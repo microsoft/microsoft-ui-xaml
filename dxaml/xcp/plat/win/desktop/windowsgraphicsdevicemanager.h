@@ -17,7 +17,7 @@ class RefreshRateInfo;
 
 struct ID3D11Device;
 struct ID2D1Device;
-struct IDCompositionDesktopDevice;
+struct IDCompositionDevice2;
 struct IPALWorkItemFactory;
 
 class WindowsGraphicsDeviceManager final : public CXcpObjectBase<IObject>
@@ -135,16 +135,14 @@ class DebugDeviceFinalReleaseAsserter
 {
 public:
     DebugDeviceFinalReleaseAsserter(
-        bool hasInteropCompositor,
         _In_opt_ ID3D11Device *pD3D11Device,
         _In_opt_ ID2D1Device *pD2DDevice,
-        _In_opt_ IDCompositionDesktopDevice *pDCompDevice);
+        _In_opt_ IDCompositionDevice2 *pDCompDevice);
     ~DebugDeviceFinalReleaseAsserter() override;
     void ReleaseAllWithAssert() override;
 
     _Maybenull_ ID3D11Device *m_pD3D11Device;
     _Maybenull_ ID2D1Device *m_pD2DDevice;
-    _Maybenull_ IDCompositionDesktopDevice *m_pDCompDevice;
-    bool m_hasInteropCompositor;
+    _Maybenull_ IDCompositionDevice2 *m_pDCompDevice;
 };
 #endif

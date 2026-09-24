@@ -43,6 +43,24 @@
     <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\idl\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd">
       <ImplementationDll>Microsoft.UI.Xaml.Controls.dll</ImplementationDll>
     </MuxControlsWinMD>
+    <!-- Charts is a standard MUXC control that happens to be built in the closed repo and
+         delivered prebuilt via WinUIDetails. Like MUXC, its metadata merges into the public
+         Microsoft.UI.Xaml.winmd, so it belongs here and not in ExternalWinMDs (which is for
+         lower-level implementation details that MUXC controls depend on). -->
+    <MuxControlsWinMD Include="$(WinUIDetailsLibPath)\Microsoft.UI.Xaml.Controls.Charts.winmd"
+                      Condition="Exists('$(WinUIDetailsLibPath)\Microsoft.UI.Xaml.Controls.Charts.winmd')">
+      <ImplementationDll>Microsoft.UI.Xaml.Controls.Charts.dll</ImplementationDll>
+    </MuxControlsWinMD>
+    <!-- Tabular merges into the public winmd on the same terms as Charts above, from the
+         metadata-only idl project rather than the DLL project, mirroring MUXC's entry.
+         Excluded from MUXFinalRelease: every Tabular type is [MUX_PREVIEW]/[MUX_INTERNAL], so
+         nothing survives there, and the DLL is not packaged in that configuration either -
+         dropping metadata and registrations together also avoids an APPX0703 mismatch.
+         Revisit when TableView leaves [MUX_PREVIEW]. -->
+    <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\idl-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd"
+                      Condition="'$(MUXFinalRelease)' != 'true'">
+      <ImplementationDll>Microsoft.UI.Xaml.Controls.Tabular.dll</ImplementationDll>
+    </MuxControlsWinMD>
 
     <WinUIEditWinMD Include="$(WinUIDetailsLibPath)\Microsoft.UI.Text.winmd">
       <ImplementationDll>WinUIEdit.dll</ImplementationDll>
@@ -76,11 +94,14 @@
     <UnMergedMuxProject Include="$(XamlSourcePath)\xcp\dxaml\idl\winrt\core\Microsoft.ui.xaml.coretypes.vcxproj" />
     <UnMergedMuxProject Include="$(XamlSourcePath)\phone\idl\phone.vcxproj" />
     <UnMergedMuxControlsWinMdProject Include="$(MuxControlsPath)\idl\Microsoft.UI.Xaml.Controls.idl.vcxproj" />
+    <UnMergedMuxControlsWinMdProject Include="$(MuxControlsPath)\idl-tabular\Microsoft.UI.Xaml.Controls.Tabular.idl.vcxproj" />
   </ItemGroup>
 
   <ItemGroup>
     <WinUIDetailsBinaries Include="$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Internal.dll" />
     <WinUIDetailsBinaries Include="$(WinUIDetailsRuntimesPath)\WinUIEdit.dll" />
+    <WinUIDetailsBinaries Include="$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Controls.Charts.dll"
+                          Condition="Exists('$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Controls.Charts.dll')" />
 
     <MuxBinaries Include="$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.dll"/>
     <MuxBinaries Include="$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.Phone.dll"/>

@@ -1,0 +1,75 @@
+<html>
+<head>
+    <style>
+        * {
+            font-family: verdana;
+        }
+        a {
+            font-family: courier;
+            font-size: 14px;
+        }
+        body {
+            padding: 5px;
+        }
+        table {
+            border-collapse: collapse;
+            text-align: right;
+        }
+        table tr {
+            border-bottom: 1px solid
+        }
+        table th {
+            font-family: verdana;
+            font-size: 14px;
+            padding: 2px 5px;
+        }
+        table td {
+            font-family: courier;
+            font-size: 16px;
+            padding: 2px 5px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>{{ title }}</h1>
+
+{% if show_versions %}
+<table>
+<thead><th></th><th>Version</th><th>Scenario apps</th></thead>
+<tr><td>Baseline</td><td>{{ baseline }}</td><td>{% for item in baseline_scenarios %}{{ item }}<br>{% endfor %}</td>
+<tr><td>Trial</td><td>{{ trial }}</td><td>{% for item in trial_scenarios %}{{ item }}<br>{% endfor %}</td>
+<table>
+<br>
+{% endif %}
+
+<h2>By absolute impact</h2>
+
+<h3>Top regressions</h3>
+{% for item in top_abs_reg %}
+{{ item }}
+<br>
+{% endfor %}
+
+<h3>Top improvements</h3>
+{% for item in top_abs_imp %}
+{{ item }}
+<br>
+{% endfor %}
+
+<h2>By % impact</h2>
+
+<h3>Top regressions</h3>
+{% for item in top_rel_reg %}
+{{ item }}
+<br>
+{% endfor %}
+
+<h3>Top improvements</h3>
+{% for item in top_rel_imp %}
+{{ item }}
+<br>
+{% endfor %}
+
+</body>
+</html>

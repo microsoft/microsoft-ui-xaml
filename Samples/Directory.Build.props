@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <UseWinUIDetails>false</UseWinUIDetails>
+    <AdHocApp Condition="'$(AdHocApp)' == ''">true</AdHocApp>
+    <TestCode>true</TestCode>
+
+    <!-- Set to true to have default sample always use the debug bits of WinUI, even if they are building in Release mode -->
+    <UseDebugWinUI Condition="'$(UseDebugWinUI)'== ''">false</UseDebugWinUI>
+
+    <!-- Opt out of legacy behavior to add VCLibs/VCLibs.UWPDesktop FWP references, to ensure that Hybrid CRT linkage is working -->
+    <WinUISDKReferences>false</WinUISDKReferences>
+
+    <!-- WinAppSDK doesn't support CX: https://github.com/microsoft/WindowsAppSDK/discussions/2884 -->
+    <WindowsAppSdkUndockedRegFreeWinRTInitializeLoadLibrary Condition="'$(AppContainerApplication)'=='true'">false</WindowsAppSdkUndockedRegFreeWinRTInitializeLoadLibrary>
+
+    <!-- Enable appx manifest activatable class entries, for execution on RS5 (system reg-free WinRT added with 19H1) -->
+    <EnableMUXWinRTRegistrations>true</EnableMUXWinRTRegistrations>
+
+    <!-- WinUI props/targets have been hacked up to support ARM64EC for tests and samples, so override
+        the normal restriction that WinAppSDK doesn't publicly support packaged Arm64EC apps. -->
+    <ValidateArm64EcConfiguration>false</ValidateArm64EcConfiguration>
+
+  </PropertyGroup>
+  
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <PackageCertificateKeyFile>$(ProjectRoot)\build\WinUITest.pfx</PackageCertificateKeyFile>
+    <AppxPackageDir>$(ArtifactsBinDir)Samples\</AppxPackageDir>
+  </PropertyGroup>
+
+  <!--
+    VS does not work well with conditionally including a PackageReference for UWP projects.
+    We work around it by conditionally including a props file that includes the PackageReference
+  -->
+  <Import Project="WinUIPackageReference.props" Condition="'$(MSBuildProjectExtension)'=='.csproj' and '$(UsingMicrosoftNETSdk)'==''" />
+
+</Project>

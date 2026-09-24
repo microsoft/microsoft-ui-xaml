@@ -124,7 +124,11 @@ UninstallTestApps("NugetPackageTestApp",
     "Microsoft.WinUI3ControlsGallery.UWP",
     "Microsoft.WinUI3ControlsGallery.Debug",
     "Microsoft.WinUI3ControlsGallery",
-    "WinUICppDesktopSampleApp")
+    "WinUICppDesktopSampleApp",
+    "DisableXamlGeneratedMainCs",
+    "DisableXamlGeneratedMainNoCtorCs",
+    "DisableXamlGeneratedMainCpp",
+    "DisableXamlGeneratedMainNoCtorCpp")
 
 # If we set the registry from a 32-bit process on a 64-bit machine, we will set the "virtualized" syswow registry. 
 # For crash dump collection we always want to set the "native" registry, so we make sure to invoke the native cmd.exe
@@ -168,6 +172,10 @@ $namesOfProcessesForDumpCollection = @(
     "AppUIBasics.exe",
     "WinUIGallery.Desktop.exe",    
     "WinUICsDesktopSampleApp.exe",
-    "WinUICppDesktopSampleApp.exe")
+    "WinUICppDesktopSampleApp.exe",
+    "DisableXamlGeneratedMainCs.exe",
+    "DisableXamlGeneratedMainNoCtorCs.exe",
+    "DisableXamlGeneratedMainCpp.exe",
+    "DisableXamlGeneratedMainNoCtorCpp.exe")
 
 Enable-CrashDumpsForProcesses $namesOfProcessesForDumpCollection

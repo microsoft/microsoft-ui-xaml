@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{65076DF7-3FC9-4D85-B402-9227E0775BE9}</ProjectGuid>
+    <RootNamespace>Microsoft.UI.Xaml.Tests.AppPerf</RootNamespace>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset Condition="$(VisualStudioVersion) &gt;= 15.0">v141</PlatformToolset>
+    <PlatformToolset Condition="$(VisualStudioVersion) &gt;= 17.0">v143</PlatformToolset>
+    <PlatformToolset Condition="$(VisualStudioVersion) &lt; 15.0">v140</PlatformToolset>
+    <TestCode>true</TestCode>
+  </PropertyGroup>
+  <Import Condition="'$(PGOBuildMode)' == 'Instrument'" Project="..\pgo\PGO.runtime.props" />
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <LinkIncremental>true</LinkIncremental>
+    <LinkerDebugOptions>
+    </LinkerDebugOptions>
+  </PropertyGroup>
+  <ItemDefinitionGroup Label="OneCoreCompileOptions">
+    <ClCompile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>%(AdditionalOptions) /d1ReturnUdtEHInline /d2ReturnUdtEHInline /Zc:externConstexpr /Zc:strictStrings</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries);kernel32.lib;advapi32.lib</IgnoreSpecificDefaultLibraries>
+      <MinimumRequiredVersion>10.0</MinimumRequiredVersion>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AppPerfTests.cpp" />
+    <ClCompile Include="LaunchTools.cpp" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetDestination>$(TargetDestination)\legacy-tools</TargetDestination>
+  </PropertyGroup>
+
+    <!-- TAEF.targets always sets INLINE_TEST_METHOD_MARKUP.  We don't want that defined so capture the value before the import and override it
+         back to the starting value afterwards. -->
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <BeforeTAEFPreprocessorDefinitions>%(PreprocessorDefinitions)</BeforeTAEFPreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+    <Import Project="$(TaefPkgDirectory)\build\Microsoft.Taef.targets"/>
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <PreprocessorDefinitions>%(BeforeTAEFPreprocessorDefinitions)</PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+    
+    <Import Project="$(MSBuildThisFileDirectory)..\..\eng\versions.props"/>
+    <Import Project="$(NugetPackageDirectory)\$(WilPackageName).$(CurrentWilPackageVersion)\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and Exists('$(NugetPackageDirectory)\$(WilPackageName).$(CurrentWilPackageVersion)\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+    <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

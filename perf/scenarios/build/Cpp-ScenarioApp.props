@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Import Project="PackageVersions.props" />
+
+  <Import Project="Paths.props" />
+
+  <PropertyGroup>
+    <AppxPackageDirOverride>$(AppxPackageDir)</AppxPackageDirOverride>
+    <BuildWinUISourceRevisionHeader>false</BuildWinUISourceRevisionHeader>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\pgo\Microsoft.WinUI.PGO.props" />
+
+  <Import Project="AppVersion.props" />
+  <Import Project="TargetPlatformVersions.props" />
+  <Import Project="Packaging.props" />
+  <Import Project="UseWinUITools.props" Condition="'$(UseWinUI)' == 'true'" />
+
+  <PropertyGroup Condition="'$(UseCppWinRT)' == 'true'">
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
+    <MinimalCoreWin>true</MinimalCoreWin>
+  </PropertyGroup>
+
+  <Import Project="$(ScenariosPackagesPath)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props" Condition="'$(UseCppWinRT)' == 'true' and Exists('$(ScenariosPackagesPath)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.props')" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.props')" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.props')" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.InteractiveExperiences.$(IXPPackageVersion)\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.InteractiveExperiences.$(IXPPackageVersion)\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.props')" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Base.$(BasePackageVersion)\build\native\Microsoft.WindowsAppSDK.Base.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Base.$(BasePackageVersion)\build\native\Microsoft.WindowsAppSDK.Base.props')" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.props')" />
+
+  <PropertyGroup>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>16</MinimumVisualStudioVersion>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <Import Project="Cpp-ProjectConfigurations.props" />
+
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType Condition="'$(ConfigurationType)' == ''">Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '16.0'">v142</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '15.0'">v141</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '14.0'">v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <ShowIncludes Condition="'$(USE_SHOWINCLUDES)' != ''">true</ShowIncludes>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level4</WarningLevel>
+      <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ScenariosPackagesPath)\microsoft.projectreunion.interactiveexperiences.transportpackage\$(IxpTransportPackageVersion)\include</AdditionalIncludeDirectories>
+      <!--Temporarily disable cppwinrt heap enforcement to work around xaml compiler generated std::shared_ptr use -->
+      <AdditionalOptions Condition="'$(UseCppWinRT)' == 'true' and '$(CppWinRTHeapEnforcement)'==''">/DWINRT_NO_MAKE_DETECTION %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(UseCppWinRT)' == 'true'">WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link Condition="'$(AddSystemLibs)' == 'true'">
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Link Condition="'$(AddSystemLibs)' == 'true'">
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ResourceCompile Include="$(GeneratedFilesDir)VersionInfo.rc" />
+  </ItemGroup>
+</Project>

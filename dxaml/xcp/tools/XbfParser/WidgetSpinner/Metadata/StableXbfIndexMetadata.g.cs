@@ -3476,6 +3476,12 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         SplitMenuFlyoutItem_Items = 2466,
         SplitMenuFlyoutItem_SubMenuItemStyle = 2467,
         SplitMenuFlyoutItem_SubMenuPresenterStyle = 2468,
+        Window_Height = 2469,
+        Window_Width = 2470,
+        Window_MaxHeight = 2471,
+        Window_MaxWidth = 2472,
+        Window_MinHeight = 2473,
+        Window_MinWidth = 2474,
     }
 
     // Define the stable XBF event indices
@@ -5194,9 +5200,15 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfPropertyIndex.VisualTransition_Storyboard, new XamlPropertyInfo("Microsoft.UI.Xaml.VisualTransition.Storyboard", StableXbfTypeIndex.Storyboard, StableXbfTypeIndex.VisualTransition, XamlPropertyFlags.IsVisualTreeProperty) },
             { StableXbfPropertyIndex.VisualTransition_To, new XamlPropertyInfo("Microsoft.UI.Xaml.VisualTransition.To", StableXbfTypeIndex.String, StableXbfTypeIndex.VisualTransition, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Window_Content, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.Content", StableXbfTypeIndex.UIElement, StableXbfTypeIndex.Window, XamlPropertyFlags.IsVisualTreeProperty) },
+            { StableXbfPropertyIndex.Window_Height, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.Height", StableXbfTypeIndex.Double, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.Window_MaxHeight, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.MaxHeight", StableXbfTypeIndex.Double, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.Window_MaxWidth, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.MaxWidth", StableXbfTypeIndex.Double, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.Window_MinHeight, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.MinHeight", StableXbfTypeIndex.Double, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.Window_MinWidth, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.MinWidth", StableXbfTypeIndex.Double, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Window_SystemBackdrop, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.SystemBackdrop", StableXbfTypeIndex.SystemBackdrop, StableXbfTypeIndex.Window, XamlPropertyFlags.IsVisualTreeProperty) },
             { StableXbfPropertyIndex.Window_Title, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.Title", StableXbfTypeIndex.String, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.Window_TransparentBackground, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.TransparentBackground", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.Window_Width, new XamlPropertyInfo("Microsoft.UI.Xaml.Window.Width", StableXbfTypeIndex.Double, StableXbfTypeIndex.Window, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.XamlUICommand_AccessKey, new XamlPropertyInfo("Microsoft.UI.Xaml.Input.XamlUICommand.AccessKey", StableXbfTypeIndex.String, StableXbfTypeIndex.XamlUICommand, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.XamlUICommand_Command, new XamlPropertyInfo("Microsoft.UI.Xaml.Input.XamlUICommand.Command", StableXbfTypeIndex.UnknownType, StableXbfTypeIndex.XamlUICommand, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.XamlUICommand_Description, new XamlPropertyInfo("Microsoft.UI.Xaml.Input.XamlUICommand.Description", StableXbfTypeIndex.String, StableXbfTypeIndex.XamlUICommand, XamlPropertyFlags.None) },

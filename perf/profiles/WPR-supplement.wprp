@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0" Author="Microsoft Corporation" Copyright="Microsoft Corporation" Company="Microsoft Corporation">
+    <Profiles>
+        <EventProvider
+            Id="EventProvider_Microsoft-Windows-Kernel-Process"
+            Name="Microsoft-Windows-Kernel-Process">
+            <Keywords>
+	            <Keyword Value ="0x0" />
+            </Keywords>
+        </EventProvider>
+
+        <EventCollector
+            Id="EventCollector_WPREventCollector"
+            Base="" Name="WPR Event Collector"
+            Private="false"
+            ProcessPrivate="false"
+            Secure="false"
+            Realtime="false">
+            <BufferSize Value="1024"/>
+            <Buffers Value="2"/>
+        </EventCollector>
+
+        <Profile
+            Id="Supplement.Verbose.Memory"
+            Name="Supplement"
+            Description="Supplement"
+            DetailLevel="Verbose"
+            Base=""
+            LoggingMode="Memory">
+            <Collectors>
+                <EventCollectorId Value="EventCollector_WPREventCollector">
+                    <EventProviders>
+                        <EventProviderId Value="EventProvider_Microsoft-Windows-Kernel-Process" />
+                    </EventProviders>
+                </EventCollectorId>
+            </Collectors>
+        </Profile>
+
+        <Profile
+            Id="Supplement.Verbose.File"
+            Name="Supplement"
+            Description="Supplement"
+            DetailLevel="Verbose"
+            Base="Supplement.Verbose.Memory"
+            LoggingMode="File"/>
+    </Profiles>
+</WindowsPerformanceRecorder>

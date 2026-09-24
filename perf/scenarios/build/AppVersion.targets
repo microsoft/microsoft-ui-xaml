@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Target Name="GenerateVersionFile" BeforeTargets="PrepareForBuild" Condition="'$(SkipGenerateVersionFile)' != 'true'">
+    <PropertyGroup>
+      <PowerShellExe Condition="'$(PowerShellExe)' == ''">%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe</PowerShellExe>
+      <GetGitStamp>false</GetGitStamp>
+      <Language Condition="'$(Language)' == ''">unset</Language>
+      <GeneratedFilesDirAbsolutePath>$([System.IO.Path]::GetFullPath('$(GeneratedFilesDir)'))</GeneratedFilesDirAbsolutePath>
+      <AppVersionScriptDir>$(ScenariosRoot)\build\appversion</AppVersionScriptDir>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(VersionString)' != ''">
+      <VersionArg>$(VersionString)</VersionArg>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(VersionString)' == ''">
+      <VersionArg>Unknown</VersionArg>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(VersionString)' == 'WinUI'">
+      <VersionArg>$(WinUIVersion)</VersionArg>
+      <GetGitStamp Condition="'$(WinUIVersion)' == '3.0.0-dev'">true</GetGitStamp>
+    </PropertyGroup>
+    <Exec Command="$(PowerShellExe) -NonInteractive -executionpolicy Unrestricted -command &quot; &amp; { $(AppVersionScriptDir)\get-version.ps1 $(VersionArg) $(GetGitStamp) } &quot;" WorkingDirectory="$(AppVersionScriptDir)" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="DetailedWinUIVersion" />
+    </Exec>
+    <Exec Command="$(PowerShellExe) -NonInteractive -executionpolicy Unrestricted -command &quot;&amp; { $(AppVersionScriptDir)\update-version.ps1 '$(GeneratedFilesDirAbsolutePath)' $(Language) $(DetailedWinUIVersion) } &quot;" WorkingDirectory="$(AppVersionScriptDir)" />
+    <PropertyGroup>
+      <AppxPackageDir Condition="'$(UseVersionSubdir)' == 'true'">$(AppxPackageDir)\$(DetailedWinUIVersion)\</AppxPackageDir>
+      <AppxPackageDirOverride Condition="'$(UseVersionSubdir)' == 'true' and '$(AppxPackageDirOverride)' != ''">$(AppxPackageDirOverride)\$(DetailedWinUIVersion)\</AppxPackageDirOverride>
+    </PropertyGroup>
+  </Target>
+</Project>

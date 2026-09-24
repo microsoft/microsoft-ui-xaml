@@ -121,7 +121,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Initialize()
     {
         ctl::ComPtr<LayoutDataInfoProvider> spLayoutDataInfoProvider;
         IFC_RETURN(ctl::make(static_cast<IModernCollectionBasePanel*>(this), &spLayoutDataInfoProvider));
-        m_spLayoutDataInfoProvider = spLayoutDataInfoProvider;
+        SetPtrValue(m_spLayoutDataInfoProvider, spLayoutDataInfoProvider);
     }
 
     return S_OK;
@@ -135,13 +135,13 @@ DOUBLE ModernCollectionBasePanel::GetDefaultCacheLength()
 
 _Check_return_ HRESULT ModernCollectionBasePanel::SetLayoutStrategyBase(_In_ const ctl::ComPtr<xaml_controls::ILayoutStrategy>& spLayoutStrategy)
 {
-    m_spLayoutStrategy = spLayoutStrategy;
+    SetPtrValue(m_spLayoutStrategy, spLayoutStrategy);
     return m_spLayoutStrategy->SetLayoutDataInfoProvider(m_spLayoutDataInfoProvider.Get());
 }
 
 _Check_return_ HRESULT ModernCollectionBasePanel::GetLayoutStrategy(_Out_ ctl::ComPtr<xaml_controls::ILayoutStrategy>* pspLayoutStrategy)
 {
-    *pspLayoutStrategy = m_spLayoutStrategy;
+    *pspLayoutStrategy = m_spLayoutStrategy.Get();
     RRETURN(S_OK);
 }
 

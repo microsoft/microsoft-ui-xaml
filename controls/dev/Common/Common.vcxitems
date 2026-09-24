@@ -13,6 +13,12 @@
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
+  <!-- NOTE: GridCoordinateHelper.{h,cpp} also live in this directory but are intentionally NOT
+       listed here. They are a Tabular-only helper (TableView keyboard navigation) and are compiled
+       into Microsoft.UI.Xaml.Controls.Tabular.dll exclusively via controls\Tabular.ProjectImports.targets.
+       Do NOT add them to this shared Common.vcxitems: this file is consumed by the in-box MUXC
+       (Microsoft.UI.Xaml.Controls.dll) build, so listing them here would compile the Tabular-only
+       helper into MUXC. -->
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)ColorConversion.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverter.cpp" />

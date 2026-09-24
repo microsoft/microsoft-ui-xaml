@@ -1,0 +1,885 @@
+<?xml version="1.0" encoding="utf-8"?>
+<InstrumentationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Instrumentation>
+        <Regions>
+            <RegionRoot Guid="{209b787e-7b9d-4feb-a57a-2addc4452863}" Name="Xaml">
+                <Region Guid="{6f6d66bd-2228-4dcb-bece-a9df66034f6e}" Name="ParseXaml">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="1" Version="0" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="2" Version="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="URI"/>
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="URI" InstanceEndpoint="Start"/>
+                    </Naming>
+                </Region>
+                <Region Guid="{ed2b0752-25ba-4abf-8542-63243a98c075}" Name="WXM::InitializeForCurrentThread">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="PerfXamlEvent"/>
+                        <PayloadIdentifier FieldName="EventName" FieldValue="WXM::InitializeForCurrentThread" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="PerfXamlEvent"/>
+                        <PayloadIdentifier FieldName="EventName" FieldValue="WXM::InitializeForCurrentThread" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                        </Event>
+                    </Match>
+
+                    <Region Guid="{02b029a7-2cb8-42bc-96e4-d55cc7e3b7e8}" Name="InitializeCore">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="31" Version="0" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="32" Version="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true" />
+                        </Match>
+                    </Region>
+                </Region>
+                <Region Guid="{969737a9-5b9c-4389-bfd8-8026fd9126f3}" Name="DWXS::Initialize">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="PerfXamlEvent"/>
+                        <PayloadIdentifier FieldName="EventName" FieldValue="DWXS::Initialize" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="PerfXamlEvent"/>
+                        <PayloadIdentifier FieldName="EventName" FieldValue="DWXS::Initialize" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                        </Event>
+                    </Match>
+                </Region>
+                <Region Guid="{0f8b3096-080e-44e7-b300-242163719f7c}" Name="LoadComponent">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Application_LoadComponent"/>
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Application_LoadComponent" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="Uri" />
+                        </Event>
+                        <Parent>
+                            <Payload FieldName="FrameNumber" />
+                        </Parent>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="Uri"/>
+                    </Naming>
+                </Region>
+
+                <Region Guid="{840ef55a-1741-43fe-8ac7-a978f0fa440e}" Name="Frame">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="CoreServices_Frame" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="CoreServices_Frame" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="FrameNumber" />
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="FrameNumber"/>
+                    </Naming>
+
+                    <Region Guid="{ccd7acbf-562c-493f-a1fd-6a1c3c8d2505}" Name="ApplyTemplate">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="FrameworkElement_ApplyTemplate" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="FrameworkElement_ApplyTemplate" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="ObjectPointer" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="FrameNumber" />
+                            </Parent>
+                            <SelfNest TID="true" PID="true" />
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="Name"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{0E40C11D-F77D-4FB0-B035-174836536321}" Name="RefreshTemplateBindings">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Control_RefreshTemplateBindings" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Control_RefreshTemplateBindings" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="ObjectPointer" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="FrameNumber" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="Name"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{D8748A44-6974-4E31-9659-D266CAFF2C67}" Name="RaiseLoadedEvent">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="EventManager_RaiseLoadedEvent" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="EventManager_RaiseLoadedEvent" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="ObjectPointer" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="FrameNumber" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="Name" />
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{f1c32a70-e1cb-4bc7-b4e4-466ebb648726}" Name="GoToState">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="VisualStateManager_GoToStateOptimized" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="VisualStateManager_GoToStateOptimized" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="ObjectPointer" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="FrameNumber" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="Type"/>
+                        </Naming>
+                    </Region>
+
+                <!-- Frame -->
+                </Region>
+
+<!--
+                <Region Guid="{48ffa4c8-e6a3-4b80-94c7-dd41c030fc60}" Name="Enter">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="DependencyObject_Enter" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="DependencyObject_Enter" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="ObjectPointer" />
+                        </Event>
+                        <Parent>
+                            <Payload FieldName="FrameNumber" />
+                        </Parent>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="Type"/>
+                    </Naming>
+                </Region>
+-->
+
+                <Region Guid="{e45f6c53-6870-40f0-9b5e-cb32e21a7b4c}" Name="Create + Init">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                        <PayloadIdentifier FieldName="NodeType" FieldValue="CreateTypeBeginInit" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                        <PayloadIdentifier FieldName="NodeType" FieldValue="EndInit" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="ObjectId" />
+                        </Event>
+                        <!-- Adding <SelfNest /> here would hierarchically group element trees being produced, but makes it hard to view them in a flat list -->
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="TypeFullName"/>
+                        <!--
+                        <PayloadBased NameField="TypeFullName"/>
+
+                        Use these to name regions based on allocation counts
+                        <PayloadBased NameField="PersistentsDelta"/>
+                        <PayloadBased NameField="TransientssDelta"/>
+                        -->
+                    </Naming>
+
+                    <Region Guid="{d51c7002-7386-4b39-9536-42fc1cf6c0d0}" Name="CreateTypeBeginInit">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="CreateTypeBeginInit" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="CreateTypeBeginInit" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="TypeFullName"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{1b86ccb7-8201-4b49-9028-9c5f8130bfd7}" Name="SetValue">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValue" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValue" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="PropertyFullName"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{9b73621e-4ba2-417f-82e6-8d3f61df9207}" Name="SetValueConstant">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueConstant" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueConstant" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="PropertyFullName"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{aee1d055-63ff-4b4c-911c-52ae39c59e37}" Name="SetValueTypeConvertedConstant">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueTypeConvertedConstant" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueTypeConvertedConstant" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="PropertyFullName"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{81e75997-6813-442c-bcc3-c8631e2ba6e0}" Name="SetValueTypeConvertedResolvedType">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueTypeConvertedResolvedType" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueTypeConvertedResolvedType" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="PropertyFullName"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{B0EEC6AB-8944-46C6-9B0A-AB4B9EC0716F}" Name="SetValueFromStaticResource">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueFromStaticResource" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueFromStaticResource" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="PropertyFullName"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{a4bc0388-2bd3-40da-a9ae-19dc8d808498}" Name="SetValueFromThemeResource">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueFromThemeResource" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueFromThemeResource" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="PropertyFullName"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{633c8bfd-acc1-478f-b654-b5309d0d6de7}" Name="SetValueFromTemplateBinding">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueFromTemplateBinding" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueFromTemplateBinding" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="PropertyFullName"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{a669d84b-59a3-46a8-888c-037c3b942209}" Name="SetValueFromMarkupExtension">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueFromMarkupExtension" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetValueFromMarkupExtension" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="PropertyFullName"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{8c29f30c-b37f-4902-8bdf-85a4c6e88771}" Name="AddToCollection">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="AddToCollection" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="AddToCollection" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="CollectionOwnerId" TargetFieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="PropertyFullName"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{69e453ea-0bfe-4489-9dca-a27c30ed82e7}" Name="AddToDictionary">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="AddToDictionary / AddToDictionaryWithKey" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="AddToDictionary / AddToDictionaryWithKey" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="ResourceDictionaryOwnerId" TargetFieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="ResourceKey"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{1ce7fc2e-6a9f-4ca9-a59f-aac09ecc9008}" Name="GetValue">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="GetValue / PushScopeGetValue" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="GetValue / PushScopeGetValue" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="PropertyFullName"/>
+                        </Naming>
+                    </Region>
+
+                    <Region Guid="{a5a62d5b-3f06-44d7-9227-30a68e004fd5}" Name="SetName">
+                        <Start>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetName" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                        </Start>
+                        <Stop>
+                            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="BinaryFormatObjectWriter::WriteNode" />
+                            <PayloadIdentifier FieldName="NodeType" FieldValue="SetName" />
+                            <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                        </Stop>
+                        <Match>
+                            <Event TID="true" PID="true">
+                                <Payload FieldName="NodeNumber" />
+                            </Event>
+                            <Parent>
+                                <Payload FieldName="ObjectId" />
+                            </Parent>
+                        </Match>
+                        <Naming>
+                            <PayloadBased NameField="Name"/>
+                        </Naming>
+                    </Region>
+
+                <!-- Create + Init -->
+                </Region>
+
+
+                <Region Guid="{22d86175-b259-4c63-b12b-1a3bf710d6b0}" Name="CEventManager::RaiseHelper">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="CEventManager::RaiseHelper" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="CEventManager::RaiseHelper" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="Sender Pointer" />
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="EventIndex"/>
+                    </Naming>
+                </Region>
+
+                <Region Guid="{31f40887-7951-40c5-9aa7-4bbd7f425f24}" Name="DXamlCore::RaiseEvent">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="DXamlCore::RaiseEvent" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="DXamlCore::RaiseEvent" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="Sender Pointer" />
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="ManagedEvent"/>
+                    </Naming>
+                </Region>
+
+                <Region Guid="{5342c59e-0a22-4d04-9253-4bd7e1623d3d}" Name="Binding - DependencyObject::RefreshExpression_Helper">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Binding - DependencyObject::RefreshExpression_Helper" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Binding - DependencyObject::RefreshExpression_Helper" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="CDOPointer" />
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="PropertyName"/>
+                    </Naming>
+                </Region>
+
+                <Region Guid="{98ce7c4e-b172-4f07-99a5-90e2a34bbd71}" Name="Binding - DependencyObject::RaiseDPChanged">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Binding - DependencyObject::RaiseDPChanged" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Binding - DependencyObject::RaiseDPChanged" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="CDOPointer" />
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="PropertyName"/>
+                    </Naming>
+                </Region>
+
+                <Region Guid="{ece55b65-409e-4b5e-a9b3-d4845e829453}" Name="DependencyObject::NotifyPropertyChanged">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="DependencyObject::NotifyPropertyChanged" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="DependencyObject::NotifyPropertyChanged" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="CDOPointer" />
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="PropertyName"/>
+                    </Naming>
+                </Region>
+
+                <Region Guid="{72a49ccb-c6b9-4637-bde7-6a6d4ed8f8d2}" Name="Binding - DependencyObject::OnInheritanceContextChanged">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Binding - DependencyObject::OnInheritanceContextChanged" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Binding - DependencyObject::OnInheritanceContextChanged" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="CDOPointer" />
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="PropertyName"/>
+                    </Naming>
+                </Region>
+
+                <Region Guid="{b0513d62-43f9-4c5d-b01d-5dc3f6024030}" Name="Binding - FrameworkElement::NotifyBindingExpressions">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Binding - FrameworkElement::NotifyBindingExpressions" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Binding - FrameworkElement::NotifyBindingExpressions" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="CDOPointer" />
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="PropertyName"/>
+                    </Naming>
+                </Region>
+
+
+                <Region Guid="{0afb0b28-0890-475a-a351-2c496bcf22bd}" Name="ResourceLookup_Dictionary">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="ResourceLookup_Dictionary" />
+                        <PayloadIdentifier FieldName="IsEnter" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="ResourceLookup_Dictionary" />
+                        <PayloadIdentifier FieldName="IsEnter" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="ETWEventIndex" />
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="ResourceKey"/>
+                    </Naming>
+                </Region>
+
+                <Region Guid="{dd96cde1-c586-47d1-af40-c89d59e1666c}" Name="Implicit Styles">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="ResourceLookup_CControl_CreationComplete" />
+                        <PayloadIdentifier FieldName="IsEnter" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="ResourceLookup_CControl_CreationComplete" />
+                        <PayloadIdentifier FieldName="IsEnter" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="ThisPointer" />
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="Type"/>
+                    </Naming>
+                </Region>
+
+
+
+            <!--
+
+                <Region Guid="{844ca47a-f676-42b5-84c7-b4df60b289ec}" Name="ValueBoxer - get_value_as">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="ValueBoxer - get_value_as" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="ValueBoxer - get_value_as" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="ObjectPointer" />
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="ObjectPointer"/>
+                    </Naming>
+                </Region>
+
+                <Region Guid="{02f36f24-2091-47a4-9a4c-f0b5117beaf0}" Name="ValueBoxer - get_property_value">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="ValueBoxer - get_property_value" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="1" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="ValueBoxer - get_property_value" />
+                        <PayloadIdentifier FieldName="IsStart" FieldValue="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true">
+                            <Payload FieldName="ObjectPointer" />
+                        </Event>
+                    </Match>
+                    <Naming>
+                        <PayloadBased NameField="ObjectPointer"/>
+                    </Naming>
+                </Region>
+
+                <Region Guid="{23ed6c93-a01d-4a01-9b97-657b317de5dc}" Name="Layout">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="41" Version="0" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="42" Version="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true" />
+                    </Match>
+                </Region>
+                <Region Guid="{1ccec463-bc80-4275-adda-df90568df322}" Name="Measure">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="43" Version="0" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="44" Version="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true" />
+                    </Match>
+                </Region>
+                <Region Guid="{cdeabc56-4ab9-47a0-b279-08bf7e006826}" Name="Arrange">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="45" Version="0" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="46" Version="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true" />
+                    </Match>
+                </Region>
+            -->
+            <!--
+                <Region Guid="{14722323-9E3F-4372-82B6-D5D41E57D4A6}" Name="ThemeChanged">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="457" Version="0" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="458" Version="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true" />
+                    </Match>
+                </Region>
+                <Region Guid="{8A452551-5A07-42B6-9C3E-9AAD8AE99E02}" Name="ReleaseQueueCleanup">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="513" Version="0" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="514" Version="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true" />
+                    </Match>
+                </Region>
+                <Region Guid="{b434c3df-bb3e-408c-bda4-996d5cf267ad}" Name="RenderWalk">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="93" Version="0" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="94" Version="1" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true" />
+                    </Match>
+                </Region>
+                <Region Guid="{89984bff-f31c-4af7-a9c0-a6a0e149218f}" Name="SubmitFrame">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="100" Version="0" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="102" Version="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true" />
+                    </Match>
+                </Region>
+                <Region Guid="{D504D396-3C6C-45F5-BA29-92B492D33343}" Name="Startup">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="31" Version="0" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="65" Version="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true" />
+                    </Match>
+                </Region>
+                <Region Guid="{bfe6717e-b77a-4f51-9256-f7227605c96b}" Name="CreateResourceManager">
+                    <Start>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="463" Version="0" />
+                    </Start>
+                    <Stop>
+                        <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="464" Version="0" />
+                    </Stop>
+                    <Match>
+                        <Event TID="true" PID="true" />
+                    </Match>
+                </Region>
+            -->
+            </RegionRoot>
+        </Regions>
+    </Instrumentation>
+</InstrumentationManifest>

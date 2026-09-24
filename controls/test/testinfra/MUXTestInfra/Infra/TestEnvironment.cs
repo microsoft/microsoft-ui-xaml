@@ -148,6 +148,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         public const string _20H2 = "19042";
         public const string _21H2 = "22000";
         public const string _22H2 = "22621";
+        public const string _24H2 = "26100";
+        public const string _25H2 = "26200";
     }
 
     // This is marked as a test class to make sure our AssemblyInitialize and AssemblyCleanup

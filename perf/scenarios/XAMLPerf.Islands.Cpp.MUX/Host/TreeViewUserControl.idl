@@ -1,0 +1,8 @@
+namespace IslandSimple
+{
+    [default_interface]
+    runtimeclass TreeViewUserControl : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        TreeViewUserControl();
+    }
+}

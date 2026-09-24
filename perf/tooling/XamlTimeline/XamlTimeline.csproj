@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Shared timeline core used by BOTH the WinUI viewer (XamlTelemtryViewerWInui3,
+    net8.0-windows) and the WPA plugin (AppBootingVisualizerPlugin, netstandard2.0).
+    Target netstandard2.0 — the common denominator both consumers can reference —
+    and keep ZERO external package dependencies so the WPA .ptix gains no new DLLs.
+    Modern C# (records, init, nullable) is enabled via LangVersion + the small
+    IsExternalInit polyfill under Polyfills/.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>XamlTimeline</RootNamespace>
+    <AssemblyName>XamlTimeline</AssemblyName>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Canonical region definitions, embedded so BOTH apps load the same XML via
+         RegionsLoader.LoadEmbeddedDefault(). -->
+    <EmbeddedResource Include="Regions\XamlAppLaunch.regions.xml" />
+  </ItemGroup>
+
+</Project>

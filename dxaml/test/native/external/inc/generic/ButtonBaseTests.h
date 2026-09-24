@@ -144,6 +144,89 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TestServices::WindowHelper->WaitForIdle();
         }
 
+        static void CanRecoverKeyboardInvocationAfterPointerCancellation()
+        {
+            TestCleanupWrapper cleanup;
+            TClassUnderTest^ button = nullptr;
+            xaml_controls::Border^ container = nullptr;
+            xaml_controls::StackPanel^ rootPanel = nullptr;
+
+            std::shared_ptr<Event> clickEvent = std::make_shared<Event>();
+            auto clickRegistration = CreateSafeEventRegistration(TClassUnderTest, Click);
+            wf::Point pressPoint(40, 20);
+            bool isTracking = false;
+
+            RunOnUIThread([&]()
+            {
+                rootPanel = ref new xaml_controls::StackPanel();
+                container = ref new xaml_controls::Border();
+                button = ref new TClassUnderTest();
+                button->Content = L"Button";
+                button->Width = 200;
+                button->Height = 40;
+                container->Width = 260;
+                container->Height = 80;
+
+                clickRegistration.Attach(button, [&]() { clickEvent->Set(); });
+
+                container->Child = button;
+                rootPanel->Children->Append(container);
+                TestServices::WindowHelper->WindowContent = rootPanel;
+            });
+
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                button->AddHandler(xaml::UIElement::PointerPressedEvent,
+                    ref new xaml_input::PointerEventHandler([&](Platform::Object^, xaml_input::PointerRoutedEventArgs^)
+                    {
+                        isTracking = true;
+                    }),
+                    true);
+
+                button->AddHandler(xaml::UIElement::PointerMovedEvent,
+                    ref new xaml_input::PointerEventHandler([&](Platform::Object^, xaml_input::PointerRoutedEventArgs^ args)
+                    {
+                        if (!isTracking)
+                        {
+                            return;
+                        }
+
+                        auto point = args->GetCurrentPoint(rootPanel)->Position;
+                        auto dx = point.X - pressPoint.X;
+                        auto dy = point.Y - pressPoint.Y;
+                        if ((dx * dx) + (dy * dy) > 20.0 * 20.0)
+                        {
+                            isTracking = false;
+                            container->Visibility = xaml::Visibility::Collapsed;
+                        }
+                    }),
+                    true);
+            });
+
+            TestServices::WindowHelper->WaitForIdle();
+
+            TestServices::InputHelper->MouseButtonDown(button, 0, 0, MouseButton::Left);
+            TestServices::WindowHelper->WaitForIdle();
+
+            TestServices::InputHelper->MoveMouse(rootPanel);
+            TestServices::WindowHelper->WaitForIdle();
+
+            TestServices::InputHelper->MouseButtonUp(rootPanel, 0, 0, MouseButton::Left);
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                container->Visibility = xaml::Visibility::Visible;
+                button->Focus(xaml::FocusState::Keyboard);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            TestServices::KeyboardHelper->Space();
+            clickEvent->WaitForDefault();
+        }
+
     }; // class ButtonBaseTests
 
 } } } } } // namespace Microsoft::UI::Xaml::Tests::Generic

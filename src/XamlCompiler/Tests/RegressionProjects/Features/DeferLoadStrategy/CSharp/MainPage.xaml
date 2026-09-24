@@ -1,0 +1,36 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Page
+    x:Class="CSharp.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:CSharp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Tag="Don't Click Me!">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" VerticalAlignment="Center">
+        <StackPanel>
+            <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:DeferLoadStrategy="Lazy" x:Name="MainGrid" Tag="{x:Bind Tag}">
+                <Button Name="Button1" Content="{x:Bind Tag}"/>
+            </Grid>
+
+            <!-- DeferLoadStrategy in DataTemplate -->
+            <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                <ContentControl x:Name="contentcontrol">
+                    <ContentControl.ContentTemplate>
+                        <DataTemplate x:DataType="local:MainPage">
+                            <StackPanel>
+                                <Button Click="Button_Click" Content="Undefer"/>
+                                <Button Click="deferred_Click" x:Name="deferred" x:DeferLoadStrategy="Lazy" Content="Deferred"/>
+                                <TextBlock Text="{x:Bind CurrentYearAsInteger}" x:Name="currentYearTextBlock" x:DeferLoadStrategy="Lazy"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ContentControl.ContentTemplate>
+                </ContentControl>              
+            </Grid>
+        </StackPanel>
+    </Grid>
+    
+</Page>

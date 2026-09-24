@@ -91,7 +91,7 @@ private:
     _Check_return_ HRESULT OnPointerRoutedAway(_In_ ixp::IPointerEventArgs* e);
     _Check_return_ HRESULT OnPointerRoutedReleased(_In_ ixp::IPointerEventArgs* e);
     _Check_return_ HRESULT OnPointerRoutedTo(_In_ ixp::IPointerEventArgs* e);
-    _Check_return_ HRESULT OnTouchHitTesting(_In_ ixp::ITouchHitTestingEventArgs* args);
+    //_Check_return_ HRESULT OnTouchHitTesting(_In_ ixp::ITouchHitTestingEventArgs* args);
 
     CUIElement* GetPublicRootVisual();
 
@@ -125,6 +125,6 @@ private:
     EventRegistrationToken m_pointerRoutedReleasedToken{};
     EventRegistrationToken m_pointerRoutedToToken{};
     EventRegistrationToken m_directManipulationHitTestToken{};
-    EventRegistrationToken m_touchHitTestRequestedToken{};
+    //EventRegistrationToken m_touchHitTestRequestedToken{};
     EventRegistrationToken m_activationChangedToken{};
 };

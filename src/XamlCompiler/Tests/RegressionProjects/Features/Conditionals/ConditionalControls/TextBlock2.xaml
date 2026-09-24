@@ -1,0 +1,14 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="ConditionalControls.TextBlock2"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ConditionalControls"
+    >
+    <StackPanel Orientation="Horizontal" Padding="10, 0, 10, 0">
+        <Rectangle Fill="Gray" Width="4" Height="20"/>
+        <TextBlock Text="{x:Bind Text}" x:Name="textBlock"/>
+    </StackPanel>
+
+</UserControl>

@@ -1,0 +1,373 @@
+{
+  "MinApp.Cpp.MUX": {
+    "Name": "Lifecycle-MinApp.Cpp.MUX",
+    "App": {
+      "AppId": "MinApp.Cpp.MUX",
+      "ProcessName": "XAMLPerf.MinApp.Cpp.MUX.exe",
+      "VersionSource": {
+        "ModuleName": "XAMLPerf.MinApp.Cpp.MUX.exe",
+        "PropertyName": "ProductVersion",
+        "$type": "ModulePropertyVersionSource"
+      },
+      "Deployment": {
+        "InstallerBaseDirectory": "",
+        "InstallerPath": "XAMLPerf.MinApp.Cpp.MUX_1.0.0.0_x64_Test\\XAMLPerf.MinApp.Cpp.MUX_1.0.0.0_x64.appx",
+        "PackageFamilyName": "XAMLPerf.MinApp.Cpp.MUX_6f07fta6qpts2",
+        "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+        "$type": "PackagedDeployment"
+      },
+      "Launcher": {
+        "$type": "PackagedAppLauncher"
+      }
+    },
+    "Tags": [ "xamlperf", "mux", "test" ],
+    "Args": [],
+    "PreRunDelay": "",
+    "PostRunDelay": "",
+    "EndCondition": {
+      "Timeout": "",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  "MinApp.Cpp.WUX": {
+    "Name": "Lifecycle-MinApp.Cpp.WUX",
+    "App": {
+      "AppId": "MinApp.Cpp.WUX",
+      "ProcessName": "XAMLPerf.MinApp.Cpp.WUX.exe",
+      "VersionSource": {
+        "ModuleName": "XAMLPerf.MinApp.Cpp.WUX.exe",
+        "PropertyName": "ProductVersion",
+        "$type": "ModulePropertyVersionSource"
+      },
+      "Deployment": {
+        "InstallerBaseDirectory": "",
+        "InstallerPath": "XAMLPerf.MinApp.Cpp.WUX_1.0.0.0_x64_Test\\XAMLPerf.MinApp.Cpp.WUX_1.0.0.0_x64.appx",
+        "PackageFamilyName": "XAMLPerf.MinApp.Cpp.WUX_6f07fta6qpts2",
+        "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+        "$type": "PackagedDeployment"
+      },
+      "Launcher": {
+        "$type": "PackagedAppLauncher"
+      }
+    },
+    "Tags": [ "xamlperf", "WUX", "test" ],
+    "Args": [],
+    "PreRunDelay": "",
+    "PostRunDelay": "",
+    "EndCondition": {
+      "Timeout": "",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  "MinApp.Cs.MUX": {
+    "Name": "Lifecycle-MinApp.Cs.MUX",
+    "App": {
+      "AppId": "MinApp.Cs.MUX",
+      "ProcessName": "XAMLPerf.MinApp.Cs.MUX.exe",
+      "VersionSource": {
+        "ModuleName": "XAMLPerf.MinApp.Cs.MUX.exe",
+        "PropertyName": "ProductVersion",
+        "$type": "ModulePropertyVersionSource"
+      },
+      "Deployment": {
+        "InstallerBaseDirectory": "",
+        "InstallerPath": "XAMLPerf.MinApp.Cs.MUX_1.0.0.0_x64_Test\\XAMLPerf.MinApp.Cs.MUX_1.0.0.0_x64.appx",
+        "PackageFamilyName": "XAMLPerf.MinApp.Cs.MUX_6f07fta6qpts2",
+        "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+        "$type": "PackagedDeployment"
+      },
+      "Launcher": {
+        "$type": "PackagedAppLauncher"
+      }
+    },
+    "Tags": [ "xamlperf", "mux" ],
+    "Args": [],
+    "PreRunDelay": "",
+    "PostRunDelay": "",
+    "EndCondition": {
+      "Timeout": "",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  "MinApp.Cs.WUX": {
+    "Name": "Lifecycle-MinApp.Cs.WUX",
+    "App": {
+      "AppId": "MinApp.Cs.WUX",
+      "ProcessName": "XAMLPerf.MinApp.Cs.WUX.exe",
+      "VersionSource": {
+        "ModuleName": "XAMLPerf.MinApp.Cs.WUX.exe",
+        "PropertyName": "ProductVersion",
+        "$type": "ModulePropertyVersionSource"
+      },
+      "Deployment": {
+        "InstallerBaseDirectory": "",
+        "InstallerPath": "XAMLPerf.MinApp.Cs.WUX_1.0.0.0_x64_Test\\XAMLPerf.MinApp.Cs.WUX_1.0.0.0_x64.appx",
+        "PackageFamilyName": "XAMLPerf.MinApp.Cs.WUX_6f07fta6qpts2",
+        "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+        "$type": "PackagedDeployment"
+      },
+      "Launcher": {
+        "$type": "PackagedAppLauncher"
+      }
+    },
+    "Tags": [ "xamlperf", "WUX" ],
+    "Args": [],
+    "PreRunDelay": "",
+    "PostRunDelay": "",
+    "EndCondition": {
+      "Timeout": "",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  "ButtonApp.Cpp.MUX": {
+    "Name": "Lifecycle-ButtonApp.Cpp.MUX",
+    "App": {
+      "AppId": "ButtonApp.Cpp.MUX",
+      "ProcessName": "XAMLPerf.ButtonApp.Cpp.MUX.exe",
+      "VersionSource": {
+        "ModuleName": "XAMLPerf.ButtonApp.Cpp.MUX.exe",
+        "PropertyName": "ProductVersion",
+        "$type": "ModulePropertyVersionSource"
+      },
+      "Deployment": {
+        "InstallerBaseDirectory": "",
+        "InstallerPath": "XAMLPerf.ButtonApp.Cpp.MUX_1.0.0.0_x64_Test\\XAMLPerf.ButtonApp.Cpp.MUX_1.0.0.0_x64.appx",
+        "PackageFamilyName": "XAMLPerf.ButtonApp.Cpp.MUX_6f07fta6qpts2",
+        "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+        "$type": "PackagedDeployment"
+      },
+      "Launcher": {
+        "$type": "PackagedAppLauncher"
+      }
+    },
+    "Tags": [ "xamlperf", "mux" ],
+    "Args": [],
+    "PreRunDelay": "",
+    "PostRunDelay": "",
+    "EndCondition": {
+      "Timeout": "",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  "NavApp.Cs.MUX": {
+    "Name": "Lifecycle-NavApp.Cs.MUX",
+    "App": {
+      "AppId": "NavApp.Cs.MUX",
+      "ProcessName": "XAMLPerf.NavApp.Cs.MUX.exe",
+      "VersionSource": {
+        "ModuleName": "XAMLPerf.NavApp.Cs.MUX.exe",
+        "PropertyName": "ProductVersion",
+        "$type": "ModulePropertyVersionSource"
+      },
+      "Deployment": {
+        "InstallerBaseDirectory": "",
+        "InstallerPath": "XAMLPerf.NavApp.Cs.MUX_1.0.0.0_x64_Test\\XAMLPerf.NavApp.Cs.MUX_1.0.0.0_x64.appx",
+        "PackageFamilyName": "XAMLPerf.NavApp.Cs.MUX_6f07fta6qpts2",
+        "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+        "$type": "PackagedDeployment"
+      },
+      "Launcher": {
+        "$type": "PackagedAppLauncher"
+      }
+    },
+    "Tags": [ "xamlperf", "mux" ],
+    "Args": [],
+    "PreRunDelay": "",
+    "PostRunDelay": "",
+    "EndCondition": {
+      "Timeout": "",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  "NavApp.Cs.WUX": {
+    "Name": "Lifecycle-NavApp.Cs.WUX",
+    "App": {
+      "AppId": "NavApp.Cs.WUX",
+      "ProcessName": "XAMLPerf.NavApp.Cs.WUX.exe",
+      "VersionSource": {
+        "ModuleName": "XAMLPerf.NavApp.Cs.WUX.exe",
+        "PropertyName": "ProductVersion",
+        "$type": "ModulePropertyVersionSource"
+      },
+      "Deployment": {
+        "InstallerBaseDirectory": "",
+        "InstallerPath": "XAMLPerf.NavApp.Cs.WUX_1.0.0.0_x64_Test\\XAMLPerf.NavApp.Cs.WUX_1.0.0.0_x64.appx",
+        "PackageFamilyName": "XAMLPerf.NavApp.Cs.WUX_6f07fta6qpts2",
+        "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+        "$type": "PackagedDeployment"
+      },
+      "Launcher": {
+        "$type": "PackagedAppLauncher"
+      }
+    },
+    "Tags": [ "xamlperf", "WUX" ],
+    "Args": [],
+    "PreRunDelay": "",
+    "PostRunDelay": "",
+    "EndCondition": {
+      "Timeout": "",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  "TextBlockApp.Cpp": {
+    "Name": "Lifecycle-TextBlockApp.Cpp.MUX",
+    "App": {
+      "AppId": "TextBlockApp.Cpp.MUX",
+      "ProcessName": "XAMLPerf.TextBlockApp.Cpp.MUX.exe",
+      "VersionSource": {
+        "ModuleName": "XAMLPerf.TextBlockApp.Cpp.MUX.exe",
+        "PropertyName": "ProductVersion",
+        "$type": "ModulePropertyVersionSource"
+      },
+      "Deployment": {
+        "InstallerBaseDirectory": "",
+        "InstallerPath": "XAMLPerf.TextBlockApp.Cpp.MUX_1.0.0.0_x64_Test\\XAMLPerf.TextBlockApp.Cpp.MUX_1.0.0.0_x64.appx",
+        "PackageFamilyName": "XAMLPerf.TextBlockApp.Cpp.MUX_6f07fta6qpts2",
+        "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+        "$type": "PackagedDeployment"
+      },
+      "Launcher": {
+        "$type": "PackagedAppLauncher"
+      }
+    },  
+    "Tags": [ "xamlperf", "mux" ],
+    "Args": [],
+    "PreRunDelay": "",
+    "PostRunDelay": "",
+    "EndCondition": {
+      "Timeout": "",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  "HelloWorldApp.Cpp": {
+    "Name": "Lifecycle-HelloWorldApp.Cpp.MUX",
+    "App": {
+      "AppId": "HelloWorldApp.Cpp.MUX",
+      "ProcessName": "XAMLPerf.HelloWorldApp.Cpp.MUX.exe",
+      "VersionSource": {
+        "ModuleName": "XAMLPerf.HelloWorldApp.Cpp.MUX.exe",
+        "PropertyName": "ProductVersion",
+        "$type": "ModulePropertyVersionSource"
+      },
+      "Deployment": {
+        "InstallerBaseDirectory": "",
+        "InstallerPath": "XAMLPerf.HelloWorldApp.Cpp.MUX-Package_1.0.0.0_x64_Test\\XAMLPerf.HelloWorldApp.Cpp.MUX-Package_1.0.0.0_x64.appx",
+        "PackageFamilyName": "XAMLPerf.HelloWorldApp.Cpp.MUX_6f07fta6qpts2",
+        "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+        "$type": "PackagedDeployment"
+      },
+      "Launcher": {
+        "$type": "PackagedAppLauncher"
+      }
+    },  
+    "Tags": [ "xamlperf", "mux" ],
+    "Args": [],
+    "PreRunDelay": "",
+    "PostRunDelay": "",
+    "EndCondition": {
+      "Timeout": "",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  "HelloWorldApp.Cs": {
+    "Name": "Lifecycle-HelloWorldApp.Cs.MUX",
+    "App": {
+      "AppId": "HelloWorldApp.Cs.MUX",
+      "ProcessName": "XAMLPerf.HelloWorldApp.Cs.MUX.exe",
+      "VersionSource": {
+        "ModuleName": "XAMLPerf.HelloWorldApp.Cs.MUX.exe",
+        "PropertyName": "ProductVersion",
+        "$type": "ModulePropertyVersionSource"
+      },
+      "Deployment": {
+        "InstallerBaseDirectory": "",
+        "InstallerPath": "XAMLPerf.HelloWorldApp.Cs.MUX-Package_1.0.0.0_x64_Test\\XAMLPerf.HelloWorldApp.Cs.MUX-Package_1.0.0.0_x64.appx",
+        "PackageFamilyName": "XAMLPerf.HelloWorldApp.Cs.MUX_6f07fta6qpts2",
+        "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+        "$type": "PackagedDeployment"
+      },
+      "Launcher": {
+        "$type": "PackagedAppLauncher"
+      }
+    },  
+    "Tags": [ "xamlperf", "mux" ],
+    "Args": [],
+    "PreRunDelay": "",
+    "PostRunDelay": "",
+    "EndCondition": {
+      "Timeout": "",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  "Islands-BlankUserControl.Cpp.MUX": {
+    "Name": "Lifecycle-Islands-BlankUserControl.Cpp.MUX",
+    "App": {
+      "AppId": "Islands-BlankUserControl.Cpp.MUX",
+      "ProcessName": "XAMLPerf.Islands-BlankUserControl.Cpp.MUX.exe",
+      "VersionSource": {
+        "ModuleName": "XAMLPerf.Islands-BlankUserControl.Cpp.MUX.exe",
+        "PropertyName": "ProductVersion",
+        "$type": "ModulePropertyVersionSource"
+      },
+      "Deployment": {
+        "InstallerBaseDirectory": "",
+        "InstallerPath": "XAMLPerf.Islands-BlankUserControl.Cpp.MUX-Package_1.0.0.0_x64_Test\\XAMLPerf.Islands-BlankUserControl.Cpp.MUX-Package_1.0.0.0_x64.appx",
+        "PackageFamilyName": "XAMLPerf.Islands-BlankUserControl.Cpp.MUX_6f07fta6qpts2",
+        "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+        "$type": "PackagedDeployment"
+      },
+      "Launcher": {
+        "$type": "PackagedAppLauncher"
+      }
+    },  
+    "Tags": [ "xamlperf", "mux", "islands" ],
+    "Args": [],
+    "PreRunDelay": "",
+    "PostRunDelay": "",
+    "EndCondition": {
+      "Timeout": "",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  "Islands-ButtonUserControl.Cpp.MUX": {
+    "Name": "Lifecycle-Islands-ButtonUserControl.Cpp.MUX",
+    "App": {
+      "AppId": "Islands.Cpp.MUX",
+      "ProcessName": "XAMLPerf.Islands.Cpp.MUX.exe",
+      "VersionSource": {
+        "ModuleName": "XAMLPerf.Islands.Cpp.MUX.exe",
+        "PropertyName": "ProductVersion",
+        "$type": "ModulePropertyVersionSource"
+      },
+      "Deployment": {
+        "InstallerBaseDirectory": "",
+        "InstallerPath": "XAMLPerf.Islands.Cpp.MUX-Package_1.0.0.0_x64_Test\\XAMLPerf.Islands.Cpp.MUX-Package_1.0.0.0_x64.appx",
+        "PackageFamilyName": "XAMLPerf.Islands.Cpp.MUX_6f07fta6qpts2",
+        "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+        "$type": "PackagedDeployment"
+      },
+      "Launcher": {
+        "$type": "PackagedAppLauncher"
+      }
+    },
+    "Tags": [ "xamlperf", "mux", "islands" ],
+    "Args": [],
+    "PreRunDelay": "",
+    "PostRunDelay": "",
+    "EndCondition": {
+      "Timeout": "",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  }
+}

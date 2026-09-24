@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Intentionally empty to avoid importing parent Directory.Build.props -->
+
+  <PropertyGroup>
+    <!-- TAEF requires an appx extension -->
+    <AppxPackageExtension>.appx</AppxPackageExtension>  
+    <!-- Don't need reg-free support for self-contained apps -->
+    <WindowsAppSdkUndockedRegFreeWinRTInitialize>false</WindowsAppSdkUndockedRegFreeWinRTInitialize>
+    <!-- WinAppSDK checks to ensure that customers always have the right version of the C#/WinRT runtime required by all our projection assemblies.
+    There's often a lag in that becoming publicly available (via the .NET SDK), and for WinUI we're nearly always ahead of that.
+    So we opt out of the check and explicitly reference the latest Microsoft.Windows.Sdk.Net.Ref if necessary. -->
+    <WindowsAppSDKVerifyWinrtRuntimeVersion>false</WindowsAppSDKVerifyWinrtRuntimeVersion>
+  </PropertyGroup>
+
+</Project>

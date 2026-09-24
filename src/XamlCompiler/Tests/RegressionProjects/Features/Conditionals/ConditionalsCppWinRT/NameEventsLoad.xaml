@@ -1,0 +1,62 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="ConditionalsCppWinRT.NameEventsLoad"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ConditionalsCppWinRT"
+    xmlns:cc="using:ConditionalControls"
+    xmlns:cc1="using:ConditionalControls?IsTypePresent(ConditionalControls.V1Type)"
+    xmlns:notcc1="using:ConditionalControls?IsTypeNotPresent(ConditionalControls.V1Type)"
+    xmlns:cc2="using:ConditionalControls?IsTypePresent(ConditionalControls.V2Type)"
+    xmlns:notcc2="using:ConditionalControls?IsTypeNotPresent(ConditionalControls.V2Type)"
+    xmlns:cc3="using:ConditionalControls?IsTypePresent(ConditionalControls.V3Type)"    
+    xmlns:notcc3="using:ConditionalControls?IsTypeNotPresent(ConditionalControls.V3Type)"
+    >
+
+    <StackPanel>
+
+        <!-- x:Name -->
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Type with x:Name:"/>
+            <cc1:TextBlock1 Text=" V1 " x:Name="V1TypeWithXName"/>
+            <cc2:TextBlock2 Text=" V2 " x:Name="V2TypeWithXName"/>
+            <cc3:TextBlock3 Text=" V3 " x:Name="V3TypeWithXName"/>
+        </StackPanel>
+
+        <!-- x:Load -->
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Type with x:Load:"/>
+            <cc1:TextBlock1 Text=" V1 " x:Name="V1TypeWithXLoad" x:Load="True"/>
+            <cc2:TextBlock2 Text=" V2 " x:Name="V2TypeWithXLoad" x:Load="True"/>
+            <cc3:TextBlock3 Text=" V3 " x:Name="V3TypeWithXLoad" x:Load="True"/>
+        </StackPanel>
+
+        <!-- Attached Property -->
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Attached property with conditional"/>
+            <cc1:TextBlock1 Text=" V1 " x:Name="V1TypeWithAttachedProperty" cc:AttachedProperties.AttachedBool="False"/>
+            <cc2:TextBlock2 Text=" V2 " x:Name="V2TypeWithAttachedProperty" cc:AttachedProperties.AttachedBool="False"/>
+            <cc3:TextBlock3 Text=" V3 " x:Name="V3TypeWithAttachedProperty" cc:AttachedProperties.AttachedBool="False"/>
+        </StackPanel>
+
+        <!-- Event Assignments -->
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Click on version. Result:"/>
+                <TextBlock Text="n/a" x:Name="buttonResult" Padding="10, 0, 0, 0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button Click="Button_Click">Always</Button>
+                <cc:Button3 cc1:Click="Button_Click_V1" Caption="V1"/>
+                <cc1:Button3 Click="Button_Click_V1" Caption="V1"/>
+                <cc:Button3 cc2:Click="Button_Click_V2" cc2:Caption="V2" notcc2:Caption="notV2"/>
+                <cc2:Button3 Click="Button_Click_V2" Caption="V2"/>
+                <cc:Button3 cc3:Click="Button_Click_V3" cc3:Caption="V3" notcc3:Caption="notV3" notcc3:Click="Button_Click_notV3" />
+                <cc3:Button3 Click="Button_Click_V3" Caption="V3"/>
+                <cc1:Button3 cc2:Click="Button_Click_V2" cc2:Caption="V2inV1" notcc2:Caption="INVALID"/>
+            </StackPanel>
+        </StackPanel>
+
+    </StackPanel>
+</UserControl>

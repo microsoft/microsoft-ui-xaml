@@ -1,0 +1,13 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace WinUICppDesktopSampleApp
+{
+    [default_interface]
+    runtimeclass MainWindow : Microsoft.UI.Xaml.Window
+    {
+        MainWindow();
+
+        Microsoft.UI.Xaml.Controls.Frame RootFrame{ get; };
+    }
+}

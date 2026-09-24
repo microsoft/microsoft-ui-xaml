@@ -1,0 +1,24 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Page
+    x:Class="CSharpExe.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:CSharpExe"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:CSharpLib="using:CSharpLib"
+    xmlns:CSharpWinrt="using:CSharpWinrtComponent"
+    xmlns:VBLib="using:VbLib"
+    xmlns:VBWinrt="using:VbWinrtComponent"
+    xmlns:VCWinrt="using:VCWinrtComponent"
+    mc:Ignorable="d">
+
+    <StackPanel>
+        <CSharpLib:CSharpUserControlFromProjectLibrary/>
+        <CSharpWinrt:CSharpUserControlFromProjectWinrtComponent/>
+        <VBLib:VbUserControlFromProjectLibrary/>
+        <VBWinrt:VBUserControlFromWinrtComponent/>
+        <VCWinrt:VCUserControlFromWinrtComponent/>
+    </StackPanel>
+</Page>

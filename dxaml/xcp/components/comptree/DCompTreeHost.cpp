@@ -3,6 +3,10 @@
 
 #include "precomp.h"
 #include "DCompTreeHost.h"
+#ifdef XAMLPROFILER_ENABLED
+#include "WucVisualTreeProfiler.h"
+#include "XamlProfilerTracing.h"
+#endif // XAMLPROFILER_ENABLED
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <windows.applicationmodel.core.h>
@@ -54,14 +58,6 @@ using namespace DirectUI;
 using namespace Microsoft::WRL::Wrappers;
 using namespace RuntimeFeatureBehavior;
 using namespace ABI::Windows::UI::Core;
-
-typedef HRESULT (WINAPI *DCOMPOSITIONCREATEDEVICE3FUNC)(
-    _In_opt_ IUnknown *renderingDevice,
-    _In_ REFIID iid,
-    _Outptr_ void **dcompositionDevice
-    );
-
-typedef HRESULT(WINAPI * PFN_DllGetActivationFactory)(HSTRING activatableClassId, IActivationFactory **ppFactory);
 
 bool DCompTreeHost::IsFullCompNodeTree()
 {
@@ -149,7 +145,6 @@ DCompTreeHost::DCompTreeHost(
     , m_useExplicitAtlasHint(false)
     , m_disableAtlas(FALSE)
     , m_isInitialized(false)
-    , m_isCallbackThreadRegistered(false)
 {
     XCP_WEAK(&m_pGraphicsDeviceManagerNoRef);
     ComputeAndCachePrimaryMonitorSize();
@@ -167,7 +162,7 @@ DCompTreeHost::DCompTreeHost(
 //----------------------------------------------------------------------------
 DCompTreeHost::~DCompTreeHost()
 {
-    VERIFYHR(ReleaseResources(false /* shouldDeferClosingInteropCompostior */));
+    VERIFYHR(ReleaseResources(false /* shouldDeferClosingInteropCompositor */));
 }
 
 // In the device loss recovery case, do this after DCompTreeHost::ReleaseResources to allow the DebugDeviceFinalReleaseAsserter
@@ -193,7 +188,7 @@ DCompTreeHost::CloseAndReleaseInteropCompositor()
 //
 //----------------------------------------------------------------------------
 _Check_return_ HRESULT
-DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
+DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompositor)
 {
     if (m_systemBackdropBrush != nullptr)
     {
@@ -219,12 +214,12 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
 
     m_projectedShadowManager->ReleaseResources();
 
-    if (m_pCompositionHelper.IsInitialized() && m_pCompositionHelper->GetSurfaceFactory() != nullptr)
+    if (GetSurfaceFactory() != nullptr)
     {
         //we store the pointers of offered surfacefactories in a list
         //in OfferTracker, so we need to inform OfferTracker this SurfaceFactory
         //is being released
-        m_offerTracker->DeleteReleasedSurfaceFactoryFromList(m_pCompositionHelper->GetSurfaceFactory());
+        m_offerTracker->DeleteReleasedSurfaceFactoryFromList(GetSurfaceFactory());
     }
 
     DCompSurfaceFactoryManager* instance = DCompSurfaceFactoryManager::Instance();
@@ -285,7 +280,7 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
         m_contentBridge = nullptr;
     }
 
-    if (!shouldDeferClosingInteropCompostior)
+    if (!shouldDeferClosingInteropCompositor)
     {
         CloseAndReleaseInteropCompositor();
     }
@@ -299,8 +294,8 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
     m_dcompDevice = nullptr;
     if (m_pCompositionHelper.IsInitialized())
     {
-        ASSERT(shouldDeferClosingInteropCompostior, "Should only still have m_pCompositionHelper if we deferred closing.");
-        m_pCompositionHelper->ReleaseResources(shouldDeferClosingInteropCompostior);
+        ASSERT(shouldDeferClosingInteropCompositor, "Should only still have m_pCompositionHelper if we deferred closing.");
+        m_pCompositionHelper->ReleaseResources(shouldDeferClosingInteropCompositor);
     }
 
     m_contentBridgeCW = nullptr;
@@ -314,7 +309,6 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
     m_offerTracker->Reset();
 
     m_isInitialized = false;
-    m_isCallbackThreadRegistered = false;
 
     // The background visual got released along with the background primitive. Clear the rect so that we'll make a new background
     // primitive the next time someone tries to attach the background visual.
@@ -434,8 +428,8 @@ DCompTreeHost::ReclaimResources(_Out_ bool *pDiscarded)
 void DCompTreeHost::GetSurfaceFactoriesForCurrentThread(_Inout_ std::vector<IDCompositionSurfaceFactory*>* surfaceFactoryVector)
 {
     //First, we put the main SurfaceFactory into the vector
-    if (m_pCompositionHelper.IsInitialized() && m_pCompositionHelper->GetSurfaceFactory() != nullptr) {
-        surfaceFactoryVector->push_back(m_pCompositionHelper->GetSurfaceFactory());
+    if (GetSurfaceFactory() != nullptr) {
+        surfaceFactoryVector->push_back(GetSurfaceFactory());
     }
 
     //We also need to put secondary SFs into the vector
@@ -568,7 +562,6 @@ DCompTreeHost::EnsureResources() noexcept
 
         // Create our surface factory
         {
-            Microsoft::WRL::ComPtr<IDCompositionSurfaceFactory> pMainSurfaceFactory;
             if (nullptr != pD2DDevice)
             {
                 IFC_RETURN(m_pCompositionHelper->CreateSurfaceFactory(static_cast<IUnknown*>(pD2DDevice)));
@@ -929,6 +922,15 @@ _Check_return_ HRESULT DCompTreeHost::SetRootForCorrectContext(_In_ WUComp::IVis
         }
 
         m_inprocIslandRootVisual = visual;
+
+        // Notify the XAML Profiler that this visual became the root of the in-proc island target,
+        // so a consumer can attach the island's WUC visual subtree to the right target.
+#ifdef XAMLPROFILER_ENABLED
+        if (WucVisualTreeProfiler::IsEnabled())
+        {
+            WucVisualTreeProfiler::NotifyRootSet(visual, reinterpret_cast<uint64_t>(compositionContent), 0 /* ownerCompNodeId unknown */);
+        }
+#endif // XAMLPROFILER_ENABLED
     }
 
     return S_OK;//RRETURN_REMOVAL
@@ -1011,6 +1013,19 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
 
                 renderData.contentConnected = true;
 
+                // Notify the XAML Profiler that this island root visual was connected to its
+                // ContentIsland target, including the owning comp node so the consumer can stitch
+                // the XamlIslandRoot's WUC subtree onto the island.
+#ifdef XAMLPROFILER_ENABLED
+                if (WucVisualTreeProfiler::IsEnabled())
+                {
+                    WucVisualTreeProfiler::NotifyRootSet(
+                        wucVisual,
+                        reinterpret_cast<uint64_t>(xamlIslandRoot),
+                        reinterpret_cast<uint64_t>(compositionPeer));
+                }
+#endif // XAMLPROFILER_ENABLED
+
                 // If this is our first island and we need a Frame visual then add it here.  Note that at this point the
                 // commit has already been done so we need to recommit.
                 if (m_needsFrameRateVisual)
@@ -1044,15 +1059,6 @@ bool DCompTreeHost::CheckMainDeviceState()
     }
 
     return result;
-}
-
-void DCompTreeHost::RegisterDCompAnimationCompletedCallbackThread()
-{
-    if (m_isInitialized && !m_isCallbackThreadRegistered)
-    {
-        IFCFAILFAST(m_pCompositionHelper->RegisterCallbackThread());
-        m_isCallbackThreadRegistered = true;
-    }
 }
 
 //----------------------------------------------------------------------------
@@ -1973,11 +1979,6 @@ DCompTreeHost::WaitForCommitCompletion()
     return S_OK;
 }
 
-bool DCompTreeHost::HasInteropCompositor() const
-{
-    return m_pCompositionHelper.IsInitialized() && m_pCompositionHelper->HasInteropCompositor();
-}
-
 // Start/Stop tracking the effective visibility of this element.
 // Note carefully, effective visibility for implicit Show/Hide animations has special semantics.
 // See additional notes in CUIElement::ComputeEffectiveVisibility();
@@ -2638,7 +2639,7 @@ DCompSurfaceFactory::~DCompSurfaceFactory()
 /*static*/ _Check_return_ HRESULT
 DCompSurfaceFactory::Create(
     _In_ DCompTreeHost *pDCompTreeHost,
-    _In_ IDCompositionDesktopDevice *pMainDevice,
+    _In_ IDCompositionDevice2 *pMainDevice,
     _In_ IUnknown *pIUnknownDevice,
     _Outptr_ DCompSurfaceFactory **ppSurfaceFactoryWrapper
     )

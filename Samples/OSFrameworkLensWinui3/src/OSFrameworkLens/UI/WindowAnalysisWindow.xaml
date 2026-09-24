@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="OSFrameworkLens.UI.WindowAnalysisWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="using:OSFrameworkLens.UI"
+    xmlns:sys="using:System"
+    Title="Window Framework Breakdown">
+
+    <Grid Background="#16181D" Padding="12">
+        <Grid.Resources>
+            <SolidColorBrush x:Key="CardBg" Color="#1F232B"/>
+            <SolidColorBrush x:Key="CardBorder" Color="#2C313B"/>
+            <SolidColorBrush x:Key="Muted" Color="#8A93A0"/>
+            <SolidColorBrush x:Key="LabelText" Color="#7C8593"/>
+            <SolidColorBrush x:Key="TrackBg" Color="#0F1116"/>
+            <SolidColorBrush x:Key="ChipBg" Color="#2A3140"/>
+            <SolidColorBrush x:Key="ChipFg" Color="#9CDCFE"/>
+            <SolidColorBrush x:Key="Text" Color="#E6E6E6"/>
+
+            <Style x:Key="Card" TargetType="Border">
+                <Setter Property="Background" Value="{StaticResource CardBg}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource CardBorder}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="Padding" Value="12,9"/>
+                <Setter Property="Margin" Value="0,0,0,8"/>
+            </Style>
+
+            <Style x:Key="SectionHeader" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource LabelText}"/>
+                <Setter Property="FontSize" Value="10"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Margin" Value="0,0,0,6"/>
+            </Style>
+
+            <Style x:Key="Mono" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Cascadia Mono, Consolas"/>
+                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="Foreground" Value="{StaticResource Text}"/>
+            </Style>
+        </Grid.Resources>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="WINDOW" Style="{StaticResource SectionHeader}"/>
+                <TextBlock x:Name="TopRootClass" Style="{StaticResource Mono}" FontSize="13" FontWeight="SemiBold"/>
+                <TextBlock x:Name="TopProcess" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,2,0,0"/>
+                <TextBlock x:Name="TopScanStats" Foreground="{StaticResource Muted}" FontSize="11" Margin="0,2,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Body -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,4,0">
+            <StackPanel>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="FRAMEWORKS PRESENT IN THIS WINDOW" Style="{StaticResource SectionHeader}"/>
+                        <ItemsControl x:Name="FrameworkList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="ui:FrameworkSliceVm">
+                                    <Grid Margin="0,4,0,4">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Bind DisplayName}"
+                                                   Foreground="{StaticResource Text}" FontWeight="SemiBold" FontSize="12"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind RightStats}"
+                                                   Foreground="{StaticResource Muted}" FontSize="11"
+                                                   FontFamily="Cascadia Mono, Consolas"/>
+
+                                        <Border Grid.Row="1" Grid.ColumnSpan="2" Background="{StaticResource TrackBg}"
+                                                CornerRadius="3" Height="8" Margin="0,4,0,0"
+                                                HorizontalAlignment="Stretch">
+                                            <Border Background="{x:Bind Brush}" CornerRadius="3"
+                                                    HorizontalAlignment="Left" Width="{x:Bind BarWidth}"/>
+                                        </Border>
+
+                                        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="{x:Bind WhereDescription}"
+                                                   TextWrapping="Wrap" Foreground="#C7CCD6" FontSize="12"
+                                                   Margin="0,5,0,0"
+                                                   Visibility="{x:Bind WhereDescriptionVisibility}"/>
+
+                                        <ItemsRepeater Grid.Row="3" Grid.ColumnSpan="2"
+                                                       ItemsSource="{x:Bind SampleClasses}" Margin="0,4,0,0">
+                                            <ItemsRepeater.Layout>
+                                                <StackLayout Orientation="Horizontal" Spacing="4"/>
+                                            </ItemsRepeater.Layout>
+                                            <ItemsRepeater.ItemTemplate>
+                                                <DataTemplate x:DataType="sys:String">
+                                                    <Border Background="{StaticResource ChipBg}" CornerRadius="3"
+                                                            Padding="6,1" Margin="0,1,0,1">
+                                                        <TextBlock Text="{x:Bind}" Foreground="{StaticResource ChipFg}"
+                                                                   FontFamily="Cascadia Mono, Consolas" FontSize="10"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsRepeater.ItemTemplate>
+                                        </ItemsRepeater>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock x:Name="NoFrameworksText" Text="No visible HWNDs found in this window."
+                                   Foreground="{StaticResource Muted}" FontStyle="Italic" Visibility="Collapsed"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="LOADED BUT NOT SEEN IN THIS WINDOW" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock Text="These frameworks have runtime modules loaded in the process but produced no visible HWND in this particular window. They may render other windows associated with same process (e.g. flyouts, dialogs), or be loaded as plugins / background workers that never render."
+                                   Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                        <ItemsControl x:Name="LoadedButNotSeenList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="sys:String">
+                                    <TextBlock Text="{x:Bind}" Style="{StaticResource Mono}" Margin="0,1,0,1"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock x:Name="LoadedButNotSeenEmpty"
+                                   Foreground="{StaticResource Muted}" FontStyle="Italic" FontSize="11"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="HOW TO READ THESE NUMBERS" Style="{StaticResource SectionHeader}"/>
+                        <TextBlock TextWrapping="Wrap" Foreground="{StaticResource Muted}" FontSize="11">
+                            • Classification uses HWND class names only (cheap; no UI-thread message sends).<LineBreak/>
+                            • A XAML island is one HWND that hosts many XAML elements — the count metric treats it as one. The area-percent metric still reflects the visible surface correctly.<LineBreak/>
+                            • Virtualized lists only instantiate visible children, so counts reflect what's painted, not what is logically scrollable.<LineBreak/>
+                            • Area % is calculated against the root window's bounding rectangle and is capped at 100% per slice; sums may exceed 100% when HWNDs overlap.<LineBreak/>
+                            • Invisible HWNDs (WS_VISIBLE = 0) are excluded.
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Grid Grid.Row="2" Margin="0,4,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Text="HWND counts are per-window; XAML islands count as 1 HWND each. Area % is share of root-window pixels."
+                       Foreground="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap"
+                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <Button Grid.Column="1" Content="📋  Copy report" Click="OnCopyClicked"/>
+            <Button Grid.Column="2" Content="Close" Margin="6,0,0,0" Click="OnCloseClicked"/>
+        </Grid>
+    </Grid>
+</Window>

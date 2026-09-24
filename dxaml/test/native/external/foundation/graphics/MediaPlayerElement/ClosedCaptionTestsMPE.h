@@ -24,18 +24,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(MediaPlayerElementWithCustomStyle)
                 TEST_METHOD_PROPERTY(L"Description", L"Closed Captions with custom style.")
+                TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_24H2)
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(MediaPlayerElementWithCustomRegion)
                 TEST_METHOD_PROPERTY(L"Description", L"Closed Captions with custom region.")
+                TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_24H2)
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(MediaPlayerElementWithLines)
                 TEST_METHOD_PROPERTY(L"Description", L"Closed Captions with cues and multiple lines")
+                TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_24H2)
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
@@ -47,6 +50,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(MediaPlayerElementWithSubformatting)
                 TEST_METHOD_PROPERTY(L"Description", L"Closed Captions with subformatting")
+                TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_24H2)
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
                 TEST_METHOD_PROPERTY(L"TestPass:MinOSVer", WINDOWS_OS_VERSION_19H1) // TODO: [MediaPlayerElement] Some CC tests fail on RS5
@@ -54,6 +58,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(MediaPlayerElementWithMultipleColors)
                 TEST_METHOD_PROPERTY(L"Description", L"Closed Captions with multi-color line")
+                TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_24H2)
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
                 TEST_METHOD_PROPERTY(L"TestPass:MinOSVer", WINDOWS_OS_VERSION_19H1) // TODO: [MediaPlayerElement] Some CC tests fail on RS5
@@ -61,12 +66,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(MediaPlayerElementWithOutline)
                 TEST_METHOD_PROPERTY(L"Description", L"Closed Captions with text outline")
+                TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_24H2)
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(RemovedWhenDisabled)
                 TEST_METHOD_PROPERTY(L"Description", L"Closed Captions are removed when the text track is disabled")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(TimedTextSourceTeardownDoesNotLeak)
+                TEST_METHOD_PROPERTY(L"Description", L"Regression: MediaPlayerElement CC teardown must not leak the TimedMetadataTracksChanged registration (CTimedTextSource::SetMediaPlayer ordering)")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(MediaPlayerElementWithImageCueNoMTCUsePercent)

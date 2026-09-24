@@ -1,0 +1,74 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  - name: traceFEScenario
+    type: boolean
+    default: false
+  - name: publishNuget
+    displayName: Publish PGO NuGet package to feed
+    type: boolean
+    default: true
+
+variables:
+- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
+- template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
+- template: AzurePipelinesTemplates\WinUI-PGO-BuildMatrix.yml
+- name: perfPath
+  value: $(Build.SourcesDirectory)\perf
+- name: incomingArtifactsPath
+  value: $(Agent.TempDirectory)\Artifacts
+- name: pgoArtifactName
+  value: PGO
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+    - repository: WindowsAppSDKConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+    - repository: WindowsAppSDKVersionConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+
+extends:
+  template: v2/Microsoft.NonOfficial.yml@templates
+  parameters:
+    featureFlags:
+      EnableCDPxPAT: false
+      WindowsHostVersion:
+        Version: 2022
+        Network: KS3
+    platform:
+      name: 'windows_undocked' # windows undocked
+    globalsdl:
+      tsa:
+        enabled: false
+      enableXFGCheck: false
+      codeql:
+        tsandjs:
+          enabled: false
+        python:
+          enabled: false
+        psscriptanalyzer:
+          enable: false
+      prefast:
+        enabled: false
+      policheck:
+        enabled: false
+
+    stages:
+    - template: AzurePipelinesTemplates\WinUI-PGO-BuildWinUI-Stage.yml
+    - template: AzurePipelinesTemplates\WinUI-PGO-Train-Stage.yml
+      parameters:
+        traceFEScenario: ${{ parameters.traceFEScenario }}
+    - template: AzurePipelinesTemplates\WinUI-PGO-Merge-Stage.yml
+    - template: AzurePipelinesTemplates\WinUI-PGO-BuildAndPublishNuget.yml
+      parameters:
+        publishNuget: ${{ parameters.publishNuget }}

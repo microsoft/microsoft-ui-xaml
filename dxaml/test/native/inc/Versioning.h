@@ -3,6 +3,12 @@
 
 #pragma once
 
+// IsOSBuildAtLeast below needs the Win32 types (DWORD, WINAPI, GetProcAddress, ...) and the
+// RTL_OSVERSIONINFOW type from winternl.h. Include them here so this header is self-contained
+// and doesn't rely on includers happening to pull these in first.
+#include <windows.h>
+#include <winternl.h>
+
 // To help TAEF deploy the customized AppxManifest for compatibility tests
 
 // this file defines the versions for managed test.
@@ -17,3 +23,24 @@
 #define WINDOWS_OS_VERSION_RS5                          L"17763"
 #define WINDOWS_OS_VERSION_RS4                          L"17134"
 #define WINDOWS_OS_VERSION_22H2                         L"22621"
+#define WINDOWS_OS_VERSION_24H2                         L"26100"
+#define WINDOWS_OS_VERSION_25H2                         L"26200"
+
+// Returns true if the current OS build number is >= the given value.
+// Uses RtlGetVersion (via GetProcAddress) to bypass GetVersionEx manifest lies.
+inline bool IsOSBuildAtLeast(DWORD buildNumber)
+{
+    typedef LONG(WINAPI* RtlGetVersionFn)(PRTL_OSVERSIONINFOW);
+    static DWORD cachedBuild = 0;
+    if (cachedBuild == 0)
+    {
+        OSVERSIONINFOW osvi = { sizeof(osvi) };
+        auto fn = reinterpret_cast<RtlGetVersionFn>(
+            GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "RtlGetVersion"));
+        if (fn && fn(&osvi) == 0)
+        {
+            cachedBuild = osvi.dwBuildNumber;
+        }
+    }
+    return cachedBuild >= buildNumber;
+}

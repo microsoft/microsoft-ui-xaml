@@ -1,0 +1,61 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  - name: publishNuget
+    type: boolean
+    default: true
+
+stages:
+- stage: BuildNuGet
+  displayName: Build and publish NuGet
+  dependsOn: Merge
+  condition: succeeded()
+  jobs:
+  - job: BuildAndPublishPGONuGet
+    pool:
+      type: windows
+    variables:
+      ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+      ob_artifactBaseName: 'NuGetPackage'
+      # The default ob checkout only does a shallow fetch. For PGO to work, it needs to fetch deeper.
+      ob_git_fetchDepth: -1
+    steps:
+    - task: NuGetAuthenticate@1
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore performance infrastructure dependencies'
+      inputs:
+        command: 'custom'
+        arguments: 'restore $(perfPath)\packages.config -ConfigFile $(Build.SourcesDirectory)\nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+        includeNuGetOrg: false
+
+    - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+      parameters:
+        targetPath: $(incomingArtifactsPath)
+        itemPattern: '**/pgd-merged/**'
+
+    - script: |
+        dir /s $(incomingArtifactsPath)
+      displayName: 'DIAG'
+      condition: always()
+
+    - task: PowerShell@2
+      displayName: CopyFilesToParent
+      inputs:
+        targetType: 'inline'
+        script: |
+          Copy-Item -Path "$(incomingArtifactsPath)\merge_*\*" -Destination "$(incomingArtifactsPath)" -Recurse -Force
+
+    - task: MSBuild@1
+      displayName: 'Create PGO Nuget'
+      inputs:
+        solution: $(perfPath)\pgo\PGO.DB.proj
+        msbuildArguments: '/t:CreatePGONuGet /p:Platform=x64 /p:PGDPathForAllArch=$(incomingArtifactsPath)\pgd-merged /p:PGOOutputPath=$(Build.ArtifactStagingDirectory)'
+
+    - task: NuGetCommand@2
+      displayName: NuGet push to WinUI-dependencies
+      condition: eq(${{ parameters.publishNuget }}, true)
+      inputs:
+        command: push
+        publishVstsFeed: 1103ce32-f206-4cab-b967-dcc556dacd13
+        packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg

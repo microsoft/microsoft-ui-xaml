@@ -19,6 +19,8 @@
 #include "VisualTreeHelper.h"
 #include "DefaultValueConverter.h"
 #include "XamlTelemetry.h"
+#include "resources\inc\ResourceResolver.h"
+#include "ErrorService.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -83,6 +85,104 @@ FrameworkElement::SetBindingImpl(_In_ IDependencyProperty* pDP, _In_ xaml_data::
 
 Cleanup:
     RRETURN(hr);
+}
+
+// Exposes the markup-only {ThemeResource} mechanism to code. Resolves the key against the current
+// tree location using a non-diagnostics tree walk, then installs a live theme resource binding on the
+// target property so it re-resolves on theme changes - reusing the same engine as markup.
+_Check_return_ HRESULT
+FrameworkElement::SetThemeResourceBindingImpl(_In_ xaml::IDependencyProperty* property, _In_ HSTRING resourceKey)
+{
+    // Marshal the target dependency property (null already rejected by the generated wrapper).
+    ctl::ComPtr<DependencyPropertyHandle> spProperty;
+    IFC_RETURN(ctl::do_query_interface(spProperty, property));
+    const CDependencyProperty* pDP = spProperty->GetDP();
+    IFCPTR_RETURN(pDP);
+
+    // Theme resource bindings can only target writable dependency properties. Report the shared
+    // AG_E_READ_ONLY_PROPERTY error ("Cannot set read-only property '%0'.") - the same error the markup
+    // parser raises for this case - rather than a bare E_INVALIDARG.
+    if (pDP->IsReadOnly())
+    {
+        // Build the "DeclaringType.PropertyName" full name the same way the parser's error reporting does.
+        const CClassInfo* pDeclaringType = DirectUI::MetadataAPI::GetClassInfoByIndex(pDP->GetDeclaringTypeIndex());
+
+        XStringBuilder propertyFullNameBuilder;
+        IFC_RETURN(propertyFullNameBuilder.Append(pDeclaringType->GetFullName()));
+        IFC_RETURN(propertyFullNameBuilder.AppendChar(L'.'));
+        IFC_RETURN(propertyFullNameBuilder.Append(pDP->GetName()));
+
+        xstring_ptr strPropertyFullName;
+        IFC_RETURN(propertyFullNameBuilder.DetachString(&strPropertyFullName));
+
+        IFC_RETURN(CErrorService::OriginateInvalidOperationError(
+            GetHandle()->GetContext(),
+            AG_E_READ_ONLY_PROPERTY,
+            strPropertyFullName));
+    }
+
+    // Marshal the resource key (null already rejected by the generated wrapper).
+    xstring_ptr strResourceKey;
+    IFC_RETURN(xstring_ptr::CloneRuntimeStringHandle(resourceKey, &strResourceKey));
+
+    CFrameworkElement* pCoreFE = static_cast<CFrameworkElement*>(GetHandle());
+    IFCPTR_RETURN(pCoreFE);
+
+    // Resolve eagerly by walking up the tree from this element's current location, tracking the
+    // dictionary the value came from so the binding can re-resolve when the theme changes. This uses a
+    // non-diagnostics resolver: ResolveResourceRuntime would create and leak a XamlDiagnostics
+    // RuntimeObject when called on a not-yet-parented element.
+    Resources::ResolvedResource resolved;
+    IFC_RETURN(Resources::ResourceResolver::ResolveThemeResourceForElement(
+        pCoreFE,
+        strResourceKey,
+        resolved));
+
+    if (!resolved.Value)
+    {
+        // Match markup, which fails the parse with this error when the key can't be found.
+        IFC_RETURN(CErrorService::OriginateInvalidOperationError(
+            pCoreFE->GetContext(),
+            AG_E_PARSER_FAILED_RESOURCE_FIND,
+            strResourceKey));
+    }
+
+    // Build the theme resource extension that owns the live binding (mirrors DiagnosticsInterop
+    // and the AppBar overlay path).
+    CCoreServices* pCore = pCoreFE->GetContext();
+    CREATEPARAMETERS cp(pCore);
+    xref_ptr<CThemeResourceExtension> themeResourceExtension;
+    IFC_RETURN(CThemeResourceExtension::Create(
+        reinterpret_cast<CDependencyObject**>(themeResourceExtension.ReleaseAndGetAddressOf()),
+        &cp));
+
+    themeResourceExtension->m_strResourceKey = strResourceKey;
+
+    IFC_RETURN(themeResourceExtension->SetInitialValueAndTargetDictionary(
+        resolved.Value.get(),
+        resolved.DictionaryForThemeReference.get()));
+
+    // Install at local precedence, consistent with markup {ThemeResource}.
+    IFC_RETURN(themeResourceExtension->SetThemeResourceBinding(
+        pCoreFE,
+        pDP,
+        nullptr /* pModifiedValue */,
+        BaseValueSourceLocal));
+
+    // Register the binding with the XamlDiagnostics resource graph so Hot Reload edits to the source
+    // resource value flow to this code-set binding, matching markup {ThemeResource}. The non-diagnostics
+    // resolver above intentionally skips registration to avoid GetParentForElementStateChanged
+    // manufacturing (and leaking) a RuntimeObject for a not-yet-parented element; registration itself is
+    // leak-free (it stores only a weak reference to the element plus the property index and dictionary key),
+    // so we add it back here. The helper lives in the resources component so the resource-graph includes
+    // stay out of dxaml/lib, and no-ops when XamlDiagnostics isn't attached.
+    Resources::ResourceResolver::RegisterThemeResourceDependencyForElement(
+        pCoreFE,
+        pDP->GetIndex(),
+        strResourceKey,
+        resolved);
+
+    return S_OK;
 }
 
 _Check_return_ HRESULT

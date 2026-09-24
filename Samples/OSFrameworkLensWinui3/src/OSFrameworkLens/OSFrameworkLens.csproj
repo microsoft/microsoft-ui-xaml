@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- WindowsAppSDK 1.6 requires Win SDK 10.0.19041+; we keep MinVersion lower so
+         the app launches on older Win10 builds where supported APIs allow. -->
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>OSFrameworkLens</RootNamespace>
+    <AssemblyName>OSFrameworkLens</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <!-- Unpackaged + self-contained so the tool is xcopy-deployable like the WPF
+         version was. Inflates output size (~70 MB) but keeps the "drop and run"
+         deployment story. -->
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <!-- WinAppSDK targets Win SDK 26100 which often mismatches local SDK headers;
+         these warnings are benign for unpackaged self-contained scenarios. -->
+    <NoWarn>$(NoWarn);MSB3277;MSB3884;NETSDK1206;MVVMTK0045</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!-- Tells VS this is a WinUI 3 / MSIX-aware project so F5 uses the right
+       launch logic. Without this VS falls back to a generic .NET WinExe
+       launcher that silently no-ops for self-contained unpackaged apps. -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250402001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Fingerprints\frameworks.json" />
+  </ItemGroup>
+
+</Project>

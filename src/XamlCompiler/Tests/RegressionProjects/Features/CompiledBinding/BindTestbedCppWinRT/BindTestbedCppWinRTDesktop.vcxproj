@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <PropertyGroup Label="Globals">
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
+    <MinimalCoreWin>true</MinimalCoreWin>
+    <ProjectGuid>{07ccfce0-4301-40fc-b6dd-cf0149636529}</ProjectGuid>
+    <ProjectName>BindTestbedCppWinRTDesktop</ProjectName>
+    <RootNamespace>BindTestbed</RootNamespace>
+    <!--
+      $(TargetName) should be same as $(RootNamespace) so that the produced binaries (.exe/.pri/etc.)
+      have a name that matches the .winmd
+    -->
+    <TargetName>$(RootNamespace)</TargetName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>false</AppContainerApplication>
+    <AppxPackage>false</AppxPackage>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputPath>bin</OutputPath>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworkVersion>net8.0</TargetFrameworkVersion>
+    <TargetFramework>native</TargetFramework>
+    <TargetRuntime>Native</TargetRuntime>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <AppxBundle>Always</AppxBundle>
+    <AppxBundlePlatforms>x86|x64|ARM64</AppxBundlePlatforms>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>DESKTOP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="BasicTests.h">
+      <DependentUpon>BasicTests.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="CastingTests.h">
+      <DependentUpon>CastingTests.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="EventTests.h">
+      <DependentUpon>EventTests.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="ExtraInfo.h" />
+    <ClInclude Include="FunctionTests.h">
+      <DependentUpon>FunctionTests.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="INotifyDataErrorInfoTests.h">
+      <DependentUpon>INotifyDataErrorInfoTests.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="ListAndTemplateTests.h">
+      <DependentUpon>ListAndTemplateTests.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="LonelyStaticBinding.h">
+      <DependentUpon>LonelyStaticBinding.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="MyInfo.h" />
+    <ClInclude Include="MyItem.h" />
+    <ClInclude Include="MyUserControl1.h">
+      <DependentUpon>MyUserControl1.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="NullableTests.h">
+      <DependentUpon>NullableTests.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="App.h">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="MainPage.h">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="PhasingTests.h">
+      <DependentUpon>PhasingTests.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="DetectLeaksPage.h">
+      <DependentUpon>DetectLeaksPage.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="LoadAndCreateFromStringTests.h">
+      <DependentUpon>LoadAndCreateFromStringTests.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="subfolder.SubDictionary.h" />
+    <ClInclude Include="subfolder\SubDictionary.h">
+      <DependentUpon>subfolder\SubDictionary.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="Templates.h">
+      <DependentUpon>Templates.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="TestsPage2.h">
+      <DependentUpon>TestsPage2.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="TwoWayTests.h">
+      <DependentUpon>TwoWayTests.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="CastingModel.h" />
+    <ClInclude Include="MainModel.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Page Include="BasicTests.xaml" />
+    <Page Include="CastingTests.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="EventTests.xaml" />
+    <Page Include="FunctionTests.xaml" />
+    <Page Include="INotifyDataErrorInfoTests.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="ListAndTemplateTests.xaml" />
+    <Page Include="LonelyStaticBinding.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MainPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MyUserControl1.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="NullableTests.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="PhasingTests.xaml" />
+    <Page Include="DetectLeaksPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="LoadAndCreateFromStringTests.xaml" />
+    <Page Include="subfolder\SubDictionary.xaml" />
+    <Page Include="Templates.xaml">
+      <DeploymentContent>true</DeploymentContent>
+    </Page>
+    <Page Include="TestsPage2.xaml" />
+    <Page Include="TwoWayTests.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\Icon.png" />
+    <Image Include="Assets\LockScreenLogo.scale-200.png" />
+    <Image Include="Assets\SplashScreen.scale-200.png" />
+    <Image Include="Assets\Square150x150Logo.scale-200.png" />
+    <Image Include="Assets\Square44x44Logo.scale-200.png" />
+    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Image Include="Assets\StoreLogo.png" />
+    <Image Include="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="App.cpp">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="BasicTests.cpp">
+      <DependentUpon>BasicTests.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="CastingModel.cpp" />
+    <ClCompile Include="CastingTests.cpp">
+      <DependentUpon>CastingTests.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="EventTests.cpp">
+      <DependentUpon>EventTests.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="ExtraInfo.cpp" />
+    <ClCompile Include="FunctionTests.cpp">
+      <DependentUpon>FunctionTests.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="INotifyDataErrorInfoTests.cpp">
+      <DependentUpon>INotifyDataErrorInfoTests.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="ListAndTemplateTests.cpp">
+      <DependentUpon>ListAndTemplateTests.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="LonelyStaticBinding.cpp">
+      <DependentUpon>LonelyStaticBinding.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="MainModel.cpp" />
+    <ClCompile Include="MainPage.cpp">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="MyInfo.cpp" />
+    <ClCompile Include="MyItem.cpp" />
+    <ClCompile Include="MyUserControl1.cpp">
+      <DependentUpon>MyUserControl1.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="NullableTests.cpp">
+      <DependentUpon>NullableTests.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="PhasingTests.cpp">
+      <DependentUpon>PhasingTests.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="DetectLeaksPage.cpp">
+      <DependentUpon>DetectLeaksPage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="LoadAndCreateFromStringTests.cpp">
+      <DependentUpon>LoadAndCreateFromStringTests.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="subfolder\SubDictionary.cpp">
+      <DependentUpon>subfolder\SubDictionary.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="Templates.cpp">
+      <DependentUpon>Templates.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="TestsPage2.cpp">
+      <DependentUpon>TestsPage2.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="TwoWayTests.cpp">
+      <DependentUpon>TwoWayTests.xaml</DependentUpon>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BindTestbedModel\BindTestbedModelDesktop.csproj">
+      <Project>{0748b16e-2455-494b-9d33-0231960ff58a}</Project>
+      <Name>BindTestbedModel</Name>
+      <Private>false</Private>
+      <IsWinMDFile>true</IsWinMDFile>
+      <Implementation>WinRT.Host.dll</Implementation>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="BindTestbed.idl">
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="WinRT.Host.runtimeconfig.json">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
+    </None>
+  </ItemGroup>
+  <!-- TODO:https://github.com/microsoft/CsWinRT/issues/808-->
+  <!-- Temporary Workaround for CSWinRT issue -->
+    <ItemGroup>
+    <Reference Include="BindTestbedModel">
+      <HintPath>..\..\..\..\..\..\..\BuildOutput\obj\x86chk\CompilerTests\BindTestbedModel\BindTestbedModelDesktop\BindTestbedModelDesktop\BindTestbedModel.winmd</HintPath>
+      <IsWinMDFile>true</IsWinMDFile>
+      <Implementation>WinRT.Host.dll</Implementation>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\..\..\..\..\..\packages\Microsoft.VCRTForwarders.140.1.0.6\build\native\Microsoft.VCRTForwarders.140.targets" Condition="Exists('..\..\..\..\..\..\..\packages\Microsoft.VCRTForwarders.140.1.0.6\build\native\Microsoft.VCRTForwarders.140.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\..\packages\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\..\..\..\packages\Microsoft.VCRTForwarders.140.1.0.6\build\native\Microsoft.VCRTForwarders.140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\..\..\..\packages\Microsoft.VCRTForwarders.140.1.0.6\build\native\Microsoft.VCRTForwarders.140.targets'))" />
+  </Target>
+</Project>

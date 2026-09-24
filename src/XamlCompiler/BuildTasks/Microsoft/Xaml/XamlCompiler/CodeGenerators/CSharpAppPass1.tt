@@ -22,18 +22,18 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 #if !DISABLE_XAML_GENERATED_MAIN
     public static class Program
 #else
-    public static class XamlGeneratedProgram
+    internal static class XamlGeneratedProgram
 #endif
     {
         <#=GeneratedCodeAttribute#>
         <#=DebuggerNonUserCodeAttribute#>
+#if !DISABLE_XAML_GENERATED_MAIN
 <#  if (ProjectInfo.IsWin32App) { #>
         [global::System.STAThreadAttribute]
 <#  } #>
-#if !DISABLE_XAML_GENERATED_MAIN
         static void Main(string[] args)
 #else
-        static void XamlGeneratedMain(string[] args)
+        internal static void XamlGeneratedMain()
 #endif
         {
 <#  if (ProjectInfo.UsingCSWinRT) { #>
@@ -49,10 +49,20 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
             <#=Globalize(KnownTypes.Application)#>.Start((p) => {
                 var context = new global::Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(global::Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
                 global::System.Threading.SynchronizationContext.SetSynchronizationContext(context);
+#if !DISABLE_XAML_GENERATED_MAIN
                 new <#=Model.CodeInfo.ClassName.ShortName#>();
+#else
+                <#=Model.CodeInfo.ClassName.ShortName#>.XamlGeneratedCreateApplicationInstance();
+#endif
             });
 <#  } else { #>
-            <#=Globalize(KnownTypes.Application)#>.Start((p) => new <#=Model.CodeInfo.ClassName.ShortName#>());
+            <#=Globalize(KnownTypes.Application)#>.Start((p) => {
+#if !DISABLE_XAML_GENERATED_MAIN
+                new <#=Model.CodeInfo.ClassName.ShortName#>();
+#else
+                <#=Model.CodeInfo.ClassName.ShortName#>.XamlGeneratedCreateApplicationInstance();
+#endif
+            });
 <#  } #>
         }
     }
@@ -61,6 +71,22 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
     {
         <#=GeneratedCodeAttribute#>
         private bool _contentLoaded;
+<# // The body of _XamlGeneratedCreateApplicationInstance() is emitted by the App's Pass2 #>
+<# // generator (CSharpPagePass2) only when the App declares a parameterless constructor. #>
+<# // Routing construction through this elidable partial keeps the Pass1 output compilable #>
+<# // in the intermediate assembly when the constructor is absent, making it optional. #>
+#if DISABLE_XAML_GENERATED_MAIN
+        <#=GeneratedCodeAttribute#>
+        <#=DebuggerNonUserCodeAttribute#>
+        internal static void XamlGeneratedCreateApplicationInstance()
+        {
+            // Constructs the App to start the application. If this App has no parameterless 
+            // constructor, the call below does nothing and the application is responsible for 
+            // constructing the App itself from its own entry point.
+            _XamlGeneratedCreateApplicationInstance();
+        }
+        static partial void _XamlGeneratedCreateApplicationInstance();
+#endif
 <# if((!ProjectInfo.GenerateProviderCode) && (!ProjectInfo.EnableTypeInfoReflection))#>
 <# {#>
         <#=GeneratedCodeAttribute#>

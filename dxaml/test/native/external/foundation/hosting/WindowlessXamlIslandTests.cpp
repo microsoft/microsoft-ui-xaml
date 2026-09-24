@@ -329,6 +329,20 @@ void WindowlessXamlIslandTests::ValidateUiaTree()
     // Make sure the scene is visible.
     ::Sleep(500);
 
+    // Bring our test window to the foreground before we hit-test. ValidateUiaTree probes fixed
+    // screen coordinates with IUIAutomation::ElementFromPoint, which walks the desktop from the
+    // top-most window down. On CI the default console window (e.g. Windows Terminal) can sit on top
+    // of our window at those coordinates, so ElementFromPoint returns its element instead of our
+    // island. The VERIFY below then fails and the resulting throw escapes the dispatcher callback
+    // and fast-fails (0xC0000409) the whole test host.
+    //
+    // A local ::SetForegroundWindow() can't fix this reliably because of the Windows foreground
+    // lock. Instead we route through the test infra server, which has a higher-fidelity activation
+    // path (it can inject input to obtain foreground rights and retries). Other tests use this same
+    // RPC. The window is up and pumping messages by now (RunEventLoop is running on the UI thread),
+    // which is required for the activation to actually take effect.
+    test_infra::IslandHelper::SetForegroundWindow(reinterpret_cast<UINT64>(windowlessXamlIslandScene.appWindowHwnd));
+
     // Run with "/p:DontTest" to pause if you just want to observe the scene and not run tests.
     if (IsTestParameterSet(L"DontTest"))
     {

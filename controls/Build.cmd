@@ -11,6 +11,7 @@ set _targetTestRunner=
 set _targetProject=
 set _targetProjectPath=
 set _targetProduct=
+set _targetTabular=
 
 :parseArgs
 if "%1"=="/project" (
@@ -22,6 +23,8 @@ if "%1"=="/project" (
     set _targetMUXControls=1
 ) else if "%1"=="product" (
     set _targetProduct=1
+) else if "%1"=="tabular" (
+    set _targetTabular=1
 ) else if "%1"=="" (
     set _targetMUXControls=1
 ) else (
@@ -45,6 +48,8 @@ if "%_targetMUXControls%" == "1" (
     call :buildSolution %reporoot%\controls\%_targetProjectPath% /m
 ) else if "%_targetProduct%" == "1" (
     call :buildSolution %reporoot%\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj /m
+) else if "%_targetTabular%" == "1" (
+    call :buildSolution %reporoot%\controls\dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.vcxproj /m
 )
 goto:eof
 
@@ -78,6 +83,7 @@ echo    Available targets:
 echo        controls            Builds all of MUXControls.sln (includes the MUXC DLL and all controls test runners and applications)
 echo        testrunner          Builds the TAEF test runner
 echo        product             Builds only MUXC and none of the tests
+echo        tabular             Builds only Microsoft.UI.Xaml.Controls.Tabular.dll
 echo        /project [project]  Builds the project at the given relative path
 echo.
 

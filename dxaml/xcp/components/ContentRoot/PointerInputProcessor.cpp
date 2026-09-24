@@ -1647,8 +1647,15 @@ _Check_return_ HRESULT PointerInputProcessor::ReleasePointerCapture(_In_ CDepend
 
     if (pPointer->GetPointerDeviceType() == DirectUI::PointerDeviceType::Mouse)
     {
-        CDependencyObject* rootElement = m_inputManager.GetContentRoot()->GetVisualTreeNoRef()->GetRootElementNoRef();
-        IFC_RETURN(m_inputManager.m_coreServices.GetInputServices()->UpdateCursor(rootElement, m_fSawMouseLeave));
+        // Skip cursor refresh on a disposed island (late queued LostFocus race after XamlIslandRoot::Dispose).
+        // A disposed island stays non-null (CContentRoot holds a strong ref; Close() doesn't reset it).
+        CContentRoot* contentRoot = m_inputManager.GetContentRoot();
+        CXamlIslandRoot* islandRoot = contentRoot->GetXamlIslandRootNoRef();
+        if (islandRoot == nullptr || islandRoot->IsActive())
+        {
+            CDependencyObject* rootElement = contentRoot->GetVisualTreeNoRef()->GetRootElementNoRef();
+            IFC_RETURN(m_inputManager.m_coreServices.GetInputServices()->UpdateCursor(rootElement, m_fSawMouseLeave));
+        }
     }
 
     return S_OK;

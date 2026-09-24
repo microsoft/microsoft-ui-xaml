@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!--
+  Regions of Interest for the WinUI 3 application launch lifecycle.
+
+  This is a standard WPA "Regions of Interest" file
+  (InstrumentationManifest / Instrumentation / Regions / RegionRoot / Region), so it loads
+  directly in Windows Performance Analyzer via Trace > Trace Properties > Add. See:
+  https://learn.microsoft.com/windows-hardware/test/wpt/creating-a-regions-of-interest-file
+
+  Tool-only metadata that WPA does not act on is carried in the standard <Metadata> node
+  (WPA ignores it for processing and just shows it as columns). RegionsLoader (XamlTimeline)
+  reads these <Metadata> children:
+    Track                "1" trace timeline (out-of-proc framing) | "2" process timeline (in-proc)
+    Kind                 "Marker" (single Start event) | "Phase" (Start..Stop duration)
+    Color                #RRGGBB swatch for the timeline view / Gantt
+    ProcessDependent     region is evaluated per selected process
+    SpecialProviders     ';'-separated provider allow-list surfaced as Track 2 children
+    ThresholdPercentage  Track 2 child visibility threshold (default 5)
+    XamlEndHeuristic     stop = pick the XAML end event via the end-heuristic
+    ProcessDependentEnd  stop event must be in the selected process
+
+  ${ProcessName} in a PayloadIdentifier FieldValue is substituted at evaluation time with
+  the selected process's image name (case-insensitive contains match).
+
+  Provider GUIDs:
+    Microsoft.Windows.AppLifeCycle.UI                 ee97cdc4-b095-5c70-6e37-a541eb74c2b5
+    Microsoft.Windows.ShellExecute                    382b5e24-181e-417f-a8d6-2155f749e724
+    Microsoft.Windows.ApplicationModel.DesktopAppx    5526aed1-f6e5-5896-cbf0-27d9f59b6be7
+    Microsoft-Windows-Kernel-Process                  22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716
+    Microsoft.Windows.CoreApplication                 a9da4dcc-e78e-5ce7-4078-411a9928f082
+    Microsoft-Windows-XAML                            531a35ab-63ce-4bcf-aa98-f88c7a89e455
+-->
+<InstrumentationManifest>
+  <Instrumentation>
+    <Regions>
+      <RegionRoot Guid="{a7ffd46e-63a7-4685-93e4-fd82cd984511}"
+                  Name="XamlAppLaunch"
+                  FriendlyName="XAML App Launch">
+
+        <!-- ================ Track 1 - Trace timeline ================ -->
+
+        <!-- The user clicks the app icon. -->
+        <Region Guid="{d5831059-2992-49f4-bf34-25fe321e899a}" Name="XamlAppLaunch-UserClick" FriendlyName="UserClick">
+          <Start>
+            <Event Provider="{ee97cdc4-b095-5c70-6e37-a541eb74c2b5}" Name="AppLaunch_UserClick" />
+            <PayloadIdentifier FieldName="appId" FieldValue="${ProcessName}" />
+          </Start>
+          <Metadata>
+            <Track>1</Track>
+            <Kind>Marker</Kind>
+            <Color>#FFB300</Color>
+            <SpecialProviders>Microsoft.Windows.AppLifeCycle.UI;Microsoft.Windows.ShellExecute</SpecialProviders>
+          </Metadata>
+        </Region>
+
+        <!-- Pre-Process: shell + activation chain (~80ms in packaged WinUI 3). UserClick -> ProcessStart. -->
+        <Region Guid="{fe62dc2c-820a-41de-8f56-5763bbc00e56}" Name="XamlAppLaunch-PreProcess" FriendlyName="Pre-Process">
+          <Start>
+            <Event Provider="{ee97cdc4-b095-5c70-6e37-a541eb74c2b5}" Name="AppLaunch_UserClick" />
+            <PayloadIdentifier FieldName="appId" FieldValue="${ProcessName}" />
+          </Start>
+          <Stop>
+            <Event Provider="{22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716}" Id="1" Version="0" Name="ProcessStart" />
+            <PayloadIdentifier FieldName="ImageName" FieldValue="${ProcessName}" />
+          </Stop>
+          <Metadata>
+            <Track>1</Track>
+            <Kind>Phase</Kind>
+            <Color>#803E75</Color>
+            <SpecialProviders>Microsoft.Windows.ShellExecute;Microsoft-Windows-Shell-Launcher;Microsoft-Windows-Immersive-Shell;Microsoft.Windows.AppLifeCycle.UI</SpecialProviders>
+          </Metadata>
+        </Region>
+
+        <!-- Kernel says the new process is created (still suspended). -->
+        <Region Guid="{2b0718c4-462d-40e0-9114-e2a081796b55}" Name="XamlAppLaunch-ProcessStart" FriendlyName="ProcessStart">
+          <Start>
+            <Event Provider="{22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716}" Id="1" Version="0" Name="ProcessStart" />
+            <PayloadIdentifier FieldName="ImageName" FieldValue="${ProcessName}" />
+          </Start>
+          <Metadata>
+            <Track>1</Track>
+            <Kind>Marker</Kind>
+            <Color>#FF6B6B</Color>
+            <SpecialProviders>Microsoft-Windows-Kernel-Process</SpecialProviders>
+          </Metadata>
+        </Region>
+
+        <!-- Packaged App Init: svchost AppInfo stages the Helium container. ProcessStart -> AddProcessToHeliumContainer. -->
+        <Region Guid="{dcd479b6-8fad-4e23-9513-b56fc9578a30}" Name="XamlAppLaunch-PackagedAppInit" FriendlyName="Packaged App Init">
+          <Start>
+            <Event Provider="{22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716}" Id="1" Version="0" Name="ProcessStart" />
+            <PayloadIdentifier FieldName="ImageName" FieldValue="${ProcessName}" />
+          </Start>
+          <Stop>
+            <Event Provider="{5526aed1-f6e5-5896-cbf0-27d9f59b6be7}" Name="AddProcessToHeliumContainer" />
+            <PayloadIdentifier FieldName="specifyingMoniker" FieldValue="${ProcessName}" />
+          </Stop>
+          <Metadata>
+            <Track>1</Track>
+            <Kind>Phase</Kind>
+            <Color>#4A90E2</Color>
+            <SpecialProviders>Microsoft.Windows.ApplicationModel.DesktopAppx;Microsoft.Windows.HostActivityManager;Microsoft.Windows.AppxCreateProcessExtensions</SpecialProviders>
+          </Metadata>
+        </Region>
+
+        <!-- Native bring-up: container ready -> WinMain. Static DLL loads, WART init, WinUI3 binaries. -->
+        <Region Guid="{1ea633d2-45f6-49af-b4b5-25ec1a321127}" Name="XamlAppLaunch-NativeBringUp" FriendlyName="Native Bring-up">
+          <Start>
+            <Event Provider="{5526aed1-f6e5-5896-cbf0-27d9f59b6be7}" Name="AddProcessToHeliumContainer" />
+            <PayloadIdentifier FieldName="specifyingMoniker" FieldValue="${ProcessName}" />
+          </Start>
+          <Stop>
+            <Event Provider="{a9da4dcc-e78e-5ce7-4078-411a9928f082}" Name="AppCreation" />
+          </Stop>
+          <Metadata>
+            <Track>1</Track>
+            <Kind>Phase</Kind>
+            <Color>#F78FB3</Color>
+            <ProcessDependentEnd>true</ProcessDependentEnd>
+            <SpecialProviders>Microsoft-Windows-CodeIntegrity;Microsoft-Antimalware-AMFilter;CombaseTraceLoggingProvider;Microsoft.Windows.CoreApplication</SpecialProviders>
+          </Metadata>
+        </Region>
+
+        <!-- XAML section: InitializeCore start to SubmitFrame stop (full XAML lifecycle). -->
+        <Region Guid="{9f36b8dd-30a9-446a-8def-205b7a308ea9}" Name="XamlAppLaunch-Xaml" FriendlyName="XAML">
+          <Start>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Id="31" Version="0" Name="InitializeCore" />
+          </Start>
+          <Stop>
+            <Event Provider="{531a35ab-63ce-4bcf-aa98-f88c7a89e455}" Name="Frame" />
+          </Stop>
+          <Metadata>
+            <Track>1</Track>
+            <Kind>Phase</Kind>
+            <Color>#56B4E9</Color>
+            <ProcessDependent>true</ProcessDependent>
+            <XamlEndHeuristic>true</XamlEndHeuristic>
+            <SpecialProviders>Microsoft-Windows-XAML;CombaseTraceLoggingProvider;Microsoft-Windows-CodeIntegrity</SpecialProviders>
+          </Metadata>
+        </Region>
+
+        <!-- First composed frame submitted = app launched. -->
+        <Region Guid="{28c2fee6-2f00-44b0-aab1-8d6fa030d45c}" Name="XamlAppLaunch-AppReadyToInteract" FriendlyName="App ready to interact">
+          <Start>
+            <Event Provider="{ef00584a-2655-462c-bc24-e7de630e7fbf}" Name="AppLaunch" />
+          </Start>
+          <Metadata>
+            <Track>1</Track>
+            <Kind>Marker</Kind>
+            <Color>#009E73</Color>
+            <ProcessDependent>true</ProcessDependent>
+            <SpecialProviders>Microsoft-Windows-XAML</SpecialProviders>
+          </Metadata>
+        </Region>
+
+        <!-- PreLaunch -> kernel ProcessStart. -->
+        <Region Guid="{4119ffed-260a-4aa6-aa28-2e4677bee9cd}" Name="XamlAppLaunch-PreLaunchToProcessStart" FriendlyName="PreLaunch_To_ProcessStart">
+          <Start>
+            <Event Provider="{49f456c1-1095-4bf7-8e60-8a01e2cecfbd}" Name="PreLaunch" />
+          </Start>
+          <Stop>
+            <Event Provider="{22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716}" Name="ProcessStart" />
+            <PayloadIdentifier FieldName="ImageName" FieldValue="${ProcessName}" />
+          </Stop>
+          <Metadata>
+            <Track>1</Track>
+            <Kind>Phase</Kind>
+            <Color>#E69F00</Color>
+            <SpecialProviders>Microsoft.Windows.ShellExecute;Microsoft-Windows-Kernel-Process;Microsoft.Windows.AppLifeCycle.UI</SpecialProviders>
+          </Metadata>
+        </Region>
+
+        <Region Guid="{afdd2a6c-aeb9-4068-b5e8-ca2d16d85688}" Name="XamlAppLaunch-ProcessStartToWinMainEntry" FriendlyName="ProcessStart_To_WinMainEntry">
+          <Start>
+            <Event Provider="{22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716}" Name="ProcessStart" />
+            <PayloadIdentifier FieldName="ImageName" FieldValue="${ProcessName}" />
+          </Start>
+          <Stop>
+            <Event Provider="{FD80D616-E92B-4B2B-9BED-131ADA36A8FD}" Name="wWinMainEntry" />
+            <PayloadIdentifier FieldName="AppName" FieldValue="${ProcessName}" />
+          </Stop>
+          <Metadata>
+            <Track>1</Track>
+            <Kind>Phase</Kind>
+            <Color>#D55E00</Color>
+            <SpecialProviders>Microsoft-Windows-Kernel-Process;Microsoft.Windows.ApplicationModel.DesktopAppx;Microsoft.Windows.CoreApplication;Microsoft-Windows-CodeIntegrity</SpecialProviders>
+          </Metadata>
+        </Region>
+
+        <Region Guid="{1f50f3a1-9ea4-41d7-b366-5de337c77d9c}" Name="XamlAppLaunch-WinMainEntryToFirstFrameRender" FriendlyName="WinMainEntry_To_FirstFrameRender">
+          <Start>
+            <Event Provider="{FD80D616-E92B-4B2B-9BED-131ADA36A8FD}" Name="wWinMainEntry" />
+            <PayloadIdentifier FieldName="AppName" FieldValue="${ProcessName}" />
+          </Start>
+          <Stop>
+            <Event Provider="{FD80D616-E92B-4B2B-9BED-131ADA36A8FD}" Name="FirstRender" />
+            <PayloadIdentifier FieldName="AppName" FieldValue="${ProcessName}" />
+          </Stop>
+          <Metadata>
+            <Track>1</Track>
+            <Kind>Phase</Kind>
+            <Color>#CC79A7</Color>
+            <SpecialProviders>Microsoft-Windows-XAML;Microsoft.Windows.CoreApplication;CombaseTraceLoggingProvider</SpecialProviders>
+          </Metadata>
+        </Region>
+
+        <Region Guid="{fad87124-5755-4be7-bbc7-56053f7c98f9}" Name="XamlAppLaunch-FirstFrameRenderToReadyToInteract" FriendlyName="FirstFrameRender_To_ReadyToInteract">
+          <Start>
+            <Event Provider="{FD80D616-E92B-4B2B-9BED-131ADA36A8FD}" Name="FirstRender" />
+            <PayloadIdentifier FieldName="AppName" FieldValue="${ProcessName}" />
+          </Start>
+          <Stop>
+            <Event Provider="{FD80D616-E92B-4B2B-9BED-131ADA36A8FD}" Name="FirstIdle" />
+            <PayloadIdentifier FieldName="AppName" FieldValue="${ProcessName}" />
+          </Stop>
+          <Metadata>
+            <Track>1</Track>
+            <Kind>Phase</Kind>
+            <Color>#50C878</Color>
+            <SpecialProviders>Microsoft-Windows-XAML;Microsoft.Windows.CoreApplication;CombaseTraceLoggingProvider</SpecialProviders>
+          </Metadata>
+        </Region>
+
+      </RegionRoot>
+    </Regions>
+  </Instrumentation>
+</InstrumentationManifest>

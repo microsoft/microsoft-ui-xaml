@@ -33,6 +33,11 @@ namespace Tests { namespace Native { namespace External { namespace Framework {
             return binding;
         }
 
+        Platform::Object^ EchoStringExtension::ProvideValue()
+        {
+            return m_value;
+        }
+
         Platform::Object^ InvokeStaticCallbackExtension::ProvideValue(Microsoft::UI::Xaml::IXamlServiceProvider^ serviceProvider)
         {
             m_callback(serviceProvider);

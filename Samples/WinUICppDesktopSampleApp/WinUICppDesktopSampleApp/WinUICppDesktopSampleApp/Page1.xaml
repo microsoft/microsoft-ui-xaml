@@ -1,0 +1,46 @@
+﻿<Page
+    x:Class="WinUICppDesktopSampleApp.Page1"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinUICppDesktopSampleApp"
+    xmlns:library="using:WinUICppRuntimeComponent"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <TextBlock x:Uid="Page1_TitleTextBlock" AutomationProperties.Name="titleTextBlock" FontSize="14" FontWeight="Bold"/>
+        <TextBox x:Uid="Page1_TextBox" AutomationProperties.Name="textBox"/>
+        <TextBlock x:Uid="ExplicitAttachedPropertyViaXUid_TextBlock" Text="AutomationProperties.Name set via x:Uid with [using:Microsoft.UI.Xaml.Automation]"/>
+        <TextBlock x:Uid="ImplicitAttachedPropertyViaXUid_TextBlock" Text="AutomationProperties.Name set via x:Uid without [using:Microsoft.UI.Xaml.Automation]" />
+        <TextBlock x:Name="TestTextBlock" AutomationProperties.Name="TestTextBlock" Text="Loaded"/>
+        <Button x:Name="myButton" AutomationProperties.Name="MyButton" Click="myButton_Click">Click Me</Button>
+        <Button x:Name="navigationButton" x:Uid="Page1_navigationButton" AutomationProperties.Name="navigationButton" Click="navigationButton_Click" />
+        <Button x:Name="missingPageNavigationButton" AutomationProperties.Name="missingPageNavigationButton" Click="missingPageNavigationButton_Click">Navigate to missing page</Button>
+
+        <!-- Control from Microsoft.UI.Xaml.Controls.dll -->
+        <SplitButton Content="SplitButton" >
+            <SplitButton.Flyout>
+                <Flyout>
+                    <TextBlock Text="Flyout" />
+                </Flyout>
+            </SplitButton.Flyout>
+        </SplitButton>
+
+        <!-- Control from separate project -->
+        <!-- This Control also includes a control from Microsoft.UI.Xaml.Phone.dll -->
+        <library:UserControl1 />
+        
+        <!-- Control that uses private APIs -->
+        <Pivot>
+            <Pivot.Items>
+                <PivotItem Header="Item 1">
+                    <TextBlock Text="Item 1" />
+                </PivotItem>
+                <PivotItem Header="Item 2">
+                    <TextBlock Text="Item 2" />
+                </PivotItem>
+            </Pivot.Items>
+        </Pivot>
+    </StackPanel>
+</Page>

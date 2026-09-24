@@ -122,6 +122,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                         //        Helix\scripts\TestPass-OneTimeMachineSetup.ps1
                         else if ((installedPackage.Id.Name == "WinUICppDesktopSampleApp") ||
                             (installedPackage.Id.Name == "WinUICsDesktopSampleApp") ||
+                            (installedPackage.Id.Name == "DisableXamlGeneratedMainCs") ||
+                            (installedPackage.Id.Name == "DisableXamlGeneratedMainNoCtorCs") ||
+                            (installedPackage.Id.Name == "DisableXamlGeneratedMainCpp") ||
+                            (installedPackage.Id.Name == "DisableXamlGeneratedMainNoCtorCpp") ||
 #if DEBUG
                             (installedPackage.Id.Name == "Microsoft.WinUI3ControlsGallery.Debug"))
 #else

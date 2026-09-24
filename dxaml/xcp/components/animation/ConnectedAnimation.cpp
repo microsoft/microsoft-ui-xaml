@@ -825,7 +825,8 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
     {
         IFC_RETURN(visualSurface->put_SourceVisual(primaryVisual.Get()));
 
-        IFC_RETURN(pDCompTreeHostNoRef->GetCompositionHelper()->SetSurfaceRealizationSize(visualSurface.Get(), realizationSize));
+
+        IFC_RETURN(CompositionVisualSurfaceHelper::SetSurfaceRealizationSize(visualSurface.Get(), realizationSize));
 
         float scaleX;
         float scaleY;
@@ -860,7 +861,7 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
 
         visualSurface->put_SourceOffset(sourceOffset);
         visualSurface->put_SourceSize(sourceSize);
-        pDCompTreeHostNoRef->GetCompositionHelper()->SetSurfaceStretch(visualSurface.Get(), createClipped ? WUComp::CompositionStretch_None : WUComp::CompositionStretch_Fill);
+        CompositionVisualSurfaceHelper::SetSurfaceStretch(visualSurface.Get(), createClipped ? WUComp::CompositionStretch_None : WUComp::CompositionStretch_Fill);
     }
 
     // Create a surface brush from the surface
@@ -924,7 +925,7 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
     // Freeze the Brush/Visual Surface if requested to do so
     if (freezeBrush)
     {
-        IFC_RETURN(pDCompTreeHostNoRef->GetCompositionHelper()->SetSurfaceFreeze(visualSurface.Get()));
+        IFC_RETURN(CompositionVisualSurfaceHelper::SetSurfaceFreeze(visualSurface.Get()));
      }
 
     Microsoft::WRL::ComPtr<WUComp::ISpriteVisual> spriteVisual;
@@ -1079,7 +1080,7 @@ _Check_return_ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
         IFC_RETURN(visualSurface->put_SourceVisual(visual.Get()));
 
         wfn::Vector2 realizationSize = { m_source.clippedRect.Width, m_source.clippedRect.Height };
-        IFC_RETURN(pDCompTreeHostNoRef->GetCompositionHelper()->SetSurfaceRealizationSize(visualSurface.Get(), realizationSize));
+        IFC_RETURN(CompositionVisualSurfaceHelper::SetSurfaceRealizationSize(visualSurface.Get(), realizationSize));
 
         float left = m_source.clippedRect.X - m_source.unclippedRect.X;
         float top = m_source.clippedRect.Y - m_source.unclippedRect.Y;
@@ -1088,7 +1089,7 @@ _Check_return_ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
         visualSurface->put_SourceOffset(sourceOffset);
         visualSurface->put_SourceSize(realizationSize);
 
-        IFC_RETURN(pDCompTreeHostNoRef->GetCompositionHelper()->SetSurfaceStretch(visualSurface.Get(), WUComp::CompositionStretch_Fill));
+        IFC_RETURN(CompositionVisualSurfaceHelper::SetSurfaceStretch(visualSurface.Get(), WUComp::CompositionStretch_Fill));
     }
 
     // Create a surface brush from the surface

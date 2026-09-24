@@ -9,7 +9,7 @@
       <RectangleGeometry Rect="0,0,0,0"/>
     </Canvas.Clip>
     <Canvas CacheMode="BitmapCache">
-      <Image x:Name="myImage" Width="50" Height="50" Source="ms-appx:///resources/native/external/foundation/graphics/image/Rainier_444_2048x1536.jpg"/>
+      <Image x:Name="myImage" Width="50" Height="50" Source="ms-appx:///resources/native/external/foundation/graphics/image/rainier_2048x1536.png"/>
     </Canvas>
   </Canvas>
 </Grid>

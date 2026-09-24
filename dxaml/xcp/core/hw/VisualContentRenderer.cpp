@@ -7,6 +7,9 @@
 #include <WUCBrushManager.h>
 #include "XamlCompositionBrush.h"
 #include <XamlLight.h>
+#ifdef XAMLPROFILER_ENABLED
+#include "XamlProfilerTracing.h"
+#endif
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
@@ -76,6 +79,15 @@ VisualContentRenderer::RenderSolidColorRectangle(
     IFC_RETURN(EnsureSpriteVisual(pCompositor, rect, AAEdge_All, &spContentVisual, &spVisual));
     IFCFAILFAST(spContentVisual->put_Brush(wucBrush.Get()));
     IFC_RETURN(LinkVisual(pBrush, nullptr, spVisual.Get()));
+
+#ifdef XAMLPROFILER_ENABLED
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        const auto visualId = reinterpret_cast<uint64_t>(spVisual.Get());
+        XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 0);
+        XamlProfilerTracing::VisualSurfaceChanged(visualId, 0, 1);
+    }
+#endif
 
     return S_OK;
 }
@@ -411,6 +423,24 @@ _Check_return_ HRESULT VisualContentRenderer::RenderPrimitive(
     }
 
     IFC_RETURN(LinkVisual(brush, nullptr, spVisual.Get()));
+
+#ifdef XAMLPROFILER_ENABLED
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        const auto getSurfaceId = [](HWTexture* texture) -> uint64_t
+        {
+            if (texture == nullptr || texture->GetCompositionSurface() == nullptr)
+            {
+                return 0;
+            }
+            return reinterpret_cast<uint64_t>(texture->GetCompositionSurface());
+        };
+
+        const auto visualId = reinterpret_cast<uint64_t>(spVisual.Get());
+        XamlProfilerTracing::VisualSurfaceChanged(visualId, getSurfaceId(brushTexture), 0);
+        XamlProfilerTracing::VisualSurfaceChanged(visualId, getSurfaceId(maskTexture), 1);
+    }
+#endif
 
     return S_OK;
 }

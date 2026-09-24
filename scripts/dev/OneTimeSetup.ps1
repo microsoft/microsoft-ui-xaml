@@ -86,7 +86,7 @@ function Install-LogViewer
 function Install-VSCode
 {
 # Install VSCode
-# https://aka.ms/win32-x64-user-stable
+# Use the current official stable installer URL.
 $where = . cmd /c "where.exe code.cmd 2>NUL"
 if ($where -ne $null) { Write-Host "VSCode already installed"; return; }
 Download -Uri https://aka.ms/win32-x64-user-stable -OutFile "vscodesetup.exe"
@@ -116,7 +116,7 @@ else
 function Install-MSBuild
 {
 # Install MSBuild Tools 2022
-# https://aka.ms/vs/17/release/vs_BuildTools.exe
+# Use the current official Visual Studio Build Tools installer URL.
 Download -Uri https://aka.ms/vs/17/release/vs_BuildTools.exe -OutFile vs_buildtools.exe
 # Note: Not passing "--quiet" because the install takes a long time, making it important to see the progress
 $installed = LaunchSetupAndWait vs_buildtools.exe  -ArgumentList " --add Microsoft.VisualStudio.Workload.MSBuildTools --config $PSScriptRoot\..\..\.vsconfig --wait"

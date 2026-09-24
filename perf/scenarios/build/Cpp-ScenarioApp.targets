@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+  <PropertyGroup>
+    <!-- This needs to be after Microsoft.Cpp.targets since it stomps on our value. -->
+    <AppxPackageDir>$(AppxPackageDirOverride)</AppxPackageDir>
+  </PropertyGroup>
+
+  <ImportGroup Condition="'$(UseCppWinRT)' == 'true'">
+    <Import Project="$(ScenariosPackagesPath)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(ScenariosPackagesPath)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  </ImportGroup>
+
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild" Condition="'$(UseCppWinRT)' == 'true'">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(ScenariosPackagesPath)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(ScenariosPackagesPath)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('$(ScenariosPackagesPath)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(ScenariosPackagesPath)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
+
+  <ImportGroup Condition="'$(UseWinUI)' == 'true'">
+    <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.targets')" />
+    <Import Project="$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets')" />
+    <Import Project="$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.targets')" />
+    <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Base.$(BasePackageVersion)\build\native\Microsoft.WindowsAppSDK.Base.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Base.$(BasePackageVersion)\build\native\Microsoft.WindowsAppSDK.Base.targets')" />
+    <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.InteractiveExperiences.$(IXPPackageVersion)\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.InteractiveExperiences.$(IXPPackageVersion)\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.targets')" />
+    <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.targets')" />
+  </ImportGroup>
+
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild" Condition="'$(UseWinUI)' == 'true'">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.props'))" />
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.targets'))" />
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.props'))" />
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.targets'))" />
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Base.$(BasePackageVersion)\build\native\Microsoft.WindowsAppSDK.Base.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Base.$(BasePackageVersion)\build\native\Microsoft.WindowsAppSDK.Base.props'))" />
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Base.$(BasePackageVersion)\build\native\Microsoft.WindowsAppSDK.Base.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Base.$(BasePackageVersion)\build\native\Microsoft.WindowsAppSDK.Base.targets'))" />
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.InteractiveExperiences.$(IXPPackageVersion)\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.InteractiveExperiences.$(IXPPackageVersion)\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.props'))" />
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.InteractiveExperiences.$(IXPPackageVersion)\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.InteractiveExperiences.$(IXPPackageVersion)\build\native\Microsoft.WindowsAppSDK.InteractiveExperiences.targets'))" />
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.props'))" />
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.targets'))" />
+  </Target>
+
+  <Import Project="AppVersion.targets" />
+
+</Project>

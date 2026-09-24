@@ -1608,9 +1608,27 @@ HRESULT CustomResourceExtension::ProvideValue(
     IFCEXPECT_RETURN(spTargetObject);
     typeToken = spTargetObject->GetTypeToken();
 
-    IFC_RETURN(spServiceProviderContext->GetSchemaContext(spSchemaContext));
-    IFC_RETURN(spSchemaContext->GetXamlType(typeToken, spObjectType));
-    IFC_RETURN(spObjectType->get_FullName(&spTypeName));
+    if (typeToken.IsEmpty())
+    {
+        // Bug 50695292: a provided root instance (created for an x:Class root via
+        // Application.LoadComponent, e.g. a ContentDialog subclass) is wrapped in a
+        // XamlQualifiedObject that carries no type token, so resolving its XamlType via the
+        // schema context yields an unknown type and get_FullName() fails. Derive the target
+        // type name from the concrete DependencyObject instead, so a markup extension set on a
+        // property of the root element can still resolve. Parser-created (non-root) elements
+        // always have a valid type token and take the path below.
+        CDependencyObject* pTargetObject = spTargetObject->GetDependencyObject();
+        IFCEXPECT_RETURN(pTargetObject);
+        const CClassInfo* pTargetType = pTargetObject->GetClassInformation();
+        IFCEXPECT_RETURN(pTargetType);
+        spTypeName = pTargetType->GetFullName();
+    }
+    else
+    {
+        IFC_RETURN(spServiceProviderContext->GetSchemaContext(spSchemaContext));
+        IFC_RETURN(spSchemaContext->GetXamlType(typeToken, spObjectType));
+        IFC_RETURN(spObjectType->get_FullName(&spTypeName));
+    }
 
     spServiceProviderContext->GetMarkupExtensionTargetProperty(spXamlProperty);
     IFCEXPECT_RETURN(spXamlProperty);

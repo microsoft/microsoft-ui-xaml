@@ -1,0 +1,45 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Page
+    x:Class="BindTestbedCX.NullableTests"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbedCX"
+    xmlns:model="using:BindTestbedModel"
+    xmlns:modelCx="using:BindTestbedCXModel"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.Resources>
+            <x:Int32 x:Key="intValue5">5</x:Int32>
+            <Color x:Key="orangeKey">Orange</Color>
+        </Grid.Resources>
+        <ScrollViewer>
+            <StackPanel Margin="30" Grid.Row="0">
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button Click="UpdateValuesClick" >Update Values</Button>
+                    <Button Click="ResetValuesClick" >Reset Values</Button>
+                </StackPanel>
+                <TextBlock Text="Testing nullable support without x:Bind" Style="{StaticResource Section}"/>
+
+                <TextBlock Text="Values below should be: NullableDouble: 5, NullableBool: , NullableEnum: XtraLarge, NullableColor: #FFFFA500" />
+                <model:NullablePropertiesButton NullableDoubleDP="{StaticResource intValue5}" NullableBool="{x:Null}" NullableColor="{StaticResource orangeKey}" NullableEnum="XtraLarge" />
+
+                <TextBlock Text="Testing nullable support with x:Bind" Style="{StaticResource Section}"/>
+                <TextBlock Text="Values below should be: NullableDouble: 123, NullableBool: True, NullableEnum: , NullableColor:" />
+                <model:NullablePropertiesButton NullableDoubleDP="{x:Bind Model.ExtractionPoint.Coords.Longitude}" NullableBool="{x:Bind Model.AlwaysNullNullableBoolProperty, TargetNullValue=True}" />
+
+                <TextBlock Text="Values below should be: NullableDouble: 420, NullableBool: False, NullableEnum: Large, NullableColor: #FFFFFF00" />
+                <model:NullablePropertiesButton NullableDoubleDP="{x:Bind Model.ExtractionPoint.Altitude}" NullableBool="False"  NullableEnum="Large" NullableColor="Yellow"/>
+
+                <TextBlock Text="NullableDouble should cycle from 10 to 13 and back to 10" />
+                <model:NullablePropertiesButton NullableDoubleDP="{x:Bind Model.FunctionReturningNullableDouble(Model.NullableDoublePropertyDP), Mode=OneWay}" />
+
+                <TextBlock Text="NullableDouble should cycle from 0 to 3 and back to 0" />
+                <model:NullablePropertiesButton NullableDoubleDP="{x:Bind Model.NullableDoublePropertyDP, Mode=TwoWay}" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

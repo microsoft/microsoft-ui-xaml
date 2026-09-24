@@ -1,0 +1,19 @@
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="Build">
+        <Warning Text="Skipping project $(MSBuildProjectFile)."/>
+    </Target>
+
+    <Target Name="Midl"/>
+    <Target Name="Sign"/>
+    <Target Name="Binplace"/>
+    <Target Name="CoreCompile"/>
+    <Target Name="ResolveProjectReferences"/>
+    <Target Name="_GenerateRestoreProjectPathWalk"/>
+    <Target Name="_ComposedMetadata"/>
+    <Target Name="GetTargetPath"/>
+    <Target Name="GetNativeManifest"/>
+    <Target Name="UnpackPackages"/>
+    <ItemGroup>
+      <WinMDFullPath Remove="@(WinMDFullPath)" />
+    </ItemGroup>
+</Project>

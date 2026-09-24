@@ -1,0 +1,33 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<ResourceDictionary
+    x:Class="BindTestbed.Templates"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:model="using:BindTestbedModel"
+    xmlns:local="using:BindTestbed">
+
+    <DataTemplate x:Key="FullNameTemplateInRDFile" x:DataType="model:IEmployee">
+        <!-- x:Bind on the root of the template, causes field to be WeakRef instead -->
+        <TextBlock Text="{x:Bind LastName, Mode=TwoWay}" x:Phase="1"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="FullNameTemplateInRDFile2" x:DataType="model:IEmployee">
+        <local:MyUserControl1 />
+    </DataTemplate>
+
+    <DataTemplate x:Key="TemplateWithOneWayArray" x:DataType="model:DataModel">
+        <Grid>
+            <TextBlock Text="{x:Bind Employees[0].Title, Mode=OneWay}"/>
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="TemplateWithUserControl" x:DataType="model:IEmployee">
+        <Grid>
+            <StackPanel>
+                <local:MyUserControl1 Property1="Test" Tag="{x:Bind FirstName, Mode=OneWay}" Visibility="{x:Bind Visibility, Converter={StaticResource BoolToVisibility}}"/>
+            </StackPanel>
+        </Grid>
+    </DataTemplate>
+
+</ResourceDictionary>

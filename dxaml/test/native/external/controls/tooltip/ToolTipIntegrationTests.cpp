@@ -3070,6 +3070,90 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    void ToolTipIntegrationTests::VerifyRootTeardownDismissesToolTipWithStationaryPointer()
+    {
+        TestCleanupWrapper cleanup;
+
+        wf::Size size(400, 400);
+        TestServices::WindowHelper->SetWindowSizeOverride(size);
+        xaml_controls::Button^ button = nullptr;
+        xaml_controls::StackPanel^ rootPanel = nullptr;
+        auto loadedEvent = std::make_shared<Event>();
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::StackPanel, Loaded);
+
+        RunOnUIThread([&]()
+        {
+            rootPanel = safe_cast<xaml_controls::StackPanel^> (xaml_markup::XamlReader::Load(
+                L"<StackPanel Width='400' Height='400' VerticalAlignment='Top' Margin='0,25,0,0' "
+                L"            xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' > "
+                L"             <Button Content='Button no tooltip'/>"
+                L"             <Button x:Name='bt' Width='200' Content='Button with a simple ToolTip.'>"
+                L"              <ToolTipService.ToolTip>"
+                L"                  <ToolTip x:Name='toolTip'>"
+                L"                      Simple ToolTip"
+                L"                  </ToolTip>"
+                L"              </ToolTipService.ToolTip>"
+                L"             </Button>"
+                L"</StackPanel>"));
+
+            button = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"bt"));
+            VERIFY_IS_NOT_NULL(button);
+            loadedRegistration.Attach(rootPanel, [loadedEvent]() { loadedEvent->Set(); });
+
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+
+        loadedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        xaml_controls::ToolTip^ toolTip = nullptr;
+
+        auto toolTipOpenedEvent = std::make_shared<Event>();
+        auto toolTipOpenedRegistration = CreateSafeEventRegistration(xaml_controls::ToolTip, Opened);
+
+        RunOnUIThread([&]()
+        {
+            toolTip = dynamic_cast<xaml_controls::ToolTip^>(rootPanel->FindName(L"toolTip"));
+
+            toolTipOpenedRegistration.Attach(toolTip, ref new xaml::RoutedEventHandler([toolTipOpenedEvent](Platform::Object^, xaml::RoutedEventArgs^)
+            {
+                LOG_OUTPUT(L"OpenToolTip: ToolTip Opened event fired!");
+                toolTipOpenedEvent->Set();
+            }));
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        TestServices::InputHelper->MoveMouse(wf::Point(1,1));
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Hover the button to open the ToolTip
+        TestServices::InputHelper->MoveMouse(button);
+        TestServices::WindowHelper->WaitForIdle();
+
+        toolTipOpenedEvent->WaitForDefault();
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(toolTip->IsOpen);
+        });
+
+        // Tear down the root without moving the pointer. This goes through SetPublicRootVisual ->
+        // ResetRoots -> OnPublicRootRemoved, the same path an island teardown takes.
+        RunOnUIThread([&]()
+        {
+            TestServices::WindowHelper->WindowContent = ref new xaml_controls::Grid();
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        // The ToolTip must be dismissed even though the pointer never moved
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(toolTip->IsOpen);
+        });
+    }
+
     void ToolTipIntegrationTests::VerifyPointerMoveInsideControlNotDismissToolTip()
     {
         TestCleanupWrapper cleanup;

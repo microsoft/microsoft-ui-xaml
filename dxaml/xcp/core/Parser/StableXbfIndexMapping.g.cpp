@@ -4477,6 +4477,12 @@ namespace Parser
         KnownPropertyIndex::SplitMenuFlyoutItem_Items,
         KnownPropertyIndex::SplitMenuFlyoutItem_SubMenuItemStyle,
         KnownPropertyIndex::SplitMenuFlyoutItem_SubMenuPresenterStyle,
+        KnownPropertyIndex::Window_Height,
+        KnownPropertyIndex::Window_Width,
+        KnownPropertyIndex::Window_MaxHeight,
+        KnownPropertyIndex::Window_MaxWidth,
+        KnownPropertyIndex::Window_MinHeight,
+        KnownPropertyIndex::Window_MinWidth,
     };
 
     // Map known property indexes to stable Xbf property indexes
@@ -4946,9 +4952,15 @@ namespace Parser
         StableXbfPropertyIndex::VisualTransition_Storyboard,
         StableXbfPropertyIndex::VisualTransition_To,
         StableXbfPropertyIndex::Window_Content,
+        StableXbfPropertyIndex::Window_Height,
+        StableXbfPropertyIndex::Window_MaxHeight,
+        StableXbfPropertyIndex::Window_MaxWidth,
+        StableXbfPropertyIndex::Window_MinHeight,
+        StableXbfPropertyIndex::Window_MinWidth,
         StableXbfPropertyIndex::Window_SystemBackdrop,
         StableXbfPropertyIndex::Window_Title,
         StableXbfPropertyIndex::Window_TransparentBackground,
+        StableXbfPropertyIndex::Window_Width,
         StableXbfPropertyIndex::XamlUICommand_AccessKey,
         StableXbfPropertyIndex::XamlUICommand_Command,
         StableXbfPropertyIndex::XamlUICommand_Description,

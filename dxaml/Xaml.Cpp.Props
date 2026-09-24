@@ -100,4 +100,11 @@
     </XamlCommonPreprocessorDefinitions>
   </PropertyGroup>
 
+  <!-- XamlProfiler producer master switch. The ETW tree-tracking instrumentation is enabled in
+       Debug builds and disabled by default for all other configurations. -->
+  <PropertyGroup>
+    <XamlProfilerEnabled>false</XamlProfilerEnabled>
+    <XamlProfilerEnabled Condition="'$(Configuration)'=='Debug'">true</XamlProfilerEnabled>
+  </PropertyGroup>
+
 </Project>

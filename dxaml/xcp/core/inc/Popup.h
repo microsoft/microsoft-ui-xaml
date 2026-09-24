@@ -10,6 +10,7 @@
 #include <XYFocus.h>
 #include <fwd/windows.ui.composition.h>
 #include <Microsoft.UI.Content.h>
+#include <ContentExternalLinkHelper.h>
 
 class HitTestPolygon;
 class CKeyEventArgs;
@@ -511,6 +512,7 @@ public:
     // IsLightDismissEnabled.
     bool                            m_disableOverlayIsLightDismissCheck;
     bool                            m_fIsOpen;
+    bool                            m_fIsOpenPending;
     bool                            m_fIsContentDialog;
     bool                            m_fIsSubMenu;
 
@@ -609,7 +611,7 @@ private:
     wrl::ComPtr<ixp::IVisual> m_contentIslandRootVisual;
     wrl::ComPtr<ixp::IVisual> m_windowedPopupDebugVisual;
     wrl::ComPtr<ixp::IVisual> m_animationRootVisual;
-    wrl::ComPtr<ixp::IContentExternalBackdropLink> m_backdropLink;
+    std::unique_ptr<ContentExternalBackdropLinkHelper> m_backdropLink;
     wrl::ComPtr<ixp::IVisual> m_systemBackdropPlacementVisual;
     wgr::RectInt32 m_windowedPopupMoveAndResizeRect = {};
 

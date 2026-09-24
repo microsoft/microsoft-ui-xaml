@@ -38,20 +38,20 @@ parameters:
 
 variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
-- template: build\AzurePipelinesTemplates\WinUI-BuildVariables.yml@WinUIInternal
+- template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - group: WinUI-Variable-Library
 - name: WindowsContainerImage
   value: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
+# Run the LifetimeStressTestSuite native scenarios in their aggressive repro variant on the PR gate.
+# An unfixed native lifetime bug can fault the test host and fail this shared gate.
+- name: WINUI_LIFETIME_STRESS_NATIVE
+  value: 1
 
 resources:
   repositories:
     - repository: templates
       type: git
       name: OneBranch.Pipelines/GovernedTemplates
-      ref: refs/heads/main
-    - repository: WinUIInternal
-      type: git
-      name: WinUI/microsoft-ui-xaml-lift
       ref: refs/heads/main
     - repository: WindowsAppSDKConfig
       type: git
@@ -73,7 +73,9 @@ extends:
     platform:
       name: 'windows_undocked'
     git:
-      submodules: false
+      # Recursively check out submodules so the public github.com/microsoft/WinUI-Gallery
+      # submodule (Samples/WinUIGallery) is available for GitHub PR sample-build validation.
+      submodules: recursive
     globalsdl:
       tsa:
         enabled: false
@@ -144,18 +146,18 @@ extends:
               Write-Host "GitHub PR context validation completed."
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
+      - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
           pipelineKind: GitHubPR
-          buildScenarioApps: false
+          buildScenarioApps: true
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
-          buildProductOnly: true
+          buildProductOnly: false
           dependsOn: ValidateGitHubPrContext
 
     - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
+      - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
         parameters:
           stageName: Build_MUXFinalRelease
           pipelineKind: PR-2
@@ -167,6 +169,17 @@ extends:
           dependsOn: ValidateGitHubPrContext
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
+      - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
+        parameters:
+          pipelineKind: PR
+
+    - ${{ if eq(parameters.runFullValidation, true) }}:
+      - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
         parameters:
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+
+    - ${{ if eq(parameters.runFullValidation, true) }}:
+      - template: AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml
+        parameters:
+          pipelineKind: GitHubPR
+          dependsOn: Build

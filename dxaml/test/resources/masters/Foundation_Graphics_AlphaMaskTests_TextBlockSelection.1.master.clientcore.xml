@@ -97,7 +97,7 @@
                       <ColorBrush Color="#ffffffff" />
                     </Source>
                     <Mask>
-                      <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="980343538" />
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="$$TextMaskCRC$$" />
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>

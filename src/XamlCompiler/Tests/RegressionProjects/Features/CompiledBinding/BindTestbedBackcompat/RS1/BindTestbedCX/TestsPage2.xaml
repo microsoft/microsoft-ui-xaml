@@ -1,0 +1,203 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="BindTestbed.TestsPage2"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbed"
+    xmlns:Subfolder="using:BindTestbed.subfolder"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:model="using:BindTestbedModel"
+    x:Name="MyPage">
+
+    <UserControl.Resources>
+
+        <ResourceDictionary>
+            <Style TargetType="Slider">
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="Width" Value="250" />
+            </Style>
+            <DataTemplate x:Key="temp" x:DataType="x:String">
+                <TextBlock Text="{x:Bind}"/>
+            </DataTemplate>
+            <model:EmployeeCollection x:Key="EmployeeCollection" x:Name="NiceEmployees"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="G">
+
+        <ScrollViewer>
+            <StackPanel Margin="30" Grid.Row="{x:Bind MyInt}">
+
+
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button Click="UpdateValuesClick" >Update Values</Button>
+                    <Button Click="ResetValuesClick" >Reset Values</Button>
+                    <Button Click="UndeferElementClick" Content="Undefer" />
+                </StackPanel>
+
+                <TextBlock Text="OneWay Bindings" Style="{StaticResource Section}"/>
+                <TextBlock Style="{StaticResource Note}">None of the following should change when the buttons are pressed</TextBlock>
+
+                <!-- Modify runtimetestTag parser to inlucde FV: specifying a fixed value for the view proeprty for binding like this one (which should be 10 if model property is more)-->
+                <Slider Minimum="0" Maximum="10" Value="{x:Bind IntPropNoINPC, Mode=OneTime}"/>
+                <Slider Minimum="0" Maximum="100" Value="{x:Bind IntPropNoINPC, Mode=OneTime}"/>
+
+                <TextBlock Style="{StaticResource Note}">All of the following should change when the buttons are pressed</TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <Slider Minimum="0" Maximum="10" Value="{x:Bind Model.IntPropWithINPC, Mode=OneWay}" x:Name="OneTimeSlider3"/>
+                    <TextBlock Text="This slider will adjust purple box further below" />
+                </StackPanel>
+                <Slider Minimum="0" Maximum="100" Value="{x:Bind Model.IntPropertyDP, Mode=OneWay}"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Rectangle x:Name="BisqueRectangle" Grid.Column="{x:Bind Model.IntPropWithINPC, Mode=TwoWay}" Fill="Bisque"/>
+                    <TextBlock Grid.Column="5" Text="{x:Bind Model.IntPropWithINPC, Mode=OneWay}"/>
+                </Grid>
+
+                <TextBlock Text="Bindings to the current page" Style="{StaticResource Section}"/>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="This should say Visible: "/>
+                    <TextBlock Text="{x:Bind Path=G.Children[0].Visibility}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="This should be a name: "/>
+                    <TextBlock Text="{x:Bind Tag.(model:IEmployee.Name)}"/>
+                </StackPanel>
+
+                <TextBox Text="Source of data for other tests" x:Name="LocalTextBox" />
+                <TextBlock Text="{x:Bind LocalTextBox.Text, Mode=OneWay}" FontSize="{x:Bind Model.IntPropWithINPC, Mode=OneWay}"/>
+
+                <!-- Todo: Create a suite for error cases and move this to it -->
+                <!--<TextBlock>
+                    <TextBlock.Text>
+                        <x:Bind Path="LocalTextBox.Text" Mode="OneWay" />
+                    </TextBlock.Text>
+                </TextBlock>-->
+
+                <TextBlock Style="{StaticResource Note}">The Green box should move based on the value updates. The purple box is controlled by the slider above.</TextBlock>
+                <Border BorderThickness="1" BorderBrush="Blue"  HorizontalAlignment="Left" >
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="20" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="20" />
+                            <RowDefinition Height="20" />
+                        </Grid.RowDefinitions>
+                        <Rectangle Grid.Column="{x:Bind Model.IntPropWithINPC, Mode=OneWay}" Fill="Green" Width="20" Height="20" />
+                        <Rectangle Grid.Row="1" Grid.Column="{x:Bind OneTimeSlider3.Value, Mode=OneWay, Converter={StaticResource DoubleToInt}, ConverterParameter=DoItQuick, ConverterLanguage=Eng}" Fill="Purple" Width="20" Height="20" />
+                    </Grid>
+                </Border>
+
+                <TextBlock Style="{StaticResource Note}">The Image should rotate and translate when values are updated.</TextBlock>
+
+                <Border Width="120" Height="120" BorderThickness="1" BorderBrush="Blue"  HorizontalAlignment="Left">
+                    <Image Source="Assets/Icon.png" Width="100" Height="100" >
+                        <Image.RenderTransform>
+                            <TransformGroup>
+                                <RotateTransform Angle="{x:Bind Model.IntPropertyDP, Mode=OneWay}" />
+                                <TranslateTransform X="{x:Bind Model.IntPropWithINPC, Mode=OneWay}" />
+                            </TransformGroup>
+                        </Image.RenderTransform>
+                    </Image>
+                </Border>
+
+
+                <TextBlock Text="Misc" Style="{StaticResource Section}"/>
+
+                <TextBlock Text="{x:Bind Background.(SolidColorBrush.Color), FallbackValue='Nope', Mode=OneWay}"/>
+                <TextBlock Visibility="{x:Bind Model.Employees[0].Visibility, Converter={StaticResource BoolToVisibility}}" Text="{x:Bind Model.Employees[0].Visibility}"/>
+
+
+                <TextBlock Text="FallbackValue and TargetNullValue"/>
+                <TextBlock Visibility="{x:Bind NullEmployee.Visibility, FallbackValue=Collapsed, Converter={StaticResource BoolToVisibility}}" Text="You should not see this text."/>
+                <TextBlock Visibility="{x:Bind NullEmployee.Visibility, FallbackValue=Visible, Converter={StaticResource BoolToVisibility}}" Text="My fallback value is (visible), above me there should be an empty space (fallback value: hidden)"/>
+
+                <TextBlock Text="{x:Bind NullEmployee.FirstName, FallbackValue='Name-Not-Available'}"/>
+                <TextBlock Text="{x:Bind NullStringProperty, TargetNullValue='This-is-a-null-string-property'}"/>
+                <!-- Binding to a null string, without TargetNullValue, that should not crash at runtime -->
+                <TextBlock Text="{x:Bind NullStringProperty}"/>
+                <!-- TODO:  Add XamlBindingHelper.ConvertValue() support in model property value resolution, this is needed to construct an Image object out of the fallback value string  -->
+                <Image Width="72" Height="72" Source="{x:Bind NullEmployee.NullImageSource,  FallbackValue='http://static-hp-wus.s-msn.com/sc/homepage/i/65/e8a77758e8644573ba5d41ada16e8c.jpg', TargetNullValue='http://static-hp-wus.s-msn.com/sc/homepage/i/65/e8a77758e8644573ba5d41ada16e8c.jpg'}"/>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Binding to Image.Source" />
+                    <Image Width="72" Height="72" Source="{x:Bind ImageUriString}"/>
+                </StackPanel>
+
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="To my right is a deferred element --" />
+                    <TextBlock x:Name="deferedTextBlock" Text="{x:Bind Model.ManagerProp.Name, FallbackValue=Bobby, TargetNullValue=Bob}" x:DeferLoadStrategy="Lazy"/>
+                </StackPanel>
+
+                <!-- KnownIssue: Boolean Property controls rect to right via converter - OSG 2199015
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Boolean Property controls rect to right via converter "/>
+                    <ToggleSwitch IsOn="{x:Bind Model.Employees[0].Visibility, Mode=TwoWay}" />
+                    <Rectangle Width="10" Height="10" Fill="Chocolate" Visibility="{x:Bind Model.Employees[0].Visibility, Converter={StaticResource BoolToVisibility}}"/>
+                </StackPanel> -->
+                
+                <StackPanel>
+                    <!-- One Way Bindings to Root Fields that implement INPC and INCC -->
+                    <TextBlock Text="{x:Bind NiceEmployees.Size, Mode=OneWay}"/>
+                    <TextBlock Text="{x:Bind NiceManager.Name, Mode=OneWay}"/>
+                </StackPanel>
+                
+                <Button x:Name="target" >This does nothing, but validates that we don't use common names like target in the generated API surface</Button>
+
+                <!-- This test ensures that we can address the attached property on the right owner type (Grid.Row instead of TextBlock.Row)-->
+                <TextBlock x:Name="TextBlockWAttachedRow" Grid.Row="0"/>
+                <TextBlock Text="{x:Bind TextBlockWAttachedRow.(Grid.Row), Mode=OneWay}"/>
+
+                <TextBlock Style="{StaticResource Note}">Bindings on members of language interfaces, like Size</TextBlock>
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox x:Name="TimeZonePicker2">
+                        <ComboBoxItem>a</ComboBoxItem>
+                        <ComboBoxItem>b</ComboBoxItem>
+                        <ComboBoxItem>c</ComboBoxItem>
+                    </ComboBox>
+                    <TextBlock Text="{x:Bind Path=TimeZonePicker2.Items.Size}" />
+                </StackPanel>
+
+                <TextBlock Style="{StaticResource Note}">Bindings on DP under indexer</TextBlock>
+                <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="Grid1">
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind Path=Grid1.Children[0].Visibility, Mode=OneWay}" />
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button Click="UpdateValuesClick" >Update Values</Button>
+                    <Button Click="ResetValuesClick" >Reset Values</Button>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <ComboBox x:Name="cb"
+                        Header="Combobox Header should have readable text"
+                        HeaderTemplate="{StaticResource temp}"/>
+                </StackPanel>
+            </StackPanel>
+
+        </ScrollViewer>
+    </Grid>
+</UserControl>

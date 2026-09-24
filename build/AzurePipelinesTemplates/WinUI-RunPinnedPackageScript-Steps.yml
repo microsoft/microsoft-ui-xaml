@@ -1,0 +1,29 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+- name: displayName
+  type: string
+- name: mode
+  type: string
+  values:
+  - CheckFetch
+  - Push
+- name: packagesDirectory
+  type: string
+- name: summaryPath
+  type: string
+- name: internalFeedSource
+  type: string
+  default: ''
+
+steps:
+- task: PowerShell@2
+  displayName: ${{ parameters.displayName }}
+  inputs:
+    targetType: filePath
+    filePath: '$(Pipeline.Workspace)\s\microsoft-ui-xaml-lift\build\PipelineScripts\RunPinnedPackageScript.ps1'
+    arguments: >
+      -Mode ${{ parameters.mode }}
+      -PackagesDirectory "${{ parameters.packagesDirectory }}"
+      -SummaryPath "${{ parameters.summaryPath }}"
+      -InternalFeedSource "${{ parameters.internalFeedSource }}"

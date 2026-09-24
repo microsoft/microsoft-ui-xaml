@@ -57,17 +57,33 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                 return $"Microsoft.UI.Xaml.Data.{objectType}";
             }
         }
-        
+
+        public string ObjectCast(XamlType type, string sourceName)
+        {
+            // We can't just do 'ToString()' on the input type, as that would return the XAML type name, which is
+            // the fully qualified type name for the type, and not the actual type expression that is valid to use
+            // in C# code. Most of the time, the two are the same. However, they don't match if the type is, for
+            // instance, a nested type. That is, the former would say 'Foo+Bar', and not 'Foo.Bar'. This would
+            // result in invalid generated code if XAML code is using eg. 'x:DataType' with a nested template type.
+            // To address this, we just use 'ToStringWithCulture', which produces the valid C# type expression.
+            if (ProjectInfo.UsingCSWinRT)
+            {
+                return $"global::WinRT.CastExtensions.As<{ToStringWithCulture(type)}>({sourceName})";
+            }
+
+            return $"({ToStringWithCulture(type)}){sourceName}";
+        }
+
         public string ObjectCast(string destinationType, string sourceName)
         {
             if (ProjectInfo.UsingCSWinRT)
             {
+                // We want to allow callers to pass either globally qualified type names, or normal
+                // type names. We never want to produce invalid code because of repeated globals.
                 return $"global::WinRT.CastExtensions.As<{Globalize(destinationType)}>({sourceName})";
             }
-            else
-            {
-                return $"({destinationType}){sourceName}";
-            }
+
+            return $"({Globalize(destinationType)}){sourceName}";
         }
 
         public string NotCLSCompliantAttribute

@@ -1,0 +1,117 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="BindTestbedCX.FunctionTests"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbedCX"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:model="using:BindTestbedModel"
+    Tag="This is a tag">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Slider">
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="Width" Value="250" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
+
+        <ScrollViewer>
+            <StackPanel Margin="30">
+
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button Click="UpdateValuesClick" >Update Values</Button>
+                    <Button Click="ResetValuesClick" >Reset Values</Button>
+                </StackPanel>
+
+                <TextBlock Text="Function Bindings" Style="{StaticResource Section}"/>
+
+                <TextBlock Style="{StaticResource Note}">One Time, No args</TextBlock>
+                <TextBlock Text="{x:Bind Tag}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelNoArgs()}"/>
+
+                <TextBlock Style="{StaticResource Note}">One Time, With args</TextBlock>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelOneStringArg('abc')}"/>
+                <TextBlock Text='{x:Bind Model.FunctionOnModelThreeArgs("abc", -2.1, x:True)}'/>
+                <TextBlock Text='{x:Bind Model.FunctionOnModelThreeArgs(x:Null, -2.1, x:False)}'/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelTwoArgs(Model.IntPropNoINPC, 2.8)}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelTwoArgs(Model.IntPropWithINPC, 3.9)}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelTwoArgs(Model.IntPropertyDP, 4.1)}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelTwoArgs(Model.ShortProperty, Model.FloatProperty)}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelOneStringArg(Model.StaticStringProperty)}"/>
+
+                <TextBlock Style="{StaticResource Note}">Statics (as instance or static syntax)</TextBlock>
+                <TextBlock Text="{x:Bind Model.StaticFunctionOnModelNoArgs()}"/>
+                <TextBlock Text="{x:Bind model:DataModel.StaticFunctionOnModelNoArgs()}"/>
+                <TextBlock Text="{x:Bind model:DataModel.StaticStringProperty.ToString()}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelOneStringArg(Model.StaticStringProperty)}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelOneStringArg(model:DataModel.StaticStringProperty)}"/>
+
+                <TextBlock Style="{StaticResource Note}">One Time, upcasts</TextBlock>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelInfrequentTypes(Model.ShortProperty, 2.8)}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelInfrequentTypes(14, 2.8)}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelInfrequentTypes(Model.ShortProperty,  Model.FloatProperty)}"/>
+
+                <TextBlock Style="{StaticResource Note}">One Time, on value types</TextBlock>
+                <TextBlock Text="{x:Bind Model.FloatProperty.ToString()}"/>
+                <TextBlock Text="{x:Bind Model.ExtractionPoint.Coords.Latitude.ToString(), Mode=OneWay}"/>
+
+                <TextBlock Style="{StaticResource Note}">One Time, arity</TextBlock>
+                <TextBlock Text="{x:Bind Model.ArityTest()}"/>
+                <TextBlock Text="{x:Bind Model.ArityTest(1)}"/>
+                <TextBlock Text="{x:Bind Model.ArityTest(1, 2)}"/>
+                <TextBlock Text="{x:Bind Model.ArityTest(1, 2, 3)}"/>
+
+                <TextBlock Style="{StaticResource Note}">One Way, without args</TextBlock>
+                <TextBlock Text="{x:Bind Model.Employees[0].Name.ToString(), Mode=OneWay}"/>
+
+                <TextBlock Style="{StaticResource Note}">One Way, INPC on Function</TextBlock>
+                <TextBlock Text="{x:Bind Model.FunctionReturningIntProperty(), Mode=OneWay}"/>
+
+                <TextBlock Style="{StaticResource Note}">One Way, with args</TextBlock>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelNullArg(Model.NullEmployee.Name), Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelTwoArgs(Model.IntPropWithINPC, 3.9), Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelTwoArgs(Model.IntPropertyDP, 3.9), Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelThreeArgs(Model.StringPropertyDP, 3.9, x:False), Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelThreeArgs(Model.Employees[0].Name, 2, Model.Employees[0].IsManager), Mode=OneWay}"/>
+
+                <TextBlock Style="{StaticResource Note}">Two Way Function Bindings</TextBlock>
+                <TextBox Text="{x:Bind Model.FunctionOnModelNoArgs(), BindBack=Model.ShowMessageDialog, Mode=TwoWay}"/>
+
+                <TextBlock Style="{StaticResource Note}">FallbackValue on function path</TextBlock>
+                <TextBlock Text="{x:Bind Model.NullEmployee.GetName(), FallbackValue='Great, fallback works on leaf!'}"/>
+                <TextBlock Text="{x:Bind Model.NullEmployee.FirstName.ToString(), FallbackValue='Great, fallback works on non-leaf!'}"/>
+                <TextBlock Visibility="{x:Bind Model.NullEmployee.GetVisibility(), FallbackValue=Visible}" Text="Great, fallback works with convert value!"/>
+                <TextBlock Style="{StaticResource Note}">FallbackValue on function params</TextBlock>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelThreeArgs(Model.NullEmployee.FirstName, 3.9, Model.Employees[0].IsManager), FallbackValue='Great, fallback works with parameters!', Mode=OneWay}"/>
+                <TextBlock Style="{StaticResource Note}">FallbackValue with x:Null (next textblock should be empty).</TextBlock>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelThreeArgs(Model.NullEmployee.FirstName, 3.9, Model.Employees[0].IsManager), FallbackValue={x:Null}, Mode=OneWay}"/>
+                <TextBlock Style="{StaticResource Note}">TargetNullValue</TextBlock>
+                <TextBlock Text="{x:Bind FunctionReturningNull(), TargetNullValue='Great, TargetNullValue works!'}"/>
+
+                <TextBlock Style="{StaticResource Note}">ToString() on return of functions</TextBlock>
+                <TextBlock Text="{x:Bind Model.FunctionReturningInt()}"/>
+
+                <TextBlock Style="{StaticResource Note}">The folowing two should display different values</TextBlock>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelOneStringArg(Model.Employees[0].Name), Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelOneStringArg(Model.Employees[2].Name), Mode=OneWay}"/>
+
+                <TextBlock Style="{StaticResource Note}">The folowing should display 123</TextBlock>
+                <TextBlock Text="{x:Bind model:DataModel.UpdateReentrancyString(Model,Model.ReentrancyString),Mode=OneWay}" />
+
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button Click="UpdateValuesClick" >Update Values</Button>
+                    <Button Click="ResetValuesClick" >Reset Values</Button>
+                    <Button Click="StopTrackingClick" >Stop Tracking</Button>
+                    <Button Click="ReInitializeBindingsClick" >Re-Initialize Bindings</Button>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

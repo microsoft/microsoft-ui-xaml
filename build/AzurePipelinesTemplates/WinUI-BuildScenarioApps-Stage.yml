@@ -1,0 +1,198 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  pipelineKind: '' # can be: Nightly, CI, PR, Preview, BuildAndTest, ValidateWindowsAppSDK
+  buildToolsDirectory: $(_buildToolsDirectory)
+  buildToolsInstallLogsDirectory: $(_buildToolsInstallLogsDirectory)
+  buildArtifactsDirectory: $(Build.SourcesDirectory)\BuildOutput
+  MUXFinalRelease: false
+  runStaticAnalysis: true
+
+stages:
+- stage: BuildScenarioApps
+  # Skip the build job if we are reusing the output of a previous build.
+  # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
+  condition:
+    and(eq(variables['useBuildOutputFromBuildId'],''), succeeded())
+  dependsOn: Build
+  displayName: Build Scenario Apps
+
+  variables:
+  - group: WinUI-InternalFeed
+
+  jobs:
+  - job: BuildScenarioApps
+    pool:
+      type: windows
+    timeoutInMinutes: 300
+    strategy:
+      maxParallel: 10
+      # The matrix of this job must stay the same as the BuildMUX job in build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
+      matrix:
+        ${{ if in( parameters.pipelineKind, 'Official', 'Nightly', 'PR', 'Preview') }}:
+          Debug_x86:
+            buildPlatform: 'x86'
+            buildOutput: 'x86'
+            buildConfiguration: 'Debug'
+            normalizedConfiguration: 'chk'
+          Release_x86:
+            buildPlatform: 'x86'
+            buildOutput: 'x86'
+            buildConfiguration: 'Release'
+            normalizedConfiguration: 'fre'
+          Release_x64:
+            buildPlatform: 'x64'
+            buildOutput: 'amd64'
+            buildConfiguration: 'Release'
+            normalizedConfiguration: 'fre'
+          Release_arm64:
+            buildPlatform: 'arm64'
+            buildOutput: 'arm64'
+            buildConfiguration: 'Release'
+            normalizedConfiguration: 'fre'
+          Release_arm64ec:
+            buildPlatform: 'arm64ec'
+            buildOutput: 'arm64ec'
+            buildConfiguration: 'Release'
+            normalizedConfiguration: 'fre'
+        ${{ if in( parameters.pipelineKind, 'Nightly', 'Preview') }}:
+          Debug_x64:
+            buildPlatform: 'x64'
+            buildOutput: 'amd64'
+            buildConfiguration: 'Debug'
+            normalizedConfiguration: 'chk'
+          Debug_arm64:
+            buildPlatform: 'arm64'
+            buildOutput: 'arm64'
+            buildConfiguration: 'Debug'
+            normalizedConfiguration: 'chk'
+    variables:
+      - group: WinUI-InternalFeed
+      - name: ob_outputDirectory
+        value: '$(Build.ArtifactStagingDirectory)'
+      - name: ob_artifactBaseName
+        value: 'drop_BuildScenarioApps_$(buildOutput)$(normalizedConfiguration)'
+      - name: ob_sdl_codeSignValidation_excludes
+        value: '-|packaging\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|temp\**;-|**\Samples\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
+      - name: ob_sdl_binskim_enabled
+        value: false
+      - name: ob_sdl_apiscan_enabled
+        value: false
+      - name: ob_sdl_prefast_enabled
+        value: false
+      
+    steps:
+
+    # This is a temporarily workaround to avoid getting non-fatal "folder C:\__t\NativeCompilerPrefast not found"
+    # errors from the Guardian PREfast task, which shouldn't even be run in the first place, because its pre-
+    # requisite of isNative=true isn't met currently.
+    - script: |
+        md "C:\__t\NativeCompilerPrefast"
+      displayName: 'Creating C:\__t\NativeCompilerPrefast to prevent errors from Guardian PREfast'
+
+    # Ensure the VS preinstalled on the image is up-to-date, or install the VS build tools if enableVsBuildTools=true
+    - template: WinUI-Install-MSBuildTools.yml
+      parameters:
+        msbuildInstallDir: '${{parameters.buildToolsDirectory}}'
+        msbuildInstallLogsDir: '${{parameters.buildToolsInstallLogsDirectory}}'
+        pipelineKind: ${{parameters.pipelineKind}}
+
+    - task: NuGetAuthenticate@1
+
+    - task: CmdLine@2
+      displayName: Set up environment
+      inputs:
+        script: |
+          $(Build.SourcesDirectory)\init.cmd /pipeline $(buildPlatform)$(normalizedConfiguration) $(_dotNetFrameworkVersionInitParam)
+
+    - task: CmdLine@2
+      displayName: Set NuGet environment variables
+      inputs:
+        script: |
+          $(Build.SourcesDirectory)\scripts\setnugetenvvars.cmd
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet locals -clear http-cache'
+      inputs:
+        command: 'custom'
+        arguments: 'locals -clear http-cache'
+
+    - ${{ if ne(parameters.pipelineKind, 'ValidateWindowsAppSDK') }}:
+      - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+        parameters:
+          artifactName: drop_$(buildOutput)$(normalizedConfiguration)
+          itemPattern: '**/WinUIComponentPackage/Microsoft.WindowsAppSDK*.nupkg'
+          targetPath: '$(Build.SourcesDirectory)\PackageStore'
+
+    - template: WinUI-InstallWindowsAppSDK-Steps.yml
+      parameters:
+        outputPackageDir: '$(Build.SourcesDirectory)\packages'
+
+    - powershell: |
+        gci env:* | sort-object name
+      displayName: Display build machine environment variable
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore AppTestAutomationHelpers'
+      inputs:
+        command: 'custom'
+        arguments: 'restore $(Build.SourcesDirectory)\Samples\AppTestAutomationHelpers\packages.config -ConfigFile $(Build.SourcesDirectory)\nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+        includeNuGetOrg: false
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore private dependencies'
+      inputs:
+        command: 'custom'
+        arguments: 'restore $(Build.SourcesDirectory)\Samples\packages.config -ConfigFile $(Build.SourcesDirectory)\nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+        includeNuGetOrg: false
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore Lifted XAML dependencies'
+      inputs:
+        command: 'custom'
+        arguments: 'restore packages.config -ConfigFile nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+        includeNuGetOrg: false
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore Lifted XAML dependencies $(buildPlatform)'
+      inputs:
+        command: 'custom'
+        arguments: 'restore packages.$(buildPlatform).config -ConfigFile $(Build.SourcesDirectory)\nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+        includeNuGetOrg: false
+        
+    - task: powershell@2
+      displayName: 'Installing .NET SDK'
+      inputs:
+        targetType: filePath
+        workingDirectory: $(Build.SourcesDirectory)\build
+        filePath: $(Build.SourcesDirectory)\build\DownloadDotNetCoreSdk.ps1
+        arguments: "-version '$(_dotnetSdkVersion)' -quality '$(_dotnetSdkQuality)' -channel '$(_dotnetSdkChannel)'"
+
+    - powershell: |
+        if ($env:LkgVcToolsName -eq $null)
+        {
+            $env:LkgVcToolsName  = '$(compilerOverridePackageName)'
+        }
+        if($env:LkgVcToolsVersion -eq $null)
+        {
+            $env:LkgVcToolsVersion = '$(compilerOverrideNupkgVersion)'
+        }
+        nuget install $env:LkgVcToolsName -version $env:LkgVcToolsVersion -source $(WinUILKGCompilerFeedUri) -ConfigFile $(Build.SourcesDirectory)\nuget.config
+      displayName: Install native compiler override
+
+    - template: WinUI-BuildSampleApps-Steps.yml
+      parameters:
+        pipelineKind: ${{ parameters.pipelineKind }}
+        artifactsRoot: ${{ parameters.buildArtifactsDirectory }}\
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+    - task: CopyFiles@2
+      displayName: 'Copy built binaries to drop'
+      condition: always()
+      inputs:
+        sourceFolder: ${{ parameters.buildArtifactsDirectory }}\bin
+        contents: |
+          **\*
+          !**\*.pdb
+        targetFolder: $(Build.ArtifactStagingDirectory)\drop

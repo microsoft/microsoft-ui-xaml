@@ -1,0 +1,51 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  signOutput: false # this is true for Release builds
+  publishToMaestro: false
+
+stages:
+- stage: Packaging
+  displayName: Packaging
+  dependsOn: Build
+  condition: not(failed())
+  variables:
+    buildPlatform: 'Win32'
+    buildConfiguration: 'Debug'
+    normalizedConfiguration: 'chk'
+  jobs:
+  - job: CreateTransportNupkg
+    pool:
+      type: windows
+    variables:
+      ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+      ob_artifactBaseName: 'NugetPackages'
+      ob_sdl_codeSignValidation_excludes: '-|packaging\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|*Microsoft.Internal.MUXAppTestHelpers.WinUI*\**;-|*Microsoft.Internal.MUXTestInfra*\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
+
+    steps:
+    # This is a temporarily workaround to avoid getting non-fatal "folder C:\__t\NativeCompilerPrefast not found"
+    # errors from the Guardian PREfast task, which shouldn't even be run in the first place, because its pre-
+    # requisite of isNative=true isn't met currently.
+    - script: |
+        if not exist "C:\__t\NativeCompilerPrefast" md "C:\__t\NativeCompilerPrefast"
+      displayName: 'Creating C:\__t\NativeCompilerPrefast to prevent errors from Guardian PREfast'
+
+    - template: WinUI-CreateTransportNupkg-Steps.yml
+      parameters:
+        signOutput: ${{ parameters.signOutput }}
+
+  - ${{ if eq( parameters.publishToMaestro, true) }}:
+    - job: PublishToMaestro
+      pool:
+        type: windows
+        isCustom: true
+        name: Azure Pipelines
+        vmImage: windows-latest
+      variables:
+        ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+      dependsOn: CreateTransportNupkg
+      steps:
+      - template: AzurePipelinesTemplates/WindowsAppSDK-PublishToMaestro-Steps.yml@WindowsAppSDKConfig
+        parameters:
+          NuGetArtifactNames: 
+          - "NugetPackages"

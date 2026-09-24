@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F292FA71-2B98-4CCF-9F2E-5F21936D3715}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <OutputPath>$(OutputPath)\vsproject\xamlcompiler\test</OutputPath>
+    <UseVSVersion>true</UseVSVersion>
+    <RootNamespace>Win8Xaml.CompilerProxies</RootNamespace>
+    <AssemblyName>Win8Xaml.CompilerProxies</AssemblyName>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup>
+    <Prefer32Bit>false</Prefer32Bit>
+    <OutputPath>..\UnitTests\UnitTestingBin\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\UnitTests\UnitTestingBin\</OutputPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\UnitTests\UnitTestingBin\</OutputPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BindPathStep_P.cs" />
+    <Compile Include="BindAssignment_P.cs" />
+    <Compile Include="BindUniverse_P.cs" />
+    <Compile Include="BindPathParser_P.cs" />
+    <Compile Include="ClassName_P.cs" />
+    <Compile Include="ConnectionIdElement_P.cs" />
+    <Compile Include="CompilerDomRoot.cs" />
+    <Compile Include="CompileXaml_P.cs" />
+    <Compile Include="DirectUIAssembly_P.cs" />
+    <Compile Include="DirectUiSchemaContext_P.cs" />
+    <Compile Include="DirectUISystem_P.cs" />
+    <Compile Include="DirectUIXamlType_P.cs" />
+    <Compile Include="EventAssignment_P.cs" />
+    <Compile Include="FieldDefinition_P.cs" />
+    <Compile Include="FileNameAndContentPair_P.cs" />
+    <Compile Include="InternalTypeEntry_P.cs" />
+    <Compile Include="InternalUserTypeInfo.cs" />
+    <Compile Include="InternalXamlUserMemberInfo_P.cs" />
+    <Compile Include="Language_P.cs" />
+    <Compile Include="LineNumberInfo_P.cs" />
+    <Compile Include="ProxyHelper.cs" />
+    <Compile Include="Roots_P.cs" />
+    <Compile Include="TypeForCodeGen_P.cs" />
+    <Compile Include="TypeInfoCollector_P.cs" />
+    <Compile Include="TypeResolver_P.cs" />
+    <Compile Include="XamlClassCodeInfo_P.cs" />
+    <Compile Include="XamlCodeGenerator_P.cs" />
+    <Compile Include="XamlCodeGenTypeNames_P.cs" />
+    <Compile Include="XamlCompileError_P.cs" />
+    <Compile Include="XamlCompilerReflectionHelper_P.cs" />
+    <Compile Include="XamlConnectionIdRewriter_P.cs" />
+    <Compile Include="XamlDomValidator_P.cs" />
+    <Compile Include="XamlFileCodeInfo_P.cs" />
+    <Compile Include="XamlHarvester_P.cs" />
+    <Compile Include="XamlMember_P.cs" />
+    <Compile Include="XamlType_P.cs" />
+    <Compile Include="XamlXmlReader_P.cs" />
+    <Compile Include="XbfMetadataProvider_P.cs" />
+    <Compile Include="XamlNodeStreamHelper_P.cs" />
+    <Compile Include="XamlProjectInfo_P.cs" />
+    <Compile Include="XamlSchemaCodeInfo_P.cs" />
+    <Compile Include="XamlTypeUniverse_P.cs" />
+    <Compile Include="XbfFileinfoArrayToken.cs" />
+    <Compile Include="XbfGenerator_P.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+</Project>

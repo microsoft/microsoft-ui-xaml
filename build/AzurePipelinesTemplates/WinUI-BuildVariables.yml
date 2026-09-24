@@ -1,0 +1,61 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+variables:
+  # Define the components of the version number. SemVer rules should be used to determine when to update.
+  transportPackageMajorVersion: 3
+  transportPackageMinorVersion: 0
+  transportPackagePatchVersion: 0
+  versionRelease: $[format('{0}.{1}.{2}', variables['transportPackageMajorVersion'], variables['transportPackageMinorVersion'], variables['transportPackagePatchVersion'])]
+  versionDate: $[format('{0:yyMMdd}', pipeline.startTime)]
+  versionDate_YYMM: $[format('{0:yyMM}', pipeline.startTime)]
+  versionPrerelease: $[counter(variables['versionDate'], 0)]
+  versionFinal: $[format('{0}-{1}.{2}.{3}{4}', variables['versionRelease'], variables['VersionTag'], variables['versionDate'], variables['versionPrerelease'], variables['PipelineSuffix'])]
+
+  # This 'coalesce' pattern allows the yml to define a default value for a variable but allows the value to be overridden at queue time.
+  # E.g. '_privateIXPNupkgVersion' defaults to empty string, but if 'privateIXPNupkgVersion' is set at queue time that value will be used.
+
+  _privateIXPNupkgVersion: $[coalesce(variables.privateIXPNupkgVersion, '')]
+  _privateCsWinRTNupkgVersion: $[coalesce(variables.privateCsWinRTNupkgVersion, '')]
+  _dotnetSdkVersion: $[coalesce(variables.dotnetSdkVersion, '')]
+  _dotnetSdkChannel: $[coalesce(variables.dotnetSdkChannel, '')]
+  _dotnetSdkQuality: $[coalesce(variables.dotnetSdkQuality,'')]
+  _dotnetRuntimeDownloadUrlx86: $[coalesce(variables.dotnetRuntimeDownloadUrlx86,'')]
+  _dotnetRuntimeDownloadUrlx64: $[coalesce(variables.dotnetRuntimeDownloadUrlx64,'')]
+
+  taefQuery: $[coalesce(variables.customTaefQuery, '')]
+  _testExecutionMultiplier: $[coalesce(variables.testExecutionMultiplier, '1')]
+  _runIgnoredTests: $[coalesce(variables.runIgnoredTests, '0')]
+  _useBuildOutputFromPipeline: $[coalesce(variables.useBuildOutputFromPipeline, variables['System.DefinitionId'] )]
+  _useBuildOutputFromBuildId: $[coalesce(variables.useBuildOutputFromBuildId, variables['Build.BuildId'] )]
+
+  # By default we use the VS install from the build machine.
+  _enableVsBuildTools: $[coalesce(variables.enableVsBuildTools, 'false' )]
+  #Visual Studio version to install. Options include: {BuildTools169, Latest16x, Release17x, Preview17x}
+  _VsVersionToInstall: $[coalesce(variables.VsVersionToInstall,'Release17x')]
+  _buildToolsDirectory: $[replace(replace(lower(variables._enableVsBuildTools),
+    'true','$(Build.SourcesDirectory)\.buildtools'),
+    'false','C:\Program Files\Microsoft Visual Studio\2022\Enterprise')]
+  _buildToolsInstallLogsDirectory: $[replace(replace(lower(variables._enableVsBuildTools),
+    'true','$(Build.SourcesDirectory)\msbuild-install-logs'),
+    'false','')]
+
+  # Convert the dotNetFrameworkVersion variable to the parameter passed to init.cmd to specify what .NET version to target.
+  # Can be blank, and init.cmd will use its default behavior of targeting .NET 5.  Possible values for dotNetFrameworkVersion are "net5","net6" or "net7".
+  _dotNetFrameworkVersionInitParam: $[lower(coalesce(variables.dotNetFrameworkVersion, ''))]
+
+  rerunPassesRequiredToAvoidFailure: 5
+
+  # Pipeline image defaults
+  WindowsContainerImage: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
+  Codeql.Enabled: true #  CodeQL once every 3 days on the default branch for all language
+
+  # Native compiler version override for win undock. The two values below are for Ge.
+  # Source of compiler override package metadata.
+  compilerOverridePackageName: "DevDiv.rel.LKG19.VCTools"
+  # Use the following corresponding version string instead of the above when calling nuget install directly.
+  compilerOverrideNupkgVersion: "19.44.35215100"
+
+# Pipeline variables that can be set at queue time:
+#   customTaefQuery: Optional: run a subset of the tests
+#   useBuildOutputFromBuildId: Optional: re-use build output from a previous run
+#   useBuildOutputFromPipeline: Optional: the id of the pipeline of the build specified in 'useBuildOutputFromBuildId'

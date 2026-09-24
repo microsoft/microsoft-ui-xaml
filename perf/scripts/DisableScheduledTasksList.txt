@@ -1,0 +1,18 @@
+delete,\Microsoft\Windows\Defrag\ScheduledDefrag
+delete,\Microsoft\Windows\Customer Experience Improvement Program\Consolidator
+delete,\Microsoft\Windows\Application Experience\ProgramDataUpdater
+delete,\Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector
+delete,\Microsoft\Windows\Power Efficiency Diagnostics\AnalyzeSystem
+delete,\Microsoft\Windows\Sysmain\HybridDriveCachePrepopulate
+disable,\Microsoft\Windows\SystemRestore\SR
+disable,\Microsoft\Windows\Maintenance\WinSAT
+disable,\Microsoft\Windows\Time Synchronization\SynchronizeTime
+disable,\Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser
+disable,\Microsoft\Windows\InstallService\ScanForUpdates
+disable,\Microsoft\Windows\InstallService\ScanForUpdatesAsUser
+disable,\Microsoft\Windows\InstallService\SmartRetry
+disable,\Microsoft\Windows\InstallService\WakeUpAndContinueUpdates
+disable,\Microsoft\Windows\InstallService\WakeUpAndScanForUpdates
+disable,\Microsoft\Windows\Device Information\Device
+disable,\Microsoft\Windows\Servicing\StartComponentCleanup
+disable,\Microsoft\Windows\Windows Error Reporting\QueueReporting

@@ -94,6 +94,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(ReplaceResourceUpdatesCodeThemeResourceBinding)
+                TEST_METHOD_PROPERTY(L"Description", L"Verifies a theme binding installed from code via FrameworkElement.SetThemeResourceBinding registers a resource-graph dependency (like markup {ThemeResource}) so Hot Reload's ReplaceResource updates it live, repeatedly.")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(ReplaceLanguagePrimitives)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that we can replace language primitives")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")

@@ -204,6 +204,6 @@
     <Error Condition="Exists('$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.props'))" />
   </Target>
   <!-- Building in Visual Studio causes it to call targets on dependent projects that may not exist.
-       Adding dummy targets to those projects makes Visual Studio happy. -->
+       Adding placeholder targets to those projects makes Visual Studio happy. -->
   <Target Name="ResolveNuGetPackageAssets" />
 </Project>

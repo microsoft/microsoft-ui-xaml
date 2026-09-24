@@ -44,7 +44,7 @@
                   <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
                     <Visual Tag="ContentVisual" />
                     <wucSpriteVisual SizeX="100" SizeY="100">
-                      <SurfaceBrush Stretch="Uniform" Transform="Identity" Surface="1380249451" />
+                      <SurfaceBrush Stretch="Uniform" Transform="Identity" Surface="598127243" />
                     </wucSpriteVisual>
                   </Visual>
                 </Visual>

@@ -132,6 +132,9 @@
     <ClInclude Include="customTypes\UserControlWithUnresolveableStaticResource.xaml.h">
       <DependentUpon>customTypes\UserControlWithUnresolveableStaticResource.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="customTypes\RootCustomResourceDialog.xaml.h">
+      <DependentUpon>customTypes\RootCustomResourceDialog.xaml</DependentUpon>
+    </ClInclude>
     <ClInclude Include="customTypes\XDeferCustomControl.h">
       <DependentUpon>customTypes\DummyIdlForInclusionInXamlTypeinfo.idl</DependentUpon>
     </ClInclude>
@@ -210,6 +213,7 @@
     <ClCompile Include="customTypes\ParserTests.CustomButton.cpp" />
     <ClCompile Include="customTypes\ParserTests_CustomTypes.xaml.cpp" />
     <ClCompile Include="customTypes\UserControlWithUnresolveableStaticResource.xaml.cpp" />
+    <ClCompile Include="customTypes\RootCustomResourceDialog.xaml.cpp" />
     <ClCompile Include="customTypes\XDeferCustomControl.cpp" />
     <ClCompile Include="customTypes\XDeferCustomPageEvents.xaml.cpp" />
     <ClCompile Include="customTypes\XDeferCustomPageNested.xaml.cpp" />
@@ -255,6 +259,7 @@
     <Page Include="customTypes\Oski.xaml" />
     <Page Include="customTypes\ParserTests_CustomTypes.xaml" />
     <Page Include="customTypes\UserControlWithUnresolveableStaticResource.xaml" />
+    <Page Include="customTypes\RootCustomResourceDialog.xaml" />
     <Page Include="customTypes\UserControlWithUnresolveableStaticResource.ResourceDictionary.xaml" />
     <Page Include="customTypes\XDeferCustomPageEvents.xaml" />
     <Page Include="customTypes\XDeferCustomPageNested.xaml" />

@@ -18,9 +18,6 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="XamlMember.cpp" />
-    <ClCompile Include="XamlType.cpp" />
-    <ClCompile Include="SharedHelpers.cpp" />
     <ClCompile Include="MUXControlsFactory.cpp" />
     <ClCompile Include="XamlMetadataProvider.cpp" />
     <ClCompile Include="DoubleUtil.cpp" />
@@ -43,8 +40,6 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="XamlMetadataProvider.h" />
-    <ClInclude Include="XamlMember.h" />
-    <ClInclude Include="XamlType.h" />
     <ClInclude Include="..\inc\BuildMacros.h">
       <Filter>inc</Filter>
     </ClInclude>

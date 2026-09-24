@@ -43,10 +43,15 @@
         <ClCompile Include="..\HWRedirectedCompTreeNodeWinRT.cpp"/>
         <ClCompile Include="..\HWWindowedPopupCompTreeNodeWinRT.cpp"/>
         <ClCompile Include="..\DCompTreeHost.cpp"/>
+        <ClCompile Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\WucVisualTreeProfiler.cpp"/>
         <ClCompile Include="..\OfferTracker.cpp"/>
         <ClCompile Include="..\DCompPropertyChangedListener.cpp"/>
         <ClCompile Include="..\SharedTransitionAnimations.cpp"/>
         <ClCompile Include="..\PropertyTransitions.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ClInclude Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\inc\WucVisualTreeProfiler.h"/>
     </ItemGroup>
 
     <ItemGroup>

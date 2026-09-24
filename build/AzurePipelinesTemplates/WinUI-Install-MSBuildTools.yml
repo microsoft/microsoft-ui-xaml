@@ -1,0 +1,44 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  msbuildInstallDir: 'c:\.buildtools'
+  pipelineKind: ''
+
+steps:
+  - script: |
+      if exist ${{ parameters.msbuildInstallDir }} rmdir /s /q ${{ parameters.msbuildInstallDir }}
+    condition: eq(variables._enableVsBuildTools, 'true')
+    displayName: Remove existing VS build tools directories
+
+  - ${{ if eq(parameters.pipelineKind, 'Preview') }}:
+    - task: powershell@2
+      displayName: 'Install the VS Preview build tools'
+      condition: and(Succeeded(), eq(variables._enableVsBuildTools, 'true'))
+      inputs:
+        targetType: filePath
+        filePath: $(Build.SourcesDirectory)\scripts\init\Initialize-InstallMSBuild.ps1
+        arguments: '-installDir "${{ parameters.msbuildInstallDir }}" -logsDir "$(ob_outputDirectory)\MSBuildToolLogs" -ignoreInstalledVS -VsVersionToInstall $(_VsVersionToInstall)'
+
+  - ${{ if ne(parameters.pipelineKind, 'Preview') }}:
+    - task: powershell@2
+      displayName: 'Install the VS build tools'
+      condition: and(Succeeded(), eq(variables._enableVsBuildTools, 'true'))
+      inputs:
+        targetType: filePath
+        filePath: $(Build.SourcesDirectory)\scripts\init\Initialize-InstallMSBuild.ps1
+        arguments: '-installDir "${{ parameters.msbuildInstallDir }}" -logsDir "$(ob_outputDirectory)\MSBuildToolLogs" -ignoreInstalledVS'
+
+  - task: powershell@2
+    displayName: 'Update installed VS'
+    condition: and(Succeeded(), ne(variables._enableVsBuildTools, 'true'))
+    inputs:
+      targetType: filePath
+      filePath: $(Build.SourcesDirectory)\scripts\init\Initialize-InstallMSBuild.ps1
+      arguments: '-installDir "${{ parameters.msbuildInstallDir }}" -logsDir "$(ob_outputDirectory)\MSBuildToolLogs"'
+
+  - task: CmdLine@2
+    displayName: Add the VS build tools to the path
+    condition: and(Succeeded(), eq(variables._enableVsBuildTools, 'true'))
+    inputs:
+      script: |
+        $(Build.SourcesDirectory)\scripts\init\SetMSBuildVars.cmd ${{ parameters.msbuildInstallDir }}

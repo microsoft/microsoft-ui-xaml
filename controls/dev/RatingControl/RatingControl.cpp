@@ -127,12 +127,34 @@ double RatingControl::CoerceValueBetweenMinAndMax(double value)
     }
     else if (value <= 1.0)
     {
-        value = 1.0;
+        value = 1.0; // The minimum valid, non-sentinel Value is 1.0.
     }
     else if (value > MaxRating())
     {
         value = MaxRating();
     }
+
+    return value;
+}
+
+double RatingControl::CoercePlaceholderValueBetweenMinAndMax(double value)
+{
+    // MaxRating can be in the middle of coercion (temporarily invalid) when this is called.
+    // Clamp against an effective max of at least 1 to avoid incorrectly forcing the sentinel.
+    const int effectiveMaxRating = std::max(1, MaxRating());
+
+    if (value < 0.0) // Force all negative values to the sentinel "unset" value.
+    {
+        value = c_noValueSetSentinel;
+    }
+    else if (value > effectiveMaxRating)
+    {
+        value = effectiveMaxRating;
+    }
+
+    // Unlike Value, PlaceholderValue is just a hint to display (e.g. an average
+    // rating), so fractional/zero values between 0 and 1 are valid and should
+    // be preserved instead of being forced up to 1.0.
 
     return value;
 }
@@ -605,6 +627,17 @@ void RatingControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
         auto value = winrt::unbox_value<int>(args.NewValue());
         auto coercedValue = std::max(1, value);
 
+        if (coercedValue != value)
+        {
+            // Commit the corrected MaxRating first, before touching Value/PlaceholderValue.
+            // This re-enters OnPropertyChanged with the corrected MaxRating already committed,
+            // so MaxRating() is guaranteed valid by the time Value/PlaceholderValue are
+            // re-coerced below (avoiding a transient invalid/negative MaxRating being read
+            // during layout while Value/PlaceholderValue are updated).
+            SetValue(property, winrt::box_value(coercedValue));
+            return;
+        }
+
         if (Value() > coercedValue)
         {
             Value(coercedValue);
@@ -614,17 +647,14 @@ void RatingControl::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
         {
             PlaceholderValue(coercedValue);
         }
-
-        if (coercedValue != value)
-        {
-            SetValue(property, winrt::box_value(coercedValue));
-            return;
-        }
     }
     else if (property == s_PlaceholderValueProperty || property == s_ValueProperty)
     {
         const auto value = winrt::unbox_value<double>(args.NewValue());
-        const auto coercedValue = CoerceValueBetweenMinAndMax(value);
+        const auto coercedValue = (property == s_PlaceholderValueProperty) ?
+            CoercePlaceholderValueBetweenMinAndMax(value) :
+            CoerceValueBetweenMinAndMax(value);
+
         if (value != coercedValue)
         {
             SetValue(property, winrt::box_value(coercedValue));

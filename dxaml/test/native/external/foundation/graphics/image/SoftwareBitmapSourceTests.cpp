@@ -1383,7 +1383,7 @@ void SoftwareBitmapSourceTests::WriteableBitmapSetSource()
     VERIFY_IS_NOT_NULL(rootGrid);
 
     LOG_OUTPUT(L"Getting stream of image");
-    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"barcelona.jpg");
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"barcelona.png");
 
     LOG_OUTPUT(L"Creating custom BitmapSource with SetStream");
     RunOnUIThread([&]()
@@ -1453,7 +1453,7 @@ void SoftwareBitmapSourceTests::WriteableBitmapSetSource()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly, L"Buffer2");
 
     LOG_OUTPUT(L"Getting stream of image");
-    bitmapStream = LoadBinaryFile(GetResourcesPath() + L"barcelona.jpg");
+    bitmapStream = LoadBinaryFile(GetResourcesPath() + L"barcelona.png");
 
     LOG_OUTPUT(L"Overwrite different pixels from Buffer with pixels from SetSource");
     RunOnUIThread([&]()

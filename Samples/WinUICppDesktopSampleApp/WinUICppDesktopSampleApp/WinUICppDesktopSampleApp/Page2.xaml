@@ -1,0 +1,16 @@
+﻿<local:Page1
+    x:Class="WinUICppDesktopSampleApp.Page2"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinUICppDesktopSampleApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <TextBlock x:Uid="Page2_TitleTextBlock" AutomationProperties.Name="titleTextBlock" FontSize="14" FontWeight="Bold"/>
+        <Button x:Name="navigationButton" x:Uid="Page2_navigationButton" AutomationProperties.Name="navigationButton" Click="navigationButton_Click" />
+        <TextBox x:Uid="Page2_TextBox" AutomationProperties.Name="textBox"/>
+        <TextBlock Text="x:Load'd TextBlock" x:Load="{x:Bind FooBool}" x:Name="xLoadTextBlock"/>
+    </StackPanel>
+</local:Page1>

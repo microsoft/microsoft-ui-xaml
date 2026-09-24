@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Import Project="PackageVersions.props" />
+
+  <PropertyGroup>
+    <!-- In case if there's no ProjectName specified - set one, but be careful.
+         If you run into problems with conflicts, make sure packaged app's MSBuildProjectName
+         is not the same as the packaging project's. -->
+
+    <ProjectName Condition="$(ProjectName) == ''">$(MSBuildProjectName)</ProjectName>
+  </PropertyGroup>
+
+  <Import Project="Paths.props" />
+
+  <PropertyGroup>
+    <AppxPackageDirOverride>$(AppxPackageDir)</AppxPackageDirOverride>
+  </PropertyGroup>
+
+  <Import Project="AppVersion.props" />
+  <Import Project="Packaging.props" />
+
+  <PropertyGroup>
+    <DefaultLanguage>en-US</DefaultLanguage>
+  </PropertyGroup>
+
+  <Import Project="TargetPlatformVersions.props" />
+
+  <Import Project="Cpp-ProjectConfigurations.props" />
+
+</Project>

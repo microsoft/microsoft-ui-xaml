@@ -1,0 +1,106 @@
+# This pipeline can run against any branch.
+# It publishes to the internal WinUI-SourceDrop-Staging repo instead of the public Github repo.
+
+trigger: none
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+- name: buildNumber
+  displayName: The build number corresponding to the source code snapshot, e.g. "20240203.0"
+  type: string
+- name: targetRepositoryBranchName
+  displayName: Name of branch in target repository to push commit to
+  type: string
+- name: targetRepositoryTagName
+  displayName: Tag to associate with commit in target repository
+  type: string
+- name: targetRepositorySeedCommittish
+  type: string
+  default: " "
+  displayName: Committish to seed the target repository branch (optional)
+- name: targetRepositorySubdirectory
+  displayName: Subdirectory to mirror source code into (optional)
+  type: string
+  default: "src"
+- name: mergeToMain
+  displayName: Merge target branch to main?
+  type: string
+  default: automatic
+  values:
+  - automatic
+  - always
+  - never
+- name: skipSourceMirroring
+  displayName: Skip source mirroring. Useful if source has been successfully published by a previous run but public symbols were not.
+  type: boolean
+  default: false
+- name: useTriggeringBranchExclusions
+  displayName: Use the triggering branch's exclusions file instead of the version corresponding to the source committish
+  type: boolean
+  default: false
+- name: publishPublicSymbols
+  displayName: Publish Public Symbols for Testing
+  type: boolean
+  default: false
+
+variables:
+- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
+- template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
+
+name: $[format('{0:yyyyMMdd}-{1}', pipeline.startTime, variables['versionFinal'])]
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+    - repository: sourceRepository
+      type: git
+      name: WinUI/microsoft-ui-xaml-lift
+      ref: refs/heads/main
+    - repository: targetRepository
+      type: git
+      name: WinUI/WinUI-SourceDrop-Staging
+      ref: refs/heads/main
+    - repository: WindowsAppSDKConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+    - repository: WindowsAppSDKVersionConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+  pipelines:
+    - pipeline: sourcePipeline
+      source: \OneBranch\microsoft-ui-xaml-lift\WinUI-Xaml-Official (OneBranch)
+      version: ${{ parameters.buildNumber }}
+      trigger: none
+
+extends:
+  template: v2/Microsoft.NonOfficial.yml@templates
+  parameters:
+    featureFlags:
+      EnableCDPxPAT: false
+      ensureArtifactsDirExists: true
+      WindowsHostVersion:
+        Version: 2022
+        Network: KS3
+    platform:
+      name: 'windows_undocked' # windows undocked
+    git:
+      submodules: false
+      persistCredentials: true
+
+    stages:
+    - template: AzurePipelinesTemplates\WinUI-MirrorSourceToExternalRepo-Stage.yml@self
+      parameters:
+        targetRepositoryBranchName: ${{ parameters.targetRepositoryBranchName }}
+        targetRepositoryTagName: ${{ parameters.targetRepositoryTagName }}
+        targetRepositorySeedCommittish: ${{ parameters.targetRepositorySeedCommittish }}
+        targetRepositorySubdirectory: ${{ parameters.targetRepositorySubdirectory }}
+        mergeToMain: ${{ parameters.mergeToMain }}
+        skipSourceMirroring: ${{ parameters.skipSourceMirroring }}
+        useTriggeringBranchExclusions: ${{ parameters.useTriggeringBranchExclusions }}
+        publishPublicSymbols: ${{ parameters.publishPublicSymbols }}

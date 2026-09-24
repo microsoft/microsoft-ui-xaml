@@ -1,0 +1,8 @@
+namespace XAMLPerf_HelloWorldApp_Cpp_MUX
+{
+    [default_interface]
+    runtimeclass MainWindow : Microsoft.UI.Xaml.Window
+    {
+        MainWindow();
+    }
+}

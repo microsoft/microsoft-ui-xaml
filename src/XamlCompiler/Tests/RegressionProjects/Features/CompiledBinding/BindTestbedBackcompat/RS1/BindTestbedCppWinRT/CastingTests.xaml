@@ -1,0 +1,92 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl x:Class="BindTestbed.CastingTests"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbed"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Tag="Foo"
+    >
+
+    <UserControl.DataContext>
+        <local:CastingModel Username="Robert" />
+    </UserControl.DataContext>
+
+    <ScrollViewer>
+        <StackPanel Margin="30" >
+
+            <TextBlock Style="{StaticResource Section}" Text="Casts" />
+            <TextBlock Style="{StaticResource Note}" Text="None should update; all should build" />
+
+            <!-- object to string -->
+            <TextBlock Text="{x:Bind (x:String)Tag, Mode=OneTime}" />
+            <TextBlock Text="{x:Bind (x:String)Tag, Mode=OneWay}" />
+            <!--<TextBlock Text="{x:Bind (x:String)Foo, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- object to local with property -->
+            <TextBlock Text="{x:Bind ((local:CastingModel)DataContext).Username, Mode=OneTime}" />
+            <TextBlock Text="{x:Bind ((local:CastingModel)DataContext).Username, Mode=OneWay}" />
+            <TextBlock Text="{x:Bind ((local:CastingModel)DataContext).Username, Mode=TwoWay}" />
+
+            <!-- bool to bool --><!-- of course these should work -->
+            <TextBlock Text="bool from bool" IsTapEnabled="{x:Bind ((local:CastingModel)DataContext).IsChecked, Mode=OneTime}" />
+            <TextBlock Text="bool from bool" IsTapEnabled="{x:Bind ((local:CastingModel)DataContext).IsChecked, Mode=OneWay}" />
+            <TextBlock Text="bool from bool" IsTapEnabled="{x:Bind ((local:CastingModel)DataContext).IsChecked, Mode=TwoWay}" />
+
+            <!-- set bool? from bool -->
+            <CheckBox Content="bool? from bool" IsChecked="{x:Bind ((local:CastingModel)DataContext).IsChecked, Mode=OneTime}" />
+            <CheckBox Content="bool? from bool" IsChecked="{x:Bind ((local:CastingModel)DataContext).IsChecked, Mode=OneWay}" />
+            <CheckBox Content="bool? from bool" IsChecked="{x:Bind ((local:CastingModel)DataContext).IsChecked, Mode=TwoWay}" />
+
+            <!-- set bool from bool? -->
+            <TextBlock Text="bool from bool?" IsTapEnabled="{x:Bind (x:Boolean)((local:CastingModel)DataContext).IsVisibleNullable, Mode=OneTime}" />
+            <TextBlock Text="bool from bool?" IsTapEnabled="{x:Bind (x:Boolean)((local:CastingModel)DataContext).IsVisibleNullable, Mode=OneWay}" />
+            <!--<TextBlock Text="bool from bool?" IsTapEnabled="{x:Bind (x:Boolean)((local:CastingModel)DataContext).IsVisibleNullable, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- bool to visibility without cast -->
+            <TextBlock Text="Visibility from bool" Visibility="{x:Bind ((local:CastingModel)DataContext).IsVisible, Mode=OneTime}" />
+            <TextBlock Text="Visibility from bool" Visibility="{x:Bind ((local:CastingModel)DataContext).IsVisible, Mode=OneWay}" />
+            <!--<TextBlock Text="Visibility from bool" Visibility="{x:Bind ((local:CastingModel)DataContext).IsVisible, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- bool to visibility with cast -->
+            <TextBlock Text="Visibility from bool" Visibility="{x:Bind (Visibility)((local:CastingModel)DataContext).IsVisible, Mode=OneTime}" />
+            <TextBlock Text="Visibility from bool" Visibility="{x:Bind (Visibility)((local:CastingModel)DataContext).IsVisible, Mode=OneWay}" />
+            <!--<TextBlock Text="Visibility from bool" Visibility="{x:Bind (Visibility)((local:CastingModel)DataContext).IsVisible, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- bool? to visibility without cast -->
+            <TextBlock Text="Visibility from bool?" Visibility="{x:Bind ((local:CastingModel)DataContext).IsVisibleNullable, Mode=OneTime}" />
+            <TextBlock Text="Visibility from bool?" Visibility="{x:Bind ((local:CastingModel)DataContext).IsVisibleNullable, Mode=OneWay}" />
+            <!--<TextBlock Text="Visibility from bool?" Visibility="{x:Bind ((local:CastingModel)DataContext).IsVisibleNullable, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- bool? to visibility with cast -->
+            <TextBlock Text="Visibility from bool?" Visibility="{x:Bind (Visibility)((local:CastingModel)DataContext).IsVisibleNullable, Mode=OneTime}" />
+            <TextBlock Text="Visibility from bool?" Visibility="{x:Bind (Visibility)((local:CastingModel)DataContext).IsVisibleNullable, Mode=OneWay}" />
+            <!--<TextBlock Text="Visibility from bool?" Visibility="{x:Bind (Visibility)((local:CastingModel)DataContext).IsVisibleNullable, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- visibility to bool -->
+            <TextBlock Text="bool from Visbility" IsTapEnabled="{x:Bind (x:Boolean)((local:CastingModel)DataContext).VisibilityValue, Mode=OneTime}" />
+            <TextBlock Text="bool from Visbility" IsTapEnabled="{x:Bind (x:Boolean)((local:CastingModel)DataContext).VisibilityValue, Mode=OneWay}" />
+            <!--<TextBlock Text="bool from Visbility" IsTapEnabled="{x:Bind (x:Boolean)((local:CastingModel)DataContext).VisibilityValue, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- visibility to bool? -->
+            <CheckBox Content="bool? from Visibility" IsChecked="{x:Bind (x:Boolean)((local:CastingModel)DataContext).VisibilityValue, Mode=OneTime}" />
+            <CheckBox Content="bool? from Visibility" IsChecked="{x:Bind (x:Boolean)((local:CastingModel)DataContext).VisibilityValue, Mode=OneWay}" />
+            <!--<CheckBox Content="bool? from Visibility" IsChecked="{x:Bind (x:Boolean)((local:CastingModel)DataContext).VisibilityValue, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- double to int -->
+            <Button Content="int from double" TabIndex="{x:Bind (x:Int32)((local:CastingModel)DataContext).DoubleVal, Mode=OneTime}" />
+            <Button Content="int from double" TabIndex="{x:Bind (x:Int32)((local:CastingModel)DataContext).DoubleVal, Mode=OneWay}" />
+            <!--<Button Content="int from double" TabIndex="{x:Bind (x:Int32)((local:CastingModel)DataContext).DoubleVal, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- int to double -->
+            <TextBlock Text="double from int" FontSize="{x:Bind ((local:CastingModel)DataContext).IntVal, Mode=OneTime}" />
+            <TextBlock Text="double from int" FontSize="{x:Bind ((local:CastingModel)DataContext).IntVal, Mode=OneWay}" />
+            <TextBlock Text="double from int" FontSize="{x:Bind ((local:CastingModel)DataContext).IntVal, Mode=TwoWay}" />
+
+            <!-- yes, functions work too -->
+            <TextBlock Text="{x:Bind ((local:CastingModel)DataContext).CombineStringWithInt(((local:CastingModel)DataContext).Prefix, (x:Int32)((local:CastingModel)DataContext).Postfix)}" />
+
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl>

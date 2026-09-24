@@ -1,0 +1,12 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Application
+    x:Class="CustomAppXaml.CustomApp"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="GreenBrush">Green</SolidColorBrush>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

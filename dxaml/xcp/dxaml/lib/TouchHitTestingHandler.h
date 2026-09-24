@@ -15,9 +15,11 @@ namespace DirectUI
         _Check_return_ HRESULT Register(_In_ wuc::ICoreWindow* pCoreWindow);
         _Check_return_ HRESULT Unregister(_In_ wuc::ICoreWindow* pCoreWindow);
 
+        /*
         static _Check_return_ HRESULT TouchHitTesting(
             _In_opt_ CUIElement* subtreeRootElement,
             _In_ mui::ITouchHitTestingEventArgs* pArgs);
+        */
 
     private:
         using EvaluateProximityToRectFunction = std::function<HRESULT(wf::Rect, mui::ProximityEvaluation*)>;
@@ -48,7 +50,7 @@ namespace DirectUI
             _In_ const TouchHitTestingInputs& inputs,
             _Out_ TouchHitTestingOutputs& outputs);
 
-        _Check_return_ HRESULT OnCoreWindowTouchHitTesting(_In_ wuc::ICoreWindow* pSender, _In_ wuc::ITouchHitTestingEventArgs* pArgs);
+        //_Check_return_ HRESULT OnCoreWindowTouchHitTesting(_In_ wuc::ICoreWindow* pSender, _In_ wuc::ITouchHitTestingEventArgs* pArgs);
 
         _Check_return_ static HRESULT UpdateBestEval(
             _In_ const mui::ProximityEvaluation& currentEval,

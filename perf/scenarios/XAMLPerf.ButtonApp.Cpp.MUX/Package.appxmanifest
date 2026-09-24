@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
+  <Identity
+    Name="XAMLPerf.ButtonApp.Cpp.MUX"
+    Publisher="CN=WinUITest"
+    Version="1.0.0.0" />
+  <mp:PhoneIdentity PhoneProductId="ecafafd1-c9af-4214-8b7a-1f4ca191d2a1" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <Properties>
+    <DisplayName>XAMLPerf.ButtonApp.Cpp.MUX</DisplayName>
+    <PublisherDisplayName>microsoft</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.18362.0" />
+  </Dependencies>
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="XAMLPerf_ButtonApp_Cpp_MUX.App">
+      <uap:VisualElements DisplayName="XAMLPerf.ButtonApp.Cpp.MUX" Description="Project for a single page C++/WinRT Universal Windows Platform (UWP) app with no predefined layout"
+        Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" BackgroundColor="transparent">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png">
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+  <Capabilities>
+    <Capability Name="internetClient" />
+  </Capabilities>
+</Package>

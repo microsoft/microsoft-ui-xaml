@@ -152,6 +152,17 @@ goto:parseArgs
 
 :doneParsingArgs
 
+rem Determine whether this is an internal (ADO) or OSS (public GitHub) build and expose it
+rem to the build scripts (e.g. PostInit.ps1). The .azuredevops folder exists only in the
+rem internal repo (it is excluded from the public mirror), matching the IsInternalWinUIBuild
+rem MSBuild property in eng\Versions.props. Use explicit true/false (never empty) so
+rem init.ps1's Invoke-CmdScript propagates the value.
+if exist "%RepoRoot%\.azuredevops" (
+    call :SetEnviromentVariable IsInternalWinUIBuild true
+) else (
+    call :SetEnviromentVariable IsInternalWinUIBuild false
+)
+
 rem If /envcheck is specified, verify that a full init has been run at least once.
 rem Without a prior full init, required tools and NuGet packages won't be available.
 if "%EnvCheck%"=="true" (
@@ -223,6 +234,25 @@ if "%fre%"=="1" if not "%_noPgo%"=="1" if not "%ARM64EC%"=="1" (
     call:SetEnviromentVariable PGOBuildMode Optimize
 )
 set _noPgo=
+
+rem Replace a blank Git setting with the word false. Both mean "off," but false
+rem survives being passed between build processes.
+rem Agent hosts can turn Git's file monitoring off using a blank value. When
+rem MSBuild starts extra workers, that blank value can disappear. The setting's
+rem name remains, but its value is missing, so Git refuses to run and breaks the
+rem build even if the code is fine.
+rem Find that specific setting (core.fsmonitor) and replace a blank or missing
+rem value with false. The loops find the right entry because its number can vary.
+rem This only repairs the environment passed to build processes. It does not
+rem change WinUI behavior or edit saved Git settings. Leave other settings and
+rem any nonblank value alone.
+if defined GIT_CONFIG_COUNT for /f "tokens=1,* delims==" %%A in ('set GIT_CONFIG_KEY_ 2^>nul') do (
+    if /i "%%B"=="core.fsmonitor" (
+        for /f "tokens=4 delims=_" %%I in ("%%A") do (
+            if not defined GIT_CONFIG_VALUE_%%I call :SetEnviromentVariable GIT_CONFIG_VALUE_%%I false
+        )
+    )
+)
 
 if "%DevEnvDir%" == "" goto :NeedDevCmd
 where msbuild >nul 2>&1

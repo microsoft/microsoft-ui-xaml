@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{8D7F3E6C-2A8E-4A11-9C5B-7E4C0A2D4E11}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);SORTINDICATOR_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SortIndicator.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\SortIndicator.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SortIndicatorAutomationPeer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\SortIndicator.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SortIndicator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SortIndicatorAutomationPeer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)SortIndicator.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SortIndicator_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <!-- No separate Perf2026 visual; reuse the same pages. -->
+    <Page Include="$(MSBuildThisFileDirectory)SortIndicator.xaml">
+      <Version>RS1</Version>
+      <Type>StylePerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SortIndicator_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)SortIndicator.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)SortIndicatorAutomationPeer.idl" />
+  </ItemGroup>
+</Project>

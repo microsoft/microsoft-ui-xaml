@@ -270,7 +270,7 @@ IFACEMETHODIMP HyperlinkAutomationPeer::GetBoundingRectangleCore(_Out_ wf::Rect*
     ctl::ComPtr<xaml_docs::IHyperlink> spOwner;
     IFC_RETURN(get_Owner(spOwner.GetAddressOf()));
 
-    XRECTF rect;
+    XRECTF rect = {};
     IFC_RETURN(pCore->GetTextElementBoundingRect(spOwner.Cast<Hyperlink>()->GetHandle(), &rect));
 
     if (XamlOneCoreTransforms::IsEnabled())
@@ -362,6 +362,25 @@ IFACEMETHODIMP HyperlinkAutomationPeer::IsOffscreenCore(_Out_ BOOLEAN* returnVal
     {
         CAutomationPeer* pContainerAP = pContainingTextElement->OnCreateAutomationPeer();
         IFC_RETURN(static_cast<CFrameworkElementAutomationPeer*>(pContainerAP)->IsOffscreenHelper(false /* ignoreClippingOnScrollContentPresenters */, returnValue));
+
+        // Even when the containing text element is on-screen, the inline hyperlink range itself may be
+        // clipped out of view (e.g. scrolled below a ScrollViewer's viewport). In that case the hyperlink's
+        // clipped bounding rectangle collapses to an empty rect, which matches what GetBoundingRectangleCore
+        // reports. Reporting IsOffscreen=false while the bounding rectangle is empty produces an inconsistent
+        // state that fails accessibility validation ("An on-screen element must not have a null
+        // BoundingRectangle property."), so treat an empty clipped bounds as off-screen.
+        if (!(*returnValue))
+        {
+            CCoreServices *pCore = static_cast<CCoreServices*>(DXamlCore::GetCurrent()->GetHandle());
+            XRECTF rect = {};
+            IFC_RETURN(pCore->GetTextElementBoundingRect(pHyperlink, &rect, false /* ignoreClip */));
+
+            const bool hasEmptyBounds = (rect.Width <= 0.0f || rect.Height <= 0.0f);
+            if (hasEmptyBounds)
+            {
+                *returnValue = TRUE;
+            }
+        }
     }
     else
     {

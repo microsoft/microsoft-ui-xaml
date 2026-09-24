@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.Build.NoTargets">
+    
+  <PropertyGroup>
+    <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="Microsoft.WinUI.PGO.props" />
+
+  <PropertyGroup>
+    <PGOHelpersPackageName>Microsoft.Internal.WinUI.PGOHelpers</PGOHelpersPackageName>
+    <PGOHelpersPackageVersion>1.0.0</PGOHelpersPackageVersion>
+    <PGOHelpersPackagePath>$(NugetPackageDirectory)\$(PGOHelpersPackageName)\$(PGOHelpersPackageVersion)</PGOHelpersPackagePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageDownload Include="$(PGOHelpersPackageName)" Version="[$(PGOHelpersPackageVersion)]"/>
+
+    <BinplaceItem Include="$(ProjectRoot)build\WinUITest.cer" Destination="$(TestDependenciesResourcesDestinationPath)" />
+    <BinplaceItem Include="$(PGOVCToolsPath)\pgosweep.exe" Destination="$(TestDependenciesResourcesDestinationPath)" />
+    <BinplaceItem Include="$(PGOVCToolsPath)\pgort140.dll" Destination="$(TestDependenciesResourcesDestinationPath)" />
+    <BinplaceItem Include="$(PGOHelpersPackagePath)\tools\$(BuildPlatform)\**\*" Destination="$(TestDependenciesResourcesDestinationPath)" />
+  </ItemGroup>
+
+</Project>

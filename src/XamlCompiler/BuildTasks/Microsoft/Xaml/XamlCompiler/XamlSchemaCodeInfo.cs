@@ -313,6 +313,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 return null;
             }
 
+            // Properties whose return type is a managed reference (e.g. a C# "ref int"
+            // ref-return property, which reflects as System.Int32&) cannot be represented
+            // in XamlTypeInfo metadata. Emitting typeof(System.Int32&) produces invalid
+            // C#/VB and breaks the build. Such ref-return properties are not usable from
+            // XAML, so skip them entirely.
+            if (duiReturnType.UnderlyingType != null && duiReturnType.UnderlyingType.IsByRef)
+            {
+                return null;
+            }
+
             // Add the Type to the master Member table.
             InternalXamlUserMemberInfo userMember;
             if (TryFindMember(xamlMember.Name, declaringType, out userMember))

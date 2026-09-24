@@ -6,6 +6,8 @@
 #include "RpcClient.h"
 
 #include <Objbase.h> // CoCreateInstance
+#include <map>
+#include <string>
 #include "MockPowerManager.h"
 
 using namespace Microsoft::WRL;
@@ -60,6 +62,13 @@ namespace Private { namespace Infrastructure {
         IFACEMETHOD(RunCommandLine)(_In_ HSTRING commandLine) override;
         IFACEMETHOD(TerminateProcess)(_In_ HSTRING processName) override;
         IFACEMETHOD(get_IsWPF)(_Out_ BOOLEAN* pIsWPF) override;
+
+        IFACEMETHOD(SetImageCompareTolerance)(INT32 tolerance) override;
+        IFACEMETHOD(GetImageCompareTolerance)(INT32* tolerance) override;
+
+        IFACEMETHOD(SetDCompXmlVariable)(HSTRING name, HSTRING value) override;
+        IFACEMETHOD(ClearDCompXmlVariables)() override;
+        IFACEMETHOD(HasDCompXmlVariables)(BOOLEAN* hasVariables) override;
 
         IFACEMETHOD(VerifyMockDCompOutput)(
             mdc::SurfaceComparison surfaceComparison
@@ -340,6 +349,8 @@ namespace Private { namespace Infrastructure {
 
         static const bool sc_enableCompLeakDetection;
         static bool s_isMockDCompDisabledForCompLeakDetection;
+        int m_imageCompareTolerance = 0;
+        std::map<std::wstring, std::wstring> m_dcompXmlVariables;
     }; // class Utilities
 
 } } // namespace Private::Infrastructure

@@ -1,0 +1,37 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+- name: "SourceToTargetBranch"
+  type: object
+  default:
+    main: liftedixp_validation
+
+jobs:
+- job: Sync
+  pool:
+    vmImage: 'windows-2022'
+  strategy:
+    matrix: 
+      ${{ each branches in parameters.SourceToTargetBranch }}:
+        ${{ branches.key }}:
+          SourceBranch: ${{ branches.key }}
+          TargetBranch: ${{ branches.value }}
+  steps:
+  - checkout: self
+    persistCredentials: true
+
+  - task: CmdLine@2
+    inputs:
+      script: |
+        git fetch
+        git checkout $(TargetBranch)
+        git config user.name "reunion-maestro-bot"
+        git config user.email "reunion-maestro-bot@microsoft.com"
+        git pull origin $(SourceBranch)
+
+  - task: CmdLine@2
+    inputs:
+      script: |
+        git push

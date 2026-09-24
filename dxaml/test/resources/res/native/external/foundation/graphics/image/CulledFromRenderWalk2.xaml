@@ -10,7 +10,7 @@
         <RectangleGeometry Rect="0,0,0,0"/>
       </Canvas.Clip>
       <Canvas.Background>
-        <ImageBrush ImageSource="ms-appx:///resources/native/external/foundation/graphics/image/Rainier_444_2048x1536.jpg"/>
+        <ImageBrush ImageSource="ms-appx:///resources/native/external/foundation/graphics/image/rainier_2048x1536.png"/>
       </Canvas.Background>
     </Canvas>
   </Canvas>

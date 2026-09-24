@@ -1,0 +1,77 @@
+# This pipeline will only run against release branches.
+# By default it publishes to the public Github repository.
+
+trigger:
+- main
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+- name: targetRepositorySubdirectory
+  displayName: Subdirectory to mirror source code into (optional)
+  type: string
+  default: " "
+- name: mergeToMain
+  displayName: Merge target branch to main?
+  type: string
+  default: never
+  values:
+  - automatic
+  - always
+  - never
+- name: useTriggeringBranchExclusions
+  displayName: Use the triggering branch's exclusions file instead of the version corresponding to the source committish
+  type: boolean
+  default: false
+
+variables:
+- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
+- template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+    - repository: sourceRepository
+      type: git
+      name: WinUI/microsoft-ui-xaml-lift
+      ref: refs/heads/main
+    - repository: targetRepository
+      endpoint: WinUI
+      type: github
+      name: microsoft/microsoft-ui-xaml
+      ref: refs/heads/main
+    - repository: WindowsAppSDKConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+    - repository: WindowsAppSDKVersionConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+
+extends:
+  template: v2/Microsoft.Official.yml@templates
+  parameters:
+    featureFlags:
+      EnableCDPxPAT: false
+      ensureArtifactsDirExists: true
+      WindowsHostVersion:
+        Version: 2022
+        Network: KS3
+    platform:
+      name: 'windows_undocked' # windows undocked
+    git:
+      submodules: false
+      persistCredentials: true
+
+    stages:
+    - template: AzurePipelinesTemplates\WinUI-PromoteDependencyPackages.yml
+
+    - template: AzurePipelinesTemplates\WinUI-MirrorSourceMainToExternalRepo-Stage.yml@self
+      parameters:
+        targetRepositorySubdirectory: ${{ parameters.targetRepositorySubdirectory }}
+        mergeToMain: ${{ parameters.mergeToMain }}
+        useTriggeringBranchExclusions: ${{ parameters.useTriggeringBranchExclusions }}

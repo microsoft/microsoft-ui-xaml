@@ -969,15 +969,18 @@ CCoreServices::~CCoreServices() noexcept
 
     // Take down the visual tree.
     VERIFYHR(ResetCoreWindowVisualTree());
-    m_inputServices = nullptr;
 
     // Clean this up before the rest of the core as its contents may have
     // the final reference to CDependencyObjects. These will not expect
     // the core to be fully shut down before them.
 
     // End of pre-cleanup
+    ASSERT(m_inputServices != nullptr);
     delete m_pTextCore;
     m_pTextCore = NULL;
+
+    // Reset input services only after the text core teardown above, whose callbacks can re-enter input and deref a null CInputServices.
+    m_inputServices = nullptr;
 
     ReleaseInterface(m_pDeploymentTree);
     if (m_pAllSurfaceImageSources != NULL)
@@ -1570,7 +1573,7 @@ _Check_return_ HRESULT CCoreServices::ClearDefaultLanguageString()
 //
 //------------------------------------------------------------------------
 
-_Check_return_ HRESULT CCoreServices::ResetState()
+_Check_return_ HRESULT CCoreServices::ResetState(bool resetInputServices)
 {
     HRESULT recordHr = S_OK;
 
@@ -1593,7 +1596,10 @@ _Check_return_ HRESULT CCoreServices::ResetState()
     }
 
     m_pMainVisualTree = nullptr;
-    m_inputServices = nullptr;
+    if (resetInputServices)
+    {
+        m_inputServices = nullptr;
+    }
 
     // Release some stuff
 
@@ -4343,10 +4349,10 @@ _Check_return_ HRESULT CCoreServices::Tick(
 
         FAIL_FAST_ASSERT(m_pNWWindowRenderTarget->GetDCompTreeHost() != nullptr);
 
-        // Wait for resource creation to complete and register the callback thread. Otherwise Xaml timelines can't add
-        // completed time events.
+        // Wait for resource creation to complete.
+        // $REVIEW: There are no more DComp animations, so we don't need to wait for D3D resources
+        // for that reason - but more investigation is needed before this wait can be removed.
         IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation());
-        m_pNWWindowRenderTarget->GetDCompTreeHost()->RegisterDCompAnimationCompletedCallbackThread();
 
         HRESULT hrTick = m_pTimeManager->Tick(
             FALSE /* newTimelinesOnly */,
@@ -10157,7 +10163,7 @@ CCoreServices::SimulateDeviceLost(bool resetVisuals, bool resetDManip)
 //------------------------------------------------------------------------------
 void
 CCoreServices::GetDCompDevice(
-    _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+    _Outptr_ IDCompositionDevice2 **ppDCompDevice
     ) const
 {
     ASSERT(m_pNWWindowRenderTarget != nullptr);
@@ -10251,10 +10257,12 @@ HRESULT CCoreServices::ShutdownToIdle()
     m_spXamlSchemaContext.reset();
     m_spXamlNodeStreamCacheManager.reset();
 
-    IFC_RETURN(ResetState());
+    IFC_RETURN(ResetState(false /* resetInputServices */));
 
+    ASSERT(m_inputServices != nullptr);
     delete m_pTextCore;
     m_pTextCore = NULL;
+    m_inputServices = nullptr;
 
     // Proactively release our D3D device lost listener to guarantee we synchronize with any pending callback that might be in-flight.
     ReleaseDeviceLostListener();

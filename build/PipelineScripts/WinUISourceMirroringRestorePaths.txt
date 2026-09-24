@@ -1,0 +1,47 @@
+# Paths in the target repo whose target-branch contents survive the mirror
+# (i.e., are restored via `git checkout --` after robocopy /mir, so the
+# target's version is not overwritten by source).
+#
+# Format: one path per line, relative to the target repo root. `#` comments
+# and blank lines are ignored. Paths are automatically prefixed with
+# $TargetRepositorySubdirectory when the mirror script is invoked with one,
+# so `NuGet.config` here yields `git checkout -- 'src\NuGet.config'` under
+# the legacy `src/`-layout flow without any edits to this file.
+#
+# Consumed by: scripts\MirrorGitRepositoryWithoutHistory.ps1 via its
+# -RestorePathspecsFile parameter (defaulted in
+# AzurePipelinesTemplates\WinUI-MirrorSourceMainToExternalRepo-Stage.yml).
+
+# Source's NuGet.config is excluded from the mirror (it points at internal
+# feeds); the target's own NuGet.config points at the OSS feed and must
+# survive each mirror cycle.
+NuGet.config
+
+# Target-only paths preserved under root-layout (silent no-op under src/-layout).
+specs
+docs\external
+docs\.unbroken_exclusions
+
+# GitHub-only ADO PR validation wrapper. The ADO source repo does not contain
+# this file, so preserve the target branch copy across source mirror syncs.
+build\WinUI-GitHub-PR.yml
+
+# The Samples/WinUIGallery submodule lives on the target (winui3/main) as a gitlink
+# (github.com/microsoft/WinUI-Gallery). robocopy /mir cannot reproduce a submodule
+# gitlink and would purge the empty submodule directory, so `git add --all` would
+# stage its deletion. The source copy stays excluded (see :/Samples/WinUIGallery/ in
+# WinUISourceMirroringExclusions.txt); restoring the target's committed gitlink here
+# preserves the submodule across every mirror cycle. (.gitmodules itself already
+# survives via robocopy's `/xf .gitmodules`.)
+Samples\WinUIGallery
+
+# OSS-curated root docs on winui3/main; matching :(glob,top)*.md exclusion above blocks
+# the source versions so these target versions survive. Note: target's `privacy.md` is
+# lowercase (case-drift from source's `PRIVACY.md`); list the target name here.
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+CONTRIBUTING_feedback_and_requests.md
+LICENSE
+README.md
+SECURITY.md
+privacy.md

@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <DebugSymbols>true</DebugSymbols>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ProjectGuid>{6AC93711-0481-4941-A6B8-5C456D24A31F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <UseVSVersion>true</UseVSVersion>
+    <RootNamespace>UnitTests</RootNamespace>
+    <AssemblyName>UnitTests</AssemblyName>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)' == 'x64'">
+    <DefineConstants>DO_NOT_USE_GENXBF</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Windows" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
+      <Visible>False</Visible>
+    </CodeAnalysisDependentAssemblyPaths>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="XbfGeneratorTests.cs" />
+    <Compile Include="CodegenTests.cs" />
+    <Compile Include="ConditionalsTests.cs" />
+    <Compile Include="BindPathParserTests.cs" />
+    <Compile Include="CodeCoverage.cs" />
+    <Compile Include="CodeGeneratorProjectContext.cs" />
+    <Compile Include="CodeGeneratorTests.cs" />
+    <Compile Include="HarvesterTests.cs" />
+    <Compile Include="KnownBugs.cs" />
+    <Compile Include="MultipleViewTests.cs" />
+    <Compile Include="StaticResourceTests.cs" />
+    <Compile Include="TestHelper.cs" />
+    <Compile Include="SchemaTests.cs" />
+    <Compile Include="TypeCollectorTests.cs" />
+    <Compile Include="UnitTests.cs" />
+    <Compile Include="NameTests.cs" />
+    <Compile Include="ValidatorTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="LibManagedDll\LibManagedDll.csproj">
+      <Project>{5D3B1E5D-9995-4FBE-88E9-2A36B2970307}</Project>
+      <Name>LibManagedDll</Name>
+    </ProjectReference>
+    <ProjectReference Include="LibManagedDllSatellite\LibManagedDllSatellite.csproj">
+      <Project>{0CA38FA1-0403-4576-9EDF-7B1E81F60857}</Project>
+      <Name>LibManagedDllSatellite</Name>
+    </ProjectReference>
+    <ProjectReference Include="LibManagedWinmd\LibManagedWinmd.csproj">
+      <Project>{9E20EC9E-B908-4245-87EA-C642ECDF843C}</Project>
+      <Name>LibManagedWinmd</Name>
+    </ProjectReference>
+    <!-- TODO: mult-targeting mismatch causing build error:
+    MSB4057: The target "GetTargetPathWithTargetPlatformMoniker" does not exist in the project.
+    <ProjectReference Include="..\..\BuildTasks\Microsoft.UI.Xaml.Markup.Compiler.csproj">
+      <Project>{fedfeea3-0e03-4798-bc77-a70ba8659a09}</Project>
+      <Name>Microsoft.UI.Xaml.Markup.Compiler</Name>
+    </ProjectReference> -->
+    <ProjectReference Include="..\XamlCompilerProxies\XamlCompilerProxies.csproj">
+      <Project>{f292fa71-2b98-4ccf-9f2e-5f21936d3715}</Project>
+      <Name>XamlCompilerProxies</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\MergedWinMD\MergedWinMD.vcxproj">
+      <Project>{52b2ed64-1cfc-401b-8c5b-6d1e1deadf98}</Project>
+      <Name>MergedWinMD</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Content</OutputItemType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\dxaml\xcp\tools\GenXbfDLL\GenXbf.vcxproj">
+      <Project>{42577057-854d-443d-ab59-f4e44c8f5207}</Project>
+      <Name>GenXbf</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Content</OutputItemType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <!--Note: these must be imported after the OutputPath is set-->
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <TestMasters Include="..\..\TestMasters\**\*" InProject="false" />
+  </ItemGroup>
+  <Target Name="BeforeBuild" BeforeTargets="Build">
+    <ItemGroup>
+      <FileWrites Include="@(TestMasters->'$(OutDir)TestMasters\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+  </Target>
+  <Target Name="AfterBuild" AfterTargets="Build" Inputs="@(TestMasters)" Outputs="@(TestMasters->'$(OutDir)TestMasters\%(RecursiveDir)%(Filename)%(Extension)')">
+    <Copy SourceFiles="@(TestMasters)" DestinationFolder="$(OutDir)TestMasters\%(RecursiveDir)" ContinueOnError="false" />
+  </Target>
+  <!-- Copy pre-built native artifacts (GenXbf.dll, compiler DLL) to the test output directory.
+       These are produced by the main repo build (build.cmd) and must exist before running tests. -->
+  <Target Name="CopyPrebuiltArtifacts" AfterTargets="Build">
+    <PropertyGroup>
+      <GenXbfSourceDir>$(ProjectRoot)BuildOutput\bin\GenXBF\x64\</GenXbfSourceDir>
+      <!-- Use ArtifactsBinDir from the repo build system, or derive platform/config from MSBuild properties -->
+      <CompilerSourceDir Condition="'$(ArtifactsBinDir)' != ''">$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.Markup.Compiler\net472\</CompilerSourceDir>
+
+      <!-- When building standalone, derive platform/config from MSBuild properties (mirrors eng/configuration.props) -->
+      <_FallbackPlatform Condition="'$(Platform)' == 'x64'">amd64</_FallbackPlatform>
+      <_FallbackPlatform Condition="'$(Platform)' == 'Win32'">x86</_FallbackPlatform>
+      <_FallbackPlatform Condition="'$(Platform)' == 'ARM64'">arm64</_FallbackPlatform>
+      <_FallbackPlatform Condition="'$(Platform)' == 'AnyCPU'">amd64</_FallbackPlatform>
+      <_FallbackPlatform Condition="'$(_FallbackPlatform)' == ''">amd64</_FallbackPlatform>
+
+      <_FallbackConfig Condition="'$(Configuration)' == 'Release'">fre</_FallbackConfig>
+      <_FallbackConfig Condition="'$(_FallbackConfig)' == ''">chk</_FallbackConfig>
+
+      <CompilerSourceDir Condition="'$(CompilerSourceDir)' == '' or !Exists('$(CompilerSourceDir)')">$(ProjectRoot)BuildOutput\bin\$(_FallbackPlatform)$(_FallbackConfig)\Product\Microsoft.UI.Xaml.Markup.Compiler\net472\</CompilerSourceDir>
+      <ProductDir Condition="'$(ArtifactsBinDir)' != ''">$(ArtifactsBinDir)Product\</ProductDir>
+      <ProductDir Condition="'$(ProductDir)' == '' or !Exists('$(ProductDir)')">$(ProjectRoot)BuildOutput\bin\$(_FallbackPlatform)$(_FallbackConfig)\Product\</ProductDir>
+    </PropertyGroup>
+    <Copy SourceFiles="$(GenXbfSourceDir)GenXbf.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(GenXbfSourceDir)GenXbf.dll')" />
+    <Copy SourceFiles="$(CompilerSourceDir)Microsoft.UI.Xaml.Markup.Compiler.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(CompilerSourceDir)Microsoft.UI.Xaml.Markup.Compiler.dll')" />
+    <Copy SourceFiles="$(ProductDir)Microsoft.UI.Xaml.winmd" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.UI.Xaml.winmd')" />
+    <Copy SourceFiles="$(ProductDir)Microsoft.UI.winmd" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.UI.winmd')" />
+    <Copy SourceFiles="$(ProductDir)Microsoft.UI.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.UI.dll')" />
+    <Copy SourceFiles="$(ProductDir)Microsoft.ui.xaml.dll" DestinationFolder="$(OutDir)" ContinueOnError="true" Condition="Exists('$(ProductDir)Microsoft.ui.xaml.dll')" />
+  </Target>
+</Project>

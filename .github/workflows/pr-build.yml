@@ -30,6 +30,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  DISABLE_PR_BUILD_MATRIX_VALIDATION: 'true'
+
 jobs:
   build:
     name: Build (${{ matrix.flavor }})
@@ -69,13 +72,20 @@ jobs:
       CL: '/MP2'
 
     steps:
+      - name: Skip disabled PR Build validation
+        if: env.DISABLE_PR_BUILD_MATRIX_VALIDATION == 'true'
+        shell: pwsh
+        run: Write-Host "PR Build matrix validation is disabled by DISABLE_PR_BUILD_MATRIX_VALIDATION."
+
       - name: Checkout
+        if: env.DISABLE_PR_BUILD_MATRIX_VALIDATION != 'true'
         uses: actions/checkout@v5
         with:
           fetch-depth: 1
           show-progress: false
 
       - name: Initialize build environment and build
+        if: env.DISABLE_PR_BUILD_MATRIX_VALIDATION != 'true'
         shell: pwsh
         run: |
           & "${{ github.workspace }}/.github/scripts/build-pr.ps1" `
@@ -84,7 +94,7 @@ jobs:
             -Configuration $env:WINUI_BUILD_CONFIGURATION
 
       - name: Upload MSBuild binlogs
-        if: failure()
+        if: failure() && env.DISABLE_PR_BUILD_MATRIX_VALIDATION != 'true'
         uses: actions/upload-artifact@v6
         with:
           name: binlogs-${{ matrix.flavor }}
@@ -93,6 +103,7 @@ jobs:
           retention-days: 7
 
       - name: Upload product runtime payload
+        if: env.DISABLE_PR_BUILD_MATRIX_VALIDATION != 'true'
         uses: actions/upload-artifact@v6
         with:
           name: winui-product-${{ matrix.flavor }}

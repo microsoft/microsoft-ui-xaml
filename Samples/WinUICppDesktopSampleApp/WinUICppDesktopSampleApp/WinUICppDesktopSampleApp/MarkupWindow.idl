@@ -1,0 +1,13 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace WinUICppDesktopSampleApp
+{
+    [default_interface]
+    runtimeclass MarkupWindow : Microsoft.UI.Xaml.Window
+    {
+        MarkupWindow();
+        
+        Microsoft.UI.Xaml.Controls.Button GetMainWindowActivateButton();
+    }
+}

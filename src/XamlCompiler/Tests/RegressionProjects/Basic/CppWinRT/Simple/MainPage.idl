@@ -1,0 +1,12 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+import "MainPageBase.idl";
+
+namespace Simple
+{
+    runtimeclass MainPage : MainPageBase
+    {
+        MainPage();
+        String StringProperty{ get; };
+    };
+}

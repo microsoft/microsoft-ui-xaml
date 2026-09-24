@@ -6,7 +6,8 @@
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
     <ComponentNuGetLicensePath>..\WindowsAppSDKConfig\NuGetLicense\preview\license.txt</ComponentNuGetLicensePath>
-    <ComponentNuGetLicensePath Condition="'$(ProductPrereleaseTag)'=='stable'">..\WindowsAppSDKConfig\NuGetLicense\release\license.txt</ComponentNuGetLicensePath>
+    <!-- Empty ProductPrereleaseTag is the WindowsAppSDKConfig convention for stable releases, so treat it the same as 'stable' (matches WinUI-CreateTransportNupkg-Steps.yml). -->
+    <ComponentNuGetLicensePath Condition="'$(ProductPrereleaseTag)'=='stable' Or '$(ProductPrereleaseTag)'==''">..\WindowsAppSDKConfig\NuGetLicense\release\license.txt</ComponentNuGetLicensePath>
     <!-- Fallback for local builds which don't have WindowsAppSDKConfig. -->
     <ComponentNuGetLicensePath Condition="!Exists('$(ComponentNuGetLicensePath)')">license.txt</ComponentNuGetLicensePath>
     <IntellisenseFolder>Intellisense\generated</IntellisenseFolder>
@@ -88,5 +89,11 @@
   
   <ItemGroup>
     <ProjectReference Include="$(ProjectRoot)\MergedWinMD\MergedWinMD.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
+    <!-- Ordering only: MergedWinMD pulls in Tabular's idl project, which covers the merged winmd and
+         so the activatable-class registrations, but not the DLL those registrations name. Without
+         this the package ships registrations with no binary and every consuming .wapproj fails with
+         APPX0703. Excluded from MUXFinalRelease for the same reason as the metadata entry in
+         eng\productmetadata.props. Revisit when TableView leaves [MUX_PREVIEW]. -->
+    <ProjectReference Include="$(MuxControlsPath)\dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" Condition="'$(MUXFinalRelease)' != 'true'" />
   </ItemGroup>
 </Project>

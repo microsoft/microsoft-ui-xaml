@@ -1495,7 +1495,7 @@ public:
     void SetDCompDeviceLeakDetectionEnabled(bool enableLeakDetection) { m_isDCompLeakDetectionEnabled = enableLeakDetection; }
 
     void GetDCompDevice(
-        _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+        _Outptr_ IDCompositionDevice2 **ppDCompDevice
         ) const;
 
     _Check_return_ HRESULT SetWindowSizeOverride(
@@ -1556,7 +1556,7 @@ public:
 private:
     _Ret_maybenull_ CSwapChainBackgroundPanel* FindSCBP() const;
 
-    _Check_return_ HRESULT ResetState();
+    _Check_return_ HRESULT ResetState(bool resetInputServices = true);
     _Check_return_ HRESULT Initialize();
 
     _Check_return_ HRESULT GetDirectManipulationChanges(

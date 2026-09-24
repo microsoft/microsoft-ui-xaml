@@ -1,0 +1,76 @@
+﻿<UserControl
+    x:Class="IslandSimple.ExampleUserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:IslandSimple"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Black">
+
+       <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.Resources>
+            <ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml" />
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Row="0" Grid.Column="0">
+            <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                <Grid.Resources>
+                    <x:Double x:Key="TileHeight">150</x:Double>
+                </Grid.Resources>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="1" Grid.Column="0" Grid.RowSpan="2" MinHeight="{StaticResource TileHeight}" Background="DarkSalmon" Margin="5" />
+                <Grid Grid.Row="1" Grid.Column="1" MinHeight="{StaticResource TileHeight}" Background="DarkRed" Margin="5" />
+                <Grid Grid.Row="1" Grid.Column="2" MinHeight="{StaticResource TileHeight}" Background="LightCoral" Margin="5" />
+
+            </Grid>
+            <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                <Grid.Resources>
+                    <x:Double x:Key="TileHeight">150</x:Double>
+                </Grid.Resources>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="1" Grid.Column="1" MinHeight="{StaticResource TileHeight}" Background="DarkRed" Margin="5" />
+                <Grid Grid.Row="1" Grid.Column="0" MinHeight="{StaticResource TileHeight}" Background="LightCoral" Margin="5" />
+                <Grid Grid.Row="1" Grid.Column="2" MinHeight="{StaticResource TileHeight}" Background="IndianRed" Margin="5" />
+
+                <Grid Grid.Row="2" Grid.ColumnSpan="3" Margin="5">
+                    <TextBlock TextWrapping="WrapWholeWords" Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." />
+                </Grid>
+
+            </Grid>
+        </StackPanel>
+        <StackPanel Grid.Row="0" Grid.Column="1" Spacing="8">
+            <StackPanel.Resources>
+                <Thickness x:Key="TextBoxTopHeaderMargin">0,2,0,2</Thickness>
+                <Thickness x:Key="PasswordBoxTopHeaderMargin">0,2,0,2</Thickness>
+            </StackPanel.Resources>
+            <TextBlock x:Name="HeaderBlock" Text="Compact Size" FontSize="18"/>
+            <TextBox Header="First Name:" x:Name="firstName" />
+            <TextBox Header="Last Name:" x:Name="lastName"  />
+            <PasswordBox Header="Password:" x:Name="password"/>
+            <PasswordBox Header="Confirm Password:" x:Name="confirmPassword"/>
+            <DatePicker Header="Pick a date" x:Name="chosenDate"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

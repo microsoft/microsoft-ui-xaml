@@ -45,9 +45,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         {
             Private::Infrastructure::TestServices::WindowHelper->InitializeXaml();
 
-            // TODO: [MediaPlayerElement] Native CC tests leak 36 bytes via DirectUI::CTimedTextSource::AddMediaPlayerEventRegistration
-            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
-
             return true;
         }
 
@@ -456,6 +453,30 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         void MediaCCTestsMPE::MediaPlayerElementWithCentering()
         {
             MediaPlayerElementWithTextCueHelper(false /*userMTC*/, L"Style001.xml" /*ccFile*/, L"en" /*lang*/);
+        }
+
+        // Regression: any MediaPlaybackItem makes CTimedTextSource register a TimedMetadataTracksChanged handler; teardown must remove it, not orphan it (no CC content required to reproduce the leak).
+        void MediaCCTestsMPE::TimedTextSourceTeardownDoesNotLeak()
+        {
+            TestCleanupWrapper cleanup([]()
+            {
+                TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+            });
+
+            {
+                MediaHelperMPE mediaHelper;
+
+                // Sets mpe->Source to a MediaPlaybackItem, so CTimedTextSource registers its track handler.
+                MediaHelperMPE::SetupBasicMediaPlayerElement(mediaHelper, GetResourcesPath(), L"blueframe_video.mp4", false /*useMTC*/, true /*waitForOpened*/, true /*useNewPlayback*/);
+
+                TestServices::WindowHelper->WaitForIdle();
+            }
+
+            // Detach the MediaPlayerElement, driving MediaPlayerElement::LeaveImpl -> CTimedTextSource::SetMediaPlayer(nullptr).
+            TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+            TestServices::WindowHelper->WaitForIdle();
+
+            // No IgnoreLeaksForTest: TestCleanup -> VerifyTestCleanup asserts the track registration was released.
         }
 
     } } }

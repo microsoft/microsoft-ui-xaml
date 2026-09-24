@@ -34,7 +34,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollView_TestUI", "dev\Sc
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ItemsView_TestUI", "dev\ItemsView\TestUI\ItemsView_TestUI.shproj", "{30C62FF5-72FE-52B6-A2A1-A95B9B8A0241}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.UI.Xaml", "dev\dll\Microsoft.UI.Xaml.vcxproj", "{AD0C90B0-4845-4D4B-88F1-86F653F8171B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.UI.Xaml.Controls", "dev\dll\Microsoft.UI.Xaml.Controls.vcxproj", "{AD0C90B0-4845-4D4B-88F1-86F653F8171B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D3327F36-E161-4FED-A0F4-56F2B735827E}"
 EndProject

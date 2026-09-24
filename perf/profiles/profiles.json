@@ -1,0 +1,100 @@
+[
+  // Collect minimal CPU data for periodic monitoring.
+
+  {
+    "Name": "cpu",
+    "Tags": [ "cpu", "monitor" ],
+    "ScenarioLaunchCount": 31,
+    "WPROptions": {
+      "Profiles": [ "XAML.wprp!XAML_CPU" ],
+      "Filemode": true,
+      "SkipPdbGen": true
+    },
+    "PipelinePath": "cpu",
+    "PipelinePropertyFilesPaths": [ "XAML.pipeline.props.json" ]
+  },
+
+  // Collect CPU data with stacks for analysis in WPA.
+
+  {
+    "Name": "cpu-stacks",
+    "Tags": [ "cpu", "cpu-stacks" ],
+    "ScenarioLaunchCount": 11,
+    "WPROptions": {
+      "Profiles": [ "GeneralProfile", "CPU", "DiskIO", "XAMLActivity" ],
+      "SkipPdbGen": true
+    }
+  },
+
+  // Collect minimal RefSet data for periodic monitoring.
+
+  {
+    "Name": "refset",
+    "Tags": [ "refset", "monitor" ],
+    "ScenarioLaunchCount": 2,
+    "WPROptions": {
+      "Profiles": [ "XAML.wprp!XAML_Memory" ],
+      "Filemode": true,
+      "SkipPdbGen": true
+    },
+    "PipelinePath": "mem",
+    "PipelinePropertyFilesPaths": [ "XAML.pipeline.props.json" ]
+  },
+
+  // Refset averaging profile.
+
+  {
+    "Name": "refset-avg",
+    "Tags": [ "refset-avg" ],
+    "ScenarioLaunchCount": 11,
+    "WPROptions": {
+      "Profiles": [ "XAML.wprp!XAML_Memory" ],
+      "Filemode": true,
+      "SkipPdbGen": true
+    },
+    "PipelinePath": "memavg",
+    "PipelinePropertyFilesPaths": [ "XAML.pipeline.props.json" ]
+  },
+
+  // Collect RefSet data with stacks for analysis in WPA.
+
+  {
+    "Name": "refset-stacks",
+    "Tags": [ "refset", "refset-stacks" ],
+    "ScenarioLaunchCount": 2,
+    "WPROptions": {
+      "Profiles": [ "ReferenceSet", "XAMLActivity" ],
+      "Filemode": true,
+      "SkipPdbGen": true
+    }
+  },
+
+  // Collect RefSet and heap allocation data with stacks for analysis in WPA.
+
+  {
+    "Name": "refset-heap-stacks",
+    "Tags": [ "refset", "refset-stacks", "heap", "heap-stacks" ],
+    "ScenarioLaunchCount": 2,
+    "WPROptions": {
+      "Profiles": [ "ReferenceSet", "XAMLActivity", "Heap" ],
+      "Filemode": true,
+      "SkipPdbGen": true,
+      "IsHeapTrace": true
+    }
+  },
+
+  // Profiles used for testing.
+
+  {
+    "Name": "cpu-test",
+    "Tags": [ "test" ],
+    "ScenarioLaunchCount": 3,
+    "WPROptions": {
+      "Profiles": [ "XAML.wprp!XAML_CPU" ],
+      "Filemode": true,
+      "SkipPdbGen": true
+    },
+    "PipelinePath": "cpu",
+    "PipelinePropertyFilesPaths": [ "XAML.pipeline.props.json" ]
+  }
+]

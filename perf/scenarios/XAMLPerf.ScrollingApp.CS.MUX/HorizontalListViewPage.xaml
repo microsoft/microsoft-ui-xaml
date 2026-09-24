@@ -1,0 +1,41 @@
+﻿<Page
+    x:Class="XAMLPerf.ScrollingApp.CS.MUX.HorizontalListViewPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:XAMLPerf.ScrollingApp.CS.MUX"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <DataTemplate x:Key="ItemTemplate" x:DataType="local:Item">
+                <StackPanel Orientation="Vertical" Margin="5">
+                    <TextBlock Text="{x:Bind Animal}" FontSize="18" FontStyle="Italic" FontWeight="Bold" />
+                    <TextBlock Text="{x:Bind CountryOrRegion}" />
+                    <TextBlock Text="{x:Bind Sightings}" />
+                    <TextBlock Text="{x:Bind Count, Mode=OneWay}" />
+                </StackPanel>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid Margin="10">
+        <ListView x:Name="listView"
+                  IsTabStop="True"
+                  ItemClick="listView_ItemClick"
+                  IsItemClickEnabled="True"
+                  ItemsSource="{x:Bind Items}"
+                  ItemTemplate="{StaticResource ItemTemplate}"
+                  ScrollViewer.HorizontalScrollMode="Enabled"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                  ScrollViewer.VerticalScrollMode="Disabled">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsStackPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+        </ListView>
+    </Grid>
+</Page>

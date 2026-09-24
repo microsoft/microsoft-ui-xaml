@@ -351,7 +351,21 @@ void RadioButtons::Select(int index)
 
         SelectedIndex(m_selectedIndex);
         SelectedItem(newSelectedItem);
-        m_selectionChangedEventSource(*this, winrt::SelectionChangedEventArgs({ previousSelectedItem }, { newSelectedItem }));
+
+        // Emit an empty collection instead of one containing null. GetDataAtIndex
+        // returns null when there is no selection (index == -1) or the index is out
+        // of range, so a null item means there is nothing to report.
+        auto const removedItems = winrt::single_threaded_vector<winrt::IInspectable>();
+        if (previousSelectedItem)
+        {
+            removedItems.Append(previousSelectedItem);
+        }
+        auto const addedItems = winrt::single_threaded_vector<winrt::IInspectable>();
+        if (newSelectedItem)
+        {
+            addedItems.Append(newSelectedItem);
+        }
+        m_selectionChangedEventSource(*this, winrt::SelectionChangedEventArgs(removedItems, addedItems));
     }
 }
 

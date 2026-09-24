@@ -815,6 +815,7 @@ _Check_return_ HRESULT CXamlIslandRoot::OnIslandSysKeyUp(
     return S_OK;
 }
 
+/*
 _Check_return_ HRESULT CXamlIslandRoot::OnIslandTouchHitTesting(
     _In_ ixp::ITouchHitTestingEventArgs* args)
 {
@@ -823,6 +824,8 @@ _Check_return_ HRESULT CXamlIslandRoot::OnIslandTouchHitTesting(
         args));
     return S_OK;
 }
+*/
+
 #pragma endregion Input
 
 #pragma region Drag Drop
@@ -1809,12 +1812,14 @@ void CXamlIslandRoot::UnsubscribeToInputEvents()
         m_pointerWheelChangedToken.value = 0;
     }
 
+    /*
     if (m_touchHitTestRequestedToken.value != 0)
     {
         IGNOREHR(m_inputPointerSource2->remove_TouchHitTesting(m_touchHitTestRequestedToken));
         m_touchHitTestRequestedToken.value = 0;
     }
-
+    */
+   
     if (m_nonClientCaptionTappedToken.value != 0)
     {
         IGNOREHR(m_inputNonClientPointerSource->remove_CaptionTapped(m_nonClientCaptionTappedToken));

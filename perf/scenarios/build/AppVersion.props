@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup Condition="'$(UseWinUI)' == 'true'">
+    <VersionString>WinUI</VersionString>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UseWUX)' == 'true'">
+    <VersionString>WUX</VersionString>
+  </PropertyGroup>
+</Project>

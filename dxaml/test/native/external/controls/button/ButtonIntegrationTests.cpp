@@ -124,6 +124,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         Generic::ButtonBaseTests<xaml_controls::Button>::CanFireRightTappedEventUsingHold();
     }
 
+    void ButtonIntegrationTests::CanRecoverKeyboardInvocationAfterPointerCancellation()
+    {
+        // Test for https://github.com/microsoft/microsoft-ui-xaml/issues/11148
+        Generic::ButtonBaseTests<xaml_primitives::ToggleButton>::CanRecoverKeyboardInvocationAfterPointerCancellation();
+    }
+
     void ButtonIntegrationTests::ValidateUIElementTree()
     {
         ControlHelper::ValidateUIElementTree(

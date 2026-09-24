@@ -177,8 +177,8 @@ CommandBarFlyoutCommandBar::~CommandBarFlyoutCommandBar()
     {
         if (auto systemBackdrop = m_systemBackdrop.get())
         {
-            systemBackdrop.OnTargetDisconnected(m_backdropLink);
-            systemBackdrop.OnTargetDisconnected(m_overflowPopupBackdropLink);
+            systemBackdrop.OnTargetDisconnected(m_backdropLink.SystemBackdropTarget());
+            systemBackdrop.OnTargetDisconnected(m_overflowPopupBackdropLink.SystemBackdropTarget());
         }
     }
 }
@@ -1588,8 +1588,8 @@ void CommandBarFlyoutCommandBar::OnPropertyChanged(const winrt::DependencyProper
 
             if (oldSystemBackdrop)
             {
-                oldSystemBackdrop.OnTargetDisconnected(m_backdropLink);
-                oldSystemBackdrop.OnTargetDisconnected(m_overflowPopupBackdropLink);
+                oldSystemBackdrop.OnTargetDisconnected(m_backdropLink.SystemBackdropTarget());
+                oldSystemBackdrop.OnTargetDisconnected(m_overflowPopupBackdropLink.SystemBackdropTarget());
                 m_registeredWithSystemBackdrop = false;
             }
 
@@ -1601,8 +1601,8 @@ void CommandBarFlyoutCommandBar::OnPropertyChanged(const winrt::DependencyProper
                 {
                     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
                     auto compositor = visual.Compositor();
-                    m_backdropLink = winrt::ContentExternalBackdropLink::Create(compositor);
-                    m_overflowPopupBackdropLink = winrt::ContentExternalBackdropLink::Create(compositor);
+                    m_backdropLink = ContentExternalLinkHelper::BackdropLink::Create(compositor);
+                    m_overflowPopupBackdropLink = ContentExternalLinkHelper::BackdropLink::Create(compositor);
                 }
 
                 TryConnectSystemBackdrop();
@@ -1629,8 +1629,8 @@ void CommandBarFlyoutCommandBar::TryConnectSystemBackdrop()
 
             if (xamlRoot)
             {
-                systemBackdrop.OnTargetConnected(m_backdropLink, XamlRoot());
-                systemBackdrop.OnTargetConnected(m_overflowPopupBackdropLink, XamlRoot());
+                systemBackdrop.OnTargetConnected(m_backdropLink.SystemBackdropTarget(), XamlRoot());
+                systemBackdrop.OnTargetConnected(m_overflowPopupBackdropLink.SystemBackdropTarget(), XamlRoot());
                 m_registeredWithSystemBackdrop = true;
             }
         }

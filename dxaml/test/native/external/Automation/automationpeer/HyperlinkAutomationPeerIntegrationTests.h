@@ -35,6 +35,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the hyperlink can source its AutomationProperties.Name from its Content and Uri when the Name is not available.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyIsOffscreenWhenScrolledOutOfView)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a hyperlink inside a RichTextBlock reports IsOffscreen=true when scrolled out of a ScrollViewer's viewport, so its empty BoundingRectangle is consistent.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyIsOffscreenForMultiLineHyperlink)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a multi-line hyperlink inside a RichTextBlock reports IsOffscreen=true with an empty BoundingRectangle when its entire wrapped range is scrolled out of a ScrollViewer's viewport.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyIsOffscreenForHyperlinkInRichTextBlockOverflow)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a hyperlink laid out inside a RichTextBlockOverflow reports IsOffscreen=true with an empty BoundingRectangle when clipped out of its ScrollViewer's viewport.")
+        END_TEST_METHOD()
+
     private:
         xaml_docs::Hyperlink^ SetupHyperlinkTest();
     };

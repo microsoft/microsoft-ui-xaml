@@ -1,0 +1,37 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+# This template requires the WinUI component package to be in $(Build.SourcesDirectory)\PackageStore
+parameters:
+  outputPackageDir: '$(Build.SourcesDirectory)\packages'
+
+steps:
+  - powershell: |
+      Move-Item -Path $env:Build_SourcesDirectory\PackageStore\WinUIComponentPackage\Microsoft.WindowsAppSDK.*.nupkg -Destination $env:Build_SourcesDirectory\PackageStore
+    displayName: Move Microsoft.WindowsAppSDK.WinUI component package
+
+  - task: PowerShell@2
+    name: ExtractWinUIVersion
+    displayName: Extract WinUI Package Version
+    inputs:
+      targetType: 'inline'
+      script: |
+        $files = Get-ChildItem "$(Build.SourcesDirectory)\PackageStore" -Filter "*Microsoft.WindowsAppSDK.WinUI*.nupkg"
+        Write-Host "Files found:" $files.Count
+        if ($files.Count -eq 1)
+        {
+            Write-Host "file:" $files.FullName
+            $version = (($files.FullName -Split "Microsoft.WindowsAppSDK.WinUI.")[1] -Split ".nupkg")[0]
+            Write-Host "|$version|"
+            Write-Host "##vso[task.setvariable variable=winUIPackageVersion]$version"
+        }
+        else
+        {
+            Write-Host "Error: Found $($files.Count) Microsoft.WindowsAppSDK.WinUI.nupkg files (expected 1)"
+            Write-Host "Please make sure only one package is present"
+        }
+
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'Install Microsoft.WindowsAppSDK.WinUI package'
+    inputs:
+      command: 'custom'
+      arguments: 'install Microsoft.WindowsAppSDK.WinUI -Version $(winUIPackageVersion) -ConfigFile $(Build.SourcesDirectory)\nuget.config -OutputDirectory ${{ parameters.outputPackageDir }} -Verbosity detailed'

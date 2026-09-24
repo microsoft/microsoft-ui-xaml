@@ -39,6 +39,7 @@
 #include <microsoft.ui.composition.interop.h>
 #include "VisualDebugTags.h"
 #include "CompHelper/CompositionHelper.h"
+#include "CompHelper/CompositionVisualSurfaceHelper.h"
 
 #ifndef NTDDI_WIN11_GE
 #define NTDDI_WIN11_GE 0x0A000010
@@ -113,15 +114,13 @@ public:
     _Check_return_ HRESULT EnsureResources() noexcept;
 
     // The following methods are safe to call before EnsureResources.
-    _Check_return_ HRESULT ReleaseResources(bool shouldDeferClosingInteropCompostior);
+    _Check_return_ HRESULT ReleaseResources(bool shouldDeferClosingInteropCompositor);
 
     void CloseAndReleaseInteropCompositor();
 
     void ReleaseGraphicsResources();
 
     bool CheckMainDeviceState();
-
-    void RegisterDCompAnimationCompletedCallbackThread();
 
     _Check_return_ HRESULT PreCommitMainDevice();
 
@@ -205,15 +204,13 @@ public:
         return m_compositionGraphicsDevice.Get();
     }
 
-    bool HasInteropCompositor() const;
-
     bool HasDCompDevice() const
     {
         ASSERT(!m_isInitialized || m_spMainDevice != NULL);
         return m_spMainDevice != nullptr;
     }
 
-    IDCompositionDesktopDevice* GetMainDevice() const
+    IDCompositionDevice2* GetMainDevice() const
     {
         ASSERT(!m_isInitialized || m_spMainDevice != NULL);
         return m_spMainDevice.Get();
@@ -227,7 +224,12 @@ public:
 
     bool HasSurfaceFactory() const
     {
-        return m_pCompositionHelper.IsInitialized() && GetCompositionHelper()->GetSurfaceFactory() != nullptr;
+        return GetSurfaceFactory() != nullptr;
+    }
+
+    IDCompositionSurfaceFactory* GetSurfaceFactory() const
+    {
+        return m_pCompositionHelper.IsInitialized() ? GetCompositionHelper()->GetSurfaceFactory() : nullptr;
     }
 
     ixp::IContentIsland* GetCoreWindowContentIsland() const
@@ -433,7 +435,7 @@ private:
     CompositionHelperHolder m_pCompositionHelper;
 
     // DComp resources
-    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionDesktopDevice> m_spMainDevice;
+    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionDevice2> m_spMainDevice;
 
 #pragma region ::Windows::UI::Composition
 
@@ -498,12 +500,6 @@ private:
     DependencyObjectDCompRegistry m_dcompObjectRegistry;
     WUCBrushManager m_wucBrushManager;
 
-    // We want callbacks from DComp on the UI thread when animations complete. By default callbacks are delivered
-    // to the thread that created the DComp device, which in Xaml's case is a worker thread. So we need to call the
-    // RegisterCallbackThread method on the UI thread, which we'll do when we commit the device. This flag marks
-    // whether the call has been made.
-    bool m_isCallbackThreadRegistered;
-
     SharedTransitionAnimations m_sharedTransitionAnimations;
 
     // For testing - normally we can get the visual out of m_inprocIsland, but for tests this returns a real visual when
@@ -526,7 +522,7 @@ private:
 public:
     static _Check_return_ HRESULT Create(
         _In_ DCompTreeHost *pDCompTreeHost,
-        _In_ IDCompositionDesktopDevice *pMainDevice,
+        _In_ IDCompositionDevice2 *pMainDevice,
         _In_ IUnknown *pIUnk,
         _Outptr_ DCompSurfaceFactory **ppSurfaceFactory
         );

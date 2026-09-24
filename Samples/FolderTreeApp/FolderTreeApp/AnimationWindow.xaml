@@ -1,0 +1,83 @@
+<Window
+    x:Class="FolderTreeApp.AnimationWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FolderTreeApp"
+    Title="Composition Animations">
+
+    <!-- White backdrop so the colorful animated layers pop. -->
+    <Grid x:Name="RootGrid" Background="White" Loaded="RootGrid_Loaded">
+        <!-- Composition canvas: hand-built Composition visuals are injected here in code-behind. -->
+        <Canvas x:Name="VisualHost" />
+
+        <!-- XAML layer: real UIElements animated by Storyboards (built in code-behind). -->
+        <Canvas x:Name="XamlLayer">
+            <Ellipse x:Name="Orb0" Width="90" Height="90" Canvas.Left="80" Canvas.Top="140">
+                <Ellipse.Fill>
+                    <SolidColorBrush x:Name="Orb0Brush" Color="#FFEF5350" />
+                </Ellipse.Fill>
+                <Ellipse.RenderTransform>
+                    <CompositeTransform x:Name="Orb0T" CenterX="45" CenterY="45" />
+                </Ellipse.RenderTransform>
+            </Ellipse>
+
+            <Ellipse x:Name="Orb1" Width="64" Height="64" Canvas.Left="260" Canvas.Top="120">
+                <Ellipse.Fill>
+                    <SolidColorBrush x:Name="Orb1Brush" Color="#FF42A5F5" />
+                </Ellipse.Fill>
+                <Ellipse.RenderTransform>
+                    <CompositeTransform x:Name="Orb1T" CenterX="32" CenterY="32" />
+                </Ellipse.RenderTransform>
+            </Ellipse>
+
+            <Rectangle x:Name="Card0" Width="70" Height="70" RadiusX="14" RadiusY="14"
+                       Canvas.Left="120" Canvas.Top="420">
+                <Rectangle.Fill>
+                    <SolidColorBrush x:Name="Card0Brush" Color="#FF66BB6A" />
+                </Rectangle.Fill>
+                <Rectangle.RenderTransform>
+                    <CompositeTransform x:Name="Card0T" CenterX="35" CenterY="35" />
+                </Rectangle.RenderTransform>
+            </Rectangle>
+
+            <Rectangle x:Name="Card1" Width="70" Height="70" RadiusX="14" RadiusY="14"
+                       Canvas.Left="240" Canvas.Top="420">
+                <Rectangle.Fill>
+                    <SolidColorBrush x:Name="Card1Brush" Color="#FFFFCA28" />
+                </Rectangle.Fill>
+                <Rectangle.RenderTransform>
+                    <CompositeTransform x:Name="Card1T" CenterX="35" CenterY="35" />
+                </Rectangle.RenderTransform>
+            </Rectangle>
+
+            <Rectangle x:Name="Card2" Width="70" Height="70" RadiusX="14" RadiusY="14"
+                       Canvas.Left="360" Canvas.Top="420">
+                <Rectangle.Fill>
+                    <SolidColorBrush x:Name="Card2Brush" Color="#FFAB47BC" />
+                </Rectangle.Fill>
+                <Rectangle.RenderTransform>
+                    <CompositeTransform x:Name="Card2T" CenterX="35" CenterY="35" />
+                </Rectangle.RenderTransform>
+            </Rectangle>
+
+            <Polygon x:Name="Star0" Canvas.Left="430" Canvas.Top="150"
+                     Points="30,0 39,20 60,20 43,33 50,55 30,42 10,55 17,33 0,20 21,20"
+                     Fill="#FFFF7043">
+                <Polygon.RenderTransform>
+                    <CompositeTransform x:Name="Star0T" CenterX="30" CenterY="28" />
+                </Polygon.RenderTransform>
+            </Polygon>
+        </Canvas>
+
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,28,0,0" Spacing="6">
+            <TextBlock x:Name="TitleText"
+                       Text="Composition + Storyboard Animations"
+                       HorizontalAlignment="Center"
+                       Foreground="#FF202020"
+                       Style="{StaticResource TitleLargeTextBlockStyle}" />
+            <TextBlock Text="Orbiting sprites · pulsing rings · spinning orbs · bouncing cards · twinkling star"
+                       HorizontalAlignment="Center"
+                       Foreground="#99000000" />
+        </StackPanel>
+    </Grid>
+</Window>

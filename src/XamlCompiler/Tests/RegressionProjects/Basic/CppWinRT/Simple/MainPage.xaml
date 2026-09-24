@@ -1,0 +1,49 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<local:MainPageBase
+    x:Class="Simple.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Simple"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <!-- Primitive Type Property CodeGen -->
+        <!-- Short Form -->
+        <local:PropBag x:Name="propertyBagObject" StringProp="StringValue" IntProp="32" DoubleProp="22.22" BooleanProp="False"/>
+        <!-- Long Form -->
+        <local:PropBag x:Name="propertyBagObjectSecond">
+            <local:PropBag.StringProp>
+                <x:String>StringValue</x:String>
+            </local:PropBag.StringProp>
+            <local:PropBag.IntProp>
+                <x:Int32>32</x:Int32>
+            </local:PropBag.IntProp>
+            <local:PropBag.DoubleProp>
+                <x:Double>22.22</x:Double>
+            </local:PropBag.DoubleProp>
+            <local:PropBag.BooleanProp>
+                <x:Boolean>False</x:Boolean>
+            </local:PropBag.BooleanProp>
+        </local:PropBag>
+    </Page.Resources>
+
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal">
+            <!-- Element Name CodeGen -->
+            <Button x:Name="Button1">Button 1</Button>
+            <Button Name="Button2">Button 2</Button>
+            <!-- Event CodeGen -->
+            <Button Click="ClickHandler" Tapped="TappedHandler">Don't Click Me</Button>
+            <Button Click="EventHandlerOnBase">Event Handler On Base</Button>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock>
+                    <Run>Page name: </Run>
+                    <Run Text="{x:Bind PageName}"/>
+            </TextBlock>
+        </StackPanel>
+    </StackPanel>
+</local:MainPageBase>

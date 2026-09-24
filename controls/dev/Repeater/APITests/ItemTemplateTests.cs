@@ -445,6 +445,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 // Asserting render size is zero
                 Verify.IsLessThan(repeater.RenderSize.Width, 0.0001);
                 Verify.IsLessThan(repeater.RenderSize.Height, 0.0001);
+
+                // A code-authored DataTemplate whose factory produces no subtree (returns null) must
+                // behave like the empty markup <DataTemplate/> above: render nothing, not crash.
+                var codeAuthoredRepeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
+                    ItemTemplate = new DataTemplate(() => (UIElement)null),
+                };
+                codeAuthoredRepeater.UpdateLayout();
+
+                Verify.IsLessThan(codeAuthoredRepeater.RenderSize.Width, 0.0001);
+                Verify.IsLessThan(codeAuthoredRepeater.RenderSize.Height, 0.0001);
             });
         }
 

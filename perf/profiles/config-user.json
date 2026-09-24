@@ -1,0 +1,25 @@
+{
+  "AppsFilePath": "apps.json",
+  "ScenariosFilePath": "scenarios.json",
+  "ProfilesFilePath": "profiles.json",
+  "ShiftsDirectory": "%LOCALAPPDATA%\\WinAppPerf\\current",
+  "DeployApps": true,
+  "InstallersRootDirectory": "%perfAppsDir%",
+  "CsvCollator": {
+    "ExperimentsDirectory": "%LOCALAPPDATA%\\WinAppPerf\\experiments",
+    "ProcessedDataArchiveDirectory": "processed"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information"
+    },
+    "Console": {
+      "FormatterName": "simple",
+      "FormatterOptions": {
+        "SingleLine": true,
+        "IncludeScopes": true,
+        "TimestampFormat": "HH:mm:ss.ff "
+      }
+    }
+  }
+}

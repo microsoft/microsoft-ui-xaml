@@ -242,8 +242,10 @@ protected:
     _Check_return_ HRESULT OnIslandSysKeyUp(
         _In_ ixp::IKeyEventArgs* e);
 
+    /*    
     _Check_return_ HRESULT OnIslandTouchHitTesting(
         _In_ ixp::ITouchHitTestingEventArgs* args);
+    */
 
     // Drag Drop
     _Check_return_ HRESULT OnDropTargetRequested(
@@ -341,8 +343,7 @@ private:
     EventRegistrationToken m_directManipulationHitTestToken{};
     EventRegistrationToken m_pointerWheelChangedToken = {};
 
-    EventRegistrationToken m_touchHitTestRequestedToken = {};
-
+    //EventRegistrationToken m_touchHitTestRequestedToken = {};
     EventRegistrationToken m_nonClientCaptionTappedToken = {};
     EventRegistrationToken m_nonClientPointerEnteredToken = {};
     EventRegistrationToken m_nonClientPointerExitedToken = {};

@@ -1,0 +1,103 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Page
+    x:Class="BindTestbed.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbed"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="using:BindTestbedModel">
+
+    <Page.Resources>
+        <model:TShirtSize x:Key="MyTShirtSize">Medium</model:TShirtSize>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="G">
+        <Hub VerticalAlignment="Stretch" x:Name="MainHub" DataContext="{x:Bind MainModel}">
+
+            <HubSection Header="Nullables Testing">
+                <DataTemplate x:DataType="local:MainModel">
+                    <local:NullableTests Model="{x:Bind Model}" DOModel="{x:Bind DOModel}" Width="800" />
+                </DataTemplate>
+            </HubSection>
+            
+            <HubSection Header="x:Load and CreateFromString" >
+                <DataTemplate x:DataType="local:MainModel">
+                    <local:LoadAndCreateFromStringTests Model="{x:Bind Model}" DOModel="{x:Bind DOModel}" Width="600" />
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Header="Function Bindings">
+                <DataTemplate x:DataType="local:MainModel">
+                    <local:FunctionTests Model="{x:Bind Model}" DOModel="{x:Bind DOModel}" Width="600" />
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Header="Basic Bindings">
+                <DataTemplate x:DataType="local:MainModel">
+                    <local:BasicTests Model="{x:Bind Model}" DOModel="{x:Bind DOModel}" Width="800" />
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Header="Other Bindings">
+                <DataTemplate x:DataType="local:MainModel">
+                    <local:TestsPage2 Model="{x:Bind Model}" DOModel="{x:Bind DOModel}" Width="800" />
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Header="List Scenarios">
+                <DataTemplate x:DataType="local:MainModel">
+                    <!--TODO: Convert BindTestbedModelCX to C++/WinRT-->
+                    <!--ModelCX="{x:Bind ModelCX-} should be added below pending the BindTestbedModelCX C++/WinRT conversion -->
+                    <local:ListAndTemplateTests Model="{x:Bind Model}" DOModel="{x:Bind DOModel}"
+                                                Employees="{x:Bind Employees}" AllFirstNames="{x:Bind AllFirstNames}" AllLastNames="{x:Bind AllLastNames}"
+                                                SomeButtonContent="{x:Bind Employees[0]}"
+                                                Width="800"/>
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Header="Phased List scenarios">
+                <DataTemplate x:DataType="local:MainModel">
+                    <local:PhasingTests Width="800" />
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Header="Casting Scenarios" >
+                <DataTemplate x:DataType="local:MainPage" >
+                    <local:CastingTests />
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Header="Event Scenarios">
+                <DataTemplate x:DataType="local:MainModel">
+                    <local:EventTests Model="{x:Bind Model}" DOModel="{x:Bind DOModel}" Width="800" />
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Header="TwoWay Scenarios">
+                <DataTemplate x:DataType="local:MainModel">
+                    <local:TwoWayTests Model="{x:Bind Model}" DOModel="{x:Bind DOModel}" Width="800" />
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Header="Lonely Static Binding">
+                <DataTemplate>
+                    <local:LonelyStaticBinding Width="100"/>
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Header="Other Tests">
+                <DataTemplate>
+                    <Button Click="DetectLeaks_Click">Detect Leaks</Button>
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Header="INotifyDataErrorInfo Tests" >
+                <DataTemplate>
+                    <local:INotifyDataErrorInfoTests Width="600" />
+                </DataTemplate>
+            </HubSection>
+        </Hub>
+    </Grid>
+</Page>

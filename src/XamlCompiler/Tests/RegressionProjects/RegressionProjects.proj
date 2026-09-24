@@ -1,0 +1,27 @@
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<Import Project="LocalMSBuild.targets" />
+
+	<!-- Basic Tests Solution Suite -->
+	<ItemGroup>
+		<TestSolutions Include="$(DepotRoot)\vsproject\XamlCompiler\Tests\RegressionProjects\Basic\CSharp\CSharp.sln"/>
+		<TestSolutions Include="$(DepotRoot)\vsproject\XamlCompiler\Tests\RegressionProjects\Basic\VisualBasic\VisualBasic.sln"/>
+		<TestSolutions Include="$(DepotRoot)\vsproject\XamlCompiler\Tests\RegressionProjects\Basic\VC\VC.sln"/>
+		<TestSolutions Include="$(DepotRoot)\vsproject\XamlCompiler\Tests\RegressionProjects\Basic\References\References.sln"/>
+		<TestSolutions Include="$(DepotRoot)\vsproject\XamlCompiler\Tests\RegressionProjects\Basic\OldPlatformsReferences\VC_Old_Behaviors_SDK\VC_Old_Behaviors_SDK.sln"/>
+	</ItemGroup>
+
+	<!-- Feature Test Solution Suite -->
+	<ItemGroup>
+		<TestSolutions Include="$(DepotRoot)\vsproject\XamlCompiler\Tests\RegressionProjects\Features\CompiledBinding\BindTestbed.sln"/>
+ 		<TestSolutions Include="$(DepotRoot)\vsproject\XamlCompiler\Tests\RegressionProjects\Features\MultiXamlFiles\MultipleViewsTestbed.sln"/>
+		<TestSolutions Include="$(DepotRoot)\vsproject\XamlCompiler\Tests\RegressionProjects\Features\DeferLoadStrategy\DeferLoadStrategy.sln"/>
+		<TestSolutions Include="$(DepotRoot)\vsproject\XamlCompiler\Tests\RegressionProjects\Features\BindPhasingTestBedCpp\BindPhasingTestBedCpp.sln"/>
+		<TestSolutions Include="$(DepotRoot)\vsproject\xamlcompiler\Tests\RegressionProjects\Features\ReduceProviderLoading\ConsumerProvider\ConsumerProvider.sln"/>
+	</ItemGroup>
+
+ 	<Target Name="Build">
+		<Microsoft.Build.Tasks.Exec Command="$(UnRazzlePath) &quot;$(InstalledMSBuildPath)&quot; %(TestSolutions.Identity) /p:TargetPlatformVersion=$(LatestInstalledUapSDKVersion) /p:TargetPlatformMinVersion=$(LatestInstalledUapSDKVersion) /p:Platform=x86 /v:m /p:DefineConstants=BUILTFORRUNTIMETEST"/>
+	</Target>
+</Project>

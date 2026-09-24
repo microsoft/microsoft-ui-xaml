@@ -1,0 +1,35 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="PlatformConditionalsModel.ConditionalControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PlatformConditionalsModel"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    xmlns:localUwp="using:PlatformConditionalsModel?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5);TargetPlatform(UWP)"
+    xmlns:localAndroid="using:PlatformConditionalsModel?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5);TargetPlatform(Android)"
+    xmlns:xamliOS="using:Some.iOS.Namespace?TargetPlatform(iOS)">
+
+    <StackPanel>
+        <TextBlock x:Name="InnerText2" Text="example of a Standard control which would show up on all apps" Foreground="Purple" />
+
+        <local:TextBoxCustom Text="hello world from a normal namespace" />
+        <localUwp:TextBoxCustom Text="hello world UWP conditional namespace" x:Name="test"/>
+
+        <localAndroid:TextBoxCustom Text="hello world local android 1">
+
+        </localAndroid:TextBoxCustom>
+        <localAndroid:TextBoxCustom Text="hello world local android 2" 
+                                    />
+        <localAndroid:TextBoxCustom Text="hello world local android 3" />
+
+        <xamliOS:SomeControl SomeProperty="{x:Bind WhoKnows}" AnotherProperty="Who knows">
+            <TextBlock Text="can't see me because I'm a child of a non-UWP elemnt" />
+        </xamliOS:SomeControl>
+
+    </StackPanel>
+</UserControl>

@@ -15,6 +15,7 @@
 #include <UIAutomationCore.h>
 #include <WUCRenderingScopeGuard.h>
 #include <ChangeDPI.h>
+#include <TestComparisonGuards.h>
 
 using namespace ::Windows::UI;
 using namespace Microsoft::UI::Text;
@@ -1430,6 +1431,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void TextBlockTests::ImageFontsWUCFull()
         {
+            // Emoji / color-font glyphs rasterize a hair differently between OS builds (no JPEG here),
+            // so allow the small per-channel tolerance.
+            ImageCompareToleranceGuard tolerance(RENDER_COMPARE_TOLERANCE_SMALL);
             DCompValidationHelper(L"ImageFonts.xaml", 1.0f, MockDComp::SurfaceComparison::ReferencedOnly, 1.0f, DCompRendering::WUCCompleteSynchronousCompTree);
         }
 

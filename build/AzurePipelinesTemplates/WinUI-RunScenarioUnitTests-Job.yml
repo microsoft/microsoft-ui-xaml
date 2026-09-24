@@ -1,0 +1,57 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  buildConfiguration: fre
+  buildOutput: amd64
+  artifactNamePrefix: drop_BuildScenarioApps
+
+jobs:
+- job: ScenarioAppUnitTests
+  condition: not(failed())
+  pool:
+    type: windows
+    isCustom: true
+    name: WinDevPool-L
+    demands: ImageOverride -equals WinDevVS17-latest
+
+  variables:
+    artifactName: ${{parameters.artifactNamePrefix}}_${{parameters.buildOutput}}${{parameters.buildConfiguration}}
+    testDir: $(Build.ArtifactStagingDirectory)\drop\${{parameters.buildOutput}}${{parameters.buildConfiguration}}\Samples\WinUICsUnitTestApp_Test
+
+  steps:
+  - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+    parameters:
+      artifactName: $(artifactName)
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+      itemPattern: '**/@(WinUICsUnitTestApp_Test)/**'
+      enableUseOutputFromPreviousBuild: true
+
+  - script: |
+     dir /b /s $(Build.ArtifactStagingDirectory)
+    displayName: 'List contents of ArtifactStagingDirectory'
+
+  - script: |
+     reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f
+    displayName: 'Enable AllowDevelopmentWithoutDevLicense reg key'
+
+  - powershell: |
+      cd $(testDir)
+      # Install any .cer files that were included in the payload:
+      foreach($cerFile in (Get-ChildItem "*.cer"))
+      {
+          Write-Host "Adding cert '$cerFile'"
+          certutil -addstore TrustedPeople "$cerFile"
+      }
+    displayName: "Install any .cer files that were included in the payload:"
+
+  - task: VSTest@2
+    displayName: 'Run Scenario App Unit Tests'
+    inputs:
+      testRunTitle: WinUICsUnitTestApp
+      failOnMinTestsNotRun: true
+      minimumExpectedTests: '2'
+      rerunFailedTests: true
+      configuration: ${{parameters.buildConfiguration}}
+      platform: ${{parameters.buildOutput}}
+      testAssemblyVer2: |
+        $(testDir)\*.msix

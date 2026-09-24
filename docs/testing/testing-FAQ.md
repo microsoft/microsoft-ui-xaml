@@ -374,7 +374,7 @@ To see the test output directly in the pipeline run:
 To download the test output for a particular test:
 * On the Pipeline page, click on the "## published" link in the Summary tab, under the "Related" section.
 
-* On the Artifact page, go to TestOutput > Win10-22H2 > x86chk.
+* On the Artifact page, go to TestOutput > Win11-25H2 > x86chk.
 
 * Scroll down to the test that you're interested in, and download the entire folder.
 
@@ -423,20 +423,8 @@ re-run, and the re-run passed, or (b) the crash happened after a test reported a
 If you expect a dump file, and it's not there, you might need to enable dump collection for that exe specifically.
 See `$namesOfProcessesForDumpCollection` in the file `TestPass-OneTimeMachineSetup.ps1`.
 
-Note, to make the dump collection work, we needed to configure our Azure VMs to disable the existing agent that
-handles crashes.  Adding this json to the Azure image script does the trick:
-
-```
-        {
-            "name": "windows-updateregistry",
-            "parameters": {
-                "RegistryPath": "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment",
-                "RegistryKey": "DISABLE_1ES_AGENT_CRASH_DUMP_COLLECTION",
-                "DataType": "REG_SZ",
-                "Value": "true"
-            }
-        }
-```
+Note, to make the dump collection work, we also needed to configure our Azure VMs to disable the existing CI agent
+that handles crashes, so that it doesn't intercept the dumps we want to collect.
 
 ### Can I log in to one of the ADO VMs where my test failed?
 Yes, but it's a bit involved.
@@ -460,9 +448,9 @@ jobs:
       name: WinDevPool-Test
       ${{ if eq( parameters.testOS, 'Win10-RS5' ) }}:
         demands: ImageOverride -equals Win10-RS5
-      ${{ if eq( parameters.testOS, 'Win10-22H2' ) }}:
+      ${{ if eq( parameters.testOS, 'Win11-25H2' ) }}:
         demands: 
-          - ImageOverride -equals Win10-22H2
+          - ImageOverride -equals Win11-25H2
           - HoldMachine -equals true  # <<< Hold this VM
       ${{ if eq( parameters.testOS, 'Win11-23H2') }}:
         demands: ImageOverride -equals Win11-23H2
@@ -474,7 +462,7 @@ jobs:
       parallel: 1 # <<< Changed to 1 so that we don't hold lots of VMs
 ```
 
-Then I ran the PR pipeline on that topic branch.  Now, the 22H2 VM gets held after running some tests.  (note it will timeout because it's trying to
+Then I ran the PR pipeline on that topic branch.  Now, the 25H2 VM gets held after running some tests.  (note it will timeout because it's trying to
 run the whole suite with the above changes.  I'm sure you could make other modifications so that it just times out right away and you don't
 need to wait for it.)
 
@@ -580,6 +568,36 @@ pipelines.
 The Sample App Tests install, launch and interact with the Sample Apps via UI Automation. They use the same test
 libraries as the MUXControls tests. The source code is under `controls\test\MUXControls.Test\ScenarioAppTests`. For now,
 these tests are compiled into MUXControls.Test.dll.
+
+### How is the WinUI Gallery test data produced?
+WinUI Gallery test data is generated entirely from public repository content. Initialize the
+`Samples\WinUIGallery` submodule before building:
+
+```shell
+git submodule update --init --recursive
+```
+
+The source data is
+`Samples\WinUIGallery\WinUIGallery\SampleSupport\Data\ControlInfoData.json`. The
+`GenerateWinUIGalleryTestData` target in `controls\test\MUXControls.Test\MUXControls.Test.csproj`
+runs after the test project builds when that JSON file is present. It invokes
+`controls\test\MUXControls.Test\ScenarioAppTests\GenerateWinUIGalleryTestData.ps1` and writes
+`WinUIGalleryTestData.xml` to the test output directory.
+
+The generated XML contains a table for each Gallery group and a row for each page. Each row provides
+the section name, page name, and expected page description used by
+`controls\test\MUXControls.Test\ScenarioAppTests\WinUIGalleryDesktopTests.cs`. When a scenario test payload is created,
+`test\CreateTestPayload.ps1` copies the XML next to the test binaries.
+
+The standalone WinUI Gallery tests also consume the same public JSON directly:
+
+* `Samples\WinUIGallery\tests\WinUIGallery.UnitTests` verifies that the Gallery data source loads
+  the expected groups.
+* `Samples\WinUIGallery\tests\WinUIGallery.UITests` copies the JSON to its output and uses it to
+  generate accessibility test cases for Gallery pages.
+
+No private test-data source or private storage location is required. If the submodule is not
+initialized, the MUX test-data generation target is skipped instead of failing the build.
 
 ### How do I run the Sample App Tests?
 First you need to build the sample apps. They do not build by default. Run "build.cmd samples" from the root of the repo.

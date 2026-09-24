@@ -1,0 +1,80 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+stages:
+- stage: Merge
+  displayName: Merge PGO counts
+  dependsOn: Train
+  condition: succeeded()
+  jobs:
+  - job: Merge
+    pool:
+      type: windows
+    timeoutInMinutes: 180
+    strategy:
+      maxParallel: 10
+      matrix: $[ variables.targets ]
+    variables:
+      buildFolderName: $(buildOutput)$(normalizedConfiguration)
+      pgcPath: $(incomingArtifactsPath)\$(pgoArtifactName)\pgc\$(buildFolderName)
+      pgdEmptyPath: $(Build.ArtifactStagingDirectory)\pgd-empty\$(buildFolderName)
+      pgdMergedPath: $(Build.ArtifactStagingDirectory)\pgd-merged\$(buildFolderName)
+      ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+      ob_artifactBaseName: 'merge_$(buildOutput)$(normalizedConfiguration)'
+      ob_sdl_binskim_enabled: false
+
+    steps:
+    - task: CmdLine@2
+      displayName: Set up environment
+      inputs:
+        script: |
+          $(Build.SourcesDirectory)\init.cmd /pipeline $(buildPlatform)$(normalizedConfiguration)
+
+    - powershell: |
+        gci env:* | sort-object name
+      displayName: Display build machine environment variable
+
+    - task: NuGetAuthenticate@1
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore performance infrastructure dependencies'
+      inputs:
+        command: 'custom'
+        arguments: 'restore $(perfPath)\packages.config -ConfigFile $(Build.SourcesDirectory)\nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+        includeNuGetOrg: false
+
+    - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+      parameters:
+        artifactName: drop_$(buildOutput)$(normalizedConfiguration)
+        targetPath: $(incomingArtifactsPath)\PGO
+        enableUseOutputFromPreviousBuild: true
+
+    - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+      parameters:
+        artifactName: train_$(buildOutput)$(normalizedConfiguration)
+        targetPath: $(incomingArtifactsPath)\PGO
+        enableUseOutputFromPreviousBuild: true
+
+    - script: |
+        dir /s $(incomingArtifactsPath)
+      displayName: 'DIAG'
+      condition: always()
+
+    - task: CopyFiles@2
+      displayName: Copy empty PGO databases
+      inputs:
+        contents: '*.pgd'
+        sourceFolder: $(incomingArtifactsPath)\PGO\$(buildFolderName)\Product
+        targetFolder: $(pgdEmptyPath)
+
+    - task: CopyFiles@2
+      displayName: Copy to be merged PGO databases
+      inputs:
+        contents: '*.pgd'
+        sourceFolder: $(incomingArtifactsPath)\PGO\$(buildFolderName)\Product
+        targetFolder: $(pgdMergedPath)
+
+    - task: MSBuild@1
+      displayName: Merge counts into PGD
+      inputs:
+        solution: $(perfPath)\pgo\PGO.DB.proj
+        msbuildArguments: '/t:MergePGOCounts /p:Platform=$(buildPlatform) /p:PGDPath=$(pgdMergedPath) /p:PGCRootPath=$(pgcPath)'

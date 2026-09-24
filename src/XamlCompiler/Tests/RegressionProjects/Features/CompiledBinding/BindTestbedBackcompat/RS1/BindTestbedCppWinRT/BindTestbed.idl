@@ -1,0 +1,214 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace BindTestbed
+{
+    runtimeclass BasicTests : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        BasicTests();
+        BindTestbedModel.DataModel Model;
+        BindTestbedModel.DOModel DOModel;
+        Int32 MyInt{ get; };
+        String NonDPOnPage{ get; };
+        String DPOnPage;
+        static Microsoft.UI.Xaml.DependencyProperty DPOnPageProperty;
+    };
+
+    runtimeclass CastingTests : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        CastingTests();
+        String Dummy{ get; };
+    }
+
+    runtimeclass DetectLeaksPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        DetectLeaksPage();
+        void BackButton_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void DetectLeakedObjects_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void UpdateValues(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+    }
+
+    runtimeclass EventTests : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        EventTests();
+        BindTestbedModel.DataModel Model;
+        BindTestbedModel.DOModel DOModel;
+
+        void Click_RegularArgs(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void Click_NoArgs();
+        void Click_BaseArgs(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        [method_name("Click_OverloadedArgs1")] void Click_OverloadedArgs();
+        [method_name("Click_OverloadedArgs2")] void Click_OverloadedArgs(Object sender, Object e);
+    }
+
+    runtimeclass FunctionTests : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        FunctionTests();
+        BindTestbedModel.DataModel Model;
+        BindTestbedModel.DOModel DOModel;
+        Object FunctionReturningNull();
+        String FunctionOnRootNoArgs();
+    }
+
+    runtimeclass CastingModel
+    {
+        CastingModel();
+        String Username;
+        Double DoubleVal;
+        Int32 IntVal;
+        Boolean IsChecked;
+        Boolean IsVisible;
+        Windows.Foundation.IReference<Boolean> IsVisibleNullable;
+        String Prefix{ get; };
+        Double Postfix{ get; };
+        Microsoft.UI.Xaml.Visibility VisibilityValue;
+        String CombineStringWithInt(String str, Int32 val);
+    }
+
+    runtimeclass ListAndTemplateTests : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        ListAndTemplateTests();
+        BindTestbedModel.DataModel Model;
+        BindTestbedModel.DOModel DOModel;
+        BindTestbedCXModel.ModelCX ModelCX;
+        Microsoft.UI.Xaml.Controls.ListView FirstListView;
+        Object SomeButtonContent;
+        Windows.Foundation.Collections.IObservableVector<BindTestbedModel.IEmployee> Employees;
+        Windows.Foundation.Collections.IObservableVector<String> AllFirstNames;
+        Windows.Foundation.Collections.IObservableVector<String> AllLastNames;
+    }
+
+    runtimeclass LoadAndCreateFromStringTests : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        LoadAndCreateFromStringTests();
+        BindTestbedModel.DataModel Model;
+        BindTestbedModel.DOModel DOModel;
+        /*
+        void Button_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void LoadInnerPanel_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void UnloadInnerPanel_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void LoadOuterPanel_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void UnloadOuterPanel_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void UnloadObject(Microsoft.UI.Xaml.DependencyObject dependencyObject);
+        */
+
+        BindTestbedModel.Circle test1;
+        BindTestbedModel.Circle test2;
+        BindTestbedModel.Circle test3;
+        BindTestbedModel.Circle test4;
+        BindTestbedCXModel.StarCx test5;
+        BindTestbedCXModel.StarCx test6;
+        //Microsoft.UI.Xaml.Controls.TextBlock innerMostNestedPanelStaticText;
+    }
+
+    runtimeclass LonelyStaticBinding : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        LonelyStaticBinding();
+        String Dummy{ get; };
+    }
+
+    runtimeclass MainModel
+    {
+        MainModel();
+        BindTestbedModel.DataModel Model { get; };
+        BindTestbedModel.DOModel DOModel{ get; };
+        BindTestbedCXModel.ModelCX ModelCX{ get; };
+        Windows.Foundation.Collections.IObservableVector<BindTestbedModel.IEmployee> Employees;
+        Windows.Foundation.Collections.IObservableVector<String> AllFirstNames;
+        Windows.Foundation.Collections.IObservableVector<String> AllLastNames;
+    }
+
+    runtimeclass ExtraInfo
+    {
+        ExtraInfo();
+        String Caption;
+    }
+
+    runtimeclass MyInfo
+    {
+        MyInfo();
+        String Prop1;
+        String Prop2;
+        String Prop3;
+        String ImageUrl;
+        String Caption;
+    }
+
+    runtimeclass MyItem
+        : Microsoft.UI.Xaml.DependencyObject
+        , Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        MyItem();
+        String Title;
+        String Subtitle;
+        String Description;
+        String DPOnMyItem;
+        Int32 Index;
+        MyInfo Info;
+        ExtraInfo OtherInfo;
+        static Microsoft.UI.Xaml.DependencyProperty DPOnMyItemProperty;
+    }
+
+    runtimeclass MainPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        MainPage();
+        BindTestbed.MainModel MainModel{ get; };
+    }
+
+    runtimeclass MyUserControl1 : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        MyUserControl1();
+        String Property1;
+    }
+
+    runtimeclass PhasingTests : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        PhasingTests();
+        Microsoft.UI.Xaml.Controls.GridView myGridView;
+    }
+
+    runtimeclass Templates : Microsoft.UI.Xaml.ResourceDictionary
+    {
+        Templates();
+        String Dummy{ get; };
+    }
+
+    runtimeclass TestsPage2 : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        TestsPage2();
+        BindTestbedModel.DataModel Model;
+        BindTestbedModel.DOModel DOModel;
+        Int32 IntPropNoINPC;
+        String DPOnPage;
+        Int32 MyInt;
+        BindTestbedModel.IEmployee NullEmployee;
+        String ImageUriString;
+        String NullStringProperty;
+        BindTestbedModel.IManager NiceManager{ get; };
+        Microsoft.UI.Xaml.Controls.TextBox LocalTextBox;
+        Microsoft.UI.Xaml.Controls.TextBlock TextBlockWAttachedRow;
+        Microsoft.UI.Xaml.Controls.Slider OneTimeSlider3;
+        Microsoft.UI.Xaml.Controls.ComboBox TimeZonePicker2;
+        Microsoft.UI.Xaml.Controls.Grid G;
+        Microsoft.UI.Xaml.Controls.Grid Grid1;
+        Microsoft.UI.Xaml.Controls.TextBlock tbWithAttachedEmployee;
+        BindTestbedModel.ObservableEmployees NiceEmployees;
+    }
+
+    runtimeclass TwoWayTests : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        TwoWayTests();
+        BindTestbedModel.DataModel Model;
+        BindTestbedModel.DOModel DOModel;
+        Int32 IntPropNoINPC;
+        String DPOnPage;
+    }
+
+    namespace subfolder {
+
+        runtimeclass SubDictionary : Microsoft.UI.Xaml.ResourceDictionary
+        {
+            SubDictionary();
+            String Dummy{ get; };
+        }
+    }
+}

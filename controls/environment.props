@@ -29,6 +29,9 @@
     <MSBuildWarningsAsMessages>APPX1707</MSBuildWarningsAsMessages>
     <MEUXNamespace>Microsoft.Experimental.UI.Xaml</MEUXNamespace>
     <MEUXTargetName>Microsoft.Experimental.UI.Xaml</MEUXTargetName>
+    <!-- Tabular owns its WinRT/resource identity; keep RootNamespace on MUXNamespace until resource-root isolation lands. -->
+    <MUXTabularNamespace>Microsoft.UI.Xaml.Controls.Tabular</MUXTabularNamespace>
+    <MUXTabularTargetName>Microsoft.UI.Xaml.Controls.Tabular</MUXTabularTargetName>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(UseInsiderSDK) == 'true'">

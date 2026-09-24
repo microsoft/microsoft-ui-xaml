@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22520.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BindPhasingTestBedCpp", "BindPhasingTestBedCpp\BindPhasingTestBedCpp.vcxproj", "{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM64 = Debug|ARM64
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|ARM64 = Release|ARM64
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Debug|ARM64.Build.0 = Debug|ARM64
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Debug|x64.ActiveCfg = Debug|x64
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Debug|x64.Build.0 = Debug|x64
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Debug|x64.Deploy.0 = Debug|x64
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Debug|x86.ActiveCfg = Debug|Win32
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Debug|x86.Build.0 = Debug|Win32
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Debug|x86.Deploy.0 = Debug|Win32
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Release|ARM64.ActiveCfg = Release|ARM64
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Release|ARM64.Build.0 = Release|ARM64
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Release|ARM64.Deploy.0 = Release|ARM64
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Release|x64.ActiveCfg = Release|x64
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Release|x64.Build.0 = Release|x64
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Release|x64.Deploy.0 = Release|x64
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Release|x86.ActiveCfg = Release|Win32
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Release|x86.Build.0 = Release|Win32
+		{F686D0A2-5D43-43A7-8E76-A62908FD4AEA}.Release|x86.Deploy.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

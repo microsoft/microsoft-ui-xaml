@@ -1,0 +1,133 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  - name: traceFEScenario
+    type: boolean
+    default: false
+
+stages:
+- stage: Train
+  displayName: Run PGO training scenarios
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+
+  # x86: App training (HelloWorld, CommonControls1, SimpleIslandApp)
+  - job: Train_x86_WinUI_Scenarios
+    pool:
+      type: windows
+      isCustom: true
+      name: WinDevPool-Test
+      demands: ImageOverride -equals ge_current-vhdx_enterprise
+    timeoutInMinutes: 180
+    variables:
+      buildPlatform: 'x86'
+      buildOutput: 'x86'
+      normalizedConfiguration: 'fre'
+      buildFolderName: x86fre
+      testPayloadDir: $(Build.SourcesDirectory)\TestPayload
+      testPayloadDirInner: $(testPayloadDir)\x86fre
+
+      ob_outputDirectory: c:\uploadroot
+      ob_artifactBaseName: 'train_x86fre'
+      ob_sdl_binskim_enabled: false
+
+      pgcPath: $(ob_outputDirectory)\PGOInstrument\pgc
+
+    steps:
+    - script: |
+        reg query "HKLM\Software\Microsoft\Windows NT\CurrentVersion"
+      displayName: Display OS version info
+
+    - powershell: |
+        gci env:* | sort-object name
+      displayName: Display build machine environment variable
+
+    - task: NuGetAuthenticate@1
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore Lifted XAML dependencies'
+      inputs:
+        command: 'custom'
+        arguments: 'restore packages.config -ConfigFile nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+        includeNuGetOrg: false
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore performance infrastructure dependencies'
+      inputs:
+        command: 'custom'
+        arguments: 'restore $(perfPath)\packages.config -ConfigFile $(Build.SourcesDirectory)\nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+        includeNuGetOrg: false
+
+    - task: NuGetCommand@2
+      displayName: NuGet restore Helix/RunTestsInHelix-PerfTests.proj
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      inputs:
+        restoreSolution: Helix/RunTestsInHelix-PerfTests.proj
+        includeNuGetOrg: false
+        feedsToUse: config
+
+    - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+      parameters:
+        enableUseOutputFromPreviousBuild: true
+        artifactName: drop_x86fre
+        targetPath: $(incomingArtifactsPath)
+
+    - script: cmd /c dir /s /b $(incomingArtifactsPath)
+      displayName: Dump incomingArtifacts directory
+
+    - task: powershell@2
+      displayName: Prepare Helix payload
+      inputs:
+        targetType: filePath
+        filePath: test\CreateTestPayload.ps1
+        arguments: -BinSourceRoot $(incomingArtifactsPath) -Platform x86 -Configuration fre -Mode PGO -ShowPayload -SkipSymbols
+
+    - script: |
+        dir /b /s $(testPayloadDir)
+      displayName: dir testPayloadDir
+
+    - task: powershell@2
+      displayName: Run Tests
+      timeoutInMinutes: 60
+      inputs:
+        targetType: filePath
+        filePath: Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1
+        arguments: -WorkItemProjFileNameFilter RunTestsInHelix-PerfTests.proj -WorkItemProjDir $(Build.SourcesDirectory)\Helix\ -TestPayloadDir $(testPayloadDirInner) -UploadRoot $(ob_outputDirectory) -JobPositionInPhase 1 -TotalJobsInPhase 1 -SkipCopyTestResultsXml
+        errorActionPreference: stop
+        workingDirectory: $(Build.SourcesDirectory)\build\PipelineScripts
+
+    - task: CopyFiles@2
+      displayName: Copy PGO counts
+      inputs:
+        contents: '**\*.pgc'
+        sourceFolder: $(pgcPath)
+        targetFolder: $(ob_outputDirectory)\pgc\$(buildFolderName)
+
+    - task: PublishPipelineArtifact@1
+      condition: always()
+      inputs:
+        targetPath: $(ob_outputDirectory)
+        artifact: 'train_x86fre'
+        Parallel: true
+
+  # x64: File Explorer training
+  - template: WinUI-PGO-Train-FE-Job.yml
+    parameters:
+      jobName: Train_x64_WinUI_Scenarios
+      poolName: WinDevPool-Test
+      imageOverride: ge_current-vhdx_enterprise
+      buildPlatform: x64
+      buildOutput: amd64
+      traceFEScenario: ${{ parameters.traceFEScenario }}
+
+  # ARM64: File Explorer training
+  - template: WinUI-PGO-Train-FE-Job.yml
+    parameters:
+      jobName: Train_ARM64_WinUI_Scenarios
+      poolName: WinDevPool-TestArm64
+      imageOverride: ge_current-vhdx_enterprise-arm64
+      buildPlatform: ARM64
+      buildOutput: arm64
+      traceFEScenario: ${{ parameters.traceFEScenario }}

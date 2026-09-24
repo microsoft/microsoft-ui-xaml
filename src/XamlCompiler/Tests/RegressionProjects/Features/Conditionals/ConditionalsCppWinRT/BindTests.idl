@@ -1,0 +1,23 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace ConditionalsCppWinRT
+{
+    runtimeclass BindTests : Microsoft.UI.Xaml.Controls.UserControl, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        BindTests();
+
+        ConditionalControls.Model Model;
+        ConditionalControls.IEmployee NullEmployee;
+        String NullProperty;
+
+        String V2Property;
+        String V3Property;
+
+        Microsoft.UI.Xaml.Controls.TextBlock v3TextBlock;
+
+        void UnloadObject(Microsoft.UI.Xaml.DependencyObject dependencyObject);
+
+        void Click_V2(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void Click_V3(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+    }
+}

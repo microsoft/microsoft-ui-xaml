@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "WinUI3CSPerf (Package)": {
+      "commandName": "MsixPackage",
+      "nativeDebugging": true
+    },
+    "WinUI3CSPerf (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

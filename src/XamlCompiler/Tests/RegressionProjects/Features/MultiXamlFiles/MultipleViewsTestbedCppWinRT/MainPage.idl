@@ -1,0 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace MultipleViewsTestbedCppWinRT
+{
+    runtimeclass MainPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        MainPage();
+        Int32 Dummy;
+    }
+}

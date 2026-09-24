@@ -11,7 +11,7 @@
       </Canvas.Clip>
       <Ellipse x:Name="myEllipse" Width="50" Height="50">
         <Ellipse.Fill>
-          <ImageBrush ImageSource="ms-appx:///resources/native/external/foundation/graphics/image/Rainier_444_2048x1536.jpg"/>
+          <ImageBrush ImageSource="ms-appx:///resources/native/external/foundation/graphics/image/rainier_2048x1536.png"/>
         </Ellipse.Fill>
       </Ellipse>
     </Canvas>

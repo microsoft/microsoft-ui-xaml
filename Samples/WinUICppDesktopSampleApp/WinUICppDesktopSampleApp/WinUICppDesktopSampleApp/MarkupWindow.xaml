@@ -1,0 +1,20 @@
+﻿<Window
+    x:Class="WinUICppDesktopSampleApp.MarkupWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinUICppDesktopSampleApp">
+    <NavigationView
+        x:Name="navigationView"
+        PaneTitle="WinUICppDesktopSampleApp" IsBackButtonVisible="Visible" IsSettingsVisible="True" IsPaneToggleButtonVisible="True" IsBackEnabled="True">
+        <StackPanel x:Name="stackPanelRoot">
+            <TextBlock Text="MarkupWindow" FontSize="16" FontWeight="SemiBold" Margin="2"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="TextBox:" VerticalAlignment="Center" Margin="2"/>
+                <TextBox Margin="2"/>
+            </StackPanel>
+            <Button Content="Activate MainWindow" x:Name="buttonActivateMainWindow" AutomationProperties.Name="buttonActivateMainWindow" Margin="2"/>
+            <Button Content="Close Window" x:Name="buttonCloseWindow" AutomationProperties.Name="buttonCloseWindow" Click="ButtonCloseWindow_Click" Margin="2"/>
+            <Button Content="Exit Application" Click="ButtonExitApplication_Click" Margin="2"/>
+        </StackPanel>
+    </NavigationView>
+</Window>

@@ -1,0 +1,73 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  - name: jobName
+    type: string
+  - name: poolName
+    type: string
+  - name: imageOverride
+    type: string
+  - name: buildPlatform
+    type: string
+  - name: buildOutput
+    type: string
+  - name: traceFEScenario
+    type: boolean
+    default: false
+
+jobs:
+- job: ${{ parameters.jobName }}
+  pool:
+    type: windows
+    isCustom: true
+    name: ${{ parameters.poolName }}
+    demands: ImageOverride -equals ${{ parameters.imageOverride }}
+  timeoutInMinutes: 300
+  variables:
+    buildPlatform: ${{ parameters.buildPlatform }}
+    buildOutput: ${{ parameters.buildOutput }}
+    normalizedConfiguration: 'fre'
+    buildFolderName: ${{ parameters.buildOutput }}fre
+    crashDumpDirectory: $(Build.ArtifactStagingDirectory)\crash-dumps
+    ob_outputDirectory: $(Build.ArtifactStagingDirectory)
+    ob_artifactBaseName: 'train_${{ parameters.buildOutput }}fre'
+    ob_sdl_binskim_enabled: false
+
+  steps:
+  - script: |
+      reg query "HKLM\Software\Microsoft\Windows NT\CurrentVersion"
+    displayName: Display OS version info
+
+  - task: powershell@2
+    displayName: Setup local crash dumps
+    inputs:
+      targetType: filePath
+      filePath: $(Build.SourcesDirectory)\build\PipelineScripts\Enable-LocalCrashDumps.ps1
+      arguments: -crashDumpDirectory $(crashDumpDirectory) -purgeDirectory
+
+  - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+    parameters:
+      enableUseOutputFromPreviousBuild: true
+      artifactName: drop_${{ parameters.buildOutput }}fre
+      itemPattern: '**/${{ parameters.buildOutput }}fre/**/*'
+      targetPath: $(incomingArtifactsPath)
+
+  - task: powershell@2
+    displayName: Run scenario
+    inputs:
+      targetType: filePath
+      filePath: $(perfPath)\pgo\run-fe-scenario.ps1
+      arguments: '
+        -modulesPath $(incomingArtifactsPath)\$(buildFolderName)\Product
+        -toolsPath $(incomingArtifactsPath)\$(buildFolderName)\TestDependencies
+        -platform ${{ parameters.buildPlatform }}
+        -outputPath $(Build.ArtifactStagingDirectory)\pgc\$(buildFolderName)
+        -debugTrace $${{ parameters.traceFEScenario }}'
+      workingDirectory: $(perfPath)\pgo
+
+  - task: PublishPipelineArtifact@1
+    condition: always()
+    inputs:
+      targetPath: $(ob_outputDirectory)
+      artifact: 'train_${{ parameters.buildOutput }}fre'
+      Parallel: true

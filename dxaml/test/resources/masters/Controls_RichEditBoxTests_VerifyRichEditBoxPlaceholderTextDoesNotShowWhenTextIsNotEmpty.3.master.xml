@@ -244,7 +244,7 @@
                 </Element>
                 <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
                   <Properties>
-                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                    <Property Name="AutomationProperties.AccessibilityView" Value="1" />
                     <Property Name="Foreground" Value="#C5FFFFFF" />
                     <Property Name="Grid.Row" Value="1" />
                     <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />

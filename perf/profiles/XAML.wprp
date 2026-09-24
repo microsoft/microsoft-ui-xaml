@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0" Author="Microsoft Corporation" Copyright="Microsoft Corporation" Company="Microsoft Corporation">
+    <Profiles>
+        <SystemCollector
+            Id="SystemCollector"
+            Name="NT Kernel Logger"
+            Realtime="false">
+            <BufferSize Value="1024"/>
+            <Buffers Value="200"/>
+        </SystemCollector>
+
+        <SystemCollector
+            Id="SystemCollector_PMC"
+            Name="NT Kernel Logger"
+            Realtime="false">
+            <BufferSize Value="2048"/>
+            <Buffers Value="20"/>
+        </SystemCollector>
+
+        <EventCollector
+            Id="EventCollector_WPREventCollector"
+            Name="EventCollector_WPREventCollector"
+            Realtime="false">
+            <BufferSize Value="1024"/>
+            <Buffers Value="5" PercentageOfTotalMemory="true"/>
+        </EventCollector>
+
+        <EventCollector
+            Id="EventCollector_User"
+            Name="EventCollector_User"
+            Realtime="false">
+            <BufferSize Value="1024" />
+            <Buffers Value="200" />
+        </EventCollector>
+
+        <SystemProvider
+            Id="SystemProvider_Base">
+            <Keywords>
+                <Keyword Value="CpuConfig"/>
+                <Keyword Value="Loader"/>
+                <Keyword Value="ProcessThread"/>
+            </Keywords>
+        </SystemProvider>
+
+        <SystemProvider
+            Id="SystemProvider_ReferenceSet"
+            Base="SystemProvider_Base">
+            <Keywords Operation="Add">
+                <Keyword Value="FootPrint" />
+                <Keyword Value="HardFaults" />
+                <Keyword Value="Memory" />
+                <Keyword Value="MemoryInfo" />
+                <Keyword Value="MemoryInfoWS" />
+                <Keyword Value="ReferenceSet" />
+                <Keyword Value="VirtualAllocation" />
+                <Keyword Value="VAMap" />
+                <Keyword Value="Session" />
+
+                <!-- This is mandatory to avoid a crash if using ReferenceSet -->
+                <Keyword Value="FileIO"/>
+                <Keyword Value="FileIOInit"/>
+                <Keyword Value="Filename"/>
+            </Keywords>
+            <!--
+            <Stacks>
+                <Stack Value="PageAccess" />
+                <Stack Value="PageRelease" />
+                <Stack Value="PageAccessEx" />
+                <Stack Value="PageRangeAccess" />
+                <Stack Value="PageRangeRelease" />
+                <Stack Value="PagefileMappedSectionDelete" />
+                <Stack Value="PagefileMappedSectionCreate" />
+                <Stack Value="VirtualAllocation" />
+                <Stack Value="VirtualFree" />
+                <Stack Value="HeapAllocation"/>
+                <Stack Value="HeapReallocation"/>
+            </Stacks> -->
+        </SystemProvider>
+
+        <SystemProvider
+            Id="SystemProvider_PMC"
+            Base="SystemProvider_Base">
+            <Keywords Operation="Add">
+                <Keyword Value="CSwitch"/>
+                <Keyword Value="DiskIO"/>
+            </Keywords>
+        </SystemProvider>
+
+        <HardwareCounter
+            Id="HardwareCounter_PMC"
+            Base=""
+            Strict="true">
+            <Counters>
+                <!-- 19H-1 - OS does not have any fixed counters, so limit to 2 -->
+                <!-- <Counter Value="LLCMisses"/>
+                <Counter Value="InstructionRetired"/> -->
+
+                <!-- >= VB - there are fixed counters, so use them and two programmable -->
+                <Counter Value="LLCMisses"/>
+                <Counter Value="BranchMispredictions"/>
+                <Counter Value="InstructionsRetiredFixed"/>
+                <Counter Value="UnhaltedCoreCyclesFixed"/>
+            </Counters>
+            <Events>
+                <Event Value="CSwitch"/>
+            </Events>
+        </HardwareCounter>
+
+        <EventProvider
+            Id="EventProvider_Win32HeapRanges"
+            Name="Win32HeapRanges"
+            NonPagedMemory="true" />
+
+        <EventProvider
+            Id="EventProvider_WPR_Status"
+            Name="36b6f488-aad7-48c2-afe3-d4ec2c8b46fa">
+            <Keywords>
+                <Keyword Value="0x10000"/>
+            </Keywords>
+        </EventProvider>
+
+        <EventProvider
+            Id="EventProvider_Microsoft_Windows_Performance_Recorder_Context"
+            Name="b7a19fcd-15ba-41ba-a3d7-dc352d5f79ba"
+            NonPagedMemory="true"
+            Strict="true"/>
+
+        <EventProvider
+            Id="EventProvider_Microsoft-Windows-Kernel-EventTracing"
+            Name="Microsoft-Windows-Kernel-EventTracing"
+            NonPagedMemory="true"
+            Level="15">
+            <Keywords>
+                <Keyword Value="0x40"/>
+            </Keywords>
+        </EventProvider>
+
+        <EventProvider
+            Id="EventProvider_Microsoft-Windows-XAML"
+            Name="Microsoft-Windows-XAML"
+            NonPagedMemory="true"
+            Strict="true"
+            Level="4"/>
+
+        <EventProvider
+            Id="EventProvider_Microsoft-Windows-Immersive-Shell"
+            Name="Microsoft-Windows-Immersive-Shell"
+            NonPagedMemory="true"
+            Strict="true"/>
+
+        <EventProvider
+            Id="EventProvider_XAMLPerf"
+            Name="C35C5221-1EFD-4DD7-9DE4-24E7AAFD3C3B"
+            NonPagedMemory="true"
+            Strict="true"/>
+
+        <Profile
+            Id="BaseProfile.Light.Memory"
+            Name="BaseProfile"
+            Description="BaseProfile"
+            DetailLevel="Light"
+            Base=""
+            LoggingMode="Memory">
+            <Collectors>
+                <EventCollectorId Value="EventCollector_WPREventCollector">
+                    <EventProviders>
+                        <EventProviderId Value="EventProvider_WPR_Status" />
+                        <EventProviderId Value="EventProvider_XAMLPerf" />
+                        <EventProviderId Value="EventProvider_Microsoft_Windows_Performance_Recorder_Context" />
+                        <EventProviderId Value="EventProvider_Microsoft-Windows-Kernel-EventTracing" />
+                    </EventProviders>
+                </EventCollectorId>
+            </Collectors>
+            <TraceMergeProperties>
+                <TraceMergeProperty Id="BaseLightTraceMergeProperties" Name="BaseTraceMergeProperties" Base="">
+                    <DeletePreMergedTraceFiles Value="true"/>
+                    <CustomEvents>
+                        <CustomEvent Value="ImageId"/>
+                        <CustomEvent Value="BuildInfo"/>
+                        <CustomEvent Value="VolumeMapping"/>
+                        <CustomEvent Value="EventMetadata"/>
+                        <CustomEvent Value="PerfTrackMetadata"/>
+                        <CustomEvent Value="WinSAT"/>
+                    </CustomEvents>
+                </TraceMergeProperty>
+            </TraceMergeProperties>
+        </Profile>
+
+        <Profile
+            Id="XAMLBaseProfile.Light.Memory"
+            Name="XAMLBaseProfile"
+            Description="XAMLBaseProfile"
+            DetailLevel="Light"
+            Base="BaseProfile.Light.Memory"
+            LoggingMode="Memory">
+            <Collectors Operation="Add">
+                <EventCollectorId Value="EventCollector_User">
+                    <EventProviders>
+                        <EventProviderId Value="EventProvider_Microsoft-Windows-XAML" />
+                        <EventProviderId Value="EventProvider_Microsoft-Windows-Immersive-Shell" />
+                    </EventProviders>
+                </EventCollectorId>
+            </Collectors>
+        </Profile>
+
+        <Profile
+            Id="XAML_CPU.Light.Memory"
+            Name="XAML_CPU"
+            Description="XAML_CPU"
+            DetailLevel="Light"
+            Base="XAMLBaseProfile.Light.Memory"
+            LoggingMode="Memory">
+            <Collectors Operation="Add">
+                <SystemCollectorId Value="SystemCollector_PMC">
+                    <SystemProviderId Value="SystemProvider_PMC" />
+                    <HardwareCounterId Value="HardwareCounter_PMC"/>
+                </SystemCollectorId>
+            </Collectors>
+        </Profile>
+
+        <Profile
+            Id="XAML_Memory.Light.Memory"
+            Name="XAML_Memory"
+            Description="XAML_Memory"
+            DetailLevel="Light"
+            Base="XAMLBaseProfile.Light.Memory"
+            LoggingMode="Memory">
+            <Collectors Operation="Add">
+                <SystemCollectorId Value="SystemCollector">
+                    <SystemProviderId Value="SystemProvider_ReferenceSet" />
+                </SystemCollectorId>
+                <EventCollectorId Value="EventCollector_User">
+                    <EventProviders>
+                        <EventProviderId Value="EventProvider_Win32HeapRanges" />
+                    </EventProviders>
+                </EventCollectorId>
+            </Collectors>
+        </Profile>
+
+        <Profile
+            Id="XAML_CPU.Light.File"
+            Name="XAML_CPU"
+            Description="XAML_CPU"
+            DetailLevel="Light"
+            Base="XAML_CPU.Light.Memory"
+            LoggingMode="File"/>
+
+        <Profile
+            Id="XAML_Memory.Light.File"
+            Name="XAML_Memory"
+            Description="XAML_Memory"
+            DetailLevel="Light"
+            Base="XAML_Memory.Light.Memory"
+            LoggingMode="File"/>
+
+    </Profiles>
+</WindowsPerformanceRecorder>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.AutoColumnsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+
+    <Grid Padding="12" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="2">
+            <TextBlock Text="All Auto columns" FontSize="18" FontWeight="SemiBold"/>
+            <TextBlock Opacity="0.7" FontSize="12" TextWrapping="Wrap"
+                       Text="Every column is GridUnitType.Auto — each sizes to the widest realized cell. The 'Notes (edit)' column hosts an editable multi-line TextBox: type a longer line to grow the column width, press Enter to add lines and grow the row height — so both column and row auto-resizing can be tested live."/>
+        </StackPanel>
+
+        <Border Grid.Row="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
+            <tv:TableView x:Name="Table"/>
+        </Border>
+    </Grid>
+</Page>

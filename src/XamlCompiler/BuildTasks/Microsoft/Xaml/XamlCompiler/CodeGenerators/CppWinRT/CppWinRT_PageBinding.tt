@@ -802,7 +802,7 @@
 <#+             if (includeDeferredSet && element.CanBeInstantiatedLater) { #>
             else
             {
-                <#=ba.ObjectDeferredAssignmentCodeName#> = <#=value#>;
+                <#=ba.ObjectDeferredAssignmentCodeName#> = <#=potentiallyBoxedValue#>;
             }
 <#+             }#>
 <#+         }#>

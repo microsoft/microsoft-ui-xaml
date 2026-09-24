@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <UseWinUITools>true</UseWinUITools>
+    <XamlCompilerTaskPath>$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\tools\net472\Microsoft.UI.Xaml.Markup.Compiler.dll</XamlCompilerTaskPath>
+  </PropertyGroup>
+</Project>

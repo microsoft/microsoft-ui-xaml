@@ -1,0 +1,269 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+- name: targetRepositoryBranchName
+  displayName: Name of branch in target repository to push commit to
+  type: string
+- name: targetRepositoryTagName
+  displayName: Tag to associate with commit in target repository
+  type: string
+- name: targetRepositorySeedCommittish
+  displayName: Tag to seed the target repository branch (optional)
+  default: " "
+- name: targetRepositorySubdirectory
+  displayName: Subdirectory to mirror source code into (optional)
+  type: string
+  default: " "
+- name: mergeToMain
+  displayName: Merge target branch to main?
+  type: string
+  default: automatic
+  values:
+  - automatic
+  - always
+  - never
+- name: skipSourceMirroring
+  displayName: Skip source mirroring. Useful if source has been successfully published by a previous run but public symbols were not.
+  type: boolean
+  default: false
+- name: useTriggeringBranchExclusions
+  displayName: Use the triggering branch's exclusions file instead of the version corresponding to the source committish
+  type: boolean
+  default: false
+- name: publishPublicSymbols
+  displayName: Publish public symbols
+  type: boolean
+  default: false
+
+stages:
+# Contrary to MSDN documentation which states that stages without a 'dependsOn' parameter
+# run sequentially in declaration order, *all* stages without a 'dependsOn' parameter run
+# in parallel (possibly due to template scheduling behavior). So the 'Symbols' stage requires an
+# explicit dependency on the 'Source' stage so it runs second. But this explicit dependency
+# prevents us from skipping the 'Source' stage entirely when running the pipeline. So instead
+# we use a pipeline parameter to dynamically insert the `Source` stage (and the required
+# dependency) into the pipeline.
+- ${{ if ne(parameters.skipSourceMirroring, true) }}:
+  - stage: Source
+    jobs:
+    - job: PublishSource
+      pool:
+        type: windows
+      timeoutInMinutes: 120
+      variables:
+        ob_outputDirectory: '$(Build.SourcesDirectory)\out' # The pipeline template requires this variable to be defined
+        ob_git_skip_checkout_none: true # we checkout repositories ourselves
+        # Repo paths are defined relative to the pipeline's workspace, $(Pipeline.Workspace)
+        selfRepoRelativePath: 's\self'
+        selfRepoRef: '$[ resources.repositories.self.ref ]'
+        sourceRepoRelativePath: 's\source'
+        sourceRepoRef: '$[ resources.repositories.sourceRepository.ref ]'
+        targetRepoRelativePath: 's\target'
+        targetRepoRef: '$[ resources.repositories.targetRepository.ref ]'
+        targetRepoName: '$[ resources.repositories.targetRepository.name ]'
+        ${{ if eq(parameters.useTriggeringBranchExclusions, true) }}:
+          useExclusionsFileFromSelfRepoArg: '-UseExclusionsFileFromSelfRepo'
+        ${{ else }}:
+          useExclusionsFileFromSelfRepoArg: ' '
+        ${{ if ne(parameters.targetRepositorySubdirectory, ' ') }}:
+          targetRepositorySubdirectoryArg: '-TargetRepositorySubdirectory ${{ parameters.targetRepositorySubdirectory }}'
+        ${{ else }}:
+          targetRepositorySubdirectoryArg: ' '
+      steps:
+      - checkout: self
+        submodules: false
+        fetchDepth: 1
+        fetchTags: false
+        path: '$(selfRepoRelativePath)'
+        displayName: Checkout self repository '$(selfRepoRelativePath)'
+      - checkout: sourceRepository
+        submodules: false
+        persistCredentials: true
+        fetchDepth: 0
+        path: '$(sourceRepoRelativePath)'
+        displayName: Checkout source repository '$(sourceRepoRelativePath)'
+      - checkout: targetRepository
+        submodules: false
+        persistCredentials: true
+        fetchDepth: 0
+        path: '$(targetRepoRelativePath)'
+        displayName: Checkout target repository '$(targetRepoRelativePath)'
+
+      - script: set
+        displayName: Display machine environment variables
+
+      # This keeps Guardian happy by allowing it to find the TSA config
+      - task: CopyFiles@2
+        displayName: Copy `.config\` to `$(Build.SourcesDirectory)`
+        inputs:
+          SourceFolder: '$(Pipeline.Workspace)\$(selfRepoRelativePath)'
+          TargetFolder: '$(Build.SourcesDirectory)'
+          Contents: |
+            .config\**
+
+      # Annoyingly, '' (the empty string) is not valid as the default value of a parameter;
+      # the interpreter will coerce it into ' '. So use ' ' as sentinel value to indicate that
+      # the user didn't provide a value for the parameter.
+      - ${{ if ne(parameters.targetRepositorySeedCommittish, ' ') }}:
+        # Script returns hash of commit in target repo in the variable `TargetRepositoryCommitHash`
+        - task: PowerShell@2
+          displayName: Seed target repository
+          inputs:
+            workingDirectory: '$(Pipeline.Workspace)'
+            filePath: '$(Pipeline.Workspace)\$(selfRepoRelativePath)\scripts\MirrorGitRepositoryWithoutHistory.ps1'
+            arguments: >
+              -SelfRepositoryDirectory $(selfRepoRelativePath)
+              -SourceRepositoryDirectory $(sourceRepoRelativePath)
+              -SourceRepositoryCommittish ${{ parameters.targetRepositorySeedCommittish }}
+              -TargetRepositoryDirectory $(targetRepoRelativePath)
+              -TargetRepositoryBranchName ${{ parameters.targetRepositoryBranchName }}
+              -MergeToMain ${{ parameters.mergeToMain }}
+              -ExclusionPathspecsFile build\PipelineScripts\WinUISourceMirroringExclusions.txt
+              -RestorePathspecsFile build\PipelineScripts\WinUISourceMirroringRestorePaths.txt
+              $(useExclusionsFileFromSelfRepoArg)
+              $(targetRepositorySubdirectoryArg)
+        - task: CmdLine@2
+          displayName: Restore clones to HEAD
+          inputs:
+            workingDirectory: '$(Pipeline.Workspace)'
+            script: |
+              @echo on
+              pushd $(sourceRepoRelativePath)
+              git rm --quiet --cached -rf .
+              git reset --hard
+              git checkout $(sourceRepoRef)
+              git rm --quiet --cached -rf .
+              git reset --hard
+              popd
+
+              pushd $(targetRepoRelativePath)
+              git rm --quiet --cached -rf .
+              git reset --hard
+              git checkout $(targetRepoRef)
+              git rm --quiet --cached -rf .
+              git reset --hard
+              popd
+
+      - task: PowerShell@2
+        displayName: Mirror source code
+        inputs:
+          workingDirectory: '$(Pipeline.Workspace)'
+          filePath: '$(Pipeline.Workspace)\$(selfRepoRelativePath)\scripts\MirrorGitRepositoryWithoutHistory.ps1'
+          arguments: >
+            -SelfRepositoryDirectory $(selfRepoRelativePath)
+            -SourceRepositoryDirectory $(sourceRepoRelativePath)
+            -SourceRepositoryCommittish $(resources.pipeline.sourcePipeline.sourceCommit)
+            -TargetRepositoryDirectory $(targetRepoRelativePath)
+            -TargetRepositoryBranchName ${{ parameters.targetRepositoryBranchName }}
+            -TargetRepositoryTagName ${{ parameters.targetRepositoryTagName }}
+            -MergeBackToDefaultBranch ${{ parameters.mergeToMain }}
+            -ExclusionPathspecsFile build\PipelineScripts\WinUISourceMirroringExclusions.txt
+            -RestorePathspecsFile build\PipelineScripts\WinUISourceMirroringRestorePaths.txt
+            $(useExclusionsFileFromSelfRepoArg)
+            $(targetRepositorySubdirectoryArg)
+
+- stage: Symbols
+  ${{ if ne(parameters.skipSourceMirroring, true) }}:
+    dependsOn: Source
+  jobs:
+  - job: PublishPublicSymbols
+    pool:
+      type: windows
+    variables:
+      ob_outputDirectory: '$(Build.SourcesDirectory)\out' # The pipeline template requires this variable to be defined
+      ob_git_skip_checkout_none: true # we checkout repositories ourselves
+      # Repo paths are defined relative to the pipeline's workspace, $(Pipeline.Workspace)
+      selfRepoRelativePath: 's\self'
+      selfRepoRef: '$[ resources.repositories.self.ref ]'
+      targetRepoRelativePath: 's\target'
+      targetRepoRef: '$[ resources.repositories.targetRepository.ref ]'
+      targetRepoName: '$[ resources.repositories.targetRepository.name ]'
+      symbolsName: "WinUIExternalSource_$(System.DefinitionId)_$(Build.BuildId)"
+      ${{ if ne(parameters.targetRepositorySubdirectory, ' ') }}:
+        targetRepositorySubdirectoryArg: '-TargetRepositorySubdirectory ${{ parameters.targetRepositorySubdirectory }}'
+      ${{ else }}:
+        targetRepositorySubdirectoryArg: ' '
+
+    steps:
+    - checkout: self
+      submodules: false
+      fetchDepth: 1
+      fetchTags: false
+      path: '$(selfRepoRelativePath)'
+      displayName: Checkout self repository '$(selfRepoRelativePath)'
+    - checkout: targetRepository
+      submodules: false
+      persistCredentials: true
+      fetchDepth: 0
+      path: '$(targetRepoRelativePath)'
+      displayName: Checkout target repository '$(targetRepoRelativePath)'
+
+    - task: PowerShell@2
+      displayName: Sync target repository
+      inputs:
+        workingDirectory: '$(Pipeline.Workspace)'
+        targetType: 'inline'
+        script: |
+          pushd $(targetRepoRelativePath)
+          git checkout ${{ parameters.targetRepositoryBranchName }}
+          $targetRepositoryCommitHash = git rev-parse HEAD
+          Write-Host "Target repository commit hash: $targetRepositoryCommitHash"
+          Write-Host "##vso[task.setvariable variable=targetRepositoryCommitHash]$targetRepositoryCommitHash"
+          popd
+
+    - script: set
+      displayName: Display machine environment variables
+
+    # This keeps Guardian happy by allowing it to find the TSA config
+    - task: CopyFiles@2
+      displayName: Copy `.config\` to `$(Build.SourcesDirectory)`
+      inputs:
+        SourceFolder: '$(Pipeline.Workspace)\$(selfRepoRelativePath)'
+        TargetFolder: '$(Build.SourcesDirectory)'
+        Contents: |
+          .config\**
+
+    - task: DownloadPipelineArtifact@2
+      displayName: Download PDBs from official build
+      inputs:
+        source: specific
+        runVersion: specific
+        project: $(resources.pipeline.sourcePipeline.projectID)
+        pipeline: $(resources.pipeline.sourcePipeline.pipelineID)
+        buildId: $(resources.pipeline.sourcePipeline.runID)
+        targetPath: '$(ob_outputDirectory)/PublicSymbols'
+        itemPattern: '**/Symbols/Product/**/*.pdb'
+
+    - task: DeleteFiles@1
+      displayName: Delete PDBs for non-shipping and CHK binaries
+      inputs:
+        SourceFolder: '$(ob_outputDirectory)/PublicSymbols'
+        Contents: |
+          *chk/*
+          **/AppAnalysisTool.pdb
+          **/Microsoft.Diagnostics.AppAnalysis.pdb
+          **/Microsoft.UI.Xaml.Design.pdb
+
+    - script: dir /s /b $(ob_outputDirectory)\PublicSymbols
+      displayName: Dump public symbols staging directory
+
+    # If target repository is not hosted on Github (e.g. the Unofficial pipeline) then
+    # obviously the source URLs we derive won't be valid. But that's OK  because we can
+    # still extract the raw srcsrv stream and manually verify it has the correct structure.
+    - task: PowerShell@2
+      displayName: Inject Github source server information
+      inputs:
+        workingDirectory: '$(Pipeline.Workspace)'
+        filePath: '$(Pipeline.Workspace)\$(selfRepoRelativePath)\scripts\InjectGithubSourceInfoIntoSymbols.ps1'
+        arguments: >
+          -SymbolsDirectory $(ob_outputDirectory)/PublicSymbols
+          -GithubRepositoryName $(targetRepoName)
+          -GithubRepositoryDirectory $(targetRepoRelativePath)
+          -CommitHash $(targetRepositoryCommitHash)
+          $(targetRepositorySubdirectoryArg)
+
+    - ${{ if eq(parameters.publishPublicSymbols, true) }}:
+      - template: ${{variables['System.DefaultWorkingDirectory']}}\AzurePipelinesTemplates\WindowsAppSDK-PublishSymbol-Steps.yml@WindowsAppSDKConfig
+        parameters:
+          SearchPattern: '$(ob_outputDirectory)\PublicSymbols\**\*.pdb'
+          IsOfficial: true

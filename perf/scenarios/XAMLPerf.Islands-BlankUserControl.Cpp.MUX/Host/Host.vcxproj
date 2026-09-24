@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{d975be59-db78-4965-b8d0-b159a230f8f2}</ProjectGuid>
+    <ProjectName>XAMLPerf.Islands-BlankUserControl.Cpp.MUX</ProjectName>
+    <RootNamespace>IslandSimple</RootNamespace>
+    <TargetName>XAMLPerf.Islands-BlankUserControl.Cpp.MUX</TargetName>
+    <AppContainerApplication>false</AppContainerApplication>
+    <UseCppWinRT>true</UseCppWinRT>
+    <UseWinUI>true</UseWinUI>
+    <AddSystemLibs>true</AddSystemLibs>
+  </PropertyGroup>
+
+  <Import Project="..\..\build\Cpp-ScenarioApp.props" />
+
+  <ItemGroup>
+    <Manifest Include="app.manifest" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="targetver.h" />
+    <ClCompile Include="Host.cpp" />
+    <ResourceCompile Include="Host.rc" />
+    <Image Include="small.ico" />
+    <ClInclude Include="UserControl.xaml.h">
+      <DependentUpon>UserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <Page Include="UserControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <ClCompile Include="UserControl.xaml.cpp">
+      <DependentUpon>UserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <Midl Include="UserControl.idl">
+      <DependentUpon>UserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+  </ItemGroup>
+
+  <Import Project="..\..\build\Cpp-ScenarioApp.targets" />
+</Project>

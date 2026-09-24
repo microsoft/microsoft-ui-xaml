@@ -18,6 +18,12 @@ namespace Diagnostics
     {
     }
 
+    void ResourceGraph::UnregisterResourceDependency(
+        _In_ CDependencyObject* ,
+        KnownPropertyIndex )
+    {
+    }
+
     void ResourceGraph::RegisterControlTemplateDependency(
         _In_ CControlTemplate* ,
         _In_ CResourceDictionary* ,

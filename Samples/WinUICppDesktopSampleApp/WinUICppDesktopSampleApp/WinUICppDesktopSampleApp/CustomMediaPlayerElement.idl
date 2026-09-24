@@ -1,0 +1,21 @@
+// Copyright (c) Microsoft Corporation and Contributors.
+// Licensed under the MIT License.
+
+namespace WinUICppDesktopSampleApp
+{
+    [default_interface]
+    runtimeclass CustomMediaPlayerElement : Microsoft.UI.Xaml.Controls.MediaPlayerElement
+    {
+        CustomMediaPlayerElement();
+    }
+
+    // Regression test for IDragProvider code generation. Without the fix,
+    // implementing `IDragProvider.DragEffects` triggers a static_assert that
+    // `winrt::hstring[]` is a complete type — a condition that can never be satisfied.
+    [bindable]
+    [default_interface]
+    runtimeclass CustomMediaPlayerElementDragProvider : Microsoft.UI.Xaml.Automation.Provider.IDragProvider
+    {
+        CustomMediaPlayerElementDragProvider();
+    }
+}

@@ -1,0 +1,156 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  stageName: 'Test_WinUIComponentPackageUpdate'
+  stageDisplayName: 'Test WinUI Component Package Update'
+  pipelineKind: '' # can be: Nightly, PR, BuildAndTest, Preview, Official
+  signOutput: false # this is true for Release builds
+  buildScenarioApps: false
+  MUXFinalRelease: false
+  runStaticAnalysis: true
+  projectCaching: false
+  dependsOn: ''
+
+stages:
+- stage: ${{ parameters.stageName }}
+  displayName: ${{ parameters.stageDisplayName }}
+  # Skip the build job if we are reusing the output of a previous build.
+  # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
+  condition:
+    and(succeeded(), eq(variables['useBuildOutputFromBuildId'],''))
+  dependsOn: ${{ parameters.dependsOn }}
+  variables:
+  - group: WinUI-InternalFeed
+  jobs:
+  - job: Test_WinUIComponentPackageUpdate
+    pool:
+      type: windows
+    timeoutInMinutes: 300
+    strategy:
+      maxParallel: 10
+      # The matrix of this job must stay the same as the BuildScenarioApps job in build\AzurePipelinesTemplates\WinUI-BuildScenarioApps-Stage.yml
+      matrix:
+          Debug_x64:
+            buildPlatform: 'x64'
+            buildOutput: 'amd64'
+            normalizedConfiguration: 'chk'
+            shouldPgo: false
+    variables:
+      ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+      ob_artifactBaseName: 'TestWinUIComponentPackageUpdate'
+      ob_sdl_codeSignValidation_excludes: '-|WinUIComponentPackage\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
+      # The default ob checkout only does a shallow fetch. For PGO to work, it needs to fetch deeper.
+      ob_git_fetchDepth: -1
+      ${{ if eq(parameters.runStaticAnalysis, 'true') }}:
+        ob_sdl_apiscan_enabled: true
+        ob_sdl_apiscan_softwareFolder: '$(Build.SourcesDirectory)\BuildOutput\APIScanTarget'
+        ob_sdl_apiscan_symbolsFolder: '$(Build.SourcesDirectory)\out\Symbols;SRV*$(WinUISymbolServerUri)'
+
+    steps:
+    - template: WinUI-BuildMUXProject-Steps.yml
+      parameters:
+        additionalMSBuildOptions: '/p:ProductMajorVersion="$(transportPackageMajorVersion)" /p:ProductMinorVersion="$(transportPackageMinorVersion)" /p:ProductBuildVersion="$(versionDate_YYMM)" /p:ProductPatchVersion="$(transportPackagePatchVersion)" /p:ProductPrereleaseTag="$(VersionTag)"'
+        pipelineKind: ${{ parameters.pipelineKind }}
+        buildScenarioApps: ${{ parameters.buildScenarioApps }}
+        signOutput: ${{ parameters.signOutput }}
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+        projectCaching: ${{ parameters.projectCaching }}
+        buildProductOnly: true
+
+    # In order to test the WindowsAppSDK component package update functionality, we'll first build the simple scratch pad app to consume the existing package.
+    # Then we'll trivially edit a source file for Microsoft.UI.Xaml.dll by adding a newline, rebuild the DLL, re-pack the component package, and then build the scratch pad app again.
+    # Finally, we'll check the timestamp of the version of Microsoft.UI.Xaml.dll in the scratch pad app's output to ensure that it picked up the new version.
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: ScratchPadApp.sln
+        solutionPath: $(Build.SourcesDirectory)\Samples\ScratchPadApp
+        nugetConfigPath: nuget.config
+        msBuildArgs: '/p:BuildingInsideVisualStudio=true /p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}}'
+        msbuildInstallDir: $(_buildToolsDirectory)
+        projectCaching: ${{ parameters.projectCaching }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+    - task: CopyFiles@2
+      displayName: 'Copy the WinUI component package to the artifact staging directory'
+      condition: always()
+      inputs:
+        sourceFolder: $(Build.SourcesDirectory)\PackageStore
+        targetFolder: $(ob_outputDirectory)\OldWinUIComponentPackage
+
+    - powershell: |
+        $lastMuxWriteTime = (Get-Item "$(Build.SourcesDirectory)\BuildOutput\obj\$(buildOutput)$(normalizedConfiguration)\Samples\ScratchPadApp\ScratchPadApp\ScratchPadApp\Microsoft.ui.xaml.dll").LastWriteTime
+        Write-Host "Last write time of Microsoft.UI.Xaml.dll in ScratchPadApp: $lastMuxWriteTime"
+        Write-Host "##vso[task.setvariable variable=lastMuxWriteTime;]$lastMuxWriteTime"
+      displayName: 'Log the last write time of Microsoft.UI.Xaml.dll in ScratchPadApp'
+
+    - script: |
+        echo. >> $(Build.SourcesDirectory)\dxaml\xcp\dxaml\dllsrv\winrt\dllentry.cpp
+      displayName: 'Add a newline to dllentry.cpp to ensure we rebuild Microsoft.UI.Xaml.dll'
+
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: Microsoft.UI.Xaml-Product.sln
+        solutionPath: $(Build.SourcesDirectory)
+        nugetConfigPath: nuget.config
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue) /bl:$(ob_outputDirectory)\binlogs\Microsoft.UI.Xaml-Product.binlog'
+        msbuildInstallDir: $(_buildToolsDirectory)
+        projectCaching: ${{ parameters.projectCaching }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+    # The product was just rebuilt with a fresh Microsoft.UI.Xaml.dll. Re-pack and re-install the
+    # Microsoft.WindowsAppSDK.WinUI component package so the rebuilt DLL is what ScratchPadApp picks up
+    # on its next build. The component package bundles a static copy of the DLL, so it must be
+    # re-packed here for the rebuild to propagate. build-nupkg.ps1 -InstallPackage
+    # purges the package from the repo-local packages folder (which nuget.config sets as the
+    # globalPackagesFolder), forcing ScratchPadApp's /restore to re-extract the freshly packed package.
+    - powershell: |
+        $dependencyOverrideArgs = @{}
+        if ($env:BUILD_REPOSITORY_PROVIDER -in @('GitHub', 'GitHubEnterprise'))
+        {
+          $dependencyOverrideArgs['UseDependencyOverrides'] = $true
+        }
+
+        & "$(Build.SourcesDirectory)\build\NuSpecs\build-nupkg.ps1" `
+          -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec `
+          -VersionOverride $(versionFinal) `
+          -PackageRoot '$(Build.SourcesDirectory)\BuildOutput\packaging\$(buildConfiguration)' `
+          -OutputDir '$(Build.SourcesDirectory)\PackageStore' `
+          -InstallPackage `
+          @dependencyOverrideArgs
+      displayName: Re-pack WinUI component package with rebuilt Microsoft.UI.Xaml.dll
+
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: ScratchPadApp.sln
+        solutionPath: $(Build.SourcesDirectory)\Samples\ScratchPadApp
+        nugetConfigPath: nuget.config
+        msBuildArgs: '/p:BuildingInsideVisualStudio=true /p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}} /bl:$(ob_outputDirectory)\binlogs\ScratchPadApp.binlog'
+        msbuildInstallDir: $(_buildToolsDirectory)
+        projectCaching: ${{ parameters.projectCaching }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+    - task: CopyFiles@2
+      displayName: 'Copy the rebuilt WinUI component package to the artifact staging directory'
+      condition: always()
+      inputs:
+        sourceFolder: $(Build.SourcesDirectory)\PackageStore
+        targetFolder: $(ob_outputDirectory)\RebuiltWinUIComponentPackage
+
+    - powershell: |
+        $lastMuxWriteTime = (Get-Item "$(Build.SourcesDirectory)\BuildOutput\obj\$(buildOutput)$(normalizedConfiguration)\Samples\ScratchPadApp\ScratchPadApp\ScratchPadApp\Microsoft.ui.xaml.dll").LastWriteTime
+
+        Write-Host "Old last write time of Microsoft.UI.Xaml.dll in ScratchPadApp: $($env:LASTMUXWRITETIME)"
+        Write-Host "New last write time of Microsoft.UI.Xaml.dll in ScratchPadApp: $lastMuxWriteTime"
+        
+        if ($lastMuxWriteTime -eq $env:LASTMUXWRITETIME)
+        {
+          Write-Error "Building ScratchPadApp after rebuilding Microsoft.UI.Xaml.dll did not successfully pick up the new DLL."
+          Write-Host "##vso[task.complete result=Failed;]Building ScratchPadApp after rebuilding Microsoft.UI.Xaml.dll did not successfully pick up the new DLL."
+        }
+        else
+        {
+          Write-Host "Building ScratchPadApp after rebuilding Microsoft.UI.Xaml.dll successfully picked up the new DLL."
+          Write-Host "##vso[task.complete result=Succeeded;]Building ScratchPadApp after rebuilding Microsoft.UI.Xaml.dll successfully picked up the new DLL."
+        }
+      displayName: 'Ensure that the last write time of Microsoft.UI.Xaml.dll in ScratchPadApp is now newer'

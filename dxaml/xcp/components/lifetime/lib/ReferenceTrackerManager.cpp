@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "ReferenceTrackerManager.h"
+#include <XcpAllocation.h>
 #include <DependencyLocator.h>
 #include <GCInstrumentationAggregator.h>
 #include <AutoReentrantReferenceLock.h>
@@ -899,6 +900,16 @@ ReferenceTrackerManager::SetReferenceTrackerHost( _In_ IReferenceTrackerHost *va
 {
     // Keep the callbacks.
     ReplaceInterface( _pReferenceTrackerHost, value );
+
+    // Enable native heap allocation tracking now that a managed runtime is
+    // present. The tracking feeds the orphaned-object GC trigger heuristic
+    // in PerFrameCallback and is only useful when there's a managed GC to
+    // drive. Pure C++ apps (no managed runtime) skip the tracking entirely
+    // to avoid per-allocation overhead.
+    if (value != nullptr)
+    {
+        XcpAllocation::EnableMemoryTracking();
+    }
 
     return S_OK;
 }

@@ -1,0 +1,12 @@
+// Copyright (c) Microsoft Corporation and Contributors.
+// Licensed under the MIT License.
+
+namespace WinUICppRuntimeComponent
+{
+    [default_interface]
+    runtimeclass CustomControl1 : Microsoft.UI.Xaml.Controls.Control
+    {
+        CustomControl1();
+        Int32 MyProperty;
+    }
+}

@@ -790,6 +790,15 @@ but currently have no effect on an `ItemsRepeater` and `ItemsView`:
 - `IItemsRangeInfo`
 - `ISelectionInfo`
 
+#### Comparison with ItemsControl.ItemsSource
+
+`ItemsView` builds on `ItemsRepeater`, so its supported `ItemsSource` interfaces differ from the legacy `ItemsControl.ItemsSource` (used by `ListView`, `GridView`, `ListBox`, etc.). Do not assume full parity:
+
+* No `Items` collection: unlike `ItemsControl`, `ItemsView` has no `Items` property — data must be set via `ItemsSource`.
+* Honored by `ListView`/`GridView` but ignored by `ItemsView`/`ItemsRepeater`: `ISupportIncrementalLoading`, `IItemsRangeInfo`, `ISelectionInfo`.
+* Same behavior: `IEnumerable`/`IIterable`, `IReadOnlyList`/`IVectorView`, `IList`/`IVector`, `INotifyCollectionChanged`, `IObservableVector`, and `IKeyIndexMapping` (consumed by `ItemsView` via `ItemsRepeater` like `ListViewBase`; only the bare `ItemsControl` ignores it).
+* Minimum requirement is the same as `ItemsControl`: the source must implement `IEnumerable`/`IIterable<T>`.
+
 ## ItemsView.ItemTemplate property
 
 Gets or sets the template used to display each item.

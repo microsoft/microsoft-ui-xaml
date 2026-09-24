@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="dogfood" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(_NTDRIVE)$(_NTROOT)\tools\Microsoft.DevDiv.Native.Settings.targets" />
+
+    <PropertyGroup>
+        <TargetType>COPY</TargetType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <CopyFile Include="LibManagedDll.dll">
+            <DestFolder>$(SuiteBinPath)</DestFolder>
+        </CopyFile>
+        <CopyFile Include="LibManagedWinmd.winmd">
+            <DestFolder>$(SuiteBinPath)</DestFolder>
+        </CopyFile>
+    </ItemGroup>
+
+    <Import Project="$(_NTDRIVE)$(_NTROOT)\tools\Microsoft.DevDiv.Native.targets" />
+</Project>

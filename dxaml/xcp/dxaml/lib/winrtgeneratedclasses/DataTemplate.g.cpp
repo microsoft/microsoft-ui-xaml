@@ -38,6 +38,12 @@ HRESULT DirectUI::DataTemplateGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Ou
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IElementFactory*>(this);
     }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDataTemplateFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IDataTemplateFeature_ExperimentalApi>(this);
+    }
+#endif
     else
     {
         RRETURN(DirectUI::FrameworkTemplate::QueryInterfaceImpl(iid, ppObject));
@@ -120,6 +126,12 @@ HRESULT DirectUI::DataTemplateFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outp
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IDataTemplateStatics*>(this);
     }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IDataTemplateFactoryFeature_ExperimentalApi)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IDataTemplateFactoryFeature_ExperimentalApi*>(this);
+    }
+#endif
     else
     {
         RRETURN(ctl::BetterAggregableCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
@@ -153,6 +165,15 @@ IFACEMETHODIMP DirectUI::DataTemplateFactory::CreateInstance(_In_opt_ IInspectab
     const HRESULT hr = ctl::ValidateFactoryCreateInstanceWithBetterAggregableCoreObjectActivationFactory(pOuter, ppInner, reinterpret_cast<IUnknown**>(ppInstance), GetTypeIndex(), false /*isFreeThreaded*/);
     IFC_RETURN(hr);
     return S_OK;
+}
+IFACEMETHODIMP DirectUI::DataTemplateFactory::CreateInstanceFromCallback(_In_ ABI::Microsoft::UI::Xaml::IDataTemplateElementFactory* pElementFactory, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppInstance)
+{
+    HRESULT hr = S_OK;
+    ARG_NOTNULL(pElementFactory, "elementFactory");
+    ARG_VALIDRETURNPOINTER(ppInstance);
+    IFC(CreateInstanceFromCallbackImpl(pElementFactory, pOuter, ppInner, ppInstance));
+Cleanup:
+    return hr;
 }
 
 // Dependency properties.

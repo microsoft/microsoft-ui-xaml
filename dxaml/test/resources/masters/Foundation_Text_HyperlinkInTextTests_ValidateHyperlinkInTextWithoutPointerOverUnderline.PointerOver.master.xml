@@ -63,6 +63,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
+$$HyperlinkHoverUnderline$$
                 <wucSpriteVisual SizeX="109" SizeY="24" BorderMode="Hard" OffsetX="20" OffsetY="74" OffsetZ="0">
                   <MaskBrush>
                     <Source>
@@ -76,7 +77,7 @@
                 <wucSpriteVisual SizeX="60" SizeY="14" BorderMode="Hard" OffsetX="141" OffsetY="87" OffsetZ="0">
                   <MaskBrush>
                     <Source>
-                      <ColorBrush Color="rgb {0.651, 0.8471, 1}" />
+                      <ColorBrush Color="$$HyperlinkHoverColor$$" />
                     </Source>
                     <Mask>
                       <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="6" />

@@ -33,6 +33,7 @@
 #define KEYWORD_NAVIGATIONVIEW     0x0000000000002000
 #define KEYWORD_INKTOOLBAR         0x0000000000004000
 #define KEYWORD_TITLEBAR           0x0000000000008000
+#define KEYWORD_INKCANVAS          0x0000000000010000
 
 // Common output formats
 #define TRACE_MSG_METH L"%s[0x%p]()\n"
@@ -91,7 +92,12 @@
 #define METH_NAME StringUtil::Utf8ToUtf16(__FUNCTION__).c_str()
 
 // TraceLogging provider name for telemetry.
+// Tabular uses distinct ETW provider names/GUIDs to avoid colliding with MUXC.
+#ifdef MUXCONTROLS_TABULAR
+#define TELEMETRY_PROVIDER_NAME "Microsoft.UI.Xaml.Controls.Tabular"
+#else
 #define TELEMETRY_PROVIDER_NAME "Microsoft.UI.Xaml.Controls"
+#endif
 
 TRACELOGGING_DECLARE_PROVIDER(g_hTelemetryProvider);
 extern bool g_IsTelemetryProviderEnabled;
@@ -100,7 +106,11 @@ extern ULONGLONG g_TelemetryProviderMatchAnyKeyword;
 extern GUID g_TelemetryProviderActivityId;
 
 // TraceLogging provider name for performance.
+#ifdef MUXCONTROLS_TABULAR
+#define PERF_PROVIDER_NAME "Microsoft.UI.Xaml.Controls.Tabular.Perf"
+#else
 #define PERF_PROVIDER_NAME "Microsoft.UI.Xaml.Controls.Perf"
+#endif
 
 TRACELOGGING_DECLARE_PROVIDER(g_hPerfProvider);
 extern bool g_IsPerfProviderEnabled;
@@ -109,7 +119,11 @@ extern ULONGLONG g_PerfProviderMatchAnyKeyword;
 extern GUID g_PerfProviderActivityId;
 
 // TraceLogging provider name for debugging.
+#ifdef MUXCONTROLS_TABULAR
+#define DEBUG_PROVIDER_NAME "Microsoft.UI.Xaml.Controls.Tabular.Debug"
+#else
 #define DEBUG_PROVIDER_NAME "Microsoft.UI.Xaml.Controls.Debug"
+#endif
 
 TRACELOGGING_DECLARE_PROVIDER(g_hLoggingProvider);
 extern bool g_IsLoggingProviderEnabled;

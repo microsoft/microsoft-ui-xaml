@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="XamlTelemtryViewerWInui3.TimelineWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Name="TimelineWindowRoot"
+    Title="Timeline View — Process Lifecycle">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.Resources>
+            <!-- Flat grey button: grey background, black text, no hover/pressed visual change. -->
+            <Style x:Key="FlatGreyButton" TargetType="Button">
+                <Setter Property="Background" Value="{ThemeResource LaneBg}" />
+                <Setter Property="Foreground" Value="{ThemeResource AppText}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Padding" Value="8,4" />
+                <Setter Property="CornerRadius" Value="4" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Padding="{TemplateBinding Padding}">
+                                <ContentPresenter
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header: process picker + status + close button -->
+        <Border
+            Grid.Row="0"
+            Padding="12"
+            Background="{ThemeResource SurfaceBg}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        Text="Process per trace:"
+                        Foreground="{ThemeResource AppText}"
+                        VerticalAlignment="Center"
+                        Margin="0,0,8,0" />
+                    <ItemsControl ItemsSource="{Binding Lanes}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical" Margin="0,0,12,0">
+                                    <TextBlock Text="{Binding TraceLabel}" Foreground="{ThemeResource SubText}" FontSize="10" Margin="2,0,0,2" />
+                                    <ComboBox
+                                        Width="220"
+                                        ItemsSource="{Binding Processes}"
+                                        SelectedItem="{Binding SelectedProcess, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" Foreground="{ThemeResource AppText}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    Spacing="8">
+                </StackPanel>
+
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    Text="{Binding StatusMessage}"
+                    Foreground="#FFD700"
+                    Margin="0,8,0,0"
+                    FontSize="11" />
+            </Grid>
+        </Border>
+
+        <!-- Scrollable content area -->
+        <ScrollViewer
+            x:Name="TimelineScrollViewer"
+            Grid.Row="1"
+            VerticalScrollBarVisibility="Auto"
+            HorizontalScrollMode="Disabled"
+            HorizontalScrollBarVisibility="Disabled"
+            PointerWheelChanged="OnScrollViewerPointerWheel">
+            <Grid Background="{ThemeResource AppBg}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+        <!-- Timeline chart area -->
+        <Border
+            Grid.Row="0"
+            Margin="12"
+            Padding="8"
+            Background="{ThemeResource PanelBg}"
+            CornerRadius="6">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Zoom controls -->
+                <StackPanel
+                    Grid.Row="0"
+                    Orientation="Horizontal"
+                    Margin="0,0,0,6">
+                    <TextBlock
+                        Text="Ctrl+Scroll to zoom  |  Left-drag to pan"
+                        Foreground="{ThemeResource SubText}"
+                        FontSize="11"
+                        VerticalAlignment="Center" />
+                    <Button
+                        Style="{StaticResource FlatGreyButton}"
+                        Content="Reset Zoom"
+                        Margin="12,0,0,0"
+                        Padding="8,4"
+                        FontSize="11"
+                        Click="OnResetZoom" />
+                </StackPanel>
+
+                <!-- Time axis canvas -->
+                <Canvas
+                    x:Name="TimeAxisCanvas"
+                    Grid.Row="1"
+                    Height="20"
+                    Margin="0,0,0,2"
+                    Background="Transparent"
+                    SizeChanged="OnCanvasSizeChanged"
+                    PointerWheelChanged="OnCanvasMouseWheel"
+                    ManipulationMode="Scale"
+                    ManipulationDelta="OnCanvasManipulationDelta"
+                    PointerPressed="OnCanvasPointerDown"
+                    PointerMoved="OnCanvasPointerMoved"
+                    PointerReleased="OnCanvasPointerUp" />
+
+                <!-- Track 1: Timeline with phases and markers (one lane per loaded trace) -->
+                <Border
+                    Grid.Row="2"
+                    MinHeight="50"
+                    Background="{ThemeResource LaneBg}"
+                    CornerRadius="4"
+                    Margin="0,0,0,0"
+                    Padding="0">
+                    <Canvas
+                        x:Name="Track1Canvas"
+                        Background="Transparent"
+                        Margin="0,0,0,0"
+                        SizeChanged="OnCanvasSizeChanged"
+                        PointerWheelChanged="OnCanvasMouseWheel"
+                        ManipulationMode="Scale"
+                        ManipulationDelta="OnCanvasManipulationDelta"
+                        PointerPressed="OnCanvasPointerDown"
+                        PointerMoved="OnCanvasPointerMoved"
+                        PointerReleased="OnCanvasPointerUp" />
+                </Border>
+
+                <!-- Legend -->
+                <ItemsControl
+                    x:Name="LegendList"
+                    Grid.Row="3"
+                    Margin="0,4,0,0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                                <Border
+                                    Width="12"
+                                    Height="12"
+                                    CornerRadius="2"
+                                    Background="{Binding ColorBrush}"
+                                    Margin="0,0,6,0" />
+                                <TextBlock
+                                    Foreground="{ThemeResource AppText}"
+                                    FontSize="11"
+                                    Text="{Binding Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+        </Border>
+
+        <!-- Track 2: Provider Activity (Hidden initially) -->
+        <Border
+            Grid.Row="1"
+            Margin="12"
+            Padding="8"
+            Background="{ThemeResource PanelBg}"
+            CornerRadius="6"
+            Visibility="{Binding IsTrack2Visible}">
+            <ScrollViewer
+                x:Name="Track2ScrollViewer"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollMode="Disabled"
+                HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Orientation="Vertical" Margin="4">
+                    <!-- Track 2 Header with Cancel button -->
+                    <Border Background="{ThemeResource LaneBg2}" Padding="8,4" CornerRadius="4" Margin="0,0,0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                Text="Track 2 - Provider Activity"
+                                Foreground="{ThemeResource AppText}"
+                                FontSize="12"
+                                FontWeight="Bold"
+                                VerticalAlignment="Center" />
+                            <Button
+                                x:Name="CloseTrack2Button"
+                                Style="{StaticResource FlatGreyButton}"
+                                Grid.Column="1"
+                                Content="Cancel"
+                                Click="OnCloseTrack2"
+                                Padding="6,2"
+                                FontSize="10" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Provider Boxes Container -->
+                    <StackPanel
+                        x:Name="Track2ProviderStackPanel"
+                        Orientation="Vertical"
+                        Spacing="8" />
+
+                    <!-- Show All Providers Button -->
+                    <Button
+                        x:Name="ShowRemainingProvidersButton"
+                        Style="{StaticResource FlatGreyButton}"
+                        AutomationProperties.AutomationId="ShowRemainingProvidersBtn"
+                        Content="Show Remaining Providers"
+                        Click="OnShowRemainingProviders"
+                        Margin="0,8,0,0"
+                        Padding="8,6"
+                        FontSize="11"
+                        Visibility="Collapsed" />
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Action Buttons Panel (for selected Track 2 region) -->
+        <Border
+            Grid.Row="2"
+            Background="{ThemeResource AppBg}"
+            BorderBrush="{ThemeResource LaneBg}"
+            BorderThickness="0,1,0,0"
+            Padding="12"
+            Visibility="{Binding IsActionButtonsVisible}"
+            x:Name="ActionButtonsPanel">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="12">
+                <Button
+                    Style="{StaticResource FlatGreyButton}"
+                    Content="AI Analysis"
+                    Click="OnAIAnalysis"
+                    Padding="16,10"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Height="40"
+                    MinWidth="120" />
+                <Button
+                    Style="{StaticResource FlatGreyButton}"
+                    Content="Open in WPA"
+                    Click="OnOpenInWPA"
+                    Padding="16,10"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Height="40"
+                    MinWidth="120" />
+            </StackPanel>
+        </Border>
+
+        <!-- Hovered Event Info Panel -->
+        <Border
+            Grid.Row="3"
+            Background="{ThemeResource SurfaceBg}"
+            BorderBrush="{ThemeResource LaneBg}"
+            BorderThickness="0,1,0,0"
+            Padding="12"
+            x:Name="HoveredEventPanel"
+            Visibility="Collapsed">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <StackPanel Orientation="Vertical" Spacing="6">
+                    <TextBlock
+                        Foreground="#FFD700"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Text="Hovering Over Event" />
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Event Name -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Foreground="{ThemeResource SubText}" FontSize="11" Text="Event:" Margin="0,0,12,0" />
+                        <TextBlock x:Name="HoveredEventName" Grid.Row="0" Grid.Column="1" Foreground="{ThemeResource AppText}" FontSize="11" TextWrapping="Wrap" />
+                        
+                        <!-- Provider -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Foreground="{ThemeResource SubText}" FontSize="11" Text="Provider:" Margin="0,0,12,0" />
+                        <TextBlock x:Name="HoveredProviderName" Grid.Row="1" Grid.Column="1" Foreground="{ThemeResource AppText}" FontSize="11" TextWrapping="Wrap" />
+                        
+                        <!-- Start Time -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Foreground="{ThemeResource SubText}" FontSize="11" Text="Start:" Margin="0,0,12,0" />
+                        <TextBlock x:Name="HoveredStartTime" Grid.Row="2" Grid.Column="1" Foreground="{ThemeResource AppText}" FontSize="11" TextWrapping="Wrap" />
+                        
+                        <!-- End Time -->
+                        <TextBlock Grid.Row="3" Grid.Column="0" Foreground="{ThemeResource SubText}" FontSize="11" Text="End:" Margin="0,0,12,0" />
+                        <TextBlock x:Name="HoveredEndTime" Grid.Row="3" Grid.Column="1" Foreground="{ThemeResource AppText}" FontSize="11" TextWrapping="Wrap" />
+                        
+                        <!-- Level -->
+                        <TextBlock Grid.Row="4" Grid.Column="0" Foreground="{ThemeResource SubText}" FontSize="11" Text="Level:" Margin="0,0,12,0" />
+                        <TextBlock x:Name="HoveredLevel" Grid.Row="4" Grid.Column="1" Foreground="{ThemeResource AppText}" FontSize="11" TextWrapping="Wrap" />
+                        
+                        <!-- Process -->
+                        <TextBlock Grid.Row="5" Grid.Column="0" Foreground="{ThemeResource SubText}" FontSize="11" Text="Process:" Margin="0,0,12,0" />
+                        <TextBlock x:Name="HoveredProcessName" Grid.Row="5" Grid.Column="1" Foreground="{ThemeResource AppText}" FontSize="11" TextWrapping="Wrap" />
+                        
+                        <!-- Thread ID -->
+                        <TextBlock Grid.Row="6" Grid.Column="0" Foreground="{ThemeResource SubText}" FontSize="11" Text="Thread:" Margin="0,0,12,0" />
+                        <TextBlock x:Name="HoveredThreadId" Grid.Row="6" Grid.Column="1" Foreground="{ThemeResource AppText}" FontSize="11" TextWrapping="Wrap" />
+                        
+                        <!-- Payload -->
+                        <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Top" Foreground="{ThemeResource SubText}" FontSize="11" Text="Payload:" Margin="0,0,12,0" />
+                        <TextBlock x:Name="HoveredPayload" Grid.Row="7" Grid.Column="1" Foreground="#90EE90" FontSize="10" FontFamily="Consolas" TextWrapping="Wrap" />
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Window>
+
+
+

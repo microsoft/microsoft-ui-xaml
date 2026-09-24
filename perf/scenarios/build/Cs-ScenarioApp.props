@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Import Project="PackageVersions.props" />
+
+  <PropertyGroup>
+    <ProjectName Condition="$(ProjectName) == ''">$(MSBuildProjectName)</ProjectName>
+    <BuildWinUISourceRevisionHeader>false</BuildWinUISourceRevisionHeader>
+  </PropertyGroup>
+
+  <Import Project="Paths.props" />
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\pgo\Microsoft.WinUI.PGO.props" />
+
+  <Import Project="AppVersion.props" />
+  <Import Project="TargetPlatformVersions.props" />
+  <Import Project="Packaging.props" />
+  <Import Project="UseWinUITools.props" Condition="'$(UseWinUI)' == 'true'" />
+
+  <PropertyGroup Condition="'$(UseUAP)' == 'true'">
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <OutputType>AppContainerExe</OutputType>
+    <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <MinimumVisualStudioVersion>16</MinimumVisualStudioVersion>
+    <FileAlignment>512</FileAlignment>
+    <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
+  </PropertyGroup>
+
+  <Import Project="Cs-ProjectConfigurations.props" />
+
+  <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(GeneratedFilesDir)VersionInfo.cs" />
+  </ItemGroup>
+</Project>

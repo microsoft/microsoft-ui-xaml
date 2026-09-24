@@ -172,7 +172,7 @@ void LoadedImageSurfaceTests::CreateFromUri()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri));
     });
 
@@ -200,7 +200,7 @@ void LoadedImageSurfaceTests::CreateFromUriWithSize()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri, {100, 100}));
     });
 
@@ -240,7 +240,7 @@ void LoadedImageSurfaceTests::CreateFromUriWithSizeAndAtlasHint()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri, {100, 100}));
     });
 
@@ -283,7 +283,7 @@ void LoadedImageSurfaceTests::CreateFromUriWithSizeVirtual()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         // Note the requested size times scale may still be less than virtual threshold but we have to consider scale
         // multipliers of up to 7 when making the decision. 1000*7 clearly exceeds the virtual threshold.
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri, {1000, 1000}));
@@ -308,7 +308,7 @@ void LoadedImageSurfaceTests::CreateFromStream()
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
     std::shared_ptr<LoadedImageSurfaceVerifier> verifier;
-    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"rainier_2048x1536.png");
 
     RunOnUIThread([&]()
     {
@@ -336,7 +336,7 @@ void LoadedImageSurfaceTests::CreateFromStreamWithSize()
     TestServices::WindowHelper->SetWindowSizeOverrideWithWindowScale(::Windows::Foundation::Size(400, 400), scale);
 
     std::shared_ptr<LoadedImageSurfaceVerifier> verifier;
-    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"rainier_2048x1536.png");
 
     RunOnUIThread([&]()
     {
@@ -364,7 +364,7 @@ void LoadedImageSurfaceTests::CreateFromStreamWithSizeVirtual()
     TestServices::WindowHelper->SetWindowSizeOverrideWithWindowScale(::Windows::Foundation::Size(400, 400), scale);
 
     std::shared_ptr<LoadedImageSurfaceVerifier> verifier;
-    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"rainier_2048x1536.png");
 
     RunOnUIThread([&]()
     {
@@ -392,7 +392,7 @@ void LoadedImageSurfaceTests::FirstUseAfterLoaded()
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
     std::shared_ptr<LoadedImageSurfaceVerifier> verifier;
-    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"rainier_2048x1536.png");
 
     RunOnUIThread([&]()
     {
@@ -417,7 +417,7 @@ void LoadedImageSurfaceTests::CloseStreamWhileStillLoading()
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
     std::shared_ptr<LoadedImageSurfaceVerifier> verifier;
-    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"rainier_2048x1536.png");
 
     RunOnUIThread([&]()
     {
@@ -438,7 +438,7 @@ void LoadedImageSurfaceTests::CloseStreamAfterLoaded()
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
     std::shared_ptr<LoadedImageSurfaceVerifier> verifier;
-    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"rainier_2048x1536.png");
 
     RunOnUIThread([&]()
     {
@@ -469,7 +469,7 @@ void LoadedImageSurfaceTests::CloseCreatedFromStream()
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
     std::shared_ptr<LoadedImageSurfaceVerifier> verifier;
-    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"rainier_2048x1536.png");
 
     RunOnUIThread([&]()
     {
@@ -488,7 +488,7 @@ void LoadedImageSurfaceTests::CloseCreatedFromUri()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri));
 
         // In C++/CX operator delete on "hat" calls the object's IClosable::Close
@@ -504,7 +504,7 @@ void LoadedImageSurfaceTests::CloseAfterLoadCompleted()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"barcelona.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"barcelona.png");
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri));
     });
 
@@ -526,7 +526,7 @@ void LoadedImageSurfaceTests::DeviceLostRecover()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"barcelona.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"barcelona.png");
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri));
     });
 
@@ -548,7 +548,7 @@ void LoadedImageSurfaceTests::DeviceLostInUse()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"barcelona.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"barcelona.png");
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri));
     });
 
@@ -573,7 +573,7 @@ void LoadedImageSurfaceTests::DeviceLostInUseWindowHidden()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"barcelona.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"barcelona.png");
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri));
     });
 
@@ -611,7 +611,7 @@ void LoadedImageSurfaceTests::DeviceLostWindowHiddenBeforeLoad()
     {
         // At this point we have no D3D device.  Create a LoadedImageSurface and put it in the tree.
         LOG_OUTPUT(L"Creating LoadedImageSurface");
-        auto uri = ref new Uri(GetResourcesPath() + L"barcelona.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"barcelona.png");
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri));
     });
     verifier->PutToXamlTree();
@@ -638,7 +638,7 @@ void LoadedImageSurfaceTests::DeviceLostBeforeLoad()
     {
         // Load the first LoadedImageSurface.  This is just to populate the cache with decoded bits.
         LOG_OUTPUT(L"Loading first LoadedImageSurface");
-        uri = ref new Uri(GetResourcesPath() + L"barcelona.jpg");
+        uri = ref new Uri(GetResourcesPath() + L"barcelona.png");
         verifier1 = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri));
     });
 
@@ -704,7 +704,7 @@ void LoadedImageSurfaceTests::PlateauScaleChange()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri, {1000, 1000}));
     });
 
@@ -738,7 +738,7 @@ void LoadedImageSurfaceTests::PlateauScaleChangeDuringDownload()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri, {1000, 1000}));
     });
 
@@ -766,7 +766,9 @@ void LoadedImageSurfaceTests::PlateauScaleChangeStream()
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
     std::shared_ptr<LoadedImageSurfaceVerifier> verifier;
-    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+    // Use PNG instead of JPEG. PNG is lossless so its Surface CRC is stable across
+    // OS versions, while JPEG decode rounding can vary between builds.
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"rainier_2048x1536.png");
     TestServices::Utilities->SetMockDCompSurfaceIdMode(MockDComp::SurfaceIdMode::CRC);
 
     RunOnUIThread([&]()
@@ -804,7 +806,7 @@ void LoadedImageSurfaceTests::ExceedPlateauScaleLimit()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         // with the current scale limit 292*7=2044 which is just below the virtual threshold
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri, {292, 292}));
     });
@@ -895,7 +897,7 @@ void LoadedImageSurfaceTests::LowMemoryStream()
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 
     std::shared_ptr<LoadedImageSurfaceVerifier> verifier;
-    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"barcelona.jpg");
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"barcelona.png");
 
     RunOnUIThread([&]()
     {
@@ -938,7 +940,7 @@ void LoadedImageSurfaceTests::CreatePairFromSameUri()
 
     RunOnUIThread([&]()
     {
-        auto uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         verifier1 = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri));
         verifier2 = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri));
     });
@@ -1206,7 +1208,7 @@ void LoadedImageSurfaceTests::UnofferDeviceBeforeImageResize()
     RunOnUIThread([&]()
     {
         LOG_OUTPUT(L"Begin to load image");
-        auto uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         verifier = std::make_shared<LoadedImageSurfaceVerifier>(LoadedImageSurface::StartLoadFromUri(uri, { 1000, 1000 }));
     });
     verifier->WaitLoaded();

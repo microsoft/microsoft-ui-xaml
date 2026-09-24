@@ -650,6 +650,22 @@ namespace MUXControlsTestApp
             }
         }
 
+        // Repro for the bug where Source is set immediately after EnsureCoreWebView2Async() WITHOUT
+        // awaiting it. The explicit creation is still in flight when Source is set, so WebView2::OnSourceChanged
+        // awaits the in-progress creation operation. That await must resume on the UI thread before navigating,
+        // otherwise the navigation runs on a background thread and fails with RO_E_WRONG_THREAD (0x8001010E).
+        public void OnEnsureNoAwait_Source_ButtonClicked(object sender, RoutedEventArgs args)
+        {
+            if (_wv2_ConcurrentCreation != null)
+            {
+                // Kick off explicit CWV2 creation but intentionally DO NOT await it.
+                _ = _wv2_ConcurrentCreation.EnsureCoreWebView2Async();
+
+                // Immediately set Source while the EnsureCoreWebView2Async() call above is still in flight.
+                WebView2Common.NavigateToUri(_wv2_ConcurrentCreation, WebView2Common.GetTestPageUri("SimplePageWithButton.html"));
+            }
+        }
+
         public void OnRemove_ConcurrentCreationElement_ButtonClicked(object sender, RoutedEventArgs args)
         {
             if (_wv2_ConcurrentCreation != null)

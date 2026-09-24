@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+      <ProjectName Condition="$(ProjectName) == ''">$(MSBuildProjectName)</ProjectName>
+    </PropertyGroup>
+    <Import Project="..\build\Paths.props" />
+    <Import Project="..\..\pgo\Microsoft.WinUI.PGO.props" />
+    <Import Project="$(MSBuildThisFileDirectory)..\..\..\eng\versions.props"/>
+</Project>

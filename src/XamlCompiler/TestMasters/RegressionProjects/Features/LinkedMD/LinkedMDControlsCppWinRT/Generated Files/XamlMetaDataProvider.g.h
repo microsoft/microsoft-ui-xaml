@@ -1,0 +1,77 @@
+﻿// WARNING: Please don't edit this file...
+
+#pragma once
+
+#include "winrt/Windows.UI.Xaml.Interop.h"
+#include "winrt/Windows.UI.Xaml.Markup.h"
+#include "winrt/Windows.UI.Composition.h"
+#include "winrt/Windows.UI.Xaml.h"
+#include "winrt/Windows.UI.Xaml.Controls.h"
+#include "winrt/LinkedMDControlsCppWinRT.h"
+
+namespace winrt::LinkedMDControlsCppWinRT::implementation {
+
+template <typename D, typename... I>
+struct WINRT_EBO XamlMetaDataProvider_base : implements<D, ::Windows::UI::Xaml::Markup::IXamlMetadataProvider, I...>
+{
+    using base_type = XamlMetaDataProvider_base;
+    using class_type = LinkedMDControlsCppWinRT::XamlMetaDataProvider;
+    using implements_type = typename XamlMetaDataProvider_base::implements_type;
+    using implements_type::implements_type;
+    
+#if _MSC_VER < 1914
+    operator class_type() const noexcept
+    {
+        static_assert(std::is_same_v<typename impl::implements_default_interface<D>::type, default_interface<class_type>>);
+        class_type result{ nullptr };
+        attach_abi(result, detach_abi(static_cast<default_interface<class_type>>(*this)));
+        return result;
+    }
+#else
+    operator impl::producer_ref<class_type> const() const noexcept
+    {
+        return { to_abi<default_interface<class_type>>(this) };
+    }
+#endif
+
+    hstring GetRuntimeClassName() const
+    {
+        return L"LinkedMDControlsCppWinRT.XamlMetaDataProvider";
+    }
+};
+
+}
+
+namespace winrt::LinkedMDControlsCppWinRT::factory_implementation {
+
+template <typename D, typename T, typename... I>
+struct WINRT_EBO XamlMetaDataProviderT : implements<D, ::Windows::Foundation::IActivationFactory, I...>
+{
+    using instance_type = LinkedMDControlsCppWinRT::XamlMetaDataProvider;
+
+    hstring GetRuntimeClassName() const
+    {
+        return L"LinkedMDControlsCppWinRT.XamlMetaDataProvider";
+    }
+
+    ::Windows::Foundation::IInspectable ActivateInstance() const
+    {
+        return make<T>();
+    }
+};
+
+}
+
+#if defined(WINRT_FORCE_INCLUDE_XAMLMETADATAPROVIDER_XAML_G_H) || __has_include("XamlMetaDataProvider.xaml.g.h")
+
+#include "XamlMetaDataProvider.xaml.g.h"
+
+#else
+
+namespace winrt::LinkedMDControlsCppWinRT::implementation
+{
+    template <typename D, typename... I>
+    using XamlMetaDataProviderT = XamlMetaDataProvider_base<D, I...>;
+}
+
+#endif

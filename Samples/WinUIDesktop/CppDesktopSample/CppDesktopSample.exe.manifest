@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.0.0.0" name="CppDesktopSample.app"/>
+
+    <application xmlns="urn:schemas-microsoft-com:asm.v3">
+      <windowsSettings>
+        <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/PM</dpiAware>
+        <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+      </windowsSettings>
+    </application>
+</assembly>
+
+<!--
+<?xml version="1.0" encoding="utf-8" ?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v3" manifestVersion="1.0">
+  <assemblyIdentity version="1.0.0.0" name="ConsoleToSubsystemWindows"/>
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+    </application>
+  </compatibility>
+  -->
+  <!--
+  <file name="MyFile.winmd">
+    <activatableClass
+      name="MyClass"
+      threadingmodel="both"/>
+
+  <file name="Microsoft.UI.Xaml.dll">
+    <activatableClass
+      name="Microsoft.UI.Xaml.Hosting.WindowsXamlManager" ThreadingModel="both" xmlns="urn:schemas-microsoft-com:winrt.v1"/>
+  </file>
+
+
+
+</assembly>
+-->

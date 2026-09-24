@@ -1,0 +1,8 @@
+<Project>
+  <!--
+    Present (and intentionally NOT chaining to the repo-root Directory.Build.targets)
+    so MSBuild does not auto-import the heavy product build targets for this
+    standalone helper library. See Directory.Build.props in this folder for the full
+    rationale.
+  -->
+</Project>

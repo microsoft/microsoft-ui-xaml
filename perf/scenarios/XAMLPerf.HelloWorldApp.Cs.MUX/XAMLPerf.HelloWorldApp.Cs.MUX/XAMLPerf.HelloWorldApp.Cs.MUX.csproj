@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <UseWinUI>true</UseWinUI>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+  </PropertyGroup>
+
+  <Import Project="..\..\build\AppVersion.props" />
+  <Import Project="..\..\build\PackageVersions.props"/>
+  <Import Project="..\..\build\TargetPlatformVersions.props"/>
+  <Import Project="..\..\..\pgo\Microsoft.WinUI.PGO.props" />
+
+  <PropertyGroup>
+    <DotNetCoreTargetFrameworkMoniker>$(_DotNetMoniker)-windows$(WindowsTargetPlatformVersion)</DotNetCoreTargetFrameworkMoniker>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
+    <RootNamespace>XAMLPerf.HelloWorldApp.Cs.MUX</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <CsWinRTEnabled>false</CsWinRTEnabled>
+    <VersionString>WinUI</VersionString>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="$(WinUIVersion)" />
+    <PackageReference Include="Microsoft.Windows.CSWinRT" Version="[$(MicrosoftCsWinRTPackageVersion)]" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(GeneratedFilesDir)VersionInfo.cs" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
+    <!-- Prevent the IXP transport package from spewing its runtime to the output dirs. -->
+    <Ixp-SelfContained>false</Ixp-SelfContained>
+  </PropertyGroup>
+
+  <!-- Test projects which reference both the WinUI and the IXP transport package (the IXP cswinrt
+        projection.dll is not in WinUI for some reason, so it has to be pulled from IXP) should
+        prefer the runtime in WinUI. This is especially important for PGO instrumentation. -->
+  <Target Name="PreferWinUI" DependsOnTargets="ResolveTargetingPackAssets" BeforeTargets="_HandlePackageFileConflicts">
+    <PropertyGroup>
+      <PackageConflictPreferredPackages>Microsoft.WinUI;$(PackageConflictPreferredPackages)</PackageConflictPreferredPackages>
+    </PropertyGroup>
+  </Target>
+
+  <Import Project="..\..\build\AppVersion.targets" />
+</Project>

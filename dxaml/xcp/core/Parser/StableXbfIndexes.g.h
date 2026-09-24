@@ -3472,6 +3472,12 @@ namespace Parser
         SplitMenuFlyoutItem_Items = 2466,
         SplitMenuFlyoutItem_SubMenuItemStyle = 2467,
         SplitMenuFlyoutItem_SubMenuPresenterStyle = 2468,
+        Window_Height = 2469,
+        Window_Width = 2470,
+        Window_MaxHeight = 2471,
+        Window_MaxWidth = 2472,
+        Window_MinHeight = 2473,
+        Window_MinWidth = 2474,
     };
 
     enum class StableEventIndex: UINT16
@@ -3819,6 +3825,6 @@ namespace Parser
     };
 
     static const UINT16 StableXbfTypeCount = static_cast<UINT16>(StableXbfTypeIndex::SplitMenuFlyoutItem) + 1;
-    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::SplitMenuFlyoutItem_SubMenuPresenterStyle) + 1;
+    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::Window_MinWidth) + 1;
     static const UINT16 StableEventCount = static_cast<UINT16>(StableEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread) + 1;
 }

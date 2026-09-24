@@ -1,0 +1,26 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  dependsOn: Packaging
+
+stages:
+- stage: AbandonIxpValidationPR
+  condition: and(eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/liftedixp_validation'), not(failed()))
+  displayName: "Abandon IXP Validation Pull Request"
+  dependsOn: ${{ parameters.dependsOn }}
+  jobs:
+  - job: AbandonPullRequest
+    pool:
+      type: windows
+    variables:
+      ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+    steps:
+    - task: PowerShell@2
+      inputs:
+        filePath: 'build\PipelineScripts\AbandonPullRequest.ps1'
+        arguments: >
+          -organization "microsoft"
+          -project "$(System.TeamProject)"
+          -repository "$(Build.Repository.Name)"
+          -pullRequestId "$(System.PullRequest.PullRequestId)"
+          -pat "$(System.AccessToken)"

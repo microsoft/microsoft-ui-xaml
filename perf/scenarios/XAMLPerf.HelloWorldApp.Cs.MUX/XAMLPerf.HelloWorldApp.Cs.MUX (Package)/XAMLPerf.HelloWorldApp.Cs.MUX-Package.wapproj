@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>dfbe516e-8e22-496f-9664-e390b68caa5d</ProjectGuid>
+    <EntryPointProjectUniqueName>..\XAMLPerf.HelloWorldApp.Cs.MUX\XAMLPerf.HelloWorldApp.Cs.MUX.csproj</EntryPointProjectUniqueName>
+    <UseWinUI>true</UseWinUI>
+  </PropertyGroup>
+
+  <Import Project="..\..\build\Packaged-ScenarioApp.props" />
+
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Images\SplashScreen.scale-200.png" />
+    <Content Include="Images\LockScreenLogo.scale-200.png" />
+    <Content Include="Images\Square150x150Logo.scale-200.png" />
+    <Content Include="Images\Square44x44Logo.scale-200.png" />
+    <Content Include="Images\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Images\StoreLogo.png" />
+    <Content Include="Images\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\XAMLPerf.HelloWorldApp.Cs.MUX\XAMLPerf.HelloWorldApp.Cs.MUX.csproj">
+      <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
+      <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Import Project="..\..\build\Packaged-ScenarioApp.targets" />
+</Project>

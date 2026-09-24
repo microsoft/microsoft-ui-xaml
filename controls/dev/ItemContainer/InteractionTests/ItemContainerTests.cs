@@ -136,6 +136,55 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verify ItemContainer visual state does not get stuck in the pressed state after the mouse is released outside the container. Regression test for Bug 53343473.")]
+        public void ItemContainerVisualStateNotStuckPressedAfterMouseReleasedOutside()
+        {
+            using (var setup = new TestSetupHelper(new[] { "ItemContainer Tests", "navigateToSummary" }))
+            {
+                Log.Comment("Retrieving RoutedEventsItemContainer");
+                var routedEventsItemContainer = FindElement.ById("RoutedEventsItemContainer");
+                Verify.IsNotNull(routedEventsItemContainer, "Verifying that RoutedEventsItemContainer was found");
+
+                Log.Comment("Retrieving CurrentVisualStateTextBlock");
+                var currentVisualStateTextBlock = new Edit(FindElement.ById("CurrentVisualStateTextBlock"));
+                Verify.IsNotNull(currentVisualStateTextBlock, "Verifying that CurrentVisualStateTextBlock was found");
+
+                Log.Comment("Retrieving CanUserSelectComboBox");
+                ComboBox canUserSelectComboBox = new ComboBox(FindElement.ById("CanUserSelectComboBox"));
+                Verify.IsNotNull(canUserSelectComboBox, "Verifying that CanUserSelectComboBox was found");
+
+                Log.Comment("Changing CanUserSelectComboBox selection to 'UserCannotSelect' so pressing does not select the container, isolating the Pressed visual state.");
+                canUserSelectComboBox.SelectItemByName("UserCannotSelect");
+                Wait.ForIdle();
+
+                Log.Comment("Move the mouse over the ItemContainer.");
+                InputHelper.MoveMouse(routedEventsItemContainer, 0, 0);
+                Wait.ForIdle();
+                Verify.AreEqual("UnselectedPointerOver", currentVisualStateTextBlock.GetText());
+
+                Log.Comment("Press the left mouse button on the ItemContainer.");
+                InputHelper.LeftMouseButtonDown(routedEventsItemContainer);
+                Wait.ForIdle();
+                Verify.AreEqual("UnselectedPressed", currentVisualStateTextBlock.GetText());
+
+                Log.Comment("While still pressed, move the mouse outside the ItemContainer.");
+                InputHelper.MoveMouse(routedEventsItemContainer, routedEventsItemContainer.BoundingRectangle.Width, routedEventsItemContainer.BoundingRectangle.Height);
+                Wait.ForIdle();
+
+                Log.Comment("Release the left mouse button while outside the ItemContainer.");
+                InputHelper.LeftMouseButtonUp(routedEventsItemContainer, routedEventsItemContainer.BoundingRectangle.Width, routedEventsItemContainer.BoundingRectangle.Height);
+                Wait.ForIdle();
+
+                Log.Comment("Move the mouse back over the ItemContainer.");
+                InputHelper.MoveMouse(routedEventsItemContainer, 0, 0);
+                Wait.ForIdle();
+
+                Log.Comment("Verify the ItemContainer is in the PointerOver state and did not get stuck in the Pressed state.");
+                Verify.AreEqual("UnselectedPointerOver", currentVisualStateTextBlock.GetText());
+            }
+        }
+
         private string IsItemContainerSelected()
         {
             Log.Comment("Retrieving btnGetIsSelected");

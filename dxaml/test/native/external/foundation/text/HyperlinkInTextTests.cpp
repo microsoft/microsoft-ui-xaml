@@ -12,6 +12,7 @@
 #include <Utils.h>
 #include "KeyboardInjectionOverride.h"
 #include <WUCRenderingScopeGuard.h>
+#include <TestComparisonGuards.h>
 #include <FocusTestHelper.h>
 #include <AutomationClient\AutomationClientManager.h>
 
@@ -71,6 +72,26 @@ void HyperlinkInTextTests::ValidateHyperlinkInText()
 // Validates the look of hyperlink in text without underline in PointerOver visual state
 void HyperlinkInTextTests::ValidateHyperlinkInTextWithoutPointerOverUnderline()
 {
+    // On Win11 25H2, the PointerOver hover color shifted from light-blue to orange
+    // and a new underline visual appears. We use $$variables$$ in the PointerOver
+    // XML master so one file works for both OS versions.
+    // Text glyph antialiasing also shifted slightly (max 15/255 grayscale),
+    // so we set tolerance=15 on 25H2 to share the PNG surface masters.
+    if (IsOSBuildAtLeast(26200))
+    {
+        TestServices::Utilities->SetDCompXmlVariable(L"HyperlinkHoverColor", L"rgb {1, 0.6471, 0}");
+        TestServices::Utilities->SetDCompXmlVariable(L"HyperlinkHoverUnderline",
+            L"                <wucSpriteVisual SizeX=\"60.84\" SizeY=\"0.87\" BorderMode=\"Soft\" OffsetX=\"140.1\" OffsetY=\"99\" OffsetZ=\"0\">\r\n"
+            L"                  <ColorBrush Color=\"rgb {1, 0.6471, 0}\" />\r\n"
+            L"                </wucSpriteVisual>\r\n");
+    }
+    else
+    {
+        TestServices::Utilities->SetDCompXmlVariable(L"HyperlinkHoverColor", L"rgb {0.651, 0.8471, 1}");
+        TestServices::Utilities->SetDCompXmlVariable(L"HyperlinkHoverUnderline", L"");
+    }
+
+    ImageCompareToleranceGuard tolerance(IsOSBuildAtLeast(26200) ? 15 : 0);
     ValidateHyperlinkInText(true /*testPointerOver*/, false /*withUnderline*/, false /*useHighContrast*/);
 }
 

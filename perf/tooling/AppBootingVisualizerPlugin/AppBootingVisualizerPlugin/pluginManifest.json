@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/microsoft-performance-toolkit-sdk/main/src/PluginsSystem/Tools/Microsoft.Performance.Toolkit.Plugins.Cli/Manifest/PluginManifestSchema.json",
+  "identity": {
+    "id": "AppBootingVisualizerPlugin",
+    "version": "1.0.0"
+  },
+  "displayName": "App Booting Visualizer Plugin",
+  "description": "Visualises XAML application launch timelines from ETL traces. Detects regions (Process Creation, Native Bring-up, XAML, App-ready) via XamlAppLaunch.regions.xml, expands one Gantt row group per process (Track 1), pairs ETW Start/Stop events on the same thread to build Events-by-Provider phases (Track 2), and renders every raw event as point markers (Track 3).",
+  "owners": [
+    {
+      "name": "Microsoft",
+      "emailAddresses": [],
+      "phoneNumbers": []
+    }
+  ],
+  "projectUrl": "https://github.com/microsoft/microsoft-ui-xaml",
+  "manifestVersion": 1.0
+}

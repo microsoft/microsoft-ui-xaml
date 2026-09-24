@@ -567,7 +567,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             // Since we resolve the URI to the string representation rather than keeping a handle to the wf::IUriRuntimeClass object, let's make sure our metadata supports that.
             VERIFY_IS_TRUE((uriSourceProperty.MetadataBits & MetadataBit::IsValueHandle) != MetadataBit::IsValueHandle);
-            VERIFY_IS_TRUE(wcscmp(L"ms-appx:///resources/native/external/foundation/graphics/image/Rainier_444_2048x1536.jpg",uriSourceProperty.Value) == 0);
+            VERIFY_IS_TRUE(wcscmp(L"ms-appx:///resources/native/external/foundation/graphics/image/rainier_2048x1536.png",uriSourceProperty.Value) == 0);
         }
 
         void XamlDiagnosticsTests::TestCanSetURISource()
@@ -585,7 +585,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             // Since we resolve the URI to the string representation rather than keeping a handle to the wf::IUriRuntimeClass object, let's make sure our metadata supports that.
             VERIFY_IS_TRUE((uriSourceProperty.MetadataBits & MetadataBit::IsValueHandle) != MetadataBit::IsValueHandle);
-            VERIFY_IS_TRUE(wcscmp(L"ms-appx:///resources/native/external/foundation/graphics/image/Rainier_444_2048x1536.jpg", uriSourceProperty.Value) == 0);
+            VERIFY_IS_TRUE(wcscmp(L"ms-appx:///resources/native/external/foundation/graphics/image/rainier_2048x1536.png", uriSourceProperty.Value) == 0);
 
             // Now let's create an instance of a URI and set it's source.
             InstanceHandle newUri = CreateInstance(uriSourceProperty.Type, L"ms-appx:///resources/native/external/foundation/graphics/image/barcelona.jpg");

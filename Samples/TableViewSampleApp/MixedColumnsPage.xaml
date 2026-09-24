@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.MixedColumnsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+
+    <Grid Padding="12" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="2">
+            <TextBlock Text="Mixed columns (Auto + Pixel + Star)" FontSize="18" FontWeight="SemiBold"/>
+            <TextBlock Opacity="0.7" FontSize="12" TextWrapping="Wrap"
+                       Text="A mix of width kinds: Name (Auto), Role (120px), Score (Template, 120px), City (*1), Bio (*2). Fixed and Auto columns are sized first, then the Star columns split the remaining viewport width."/>
+        </StackPanel>
+
+        <Border Grid.Row="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
+            <tv:TableView x:Name="Table"/>
+        </Border>
+    </Grid>
+</Page>

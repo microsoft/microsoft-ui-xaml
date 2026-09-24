@@ -1234,7 +1234,7 @@ this.Write(this.ToStringHelper.ToStringWithCulture(ba.ObjectDeferredAssignmentCo
 
 this.Write(" = ");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(value));
+this.Write(this.ToStringHelper.ToStringWithCulture(potentiallyBoxedValue));
 
 this.Write(";\r\n            }\r\n");
 

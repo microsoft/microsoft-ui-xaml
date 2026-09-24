@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "DisableXamlGeneratedMainNoCtorCs (Package)": {
+      "commandName": "MsixPackage",
+      "nativeDebugging": true
+    },
+    "DisableXamlGeneratedMainNoCtorCs (Unpackaged)": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

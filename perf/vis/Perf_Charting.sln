@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.161
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Perf_Charting", "Perf_Charting.pyproj", "{B4B5A0B3-67B4-4195-BAE7-28C750BA45E0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B4B5A0B3-67B4-4195-BAE7-28C750BA45E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4B5A0B3-67B4-4195-BAE7-28C750BA45E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CECC4990-CA90-47E4-BB34-3A4EE5F6B6C7}
+	EndGlobalSection
+EndGlobal
