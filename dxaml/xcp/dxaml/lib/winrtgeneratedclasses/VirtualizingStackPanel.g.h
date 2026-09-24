@@ -89,15 +89,19 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) VirtualizingStackPanelFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanelFactory
         , public ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanelStatics
     {
-        BEGIN_INTERFACE_MAP(VirtualizingStackPanelFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(VirtualizingStackPanelFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(VirtualizingStackPanelFactory, ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanelFactory)
             INTERFACE_ENTRY(VirtualizingStackPanelFactory, ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanelStatics)
-        END_INTERFACE_MAP(VirtualizingStackPanelFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(VirtualizingStackPanelFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanel** ppInstance);
+
 
         // Static properties.
 
