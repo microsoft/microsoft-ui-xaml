@@ -1941,7 +1941,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         : public TimePickerFlyoutPresenterRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::TimePickerFlyoutPresenter;
-        friend class pctl::AggregableComObject<
+        friend class pctl::AggregableComObject< 
             ABI::Microsoft::UI::Xaml::Controls::TimePickerFlyoutPresenter,
             ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyoutPresenter>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_TimePickerFlyoutPresenter, TrustLevel::BaseTrust);
@@ -2066,8 +2066,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Customized properties.
 
-        // Initialization methods
-        virtual _Check_return_ HRESULT InitializeImpl();
+        // Initialization methods required by AggregableComObject to make this an aggregable class.
+        virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
 
         // Event Sources
     };
