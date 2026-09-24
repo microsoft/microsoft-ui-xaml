@@ -73,11 +73,56 @@ namespace ShapingHelpers
         // vanished (a filter removed its last row, the source was reassigned) lingers forever and
         // the store grows unbounded across changing datasets. Silent: pruning a dead key changes
         // no live key's resolved state.
+        //
+        // Safe for a consumer whose live-key set is COMPLETE -- grouping's is, because every
+        // group emits a header whether it is collapsed or not. A consumer that only enumerates
+        // part of its structure must use RetainOnlyUnder instead.
         void RetainOnly(std::unordered_set<winrt::hstring> const& liveKeys);
+
+        // The same prune, scoped to the part of the structure the caller actually LOOKED AT.
+        //
+        // A lazy consumer -- a tree that does not descend into collapsed nodes -- cannot produce
+        // a complete live-key set. Its collapsed subtrees are not absent because they vanished;
+        // they are absent because nobody walked them. Handing that partial set to RetainOnly
+        // silently deletes the user's intent for everything hidden behind a collapse, which shows
+        // up as "collapse a grandchild, collapse its parent, re-expand the parent, and the
+        // grandchild is expanded again".
+        //
+        // So the caller also reports which keys it enumerated IN FULL, as a set of parent path
+        // prefixes. A key is dropped only when some ANCESTOR-or-self of it has an enumerated
+        // parent prefix and is itself not live -- i.e. only when the caller genuinely looked where
+        // that branch should have been and did not find it. Keys with no enumerated ancestor are
+        // left alone and get their chance to be pruned the next time that part of the structure is
+        // walked.
+        //
+        // The walk has to go all the way up, not just to the immediate parent: if A was enumerated
+        // and its child B vanished, nothing ever enumerates A/B again, so intent stored for A/B/C
+        // would otherwise survive forever.
+        //
+        // `parentPrefixOf` extracts a key's immediate parent prefix; it is supplied by the caller
+        // because the key format is the caller's, not this type's -- this class deliberately knows
+        // nothing about paths, groups, rows or any other structure. It is expected to reach a fixed
+        // point (or an empty string) at a root; the walk is bounded either way.
+        void RetainOnlyUnder(
+            std::unordered_set<winrt::hstring> const& liveKeys,
+            std::unordered_set<winrt::hstring> const& enumeratedPrefixes,
+            std::function<winrt::hstring(winrt::hstring const&)> const& parentPrefixOf);
 
         void Clear();
 
     private:
+        // Upper bound on the ancestor walk in RetainOnlyUnder. Generous relative to any real
+        // structure's depth; it exists so a malformed key format that never reduces cannot spin.
+        static constexpr int32_t c_maxPrefixWalk = 1024;
+
+        // True when an ancestor-or-self of `key` was looked for and not found, which proves the
+        // whole branch below that ancestor is gone.
+        static bool IsProvablyDead(
+            winrt::hstring const& key,
+            std::unordered_set<winrt::hstring> const& liveKeys,
+            std::unordered_set<winrt::hstring> const& enumeratedPrefixes,
+            std::function<winrt::hstring(winrt::hstring const&)> const& parentPrefixOf);
+
         void RaiseChanged(Change change) const;
 
         bool m_defaultExpanded{ true };
