@@ -1901,7 +1901,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Customized properties.
 
         // Initialization methods
-        virtual _Check_return_ HRESULT InitializeImpl();
+        // Initialization methods required by AggregableComObject to make this an aggregable class.
+        virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
 
         // Event Sources
         Private::TrackerEventSource<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::TimePickerFlyout*, ABI::Microsoft::UI::Xaml::Controls::TimePickedEventArgs*>> m_TimePickedEventSource;
