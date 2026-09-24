@@ -966,12 +966,27 @@ void ItemsView::OnScrollViewAnchorRequested(
 
     if (m_bringIntoViewElement != nullptr)
     {
-        // During a StartBringItemIntoView operation, its target element is used as the scroll anchor so that any potential shuffling of the Layout does not disturb the final visual.
-        // This anchor is used until the new layout has a chance to settle.
-        ITEMSVIEW_TRACE_INFO_DBG(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, m_bringIntoViewElement.get(), L"ScrollingAnchorRequestedEventArgs.AnchorElement set to m_bringIntoViewElement.");
-        ITEMSVIEW_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"at index", GetElementIndex(m_bringIntoViewElement.get()));
+        const auto bringIntoViewElement = m_bringIntoViewElement.get();
+        if (bringIntoViewElement && bringIntoViewElement.Visibility() == winrt::Visibility::Visible)
+        {
+            try
+            {
+                // During a StartBringItemIntoView operation, its target element is used as the scroll anchor so that any potential shuffling of the Layout does not disturb the final visual.
+                // This anchor is used until the new layout has a chance to settle.
+                ITEMSVIEW_TRACE_INFO_DBG(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, bringIntoViewElement, L"ScrollingAnchorRequestedEventArgs.AnchorElement set to m_bringIntoViewElement.");
+                ITEMSVIEW_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"at index", GetElementIndex(bringIntoViewElement));
 
-        args.AnchorElement(m_bringIntoViewElement.get());
+                args.AnchorElement(bringIntoViewElement);
+            }
+            catch (const winrt::hresult_invalid_argument&)
+            {
+                CompleteStartBringItemIntoView();
+            }
+        }
+        else
+        {
+            CompleteStartBringItemIntoView();
+        }
     }
 #ifdef DBG
     else
