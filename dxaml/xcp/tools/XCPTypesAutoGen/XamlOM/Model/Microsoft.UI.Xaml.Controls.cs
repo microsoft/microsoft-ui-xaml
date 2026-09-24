@@ -1793,7 +1793,7 @@ namespace Microsoft.UI.Xaml.Controls
     [TypeFlags(IsCreateableFromXAML = false)]
     [FrameworkTypePattern]
     [Guids(ClassGuid = "2c093ebc-8a2c-4454-bc76-2cae494bc0ac")]
-    public class ScrollViewerView
+    public sealed class ScrollViewerView
     {
         [Comment("Gets the HorizontalOffset property.")]
         [PropertyKind(PropertyKind.PropertyOnly)]
@@ -1888,7 +1888,6 @@ namespace Microsoft.UI.Xaml.Controls
     }
 
     [CodeGen(partial: true)]
-    [ForceSealed]
     [DXamlIdlGroup("Controls2")]
     [InstanceCountTelemetry]
     [Guids(ClassGuid = "71d529d6-3a4e-4a1f-8b40-6f1e6cdce52c")]
