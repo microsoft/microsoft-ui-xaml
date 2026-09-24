@@ -336,9 +336,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [default_interface]
-    runtimeclass ListPickerFlyoutPresenter
+    unsealed runtimeclass ListPickerFlyoutPresenter
         : Microsoft.UI.Xaml.Controls.Control
     {
+        [method_name("CreateInstance")] ListPickerFlyoutPresenter();
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
