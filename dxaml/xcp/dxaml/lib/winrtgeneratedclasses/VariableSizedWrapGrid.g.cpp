@@ -110,13 +110,17 @@ IFACEMETHODIMP DirectUI::VariableSizedWrapGridGenerated::put_VerticalChildrenAli
 
 HRESULT DirectUI::VariableSizedWrapGridFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGridStatics)))
+    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGridFactory)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGridFactory*>(this);
+    }
+    else     if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGridStatics)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGridStatics*>(this);
     }
     else
     {
-        RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
+        RRETURN(ctl::BetterAggregableCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
     }
 
     AddRefOuter();
@@ -125,6 +129,15 @@ HRESULT DirectUI::VariableSizedWrapGridFactory::QueryInterfaceImpl(_In_ REFIID i
 
 
 // Factory methods.
+
+// Factory methods.
+IFACEMETHODIMP DirectUI::VariableSizedWrapGridFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGrid** ppInstance)
+{
+#if DBG
+    const GUID uuidofGUID=__uuidof(ABI::Microsoft::UI::Xaml::Controls::IVariableSizedWrapGrid); const GUID metadataAPIGUID=MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetGuid(); if(uuidofGUID!=metadataAPIGUID){XAML_FAIL_FAST();}
+#endif
+    const HRESULT hr=ctl::ValidateFactoryCreateInstanceWithBetterAggregableCoreObjectActivationFactory(pOuter,ppInner,reinterpret_cast<IUnknown**>(ppInstance),GetTypeIndex(),false); IFC_RETURN(hr); return S_OK;
+}
 
 // Dependency properties.
 IFACEMETHODIMP DirectUI::VariableSizedWrapGridFactory::get_ItemHeightProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
