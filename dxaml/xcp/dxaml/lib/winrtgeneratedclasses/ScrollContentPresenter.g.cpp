@@ -505,7 +505,7 @@ HRESULT DirectUI::ScrollContentPresenterFactory::QueryInterfaceImpl(_In_ REFIID 
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenterFactory*>(this);
     }
-    else     if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenterStatics)))
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenterStatics)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenterStatics*>(this);
     }
@@ -520,15 +520,25 @@ HRESULT DirectUI::ScrollContentPresenterFactory::QueryInterfaceImpl(_In_ REFIID 
 
 
 // Factory methods.
-
-// Factory methods.
 IFACEMETHODIMP DirectUI::ScrollContentPresenterFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenter** ppInstance)
 {
+
 #if DBG
+    // We play some games with reinterpret_cast and assuming that the GUID type table is accurate - which is somewhat sketchy, but
+    // really good for binary size.  This code is a sanity check that the games we play are ok.
     const GUID uuidofGUID = __uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollContentPresenter);
     const GUID metadataAPIGUID = MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetGuid();
-    if (uuidofGUID != metadataAPIGUID) { XAML_FAIL_FAST(); }
+    const KnownTypeIndex typeIndex = GetTypeIndex();
+
+    if(uuidofGUID != metadataAPIGUID)
+    {
+        XAML_FAIL_FAST();
+    }
 #endif
+
+    // Can't just IFC(_RETURN) this because for some validate calls (those with multiple template parameters), the
+    // preprocessor gets confused at the "," in the template type-list before the function's opening parenthesis.
+    // So we'll use IFC_RETURN syntax with a local hr variable, kind of weirdly.
     const HRESULT hr = ctl::ValidateFactoryCreateInstanceWithBetterAggregableCoreObjectActivationFactory(pOuter, ppInner, reinterpret_cast<IUnknown**>(ppInstance), GetTypeIndex(), false /*isFreeThreaded*/);
     IFC_RETURN(hr);
     return S_OK;
