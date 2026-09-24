@@ -156,13 +156,17 @@ Cleanup:
 
 HRESULT DirectUI::ItemsStackPanelFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsStackPanelStatics)))
+    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsStackPanelFactory)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IItemsStackPanelFactory*>(this);
+    }
+    else     if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsStackPanelStatics)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IItemsStackPanelStatics*>(this);
     }
     else
     {
-        RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
+        RRETURN(ctl::BetterAggregableCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
     }
 
     AddRefOuter();
@@ -171,6 +175,15 @@ HRESULT DirectUI::ItemsStackPanelFactory::QueryInterfaceImpl(_In_ REFIID iid, _O
 
 
 // Factory methods.
+
+// Factory methods.
+IFACEMETHODIMP DirectUI::ItemsStackPanelFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IItemsStackPanel** ppInstance)
+{
+#if DBG
+ const GUID a=__uuidof(ABI::Microsoft::UI::Xaml::Controls::IItemsStackPanel); const GUID b=MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetGuid(); if(a!=b){XAML_FAIL_FAST();}
+#endif
+ const HRESULT hr=ctl::ValidateFactoryCreateInstanceWithBetterAggregableCoreObjectActivationFactory(pOuter,ppInner,reinterpret_cast<IUnknown**>(ppInstance),GetTypeIndex(),false); IFC_RETURN(hr); return S_OK;
+}
 
 // Dependency properties.
 IFACEMETHODIMP DirectUI::ItemsStackPanelFactory::get_GroupPaddingProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
