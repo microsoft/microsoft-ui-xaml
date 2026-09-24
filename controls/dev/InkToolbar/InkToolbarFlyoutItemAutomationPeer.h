@@ -10,6 +10,9 @@
 #include "InkToolbarFlyoutItem.h"
 #include "InkToolbarFlyoutItemAutomationPeer.g.h"
 
+#include <UIAutomationCore.h>
+#include <UIAutomationCoreApi.h>
+
 class InkToolbarFlyoutItemAutomationPeer :
     public ReferenceTracker<InkToolbarFlyoutItemAutomationPeer, winrt::implementation::InkToolbarFlyoutItemAutomationPeerT>
 {
@@ -26,12 +29,22 @@ public:
         {
             return *this;
         }
+        if (patternInterface == winrt::PatternInterface::SelectionItem)
+        {
+            if (auto owner = GetImpl())
+            {
+                if (IsSelectionItem(owner))
+                {
+                    return *this;
+                }
+            }
+        }
         return __super::GetPatternCore(patternInterface);
     }
 
     winrt::AutomationControlType GetAutomationControlTypeCore()
     {
-        return winrt::AutomationControlType::Custom;
+        return winrt::AutomationControlType::MenuItem;
     }
 
     hstring GetClassNameCore()
@@ -58,7 +71,87 @@ public:
         }
     }
 
+    // ISelectionItemProvider
+    bool IsSelected()
+    {
+        if (auto owner = GetImpl())
+        {
+            return IsSelectionItem(owner) && owner->IsChecked();
+        }
+        return false;
+    }
+
+    winrt::IRawElementProviderSimple SelectionContainer()
+    {
+        // The flyout's StackPanel does not provide the Selection pattern.
+        return nullptr;
+    }
+
+    void Select()
+    {
+        if (auto owner = GetSelectionItem())
+        {
+            if (!owner->IsChecked())
+            {
+                owner->OnInvoked();
+            }
+        }
+    }
+
+    void AddToSelection()
+    {
+        if (auto owner = GetSelectionItem())
+        {
+            if (!owner->IsChecked())
+            {
+                if (owner->IsAnySelectedInRadioGroup())
+                {
+                    throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+                }
+                owner->OnInvoked();
+            }
+        }
+    }
+
+    void RemoveFromSelection()
+    {
+        if (auto owner = GetSelectionItem())
+        {
+            if (owner->IsChecked())
+            {
+                if (owner->Kind() == winrt::InkToolbarFlyoutItemKind::Radio)
+                {
+                    throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+                }
+                owner->OnInvoked();
+            }
+        }
+    }
+
 private:
+    static bool IsSelectionItem(com_ptr<InkToolbarFlyoutItem> const& owner)
+    {
+        return owner->Kind() == winrt::InkToolbarFlyoutItemKind::Radio
+            || owner->Kind() == winrt::InkToolbarFlyoutItemKind::RadioCheck;
+    }
+
+    com_ptr<InkToolbarFlyoutItem> GetSelectionItem()
+    {
+        auto owner = GetImpl();
+        if (owner)
+        {
+            if (!IsSelectionItem(owner))
+            {
+                throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+            }
+            if (!owner->IsEnabled())
+            {
+                throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+            }
+        }
+        return owner;
+    }
+
     com_ptr<InkToolbarFlyoutItem> GetImpl()
     {
         com_ptr<InkToolbarFlyoutItem> impl;
@@ -69,4 +162,3 @@ private:
         return impl;
     }
 };
-
