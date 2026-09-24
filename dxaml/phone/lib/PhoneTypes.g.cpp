@@ -3234,18 +3234,15 @@ void ListPickerFlyoutFactory::ClearProperties()
         s_SelectedItemsProperty.Reset();
 }
 
-IFACEMETHODIMP
-ListPickerFlyoutFactory::ActivateInstance(
-    _Outptr_ IInspectable** ppInspectable)
+IFACEMETHODIMP ListPickerFlyoutFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IListPickerFlyout** ppInstance)
 {
     HRESULT hr = S_OK;
-    wrl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::IListPickerFlyout> listPickerFlyout;
-
-    IFCPTR(ppInspectable);
-    IFC(wrl::MakeAndInitialize<ListPickerFlyout>(&listPickerFlyout));
-
-    *ppInspectable = listPickerFlyout.Detach();
-
+    IFC((pctl::AggregableComObject<
+            ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyout,
+            ABI::Microsoft::UI::Xaml::Controls::IListPickerFlyout>::CreateInstance(
+            pOuter,
+            ppInner,
+            ppInstance)));
 Cleanup:
     RRETURN(hr);
 }
