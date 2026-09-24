@@ -241,7 +241,7 @@
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
 
             <!-- Row foregrounds -->
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />

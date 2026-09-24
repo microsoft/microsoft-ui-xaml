@@ -176,9 +176,12 @@ Merge `TabularControlsResources` alongside `XamlControlsResources` in the applic
 fallbacks into the default-style dictionary. In high contrast, Fluent color tokens such as
 `TextFillColorPrimary` and `SubtleFillColorSecondary` are diagnostic red sentinels, not usable colors.
 
-Rows use system window colors normally, paired system highlight/highlight-text colors for
-pointer-over, pressed, and selected states, and system gray text when disabled. Cell content
-inherits the state foreground unless an application template explicitly supplies its own brush.
+In high contrast, rows use system window colors normally, paired system highlight/highlight-text
+colors for pointer-over, pressed, and selected states, and system gray text when disabled. The
+selection indicator uses highlight text on the selected background and gray text when disabled.
+An application-set table or row `Foreground` supplies the normal-state value; interaction states
+temporarily use the corresponding state brush. Cell content inherits that foreground unless an
+application template explicitly supplies its own brush.
 Application-supplied row backgrounds, foregrounds, and cell templates remain responsible for
 their own contrast-theme support.
 
@@ -485,7 +488,6 @@ These are understood and deliberately not addressed by single selection:
 - **Pointer selection is not blocked during an open edit.** Keyboard navigation is suppressed while editing, but clicking another row moves `SelectedItem` and the highlight immediately. If the resulting commit is then vetoed by validation, the editor stays open on the previous row while the selection has already moved. Whether selection should be blocked, deferred, or allowed to diverge from the edit target is an open decision.
 - **The selection indicator scrolls with the row.** `PART_SelectionIndicator` lives inside the horizontally scrolling row content, so the accent strip scrolls off the leading edge. `TreeViewItem` and `ItemContainer` pin theirs to the container; doing the same here likely means reusing the frozen-column offset mechanism.
 - **A `TableViewTemplateColumn` whose `CellTemplate` sets an explicit `Foreground` overrides the selected foreground.** `PART_CellForegroundPresenter` only reaches cells that *inherit* `Foreground`. `TableViewTextColumn` correctly sets none; template columns are free to, and in High Contrast that renders app-chosen text over `SystemColorHighlightColor`. Template columns should leave `Foreground` unset unless they take responsibility for the selected and High Contrast cases.
-- **The in-file brush fallbacks cannot vary the selection indicator by theme.** `CommonStyles/TabularSurfaces_themeresources.xaml` is the canonical source and maps the indicator to `SystemColorHighlightColor` in High Contrast. The last-resort fallbacks in `TableView.xaml` are a flat dictionary, so the indicator stays `SystemAccentColor` there — a host that does not merge the shared dictionary gets an accent-coloured indicator in High Contrast. The row fills and foregrounds are unaffected: they use `{ThemeResource}` colours that do resolve per theme.
 - **Reconciliation order is load-bearing.** Row chrome is restamped from `ItemsSourceView.CollectionChanged`, which is correct only because `SelectionModel` is handed the repeater's *shared* `ItemsSourceView` and is subscribed ahead of the control. Handing the model a raw source, or reordering those two calls in `ResolveSelectionAfterSourceChange`, silently reintroduces stale-index stamping — and an insert above the selection raises no event to correct it. This is deliberately different from `ItemsView`, which hands the model a raw source and repairs the resulting race afterwards with a dispatcher hop; the ordering here is structural instead.
 - **Adding `Multiple`/`Extended` is not purely additive.** The enum values are appended and the event args already carry both vectors, so the shapes that are expensive to reverse are settled. But `SelectedItems` is deliberately **not** exposed in this release — it would be redundant with `SelectedItem` while at most one row can be selected, and `SelectionModel`'s view leaves `IndexOf` and `GetMany` unimplemented, so `Contains`, `ToList` and `ToArray` throw. It should be added with `Multiple`, where it becomes the only way to read the whole selection and those sharp edges are worth the capability. The gesture layer also routes through `SelectRowIndexFromInteraction(index, toggle)`, which carries no anchor or range state, and `ApplySelection` encodes single-selection semantics; multi-selection needs modifier state threaded through those entry points and an anchor model, closer to `ItemsView`'s `SelectorBase` strategy split.
 
