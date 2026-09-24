@@ -164,6 +164,8 @@ public:
 #define SR_InkToolbarLargeEraserLabel L"InkToolbarLargeEraserLabel"
 #define SR_InkToolbarClearAllLabel L"InkToolbarClearAllLabel"
 #define SR_InkToolbarPenConfigurationSizeSliderName L"InkToolbarPenConfigurationSizeSliderName"
+#define SR_InkToolbarPenConfigurationColorsLabel L"InkToolbarPenConfigurationColorsLabel"
+#define SR_InkToolbarPenConfigurationSizeLabel L"InkToolbarPenConfigurationSizeLabel"
 #define SR_InkToolbarStrokeWidthSliderRangeFormat L"InkToolbarStrokeWidthSliderRangeFormat"
 #define SR_InkToolbarNonSolidColorName L"InkToolbarNonSolidColorName"
 #define SR_InkToolbarColorRgbFormat L"InkToolbarColorRgbFormat"

@@ -130,6 +130,14 @@
     <value>Pen Size</value>
     <comment>Accessible name for the stroke-width slider in the InkToolbar pen flyout; Narrator reads this before the value. UWP IDS_INKTOOLBAR_PENL3STROKEWIDTHSLIDERNAME = 6422.</comment>
   </data>
+  <data name="InkToolbarPenConfigurationColorsLabel" xml:space="preserve">
+    <value>Colors</value>
+    <comment>Heading above the colour palette in the InkToolbar pen configuration flyout.</comment>
+  </data>
+  <data name="InkToolbarPenConfigurationSizeLabel" xml:space="preserve">
+    <value>Size</value>
+    <comment>Heading above the stroke-width slider in the InkToolbar pen configuration flyout.</comment>
+  </data>
   <data name="InkToolbarNonSolidColorName" xml:space="preserve">
     <value>Not a solid color</value>
     <comment>Accessible name and tooltip for an InkToolbar palette entry whose brush is not a solid color. UWP IDS_INKTOOLBAR_NONSOLIDCOLOR = 6411.</comment>
