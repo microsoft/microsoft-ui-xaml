@@ -177,37 +177,6 @@ Lifetime rules: columns and rows use weak owner back-pointers (`GetOwningTableVi
 
 Theme values resolve through `TabularSurfaces` resources and re-resolve across theme (and high-contrast) changes. Dark `TabularSurfaceGridLineBrush` is `#29FFFFFF`; the C++ fallback uses the same 16% white.
 
-### Outer boundary and interior separators
-
-`TabularSurfaceBorderBrush` controls the default TableView perimeter independently of
-`TabularSurfaceGridLineBrush`, which controls interior gridlines and the header/body
-separator. Both brushes retain `#29FFFFFF` in Default (dark) and `#29000000` in Light.
-In HighContrast, the perimeter uses `{ThemeResource SystemColorButtonTextColor}`;
-gridlines retain `{ThemeResource SystemColorWindowTextColor}`. These are
-palette-dependent roles, not fixed yellow and white colors.
-
-This perimeter role matches the framework ListBox outer border:
-`ListBoxBorder` resolves through `SystemControlForegroundBaseHighBrush` to
-`SystemColorButtonTextColor` in HighContrast. The Gallery TreeView example also
-uses ButtonText, but through an explicitly bordered surrounding Grid whose
-`TextControlBorderBrush` resolves through `SystemControlForegroundBaseMediumBrush`.
-That Gallery wrapper is not a default TreeView outer border. The Gallery sample
-card is separate and uses `CardStrokeColorDefaultBrush` (WindowText in HighContrast).
-ListView's default template binds its outer border properties without supplying
-border brush or thickness setters; visible perimeter styling is not universal.
-
-The TableView style consumes the perimeter brush with `ThemeResource`; its outer
-Border retains `TemplateBinding` for `BorderBrush` and `BorderThickness`. Consumers
-can override those properties directly or customize `TabularSurfaceBorderBrush`
-in their resource scope. Existing `TabularSurfaceGridLineBrush` customizations now
-affect only interior separators, not the perimeter; applications that customized
-both should also set `BorderBrush` or the new perimeter resource.
-
-The existing one-pixel default perimeter thickness and Light/Default appearance
-remain unchanged. Disabled, focus, and selection behavior remain independent of
-the perimeter brush; no new outer-border state transitions or high-contrast code
-paths are introduced.
-
 ## Sort ownership and reconciliation
 
 Sort has two front-ends and exactly one axis is ever in force; they reconcile rather than stack.
