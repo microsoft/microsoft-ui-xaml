@@ -501,6 +501,73 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TreeViewKeyDownRightToLeftTest(isContentMode:true);
         }
 
+        private void TreeViewKeyDownExpandCollapseTest(bool isContentMode = false)
+        {
+            if (IsPhoneDevice())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(isContentMode);
+
+                UIObject ItemRoot = LabelFirstItem();
+
+                ClickButton("DisableClickToExpand");
+                ClickButton("AddSecondLevelOfNodes");
+                ClickButton("GetItemCount");
+                Verify.AreEqual("1", ReadResult());
+
+                InputHelper.Tap(ItemRoot);
+
+                Verify.AreEqual("ItemClicked:Root", ReadResult());
+
+                ClickButton("GetItemCount");
+                Verify.AreEqual("1", ReadResult());
+
+                InputHelper.Tap(ItemRoot);
+
+                KeyboardHelper.PressKey(Key.Add);
+
+                ClickButton("GetItemCount");
+                Log.Comment("Verify that ItemRoot has expanded.");
+                Verify.AreEqual("4", ReadResult());
+
+                InputHelper.Tap(ItemRoot);
+
+                KeyboardHelper.PressKey(Key.Subtract);
+
+                Log.Comment("Verify that ItemRoot has collapsed.");
+                ClickButton("GetItemCount");
+                Verify.AreEqual("1", ReadResult());
+
+                InputHelper.Tap(ItemRoot);
+
+                KeyboardHelper.PressKey(Key.Multiply);
+
+                ClickButton("GetItemCount");
+                Log.Comment("Verify that ItemRoot has expanded recursively.");
+                Verify.AreEqual("8", ReadResult());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void TreeViewKeyDownExpandCollapseTest_NodeMode()
+        {
+            TreeViewKeyDownExpandCollapseTest();
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void TreeViewKeyDownExpandCollapseTest_ContentMode()
+        {
+            TreeViewKeyDownExpandCollapseTest(isContentMode: true);
+        }
+
         private void TreeViewSwappingNodesTest(bool isContentMode = false)
         {
             if (IsPhoneDevice())
