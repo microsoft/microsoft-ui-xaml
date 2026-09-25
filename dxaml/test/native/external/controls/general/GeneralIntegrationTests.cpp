@@ -332,6 +332,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             safe_cast<xaml_controls::IComboBoxItemFactory^>(factory)->CreateInstance(reinterpret_cast<Platform::Object^>(static_cast<IInspectable*>(countingOuter.Get())), &inner);
             VERIFY_ARE_EQUAL(0, countingOuter.Get()->GetQueryInterfaceCallCount());
 
+            LOG_OUTPUT(L"Validate AutoSuggestBox");
+            THROW_IF_FAILED(wf::GetActivationFactory(wrl::Wrappers::HStringReference(L"Microsoft.UI.Xaml.Controls.AutoSuggestBox").Get(), reinterpret_cast<IInspectable**>(&factory)));
+            safe_cast<xaml_controls::IAutoSuggestBoxFactory^>(factory)->CreateInstance(reinterpret_cast<Platform::Object^>(static_cast<IInspectable*>(countingOuter.Get())), &inner);
+            VERIFY_ARE_EQUAL(0, countingOuter.Get()->GetQueryInterfaceCallCount());
+
             LOG_OUTPUT(L"Validate ListBox");
             THROW_IF_FAILED(wf::GetActivationFactory(wrl::Wrappers::HStringReference(L"Microsoft.UI.Xaml.Controls.ListBox").Get(), reinterpret_cast<IInspectable**>(&factory)));
             safe_cast<xaml_controls::IListBoxFactory^>(factory)->CreateInstance(reinterpret_cast<Platform::Object^>(static_cast<IInspectable*>(countingOuter.Get())), &inner);

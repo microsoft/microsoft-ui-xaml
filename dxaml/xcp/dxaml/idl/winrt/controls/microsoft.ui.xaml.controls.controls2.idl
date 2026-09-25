@@ -1726,10 +1726,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [inputproperty("Text")]
-    runtimeclass AutoSuggestBox
+    unsealed runtimeclass AutoSuggestBox
         : Microsoft.UI.Xaml.Controls.ItemsControl
     {
-        AutoSuggestBox();
+        [method_name("CreateInstance")] AutoSuggestBox();
         Double MaxSuggestionListHeight;
         Boolean IsSuggestionListOpen;
         String TextMemberPath;
