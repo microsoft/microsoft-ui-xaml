@@ -103,11 +103,11 @@ void InkToolbarPenButton::UpdatePenButtonHelpText()
     {
         bool isGenericFormat = false;
         auto name = m_colorNames.GetColorName(solid.Color(), isGenericFormat);
-        // UWP skips HelpText for generic (unnamed) colors; the lift only has generic names for now.
-        if (!isGenericFormat)
-        {
-            winrt::AutomationProperties::SetHelpText(*this, name);
-        }
+        winrt::AutomationProperties::SetHelpText(*this, isGenericFormat ? L"" : name);
+    }
+    else
+    {
+        winrt::AutomationProperties::SetHelpText(*this, L"");
     }
 }
 
