@@ -23,6 +23,8 @@ namespace MUXControlsTestApp
     public sealed partial class ExtraCommandBarFlyoutPage : TestPage
     {
         private int customButtonsFlyoutOpenCount = 0;
+        private int flyoutVisibleFrameCount = 0;
+        private bool isCountingFlyoutFrames = false;
 
         public ExtraCommandBarFlyoutPage()
         {
@@ -34,6 +36,49 @@ namespace MUXControlsTestApp
             RichTextBlock1.ContextFlyout = TextCommandBarContextFlyout;
             TextBox1.SelectionFlyout = TextCommandBarSelectionFlyout;
             RichTextBlock1.SelectionFlyout = TextCommandBarSelectionFlyout;
+
+            TextCommandBarContextFlyout.Opening += OnContextFlyoutOpening;
+            TextCommandBarContextFlyout.Closed += OnContextFlyoutClosed;
+        }
+
+        private void OnContextFlyoutOpening(object sender, object args)
+        {
+            flyoutVisibleFrameCount = 0;
+            CountFlyoutFrames(true);
+        }
+
+        private void OnContextFlyoutClosed(object sender, object args)
+        {
+            CountFlyoutFrames(false);
+        }
+
+        private void CountFlyoutFrames(bool count)
+        {
+            if (count == isCountingFlyoutFrames)
+            {
+                return;
+            }
+
+            isCountingFlyoutFrames = count;
+
+            if (count)
+            {
+                CompositionTarget.Rendering += OnRendering;
+            }
+            else
+            {
+                CompositionTarget.Rendering -= OnRendering;
+            }
+        }
+
+        // Rendering is raised right before the frame is drawn, so an open popup at this point is a
+        // popup the user is about to see.
+        private void OnRendering(object sender, object args)
+        {
+            if (VisualTreeHelper.GetOpenPopupsForXamlRoot(XamlRoot).Count > 0)
+            {
+                flyoutVisibleFrameCount++;
+            }
         }
 
         private void OnClearClipboardContentsClicked(object sender, object args)
@@ -45,6 +90,7 @@ namespace MUXControlsTestApp
         {
             PopupCountTextBox.Text = VisualTreeHelper.GetOpenPopupsForXamlRoot(XamlRoot).Count.ToString();
             CustomButtonsOpenCount.Text = customButtonsFlyoutOpenCount.ToString();
+            FlyoutVisibleFrameCountTextBox.Text = flyoutVisibleFrameCount.ToString();
         }
 
         private void tbloaded(object sender, RoutedEventArgs e)
