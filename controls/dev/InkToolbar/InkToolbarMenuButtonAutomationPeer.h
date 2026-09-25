@@ -23,7 +23,7 @@ public:
     {
         try
         {
-            m_dropDownControlType = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarDropDownButtonControlTypeName);
+            m_dropDownControlType = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilDropDownControlTypeName);
             m_persistentName = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilButtonName);
         }
         catch (winrt::hresult_error const& e)
@@ -42,6 +42,14 @@ public:
                 return *this;
             }
             return nullptr;
+        }
+        if (patternInterface == winrt::PatternInterface::Toggle)
+        {
+            if (auto owner = GetImpl(); owner && owner->HasL3())
+            {
+                // The dropdown reports expansion, not the stencil's on/off state.
+                return nullptr;
+            }
         }
         return __super::GetPatternCore(patternInterface);
     }

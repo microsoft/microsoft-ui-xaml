@@ -876,8 +876,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(peer, "MenuButton should create an automation peer.");
                 Verify.AreEqual(AutomationControlType.Button, peer.GetAutomationControlType(),
                     "The measuring-tools dropdown should expose the standard Button role.");
-                Verify.AreEqual("drop down button", peer.GetLocalizedControlType(),
+                Verify.AreEqual("dropdown", peer.GetLocalizedControlType(),
                     "The measuring-tools button should advertise its dropdown.");
+                Verify.IsNull(peer.GetPattern(PatternInterface.Toggle),
+                    "The measuring-tools dropdown should not announce an additional on/off state.");
                 Verify.AreEqual("Measuring tools, Ruler", peer.GetName(),
                     "The name should include both the menu identity and the selected ruler.");
 
@@ -903,6 +905,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState,
                         "Opening the measuring-tools flyout through UIA should report Expanded.");
+                    Verify.IsNull(peer.GetPattern(PatternInterface.Toggle),
+                        "An expanded measuring-tools dropdown should not expose Toggle.");
                     Verify.AreEqual("Measuring tools, Ruler", peer.GetName(),
                         "Opening the dropdown should preserve its identity and selected stencil.");
 
@@ -1000,8 +1004,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 button.IsRulerItemVisible = true;
                 button.IsProtractorItemVisible = true;
-                Verify.AreEqual("drop down button", peer.GetLocalizedControlType(),
+                Verify.AreEqual("dropdown", peer.GetLocalizedControlType(),
                     "Restoring both stencils should restore the dropdown role on the existing peer.");
+                Verify.IsNull(peer.GetPattern(PatternInterface.Toggle),
+                    "Restoring dropdown mode should stop exposing the single-stencil Toggle pattern.");
                 var expandCollapse = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
                 Verify.IsNotNull(expandCollapse, "Restoring both stencils should restore ExpandCollapse.");
                 Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState,

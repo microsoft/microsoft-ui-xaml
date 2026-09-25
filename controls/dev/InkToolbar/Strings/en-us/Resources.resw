@@ -108,7 +108,11 @@
   </data>
   <data name="InkToolbarDropDownButtonControlTypeName" xml:space="preserve">
     <value>drop down button</value>
-    <comment>Accessible control type for measuring-tools and built-in pen buttons with a flyout. UI Automation reports the expanded or collapsed state separately.</comment>
+    <comment>Accessible control type for built-in pen buttons with a flyout. UI Automation reports the expanded or collapsed state separately.</comment>
+  </data>
+  <data name="InkToolbarStencilDropDownControlTypeName" xml:space="preserve">
+    <value>dropdown</value>
+    <comment>Concise accessible control type for the measuring-tools dropdown. UI Automation reports the expanded or collapsed state separately.</comment>
   </data>
   <data name="InkToolbarStencilButtonName" xml:space="preserve">
     <value>Measuring tools</value>

@@ -49,6 +49,7 @@ public:
 #define SR_InkToolbarStencilProtractorName L"InkToolbarStencilProtractorName"
 #define SR_InkToolbarToolButtonControlTypeName L"InkToolbarToolButtonControlTypeName"
 #define SR_InkToolbarDropDownButtonControlTypeName L"InkToolbarDropDownButtonControlTypeName"
+#define SR_InkToolbarStencilDropDownControlTypeName L"InkToolbarStencilDropDownControlTypeName"
 #define SR_InkToolbarStencilButtonName L"InkToolbarStencilButtonName"
 #define SR_InkToolbarColorPaletteHelpText L"InkToolbarColorPaletteHelpText"
 
