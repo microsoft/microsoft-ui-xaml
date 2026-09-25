@@ -517,10 +517,10 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [default_interface]
-    runtimeclass PivotHeaderPanel
+    unsealed runtimeclass PivotHeaderPanel
         : Microsoft.UI.Xaml.Controls.Canvas
     {
-        PivotHeaderPanel();
+        [method_name("CreateInstance")] PivotHeaderPanel();
     };
 
 }
