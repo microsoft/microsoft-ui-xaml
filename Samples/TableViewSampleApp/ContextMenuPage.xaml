@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.ContextMenuPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+    <Page.Resources>
+        <DataTemplate x:Key="AppFlyoutCell">
+            <TextBlock Text="{Binding Notes}" Margin="8,0">
+                <TextBlock.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="APP-OWNED" />
+                    </MenuFlyout>
+                </TextBlock.ContextFlyout>
+            </TextBlock>
+        </DataTemplate>
+    </Page.Resources>
+    <Grid Padding="12" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="Context menus" FontSize="18" />
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+            <ComboBox x:Name="Mode" SelectedIndex="0">
+                <ComboBoxItem Content="Keep" />
+                <ComboBoxItem Content="Replace" />
+                <ComboBoxItem Content="Null" />
+                <ComboBoxItem Content="Suppress" />
+                <ComboBoxItem Content="Remove column" />
+                <ComboBoxItem Content="Hide column" />
+                <ComboBoxItem Content="Swap items" />
+                <ComboBoxItem Content="Swap items + null" />
+            </ComboBox>
+            <CheckBox x:Name="NoSelection"
+                      Content="SelectionMode.None"
+                      Click="OnSelectionMode" />
+            <Button Content="Clear row menu" Click="OnClearRow" />
+            <Button Content="Reset" Click="OnReset" />
+        </StackPanel>
+        <tv:TableView x:Name="Table" Grid.Row="2" IsReadOnly="False" />
+        <TextBlock x:Name="Status" Grid.Row="3" TextWrapping="Wrap" />
+    </Grid>
+</Page>

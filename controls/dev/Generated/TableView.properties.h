@@ -45,6 +45,9 @@ public:
     void RowBackground(winrt::Brush const& value);
     winrt::Brush RowBackground();
 
+    void RowContextFlyout(winrt::FlyoutBase const& value);
+    winrt::FlyoutBase RowContextFlyout();
+
     void SelectedIndex(int value);
     int SelectedIndex();
 
@@ -66,6 +69,7 @@ public:
     static winrt::DependencyProperty IsReadOnlyProperty() { return s_IsReadOnlyProperty; }
     static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
     static winrt::DependencyProperty RowBackgroundProperty() { return s_RowBackgroundProperty; }
+    static winrt::DependencyProperty RowContextFlyoutProperty() { return s_RowContextFlyoutProperty; }
     static winrt::DependencyProperty SelectedIndexProperty() { return s_SelectedIndexProperty; }
     static winrt::DependencyProperty SelectedItemProperty() { return s_SelectedItemProperty; }
     static winrt::DependencyProperty SelectionModeProperty() { return s_SelectionModeProperty; }
@@ -82,6 +86,7 @@ public:
     static GlobalDependencyProperty s_IsReadOnlyProperty;
     static GlobalDependencyProperty s_ItemsSourceProperty;
     static GlobalDependencyProperty s_RowBackgroundProperty;
+    static GlobalDependencyProperty s_RowContextFlyoutProperty;
     static GlobalDependencyProperty s_SelectedIndexProperty;
     static GlobalDependencyProperty s_SelectedItemProperty;
     static GlobalDependencyProperty s_SelectionModeProperty;
@@ -90,6 +95,8 @@ public:
     void BeginningEdit(winrt::event_token const& token);
     winrt::event_token CellEditEnding(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndingEventArgs> const& value);
     void CellEditEnding(winrt::event_token const& token);
+    winrt::event_token ContextFlyoutRequested(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewContextFlyoutRequestedEventArgs> const& value);
+    void ContextFlyoutRequested(winrt::event_token const& token);
     winrt::event_token SelectionChanged(winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs> const& value);
     void SelectionChanged(winrt::event_token const& token);
     winrt::event_token Sorted(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs> const& value);
@@ -99,6 +106,7 @@ public:
 
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewBeginningEditEventArgs>> m_beginningEditEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndingEventArgs>> m_cellEditEndingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewContextFlyoutRequestedEventArgs>> m_contextFlyoutRequestedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs>> m_selectionChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs>> m_sortedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortingEventArgs>> m_sortingEventSource;

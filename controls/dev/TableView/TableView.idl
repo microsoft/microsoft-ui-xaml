@@ -213,6 +213,11 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     // tooltip. A CLR property, not a DP, so XAML passes the Binding through unevaluated.
     Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
 
+    // Optional context flyouts for body cells and the column header. Null means this column does
+    // not contribute a custom flyout at that target.
+    Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
+    Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
+
     // The editing hooks a derived column would override - GenerateEditingElement, PrepareCellForEdit,
     // CommitCellEdit, CancelCellEdit - are internal in this release. The built-in columns use them,
     // but a CellEditingTemplate is the supported way to customise an editor here, so publishing the
@@ -230,6 +235,8 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CellEditingTemplateProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CanSortProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SortCycleProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SortMemberPathProperty { get; };
@@ -287,6 +294,17 @@ runtimeclass TableViewCellEditEndingEventArgs
     MU_XC_NAMESPACE.TableViewEditAction EditAction { get; };
 
     Boolean Cancel;
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+runtimeclass TableViewContextFlyoutRequestedEventArgs
+{
+    Object Item { get; };
+    MU_XC_NAMESPACE.TableViewColumn Column { get; };
+    Boolean IsHeader { get; };
+    Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase ContextFlyout;
+    Boolean Handled;
 };
 
 [MUX_PREVIEW]
@@ -495,6 +513,10 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("true")]
     Boolean IsReadOnly { get; set; };
 
+    // Optional row-level candidate in the context-menu precedence. Null means the request can keep
+    // falling through to later policy, including the table's native ContextFlyout.
+    Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase RowContextFlyout { get; set; };
+
     // ----- Editing -----
 
     // True while an edit is in flight on a cell: from the edit being accepted, through the open
@@ -510,8 +532,8 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
 
     // Editing starts from the user: double-click, or F2 on the current cell. There is no
     // programmatic BeginEdit in this release, and therefore no public current-cell surface for one
-    // to target. Both arrive together when there is a scenario - a context menu or a view-model
-    // command - to justify them.
+    // to target. The context-menu feature keeps current-cell access internal; a public command
+    // surface still arrives later, when there is a programmatic editing scenario to justify it.
 
     // Closes the open CELL edit. False when it did not close: a veto or failed validation leaves the
     // edit open and IsEditing true.
@@ -527,6 +549,12 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     // There is no post-close event in this release. CellEditEnding reports the outcome through
     // EditAction and is raised for every close, so a second "it finished" event is surface without
     // a scenario of its own yet. It can be added later without breaking anyone.
+
+    // ----- Context menus -----
+    // Raised synchronously once a body or header request has a candidate flyout from the public
+    // row/column properties. Set Handled=true to suppress all custom and native fallback. Leaving
+    // ContextFlyout null permits the request to continue to native bubbling.
+    event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, MU_XC_NAMESPACE.TableViewContextFlyoutRequestedEventArgs> ContextFlyoutRequested;
 
     // ----- Selection -----
     // Row-scoped, single item. SelectedItem and SelectedIndex are read-only projections of the
@@ -606,6 +634,7 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty GroupHeaderTemplateProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty IsReadOnlyProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty RowContextFlyoutProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SelectionModeProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SelectedItemProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SelectedIndexProperty { get; };
