@@ -77,6 +77,8 @@
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="Transparent" />
             <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0</Thickness>
 
+            <SolidColorBrush x:Key="TabularSurfaceBorderBrush" Color="#29FFFFFF" />
+
             <!-- Grid lines. DividerStrokeColorDefault (~16% white on Dark) — visible above row
                  banding without dominating the surface. Earlier ControlStrokeColorDefault (~7%
                  white) was too faint at 1-px width on alternating rows. -->
@@ -166,6 +168,8 @@
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="#26000000" />                       <!-- ~15% black (#26 alpha) -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundBrush" Color="#9E000000" />                       <!-- TextFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#0F000000" />                        <!-- ControlStrokeColorDefault (Light) -->
+
+            <SolidColorBrush x:Key="TabularSurfaceBorderBrush" Color="#29000000" />
 
             <!-- Grid lines. DividerStrokeColorDefault (~16% black on Light) — visible above row
                  banding without dominating the surface. Earlier ControlStrokeColorDefault (~6%
@@ -264,6 +268,8 @@
             <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">1.0</x:Double>
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0,1,0,1</Thickness>
+
+            <SolidColorBrush x:Key="TabularSurfaceBorderBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
 
             <!-- Grid lines -->
             <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
