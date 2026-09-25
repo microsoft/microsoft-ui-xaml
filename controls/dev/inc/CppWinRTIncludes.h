@@ -7,14 +7,12 @@
 #include <winrt\Windows.Foundation.h>
 #include <winrt\Windows.Foundation.Collections.h>
 #include <winrt\Windows.Foundation.Metadata.h>
-#include <winrt\Windows.ApplicationModel.Activation.h>
 #include <winrt\Windows.ApplicationModel.Contacts.h>
 #include <winrt\Windows.ApplicationModel.Core.h>
 #include <winrt\Windows.ApplicationModel.DataTransfer.h>
 #include <winrt\Windows.ApplicationModel.DataTransfer.DragDrop.h>
 #include <winrt\Windows.ApplicationModel.Resources.h>
 #include <winrt\Windows.ApplicationModel.Resources.Core.h>
-#include <winrt\Windows.Devices.Geolocation.h>
 #include <winrt\Windows.Globalization.h>
 #include <winrt\Windows.Globalization.NumberFormatting.h>
 #include <winrt\Windows.Graphics.h>
@@ -34,7 +32,6 @@
 #include <winrt\Windows.UI.Input.Inking.h>
 #include <winrt\Windows.UI.Text.h>
 #include <winrt\Windows.UI.ViewManagement.h>
-#include <winrt\Windows.UI.Xaml.Interop.h>
 #include <winrt\Windows.Data.Json.h>
 
 #include <winrt\Microsoft.Windows.ApplicationModel.Resources.h>
@@ -48,7 +45,6 @@
 #endif
 #include <winrt\Microsoft.UI.Content.h>
 #include <winrt\Microsoft.UI.Input.h>
-#include <winrt\Microsoft.UI.Input.Experimental.h>
 #include <winrt\Microsoft.UI.Text.h>
 #include <winrt\Microsoft.UI.Windowing.h>
 #include <winrt\Microsoft.UI.Xaml.h>
@@ -80,7 +76,6 @@
 namespace winrt
 {
     using namespace ::winrt::Windows;
-    using namespace ::winrt::Windows::ApplicationModel::Activation;
     using namespace ::winrt::Windows::ApplicationModel::Contacts;
     using namespace ::winrt::Windows::ApplicationModel::Core;
     using namespace ::winrt::Windows::ApplicationModel::DataTransfer;
@@ -109,7 +104,6 @@ namespace winrt
     using namespace ::winrt::Windows::UI::Core;
     using namespace ::winrt::Windows::UI::Text;
     using namespace ::winrt::Windows::UI::ViewManagement;
-    using namespace ::winrt::Windows::Web;
 
     using namespace ::winrt::Microsoft::UI::Dispatching;
     using namespace ::winrt::Microsoft::UI::Composition;
@@ -119,7 +113,6 @@ namespace winrt
     using namespace ::winrt::Microsoft::UI::Composition::SystemBackdrops;
     using namespace ::winrt::Microsoft::UI::Content;
     using namespace ::winrt::Microsoft::UI::Input;
-    using namespace ::winrt::Microsoft::UI::Input::Experimental;
 
     using namespace ::winrt::Microsoft::Web::WebView2::Core;
 

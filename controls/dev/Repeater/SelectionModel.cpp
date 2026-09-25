@@ -3,6 +3,7 @@
 
 #include <pch.h>
 #include <common.h>
+#include <winrt/Windows.UI.Xaml.Interop.h>
 #include "ItemsRepeater.common.h"
 #include "SelectionNode.h"
 #include "SelectionModel.h"
