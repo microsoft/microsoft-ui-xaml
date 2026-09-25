@@ -845,6 +845,7 @@ void TableView::OnApplyTemplate()
         m_headerHostGettingFocusRevoker.revoke();
         m_headerHostGotFocusRevoker.revoke();
     }
+    m_headerContextRequestedRevoker.revoke();
     if (auto oldBodyScroller = m_bodyScroller.get())
     {
         oldBodyScroller.ViewChanged(m_bodyScrollerViewChangedToken);
@@ -889,6 +890,15 @@ void TableView::OnApplyTemplate()
                 if (auto strongThis = weakThis.get())
                 {
                     strongThis->OnHeaderHostGotFocus(sender, args);
+                }
+            });
+
+        m_headerContextRequestedRevoker = headerHost.ContextRequested(winrt::auto_revoke,
+            [weakThis](winrt::IInspectable const&, winrt::ContextRequestedEventArgs const& args)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->OnHeaderContextRequested(args);
                 }
             });
 
