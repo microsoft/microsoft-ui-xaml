@@ -5,6 +5,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
     <Page.Resources>
+        <DataTemplate x:Key="NestedTableCell">
+            <tv:TableView Loaded="OnNestedLoaded" Height="100" Width="200" />
+        </DataTemplate>
         <DataTemplate x:Key="AppFlyoutCell">
             <TextBlock Text="{Binding Notes}" Margin="8,0">
                 <TextBlock.ContextFlyout>
@@ -23,24 +26,52 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <TextBlock Text="Context menus" FontSize="18" />
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
-            <ComboBox x:Name="Mode" SelectedIndex="0">
-                <ComboBoxItem Content="Keep" />
-                <ComboBoxItem Content="Replace" />
-                <ComboBoxItem Content="Null" />
-                <ComboBoxItem Content="Suppress" />
-                <ComboBoxItem Content="Remove column" />
-                <ComboBoxItem Content="Hide column" />
-                <ComboBoxItem Content="Swap items" />
-                <ComboBoxItem Content="Swap items + null" />
-            </ComboBox>
-            <CheckBox x:Name="NoSelection"
-                      Content="SelectionMode.None"
-                      Click="OnSelectionMode" />
-            <Button Content="Clear row menu" Click="OnClearRow" />
-            <Button Content="Reset" Click="OnReset" />
-        </StackPanel>
-        <tv:TableView x:Name="Table" Grid.Row="2" IsReadOnly="False" />
+        <ScrollViewer Grid.Row="1" MaxHeight="180"
+                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ComboBox x:Name="Mode" SelectedIndex="0" AutomationProperties.Name="Request mode">
+                        <ComboBoxItem Content="Keep" />
+                        <ComboBoxItem Content="Replace" />
+                        <ComboBoxItem Content="Null" />
+                        <ComboBoxItem Content="Suppress" />
+                        <ComboBoxItem Content="Remove column" />
+                        <ComboBoxItem Content="Hide column" />
+                        <ComboBoxItem Content="Swap items" />
+                        <ComboBoxItem Content="Swap items + null" />
+                        <ComboBoxItem Content="Retemplate in callback" />
+                        <ComboBoxItem Content="Retain args" />
+                    </ComboBox>
+                    <CheckBox x:Name="NoSelection"
+                              Content="SelectionMode.None"
+                              Click="OnSelectionMode" />
+                    <Button Content="Clear row menu" Click="OnClearRow" />
+                    <Button Content="Reset" Click="OnReset" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Direct row menu" Click="OnDirectRow" />
+                    <Button Content="Direct header menu" Click="OnDirectHeader" />
+                    <Button Content="Retemplate" Click="OnRetemplate" />
+                    <Button Content="Mutate on next focus" Click="OnMutateOnFocus" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Nested table" Click="OnNested" />
+                    <Button Content="Clear inner menus" Click="OnClearInnerMenus" />
+                    <Button Content="Null item row" Click="OnNullItem" />
+                    <Button Content="Hide headers" Click="OnHideHeaders" />
+                    <Button Content="Show headers" Click="OnShowHeaders" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="RTL + frozen Name" Click="OnRtl" />
+                    <Button Content="Plain flyout" Click="OnPlainFlyout" />
+                    <Button Content="Group by City" Click="OnGroup" />
+                    <Button Content="Change retained args" Click="OnChangeRetainedArgs" />
+                </StackPanel>
+                <TextBlock x:Name="Hint" TextWrapping="Wrap" MaxWidth="680" HorizontalAlignment="Left" />
+            </StackPanel>
+        </ScrollViewer>
+        <tv:TableView x:Name="Table" Grid.Row="2" IsReadOnly="False"
+                      AutomationProperties.Name="Context menu table" />
         <TextBlock x:Name="Status" Grid.Row="3" TextWrapping="Wrap" />
     </Grid>
 </Page>

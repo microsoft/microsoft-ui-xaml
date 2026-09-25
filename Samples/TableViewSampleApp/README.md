@@ -98,6 +98,76 @@ The **Filter / sort / group** page exercises the data-shaping surface:
 - `TableView.CanUserSortColumns`, `SortByColumn`, `ClearSort`, `Sorting` / `Sorted`
 - `GroupHeaderTemplate` (custom vs. built-in), `ExpandAllGroups` / `CollapseAllGroups`
 
+## Context menus
+
+The **Context menus** page demonstrates per-column cell/header flyouts and row
+fallback. Column cell menus take precedence over `RowContextFlyout`; the native
+`TableView.ContextFlyout` is the final fallback. `ContextFlyoutRequested` can
+replace the resolved flyout. Setting it to null permits native fallback; setting
+`Handled` suppresses all further display. No candidate means no override event.
+
+Context requests move body focus without changing selection. Headers do not move
+body focus. Direct element flyouts keep native priority on their routed path.
+Menus are not stamped on realized cells. A target invalidated during an app
+callback is not retargeted; custom display is suppressed unless the app explicitly
+chooses null fallback. The event is synchronous: later changes to retained args
+do not change its completed decision.
+
+The scrollable diagnostic toolbar keeps the table usable in smaller windows.
+Status shows request/open counts, selection, item, column, and menu binding.
+`fixtureIndex` identifies the requested item in the original 300-row fixture
+(`-1` for headers, null items, or replacement data).
+`opens` counts menus made by this page, including inner/direct menus, but not the
+XAML-defined `APP-OWNED` menu or an editor's built-in context menu. A visible
+`binding=PASS` compares the menu item's inherited data context to the request item.
+Use **Reset** between independent cases. Reset restores ordinary data, headers,
+templates, LTR and menu candidates, cancels pending focus mutation, and releases
+retained args; it preserves the selection-mode checkbox and deliberately does not
+clear direct menus on existing elements. **Navigate away/back after direct-menu
+or nested-table cases** to create clean containers.
+
+| Case | Reproduction and expected result |
+|---|---|
+| B1 | Right-click Name, Escape, Shift+F10, Escape, Apps key: one CELL request/open per gesture, correct bound item. |
+| B2 | Select one row, right-click another: focus moves, selection does not. Repeat with SelectionMode.None. |
+| B3 | Invoke Name, then trailing blank space in the same row: ROW with null column, not the old Name column. Clear row menu: NATIVE without another override. |
+| B4 | Scroll horizontally/vertically, invoke visible cells: column and item match the target. |
+| B5 | City/Score uses ROW. Clear row menu and invoke again: NATIVE, zero custom requests after Reset. |
+| B6-B8 | Name with Replace / Null / Suppress: REPLACEMENT / NATIVE / no menu; one callback each. |
+| B9 | Right-click Notes text: APP-OWNED, zero outer requests. A Name TextBox editor keeps native editing behavior; see limitation below. |
+| B10 | Right-click a different Name row, Escape, F2: editing starts on the context row/cell, not the previously selected row. |
+| B11 | Invoke Name on successive rows: CELL binding text changes to the requested item. |
+| H1 | Name/City header pointer or focused-header Shift+F10/Apps: HEADER/CITY HEADER, null item. |
+| H2 | Header Replace / Null / Suppress: REPLACEMENT / NATIVE / none. Score header has no candidate: NATIVE without callback. |
+| H3 | Direct header menu, invoke Name header: DIRECT HEADER without custom callback. Recreate page afterwards. |
+| H4 | Start Name editing with F2, invoke City header: CITY HEADER remains eligible. |
+| H5 | Blank header space or Group by City then group header: NATIVE, no custom callback. |
+| H6 | Hide headers, invoke former header position: no stale header request. Show headers, invoke Name: HEADER once. |
+| H7 | Repeat B1, B5, B7 and B8 after header cases: body behavior is unchanged. |
+| L1-L2 | Remove column / Hide column, invoke Name cell; recreate and repeat on header: one callback, zero opens, no fallback. |
+| L3 | Swap items on Name suppresses display; Swap items + null opens NATIVE despite mutation. |
+| L4 | Mutate on next focus, right-click a different row without left-clicking: synchronous GettingFocus replaces items; no custom callback/open for the stale request. GotFocus itself is deferred until after Focus returns and cannot exercise this synchronous gate. |
+| L5 | Retemplate in callback, invoke Name cell/header: one callback, no show. Choose Keep and invoke fresh target: one show. |
+| L6 | Direct row menu gives DIRECT ROW without callback. Nested table then right-click Inner body gives INNER without outer callback; Clear inner menus gives native outer fallback, still no outer callback. |
+| L7 | Retemplate three times; scroll past row 150 and back; invoke Name after each: one request/open each, current binding. |
+| L8-L9 | Developer-only native debugger cases: same-owner nested request must suppress; throwing from the override must propagate and unwind the guard. These intentionally have no shipping probe/button. |
+| A1-A2 | Physical touch-hold and gamepad Menu on body/header: applicable menu once, selection unchanged. Require actual hardware; keyboard is not a substitute. |
+| A3 | RTL + frozen Name, horizontal scroll, invoke Name/body/header: inspect target and mirrored platform placement. |
+| A4 | Inspect an open menu with UIA/Narrator: CELL presenter and named CELL/current-item entries; only one popup. |
+| A5 | Escape from CELL, then F2: row focus returns and Name editing works. |
+| A6 | Retain args, invoke Name, Escape, Change retained args: no additional callback/open or late menu. |
+| A7 | Plain flyout, Name with Keep / Null / Suppress: PLAIN FLYOUT / NATIVE / none. |
+| A8 | Group by City, invoke group header: NATIVE without column/row callback. |
+| Null-item regression | Null item row creates an actual null source item at row zero. Wait for realizedNull=PASS; right-click its blank Name/City with Keep / Replace / Null / Suppress and mutation modes. Reset then reapply Null item row between cases. |
+
+These are reproducible diagnostics, not a claim that every hardware/accessibility
+case has passed. Known editing limitation: opening the built-in TextBox popup can
+cause existing focus-loss commit/teardown before the context-menu pipeline runs.
+That pre-existing editor behavior is separate from header eligibility while editing.
+The existing frozen-column layout explicitly disables pinning in RTL. The A3
+button exposes this limitation: Name can scroll out of view, so combined
+RTL/frozen/scroll coverage must not be reported as passed.
+
 ## More detail
 
 See [AGENTS.md](AGENTS.md).
