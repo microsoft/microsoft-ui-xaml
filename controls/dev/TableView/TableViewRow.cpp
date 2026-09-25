@@ -174,7 +174,7 @@ bool TableViewRow::IsContextMenuTargetCurrent(
 
     if (target.Kind != ContextMenuTargetKind::Body || !target.Row ||
         winrt::get_self<TableViewRow>(target.Row) != this ||
-        !target.Row.IsLoaded() || !target.Item || target.ScopeRoot != m_cellsHost.get() ||
+        !target.Row.IsLoaded() || target.ScopeRoot != m_cellsHost.get() ||
         !target.ScopeRoot || !target.Anchor)
     {
         return false;
@@ -1317,10 +1317,6 @@ std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextM
     }
 
     auto const item = ownerImpl->UnwrapEditingDataItem(DataContext());
-    if (!item)
-    {
-        return std::nullopt;
-    }
 
     TableViewDetails::ContextMenuTarget target;
     target.Row = *this;
