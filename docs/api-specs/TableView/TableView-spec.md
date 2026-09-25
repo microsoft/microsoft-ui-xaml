@@ -185,6 +185,12 @@ application template explicitly supplies its own brush.
 Application-supplied row backgrounds, foregrounds, and cell templates remain responsible for
 their own contrast-theme support.
 
+Removing the shadowing brush fallbacks also restores the canonical Light/Dark header fills
+(`#26000000` / `#26FFFFFF`) and gridline brushes (`#29000000` / `#29FFFFFF`). The normal-state
+`Foreground` and interaction-state override behavior above also applies in Light/Dark.
+Overrides of low-level Fluent color tokens no longer flow through the deleted fallback brushes;
+override the named `TabularSurface*` brush keys instead.
+
 Runtime validation should exercise normal, hovered, pressed, selected, and disabled rows in each contrast theme, including
 switching themes while the table is visible and returning to Light/Dark. Verify text, selection,
 header and gridline colors, group headers, and application resource overrides.
@@ -632,7 +638,7 @@ Template parts:
 |---|---|---|
 | `PART_RootBorder` | `Border` | Row root border. Its `Background` is driven by `CommonStates`. |
 | `PART_CellsHost` | `Panel` | Host for generated cell elements. |
-| `PART_SelectionIndicator` | `UIElement` | **Required.** Leading-edge accent strip; `Opacity` is animated `0 → 1` by the `Selected*` states, which target it by name — a re-template that omits it fails when a row is first selected, not at parse time. |
+| `PART_SelectionIndicator` | `Shape` (default: `Rectangle`) | **Required by the default state definitions.** Leading-edge selection strip; the `Selected*` states animate `Opacity` to `1`, and `SelectedDisabled` also animates `Fill`. Custom templates using other indicator types must adapt the corresponding state targets. |
 
 Visual states:
 
