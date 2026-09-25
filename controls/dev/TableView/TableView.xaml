@@ -9,8 +9,7 @@
     <!-- Metric defaults remain available alongside the default styles. -->
     <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
 
-    <!-- TabularControlsResources supplies TabularSurface* for all themes. Local fallbacks
-         shadow its HighContrast brushes and resolve Fluent-only colors to red sentinels. -->
+    <!-- TabularControlsResources is required to supply TabularSurface* brushes for all themes. -->
 
     <!-- TableView default style. Header cells stack horizontally (one per
          column); the body is an ItemsRepeater of TableViewRow, each building its cells from

@@ -178,6 +178,9 @@ foreground brush. Cell content inherits that foreground unless its template supp
 Override the named `TabularSurface*` brush keys to customize colors. Low-level Fluent color-token
 overrides no longer flow through the removed default-style brush fallbacks.
 
+In Light and Dark themes, the disabled-selected indicator now uses the disabled foreground brush
+instead of the accent brush; in High Contrast, it uses `SystemColorGrayTextColor`.
+
 ### Frozen (pinned) leading columns
 
 Set `FrozenEdge="Leading"` on a contiguous prefix starting at column 0 to pin those columns to the leading edge. A later `Leading` column is ignored. `Trailing` is reserved.
