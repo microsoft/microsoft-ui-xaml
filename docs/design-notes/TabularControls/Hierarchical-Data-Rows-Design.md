@@ -132,16 +132,32 @@ runtimeclass TableViewSource
 
 Overload metadata is frozen at declaration time for the same MIDL reason `GroupBy` documents.
 
-**`WithChildren` + `GroupBy` throws `E_INVALIDARG` in v1.** They are two different flattening axes
-with two different parent concepts; unifying them is §9, not v1. Failing fast beats shipping an
-ill-defined interleaving.
+**`WithChildren` + `GroupBy` compose.** `GroupBy` applies to the **roots** only. The row stream
+becomes `[Header A] [rootA1] [rootA1's visible subtree…] [rootA2] … [Header B] [rootB1] …`. A
+descendant is never re-bucketed: its depth is what makes it a descendant, and it cannot
+simultaneously sit at depth 3 under its parent and at depth 0 under a header. Headers therefore
+exist at the top level and nowhere else, and every non-header row remains a real data row at its
+real depth — the invariant that separates this feature from grouping.
 
-**Which call throws, precisely:** the *second* verb throws, whichever it is — `GroupBy` on a source
-that already has a children selector, and `WithChildren` on a source that already has a group
-selector, both throw `E_INVALIDARG` at the call site. Order-independent, so an app cannot reach a
-both-set state and discover it later at rebuild time. `ClearHierarchy()` then `GroupBy(...)` is
-legal, as is `ClearGrouping()` then `WithChildren(...)`: the constraint is on the *resulting* state,
-not on call history.
+**Mechanism.** The roots are ordered bucket-by-bucket and handed to the hierarchy adapter, which
+emits each root immediately followed by its visible subtree. Because a bucket's roots are
+contiguous and a root's subtree follows it, the adapter's entries can be sliced per bucket in one
+pass, cutting at every `Depth == 0` row. Each group's `Items` is its slice — roots *plus* every
+currently-visible descendant, so a header's item count grows as subtrees open.
+
+Two consequences worth stating plainly:
+
+- **The root set must not be re-shaped by the per-level shaping callback** under grouping. Letting
+  it sort the roots among themselves would interleave buckets and destroy the contiguity the slice
+  depends on. Layer 2 owns root ordering; the adapter never re-shapes the root set.
+- **A node toggle costs a grouped `Reset`, not an incremental splice.** Under grouping the
+  presented axis is the grouped adapter's, so a hierarchy splice is invisible to it until the
+  slices are recomputed and re-pushed. Accepted for v1; revisit if it measures badly.
+
+**Index spaces diverge.** A data row's index on the grouped axis does not address the hierarchy
+adapter, because headers interleave. The row's *item* is the only shared handle, which is sound
+because one object occupies at most one visible row (layer 2 rejects duplicate objects, and the
+walk rejects duplicate siblings).
 
 **Default expansion state is collapsed.** `TableViewSource` sets the hierarchical adapter's
 expansion baseline to collapsed at construction (§4.3). This is a deliberate divergence from
@@ -473,17 +489,16 @@ descendants; and §4.3 allows those children to arrive **asynchronously**, so "w
 is not merely expensive but not answerable synchronously at all. The two features cannot both hold.
 v1 resolves it rather than leaving it to discovery:
 
-- **`Filter` + `WithChildren` without a `hasChildrenSelector`** → supported, `O(tree)`, ancestor
-  retention as described. The children selector is the only truth about children and the walk may
-  call it freely.
-- **`Filter` + `WithChildren` *with* a `hasChildrenSelector`** → throws `E_INVALIDARG` at the point
-  the second of the two is declared, with a diagnostic saying the lazy selector and filtering are
-  mutually exclusive in v1 and naming both escapes: drop `hasChildrenSelector` to accept the full
-  walk, or pre-filter the source. Silently ignoring the lazy selector would realize a tree the app
-  explicitly asked not to realize — the one outcome the app used that overload to prevent.
-
-This is the same failing-fast-over-guessing call as `GroupBy` + `WithChildren`, and it is listed in
-§9 with the design it is waiting on: an async-aware, incrementally-realizing filter.
+- **`Filter` + `WithChildren`** → supported, and the filter is **match-node-only**: a node that
+  fails the predicate is dropped even when a descendant would have matched, because that descendant
+  is reachable only through the parent just removed. This holds with or without a
+  `hasChildrenSelector`, and it is the one shape that stays `O(visible)` and never realizes a
+  subtree the app asked not to realize.
+- **Ancestor retention** — keeping a non-matching parent alive because something beneath it matches
+  — is **deferred**, not silently approximated. It is inherently `O(tree)`: the only way to know
+  whether a collapsed subtree contains a match is to walk it, which defeats the lazy contract the
+  `hasChildrenSelector` overload exists to uphold. §9 carries it, waiting on an async-aware,
+  incrementally-realizing filter.
 
 **Sort semantics:** sorts apply within each sibling set; sibling order never mixes depths. A sort
 comparing a parent against its own child is meaningless and is not expressible.
@@ -627,11 +642,12 @@ method, not silently mitigated.
   totals and TableView binds the parent's cells — which is exactly how Task Manager works, and
   needs zero engine work. Declarative `Aggregate(column, items => …)` over descendants is the only
   genuinely new compute in the feature and it needs incremental-recompute design of its own.
-- **`GroupBy` + `WithChildren` together.** The architectural prize is one node abstraction with a
-  `kind` tag (`Header` vs `DataParent`) and a depth, backing one adapter and one expansion model —
-  `RowExpansionModel` is already neutral enough to serve both, and `TableViewRowInfo` already has
-  both `Kind` and `Level`. But it requires deciding what sorting and filtering mean across a mixed
-  axis, so v1 throws instead of guessing.
+- **`GroupBy` + `WithChildren` at every level.** v1 composes the two axes by grouping the **roots**
+  only (§4). What remains deferred is *nested* grouping — synthetic headers bucketing siblings at
+  depth — which would re-parent rows under headers and break the "every non-header row is a real
+  data row at its real depth" invariant. It also needs a decision on what a sort means across a
+  mixed axis. Also deferred: the incremental splice, since a node toggle under grouping currently
+  costs a grouped `Reset`.
 - **Ranged subtree updates on child-collection change.** v1 rebuilds, matching grouping's current
   behaviour; optimize against a benchmark.
 - **`Filter` + a lazy `hasChildrenSelector`.** v1 throws (§5). Unblocking it needs a filter that can
@@ -655,7 +671,7 @@ method, not silently mitigated.
 | --- | --- | --- |
 | 0 | `RowExpansionModel::RetainOnlyUnder(liveKeys, enumeratedPrefixes, parentPrefixOf)` — prefix-scoped prune (§4.2). Layer 1 only, no consumer changes. | Unit tests: intent under an unenumerated prefix survives; intent under an enumerated prefix that vanished is pruned; intent whose *grandparent* was enumerated but whose parent vanished is pruned (the ancestor walk, not just the immediate parent); a throwing or non-reducing extractor prunes nothing; existing `RetainOnly` behaviour unchanged for the grouped caller |
 | 1 | `HierarchicalSourceAdapter` + `NodeRow` + path identity + collapsed baseline + cycle/depth guards + `Rebuild` + splice + `m_indexByPathKey`. No control changes. | Unit tests on the adapter alone (no host, no dispatcher — the same testability `RowExpansionModel` has). Must include: collapsed 1M-node tree walks `O(roots)`; collapse-grandchild → collapse-parent → expand-parent preserves the grandchild's collapse; a cyclic children selector throws rather than overflowing; index map stays exact across splices |
-| 2 | `ShapedItemsSource::RebuildHierarchical`, `ProjectionKind::Hierarchical`, per-sibling-set shaping | Shaping tests: sort/filter per level, ancestor retention, `GroupBy`+`WithChildren` throws either order, `Filter`+lazy `hasChildrenSelector` throws, shared child hits the duplicate-object diagnostic |
+| 2 | `ShapedItemsSource::RebuildHierarchical` / `RebuildGroupedHierarchical`, `ProjectionKind::Hierarchical` and `GroupedHierarchical`, per-sibling-set shaping | Shaping tests: sort/filter per level, match-node-only filtering, `GroupBy`+`WithChildren` buckets roots and keeps subtrees under their roots, a node toggle updates the grouped slices, shared child hits the duplicate-object diagnostic |
 | 3 | `TableViewSource.WithChildren` IDL + wiring; `RowMetadataProvider::CreateForHierarchicalRows` | API review; metadata tests for `Level` (roots report 1, not 0) / `ChildCount` / path identity |
 | 4 | `TableViewRow` indent + chevron + visual states + cells-panel gutter; toggle plumbing | Visual verification incl. RTL, frozen columns, density; roots render flush |
 | 5 | Keyboard, selection semantics, automation peer (`IExpandCollapseProvider`, `Level`, sibling-scoped `SizeOfSet`) | TAEF + UIA harness (`tableview-uia-harness.ps1`) |

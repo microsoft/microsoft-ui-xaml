@@ -15,8 +15,10 @@
 #include "ShapingPipeline.h"
 #include "ShapingHelpers.h"
 #include "RowIdentity.h"
+#include "HierarchyContract.h"
 
 class GroupedSourceAdapter;
+class HierarchicalSourceAdapter;
 class ShapedGroup;
 
 // Layer 2 of the shaping stack: the LIVE PROJECTION.
@@ -57,6 +59,14 @@ public:
         Flat,
         // Group headers interleaved with their items, produced through the group adapter.
         Grouped,
+        // A tree: every visible row is a real data row, produced through the hierarchy adapter.
+        // Unlike Grouped there are no synthetic header rows -- a parent IS a data row.
+        Hierarchical,
+        // Both axes in force. The ROOTS are bucketed into groups; each root still expands into its
+        // own subtree beneath it, and a descendant is never re-bucketed away from its parent. So
+        // group headers appear at depth 0 only, and every row under one is a real data row at its
+        // real depth -- the two axes compose rather than compete.
+        GroupedHierarchical,
     };
 
     explicit ShapedItemsSource(winrt::IInspectable const& source);
@@ -121,6 +131,19 @@ public:
         ShapingHelpers::KeySelector const& key,
         RowIdentity::IdentitySelector const& groupIdentitySelector);
     void ClearGroup();
+
+    // Declares the source a HIERARCHY: `children` yields a node's child collection, and the
+    // optional `hasChildren` answers "is this expandable" without enumerating, which is what keeps
+    // a collapsed subtree genuinely unrealized. Clearing returns the projection to flat/grouped.
+    //
+    // Composes with grouping. When both are in force the GROUP key is applied to the ROOTS: the
+    // top level is bucketed under headers, and each root still expands into its own subtree. A
+    // descendant is never pulled out from under its parent to join a bucket, because its depth --
+    // and therefore the tree itself -- would not survive it.
+    void SetChildren(
+        ShapingHelpers::ChildrenFn const& children,
+        ShapingHelpers::HasChildrenFn const& hasChildren);
+    void ClearChildren();
     void SetSort(
         winrt::hstring const& previousAxisToken,
         winrt::hstring const& axisToken,
@@ -163,6 +186,7 @@ public:
     // (group order, headers excluded) so Rows() stays coherent regardless of grouping.
     winrt::IObservableVector<winrt::IInspectable> Rows() const noexcept { return m_rows; }
     std::shared_ptr<GroupedSourceAdapter> GroupedAdapter() const noexcept { return m_groupedAdapter; }
+    std::shared_ptr<HierarchicalSourceAdapter> HierarchicalAdapter() const noexcept { return m_hierarchicalAdapter; }
     // The selector every identity consumer must use. Derives identity from each item's object
     // identity, so shaping never depends on the app having a unique domain key.
     ShapingHelpers::KeySelector const& IdentitySelector() const noexcept { return EffectiveIdentitySelector(); }
@@ -200,6 +224,31 @@ private:
     void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1) const { m_pipeline.ApplySort(rows, afterOrder, beforeOrder); }
     void RebuildFlat(std::vector<winrt::IInspectable>& rows);
     void RebuildGrouped(std::vector<winrt::IInspectable>& rows);
+    void RebuildHierarchical(std::vector<winrt::IInspectable>& rows);
+    // Both axes. Buckets the roots, walks each bucket's roots through the hierarchy adapter, then
+    // hands the grouped adapter one group per bucket whose Items are that bucket's visible rows.
+    void RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows);
+
+    // Shared by both hierarchical paths: (re-)creates the adapter, installs the selectors and the
+    // per-level shaping callback, and attaches it to `roots`. Returns the adapter.
+    void EnsureHierarchicalAdapter(std::vector<winrt::IInspectable> const& roots, bool shapeRoots);
+
+    // Snapshot of the hierarchy adapter's currently visible rows, in order.
+    std::vector<winrt::IInspectable> VisibleHierarchicalRows() const;
+
+    // Re-derives each group's Items from the hierarchy adapter's current entries. Called on the
+    // initial build and again whenever a node toggle splices the adapter, because the grouped
+    // adapter's rows are those Items and nothing else would tell it the tree changed shape.
+    void ResliceGroupsFromHierarchy();
+
+    // Bucket assignment for each root, by object identity. Rebuilt by RebuildGroupedHierarchical
+    // and read by ResliceGroupsFromHierarchy, which runs later and off a notification.
+    std::unordered_map<void*, size_t> m_rootBucketIndex;
+    std::vector<winrt::com_ptr<ShapedGroup>> m_hierarchyGroups;
+    winrt::event_token m_hierarchyEntriesChangedToken{};
+    winrt::ItemsSourceView m_hierarchyEntriesForRevocation{ nullptr };
+    // Guards the re-slice against re-entering itself through the group mutations it performs.
+    bool m_reslicingGroups{ false };
     void RebuildUnshapedRows(std::vector<winrt::IInspectable> const& rows, wchar_t const* reason);
     bool IsIdentityRequired() const;
     // True when any of Filter / Sort / GroupBy is in force. Distinct from IsIdentityRequired,
@@ -272,6 +321,13 @@ private:
     bool m_shapingBatchHasRefresh{ false };
     std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> m_groupCache;
     std::shared_ptr<GroupedSourceAdapter> m_groupedAdapter{};
+
+    ShapingHelpers::ChildrenFn m_childrenSelector{ nullptr };
+    ShapingHelpers::HasChildrenFn m_hasChildrenSelector{ nullptr };
+    // The shaped ROOT sibling set handed to the adapter. Separate from m_rows because m_rows stays
+    // the flat shaped projection of every visible row, while this is only the top level.
+    winrt::IObservableVector<winrt::IInspectable> m_hierarchySource{ nullptr };
+    std::shared_ptr<HierarchicalSourceAdapter> m_hierarchicalAdapter{};
 
     std::function<void()> m_projectionRebuilt{ nullptr };
     std::function<void()> m_shapeSwapped{ nullptr };

@@ -739,8 +739,31 @@ HierarchicalSourceAdapter::NodeRow const* HierarchicalSourceAdapter::TryGetNodeR
     return &m_descriptors[static_cast<size_t>(index)];
 }
 
-bool HierarchicalSourceAdapter::TryGetIndexForPathKey(winrt::hstring const& pathKey, int32_t& index) const
+HierarchicalSourceAdapter::NodeRow const* HierarchicalSourceAdapter::TryGetNodeRowForItem(winrt::IInspectable const& item) const
 {
+    if (!item)
+    {
+        return nullptr;
+    }
+
+    // Linear over the VISIBLE rows, not the tree: a collapsed subtree contributes nothing to
+    // m_descriptors, so this is bounded by what is on screen plus whatever is expanded above it.
+    // No item->index map is maintained for it because the map would have to be swept on every
+    // splice exactly as m_indexByPathKey is, doubling that cost to serve a lookup the ungrouped
+    // path never performs at all.
+    void* const target = winrt::get_abi(item);
+    for (auto const& descriptor : m_descriptors)
+    {
+        if (winrt::get_abi(descriptor.Item) == target)
+        {
+            return &descriptor;
+        }
+    }
+
+    return nullptr;
+}
+
+bool HierarchicalSourceAdapter::TryGetIndexForPathKey(winrt::hstring const& pathKey, int32_t& index) const{
     index = -1;
     if (pathKey.empty())
     {

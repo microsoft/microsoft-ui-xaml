@@ -329,6 +329,7 @@ public:
     // Re-derives IsSelected for a realized or re-indexed row; it never survives recycling.
     void RefreshRowSelectionState(winrt::TableViewRow const& row);
     void RefreshRowSelectionState(winrt::TableViewRow const& row, int32_t selectedIndex);
+    void RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t index);
 
     // For the automation peers, which cannot reach the private members. Both read the model.
     int32_t SelectedIndexInternal() const;
@@ -374,6 +375,7 @@ public:
     // CanSort gates whether the chevron is built at all, so a runtime flip needs a header rebuild.
     void OnColumnCanSortChanged(const winrt::TableViewColumn& column);
     void OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnRowIndentSizePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     // Drops a column that has left Columns from the active sort state. Returns true when the sort
     // state changed.
     bool PurgeColumnFromSortState(const winrt::TableViewColumn& removedColumn);

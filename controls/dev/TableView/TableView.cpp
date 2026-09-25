@@ -1367,6 +1367,7 @@ void TableView::OnRowElementPrepared(
         rowImpl->SetOwningTableViewInternal(*this);
         rowImpl->RefreshGridLines();
         rowImpl->RefreshRowBackground();
+        RefreshRowHierarchyState(row, args.Index());
         RefreshRowSelectionState(row);
         InvalidateMeasure();
     }
@@ -1444,10 +1445,48 @@ void TableView::OnRowElementIndexChanged(
         winrt::get_self<TableViewRow>(row)->RefreshRowBackground();
     }
 
+    // ...and so must the hierarchy affordance: a row whose index moved is at a new depth, which is
+    // exactly what an expand above it does to every row below.
+    RefreshRowHierarchyState(row, args.NewIndex());
+
     // ...and so must selected chrome. The element keeps its item here (only its index moved), so
     // this normally re-derives the same answer - it is the cheap guarantee that a row whose index
     // shifted under an insert cannot end up disagreeing with the model.
     RefreshRowSelectionState(row);
+}
+
+// Pushes this index's hierarchy metadata onto the row. A flat or grouped source reports Level 0
+// here, which is what makes the chevron and indent disappear without a mode switch.
+void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t index)
+{
+    if (!row)
+    {
+        return;
+    }
+
+    TableViewRowInfo rowInfo{};
+    // Trust the metadata only when it actually describes a data row. A realized row can be
+    // re-prepared at an index that has just become a GROUP HEADER, where the info is valid but
+    // describes the header - taking IsExpandable/IsExpanded from that would give a data row a
+    // chevron for someone else's group. Same window, same guard as PrepareGroupHeaderElement.
+    const bool hasRowInfo =
+        TryGetTableViewSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::Data;
+
+    auto const rowImpl = winrt::get_self<TableViewRow>(row);
+    if (!hasRowInfo)
+    {
+        rowImpl->SetHierarchyStateInternal(0, false, false);
+        return;
+    }
+
+    // A grouped source also reports Level 1 for its data rows, but never IsExpandable - a data row
+    // under a group has nothing to expand. Gating on IsExpandable OR a level past the first keeps
+    // grouped tables rendering exactly as they did.
+    const bool isHierarchicalRow = rowInfo.IsExpandable || rowInfo.Level > 1;
+    rowImpl->SetHierarchyStateInternal(
+        isHierarchicalRow ? (std::max)(1, rowInfo.Level) : 0,
+        rowInfo.IsExpandable,
+        rowInfo.IsExpanded);
 }
 
 // One header-text extraction per column, shared by the header cell's automation name and the
@@ -1770,8 +1809,17 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
     QueueRebuildHeaders();
 }
 
-void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column){
-    // A column that just opted out must not keep an active sort applied to it.
+void TableView::OnRowIndentSizePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
+{
+    // Indent is baked into each realized row's layout, so every one has to re-derive it. Only
+    // realized rows are walked: an unrealized row reads the new value when it is prepared.
+    ForEachRealizedRow([](winrt::TableViewRow const& row)
+    {
+        winrt::get_self<TableViewRow>(row)->ApplyHierarchyAffordance();
+    });
+}
+
+void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column){    // A column that just opted out must not keep an active sort applied to it.
     if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None)
     {
         SortByColumn(column, winrt::SortDirection::None);

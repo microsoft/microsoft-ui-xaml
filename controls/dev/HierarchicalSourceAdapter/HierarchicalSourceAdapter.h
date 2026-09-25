@@ -132,6 +132,17 @@ public:
     NodeRow const* TryGetNodeRow(int32_t index) const;
     bool TryGetIndexForPathKey(winrt::hstring const& pathKey, int32_t& index) const;
 
+    // Descriptor for a visible row addressed by its ITEM rather than its index. Needed when the
+    // hierarchy is composed under grouping: the presented row axis is then the grouped adapter's,
+    // whose indices interleave header rows and so do not line up with this adapter's. The item is
+    // the only thing both axes agree on.
+    //
+    // Sound because a given object occupies at most one visible row: layer 2 rejects a source in
+    // which one object appears twice, and the walk rejects duplicate siblings, so item -> row is a
+    // function. Returns null for an item that is not currently visible (collapsed away, filtered
+    // out, or simply not part of this tree).
+    NodeRow const* TryGetNodeRowForItem(winrt::IInspectable const& item) const;
+
 private:
     // One expanded node's subscription to its own children collection. Declared here rather than
     // beside m_nodeSubscriptions because the walk takes a vector of these by reference -- see Emit.

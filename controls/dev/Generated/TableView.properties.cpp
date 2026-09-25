@@ -25,6 +25,7 @@ GlobalDependencyProperty TableViewProperties::s_HeadersVisibilityProperty{ nullp
 GlobalDependencyProperty TableViewProperties::s_IsReadOnlyProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_ItemsSourceProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_RowBackgroundProperty{ nullptr };
+GlobalDependencyProperty TableViewProperties::s_RowIndentSizeProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectedIndexProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectedItemProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectionModeProperty{ nullptr };
@@ -173,6 +174,17 @@ void TableViewProperties::EnsureProperties()
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnRowBackgroundPropertyChanged));
     }
+    if (!s_RowIndentSizeProperty)
+    {
+        s_RowIndentSizeProperty =
+            InitializeDependencyProperty(
+                L"RowIndentSize",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::TableView>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxValueIfNecessary(16.0),
+                winrt::PropertyChangedCallback(&OnRowIndentSizePropertyChanged));
+    }
     if (!s_SelectedIndexProperty)
     {
         s_SelectedIndexProperty =
@@ -222,6 +234,7 @@ void TableViewProperties::ClearProperties()
     s_IsReadOnlyProperty = nullptr;
     s_ItemsSourceProperty = nullptr;
     s_RowBackgroundProperty = nullptr;
+    s_RowIndentSizeProperty = nullptr;
     s_SelectedIndexProperty = nullptr;
     s_SelectedItemProperty = nullptr;
     s_SelectionModeProperty = nullptr;
@@ -313,6 +326,14 @@ void TableViewProperties::OnRowBackgroundPropertyChanged(
 {
     auto owner = sender.as<winrt::TableView>();
     winrt::get_self<TableView>(owner)->OnRowBackgroundPropertyChanged(args);
+}
+
+void TableViewProperties::OnRowIndentSizePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableView>();
+    winrt::get_self<TableView>(owner)->OnRowIndentSizePropertyChanged(args);
 }
 
 void TableViewProperties::OnSelectionModePropertyChanged(
@@ -477,6 +498,19 @@ void TableViewProperties::RowBackground(winrt::Brush const& value)
 winrt::Brush TableViewProperties::RowBackground()
 {
     return ValueHelper<winrt::Brush>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_RowBackgroundProperty));
+}
+
+void TableViewProperties::RowIndentSize(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableView*>(this)->SetValue(s_RowIndentSizeProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double TableViewProperties::RowIndentSize()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_RowIndentSizeProperty));
 }
 
 void TableViewProperties::SelectedIndex(int value)

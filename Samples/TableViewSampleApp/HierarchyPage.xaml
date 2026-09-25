@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.HierarchyPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+
+    <Page.Resources>
+        <!-- Headers only ever appear at the top level: GroupBy buckets the ROOTS, and a descendant
+             stays under its parent rather than being pulled out to join a bucket. ItemCount counts
+             every currently visible row in the bucket, so it grows as subtrees are opened. -->
+        <DataTemplate x:Key="GroupHeader">
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <TextBlock Text="{Binding KeyText}" FontWeight="SemiBold"/>
+                <Border Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}"
+                        CornerRadius="10" Padding="8,1">
+                    <TextBlock Text="{Binding ItemCountText}" FontSize="11"/>
+                </Border>
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Padding="12" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="2">
+            <TextBlock Text="Hierarchical rows" FontSize="18" FontWeight="SemiBold"/>
+            <TextBlock Opacity="0.7" FontSize="12" TextWrapping="Wrap"
+                       Text="WithChildren turns a flat source into a tree. Every row here is a real data row with real cells in every column — there are no synthetic header rows, which is what separates this from GroupBy. Click a chevron to expand. Rows start COLLAPSED on purpose: the projection only calls the children selector for nodes it has been told to descend into, so the 'children materialized' counter below stays put until you actually open something. The HasChildren predicate is what lets a folder draw a chevron without its contents being read first. Grouping composes rather than competes: turn on 'Group roots by' and the ROOTS get bucketed under headers while each root keeps its own subtree beneath it."/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <Button Content="Expand all" Click="ExpandAll_Click"/>
+            <Button Content="Collapse all" Click="CollapseAll_Click"/>
+            <Button Content="Rebuild tree" Click="Rebuild_Click"/>
+            <CheckBox x:Name="HasChildrenToggle" Content="Use HasChildren predicate" IsChecked="True"
+                      Checked="HasChildren_Toggled" Unchecked="HasChildren_Toggled"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <TextBlock Text="Indent:" VerticalAlignment="Center"/>
+            <Slider x:Name="IndentSlider" Width="180" Minimum="0" Maximum="48" Value="16"
+                    StepFrequency="4" TickFrequency="8" TickPlacement="Outside"
+                    ValueChanged="Indent_Changed"/>
+            <TextBlock Text="Filter:" VerticalAlignment="Center" Margin="12,0,0,0"/>
+            <TextBox x:Name="FilterBox" Width="200" PlaceholderText="name contains…"
+                     TextChanged="Filter_Changed"/>
+            <TextBlock Text="Sort:" VerticalAlignment="Center" Margin="12,0,0,0"/>
+            <ComboBox x:Name="SortCombo" Width="190" SelectionChanged="Sort_Changed">
+                <ComboBoxItem Content="Authored order" IsSelected="True"/>
+                <ComboBoxItem Content="Name ascending"/>
+                <ComboBoxItem Content="Name descending"/>
+                <ComboBoxItem Content="Size descending"/>
+            </ComboBox>
+            <TextBlock Text="Group roots by:" VerticalAlignment="Center" Margin="12,0,0,0"/>
+            <ComboBox x:Name="GroupCombo" Width="150" SelectionChanged="Group_Changed">
+                <ComboBoxItem Content="None" IsSelected="True"/>
+                <ComboBoxItem Content="Kind"/>
+                <ComboBoxItem Content="Owner"/>
+            </ComboBox>
+        </StackPanel>
+
+        <Border Grid.Row="3" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
+            <tv:TableView x:Name="Table" SelectionMode="Single" GridLinesVisibility="Horizontal"/>
+        </Border>
+
+        <TextBlock x:Name="StatusText" Grid.Row="4" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
+    </Grid>
+</Page>
