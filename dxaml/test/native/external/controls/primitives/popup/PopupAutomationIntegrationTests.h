@@ -56,7 +56,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyPopupButtonAutomationPropertyChangedEvent)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that the a Popup Button gets the UI Automation property changed event.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE: Fails on RS5 trying to remove an event handler
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyOpenPopupPreservesMainTree)
