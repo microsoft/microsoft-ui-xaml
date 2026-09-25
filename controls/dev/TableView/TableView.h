@@ -141,6 +141,12 @@ public:
     double GetCellFontSize();
     double GetHeaderFontSize();
 
+    // Per-level hierarchy indent, from the TableViewRowIndentSize resource. A resource rather than
+    // a property for the same reason the metrics above are: it is chrome geometry, themeable per
+    // app or per element subtree, and rows resolve it through the owner's cache instead of
+    // walking the tree themselves once per row.
+    double GetRowIndentSize();
+
     // Resolved grid-line brush (theme/HC-aware, cached); rows call this via get_self, like the
     // density/font accessors above.
     winrt::Brush GetGridLineBrush();
@@ -335,8 +341,6 @@ public:
     int32_t SelectedIndexInternal() const;
     winrt::IInspectable SelectedItemInternal() const;
 
-    // Cached RowIndentSize, for rows to read during layout without touching the DP.
-    double RowIndentSizeInternal() const noexcept { return m_rowIndentSize; }
     // --- Grouped projections (TableView_Grouping.cpp) ---
     //
     // Which container type a row-source item realizes as. Item-based rather than index-based
@@ -378,7 +382,6 @@ public:
     // CanSort gates whether the chevron is built at all, so a runtime flip needs a header rebuild.
     void OnColumnCanSortChanged(const winrt::TableViewColumn& column);
     void OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnRowIndentSizePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     // Drops a column that has left Columns from the active sort state. Returns true when the sort
     // state changed.
     bool PurgeColumnFromSortState(const winrt::TableViewColumn& removedColumn);
@@ -887,9 +890,6 @@ private:
 
     int32_t m_navAnchorRow{ -1 };
 
-    // Mirror of the RowIndentSize DP. Rows read this instead of the property: see
-    // OnRowIndentSizePropertyChanged for why the DP must not be read during row layout.
-    double m_rowIndentSize{ 16.0 };
     void OnPreviewKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);

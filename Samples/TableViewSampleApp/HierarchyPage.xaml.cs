@@ -27,7 +27,6 @@ public sealed partial class HierarchyPage : Page
         _source = TableViewSource.From(_roots);
         Table.ItemsSource = _source;
         Table.GroupHeaderTemplate = (DataTemplate)Resources["GroupHeader"];
-        Table.RowIndentSize = IndentSlider.Value;
 
         ApplyChildren();
 
@@ -199,17 +198,6 @@ public sealed partial class HierarchyPage : Page
         UpdateStatus();
     }
 
-    private void Indent_Changed(object sender, RangeBaseValueChangedEventArgs e)
-    {
-        if (Table is null)
-        {
-            return;
-        }
-
-        Table.RowIndentSize = e.NewValue;
-        UpdateStatus();
-    }
-
     private void UpdateStatus()
     {
         if (StatusText is null)
@@ -227,6 +215,6 @@ public sealed partial class HierarchyPage : Page
             $"hasChildren={(HasChildrenToggle.IsChecked == true ? "predicate" : "selector")}  " +
             $"group={group}  sort={sort}  " +
             $"filter={(filter.Length == 0 ? "none" : "\"" + filter + "\"")}  " +
-            $"indent={Table.RowIndentSize:0}  selected={selected?.Name ?? "(none)"}";
+            $"selected={selected?.Name ?? "(none)"}";
     }
 }

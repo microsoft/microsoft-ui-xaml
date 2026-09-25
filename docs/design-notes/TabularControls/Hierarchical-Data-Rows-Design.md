@@ -38,7 +38,7 @@ Three additions, and nothing else:
 | --- | --- |
 | `TableViewSource.WithChildren(childrenSelector [, hasChildrenSelector])` | Declares intrinsic hierarchy: how to reach an item's children, and optionally how to answer "is it expandable" without enumerating them. `ClearHierarchy()` removes it. |
 | `TableView.ExpandAllRows()` / `CollapseAllRows()` | Bulk expand/collapse of the row hierarchy, as an intent rather than a loop over live nodes. |
-| `TableView.RowIndentSize` | Per-level indent applied to the primary cell. Defaults from a theme resource. |
+| `TableViewRowIndentSize` theme resource | Per-level indent applied to the primary cell (Double, default 16). A theme resource rather than a property — see §7.2. |
 
 Per-node expand/collapse is reached the way group expansion already is — the chevron, the keyboard,
 and `IExpandCollapseProvider` — not through a public per-item method. §3 has the exact IDL.
@@ -169,7 +169,7 @@ grouping, whose baseline is expanded, and it is load-bearing rather than cosmeti
 // TableView
 void ExpandAllRows();
 void CollapseAllRows();
-Double RowIndentSize { get; set; };   // per-level indent; default from theme resource
+// Per-level indent is not a property: it is the TableViewRowIndentSize theme resource (§7.2).
 ```
 
 `ExpandAllGroups` / `CollapseAllGroups` stay group-only; the row verbs are separate because a
@@ -547,7 +547,7 @@ static TableViewRowMetadataProvider CreateForHierarchicalRows(
   are separate entry points.
 
 **`Level` is 1-based on the wire, 0-based in the descriptor, and the conversion happens here — once.**
-`NodeRow::Depth` is 0 for roots because indent is `Depth * RowIndentSize` and roots must not be
+`NodeRow::Depth` is 0 for roots because indent is `Depth * TableViewRowIndentSize` and roots must not be
 indented. `TableViewRowInfo::Level` is already 1-based in shipping code (`RowMetadataProvider`
 assigns `Level = 1` to grouped data rows), and UIA's `AutomationProperties.Level` is 1-based by
 definition. Emitting raw `Depth` would therefore give roots `Level = 0`, silently contradicting the
@@ -595,17 +595,32 @@ by `TableViewCellsPanel`, not by padding the row:
   authoritative; indent consumes *content* width within the cell, never column width.
 - The gutter is reserved (`PART_ExpanderGutter`-style) even for leaves at the same depth so sibling
   text stays aligned — the alignment reason `TableView.idl:350` already gives for headers.
-- Effective indent = `(Level - 1) * RowIndentSize` — i.e. the descriptor's 0-based `Depth`, so a
-  root row is flush (§6) — defaulted from a `TabularSurfaces_themeresources.xaml`
-  resource and RTL-mirrored via the existing cells-panel flow-direction handling.
+- Effective indent = `(Level - 1) * TableViewRowIndentSize` — i.e. the descriptor's 0-based `Depth`,
+  so a root row is flush (§6) — sourced from a theme resource and RTL-mirrored via the existing
+  cells-panel flow-direction handling. Under a grouped source a fixed base offset
+  (group gutter + column spacing) is added first so roots nest inside their group header rather
+  than sitting to its left.
 
 Editing interaction: the chevron hit-test wins over cell edit-on-click within the gutter only;
 outside it, existing `OnPointerPressedForEditing` behaviour is unchanged.
 
-`RowIndentSize` is a DP on `TableView`, but rows never read it through the DP. `TableView` caches
-the validated value (finite, non-negative) in a plain `double` and rows read the cache during
-layout: an indent read happens per row per measure pass, and a DP get on that path is both slower
-and a needless dependency on framework metadata resolution during the very first layout.
+**Indent is a theme resource, not a property.** `TableViewRowIndentSize` (Double, default 16) is
+looked up from the row's owning `TableView` outward — the table's own `Resources`, then ancestors,
+then `Application.Resources`, then the control's generic dictionary — using the same
+`LookupElementResource` path that already serves `RowMinHeight`, `CellPadding` and the grid-line
+brushes. It is chrome geometry, in the same family as `TableViewRowExpanderSize`, so it is themed
+where the rest of the row metrics are themed rather than duplicated as a per-instance knob.
+
+Two consequences are deliberate:
+
+- Rows never read a custom DP during layout. A DP get on the per-row measure path is both slower
+  and a needless dependency on framework metadata resolution during the very first layout — which
+  is not merely theoretical here: resolving a custom DP mid-first-layout forces every queued
+  registration to resolve before other libraries' metadata providers exist, and fails.
+- There is no change notification. A resource swap after rows are prepared does not reflow them;
+  the value is resolved while a row is prepared. Callers that must retheme at runtime have to cause
+  the rows to be re-prepared. This is accepted: indent is set-once chrome, and the alternative — a
+  DP plus an invalidation path — buys live tuning nothing in the product actually needs.
 
 ### 7.3 Toggle plumbing
 

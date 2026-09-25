@@ -587,14 +587,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     void ExpandAllGroups();
     void CollapseAllGroups();
 
-    // ----- Hierarchy -----
-    // Per-level indent, in pixels, applied to a hierarchical row's first column. A root row
-    // (Level 1) gets no indent; each level below adds this much. Only the first column's content
-    // moves -- column widths and the header row are untouched, so headers stay aligned with cells,
-    // which is what distinguishes a tree GRID from a tree view.
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("16.0")]
-    Double RowIndentSize { get; set; };
 
     // ----- Sorting -----
     // Single-column sort. The control reshapes the rows itself: an ItemsSource that is not already
@@ -646,7 +638,6 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty SelectedItemProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty SelectedIndexProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty CanUserSortColumnsProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty RowIndentSizeProperty { get; };
 };
 
 [MUX_PREVIEW]

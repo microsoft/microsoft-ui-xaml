@@ -179,7 +179,6 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"IsReadOnly", L"Boolean", statics.IsReadOnlyProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ItemsSource", L"Object", statics.ItemsSourceProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"RowBackground", L"Microsoft.UI.Xaml.Media.Brush", statics.RowBackgroundProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"RowIndentSize", L"Double", statics.RowIndentSizeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SelectedIndex", L"Int32", statics.SelectedIndexProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SelectedItem", L"Object", statics.SelectedItemProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SelectionMode", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSelectionMode", statics.SelectionModeProperty(), false /* isContent */);

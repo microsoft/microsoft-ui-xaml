@@ -117,6 +117,10 @@
 
     <x:Double x:Key="TableViewRowExpanderSize">24</x:Double>
 
+    <!-- Indent added per hierarchy level on a tree row's first column. Override in an app's
+         resources to retheme every table, or in one TableView's Resources for a single table. -->
+    <x:Double x:Key="TableViewRowIndentSize">16</x:Double>
+
     <Style TargetType="controls:TableViewRow">
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />

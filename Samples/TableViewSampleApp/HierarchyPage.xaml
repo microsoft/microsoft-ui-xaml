@@ -44,11 +44,7 @@
         </StackPanel>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-            <TextBlock Text="Indent:" VerticalAlignment="Center"/>
-            <Slider x:Name="IndentSlider" Width="180" Minimum="0" Maximum="48" Value="16"
-                    StepFrequency="4" TickFrequency="8" TickPlacement="Outside"
-                    ValueChanged="Indent_Changed"/>
-            <TextBlock Text="Filter:" VerticalAlignment="Center" Margin="12,0,0,0"/>
+            <TextBlock Text="Filter:" VerticalAlignment="Center"/>
             <TextBox x:Name="FilterBox" Width="200" PlaceholderText="name contains…"
                      TextChanged="Filter_Changed"/>
             <TextBlock Text="Sort:" VerticalAlignment="Center" Margin="12,0,0,0"/>
@@ -67,7 +63,15 @@
         </StackPanel>
 
         <Border Grid.Row="3" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
-            <tv:TableView x:Name="Table" SelectionMode="Single" GridLinesVisibility="Horizontal"/>
+            <!-- Per-level hierarchy indent is a theme resource, not a property. Putting the key in
+                 this TableView's own Resources overrides it for this table only; the same key in
+                 Application.Resources would retheme every table. It is resolved while rows are
+                 prepared, so treat it as set-once chrome rather than a runtime knob. -->
+            <tv:TableView x:Name="Table" SelectionMode="Single" GridLinesVisibility="Horizontal">
+                <tv:TableView.Resources>
+                    <x:Double x:Key="TableViewRowIndentSize">24</x:Double>
+                </tv:TableView.Resources>
+            </tv:TableView>
         </Border>
 
         <TextBlock x:Name="StatusText" Grid.Row="4" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>

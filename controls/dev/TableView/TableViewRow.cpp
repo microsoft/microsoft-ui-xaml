@@ -19,7 +19,7 @@ static constexpr std::wstring_view s_RowExpanderGutterPartName{ L"PART_RowExpand
 // to be computed even on the pass that creates the cells, before the gutter has been measured.
 static constexpr double c_rowExpanderSize{ 24.0 };
 
-// Mirrors TableView.RowIndentSize's MUX_DEFAULT_VALUE. Used only when there is no owner to ask.
+// Mirrors the TableViewRowIndentSize resource. Used only when there is no owner to ask.
 static constexpr double c_defaultRowIndentSize{ 16.0 };
 
 // Where a group header's own content starts: PART_ExpanderGutter's width plus its Grid's
@@ -530,9 +530,10 @@ void TableViewRow::SetHierarchyStateInternal(int32_t level, bool isExpandable, b
     IsExpanded(isExpanded);
 
     // Unconditionally, even when the three values are unchanged: the indent also depends on the
-    // owner's RowIndentSize and on whether the source is grouped, either of which can change while
-    // a row keeps the same level. Every write below is already guarded against writing an equal
-    // value, so this re-applies nothing and cannot re-invalidate layout from within layout.
+    // TableViewRowIndentSize resource and on whether the source is grouped, either of which can
+    // change while a row keeps the same level. Every write below is already guarded against
+    // writing an equal value, so this re-applies nothing and cannot re-invalidate layout from
+    // within layout.
     ApplyHierarchyAffordance();
 }
 
@@ -591,14 +592,9 @@ double TableViewRow::HierarchyIndent()
     {
         auto const ownerImpl = winrt::get_self<TableView>(owner);
 
-        // The cached mirror, never the DP: reading a custom DP here would force the framework to
-        // resolve every queued DP registration mid-layout, before other libraries' metadata
-        // providers exist.
-        const double ownerIndent = ownerImpl->RowIndentSizeInternal();
-        if (std::isfinite(ownerIndent) && ownerIndent >= 0.0)
-        {
-            indentSize = ownerIndent;
-        }
+        // Resolved from the TableViewRowIndentSize resource, validated by the owner. Read through
+        // the owner rather than walked from here so one lookup serves the whole row.
+        indentSize = ownerImpl->GetRowIndentSize();
 
         // Only when headers are actually present. An ungrouped tree's roots are top-level rows and
         // must stay flush against the cell's leading edge.

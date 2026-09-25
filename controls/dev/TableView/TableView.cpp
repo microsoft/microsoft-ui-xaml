@@ -31,7 +31,8 @@ static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGri
 // unusable.
 static constexpr double c_resizeGripperWidthFallback{ 8.0 };
 
-// Mirrors the RowIndentSize DP default in the IDL.
+// Mirrors the TableViewRowIndentSize resource shipped in TableView.xaml. Used when the resource is
+// missing or unusable.
 static constexpr double c_defaultRowIndentSize{ 16.0 };
 static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator"sv };
 // ScrollViewer template names are documented; ancestors are resolved by walking from child parts.
@@ -1267,6 +1268,27 @@ double TableView::GetHeaderFontSize()
     return cache.font.headerFontSize;
 }
 
+double TableView::GetRowIndentSize()
+{
+    // Deliberately not cached, unlike the density and font metrics above. Those are invalidated by
+    // a property or theme change the control is told about; a resource an app swaps at runtime
+    // arrives with no notification at all, so a cache here could only ever go stale. The lookup is
+    // a short ancestor walk and runs a couple of times per realized row, not per measure.
+    double resolved = c_defaultRowIndentSize;
+    if (auto raw = LookupElementResource(*this, L"TableViewRowIndentSize"))
+    {
+        const double value = winrt::unbox_value_or<double>(raw, c_defaultRowIndentSize);
+        // A negative or non-finite indent would pull cell content left, under the chevron. Fall
+        // back rather than render an unreadable row.
+        if (std::isfinite(value) && value >= 0.0)
+        {
+            resolved = value;
+        }
+    }
+
+    return resolved;
+}
+
 void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (args.OldValue() == args.NewValue())
@@ -1812,31 +1834,6 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
 
     // The chevron and the click handler are stamped at header-build time.
     QueueRebuildHeaders();
-}
-
-void TableView::OnRowIndentSizePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    // Cached rather than read back per row. Reading a custom DP forces the framework to resolve
-    // every queued DP registration, and a row's first layout can run before the metadata providers
-    // for other libraries are registered, which fails the whole resolution pass. The callback
-    // already carries the new value, so nothing needs to read the property here.
-    m_rowIndentSize = c_defaultRowIndentSize;
-    if (auto const newValue = args.NewValue().try_as<double>())
-    {
-        // A negative or non-finite indent would pull cell content left, under the chevron. Fall
-        // back rather than render an unreadable row.
-        if (std::isfinite(*newValue) && *newValue >= 0.0)
-        {
-            m_rowIndentSize = *newValue;
-        }
-    }
-
-    // Indent is baked into each realized row's layout, so every one has to re-derive it. Only
-    // realized rows are walked: an unrealized row reads the new value when it is prepared.
-    ForEachRealizedRow([](winrt::TableViewRow const& row)
-    {
-        winrt::get_self<TableViewRow>(row)->ApplyHierarchyAffordance();
-    });
 }
 
 void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column){    // A column that just opted out must not keep an active sort applied to it.
