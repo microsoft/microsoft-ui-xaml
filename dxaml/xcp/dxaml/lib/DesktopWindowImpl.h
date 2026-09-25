@@ -311,7 +311,5 @@ namespace DirectUI
         ctl::ComPtr<xaml::IAtlasRequestCallback> m_atlasRequestCallback;
         ctl::ComPtr<DirectUI::WindowChrome> m_windowChrome;
         ctl::ComPtr<DirectUI::DesktopWindowXamlSource> m_desktopWindowXamlSource;
-        // Only needed while the top-level HWND uses its GDI redirection bitmap.
-        bool m_isBufferedPaintInitialized = false;
     };
 }
