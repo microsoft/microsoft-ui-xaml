@@ -43,7 +43,7 @@ public sealed partial class ContextMenuPage : Page
             if (!_mutateOnFocus) return;
             _mutateOnFocus = false;
             Table.ItemsSource = Data.Make(300);
-            Hint.Text = "Items replaced during focus. Expect no custom request or open.";
+            Hint.Text = "Items replaced during focus. Expect no custom request or custom open; native fallback remains eligible if no custom menu was configured.";
             Report();
         };
         Table.LayoutUpdated += OnTableLayoutUpdated;
