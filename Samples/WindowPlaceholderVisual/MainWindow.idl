@@ -1,0 +1,9 @@
+namespace WindowPlaceholderVisual
+{
+    [default_interface]
+    runtimeclass MainWindow : Microsoft.UI.Xaml.Window
+    {
+        MainWindow();
+        void BeginDelayedContent();
+    }
+}

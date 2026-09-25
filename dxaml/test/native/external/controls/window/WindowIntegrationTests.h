@@ -195,6 +195,34 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        //
+        // Top-level window placeholder (SkipWindowRedirectionSurface)
+        //
+
+        BEGIN_TEST_METHOD(WindowPlaceholderIsUsedUntilFirstFrame)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that an opted-in window is created without a redirection surface, shows a placeholder visual from activation until its first rendered frame, and then shows its real content.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{SkipWindowRedirectionSurface:true}")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlaceholderIsNotUsedWhenDisabled)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that with the optional change disabled the window keeps its redirection surface and no placeholder is ever installed.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{SkipWindowRedirectionSurface:false}")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlaceholderSurvivesCloseBeforeFirstFrame)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that closing an opted-in window while its placeholder is still installed (before the first frame) is safe and does not break later windows.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{SkipWindowRedirectionSurface:true}")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlaceholderIsTrackedPerWindow)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that each opted-in window tracks its own placeholder state independently before rendering resumes.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{SkipWindowRedirectionSurface:true}")
+        END_TEST_METHOD()
+
     };
 
 } } } } } }
