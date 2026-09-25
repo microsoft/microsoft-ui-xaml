@@ -271,6 +271,12 @@ CImageSource::~CImageSource()
 
     DisconnectImageOperation();
 
+    if (m_pAsyncAction != nullptr)
+    {
+        m_pAsyncAction->CoreCancelAsyncAction();
+        CompleteAsyncAction(S_OK);
+    }
+
     core->RemoveImageUpdateRequest(m_pImageSurfaceWrapper);
 
     VERIFYHR(UnregisterWithReloadManager());
