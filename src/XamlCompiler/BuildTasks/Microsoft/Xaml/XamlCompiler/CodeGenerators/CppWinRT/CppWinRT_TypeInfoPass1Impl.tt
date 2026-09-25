@@ -239,7 +239,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 
     bool XamlSystemBaseType::IsConstructible() const
     {
-        throw ::winrt::hresult_not_implemented {};
+        return false;
     }
 
     bool XamlSystemBaseType::IsDictionary() const
