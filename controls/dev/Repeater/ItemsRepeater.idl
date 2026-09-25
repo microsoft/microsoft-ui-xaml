@@ -634,7 +634,7 @@ unsealed runtimeclass RecyclingElementFactory : ElementFactory
     overridable String OnSelectTemplateKeyCore(Object dataContext, Microsoft.UI.Xaml.UIElement owner);
 }
 
-[MUX_PREVIEW]
+[MUX_PUBLIC_V12]
 [webhosthidden]
 runtimeclass IndexPath : Windows.Foundation.IStringable
 {
@@ -649,14 +649,14 @@ runtimeclass IndexPath : Windows.Foundation.IStringable
     static IndexPath CreateFromIndices(Windows.Foundation.Collections.IVector<Int32> indices);
 }
 
-[MUX_PREVIEW]
+[MUX_PUBLIC_V12]
 [webhosthidden]
 [default_interface]
 runtimeclass SelectionModelSelectionChangedEventArgs
 {
 }
 
-[MUX_PREVIEW]
+[MUX_PUBLIC_V12]
 [webhosthidden]
 runtimeclass SelectionModelChildrenRequestedEventArgs
 {
@@ -665,7 +665,7 @@ runtimeclass SelectionModelChildrenRequestedEventArgs
     Object Children { get; set; };
 }
 
-[MUX_PREVIEW]
+[MUX_PUBLIC_V12]
 [webhosthidden]
 unsealed runtimeclass SelectionModel : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
 {
