@@ -30,6 +30,141 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class TeachingTipTests : ApiTestBase
     {
         [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void LightDismissDuringExpandAnimation()
+        {
+            TeachingTip tip = null;
+            int closingCount = 0;
+            int closedCount = 0;
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(new global::Windows.UI.ViewManagement.UISettings().AnimationsEnabled,
+                        "This regression test requires animations to be enabled.");
+                    tip = new TeachingTip { Title = "Animation regression", IsLightDismissEnabled = true };
+                    tip.Closing += (sender, args) =>
+                    {
+                        closingCount++;
+                        Verify.AreEqual(TeachingTipCloseReason.LightDismiss, args.Reason);
+                    };
+                    tip.Closed += (sender, args) =>
+                    {
+                        closedCount++;
+                        Verify.AreEqual(TeachingTipCloseReason.LightDismiss, args.Reason);
+                    };
+                    TeachingTipTestHooks.SetExpandAnimationDuration(tip, TimeSpan.FromSeconds(10));
+                    TeachingTipTestHooks.SetContractAnimationDuration(tip, TimeSpan.FromMilliseconds(100));
+                    Content = tip;
+                    tip.IsOpen = true;
+                });
+
+                WaitForTeachingTipCondition(() =>
+                    TeachingTipTestHooks.GetPopup(tip)?.IsOpen == true && !TeachingTipTestHooks.GetIsIdle(tip),
+                    "The popup should open while its expand animation is still running.");
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(TeachingTipTestHooks.GetIsIdle(tip));
+                    var popup = TeachingTipTestHooks.GetPopup(tip);
+                    Microsoft.UI.Xaml.Controls.Primitives.Popup indicator = null;
+                    foreach (var openPopup in VisualTreeHelper.GetOpenPopupsForXamlRoot(tip.XamlRoot))
+                    {
+                        if (openPopup != popup && openPopup.IsLightDismissEnabled)
+                        {
+                            Verify.IsNull(indicator, "There should be only one light-dismiss indicator.");
+                            indicator = openPopup;
+                        }
+                    }
+                    Verify.IsNotNull(indicator);
+                    // Exercise the same Closed notification used by outside click and deactivation.
+                    indicator.IsOpen = false;
+                });
+
+                WaitForTeachingTipCondition(() => closedCount == 1 && TeachingTipTestHooks.GetIsIdle(tip),
+                    "Closing must complete without waiting for the ten-second expand animation.");
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(tip.IsOpen);
+                    Verify.IsFalse(TeachingTipTestHooks.GetPopup(tip).IsOpen);
+                    Verify.IsNull(TeachingTipTestHooks.GetPopup(tip).Child);
+                    Verify.AreEqual(1, closingCount);
+                    Verify.AreEqual(1, closedCount);
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Content = null);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void ReopenDuringContractAnimationIsRejected()
+        {
+            TeachingTip tip = null;
+            int closedCount = 0;
+            bool closing = false;
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(new global::Windows.UI.ViewManagement.UISettings().AnimationsEnabled,
+                        "This regression test requires animations to be enabled.");
+                    tip = new TeachingTip { Title = "Reopen animation regression" };
+                    tip.Closing += (sender, args) => closing = true;
+                    tip.Closed += (sender, args) => closedCount++;
+                    TeachingTipTestHooks.SetContractAnimationDuration(tip, TimeSpan.FromSeconds(2));
+                    Content = tip;
+                    tip.IsOpen = true;
+                });
+                WaitForTeachingTipCondition(() =>
+                    TeachingTipTestHooks.GetPopup(tip)?.IsOpen == true && TeachingTipTestHooks.GetIsIdle(tip),
+                    "The tip should finish opening.");
+                RunOnUIThread.Execute(() => tip.IsOpen = false);
+                WaitForTeachingTipCondition(() => closing && !TeachingTipTestHooks.GetIsIdle(tip),
+                    "The contract animation should start.");
+                RunOnUIThread.Execute(() => tip.IsOpen = true);
+                WaitForTeachingTipCondition(() => !tip.IsOpen, "Reopening during contraction should be rejected.");
+                WaitForTeachingTipCondition(() => closedCount == 1 && TeachingTipTestHooks.GetIsIdle(tip),
+                    "The original close should finish.");
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(tip.IsOpen);
+                    Verify.IsFalse(TeachingTipTestHooks.GetPopup(tip).IsOpen);
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Content = null);
+            }
+        }
+
+        private static void WaitForTeachingTipCondition(Func<bool> condition, string message)
+        {
+            using (var completed = new ManualResetEvent(false))
+            {
+                EventHandler<object> rendering = (sender, args) =>
+                {
+                    if (condition())
+                    {
+                        completed.Set();
+                    }
+                };
+                try
+                {
+                    RunOnUIThread.Execute(() => CompositionTarget.Rendering += rendering);
+                    Verify.IsTrue(completed.WaitOne(TimeSpan.FromSeconds(5)), message);
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() => CompositionTarget.Rendering -= rendering);
+                }
+            }
+        }
+
+        [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // TeachingTip doesn't appear to show up correctly in OneCore.
         public void TeachingTipBackgroundTest()
         {
