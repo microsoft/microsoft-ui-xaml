@@ -1830,10 +1830,10 @@ namespace Microsoft.UI.Xaml.Shapes
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass Polygon
+    unsealed runtimeclass Polygon
         : Microsoft.UI.Xaml.Shapes.Shape
     {
-        Polygon();
+        [method_name("CreateInstance")] Polygon();
         Microsoft.UI.Xaml.Media.FillRule FillRule;
         Microsoft.UI.Xaml.Media.PointCollection Points;
         static Microsoft.UI.Xaml.DependencyProperty FillRuleProperty{ get; };
