@@ -15,7 +15,8 @@ param (
   [switch]$Stat,
   [switch]$forceHostingMode,
   [string]$fromFile,
-  [switch]$SkipPackageUninstall
+  [switch]$SkipPackageUninstall,
+  [switch]$PreservePackageRegistration
 )
 
 if (!$TestQuery)
@@ -36,6 +37,7 @@ if (!$TestQuery)
       -Stat: display statistics about the test suite from your query rather than run them.
       -FromFile:<file> : select test names from the given file, rather than the main testQuery param (which is ignored)
       -SkipPackageUninstall: skip uninstalling previous versions of sample apps. This is useful if using dll redirection since uninstalling the app deletes the entire app folder.
+      -PreservePackageRegistration: register the WPF test package once for method-isolated storage tests, then unregister it after the run.
 
     This script passes through unrecognized arguments to TAEF.  See `"te.exe /!`" for TAEF parameters.
     TAEF passes through -p arguments to the Xaml tests and infrastructure, as `"-p:ParamName=Value`".
@@ -105,6 +107,10 @@ if (!$SkipPackageUninstall)
 }
 
 [string[]]$argsEx = $null
+if ($PreservePackageRegistration)
+{
+    $argsEx += "/p:PreservePackageRegistration=true"
+}
 
 if ($fromFile)
 {
@@ -229,6 +235,10 @@ if ($HostingMode -eq 'Auto') {
 }
 
 Write-Host "Hosting mode is '$HostingMode'."
+if ($PreservePackageRegistration -and $HostingMode -ne "WPF")
+{
+    throw "-PreservePackageRegistration requires WPF hosting."
+}
 
 if ($HostingMode -eq "WPF")
 {
@@ -265,10 +275,63 @@ if($TerminateOnFirstFailure)
     $argsEx += "/terminateOnFirstFailure"
 }
 
-Write-Host $argsEx
-Write-Host $ExtraArgs
+$restoreManifest = $false
+try
+{
+    if ($PreservePackageRegistration)
+    {
+        $packageRoot = Join-Path $TestDir "Test"
+        $manifestPath = Join-Path $packageRoot "AppxManifest.xml"
+        $sourceManifest = Join-Path $packageRoot "AppxManifest.Centennial.xml"
+        $packageName = ([xml](Get-Content $sourceManifest -Raw -ErrorAction Stop)).Package.Identity.Name
+        if (Get-AppxPackage -Name $packageName -ErrorAction Stop)
+        {
+            throw "Package '$packageName' is already registered. Refusing to replace another test run's registration."
+        }
+        $originalManifest = if (Test-Path $manifestPath) { [IO.File]::ReadAllBytes($manifestPath) } else { $null }
+        $restoreManifest = $true
+        Copy-Item $sourceManifest $manifestPath -Force -ErrorAction Stop
+        Add-AppxPackage -Register $manifestPath -ErrorAction Stop
+        $package = Get-AppxPackage -Name $packageName -ErrorAction Stop
+        if (!$package -or $package.InstallLocation -ne $packageRoot)
+        {
+            throw "The test package was not registered at '$packageRoot'."
+        }
+        Write-Host "Using one package registration: $($package.PackageFullName)"
+        $argsEx += "/UAP:PackageFullName=$($package.PackageFullName)"
+    }
 
-Write-Host ".\te.exe "Test\Microsoft.UI.Xaml.Tests.*.dll" "Test\MUXControls.Test.dll" "Test\UnpackagedApps\MUXControlsTestApp\MUXControlsTestApp.dll" "Test\IXMPTestApp.appx" "/p:SkipConsoleWindowMinimize" "/select:`"$queryArgs`"" $argsEx $ExtraArgs"
-.\te.exe "Test\Microsoft.UI.Xaml.Tests.*.dll" "Test\MUXControls.Test.dll" "Test\UnpackagedApps\MUXControlsTestApp\MUXControlsTestApp.dll" "Test\IXMPTestApp.appx" "/p:SkipConsoleWindowMinimize" "/select:`"$queryArgs`"" $argsEx $ExtraArgs
+    Write-Host $argsEx
+    Write-Host $ExtraArgs
+    Write-Host ".\te.exe "Test\Microsoft.UI.Xaml.Tests.*.dll" "Test\MUXControls.Test.dll" "Test\UnpackagedApps\MUXControlsTestApp\MUXControlsTestApp.dll" "Test\IXMPTestApp.appx" "/p:SkipConsoleWindowMinimize" "/select:`"$queryArgs`"" $argsEx $ExtraArgs"
+    .\te.exe "Test\Microsoft.UI.Xaml.Tests.*.dll" "Test\MUXControls.Test.dll" "Test\UnpackagedApps\MUXControlsTestApp\MUXControlsTestApp.dll" "Test\IXMPTestApp.appx" "/p:SkipConsoleWindowMinimize" "/select:`"$queryArgs`"" $argsEx $ExtraArgs
+
+    if ($PreservePackageRegistration)
+    {
+        $remainingPackage = Get-AppxPackage -Name $packageName -ErrorAction Stop
+        if (!$remainingPackage -or $remainingPackage.PackageFullName -ne $package.PackageFullName -or
+            $remainingPackage.InstallLocation -ne $packageRoot)
+        {
+            throw "TAEF did not preserve the test package registration."
+        }
+    }
+}
+finally
+{
+    if ($restoreManifest)
+    {
+        try
+        {
+            Get-AppxPackage -Name $packageName -ErrorAction Stop |
+                Where-Object { $_.InstallLocation -eq $packageRoot } |
+                Remove-AppxPackage -ErrorAction Stop
+        }
+        finally
+        {
+            if ($null -ne $originalManifest) { [IO.File]::WriteAllBytes($manifestPath, $originalManifest) }
+            else { Remove-Item $manifestPath -ErrorAction Stop }
+        }
+    }
+}
 
 Pop-Location

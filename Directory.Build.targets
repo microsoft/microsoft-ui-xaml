@@ -26,7 +26,19 @@
 	<Import Project="$(ProjectRoot)\eng\WebView2ProjectionWorkaround.targets" />
 
     <!--
-      Since in Directory.Build.props we prevented C++/WinRT from automatically injecting /await, we
+      SkipProject only works when dxaml\msbuild\BuildSettings\SkipProjectBuild.targets is imported,
+      and that import lives in dxaml\Microsoft.UI.Xaml.Build.targets, which SDK-style projects never
+      import. Setting SkipProject in an SDK-style project therefore does nothing, and the project
+      keeps building while the author believes it is excluded. Fail instead of pretending.
+    -->
+    <Target Name="ValidateSkipProjectIsHonored" BeforeTargets="Build"
+            Condition="'$(SkipProject)'=='true' and '$(BuildAll)'!='true' and '$(SkipProjectBuildImported)'!='true'">
+        <Error Code="XAMLSKIP003"
+               Text="$(MSBuildProjectFile) sets SkipProject=true, but it does not import dxaml\msbuild\BuildSettings\SkipProjectBuild.targets, so the property has no effect and the project still builds. Remove SkipProject, or exclude the project from the solution or traversal that builds it." />
+                   </Target>
+
+                   <!--
+                     Since in Directory.Build.props we prevented C++/WinRT from automatically injecting /await, we
       need to add /await:strict in order to allow C++17 projects to use C++20-compliant coroutines.
 
       While strictly speaking it's overly broad to enable this for _all_ C++17 projects, there is no

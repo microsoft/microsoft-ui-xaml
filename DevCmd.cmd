@@ -59,16 +59,17 @@ shift
 goto ParseArgs
 
 :DoneParsing
-set vswhere="%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
-if not exist %vswhere% (echo VSWhere.exe not found. Install MSBuild first from OneTimeSetup.cmd && exit /b 1)
+set vswherePath="%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+set vswhere=vswhere.exe
+if not exist %vswherePath% (echo VSWhere.exe not found. Install MSBuild first from OneTimeSetup.cmd && exit /b 1)
 
 rem Try MSBuild first
 set MSBuildInstallpath=
-for /f "tokens=*" %%a in ('%vswhere% -products Microsoft.VisualStudio.Product.BuildTools -property InstallationPath %PrereleaseArg% -latest -version %VsVersion%') do set MSBuildInstallPath=%%a
+for /f "tokens=*" %%a in ('%vswhere% -all -products Microsoft.VisualStudio.Product.BuildTools -property InstallationPath %PrereleaseArg% -version 17.0 ^| findstr /i "2022"') do set MSBuildInstallPath=%%a
 
 if "%MSBuildInstallPath%" EQU "" (
     rem We didn't find MSBuild, try a full VSexit
-    for /f "tokens=*" %%a in ('%vswhere% -requires Microsoft.Component.MSBuild -property InstallationPath %PrereleaseArg% -latest -version %VsVersion%') do set MSBuildInstallPath=%%a
+    for /f "tokens=*" %%a in ('%vswhere% -all -requires Microsoft.Component.MSBuild -property InstallationPath %PrereleaseArg% -version 17.0 ^| findstr /i "2022"') do set MSBuildInstallPath=%%a
     )
 
 if "%MSBuildInstallPath%" EQU "" (

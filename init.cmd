@@ -277,6 +277,11 @@ set PATH=%RepoRoot%\.buildtools\MSBuild\Current\Bin\amd64;%RepoRoot%\.tools;%Rep
 rem If we have init'd from a VS developer command prompt, we should use its tooling instead of the VS build tools installed with the repo
 call :AddPathIfExists "%VSINSTALLDIR%\MSBuild\Current\Bin\amd64"
 
+rem A partially applied Visual Studio update leaves mismatched MSBuild binaries behind and
+rem makes builds fail later with a confusing MSB4216 task host error. Warn about it here
+rem instead. This is a host repair, so it does not stop init.
+powershell -ExecutionPolicy Bypass -NoProfile -File "%RepoRoot%\scripts\init\Test-MSBuildInstall.ps1"
+
 call :SetEnviromentVariable BuildArtifactsDir "%RepoRoot%\BuildOutput"
 
 call :SetEnviromentVariable BinRoot "%BuildArtifactsDir%\Bin"

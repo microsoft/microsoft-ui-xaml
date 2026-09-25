@@ -627,12 +627,19 @@ echo %ERRORLEVEL% > "$exitFile"
             }
         }
 
-        # te.exe returns 0 even when tests fail. Parse the TAEF summary line.
+        # te.exe can return 0 for failed/blocked tests or an empty selection.
         if ($exitCode -eq 0 -and (Test-Path $logFile)) {
             $logLines = Read-NormalizedLog $logFile
             $summaryLine = $logLines | Where-Object { $_ -match 'Summary:\s+Total=\d+' } | Select-Object -Last 1
-            if ($summaryLine -match 'Failed=(\d+)') {
-                if ([int]$Matches[1] -gt 0) { $exitCode = 1 }
+            $zeroTests = $summaryLine -match 'Total=0' -or
+                         ($logLines | Where-Object { $_ -match 'No test cases were executed' } | Select-Object -First 1)
+            if ($zeroTests) {
+                Write-Host "ERROR: TAEF executed zero tests for query '$($testArgs -join ' ')'." -ForegroundColor Red
+                $exitCode = 1
+            } elseif ($summaryLine -match 'Failed=(\d+)' -and [int]$Matches[1] -gt 0) {
+                $exitCode = 1
+            } elseif ($summaryLine -match 'Blocked=(\d+)' -and [int]$Matches[1] -gt 0) {
+                $exitCode = 1
             }
         }
 
