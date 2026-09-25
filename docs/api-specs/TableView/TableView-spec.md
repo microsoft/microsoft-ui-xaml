@@ -1,5 +1,9 @@
 # Background
 
+The proposed visual-design handoff is tracked in
+[TableView Figma requirements (draft)](./TableView-figma-requirements.md).
+That proposal does not change the API or feature scope described here.
+
 TableView is a preview tabular control for WinUI 3. It presents an `ItemsSource` as rows and a developer-defined `Columns` collection as cells, with optional column headers, gridlines, density, alternating row backgrounds, leading-prefix frozen columns, and an empty-state template. It is display-only by default; **opt-in cell editing** is enabled by clearing `IsReadOnly`.
 
 Rows are virtualized: TableView renders rows with `ItemsRepeater`, so large row counts are virtualized (only on-screen rows plus a small cache are realized).
