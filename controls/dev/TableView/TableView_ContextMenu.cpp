@@ -236,6 +236,11 @@ TableViewDetails::ContextMenuResult TableView::ProcessContextMenuRequest(
 
     if (body)
     {
+        // Capture participation only; valid requests resolve their candidate after focus.
+        auto const invalidatedResult = ResolveContextFlyout(target)
+            ? ContextMenuResult::Suppressed
+            : ContextMenuResult::Unhandled;
+
         if (target.Column)
         {
             SetCurrentCell(target.Item, target.Column);
@@ -243,13 +248,13 @@ TableViewDetails::ContextMenuResult TableView::ProcessContextMenuRequest(
 
         if (!requestIsCurrent())
         {
-            return ContextMenuResult::Suppressed;
+            return invalidatedResult;
         }
 
         target.Row.Focus(winrt::FocusState::Programmatic);
         if (!requestIsCurrent())
         {
-            return ContextMenuResult::Suppressed;
+            return invalidatedResult;
         }
     }
 

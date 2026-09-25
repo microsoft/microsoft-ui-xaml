@@ -110,7 +110,9 @@ Context requests move body focus without changing selection. Headers do not move
 body focus. Direct element flyouts keep native priority on their routed path.
 Menus are not stamped on realized cells. A target invalidated during an app
 callback is not retargeted; custom display is suppressed unless the app explicitly
-chooses null fallback. The event is synchronous: later changes to retained args
+chooses null fallback. A body request with no applicable custom candidate before
+focus still permits native fallback if focus invalidates its target, without an
+override event. The event is synchronous: later changes to retained args
 do not change its completed decision.
 
 The scrollable diagnostic toolbar keeps the table usable in smaller windows.
@@ -146,7 +148,8 @@ or nested-table cases** to create clean containers.
 | H7 | Repeat B1, B5, B7 and B8 after header cases: body behavior is unchanged. |
 | L1-L2 | Remove column / Hide column, invoke Name cell; recreate and repeat on header: one callback, zero opens, no fallback. |
 | L3 | Swap items on Name suppresses display; Swap items + null opens NATIVE despite mutation. |
-| L4 | Mutate on next focus, right-click a different row without left-clicking: synchronous GettingFocus replaces items; no custom callback/open for the stale request. GotFocus itself is deferred until after Focus returns and cannot exercise this synchronous gate. |
+| L4 | Focus Mutate on next focus and invoke it, then right-click Name without left-clicking: synchronous GettingFocus replaces items; zero custom requests and zero opens for the configured stale request. GotFocus itself is deferred until after Focus returns and cannot exercise this synchronous gate. |
+| B5 + L4 | Reset, Clear row menu, focus Mutate on next focus and invoke it, then right-click City: zero custom requests, one NATIVE open, selection unchanged. Repeat after Reset and Null item row (wait for realizedNull=PASS), targeting the blank City cell in row zero. The null row's Name cell remains configured and must still suppress with zero requests/opens. |
 | L5 | Retemplate in callback, invoke Name cell/header: one callback, no show. Choose Keep and invoke fresh target: one show. |
 | L6 | Direct row menu gives DIRECT ROW without callback. Nested table then right-click Inner body gives INNER without outer callback; Clear inner menus gives native outer fallback, still no outer callback. |
 | L7 | Retemplate three times; scroll past row 150 and back; invoke Name after each: one request/open each, current binding. |
