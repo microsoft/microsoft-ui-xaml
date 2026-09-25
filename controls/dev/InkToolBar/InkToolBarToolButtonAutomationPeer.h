@@ -8,16 +8,34 @@
 #include "common.h"
 
 #include "InkToolbarToolButton.h"
+#include "InkToolbarTrace.h"
 #include "ResourceAccessor.h"
 #include "InkToolbarToolButtonAutomationPeer.g.h"
+
+#include <string>
 
 class InkToolbarToolButtonAutomationPeer :
     public ReferenceTracker<InkToolbarToolButtonAutomationPeer, winrt::implementation::InkToolbarToolButtonAutomationPeerT>
 {
 public:
     InkToolbarToolButtonAutomationPeer(winrt::InkToolbarToolButton const& owner)
-        : ReferenceTracker(owner)
+        : ReferenceTracker(owner),
+          m_isBuiltInPen(owner.ToolKind() == winrt::InkToolbarTool::BallpointPen ||
+              owner.ToolKind() == winrt::InkToolbarTool::Pencil ||
+              owner.ToolKind() == winrt::InkToolbarTool::Highlighter)
     {
+        if (m_isBuiltInPen)
+        {
+            try
+            {
+                m_dropDownControlType = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarDropDownButtonControlTypeName);
+                m_colorPaletteHint = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarColorPaletteHelpText);
+            }
+            catch (winrt::hresult_error const& e)
+            {
+                InkToolbarLogHResult(e.code(), L"pen button accessibility resource lookup");
+            }
+        }
     }
 
     // IAutomationPeerOverrides
@@ -32,13 +50,21 @@ public:
 
     winrt::AutomationControlType GetAutomationControlTypeCore()
     {
-        // UWP returns Custom so Narrator understands the button's primary
-        // (select tool) and secondary (expand flyout) actions.
-        return winrt::AutomationControlType::Custom;
+        // A standard button role lets Narrator announce the expand/collapse pattern.
+        return m_isBuiltInPen ? winrt::AutomationControlType::Button : winrt::AutomationControlType::Custom;
     }
 
     hstring GetLocalizedControlTypeCore()
     {
+        if (m_isBuiltInPen)
+        {
+            if (auto owner = GetImpl(); owner && owner->HasL3() && !m_dropDownControlType.empty())
+            {
+                return m_dropDownControlType;
+            }
+            return __super::GetLocalizedControlTypeCore();
+        }
+
         // UWP overrides this because the Custom control type would make Narrator read out "custom";
         // the actual value of IDS_INKTOOLBAR_TOOL_BUTTON_CONTROLTYPE_NAME is "button" (per the UWP source).
         try
@@ -49,6 +75,17 @@ public:
         {
             return __super::GetLocalizedControlTypeCore();
         }
+    }
+
+    hstring GetHelpTextCore()
+    {
+        auto helpText = __super::GetHelpTextCore();
+        if (m_isBuiltInPen && !m_colorPaletteHint.empty())
+        {
+            return helpText.empty() ? m_colorPaletteHint
+                : winrt::hstring{ std::wstring{ helpText.c_str() } + L", " + std::wstring{ m_colorPaletteHint.c_str() } };
+        }
+        return helpText;
     }
 
     // IExpandCollapseProvider
@@ -82,6 +119,10 @@ public:
     }
 
 private:
+    bool m_isBuiltInPen;
+    winrt::hstring m_dropDownControlType;
+    winrt::hstring m_colorPaletteHint;
+
     com_ptr<InkToolbarToolButton> GetImpl()
     {
         com_ptr<InkToolbarToolButton> impl;
@@ -92,4 +133,3 @@ private:
         return impl;
     }
 };
-
