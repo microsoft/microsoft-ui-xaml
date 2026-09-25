@@ -169,31 +169,14 @@ PeopleTable.GridLinesVisibility = TableViewGridLinesVisibility.All;
 PeopleTable.Density = TableViewDensity.Compact;
 ```
 
-### Contrast themes
+### Theme customization
 
-Merge `TabularControlsResources` alongside `XamlControlsResources` in the application resources.
-`TabularSurface*` brushes come from the shared theme dictionary; do not copy theme-invariant
-fallbacks into the default-style dictionary. In high contrast, Fluent color tokens such as
-`TextFillColorPrimary` and `SubtleFillColorSecondary` are diagnostic red sentinels, not usable colors.
+In all themes, an application-set table or row `Foreground` supplies the normal-state value;
+pointer-over, pressed, selected, and disabled states use the corresponding `TabularSurface*`
+foreground brush. Cell content inherits that foreground unless its template supplies an explicit brush.
 
-In high contrast, rows use system window colors normally, paired system highlight/highlight-text
-colors for pointer-over, pressed, and selected states, and system gray text when disabled. The
-selection indicator uses highlight text on the selected background and gray text when disabled.
-An application-set table or row `Foreground` supplies the normal-state value; interaction states
-temporarily use the corresponding state brush. Cell content inherits that foreground unless an
-application template explicitly supplies its own brush.
-Application-supplied row backgrounds, foregrounds, and cell templates remain responsible for
-their own contrast-theme support.
-
-Removing the shadowing brush fallbacks also restores the canonical Light/Dark header fills
-(`#26000000` / `#26FFFFFF`) and gridline brushes (`#29000000` / `#29FFFFFF`). The normal-state
-`Foreground` and interaction-state override behavior above also applies in Light/Dark.
-Overrides of low-level Fluent color tokens no longer flow through the deleted fallback brushes;
-override the named `TabularSurface*` brush keys instead.
-
-Runtime validation should exercise normal, hovered, pressed, selected, and disabled rows in each contrast theme, including
-switching themes while the table is visible and returning to Light/Dark. Verify text, selection,
-header and gridline colors, group headers, and application resource overrides.
+Override the named `TabularSurface*` brush keys to customize colors. Low-level Fluent color-token
+overrides no longer flow through the removed default-style brush fallbacks.
 
 ### Frozen (pinned) leading columns
 

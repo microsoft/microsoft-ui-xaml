@@ -82,7 +82,7 @@ Each `TableViewCellsPanel` measures its cells unconstrained and arranges them at
 
 `PART_HeaderRow` provides the header-surface background and a 1px bottom gridline. `PART_HeaderScroller` is horizontal-only (`HorizontalScrollMode="Auto"`, horizontal scrollbar hidden, vertical disabled). `PART_HeaderHost` is a `TableViewCellsPanel` (inherently horizontal); `RebuildHeaders` fills it with one `Grid` header cell per non-null column (each cell mirrors the column's `Visibility`), in `Columns` order, left-to-right. Header cells use the density row minimum height, so the header band matches body rows. Header content comes from `TableViewColumn.Header`, displayed via `HeaderTemplateSelector` when set, otherwise `HeaderTemplate`, otherwise the default text presenter.
 
-The header's bottom `BorderThickness` is a style setter, matching `TableViewRow`. `GridLinesVisibility` suppresses horizontal lines with a local zero thickness and restores the style value with `ClearValue` for `Horizontal` or `All`. Custom templates using a `Border` for `PART_HeaderRow` should likewise supply its gridline thickness through a style setter rather than a local value.
+Custom templates using a `Border` for `PART_HeaderRow` must supply its gridline `BorderThickness` through a style setter rather than a local value, so `GridLinesVisibility` can restore it with `ClearValue` for `Horizontal` or `All`.
 
 ## Body band
 
