@@ -1,0 +1,112 @@
+<Page
+    x:Class="RecyclePoolSampleApp.Pages.RecyclePoolBasicsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:common="using:RecyclePoolSampleApp.Common"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <Grid Padding="16" ColumnSpacing="16" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="420" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.ColumnSpan="2" Spacing="4">
+            <TextBlock Text="Recycle pool basics" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="RecyclePool is a keyed parking lot for UIElements. PutElement parks one under a key, TryGetElement asks for one back. Elements only ever come back under the key they went in with, and the pool prefers an element that already belongs to the owner you are asking for." />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Spacing="12">
+                <Border BorderThickness="1" CornerRadius="4" Padding="10"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Owner A (a StackPanel)" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <StackPanel x:Name="OwnerA" Orientation="Horizontal" Spacing="6" MinHeight="44" />
+                    </StackPanel>
+                </Border>
+
+                <Border BorderThickness="1" CornerRadius="4" Padding="10"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Owner B (a StackPanel)" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <StackPanel x:Name="OwnerB" Orientation="Horizontal" Spacing="6" MinHeight="44" />
+                    </StackPanel>
+                </Border>
+
+                <Border BorderThickness="1" CornerRadius="4" Padding="10"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Handed out (not parented)" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <StackPanel x:Name="Loose" Orientation="Horizontal" Spacing="6" MinHeight="44" />
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="4" Padding="10">
+                    <StackPanel>
+                        <TextBlock Text="Call log" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock x:Name="LogText" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <ScrollViewer Grid.Row="1" Grid.Column="1">
+            <StackPanel Spacing="8">
+                <TextBlock Text="Key" />
+                <ComboBox x:Name="KeyBox" SelectedIndex="0" HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Header" />
+                    <ComboBoxItem Content="Item" />
+                    <ComboBoxItem Content="Footer" />
+                </ComboBox>
+
+                <TextBlock Text="Owner" />
+                <ComboBox x:Name="OwnerBox" SelectedIndex="0" HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Owner A" />
+                    <ComboBoxItem Content="Owner B" />
+                    <ComboBoxItem Content="(null)" />
+                </ComboBox>
+
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Content="Create element" Click="OnCreate" />
+                    <Button Content="PutElement" Click="OnPut" />
+                    <Button Content="TryGetElement" Click="OnTryGet" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Content="PutElement(no owner)" Click="OnPutNoOwner" />
+                    <Button Content="TryGetElement(no owner)" Click="OnTryGetNoOwner" />
+                </StackPanel>
+                <Button Content="Reset" Click="OnReset" HorizontalAlignment="Stretch" />
+
+                <TextBlock x:Name="ResultText" TextWrapping="Wrap"
+                           FontFamily="Consolas"
+                           Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="4" Padding="10">
+                    <StackPanel>
+                        <TextBlock Text="Factory state" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock x:Name="StateText" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="4" Padding="10">
+                    <StackPanel>
+                        <TextBlock Text="Pool contents" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock x:Name="PoolText" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
