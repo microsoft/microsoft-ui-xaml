@@ -915,6 +915,101 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         }
 
         [TestMethod]
+        [TestProperty("Description", "Validates that TextBox honors FontStretch instead of falling back to a condensed face.")]
+        [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        public void VerifyTextBoxHonorsFontStretch()
+        {
+            TestServices.WindowHelper.SetWindowSizeOverride(new Size(800, 400));
+
+            // Bahnschrift ships with Windows and has separate Normal, SemiCondensed and Condensed faces,
+            // so whichever face gets resolved shows up as a difference in the measured width.
+            double unset = MeasureFontStretchSample(null);
+            double normal = MeasureFontStretchSample("Normal");
+            double semiCondensed = MeasureFontStretchSample("SemiCondensed");
+            double condensed = MeasureFontStretchSample("Condensed");
+
+            Log.Comment($"Widths - unset: {unset}, Normal: {normal}, SemiCondensed: {semiCondensed}, Condensed: {condensed}");
+
+            Verify.IsGreaterThan(normal, semiCondensed, "Normal should be wider than SemiCondensed");
+            Verify.IsGreaterThan(semiCondensed, condensed, "SemiCondensed should be wider than Condensed");
+            Verify.AreEqual(normal, unset, "An unset FontStretch should render the same as Normal");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Validates that changing TextBox.FontStretch after load re-resolves the font face.")]
+        [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        public void VerifyTextBoxFontStretchChangeIsReflected()
+        {
+            TestServices.WindowHelper.SetWindowSizeOverride(new Size(800, 400));
+
+            const string rootPanelXaml =
+                    @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                        <TextBox x:Name='tb' HorizontalAlignment='Left' FontFamily='Bahnschrift' FontSize='20'
+                                 Text='HHHHHHHHHHHHHHHHHHHH' />
+                      </StackPanel>";
+
+            StackPanel rootPanel = null;
+            TextBox textBox = null;
+            double normalWidth = 0;
+            double condensedWidth = 0;
+
+            UIExecutor.Execute(() =>
+            {
+                rootPanel = (StackPanel)XamlReader.Load(rootPanelXaml);
+                textBox = (TextBox)rootPanel.FindName("tb");
+                TestServices.WindowHelper.WindowContent = rootPanel;
+            });
+
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                normalWidth = textBox.ActualWidth;
+                textBox.FontStretch = global::Windows.UI.Text.FontStretch.Condensed;
+            });
+
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                condensedWidth = textBox.ActualWidth;
+            });
+
+            Log.Comment($"Widths - Normal: {normalWidth}, Condensed: {condensedWidth}");
+            Verify.IsGreaterThan(normalWidth, condensedWidth, "Setting FontStretch to Condensed should narrow the text");
+        }
+
+        private static double MeasureFontStretchSample(string fontStretch)
+        {
+            string fontStretchAttribute = fontStretch == null ? string.Empty : $" FontStretch='{fontStretch}'";
+            string rootPanelXaml =
+                    $@"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                        <TextBox x:Name='tb' HorizontalAlignment='Left' FontFamily='Bahnschrift' FontSize='20'{fontStretchAttribute}
+                                 Text='HHHHHHHHHHHHHHHHHHHH' />
+                      </StackPanel>";
+
+            StackPanel rootPanel = null;
+            TextBox textBox = null;
+            double width = 0;
+
+            UIExecutor.Execute(() =>
+            {
+                rootPanel = (StackPanel)XamlReader.Load(rootPanelXaml);
+                textBox = (TextBox)rootPanel.FindName("tb");
+                TestServices.WindowHelper.WindowContent = rootPanel;
+            });
+
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                width = textBox.ActualWidth;
+            });
+
+            return width;
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verify Hold on grippers invokes Context Menu.")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Hosting:Mode", "UAP")]
