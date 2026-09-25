@@ -464,6 +464,7 @@ void TableView::OnApplyTemplate()
             m_headerHostLoadedToken = {};
         }
     }
+    m_headerContextRequestedRevoker.revoke();
     if (auto oldBodyScroller = m_bodyScroller.get())
     {
         oldBodyScroller.ViewChanged(m_bodyScrollerViewChangedToken);
@@ -489,6 +490,15 @@ void TableView::OnApplyTemplate()
     // Defer ScrollViewer ancestor lookup until Loaded because template parts are not fully connected here.
     if (auto headerHost = m_headerHost.get())
     {
+        m_headerContextRequestedRevoker = headerHost.ContextRequested(winrt::auto_revoke,
+            [weakThis](winrt::IInspectable const&, winrt::ContextRequestedEventArgs const& args)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->OnHeaderContextRequested(args);
+                }
+            });
+
         // Focus on an off-screen header must not scroll PART_HeaderScroller: header/body sync is
         // one-way, so the band would end up offset from the columns it labels.
         m_headerBringIntoViewRevoker = headerHost.BringIntoViewRequested(winrt::auto_revoke,
