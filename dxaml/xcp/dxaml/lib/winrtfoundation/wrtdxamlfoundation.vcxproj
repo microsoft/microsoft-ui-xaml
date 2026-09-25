@@ -32,6 +32,7 @@
             $(XcpPath)\components\WindowChrome\inc;
             $(FrameworkUdkIncPath);
             $(LiftedIXPGeneratedIncludePath);
+            $(ProjectRoot)external\inc\PlacementEx;
         </ProjectIncludeDirectories>
     </PropertyGroup>
 
@@ -48,10 +49,79 @@
                 <DisableAnalyzeExternal />
                 <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
             </ClCompile>
+            <!-- The record codec is independent of XAML and native windowing headers. -->
+            <ClCompile Include="..\WindowPlacementRecord.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
+            </ClCompile>
+            <!-- Store-adapter naming and base64 transport. Storage I/O stays out of this file. -->
+            <ClCompile Include="..\WindowPlacementStorageFormat.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <ExceptionHandling>Sync</ExceptionHandling>
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
+            </ClCompile>
+            <ClCompile Include="..\WindowPlacementStore.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
+            </ClCompile>
+            <ClCompile Include="..\WindowPlacementDiagnostics.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
+            </ClCompile>
+            <!-- Public value copies translate allocation failures at the ABI boundary. -->
+            <ClCompile Include="..\WindowPlacementPublic.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <ExceptionHandling>Sync</ExceptionHandling>
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
+            </ClCompile>
+            <!-- Placement policy. Geometry and state rules only; no HWND or storage access. -->
+            <ClCompile Include="..\WindowPlacementPolicy.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
+            </ClCompile>
+            <ClCompile Include="..\WindowPlacementAdapter.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
+            </ClCompile>
+            <ClCompile Include="..\WindowPlacementCoordinator.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <ExceptionHandling>Sync</ExceptionHandling>
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
+            </ClCompile>
+            <ClCompile Include="..\WindowPlacementApplication.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
+            </ClCompile>
+            <!-- Window placement capture. Captures effective placement state at specific moments. -->
+            <ClCompile Include="..\WindowPlacementCapture.cpp">
+                <PrecompiledHeader>NotUsing</PrecompiledHeader>
+                <PrecompiledHeaderFile />
+                <PrecompiledHeaderOutputFile />
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
+            </ClCompile>
         </ItemGroup>
     </Target>
 
     <ItemGroup>
+        <ClCompile Include="..\WindowPlacement_Partial.cpp"/>
         <ClCompile Include="..\JupiterControl.cpp"/>
         <ClCompile Include="..\JupiterWindow.cpp"/>
         <ClCompile Include="..\InputSiteAdapter.cpp"/>

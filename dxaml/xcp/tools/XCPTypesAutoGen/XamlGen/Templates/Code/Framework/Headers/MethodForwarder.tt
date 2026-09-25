@@ -5,4 +5,4 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="OM" #>
 
-IFACEMETHOD(<#= Model.Name #>)(<#= GetParameterListAsString(Model.Member.Parameters, Model.Member.ReturnType) #>) override { return This()-><#= Model.Name #>(<#= GetArgumentListAsString(Model.Member.Parameters, Model.Member.ReturnType) #>); }
+IFACEMETHOD(<#= Model.Name #>)(<#= GetParameterListAsString(Model.Member.Parameters, Model.Member.ReturnType) #>) override { return This()-><#= Model.TargetName #>(<#= GetArgumentListAsString(Model.Member.Parameters, Model.Member.ReturnType) #>); }

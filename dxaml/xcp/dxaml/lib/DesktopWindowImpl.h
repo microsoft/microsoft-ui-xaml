@@ -12,11 +12,14 @@
 #include <DesktopWindowXamlSource_partial.h>
 #include "CWindowChrome.h"
 #include "BaseWindow.h"
+#include "WindowPlacementCapture.h"
+#include "WindowPlacementCoordinator.h"
 
 
 namespace DirectUI
 {
-    class DesktopWindowImpl : public WindowImpl, public BaseWindow<DesktopWindowImpl>
+    class DesktopWindowImpl : public WindowImpl, public BaseWindow<DesktopWindowImpl>, 
+        public WindowPlacementPersistence::IWindowPlacementCoordinatorHost
     {
 
     public:
@@ -74,6 +77,56 @@ namespace DirectUI
         // Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop implementation
         IFACEMETHOD(get_SystemBackdrop)(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionBrush** systemBackdropBrush) override;
         IFACEMETHOD(put_SystemBackdrop)(_In_opt_ ABI::Windows::UI::Composition::ICompositionBrush* systemBackdropBrush) override;
+
+        // Window placement persistence (contract 12)
+        _Check_return_ HRESULT get_PersistPlacementIdImpl(_Out_ HSTRING* pValue) override;
+        _Check_return_ HRESULT put_PersistPlacementIdImpl(_In_opt_ HSTRING value) override;
+        _Check_return_ HRESULT get_UseAutomaticPlacementPersistenceImpl(_Out_ BOOLEAN* pValue) override;
+        _Check_return_ HRESULT put_UseAutomaticPlacementPersistenceImpl(_In_ BOOLEAN value) override;
+        _Check_return_ HRESULT TryApplyInitialPlacementImpl(_In_opt_ xaml::IWindowShowOptions* options, _Out_ BOOLEAN* pValue) override;
+        _Check_return_ HRESULT TryGetPlacementImpl(_Outptr_result_maybenull_ xaml::IWindowPlacement** pValue, _Out_ BOOLEAN* pReturnValue) override;
+        _Check_return_ HRESULT ShowWithOptionsImpl(_In_opt_ xaml::IWindowShowOptions* options) override;
+
+        bool SupportsPublicDisplayApis() const override { return true; }
+
+        // IWindowPlacementCoordinatorHost implementation
+        bool IsClosed() const noexcept override;
+        bool IsVisible() const noexcept override;
+        bool TryGetPlacementPeer(
+            const std::u16string& placementId,
+            WindowPlacementPersistence::Snapshot& placement) noexcept override;
+        bool ApplyPlacement(const WindowPlacementPersistence::PlacementPass& pass) override;
+        bool Display(WindowPlacementPersistence::CoordinatorOperation operation, bool doNotActivate) override;
+        bool TryCapturePlacementAndSave() noexcept override;
+
+        void UpdatePlacementPeerMarker() noexcept;
+        void RemovePlacementPeerMarker() noexcept;
+
+        // Shared peer discovery. An empty required device name accepts any monitor;
+        // a non-empty one keeps walking Z order until a peer on that monitor is found.
+        bool TryFindPlacementPeer(
+            const std::u16string& placementId,
+            const std::u16string& requiredDeviceName,
+            WindowPlacementPersistence::Snapshot& placement) noexcept;
+
+        // Cursor for the Z-order peer enumeration. Each window can produce two
+        // candidates: the framework cache, then a direct capture for windows this
+        // process does not own.
+        struct PlacementPeerCursor
+        {
+            const std::u16string* PlacementId{nullptr};
+            const std::u16string* MarkerName{nullptr};
+            HWND Current{nullptr};
+            bool Started{false};
+            bool CaptureCurrent{false};
+        };
+
+        // One step of the walk. Produces the next candidate snapshot and returns false
+        // once enumeration is exhausted. Acceptance is decided by the caller, so a
+        // rejected candidate simply advances the cursor.
+        bool TryGetNextPlacementPeerCandidate(
+            PlacementPeerCursor& cursor,
+            WindowPlacementPersistence::Snapshot& candidate) noexcept;
 
         // IWindowNative
         _Check_return_ IFACEMETHOD(get_WindowHandle)(_Out_ HWND* pValue) override;
@@ -181,8 +234,8 @@ namespace DirectUI
 
         // Records the live client size as the restored size, but only while in the restored state.
         void UpdateLastRestoredClientSize();
-        // Defers UpdateLastRestoredClientSize onto the dispatcher queue, coalescing WM_SIZE bursts.
-        void ScheduleUpdateLastRestoredClientSize();
+        // Coalesces placement capture and optional restored-size tracking across move/size bursts.
+        void ScheduleWindowStateUpdate(bool updateRestoredSize) noexcept;
         // Applies a Width/Height remembered before first show or while in a non-sizing presenter.
         _Check_return_ HRESULT ApplyPendingClientSizeIfNeeded();
         // On AppWindow.Changed (presenter swap): applies a Width/Height remembered while in a non-sizing
@@ -204,6 +257,26 @@ namespace DirectUI
         _Check_return_ HRESULT TryGetOverlappedPresenter(_Outptr_result_maybenull_ ixp::IOverlappedPresenter3** ppPresenter);
         _Check_return_ HRESULT ApplySizeConstraintsToPresenterIfOverlapped();
         _Check_return_ HRESULT ClearOwnedConstraintsOnPresenterIfOverlapped();
+
+        // Message-safe capture. No virtual-desktop query; failure keeps the last snapshot.
+        void CaptureEffectivePlacement() noexcept;
+        const WindowPlacementPersistence::Snapshot* GetCachedPlacement() const noexcept { return m_placementCache.TryGetPlacement(); }
+
+        // Posts the private refresh message so the virtual-desktop query runs from the
+        // message loop instead of inline. Callers pass whether the window is being displayed
+        // because WM_SHOWWINDOW arrives before the window reports itself visible.
+        void ScheduleVirtualDesktopIdRefresh(bool displayed) noexcept;
+
+        // Reads a show request. While the initial-placement phase is open the whole request
+        // is validated; afterwards only DoNotActivate applies and the ignored fields are
+        // never validated.
+        _Check_return_ HRESULT CopyShowOptions(
+            _In_opt_ xaml::IWindowShowOptions* options,
+            bool isHiddenApplication,
+            _Out_ WindowPlacementPersistence::InitialRequest& request);
+        // Native display steps the coordinator drives through Display().
+        void ShowWindowForDisplay(bool doNotActivate);
+        _Check_return_ HRESULT ActivateWindowForDisplay();
 
         // ------------------------------------
         //     Desktop-specific State
@@ -238,14 +311,15 @@ namespace DirectUI
         };
         std::optional<TrackedRestoredSize> m_trackedRestoredSize;
 
-        // We've scheduled an update of the restored client size onto the dispatcher queue
+        bool m_windowStateUpdateScheduled = false;
+        // The pending window-state callback should also update the restored client size.
         bool m_restoredSizeUpdateScheduled = false;
 
         // True while the user is interactively moving/resizing the window.
         bool m_inSizeMove = false;
 
-        // Lifetime sentinel for deferred (DispatcherQueue) restored-size callbacks. Lazily allocated
-        // the first time we enqueue such a callback (ScheduleUpdateLastRestoredClientSize); stays null
+        // Lifetime sentinel for deferred (DispatcherQueue) window-state callbacks. Lazily allocated
+        // the first time we enqueue such a callback (ScheduleWindowStateUpdate); stays null
         // for windows that never schedule one. Shutdown() clears it so a callback outliving the window
         // no-ops instead of touching freed memory.
         std::shared_ptr<bool> m_isWindowAlive;
@@ -283,6 +357,23 @@ namespace DirectUI
         // We use ::GetClientRect to report the window bounds, but that returns 0x0 if the window is minimized. In
         // that case we'll cache the most recently reported bounds and return that.
         wf::Rect m_cachedWindowBounds {0};
+
+        // Cached effective window placement (monitor, DPI, geometry, state) and the WinUI
+        // state the placement engine cannot report from an HWND.
+        WindowPlacementPersistence::WindowPlacementCapture m_placementCache;
+
+        // A virtual-desktop refresh message is already posted and not yet handled. One
+        // display posts from both WM_SHOWWINDOW and Display(), and one shell query is enough.
+        bool m_virtualDesktopRefreshPending{false};
+
+        // Window placement persistence
+        std::unique_ptr<WindowPlacementPersistence::WindowPlacementCoordinator> m_placementCoordinator;
+        std::u16string m_placementPeerMarkerName;
+        std::u16string m_persistPlacementId;
+        bool m_useAutomaticPlacementPersistence{true};
+        // The coordinator drives display through a bool-returning callback, so the failure
+        // HRESULT of the native display step is carried back to Show/Activate here.
+        HRESULT m_lastDisplayResult{S_OK};
 
         // We also get a WM_SIZE message whenever the window is minimized or restored. In those cases, we don't want
         // to raise a Window.SizeChanged event to match behavior on WPF and system Xaml. So cache the size of the last

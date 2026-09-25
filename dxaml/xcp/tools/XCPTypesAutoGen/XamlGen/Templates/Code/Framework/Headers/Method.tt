@@ -6,9 +6,9 @@
 <#@ import namespace="OM" #>
 <# if (Model.IsInterfaceImplementation) { 
        if (Model.DeclaringVersion.IsVersionInterfaceForwarded() && !Model.IsStatic) { #>
-<#if (Model.IsImplVirtual) { #>virtual <# } #>_Check_return_ HRESULT STDMETHODCALLTYPE <#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>);
+<#if (Model.IsImplVirtual) { #>virtual <# } #>_Check_return_ HRESULT STDMETHODCALLTYPE <#= Model.CppName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>);
 <#     } else { #>
-IFACEMETHOD(<#= Model.IdlMethodInfo.Name #>)(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)<# if (Model.IsPureVirtual) { #> = 0<# } else { #> <#=VelocityFeatures.GetOverrideString(Model.Version, Model.DeclaringClass.VelocityVersion)#><# } #>;
+IFACEMETHOD(<#= Model.CppName #>)(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)<# if (Model.IsPureVirtual) { #> = 0<# } else { #> <#=VelocityFeatures.GetOverrideString(Model.Version, Model.DeclaringClass.VelocityVersion)#><# } #>;
 <#     } #>
 <#     if (Model.IsVirtual) {
            if (Model.Modifier == Modifier.Protected) { #>
@@ -20,5 +20,5 @@ IFACEMETHOD(<#= Model.IdlMethodInfo.VirtualName #>)(<#= GetParameterListAsString
 <#         }
        }
    } else { #>
-<# if (!Model.IsStatic && (Model.IsPureVirtual || Model.IsImplVirtual)) { #>virtual <# } #>_Check_return_ HRESULT <#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)<# if (Model.IsPureVirtual) { #> = 0<# } #>;
+<# if (!Model.IsStatic && (Model.IsPureVirtual || Model.IsImplVirtual)) { #>virtual <# } #>_Check_return_ HRESULT <#= Model.CppName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)<# if (Model.IsPureVirtual) { #> = 0<# } #>;
 <# } #>

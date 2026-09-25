@@ -3338,6 +3338,7 @@ namespace Microsoft.UI.Xaml
     [Implements(typeof(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 1, ForcePrimaryInterfaceGeneration = true)]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 4)]
+    [Platform(12, typeof(Microsoft.UI.Xaml.WinUIContract), 12)]
     [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [DXamlIdlGroup("coretypes2")]
     [Guids(ClassGuid = "b0d8d8be-9fae-4cdc-a457-523fb68b3953")]
@@ -3455,6 +3456,63 @@ namespace Microsoft.UI.Xaml
         public Microsoft.UI.Windowing.AppWindow AppWindow
         {
             get;
+        }
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [Version(12)]
+        public string PersistPlacementId
+        {
+            get;
+            set;
+        }
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [Version(12)]
+        public bool UseAutomaticPlacementPersistence
+        {
+            get;
+            set;
+        }
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [Version(12)]
+        public bool TryApplyInitialPlacement(Microsoft.UI.Xaml.WindowShowOptions options)
+        {
+            return false;
+        }
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [Version(12)]
+        public bool TryGetPlacement(out Microsoft.UI.Xaml.WindowPlacement placement)
+        {
+            placement = default(Microsoft.UI.Xaml.WindowPlacement);
+            return false;
+        }
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [Version(12)]
+        [DXamlName("ShowWithOptions")]
+        [DXamlOverloadName("Show")]
+        public void Show(Microsoft.UI.Xaml.WindowShowOptions options)
+        {
+        }
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [Version(12)]
+        [DXamlName("ShowPublic", IdlName = "Show")]
+        [DXamlOverloadName("Show")]
+        [DefaultOverload]
+        public void Show()
+        {
+        }
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [Version(12)]
+        [DXamlName("HidePublic", IdlName = "Hide")]
+        public void Hide()
+        {
         }
 
         // DO NOT promote Window.Width/Height out of experimental (do not remove Feature_ExperimentalApi) until the

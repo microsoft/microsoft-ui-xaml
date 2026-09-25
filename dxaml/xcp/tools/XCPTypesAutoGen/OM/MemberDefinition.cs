@@ -120,7 +120,30 @@ namespace OM
                 {
                     return IdlMemberInfo.VirtualName + "Impl";
                 }
-                return IdlMemberInfo.Name + "Impl";
+                return CppName + "Impl";
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets an alternate name for the generated C++ member. Use this when another
+        /// interface implemented by the same class already uses the ABI name and needs its own
+        /// implementation. Null means the C++ member keeps the ABI name.
+        /// </summary>
+        public string CppNameOverride
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Gets the name of the generated C++ member. This matches the ABI name unless
+        /// CppNameOverride is set.
+        /// </summary>
+        public string CppName
+        {
+            get
+            {
+                return string.IsNullOrEmpty(CppNameOverride) ? IdlMemberInfo.Name : CppNameOverride;
             }
         }
 

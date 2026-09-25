@@ -136,7 +136,10 @@ namespace XamlOM
         }
     }
 
-    [AttributeUsage(AttributeTargets.All, Inherited = false)]
+    [AttributeUsage(
+        AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface | AttributeTargets.Enum |
+        AttributeTargets.Delegate | AttributeTargets.Method,
+        Inherited = false)]
     public class DXamlNameAttribute :
         NameAttribute,
         NewBuilders.IPattern,
@@ -148,6 +151,17 @@ namespace XamlOM
             private set;
         }
 
+        /// <summary>
+        /// Keeps the ABI/IDL name different from the generated C++ name. Use this when two
+        /// interfaces on the same class declare the same ABI method name and each one needs
+        /// its own implementation. Only honored for methods; setting it on a type throws.
+        /// </summary>
+        public string IdlName
+        {
+            get;
+            set;
+        }
+
         public DXamlNameAttribute(string name, string defaultInterfaceName = null)
         {
             Name = name;
@@ -156,6 +170,12 @@ namespace XamlOM
 
         public void BuildNewType(OM.TypeDefinition definition, Type source)
         {
+            if (!string.IsNullOrEmpty(IdlName))
+            {
+                throw new InvalidOperationException(
+                    "DXamlName.IdlName is only honored on methods, but it is set on type '" + source.FullName + "'.");
+            }
+
             definition.IdlTypeInfo.Name = Name;
         }
 
@@ -171,7 +191,15 @@ namespace XamlOM
         public void BuildNewMethod(OM.MethodDefinition definition, MethodInfo source)
         {
             definition.Name = Name;
-            definition.IdlMemberInfo.Name = Name;
+            if (string.IsNullOrEmpty(IdlName))
+            {
+                definition.IdlMemberInfo.Name = Name;
+            }
+            else
+            {
+                definition.IdlMemberInfo.Name = IdlName;
+                definition.CppNameOverride = Name;
+            }
         }
 
         public void BuildNewDelegate(OM.DelegateDefinition definition, Type source)

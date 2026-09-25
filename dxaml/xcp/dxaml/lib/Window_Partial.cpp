@@ -35,6 +35,17 @@ using namespace RuntimeFeatureBehavior;
 #undef max
 #undef min
 
+// Codegen regression guard. The public display APIs must keep their own C++ entry points so
+// that public Window.Show()/Window.Hide() do not land on the IWindowPrivate implementations.
+// If the code generator ever collapses these names again, this fails the build instead of
+// silently routing public Hide() into the private UWP lifecycle path.
+static_assert(
+    std::is_same_v<decltype(&WindowGenerated::ShowPublic), HRESULT (STDMETHODCALLTYPE WindowGenerated::*)()>,
+    "WindowGenerated::ShowPublic must exist as the public Show() entry point.");
+static_assert(
+    std::is_same_v<decltype(&WindowGenerated::HidePublic), HRESULT (STDMETHODCALLTYPE WindowGenerated::*)()>,
+    "WindowGenerated::HidePublic must exist as the public Hide() entry point.");
+
 // ----------------------------------------------------------------------
 //                             IWindowStatic
 // ----------------------------------------------------------------------
@@ -298,9 +309,91 @@ _Check_return_ HRESULT Window::put_SystemBackdropImpl(_In_opt_ xaml::Media::ISys
     return S_OK;
 }
 
-// ----------------------------------------------------------------------
-//                          IWindowNative
-// ----------------------------------------------------------------------
+// Window placement persistence (contract 12)
+_Check_return_ HRESULT Window::get_PersistPlacementIdImpl(_Out_ HSTRING* pValue)
+{
+    IFC_RETURN(m_spWindowImpl->get_PersistPlacementIdImpl(pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::put_PersistPlacementIdImpl(_In_opt_ HSTRING value)
+{
+    IFC_RETURN(m_spWindowImpl->put_PersistPlacementIdImpl(value));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::get_UseAutomaticPlacementPersistenceImpl(_Out_ BOOLEAN* pValue)
+{
+    IFC_RETURN(m_spWindowImpl->get_UseAutomaticPlacementPersistenceImpl(pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::put_UseAutomaticPlacementPersistenceImpl(_In_ BOOLEAN value)
+{
+    IFC_RETURN(m_spWindowImpl->put_UseAutomaticPlacementPersistenceImpl(value));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::TryApplyInitialPlacementImpl(_In_opt_ xaml::IWindowShowOptions* options, _Out_ BOOLEAN* pValue)
+{
+    // Unlike Show(), this API requires an options object so callers must
+    // explicitly request the default policy with new WindowShowOptions().
+    if (options == nullptr)
+    {
+        return E_INVALIDARG;
+    }
+
+    IFC_RETURN(m_spWindowImpl->TryApplyInitialPlacementImpl(options, pValue));
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::TryGetPlacementImpl(
+    _Outptr_result_maybenull_ xaml::IWindowPlacement** pValue,
+    _Out_ BOOLEAN* pReturnValue)
+{
+    IFC_RETURN(m_spWindowImpl->TryGetPlacementImpl(pValue, pReturnValue));
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::ShowWithOptionsImpl(_In_opt_ xaml::IWindowShowOptions* options)
+{
+    if (!m_spWindowImpl->SupportsPublicDisplayApis())
+    {
+        return E_NOTIMPL;
+    }
+
+    IFC_RETURN(m_spWindowImpl->ShowWithOptionsImpl(options));
+    return S_OK;
+}
+
+// Public Window.Show(). Desktop-only; see ShowImpl below for the IWindowPrivate path.
+_Check_return_ HRESULT Window::ShowPublicImpl()
+{
+    if (!m_spWindowImpl->SupportsPublicDisplayApis())
+    {
+        return E_NOTIMPL;
+    }
+
+    IFC_RETURN(m_spWindowImpl->ShowImpl());
+    return S_OK;
+}
+
+// Public Window.Hide(). Desktop-only; see HideImpl below for the IWindowPrivate path,
+// which keeps its existing UWP behavior.
+_Check_return_ HRESULT Window::HidePublicImpl()
+{
+    if (!m_spWindowImpl->SupportsPublicDisplayApis())
+    {
+        return E_NOTIMPL;
+    }
+
+    IFC_RETURN(m_spWindowImpl->HideImpl());
+    return S_OK;
+}
+
+// IWindowNative
 _Check_return_ HRESULT Window::get_WindowHandle(HWND* pValue)
 {
     IFC_RETURN(m_spWindowImpl->get_WindowHandle(pValue));
@@ -353,7 +446,9 @@ _Check_return_ HRESULT Window::put_TransparentBackgroundImpl(_In_ BOOLEAN value)
 
 _Check_return_ HRESULT Window::ShowImpl()
 {
-    return E_NOTIMPL;
+    IFC_RETURN(m_spWindowImpl->ShowImpl());
+
+    return S_OK;
 }
 
 _Check_return_ HRESULT Window::HideImpl()
@@ -959,4 +1054,3 @@ _Check_return_ HRESULT Window::put_HeightImpl(DOUBLE value)
     IFC_RETURN(m_spWindowImpl->put_HeightImpl(value));
     return S_OK;
 }
-

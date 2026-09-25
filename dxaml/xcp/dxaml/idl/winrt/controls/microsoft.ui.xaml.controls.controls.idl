@@ -27,6 +27,7 @@ import "microsoft.ui.windowing.idl";
 import "microsoft.ui.xaml.coretypes2.idl";
 import "windows.foundation.idl";
 import "windows.foundation.numerics.idl";
+import "windows.graphics.idl";
 import "windows.graphics.printing.idl";
 import "windows.media.casting.idl";
 import "windows.ui.idl";

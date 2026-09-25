@@ -742,6 +742,7 @@ namespace XamlOM.NewBuilders
             implementedMember.Modifier = interfaceMember.Modifier;
             implementedMember.Name = interfaceMember.Name;
             implementedMember.IdlMemberInfo.Name = interfaceMember.IdlMemberInfo.Name;
+            implementedMember.CppNameOverride = interfaceMember.CppNameOverride;
             implementedMember.GenerateDefaultBody = interfaceMember.GenerateDefaultBody;
             implementedMember.GenerateStub = interfaceMember.GenerateStub;
         }

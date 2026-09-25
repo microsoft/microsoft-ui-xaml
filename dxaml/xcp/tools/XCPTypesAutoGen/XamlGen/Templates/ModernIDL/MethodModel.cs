@@ -21,9 +21,9 @@ namespace XamlGen.Templates.ModernIDL
 
                 if (RequestedInterface == RequestedInterface.VirtualMembers && Member.Modifier == OM.Modifier.Public)
                 {
-                    return Member.Name + "Core";
+                    return Member.IdlMemberInfo.Name + "Core";
                 }
-                return Member.Name;
+                return Member.IdlMemberInfo.Name;
             }
         }
 

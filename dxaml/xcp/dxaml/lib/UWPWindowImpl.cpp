@@ -856,6 +856,50 @@ _Check_return_ HRESULT UWPWindowImpl::ShowImpl()
     return E_NOTIMPL;
 }
 
+_Check_return_ HRESULT UWPWindowImpl::ShowWithOptionsImpl(_In_opt_ xaml::IWindowShowOptions* /*options*/)
+{
+    return ShowImpl();
+}
+
+_Check_return_ HRESULT UWPWindowImpl::get_PersistPlacementIdImpl(_Out_ HSTRING* pValue)
+{
+    *pValue = nullptr;
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_PersistPlacementIdImpl(_In_opt_ HSTRING /*value*/)
+{
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::get_UseAutomaticPlacementPersistenceImpl(_Out_ BOOLEAN* pValue)
+{
+    *pValue = FALSE;
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_UseAutomaticPlacementPersistenceImpl(_In_ BOOLEAN /*value*/)
+{
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::TryApplyInitialPlacementImpl(
+    _In_opt_ xaml::IWindowShowOptions* /*options*/,
+    _Out_ BOOLEAN* pValue)
+{
+    *pValue = FALSE;
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::TryGetPlacementImpl(
+    _Outptr_result_maybenull_ xaml::IWindowPlacement** pValue,
+    _Out_ BOOLEAN* pReturnValue)
+{
+    *pValue = nullptr;
+    *pReturnValue = FALSE;
+    return S_OK;
+}
+
 _Check_return_ HRESULT UWPWindowImpl::HideImpl()
 {
     ElementSoundPlayerService* soundPlayerService = DXamlCore::GetCurrent()->TryGetElementSoundPlayerServiceNoRef();

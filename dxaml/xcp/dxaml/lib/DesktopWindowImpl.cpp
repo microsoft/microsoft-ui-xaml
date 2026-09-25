@@ -25,6 +25,12 @@
 #include "Microsoft.UI.Windowing.h"
 #include <FrameworkUdk/Theming.h>
 #include <Microsoft.UI.Interop.h>
+#include "WindowPlacementStore.h"
+#include "WindowPlacementStorageFormat.h"
+#include "WindowPlacementApplication.h"
+#include "WindowPlacementCapture.h"
+#include "WindowPlacement_Partial.h"
+#include "WindowShowOptions_Partial.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -50,6 +56,18 @@ static const wchar_t s_windowClassName[]    = L"WinUIDesktopWin32WindowClass";
 
 // Default window title for top-level WinUI desktop windows
 static const wchar_t s_defaultWindowTitle[] = L"WinUI Desktop";
+
+// Private message used to run the virtual-desktop query from the message loop. The query is
+// a cross-apartment COM call, so it cannot run inline from a display call or from an
+// input-synchronous message. A posted message is always dispatched by the window's own pump,
+// which is a safe place to call out. A registered message avoids colliding with anything an
+// app posts to this window. Zero means registration failed and no refresh is scheduled.
+static UINT GetVirtualDesktopRefreshMessage() noexcept
+{
+    static const UINT message = ::RegisterWindowMessageW(
+        L"Microsoft.UI.Xaml.WindowPlacement.RefreshVirtualDesktopId");
+    return message;
+}
 
 // Note that win32 class registration, win32 window and DesktopWindowXamlSource
 // creation, and DWXS::Initialize failures are non-recoverable errors.
@@ -82,6 +100,9 @@ DesktopWindowImpl::DesktopWindowImpl(Window* parentWindow) : m_dxamlWindowInstan
         // is desired behavior. This initial SizeChanged notification is also where we cache the initial size of the
         // window to return if the app is minimized right away.
     }
+
+    m_placementCoordinator =
+        std::make_unique<WindowPlacementPersistence::WindowPlacementCoordinator>(*this);
 
     // Note: no need for RAII for the end event - ctors can't fail
     XamlTelemetry::CreateDesktopWindow(false, reinterpret_cast<uint64_t>(this));
@@ -160,6 +181,12 @@ DesktopWindowImpl::~DesktopWindowImpl()
     // its members.  Make sure to close if we have not done so.
     if (!m_bIsClosed)
     {
+        // Backstop save attempt in destructor path
+        if (m_placementCoordinator)
+        {
+            m_placementCoordinator->OnDestroy();
+        }
+
         // this code will run only in special case where CLoseImpl has not been called
         VERIFYHR(m_dxamlWindowInstance->SetTitleBar(nullptr));
         VERIFYHR(m_dxamlWindowInstance->put_Content(nullptr));
@@ -418,6 +445,18 @@ _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
 {
     IFC_RETURN(CheckIsWindowClosed());
 
+    m_lastDisplayResult = S_OK;
+    m_placementCoordinator->Activate(
+        m_persistPlacementId.c_str(),
+        m_persistPlacementId.length(),
+        m_useAutomaticPlacementPersistence);
+    IFC_RETURN(m_lastDisplayResult);
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::ActivateWindowForDisplay()
+{
     // Show the top-level win32 window
     auto nCmdShow = SW_SHOW;
     if (IsZoomed(m_hwnd.get()))
@@ -478,6 +517,14 @@ _Check_return_ HRESULT DesktopWindowImpl::CloseImpl()
             // m_bIsClosing will get reset to false
             return S_OK;
         }
+
+        // After close handlers have completed and close wasn't cancelled,
+        // attempt to save placement if the window is enrolled
+        if (m_placementCoordinator)
+        {
+            m_placementCoordinator->OnAcceptedClose();
+        }
+
         m_desktopWindowXamlSource->PrepareToClose();
 
         // set these to null before marking window as closed as they fail if called after m_bIsClosed is set
@@ -710,27 +757,501 @@ _Check_return_ HRESULT DesktopWindowImpl::put_TransparentBackgroundImpl(_In_ BOO
 
 _Check_return_ HRESULT DesktopWindowImpl::ShowImpl()
 {
-    if (ShowWindow(m_hwnd.get(), SW_RESTORE))
-    {
-        HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+    return ShowWithOptionsImpl(nullptr);
+}
 
-        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(hr, ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
+_Check_return_ HRESULT DesktopWindowImpl::ShowWithOptionsImpl(_In_opt_ xaml::IWindowShowOptions* options)
+{
+    IFC_RETURN(CheckIsWindowClosed());
 
-        // GLE may return 0, even after win32 API fails
-        if (SUCCEEDED(hr))
-        {
-            IFC_RETURN(E_FAIL);
-        }
+    WindowPlacementPersistence::InitialRequest request;
+    IFC_RETURN(CopyShowOptions(options, false /* isHiddenApplication */, request));
 
-        IFC_RETURN(hr);
-    }
+    m_lastDisplayResult = S_OK;
+    m_placementCoordinator->Show(
+        request,
+        m_persistPlacementId.c_str(),
+        m_persistPlacementId.length(),
+        m_useAutomaticPlacementPersistence);
+    IFC_RETURN(m_lastDisplayResult);
 
     return S_OK;
 }
 
+void DesktopWindowImpl::ShowWindowForDisplay(bool doNotActivate)
+{
+    // Show reveals the window in its current state. It never unminimizes, and it requests
+    // activation only for a non-minimized window that did not ask to stay unactivated.
+    int command = SW_SHOWMINNOACTIVE;
+    if (!::IsIconic(m_hwnd.get()))
+    {
+        command = doNotActivate ? SW_SHOWNA : SW_SHOW;
+    }
+
+    ::ShowWindow(m_hwnd.get(), command);
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::CopyShowOptions(
+    _In_opt_ xaml::IWindowShowOptions* options,
+    bool isHiddenApplication,
+    _Out_ WindowPlacementPersistence::InitialRequest& request)
+{
+    request = {};
+    if (options == nullptr) return S_OK;
+
+    if (m_placementCoordinator->IsInitialPlacementPhaseOpen())
+    {
+        // Sealed framework value: QI the implementation, never read its fields separately.
+        ctl::ComPtr<WindowShowOptions> implementation;
+        IFC_RETURN(ctl::ComPtr<xaml::IWindowShowOptions>(options).As(&implementation));
+        IFC_RETURN(implementation->CopyInitialRequest(isHiddenApplication, request));
+        return S_OK;
+    }
+
+    // After the phase, Placement, Reason, CascadeBehavior, and SkipInitialPlacement are
+    // ignored without being validated. DoNotActivate remains a per-Show display option.
+    BOOLEAN doNotActivate = FALSE;
+    IFC_RETURN(options->get_DoNotActivate(&doNotActivate));
+    request.DoNotActivate = !!doNotActivate;
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::get_PersistPlacementIdImpl(_Out_ HSTRING* pValue)
+{
+    *pValue = nullptr;
+    if (m_persistPlacementId.empty())
+    {
+        return S_OK;
+    }
+    
+    IFC_RETURN(WindowsCreateString(reinterpret_cast<const wchar_t*>(m_persistPlacementId.c_str()),
+        static_cast<UINT32>(m_persistPlacementId.length()), pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_PersistPlacementIdImpl(_In_opt_ HSTRING value)
+{
+    RemovePlacementPeerMarker();
+    if (value == nullptr)
+    {
+        m_persistPlacementId.clear();
+    }
+    else
+    {
+        UINT32 length = 0;
+        const wchar_t* str = WindowsGetStringRawBuffer(value, &length);
+        m_persistPlacementId.assign(reinterpret_cast<const char16_t*>(str), length);
+    }
+    UpdatePlacementPeerMarker();
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::get_UseAutomaticPlacementPersistenceImpl(_Out_ BOOLEAN* pValue)
+{
+    *pValue = m_useAutomaticPlacementPersistence ? TRUE : FALSE;
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_UseAutomaticPlacementPersistenceImpl(_In_ BOOLEAN value)
+{
+    m_useAutomaticPlacementPersistence = !!value;
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::TryApplyInitialPlacementImpl(_In_opt_ xaml::IWindowShowOptions* options, _Out_ BOOLEAN* pValue)
+{
+    *pValue = FALSE;
+    IFC_RETURN(CheckIsWindowClosed());
+
+    // A displayed window or a running operation returns false without validating the
+    // request, so the ignored fields of a late call are never rejected.
+    if (!m_placementCoordinator->IsInitialPlacementPhaseOpen() ||
+        m_placementCoordinator->IsOperationInProgress() ||
+        IsVisible())
+    {
+        return S_OK;
+    }
+
+    WindowPlacementPersistence::InitialRequest request;
+    IFC_RETURN(CopyShowOptions(options, true /* isHiddenApplication */, request));
+
+    *pValue = m_placementCoordinator->TryApplyInitialPlacement(
+        request,
+        m_persistPlacementId.c_str(),
+        m_persistPlacementId.length(),
+        m_useAutomaticPlacementPersistence) ? TRUE : FALSE;
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::TryGetPlacementImpl(
+    _Outptr_result_maybenull_ xaml::IWindowPlacement** pValue,
+    _Out_ BOOLEAN* pReturnValue)
+{
+    *pValue = nullptr;
+    *pReturnValue = FALSE;
+    IFC_RETURN(CheckIsWindowClosed());
+
+    const auto presenter = WindowPlacementPersistence::ResolvePresenterKind(
+        AreNewWindowingApisEnabled(), [this]() { return AppWindowPresenterSupportsSizing(); });
+    const bool captured = m_placementCache.TryCapture(m_hwnd.get(), presenter);
+    if (!captured && presenter == WindowPlacementPersistence::PresenterKind::Overlapped)
+    {
+        // Do not expose a stale snapshot when live overlapped capture failed. A non-overlapped
+        // presenter is the only case where the cache intentionally represents the current
+        // placement because the window has no overlapped geometry to capture.
+        return S_OK;
+    }
+
+    const auto* placement = GetCachedPlacement();
+    if (!placement)
+    {
+        return S_OK;
+    }
+
+    IFC_RETURN(WindowPlacement::CreateFromSnapshot(*placement, pValue));
+    *pReturnValue = TRUE;
+    return S_OK;
+}
+
+// IWindowPlacementCoordinatorHost implementation
+bool DesktopWindowImpl::IsClosed() const noexcept
+{
+    return m_bIsClosed;
+}
+
+bool DesktopWindowImpl::IsVisible() const noexcept
+{
+    return m_hwnd && ::IsWindowVisible(m_hwnd.get()) != FALSE;
+}
+
+bool DesktopWindowImpl::TryGetPlacementPeer(
+    const std::u16string& placementId,
+    WindowPlacementPersistence::Snapshot& placement) noexcept
+{
+    return TryFindPlacementPeer(placementId, {}, placement);
+}
+
+bool DesktopWindowImpl::TryFindPlacementPeer(
+    const std::u16string& placementId,
+    const std::u16string& requiredDeviceName,
+    WindowPlacementPersistence::Snapshot& placement) noexcept
+{
+    if (placementId.empty() || !m_hwnd)
+    {
+        return false;
+    }
+
+    std::u16string applicationId;
+    const HRESULT identityResult =
+        WindowPlacementPersistence::TryGetPackagedApplicationId(applicationId);
+    if (FAILED(identityResult) &&
+        identityResult != HRESULT_FROM_WIN32(APPMODEL_ERROR_NO_PACKAGE) &&
+        identityResult != HRESULT_FROM_WIN32(APPMODEL_ERROR_NO_APPLICATION))
+    {
+        return false;
+    }
+
+    std::u16string markerName;
+    if (!WindowPlacementPersistence::TryMakePlacementGroupPropertyName(
+            applicationId.c_str(), applicationId.length(),
+            placementId.c_str(), placementId.length(), markerName))
+    {
+        return false;
+    }
+
+    // The framework-owned window map gives us initialized WinUI windows without
+    // callbacks into unrelated UI threads. Enumeration follows Z order, preferring
+    // the topmost eligible peer. The marker also finds windows owned by another
+    // process, where no framework object is available.
+    struct WalkContext
+    {
+        DesktopWindowImpl* Self;
+        PlacementPeerCursor Cursor;
+    };
+
+    WalkContext walk{this, {}};
+    walk.Cursor.PlacementId = &placementId;
+    walk.Cursor.MarkerName = &markerName;
+
+    WindowPlacementPersistence::PlacementPeerCandidateSource candidates{};
+    candidates.Context = &walk;
+    candidates.TryGetNext = [](void* context, WindowPlacementPersistence::Snapshot& candidate)
+    {
+        auto* state = static_cast<WalkContext*>(context);
+        return state->Self->TryGetNextPlacementPeerCandidate(state->Cursor, candidate);
+    };
+
+    return WindowPlacementPersistence::TryFindAcceptablePlacementPeer(
+        candidates, requiredDeviceName, placement);
+}
+
+bool DesktopWindowImpl::TryGetNextPlacementPeerCandidate(
+    PlacementPeerCursor& cursor,
+    WindowPlacementPersistence::Snapshot& candidate) noexcept
+{
+    while (true)
+    {
+        if (cursor.CaptureCurrent)
+        {
+            // A foreign process cannot expose its framework cache. PlacementEx reads
+            // the peer HWND without callbacks or activation.
+            cursor.CaptureCurrent = false;
+            WindowPlacementPersistence::WindowPlacementCapture capture;
+            if (capture.TryCapture(
+                    cursor.Current,
+                    WindowPlacementPersistence::PresenterKind::Overlapped))
+            {
+                const auto* captured = capture.TryGetPlacement();
+                if (captured &&
+                    WindowPlacementPersistence::TryCopySnapshot(*captured, candidate))
+                {
+                    return true;
+                }
+            }
+            continue;
+        }
+
+        cursor.Current = cursor.Started
+            ? ::GetWindow(cursor.Current, GW_HWNDNEXT)
+            : ::GetTopWindow(nullptr);
+        cursor.Started = true;
+        if (!cursor.Current)
+        {
+            return false;
+        }
+
+        if (cursor.Current == m_hwnd.get() || !::IsWindowVisible(cursor.Current) ||
+            ::GetPropW(cursor.Current,
+                reinterpret_cast<LPCWSTR>(cursor.MarkerName->c_str())) == nullptr)
+        {
+            continue;
+        }
+
+        cursor.CaptureCurrent = true;
+
+        if (m_dxamlCoreNoRef)
+        {
+            const auto iter = m_dxamlCoreNoRef->m_handleToDesktopWindowMap.find(cursor.Current);
+            if (iter != m_dxamlCoreNoRef->m_handleToDesktopWindowMap.end())
+            {
+                auto* peerWindow = iter->second;
+                auto* peerImpl = peerWindow ? peerWindow->GetWindowImpl() : nullptr;
+                auto* peer = static_cast<DesktopWindowImpl*>(peerImpl);
+                if (!peer || peer->m_bIsClosed ||
+                    peer->m_persistPlacementId != *cursor.PlacementId ||
+                    !peer->m_placementCoordinator ||
+                    !peer->m_placementCoordinator->HasEverBeenDisplayed() ||
+                    !peer->AppWindowPresenterSupportsSizing())
+                {
+                    // A framework window that is not an eligible peer is never read
+                    // through the foreign-process path.
+                    cursor.CaptureCurrent = false;
+                    continue;
+                }
+
+                peer->CaptureEffectivePlacement();
+                const auto* cached = peer->GetCachedPlacement();
+                if (cached && WindowPlacementPersistence::TryCopySnapshot(*cached, candidate))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+}
+
+void DesktopWindowImpl::UpdatePlacementPeerMarker() noexcept
+{
+    if (!m_hwnd || !IsVisible() || m_persistPlacementId.empty()) return;
+
+    std::u16string applicationId;
+    const HRESULT identityResult =
+        WindowPlacementPersistence::TryGetPackagedApplicationId(applicationId);
+    if (FAILED(identityResult) &&
+        identityResult != HRESULT_FROM_WIN32(APPMODEL_ERROR_NO_PACKAGE) &&
+        identityResult != HRESULT_FROM_WIN32(APPMODEL_ERROR_NO_APPLICATION))
+    {
+        return;
+    }
+
+    std::u16string markerName;
+    if (!WindowPlacementPersistence::TryMakePlacementGroupPropertyName(
+            applicationId.c_str(), applicationId.length(),
+            m_persistPlacementId.c_str(), m_persistPlacementId.length(), markerName))
+    {
+        return;
+    }
+
+    if (!m_placementPeerMarkerName.empty() &&
+        m_placementPeerMarkerName != markerName)
+    {
+        ::RemovePropW(m_hwnd.get(),
+            reinterpret_cast<LPCWSTR>(m_placementPeerMarkerName.c_str()));
+    }
+
+    if (::SetPropW(m_hwnd.get(), reinterpret_cast<LPCWSTR>(markerName.c_str()),
+            reinterpret_cast<HANDLE>(static_cast<INT_PTR>(1))))
+    {
+        m_placementPeerMarkerName = std::move(markerName);
+    }
+}
+
+void DesktopWindowImpl::RemovePlacementPeerMarker() noexcept
+{
+    if (m_hwnd && !m_placementPeerMarkerName.empty())
+    {
+        ::RemovePropW(m_hwnd.get(),
+            reinterpret_cast<LPCWSTR>(m_placementPeerMarkerName.c_str()));
+        m_placementPeerMarkerName.clear();
+    }
+}
+
+bool DesktopWindowImpl::ApplyPlacement(const WindowPlacementPersistence::PlacementPass& pass)
+{
+    if (m_bIsClosed || !m_hwnd) return false;
+    if (AreNewWindowingApisEnabled())
+    {
+        // Presenter bounds are not overlapped placement. Never switch presenters here.
+        if (!AppWindowPresenterSupportsSizing()) return false;
+        // Pending Width/Height supply fallback bounds; selected placement replaces them.
+        if (FAILED(ApplyPendingClientSizeIfNeeded())) return false;
+    }
+    if (m_bIsClosed || !m_hwnd) return false;
+
+    // Explicit placement cascades off a peer on its own target monitor, which is only
+    // known after policy resolves it. The lookup is therefore deferred to a callback.
+    struct AnchorContext
+    {
+        DesktopWindowImpl* Window;
+        std::u16string PlacementId;
+    } anchorContext{this, pass.PlacementId};
+    WindowPlacementPersistence::PeerAnchorSource anchorSource{};
+    anchorSource.Context = &anchorContext;
+    anchorSource.TryGetAnchor = [](
+        void* context,
+        const std::u16string& targetDeviceName,
+        WindowPlacementPersistence::Snapshot& peer)
+    {
+        auto* anchor = static_cast<AnchorContext*>(context);
+        if (!anchor || !anchor->Window || anchor->Window->m_bIsClosed || !anchor->Window->m_hwnd)
+        {
+            return false;
+        }
+        return anchor->Window->TryFindPlacementPeer(anchor->PlacementId, targetDeviceName, peer);
+    };
+
+    const bool applied = WindowPlacementPersistence::TryApplyPlacement(
+        m_hwnd.get(), pass, m_placementCache,
+        WindowPlacementPersistence::ReadPersistPlacementCore, anchorSource);
+    if (!m_bIsClosed && m_hwnd && AreNewWindowingApisEnabled())
+    {
+        UpdateLastRestoredClientSize();
+    }
+    return applied;
+}
+
+bool DesktopWindowImpl::Display(
+    WindowPlacementPersistence::CoordinatorOperation operation,
+    bool doNotActivate)
+{
+    if (m_bIsClosed || !m_hwnd)
+    {
+        return false;
+    }
+
+    if (operation == WindowPlacementPersistence::CoordinatorOperation::Activate)
+    {
+        m_lastDisplayResult = ActivateWindowForDisplay();
+        if (FAILED(m_lastDisplayResult)) return false;
+    }
+    else
+    {
+        // A skipping Show still applies ordinary pending Window sizing.
+        if (m_bInitialWindowActivation && AreNewWindowingApisEnabled())
+        {
+            m_lastDisplayResult = ApplyPendingClientSizeIfNeeded();
+            if (FAILED(m_lastDisplayResult) || m_bIsClosed || !m_hwnd) return false;
+        }
+        ShowWindowForDisplay(doNotActivate);
+    }
+
+    // ShowWindow reports the window's *previous* visibility, so its return value says
+    // nothing about whether this call displayed the window. Report the resulting state.
+    UpdatePlacementPeerMarker();
+    const bool visible = IsVisible();
+    ScheduleVirtualDesktopIdRefresh(visible);
+    return visible;
+}
+
+void DesktopWindowImpl::ScheduleVirtualDesktopIdRefresh(bool displayed) noexcept
+{
+    if (!m_hwnd) return;
+    if (!WindowPlacementPersistence::ShouldScheduleVirtualDesktopRefresh(m_bIsClosed, displayed))
+    {
+        return;
+    }
+
+    // A single display reaches this twice: once from the WM_SHOWWINDOW the show sends and
+    // once from Display() itself. One pending post is enough, so the shell is asked once.
+    if (m_virtualDesktopRefreshPending) return;
+
+    const UINT message = GetVirtualDesktopRefreshMessage();
+    if (message == 0) return;
+
+    // Best effort. A dropped post only means this save carries no virtual desktop id.
+    if (::PostMessageW(m_hwnd.get(), message, 0, 0))
+    {
+        m_virtualDesktopRefreshPending = true;
+    }
+}
+
+bool DesktopWindowImpl::TryCapturePlacementAndSave() noexcept
+{
+    // Snapshot the current Boolean and id together. Close handlers may have changed
+    // either one, and an enrolled window is allowed to save to a different id than
+    // it enrolled with. An empty id skips the attempt without error.
+    const bool automaticPersistence = m_useAutomaticPlacementPersistence;
+    const char16_t* const placementId = m_persistPlacementId.c_str();
+    const size_t placementIdLength = m_persistPlacementId.length();
+    if (!automaticPersistence || placementIdLength == 0)
+    {
+        return false;
+    }
+
+    // Refresh the cache so the save uses this window's current geometry rather than
+    // whatever the last state change happened to leave behind.
+    CaptureEffectivePlacement();
+
+    const WindowPlacementPersistence::Snapshot* placement = GetCachedPlacement();
+    WindowPlacementPersistence::ApplicationDataPlacementSettingsBackend backend;
+    return WindowPlacementPersistence::SavePersistPlacement(
+        backend,
+        placement,
+        placementId,
+        placementIdLength,
+        WindowPlacementPersistence::TryGetPackagedApplicationId);
+}
+
+
 _Check_return_ HRESULT DesktopWindowImpl::HideImpl()
 {
-    return E_NOTIMPL;
+    IFC_RETURN(CheckIsWindowClosed());
+
+    // Hiding is not a close and not a display. It never saves placement and never
+    // reopens or ends the initial-placement phase. A hidden window stays out of live
+    // peer discovery because that enumeration skips invisible windows.
+    if (!IsVisible())
+    {
+        return S_OK;
+    }
+
+    // Capture while the window still has its on-screen geometry, so a later save or
+    // TryGetPlacement reports the placement the window was hidden from.
+    CaptureEffectivePlacement();
+
+    ::ShowWindow(m_hwnd.get(), SW_HIDE);
+
+    return S_OK;
 }
 
 _Check_return_ HRESULT DesktopWindowImpl::MoveWindowImpl(_In_ INT x, _In_ INT y, _In_ INT width, _In_ INT height)
@@ -1216,6 +1737,45 @@ LRESULT DesktopWindowImpl::OnMessage(
     WPARAM wParam,
     LPARAM lParam) noexcept
 {
+    if (uMsg == WM_DESTROY)
+    {
+        RemovePlacementPeerMarker();
+        if (m_placementCoordinator) m_placementCoordinator->OnDestroy();
+    }
+    else if (uMsg == WM_ENDSESSION && wParam != FALSE && m_placementCoordinator)
+    {
+        m_placementCoordinator->OnSessionEnd();
+    }
+    else if (uMsg != 0 && uMsg == GetVirtualDesktopRefreshMessage())
+    {
+        m_virtualDesktopRefreshPending = false;
+
+        // Only an enrolled window can save, and the id is only ever read back out of a saved
+        // record, so an app that never persists placement pays nothing for this message
+        // beyond the post itself.
+        const bool hasEnrollment =
+            m_placementCoordinator && m_placementCoordinator->HasEnrollment();
+        if (!WindowPlacementPersistence::ShouldRunVirtualDesktopRefresh(m_bIsClosed, hasEnrollment))
+        {
+            return 0;
+        }
+
+        // Safe point for the shell query: a posted message, outside any display call and
+        // outside any input-synchronous message. A failure or a stale token just leaves the
+        // cached placement without a virtual desktop id.
+        if (m_placementCache.LifetimeToken() == 0)
+        {
+            // Nothing has captured yet, so bind the cache first. Otherwise there is no
+            // live token for the result to attach to.
+            CaptureEffectivePlacement();
+        }
+        WindowPlacementPersistence::TryRefreshVirtualDesktopId(
+            m_placementCache,
+            m_hwnd.get(),
+            WindowPlacementPersistence::TryQueryVirtualDesktopId);
+        return 0;
+    }
+
     // When DispatcherShutdownMode is OnLastWindowClose, exit FrameworkApplication::ProcessMessage when the last WinUI
     // Desktop Window is destroyed.
     auto dxamlCore = DirectUI::DXamlCore::GetCurrent();
@@ -1240,6 +1800,7 @@ LRESULT DesktopWindowImpl::OnMessage(
                 // This message means an end-user drag just finished, so the window is now at its final size.
                 // Capture it immediately.
                 UpdateLastRestoredClientSize();
+                CaptureEffectivePlacement();
                 break;
         }
     }
@@ -1248,6 +1809,20 @@ LRESULT DesktopWindowImpl::OnMessage(
     {
         case WM_DPICHANGED:
             return OnDpiChanged(wParam, lParam);
+        case WM_SHOWWINDOW:
+            // A native or AppWindow display bypasses the framework placement pipeline and
+            // ends the initial-placement phase. lParam is zero only for an explicit
+            // ShowWindow call, which is the display we care about. The coordinator ignores
+            // this while it is driving a display itself.
+            if (wParam && lParam == 0 && m_placementCoordinator)
+            {
+                m_placementCoordinator->NotifyNativeDisplayed();
+                UpdatePlacementPeerMarker();
+                // WM_SHOWWINDOW arrives before the window reports itself visible, so tell
+                // the scheduler that a display is happening rather than asking.
+                ScheduleVirtualDesktopIdRefresh(true);
+            }
+            break;
         case WM_CLOSE:
             return LResultFromHResult(OnClosed());
         case WM_MOVE:
@@ -1544,27 +2119,31 @@ _Check_return_ HRESULT DesktopWindowImpl::OnSizeChanged(
     // Only SIZE_RESTORED represents the window in its restored geometry - maximize/minimize (and the
     // owner-driven SIZE_MAXSHOW/SIZE_MAXHIDE) don't, and UpdateLastRestoredClientSize would ignore them
     // anyway (it re-checks IsInOverlappedRestoredState), so there's no point scheduling a no-op there.
-    if (AreNewWindowingApisEnabled() && wParam == SIZE_RESTORED && m_hwnd && !m_inSizeMove)
-    {
-        ScheduleUpdateLastRestoredClientSize();
-    }
+    ScheduleWindowStateUpdate(
+        AreNewWindowingApisEnabled() && wParam == SIZE_RESTORED && m_hwnd && !m_inSizeMove);
 
     return S_OK;
 }
 
-void DesktopWindowImpl::ScheduleUpdateLastRestoredClientSize()
+void DesktopWindowImpl::ScheduleWindowStateUpdate(bool updateRestoredSize) noexcept
 {
-    ASSERT(AreNewWindowingApisEnabled());
-
-    // Coalesce the burst of WM_SIZE messages a drag produces into a single deferred re-evaluation.
-    if (m_restoredSizeUpdateScheduled || !m_dxamlCoreNoRef)
+    if (m_bIsClosed || !m_hwnd || (m_isWindowAlive && !*m_isWindowAlive))
     {
         return;
     }
 
-    msy::IDispatcherQueue* dispatcherQueue = m_dxamlCoreNoRef->GetDispatcherQueueNoRef();
+    m_restoredSizeUpdateScheduled |= updateRestoredSize;
+    if (m_windowStateUpdateScheduled)
+    {
+        return;
+    }
+
+    msy::IDispatcherQueue* dispatcherQueue =
+        m_dxamlCoreNoRef ? m_dxamlCoreNoRef->GetDispatcherQueueNoRef() : nullptr;
     if (!dispatcherQueue)
     {
+        CaptureEffectivePlacement();
+        if (m_restoredSizeUpdateScheduled) UpdateLastRestoredClientSize();
         return;
     }
 
@@ -1582,15 +2161,24 @@ void DesktopWindowImpl::ScheduleUpdateLastRestoredClientSize()
     {
         if (*alive)
         {
-            UpdateLastRestoredClientSize();
+            m_windowStateUpdateScheduled = false;
+            CaptureEffectivePlacement();
+            if (m_restoredSizeUpdateScheduled) UpdateLastRestoredClientSize();
         }
         return S_OK;
     });
 
     boolean enqueued = false;
-    if (SUCCEEDED(dispatcherQueue->TryEnqueue(callback.Get(), &enqueued)) && enqueued)
+    const HRESULT enqueueResult = dispatcherQueue->TryEnqueue(callback.Get(), &enqueued);
+    if (SUCCEEDED(enqueueResult) && enqueued)
     {
-        m_restoredSizeUpdateScheduled = true;
+        m_windowStateUpdateScheduled = true;
+    }
+    else
+    {
+        TRACE_HR_NORETURN(FAILED(enqueueResult) ? enqueueResult : RO_E_CLOSED);
+        CaptureEffectivePlacement();
+        if (m_restoredSizeUpdateScheduled) UpdateLastRestoredClientSize();
     }
 }
 
@@ -1623,6 +2211,10 @@ void DesktopWindowImpl::UpdateLastRestoredClientSize()
 _Check_return_ HRESULT DesktopWindowImpl::OnMoved(WPARAM wParam, LPARAM lParam)
 {
     RepositionWindowToDesktopWindowXamlSourceWindowDimensions(wParam, lParam);
+
+    // A hidden window can still move. Share the deferred capture with WM_SIZE.
+    ScheduleWindowStateUpdate(false);
+
     return S_OK;
 }
 
@@ -1632,6 +2224,18 @@ _Check_return_ HRESULT DesktopWindowImpl::OnClosed()
     IFC_RETURN(CloseImpl());
 
     return S_OK;
+}
+
+void DesktopWindowImpl::CaptureEffectivePlacement() noexcept
+{
+    if (m_bIsClosed || !m_hwnd) return;
+
+    // A full-screen or compact-overlay window has no overlapped geometry to capture, so
+    // the cache keeps its last valid overlapped snapshot.
+    const auto presenter = WindowPlacementPersistence::ResolvePresenterKind(
+        AreNewWindowingApisEnabled(), [this]() { return AppWindowPresenterSupportsSizing(); });
+
+    m_placementCache.TryCapture(m_hwnd.get(), presenter);
 }
 
 _Check_return_ HRESULT DesktopWindowImpl::RestoreFocus(_Outptr_ xaml_hosting::IXamlSourceFocusNavigationResult** result)
@@ -1758,11 +2362,17 @@ _Check_return_ HRESULT DesktopWindowImpl::get_WindowHandle(_Out_ HWND* pValue)
 
 void DesktopWindowImpl::Shutdown()
 {
-    // Disarm any deferred restored-size re-evaluation that may still be queued on the dispatcher: once
-    // the window is torn down the callback must not touch this (soon to be destroyed) object. Feature
-    // code, so contained by AreNewWindowingApisEnabled; the sentinel is also only allocated once a
-    // callback has been scheduled, so it may still be null even when enabled.
-    if (AreNewWindowingApisEnabled() && m_isWindowAlive)
+    // Attempt backstop save if normal close didn't already save
+    if (m_placementCoordinator)
+    {
+        m_placementCoordinator->OnDestroy();
+    }
+
+    // WM_CLOSE can be cancelled. Retire the capture cache only when teardown actually starts.
+    m_placementCache.Detach();
+
+    // A queued state update must not touch this object after teardown, even with the feature off.
+    if (m_isWindowAlive)
     {
         *m_isWindowAlive = false;
     }
