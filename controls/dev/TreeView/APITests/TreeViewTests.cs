@@ -495,6 +495,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyChevronIsNotMirroredInLeftToRight()
+        {
+            VerifyChevronMirroring(FlowDirection.LeftToRight, shouldBeMirrored: false);
+        }
+
+        [TestMethod]
+        public void VerifyChevronIsMirroredInRightToLeft()
+        {
+            VerifyChevronMirroring(FlowDirection.RightToLeft, shouldBeMirrored: true);
+        }
+
+        private void VerifyChevronMirroring(FlowDirection flowDirection, bool shouldBeMirrored)
+        {
+            TreeView treeView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                treeView = new TreeView() { Width = 400, Height = 400, FlowDirection = flowDirection };
+                var node = new TreeViewNode() { Content = "Node1" };
+                node.Children.Add(new TreeViewNode() { Content = "Node1.1" });
+                treeView.RootNodes.Add(node);
+
+                Content = treeView;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var collapsedGlyph = VisualTreeUtils.FindVisualChildByName(treeView, "CollapsedGlyph") as FontIcon;
+                Verify.IsNotNull(collapsedGlyph, "CollapsedGlyph needs to be a FontIcon so that it can mirror in RTL");
+                Verify.IsTrue(collapsedGlyph.MirroredWhenRightToLeft, "CollapsedGlyph should opt into RTL mirroring");
+
+                var expandedGlyph = VisualTreeUtils.FindVisualChildByName(treeView, "ExpandedGlyph") as FontIcon;
+                Verify.IsNotNull(expandedGlyph, "ExpandedGlyph needs to be a FontIcon so that it can mirror in RTL");
+                Verify.IsTrue(expandedGlyph.MirroredWhenRightToLeft, "ExpandedGlyph should opt into RTL mirroring");
+                var scaleX = (collapsedGlyph.RenderTransform as ScaleTransform)?.ScaleX ?? 1.0;
+                Verify.AreEqual(shouldBeMirrored ? -1.0 : 1.0, scaleX, "CollapsedGlyph horizontal scale");
+            });
+        }
+
+        [TestMethod]
         public void TreeViewSelectionChangedSingleMode()
         {
             RunOnUIThread.Execute(() =>
@@ -737,7 +780,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var treeview = new TreeView();
 
-                var items = new ObservableCollection<string>() { 
+                var items = new ObservableCollection<string>() {
                     "Item0", "Item1", "Item2"
                 };
 
@@ -820,7 +863,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment($"Verify TreeView.SelectedNodes");
             Verify.AreEqual(expected.Length, treeView.SelectedNodes.Count, "Verify TreeView SelectedNodes count");
-            for(int i=0; i<expected.Length; i++)
+            for (int i = 0; i < expected.Length; i++)
             {
                 var nodeContent = treeView.SelectedNodes[i].Content as TreeViewItemSource;
                 Verify.IsNotNull(nodeContent);
