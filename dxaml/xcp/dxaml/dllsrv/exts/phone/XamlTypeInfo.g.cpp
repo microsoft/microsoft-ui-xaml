@@ -1951,6 +1951,7 @@ XamlRuntimeType::ResetDependencyProperties() const
     ABI::Microsoft::UI::Xaml::Controls::PivotItemFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Automation::Peers::PivotItemAutomationPeerFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Automation::Peers::PivotItemDataAutomationPeerFactory::ClearProperties();
+    ABI::Microsoft::UI::Xaml::Controls::Primitives::PivotPanelFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Media::Animation::SlideNavigationTransitionInfoFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Controls::TimePickedEventArgsFactory::ClearProperties();
     ABI::Microsoft::UI::Xaml::Controls::TimePickerFlyoutFactory::ClearProperties();
@@ -1995,6 +1996,8 @@ XamlRuntimeType::EnsureDependencyProperties(_In_ UINT16 typeLabel) const
             return ABI::Microsoft::UI::Xaml::Controls::Primitives::PivotHeaderItemFactory::EnsureProperties();
         case activate_PivotItem:
             return ABI::Microsoft::UI::Xaml::Controls::PivotItemFactory::EnsureProperties();
+        case activate_PivotPanel:
+            return ABI::Microsoft::UI::Xaml::Controls::Primitives::PivotPanelFactory::EnsureProperties();
         case activate_SlideNavigationTransitionInfo:
             return ABI::Microsoft::UI::Xaml::Media::Animation::SlideNavigationTransitionInfoFactory::EnsureProperties();
         case activate_TimePickerFlyout:
