@@ -185,7 +185,7 @@
   <Thickness x:Key="ToggleSwitchTopHeaderMargin">0,0,0,4</Thickness>
   <x:Double x:Key="ToggleSwitchPreContentMargin">10</x:Double>
   <x:Double x:Key="ToggleSwitchPostContentMargin">10</x:Double>
-  <x:Double x:Key="ToggleSwitchThemeMinWidth">154</x:Double>
+  <x:Double x:Key="ToggleSwitchThemeMinWidth">48</x:Double>
   <Style TargetType="ToggleSwitch" BasedOn="{StaticResource DefaultToggleSwitchStyle}" />
   <Style x:Key="DefaultToggleSwitchStyle" TargetType="ToggleSwitch">
     <Setter Property="Foreground" Value="{ThemeResource ToggleSwitchContentForeground}" />
