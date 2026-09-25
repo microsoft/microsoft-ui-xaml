@@ -97,6 +97,7 @@
                 <muxc:NavigationViewItemSeparator/>
                 <muxc:NavigationViewItemHeader Content="Rows &amp; cells"/>
                 <muxc:NavigationViewItem Tag="ToolTips" Content="Tooltips"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE897;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="ContextMenus" Content="Context menus"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE700;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="Groups" Content="Grouped rows"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8FD;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="Hierarchy" Content="Hierarchy"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8A9;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="GridLinesVisibility" Content="Grid lines visibility"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xF0E2;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
