@@ -180,8 +180,7 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
         IFC_RETURN(E_FAIL);
     }
 
-    if (policy == AppPolicyWindowingModel_ClassicDesktop ||
-        policy == AppPolicyWindowingModel_Universal)
+    if (policy == AppPolicyWindowingModel_ClassicDesktop)
     {
         if (OptionalChangeState::IsGamepadKeyRoutingEnabled())
         {
@@ -189,10 +188,7 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
             // keyboard navigation responds to a gamepad the way it did in System XAML.
             VERIFYHR(EnableGamepadKeyRouting());
         }
-    }
 
-    if (policy == AppPolicyWindowingModel_ClassicDesktop)
-    {
         return FrameworkApplication::StartDesktop();
     }
     else if (policy == AppPolicyWindowingModel_Universal)

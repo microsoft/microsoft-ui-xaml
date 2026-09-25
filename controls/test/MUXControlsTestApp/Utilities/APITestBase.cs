@@ -178,6 +178,16 @@ namespace MUXControlsTestApp.Utilities
 
                         Verify.AreNotEqual(changeId, XamlChangeId._Reserved, "Unknown XamlChangeId: " + name);
 
+                        if (changeId == XamlChangeId.GamepadKeyRouting && !enabled)
+                        {
+                            // Gamepad key routing is applied to the process by Application.Start(), which has
+                            // already run by the time test setup reads this property. Clearing the optional
+                            // change here only updates the bit, leaving the process still routing gamepad input
+                            // as keys, so the test would silently run against the wrong configuration.
+                            Verify.Fail("XamlOptionalChanges test override cannot disable GamepadKeyRouting: the " +
+                                "process-wide routing setting is already applied by Application.Start().");
+                        }
+
                         xamlOptionalChanges.Add(changeId, enabled);
                         pos = sepPos + 1;
                     }
