@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "TableView.g.h"
+#include "TableViewContextMenu.h"
 #include "TableView.properties.h"
 #include "TableViewRowInfo.h"
 #include "TableViewTip.h"
@@ -417,6 +418,10 @@ public:
         winrt::UIElement const& element,
         int32_t visibleColumnIndex,
         winrt::FocusState focusState = winrt::FocusState::Keyboard);
+
+    TableViewDetails::ContextMenuResult ProcessContextMenuRequest(
+        TableViewDetails::ContextMenuTarget target,
+        winrt::ContextRequestedEventArgs const& args);
 
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 
@@ -1151,6 +1156,7 @@ private:
     tracker_ref<winrt::FrameworkElement> m_headerRow{ this };
     tracker_ref<winrt::Panel> m_headerHost{ this };
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
+    winrt::UIElement::ContextRequested_revoker m_headerContextRequestedRevoker{};
     // Keeps the header band locked to the body when focus moves to an off-screen header.
     winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
     winrt::UIElement::BringIntoViewRequested_revoker m_bodyBringIntoViewRevoker{};
@@ -1311,6 +1317,17 @@ private:
     // The source whose owner refused this table, which waits to be offered it on release.
     winrt::weak_ref<winrt::TableViewSource> m_awaitedSource{ nullptr };
     void StopAwaitingSource();
+
+    bool IsContextMenuTargetCurrent(TableViewDetails::ContextMenuTarget const& target) const;
+    winrt::FlyoutBase ResolveContextFlyout(TableViewDetails::ContextMenuTarget const& target);
+    winrt::TableViewContextFlyoutRequestedEventArgs RaiseContextFlyoutRequested(
+        TableViewDetails::ContextMenuTarget const& target,
+        winrt::FlyoutBase const& resolvedFlyout);
+    void ShowContextFlyout(
+        TableViewDetails::ContextMenuTarget const& target,
+        winrt::FlyoutBase const& flyout,
+        winrt::ContextRequestedEventArgs const& args);
+    bool m_isProcessingContextMenu{ false };
 
     double ComputeLeadingFrozenWidth();
     void RefreshFrozenColumns();
