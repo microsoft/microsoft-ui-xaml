@@ -140,6 +140,8 @@
     <ClInclude Include="graphics\rendering\VSISTests.h" />
     <ClInclude Include="graphics\SwapChain\SCPTestHelper.h" />
     <ClInclude Include="graphics\SwapChain\SwapChainPanelTests.h" />
+    <ClInclude Include="hosting\WindowDisplayApiHostTests.h" />
+    <ClInclude Include="hosting\WindowPlacementAbiTests.h" />
     <ClInclude Include="hosting\XamlIslandTests.h" />
     <ClInclude Include="input\AccessKeys\AccessKeyIntegrationTests.h" />
     <ClInclude Include="input\AccessKeys\AccessKeyTestHelper.h" />
@@ -282,6 +284,8 @@
     <ClCompile Include="graphics\rendering\FontFamilyModelTests.cpp" />
     <ClCompile Include="graphics\SwapChain\SwapChainPanelTests.cpp" />
     <ClCompile Include="graphics\SwapChain\SCPTestHelper.cpp" />
+    <ClCompile Include="hosting\WindowDisplayApiHostTests.cpp" />
+    <ClCompile Include="hosting\WindowPlacementAbiTests.cpp" />
     <ClCompile Include="hosting\XamlIslandTests.cpp" />
     <ClCompile Include="hosting\WindowlessXamlIslandTests.cpp" />
     <ClCompile Include="input\AccessKeys\BasicAccessKeysTests.cpp" />

@@ -42,8 +42,8 @@ namespace Microsoft.UI.Xaml.Tests.Common
         [TestProperty("CoreClrProfile", "localDotNet")]
         [TestProperty("ThreadingModel[@HostingMode='WPF']", "STA")]
         [TestProperty("UAP:Host[@HostingMode='WPF']", "PackagedCwa")]
-        [TestProperty("UAP:AppXManifest[@HostingMode='WPF']", AppxManifests.WINDOWS_VERSION_CURRENT_CENTENNIAL)]
-        [TestProperty("UAP:AppXManifest[default]", AppxManifests.WINDOWS_VERSION_CURRENT)]
+        [TestProperty("UAP:AppXManifest[@HostingMode='WPF' and not(@PreservePackageRegistration='true')]", AppxManifests.WINDOWS_VERSION_CURRENT_CENTENNIAL)]
+        [TestProperty("UAP:AppXManifest[not(@HostingMode='WPF') and not(@PreservePackageRegistration='true')]", AppxManifests.WINDOWS_VERSION_CURRENT)]
         [TestProperty("UAP:WaitForXamlWindowActivation", "false")]
         [DeploymentItem(@"..\EtwProcessor.dll")]
         [TestProperty("Hosting:Mode", "WPF")] // TODO: Enable MUX Managed tests in UWP mode once .net5 is supported there.
