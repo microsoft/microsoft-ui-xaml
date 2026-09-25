@@ -205,7 +205,7 @@
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Fill">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceSelectionIndicatorDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Opacity">
                                             <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />

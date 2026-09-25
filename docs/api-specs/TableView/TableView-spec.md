@@ -178,8 +178,9 @@ foreground brush. Cell content inherits that foreground unless its template supp
 Override the named `TabularSurface*` brush keys to customize colors. Low-level Fluent color-token
 overrides no longer flow through the removed default-style brush fallbacks.
 
-In Light and Dark themes, the disabled-selected indicator now uses the disabled foreground brush
-instead of the accent brush; in High Contrast, it uses `SystemColorGrayTextColor`.
+Override `TabularSurfaceSelectionIndicatorDisabledBrush` and `TabularSurfaceRowForegroundDisabledBrush`
+independently to customize the disabled-selected indicator and disabled row text.
+By default, the disabled-selected indicator uses disabled-text colors rather than the accent color.
 
 ### Frozen (pinned) leading columns
 
