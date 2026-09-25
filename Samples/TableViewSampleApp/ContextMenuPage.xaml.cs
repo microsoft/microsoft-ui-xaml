@@ -24,16 +24,12 @@ public sealed partial class ContextMenuPage : Page
     private object? _requestedItem;
     private string _lastRequest = "none";
     private string _lastOpen = "none";
+    private string _apiDefaults = "UNKNOWN";
 
     public ContextMenuPage()
     {
         InitializeComponent();
-        System.Diagnostics.Debug.Assert(_name.CellContextFlyout is null);
-        System.Diagnostics.Debug.Assert(_name.HeaderContextFlyout is null);
-        System.Diagnostics.Debug.Assert(Table.RowContextFlyout is null);
-        System.Diagnostics.Debug.Assert(TableViewColumn.CellContextFlyoutProperty is not null);
-        System.Diagnostics.Debug.Assert(TableViewColumn.HeaderContextFlyoutProperty is not null);
-        System.Diagnostics.Debug.Assert(TableView.RowContextFlyoutProperty is not null);
+        VerifyApiDefaults();
         _name.Binding = new Binding
         {
             Path = new PropertyPath(nameof(Item.Name)),
@@ -80,6 +76,44 @@ public sealed partial class ContextMenuPage : Page
             Report();
         };
         return menu;
+    }
+
+    private void VerifyApiDefaults()
+    {
+        List<string> failures = new();
+        if (_name.CellContextFlyout is not null)
+        {
+            failures.Add("Name.Cell!=null");
+        }
+
+        if (_name.HeaderContextFlyout is not null)
+        {
+            failures.Add("Name.Header!=null");
+        }
+
+        if (Table.RowContextFlyout is not null)
+        {
+            failures.Add("Table.Row!=null");
+        }
+
+        if (TableViewColumn.CellContextFlyoutProperty is null)
+        {
+            failures.Add("CellDP=null");
+        }
+
+        if (TableViewColumn.HeaderContextFlyoutProperty is null)
+        {
+            failures.Add("HeaderDP=null");
+        }
+
+        if (TableView.RowContextFlyoutProperty is null)
+        {
+            failures.Add("RowDP=null");
+        }
+
+        _apiDefaults = failures.Count == 0
+            ? "PASS"
+            : "FAIL:" + string.Join(",", failures);
     }
 
     private void Reset()
@@ -153,7 +187,7 @@ public sealed partial class ContextMenuPage : Page
     }
 
     private void Report() =>
-        Status.Text = $"requests={_requests}; opens={_opens}; selected={Table.SelectedIndex}; " +
+        Status.Text = $"defaults={_apiDefaults}; requests={_requests}; opens={_opens}; selected={Table.SelectedIndex}; " +
             $"request=[{_lastRequest}]; open=[{_lastOpen}]";
 
     private void OnSelectionMode(object sender, RoutedEventArgs e) =>
