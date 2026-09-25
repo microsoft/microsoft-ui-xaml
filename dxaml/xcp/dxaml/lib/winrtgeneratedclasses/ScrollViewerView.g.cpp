@@ -97,36 +97,11 @@ Cleanup:
 
 // Methods.
 
-HRESULT DirectUI::ScrollViewerViewFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
-{
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollViewerViewFactory)))
-    {
-        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IScrollViewerViewFactory*>(this);
-    }
-    else
-    {
-        RRETURN(ctl::AggregableActivationFactory<DirectUI::ScrollViewerView>::QueryInterfaceImpl(iid, ppObject));
-    }
-
-    AddRefOuter();
-    RRETURN(S_OK);
-}
-
-
-// Factory methods.
-
-// Dependency properties.
-
-// Attached properties.
-
-// Static properties.
-
-// Static methods.
 
 namespace DirectUI
 {
     _Check_return_ IActivationFactory* CreateActivationFactory_ScrollViewerView()
     {
-        RRETURN(ctl::ActivationFactoryCreator<ScrollViewerViewFactory>::CreateActivationFactory());
+        RRETURN(ctl::ActivationFactoryCreator<ctl::AbstractActivationFactory>::CreateActivationFactory());
     }
 }

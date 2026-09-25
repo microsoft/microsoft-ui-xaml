@@ -789,7 +789,7 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    unsealed runtimeclass ScrollViewerView
+    runtimeclass ScrollViewerView
     {
         Double HorizontalOffset{ get; };
         Double VerticalOffset{ get; };
