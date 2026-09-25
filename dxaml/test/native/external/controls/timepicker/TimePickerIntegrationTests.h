@@ -94,6 +94,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verify that the TimePicker's Automation Name is empty when no time is selected")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateFlyoutButtonCarriesParentNameForVoiceAccess)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify the inner FlyoutButton keeps the TimePicker's label (for Voice Access) while the group peer is removed from the Control/Content views to avoid the duplicate Narrator announcement (GitHub issue #8296)")
+        END_TEST_METHOD()
+
     private:
         Microsoft::UI::Xaml::Controls::Grid^ CreateRootGrid();
         Microsoft::UI::Xaml::Controls::TimePicker^ SetupTimePickerTest();
