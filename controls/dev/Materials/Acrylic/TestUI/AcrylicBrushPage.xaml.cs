@@ -98,6 +98,14 @@ namespace MUXControlsTestApp
             _acrylicBrush.AlwaysUseFallback = false;
         }
 
+        private void IsNoiseEnabledButton_IsCheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (_acrylicBrush != null)
+            {
+                _acrylicBrush.IsNoiseEnabled = IsNoiseEnabledButton.IsChecked == true;
+            }
+        }
+
         private void TintOpacity_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
         {
             if (_acrylicBrush != null)

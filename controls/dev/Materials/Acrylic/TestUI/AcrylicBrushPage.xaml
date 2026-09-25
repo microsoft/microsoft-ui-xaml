@@ -78,6 +78,7 @@
                     <ToggleButton x:Name="TintColorButton" Content="TintColor Chooser" Checked="TintColorButton_Checked" Unchecked="TintColorButton_Unchecked"/>
                     <ToggleButton x:Name="FallbackColorButton" Content="FallbackColor [-> Orange]" Checked="FallbackColorButton_Checked" Unchecked="FallbackColorButton_Unchecked"/>
                     <ToggleButton x:Name="AlwaysUseFallbackButton" Content="AlwaysUseFallback [-> True]" Checked="AlwaysUseFallbackButton_Checked" Unchecked="AlwaysUseFallbackButton_Unchecked"/>
+                    <ToggleButton x:Name="IsNoiseEnabledButton" IsChecked="True" Content="IsNoiseEnabled" Checked="IsNoiseEnabledButton_IsCheckedChanged" Unchecked="IsNoiseEnabledButton_IsCheckedChanged"/>
                     <ToggleButton x:Name="AnimateBackgroundButton" Content="Animate Background" Checked="AnimateBackgroundButton_Checked" Unchecked="AnimateBackgroundButton_Unchecked"/>
 
                 <StackPanel Orientation="Vertical">
