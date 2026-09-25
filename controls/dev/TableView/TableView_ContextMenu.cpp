@@ -70,6 +70,77 @@ bool TableView::IsContextMenuTargetCurrent(
         TableViewCellsPanel::CellForColumn(target.ScopeRoot, target.Column) == target.Anchor;
 }
 
+std::optional<TableViewDetails::ContextMenuTarget> TableView::ResolveHeaderContextMenuTarget(
+    winrt::ContextRequestedEventArgs const& args)
+{
+    auto const host = m_headerHost.get();
+    if (!host)
+    {
+        return std::nullopt;
+    }
+
+    auto node = args.OriginalSource().try_as<winrt::DependencyObject>();
+    while (node && node != host)
+    {
+        if (node.try_as<winrt::TableView>() || node.try_as<winrt::TableViewRow>())
+        {
+            return std::nullopt;
+        }
+
+        auto const parent = winrt::VisualTreeHelper::GetParent(node);
+        if (parent == host)
+        {
+            auto const cell = node.try_as<winrt::Grid>();
+            if (!cell)
+            {
+                return std::nullopt;
+            }
+
+            auto const column = cell.Tag().try_as<winrt::TableViewColumn>();
+            if (!column)
+            {
+                return std::nullopt;
+            }
+
+            TableViewDetails::ContextMenuTarget target;
+            target.Kind = TableViewDetails::ContextMenuTargetKind::Header;
+            target.Column = column;
+            target.Anchor = cell;
+            target.ScopeRoot = host;
+            if (!IsContextMenuTargetCurrent(target))
+            {
+                return std::nullopt;
+            }
+
+            return target;
+        }
+
+        node = parent;
+    }
+
+    return std::nullopt;
+}
+
+void TableView::OnHeaderContextRequested(winrt::ContextRequestedEventArgs const& args)
+{
+    if (args.Handled())
+    {
+        return;
+    }
+
+    auto target = ResolveHeaderContextMenuTarget(args);
+    if (!target)
+    {
+        return;
+    }
+
+    auto const result = ProcessContextMenuRequest(*target, args);
+    if (result != TableViewDetails::ContextMenuResult::Unhandled)
+    {
+        args.Handled(true);
+    }
+}
+
 winrt::FlyoutBase TableView::ResolveContextFlyout(
     TableViewDetails::ContextMenuTarget const& target)
 {
