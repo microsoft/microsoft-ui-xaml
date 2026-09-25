@@ -106,6 +106,22 @@
     <value>button</value>
     <comment>Localized UIA control-type name for InkToolbar tool buttons; Narrator reads this instead of "custom". UWP IDS_INKTOOLBAR_TOOL_BUTTON_CONTROLTYPE_NAME.</comment>
   </data>
+  <data name="InkToolbarDropDownButtonControlTypeName" xml:space="preserve">
+    <value>drop down button</value>
+    <comment>Accessible control type for built-in pen buttons with a flyout. UI Automation reports the expanded or collapsed state separately.</comment>
+  </data>
+  <data name="InkToolbarStencilDropDownControlTypeName" xml:space="preserve">
+    <value>dropdown</value>
+    <comment>Concise accessible control type for the measuring-tools dropdown. UI Automation reports the expanded or collapsed state separately.</comment>
+  </data>
+  <data name="InkToolbarStencilButtonName" xml:space="preserve">
+    <value>Measuring tools</value>
+    <comment>Persistent accessible identity of the ruler/protractor dropdown, announced before the selected stencil name.</comment>
+  </data>
+  <data name="InkToolbarColorPaletteHelpText" xml:space="preserve">
+    <value>Open to choose a color from the palette</value>
+    <comment>Accessible help for the ballpoint-pen, pencil and highlighter dropdowns.</comment>
+  </data>
   <data name="InkToolbarStrokeEraserLabel" xml:space="preserve">
     <value>Stroke eraser</value>
     <comment>Display label for the InkToolbar eraser flyout stroke-eraser item. UWP IDS_INKTOOLBAR_ERASERSTROKEERASER.</comment>
