@@ -1319,6 +1319,9 @@ private:
     void StopAwaitingSource();
 
     bool IsContextMenuTargetCurrent(TableViewDetails::ContextMenuTarget const& target) const;
+    void OnHeaderContextRequested(winrt::ContextRequestedEventArgs const& args);
+    std::optional<TableViewDetails::ContextMenuTarget> ResolveHeaderContextMenuTarget(
+        winrt::ContextRequestedEventArgs const& args);
     winrt::FlyoutBase ResolveContextFlyout(TableViewDetails::ContextMenuTarget const& target);
     winrt::TableViewContextFlyoutRequestedEventArgs RaiseContextFlyoutRequested(
         TableViewDetails::ContextMenuTarget const& target,
