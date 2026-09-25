@@ -22,6 +22,11 @@ static constexpr double c_rowExpanderSize{ 24.0 };
 // Mirrors TableView.RowIndentSize's MUX_DEFAULT_VALUE. Used only when there is no owner to ask.
 static constexpr double c_defaultRowIndentSize{ 16.0 };
 
+// Where a group header's own content starts: PART_ExpanderGutter's width plus its Grid's
+// ColumnSpacing in the group-header template. A root row under a header is a child of that header,
+// so it starts where the header's text does instead of hanging off its left edge.
+static constexpr double c_groupHeaderContentOffset{ 24.0 + 6.0 };
+
 namespace
 {
     constexpr winrt::Thickness s_verticalThickness{ 0, 0, 1, 0 };
@@ -519,21 +524,16 @@ void TableViewRow::SetIsSelectedInternal(bool isSelected)
 
 void TableViewRow::SetHierarchyStateInternal(int32_t level, bool isExpandable, bool isExpanded)
 {
-    // Publish through the DPs so an app template (or a peer) can bind to them, but short-circuit
-    // when nothing changed. This runs from ElementPrepared, which is inside the repeater's measure
-    // pass, and the affordance below is layout-affecting: re-applying an equal value there would
-    // re-invalidate layout from within layout on every scroll-recycle.
-    const bool changed =
-        Level() != level || IsExpandable() != isExpandable || IsExpanded() != isExpanded;
-
+    // Publish through the DPs so an app template (or a peer) can bind to them.
     Level(level);
     IsExpandable(isExpandable);
     IsExpanded(isExpanded);
 
-    if (changed)
-    {
-        ApplyHierarchyAffordance();
-    }
+    // Unconditionally, even when the three values are unchanged: the indent also depends on the
+    // owner's RowIndentSize and on whether the source is grouped, either of which can change while
+    // a row keeps the same level. Every write below is already guarded against writing an equal
+    // value, so this re-applies nothing and cannot re-invalidate layout from within layout.
+    ApplyHierarchyAffordance();
 }
 
 // Places the chevron and reserves the matching room in the first cell. Split from
@@ -586,19 +586,29 @@ double TableViewRow::HierarchyIndent()
     }
 
     double indentSize = c_defaultRowIndentSize;
+    double baseIndent = 0.0;
     if (auto const owner = GetOwningTableView())
     {
+        auto const ownerImpl = winrt::get_self<TableView>(owner);
+
         // The cached mirror, never the DP: reading a custom DP here would force the framework to
         // resolve every queued DP registration mid-layout, before other libraries' metadata
         // providers exist.
-        const double ownerIndent = winrt::get_self<TableView>(owner)->RowIndentSizeInternal();
+        const double ownerIndent = ownerImpl->RowIndentSizeInternal();
         if (std::isfinite(ownerIndent) && ownerIndent >= 0.0)
         {
             indentSize = ownerIndent;
         }
+
+        // Only when headers are actually present. An ungrouped tree's roots are top-level rows and
+        // must stay flush against the cell's leading edge.
+        if (ownerImpl->IsTableViewSourceGrouped())
+        {
+            baseIndent = c_groupHeaderContentOffset;
+        }
     }
 
-    return (level - 1) * indentSize;
+    return baseIndent + (level - 1) * indentSize;
 }
 
 // Reserve the chevron's footprint inside the leading cell. Padding on the WRAPPER, not on the
