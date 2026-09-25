@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -53,6 +53,8 @@ public:
     // Re-applies the indent and chevron from the current DP values. Called on template apply and
     // after every cell rebuild, both of which discard the previous pass's layout.
     void ApplyHierarchyAffordance();
+    void ApplyHierarchyIndentToCells();
+    double HierarchyIndent();
 
     // Used by automation peers to enumerate live cells after template application.
     winrt::Panel GetCellsHostPanelInternal() const { return m_cellsHost.get(); }

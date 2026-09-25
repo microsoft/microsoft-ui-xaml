@@ -443,6 +443,20 @@ v1 responds to any child-collection change with a full `Rebuild`. That is what t
 does for inner-group changes today, and it keeps the first version honest; a ranged
 subtree-local update is a later optimization with a real benchmark behind it.
 
+### 4.6 The coherent-edge contract — `ProjectionChanged`
+
+The adapter owns a **triple invariant**: `m_entries` (the projected row vector), the per-node
+descriptors (`IsExpanded` / `ChildCount`), and the path→index metadata must agree. Those three are
+updated in separate statements, so there is a window in which they disagree.
+
+Layer 2 must therefore never listen to `Entries().CollectionChanged`. That event fires from inside
+the mutation, while the descriptors and the metadata may still describe the previous shape, and a
+consumer that reprojects on it observes a torn state. Instead the adapter raises a single
+`ProjectionChanged` callback **after** all three parts are consistent — at the end of `Rebuild` and
+at each successful splice — and `ShapedItemsSource` subscribes to that. The ordering rule inside
+the adapter is the other half of the contract: metadata and descriptors are written *before*
+`m_entries` is spliced, so the callback edge is the only moment anyone outside observes.
+
 ---
 
 ## 5. Layer 2 — shaping a hierarchy
@@ -587,6 +601,11 @@ by `TableViewCellsPanel`, not by padding the row:
 
 Editing interaction: the chevron hit-test wins over cell edit-on-click within the gutter only;
 outside it, existing `OnPointerPressedForEditing` behaviour is unchanged.
+
+`RowIndentSize` is a DP on `TableView`, but rows never read it through the DP. `TableView` caches
+the validated value (finite, non-negative) in a plain `double` and rows read the cache during
+layout: an indent read happens per row per measure pass, and a DP get on that path is both slower
+and a needless dependency on framework metadata resolution during the very first layout.
 
 ### 7.3 Toggle plumbing
 

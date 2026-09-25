@@ -103,8 +103,20 @@ void HierarchicalSourceAdapter::ShapeSiblings(ShapingHelpers::ShapeSiblingsFn fn
     Rebuild();
 }
 
-// --- Path identity ------------------------------------------------------------------------------
+void HierarchicalSourceAdapter::ProjectionChanged(std::function<void()> fn){
+    m_projectionChanged = std::move(fn);
+}
 
+void HierarchicalSourceAdapter::RaiseProjectionChanged(){
+    // Copied before invoking: the handler is free to re-declare the hierarchy (which reassigns
+    // m_projectionChanged) and must not destroy the std::function it is running inside.
+    if (auto const handler = m_projectionChanged)
+    {
+        handler();
+    }
+}
+
+// --- Path identity ------------------------------------------------------------------------------
 winrt::hstring HierarchicalSourceAdapter::ObjectIdentity(winrt::IInspectable const& item)
 {
     // COM identity: the IUnknown obtained by QI is the canonical per-object pointer, so two
@@ -137,6 +149,17 @@ winrt::hstring HierarchicalSourceAdapter::ObjectIdentity(winrt::IInspectable con
 winrt::hstring HierarchicalSourceAdapter::MakePathKey(winrt::hstring const& parentPath, winrt::IInspectable const& item)
 {
     return parentPath + L"/" + ObjectIdentity(item);
+}
+
+bool HierarchicalSourceAdapter::IsNodePathKey(winrt::hstring const& key)
+{
+    const std::wstring_view view{ key.c_str(), key.size() };
+
+    // "node:" alone is the ROOT SIBLING SET's parent path, never a row, so a real node key is
+    // strictly longer and carries at least one separator.
+    return view.size() > c_nodeKeyPrefix.size() + 1 &&
+        view.compare(0, c_nodeKeyPrefix.size(), c_nodeKeyPrefix) == 0 &&
+        view[c_nodeKeyPrefix.size()] == L'/';
 }
 
 winrt::hstring HierarchicalSourceAdapter::ParentPathOf(winrt::hstring const& pathKey)
@@ -247,6 +270,9 @@ void HierarchicalSourceAdapter::Rebuild()
 
         // resetGuard runs here, publishing into runPending whether a re-entrant request arrived.
     } while (runPending);
+
+    // One coherent edge for the whole rebuild, after the last iteration has published.
+    RaiseProjectionChanged();
 }
 
 void HierarchicalSourceAdapter::Emit(
@@ -556,8 +582,11 @@ bool HierarchicalSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& pa
         // inside a subtree the user just collapsed.
         UnsubscribeUnder(pathKey);
 
-        RemoveRows(index + 1, runEnd - (index + 1));
+        // Descriptor first: RemoveRows raises the vector notification, and the node's own row must
+        // already read "collapsed" by the time anyone reacts to it.
         m_descriptors[static_cast<size_t>(index)].IsExpanded = false;
+        RemoveRows(index + 1, runEnd - (index + 1));
+        RaiseProjectionChanged();
         return true;
     }
 
@@ -643,11 +672,16 @@ bool HierarchicalSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& pa
         }
     }
 
-    InsertRows(index + 1, built, descriptors);
+    // The node's own descriptor is updated BEFORE the insertion, for the same reason the collapse
+    // path does it: InsertRows raises the vector notification, and a consumer reacting to it must
+    // see the parent already reading "expanded" with its resolved child count.
+    {
+        auto& refreshed = m_descriptors[static_cast<size_t>(index)];
+        refreshed.IsExpanded = true;
+        refreshed.ChildCount = static_cast<int32_t>(children.size());
+    }
 
-    auto& refreshed = m_descriptors[static_cast<size_t>(index)];
-    refreshed.IsExpanded = true;
-    refreshed.ChildCount = static_cast<int32_t>(children.size());
+    InsertRows(index + 1, built, descriptors);
 
     // The run is in. Adopt the subscriptions the walk accumulated, including this node's own.
     SubscribeToNode(pathKey, childrenCollection, m_nodeSubscriptions);
@@ -655,6 +689,7 @@ bool HierarchicalSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& pa
         m_nodeSubscriptions.end(),
         std::make_move_iterator(subscriptions.begin()),
         std::make_move_iterator(subscriptions.end()));
+    RaiseProjectionChanged();
     return true;
 }
 
@@ -673,12 +708,9 @@ void HierarchicalSourceAdapter::InsertRows(
 
     const int32_t count = static_cast<int32_t>(items.size());
 
-    uint32_t insertAt = static_cast<uint32_t>(index);
-    for (auto const& item : items)
-    {
-        m_entries.InsertAt(insertAt++, item);
-    }
-
+    // Metadata FIRST, rows last. m_entries.InsertAt raises CollectionChanged synchronously, so any
+    // consumer that reacts to it must find the descriptor side-table and the index map already
+    // agreeing with the rows it is being told about. The reverse order publishes a torn triple.
     m_descriptors.insert(m_descriptors.begin() + index, descriptors.begin(), descriptors.end());
 
     // Shift every tracked index at or after the insertion point. O(visible rows) in integer
@@ -697,6 +729,12 @@ void HierarchicalSourceAdapter::InsertRows(
     {
         m_indexByPathKey[descriptors[static_cast<size_t>(i)].PathKey] = index + i;
     }
+
+    uint32_t insertAt = static_cast<uint32_t>(index);
+    for (auto const& item : items)
+    {
+        m_entries.InsertAt(insertAt++, item);
+    }
 }
 
 void HierarchicalSourceAdapter::RemoveRows(int32_t index, int32_t count)
@@ -706,6 +744,7 @@ void HierarchicalSourceAdapter::RemoveRows(int32_t index, int32_t count)
         return;
     }
 
+    // Metadata first, for the same reason InsertRows does it.
     for (int32_t i = 0; i < count; ++i)
     {
         m_indexByPathKey.erase(m_descriptors[static_cast<size_t>(index + i)].PathKey);
@@ -713,17 +752,17 @@ void HierarchicalSourceAdapter::RemoveRows(int32_t index, int32_t count)
 
     m_descriptors.erase(m_descriptors.begin() + index, m_descriptors.begin() + index + count);
 
-    for (int32_t i = 0; i < count; ++i)
-    {
-        m_entries.RemoveAt(static_cast<uint32_t>(index));
-    }
-
     for (auto& entry : m_indexByPathKey)
     {
         if (entry.second >= index)
         {
             entry.second -= count;
         }
+    }
+
+    for (int32_t i = 0; i < count; ++i)
+    {
+        m_entries.RemoveAt(static_cast<uint32_t>(index));
     }
 }
 

@@ -461,7 +461,10 @@ bool RowMetadataProvider::IsNodeExpansionKey(winrt::hstring const& key) const
         return false;
     }
 
-    return !IsGroupExpansionKey(key);
+    // Positive prefix test. "Not a group key" would let a stale or foreign identity become node
+    // expansion intent under a path the adapter never minted -- intent that PruneExpansionIntent
+    // cannot prove dead, so it would survive every rebuild.
+    return HierarchicalSourceAdapter::IsNodePathKey(key);
 }
 
 bool RowMetadataProvider::SetNodeExpandedCore(winrt::hstring const& pathKey, std::optional<bool> desired)

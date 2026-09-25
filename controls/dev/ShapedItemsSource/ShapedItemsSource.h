@@ -245,8 +245,13 @@ private:
     // and read by ResliceGroupsFromHierarchy, which runs later and off a notification.
     std::unordered_map<void*, size_t> m_rootBucketIndex;
     std::vector<winrt::com_ptr<ShapedGroup>> m_hierarchyGroups;
-    winrt::event_token m_hierarchyEntriesChangedToken{};
-    winrt::ItemsSourceView m_hierarchyEntriesForRevocation{ nullptr };
+
+    // Tears down the hierarchical projection: the coherent-edge callback, the adapter's source
+    // attachment (and with it every per-node subscription), and the grouped slices derived from
+    // it. Called by every rebuild path that is NOT hierarchical, because a retained adapter would
+    // keep re-slicing groups -- and holding the app's child collections alive -- for a projection
+    // that is no longer being shown.
+    void ReleaseHierarchyProjection();
     // Guards the re-slice against re-entering itself through the group mutations it performs.
     bool m_reslicingGroups{ false };
     void RebuildUnshapedRows(std::vector<winrt::IInspectable> const& rows, wchar_t const* reason);

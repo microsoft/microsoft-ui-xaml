@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
@@ -76,6 +77,17 @@ public:
     void HasChildrenSelector(ShapingHelpers::HasChildrenFn fn);
     void ShapeSiblings(ShapingHelpers::ShapeSiblingsFn fn);
 
+    // "The published projection changed" -- raised ONCE per coherent publish, after the entries,
+    // the descriptors and the index map all agree again.
+    //
+    // Deliberately not Entries().CollectionChanged. That fires from inside the vector mutation, so
+    // a consumer reacting to it observes the triple invariant mid-repair, and a multi-row splice
+    // fires it once per row. A composer that has to re-derive state from (entry, descriptor) pairs
+    // -- which is exactly what grouping over a hierarchy does -- would read torn state and would
+    // do it N times. This callback is the coherent, coalesced edge for those consumers; the
+    // per-mutation vector notification remains available for consumers that only need the rows.
+    void ProjectionChanged(std::function<void()> fn);
+
     // Per-node expand / collapse intent, addressed by PATH key.
     //
     // A path key rather than the node's own object identity, for two reasons that are not the same
@@ -142,6 +154,15 @@ public:
     // function. Returns null for an item that is not currently visible (collapsed away, filtered
     // out, or simply not part of this tree).
     NodeRow const* TryGetNodeRowForItem(winrt::IInspectable const& item) const;
+
+    // Does this expansion key address a NODE in this adapter's key space?
+    //
+    // Positive test, not "anything that is not a group key". Under a composed grouped+hierarchical
+    // projection both key spaces arrive at the same expand/collapse entry points, and a stale or
+    // foreign key that fell through to the node side would be stored as expansion intent under a
+    // path this adapter never minted -- intent PruneExpansionIntent cannot prove dead, so it would
+    // be retained and re-applied indefinitely.
+    static bool IsNodePathKey(winrt::hstring const& key);
 
 private:
     // One expanded node's subscription to its own children collection. Declared here rather than
@@ -248,6 +269,8 @@ private:
     void InsertRows(int32_t index, std::vector<winrt::IInspectable> const& items, std::vector<NodeRow> const& descriptors);
     void RemoveRows(int32_t index, int32_t count);
 
+    void RaiseProjectionChanged();
+
     // pathKey = "node:" + "/" + id(root) + "/" + ... + "/" + id(node), where id(x) is the canonical
     // IUnknown pointer -- the same primitive flat and grouped rows already use. A root's parent path
     // is the bare prefix "node:", which doubles as the sentinel for "the root sibling set" in
@@ -261,6 +284,9 @@ private:
     ShapingHelpers::ChildrenFn m_childrenSelector{ nullptr };
     ShapingHelpers::HasChildrenFn m_hasChildrenSelector{ nullptr };
     ShapingHelpers::ShapeSiblingsFn m_shapeSiblings{ nullptr };
+
+    // See ProjectionChanged. Held by value; the owner clears it by passing nullptr.
+    std::function<void()> m_projectionChanged{ nullptr };
 
     // THE flat projection: the visible rows, as raw app items. Materialized in full on every
     // Rebuild via a single ReplaceAll; a single-node toggle splices one contiguous run in place.

@@ -1049,6 +1049,8 @@ void ShapedItemsSource::RebuildUnshapedRows(std::vector<winrt::IInspectable> con
     // A grouped/degraded projection does not use the flat incremental fast-path.
     ClearFlatRowIdentityTracking();
 
+    ReleaseHierarchyProjection();
+
     if (m_groupSource)
     {
         // Detach the adapter BEFORE clearing the internal group source. Otherwise Clear() fires
@@ -1199,6 +1201,8 @@ void ShapedItemsSource::RebuildFlat(std::vector<winrt::IInspectable>& rows)
     // duplicate/empty identities and locate sorted removes without O(n) WinRT IndexOf scans.
     RebuildFlatRowIdentityTracking(rows);
 
+    ReleaseHierarchyProjection();
+
     // Releasing any prior grouped projection: switching grouped->flat must not retain the stale
     // group observable/cache. They are rebuilt from scratch by RebuildGrouped on the next GroupBy,
     // so holding them here only leaks the previous grouping (and its cached ShapedGroups).
@@ -1231,6 +1235,9 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     InvalidateShapingState();
     // A grouped projection does not use the flat incremental fast-path.
     ClearFlatRowIdentityTracking();
+    // Plain grouping: no hierarchy axis, so any adapter a previous grouped+hierarchical projection
+    // left behind must go before the group slices are rebuilt from the flat rows.
+    ReleaseHierarchyProjection();
     // Sorts requested before GroupBy establish the group order. Sorts requested after GroupBy
     // are applied per bucket below, preserving the group order while sorting within each group.
     ApplySort(rows, -1, m_pipeline.GroupOrder());
@@ -1587,6 +1594,24 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
     RaiseProjectionRebuilt();
 }
 
+void ShapedItemsSource::ReleaseHierarchyProjection()
+{
+    if (m_hierarchicalAdapter)
+    {
+        // Callback first: DetachSourceQuietly must not be able to drive a re-slice on the way out.
+        m_hierarchicalAdapter->ProjectionChanged(nullptr);
+        m_hierarchicalAdapter->DetachSourceQuietly();
+    }
+
+    if (m_hierarchySource)
+    {
+        m_hierarchySource.Clear();
+    }
+
+    m_hierarchyGroups.clear();
+    m_rootBucketIndex.clear();
+}
+
 void ShapedItemsSource::EnsureHierarchicalAdapter(std::vector<winrt::IInspectable> const& roots, bool shapeRoots)
 {
     if (!m_hierarchySource)
@@ -1607,15 +1632,10 @@ void ShapedItemsSource::EnsureHierarchicalAdapter(std::vector<winrt::IInspectabl
         m_hierarchicalAdapter->DetachSourceQuietly();
     }
 
-    // Drop the previous entries subscription before the rebuild: it is re-established below against
-    // whatever view the adapter is publishing now, and a stale one would re-slice groups that this
+    // Drop the previous projection callback before the rebuild: it is re-established below only
+    // when this projection actually needs it, and a stale one would re-slice groups that this
     // rebuild is in the middle of replacing.
-    if (m_hierarchyEntriesForRevocation && m_hierarchyEntriesChangedToken)
-    {
-        m_hierarchyEntriesForRevocation.CollectionChanged(m_hierarchyEntriesChangedToken);
-    }
-    m_hierarchyEntriesForRevocation = nullptr;
-    m_hierarchyEntriesChangedToken = {};
+    m_hierarchicalAdapter->ProjectionChanged(nullptr);
 
     // Per-level shaping. This runs INSIDE the adapter's walk, so it must touch nothing but the
     // vector it is handed -- see the re-entrancy contract on ShapeSiblingsFn. Filtering and sorting
@@ -1650,21 +1670,20 @@ void ShapedItemsSource::EnsureHierarchicalAdapter(std::vector<winrt::IInspectabl
 
     // Under grouping the adapter's entries are NOT the presented axis -- the grouped adapter's
     // are -- so a node toggle, which splices the hierarchy adapter in place, would otherwise be
-    // invisible. This subscription is what carries it across to the groups.
+    // invisible. This callback is what carries it across to the groups. It is the adapter's
+    // COHERENT edge rather than the raw vector notification: a multi-row splice raises the latter
+    // once per row and from inside the mutation, so a re-slice driven by it would read the
+    // descriptor side-table mid-repair and would do it N times.
     if (!shapeRoots)
     {
-        if (auto const entries = m_hierarchicalAdapter->Entries())
-        {
-            m_hierarchyEntriesForRevocation = entries;
-            m_hierarchyEntriesChangedToken = entries.CollectionChanged(
-                [weakThis](winrt::IInspectable const&, winrt::NotifyCollectionChangedEventArgs const&)
+        m_hierarchicalAdapter->ProjectionChanged(
+            [weakThis]()
+            {
+                if (auto strongThis = weakThis.lock())
                 {
-                    if (auto strongThis = weakThis.lock())
-                    {
-                        strongThis->ResliceGroupsFromHierarchy();
-                    }
-                });
-        }
+                    strongThis->ResliceGroupsFromHierarchy();
+                }
+            });
     }
 }
 

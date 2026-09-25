@@ -30,6 +30,9 @@ static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGri
 // Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
 // unusable.
 static constexpr double c_resizeGripperWidthFallback{ 8.0 };
+
+// Mirrors the RowIndentSize DP default in the IDL.
+static constexpr double c_defaultRowIndentSize{ 16.0 };
 static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator"sv };
 // ScrollViewer template names are documented; ancestors are resolved by walking from child parts.
 
@@ -1809,8 +1812,23 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
     QueueRebuildHeaders();
 }
 
-void TableView::OnRowIndentSizePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
+void TableView::OnRowIndentSizePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    // Cached rather than read back per row. Reading a custom DP forces the framework to resolve
+    // every queued DP registration, and a row's first layout can run before the metadata providers
+    // for other libraries are registered, which fails the whole resolution pass. The callback
+    // already carries the new value, so nothing needs to read the property here.
+    m_rowIndentSize = c_defaultRowIndentSize;
+    if (auto const newValue = args.NewValue().try_as<double>())
+    {
+        // A negative or non-finite indent would pull cell content left, under the chevron. Fall
+        // back rather than render an unreadable row.
+        if (std::isfinite(*newValue) && *newValue >= 0.0)
+        {
+            m_rowIndentSize = *newValue;
+        }
+    }
+
     // Indent is baked into each realized row's layout, so every one has to re-derive it. Only
     // realized rows are walked: an unrealized row reads the new value when it is prepared.
     ForEachRealizedRow([](winrt::TableViewRow const& row)

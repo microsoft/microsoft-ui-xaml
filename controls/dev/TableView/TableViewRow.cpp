@@ -552,24 +552,7 @@ void TableViewRow::ApplyHierarchyAffordance()
     winrt::VisualStateManager::GoToState(
         *this, IsExpanded() ? L"Expanded" : L"Collapsed", false /* useTransitions */);
 
-    // Level 1 (a root) gets no indent, only the gutter's own width. Level is 1-based because UIA
-    // is; the subtraction is the one place that converts.
-    double indent = 0.0;
-    if (isHierarchical)
-    {
-        double indentSize = c_defaultRowIndentSize;
-        if (auto const owner = GetOwningTableView())
-        {
-            const double ownerIndent = owner.RowIndentSize();
-            // A negative or non-finite indent would pull cell content left, under the chevron. Fall
-            // back rather than render an unreadable row.
-            if (std::isfinite(ownerIndent) && ownerIndent >= 0.0)
-            {
-                indentSize = ownerIndent;
-            }
-        }
-        indent = (level - 1) * indentSize;
-    }
+    const double indent = HierarchyIndent();
 
     if (auto const gutter = m_rowExpanderGutter.get())
     {
@@ -580,35 +563,79 @@ void TableViewRow::ApplyHierarchyAffordance()
         }
     }
 
-    // Reserve the chevron's footprint inside the first cell. Padding on the WRAPPER, not on the
-    // generated content: the content is whatever the column produced (an app DataTemplate in a
-    // TemplateColumn), and reaching into it would both fight the column's own layout and fail for
-    // any element without a Padding property.
+    ApplyHierarchyIndentToCells();
+}
+
+// Level 1 (a root) gets no indent, only the gutter's own width. Level is 1-based because UIA is;
+// the subtraction is the one place that converts.
+double TableViewRow::HierarchyIndent()
+{
+    const int32_t level = Level();
+    if (level <= 0)
+    {
+        return 0.0;
+    }
+
+    double indentSize = c_defaultRowIndentSize;
+    if (auto const owner = GetOwningTableView())
+    {
+        // The cached mirror, never the DP: reading a custom DP here would force the framework to
+        // resolve every queued DP registration mid-layout, before other libraries' metadata
+        // providers exist.
+        const double ownerIndent = winrt::get_self<TableView>(owner)->RowIndentSizeInternal();
+        if (std::isfinite(ownerIndent) && ownerIndent >= 0.0)
+        {
+            indentSize = ownerIndent;
+        }
+    }
+
+    return (level - 1) * indentSize;
+}
+
+// Reserve the chevron's footprint inside the leading cell. Padding on the WRAPPER, not on the
+// generated content: the content is whatever the column produced (an app DataTemplate in a
+// TemplateColumn), and reaching into it would both fight the column's own layout and fail for any
+// element without a Padding property.
+//
+// Split out from ApplyHierarchyAffordance because a column-visibility change must move the
+// reservation WITHOUT re-running the visual-state transitions, which the caller may be in the
+// middle of.
+void TableViewRow::ApplyHierarchyIndentToCells()
+{
     auto const host = m_cellsHost.get();
     if (!host)
     {
         return;
     }
 
+    const bool isHierarchical = Level() > 0;
+    const double indent = HierarchyIndent();
+
     auto const children = host.Children();
+    bool leadAssigned = false;
     for (uint32_t i = 0; i < children.Size(); ++i)
     {
         auto const wrapper = children.GetAt(i).try_as<winrt::Border>();
-        if (!wrapper || wrapper.Visibility() != winrt::Visibility::Visible)
+        if (!wrapper)
         {
             continue;
         }
 
         // First VISIBLE cell, not children[0]: hiding the first column must move the indent to
-        // whichever column now leads, or the tree structure would become invisible.
-        const double reserved = isHierarchical ? indent + c_rowExpanderSize : 0.0;
+        // whichever column now leads, or the tree structure would become invisible. Every other
+        // wrapper is reset rather than skipped -- otherwise hiding the lead column at runtime
+        // would strand its reservation on a cell nobody can see, and re-showing it would leave two.
+        const bool isLead =
+            !leadAssigned && wrapper.Visibility() == winrt::Visibility::Visible;
+        leadAssigned = leadAssigned || isLead;
+
+        const double reserved = (isLead && isHierarchical) ? indent + c_rowExpanderSize : 0.0;
         auto padding = wrapper.Padding();
         if (padding.Left != reserved)
         {
             padding.Left = reserved;
             wrapper.Padding(padding);
         }
-        return;
     }
 }
 
@@ -664,6 +691,11 @@ void TableViewRow::RefreshColumnVisibility(const winrt::TableViewColumn& column,
     {
         cell.Visibility(visibility);
     }
+
+    // Which cell leads may have just changed, and the indent reservation lives on the leading
+    // cell's wrapper. Indent only: this runs from the column's property-changed callback, so
+    // re-running the row's visual-state transitions here is both unnecessary and unwelcome.
+    ApplyHierarchyIndentToCells();
 }
 
 double TableViewRow::MeasuredWidthForColumn(const winrt::TableViewColumn& column) const
@@ -1455,3 +1487,4 @@ winrt::TableViewColumn TableViewRow::ResolvePressedColumn(
 
     return nullptr;
 }
+

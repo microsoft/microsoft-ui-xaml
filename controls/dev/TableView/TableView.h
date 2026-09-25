@@ -334,6 +334,9 @@ public:
     // For the automation peers, which cannot reach the private members. Both read the model.
     int32_t SelectedIndexInternal() const;
     winrt::IInspectable SelectedItemInternal() const;
+
+    // Cached RowIndentSize, for rows to read during layout without touching the DP.
+    double RowIndentSizeInternal() const noexcept { return m_rowIndentSize; }
     // --- Grouped projections (TableView_Grouping.cpp) ---
     //
     // Which container type a row-source item realizes as. Item-based rather than index-based
@@ -883,6 +886,10 @@ private:
     bool m_focusLossCommitQueued{ false };
 
     int32_t m_navAnchorRow{ -1 };
+
+    // Mirror of the RowIndentSize DP. Rows read this instead of the property: see
+    // OnRowIndentSizePropertyChanged for why the DP must not be read during row layout.
+    double m_rowIndentSize{ 16.0 };
     void OnPreviewKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
@@ -891,3 +898,4 @@ private:
     int32_t GetFocusedRowIndex() const;
     int32_t GetEstimatedRowsPerPage(); // Non-const — GetDensityRowMinHeight() mutates the resource cache.
 };
+
