@@ -663,7 +663,11 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         {
             groupKey = groupObject;
         }
-        itemCount = entry->GroupItemCount();
+        // Row metadata wins when it describes this header: under a hierarchy the entry's count is
+        // the rows the group spans (roots plus visible descendants) while the metadata reports the
+        // roots the header actually owns. The entry stays the fallback for the reshape window
+        // where the metadata describes a different row.
+        itemCount = hasRowInfo ? rowInfo.ChildCount : entry->GroupItemCount();
         isExpanded = hasRowInfo ? rowInfo.IsExpanded : entry->IsExpanded();
         isExpandable = hasRowInfo ? rowInfo.IsExpandable : (entry->GroupItemCount() > 0);
         level = hasRowInfo ? std::max(0, rowInfo.Level) : 0;

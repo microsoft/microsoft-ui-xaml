@@ -248,11 +248,12 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="HierarchyStates">
-                                <VisualState x:Name="NotHierarchical">
-                                    <VisualState.Setters>
-                                        <Setter Target="PART_RowExpanderGutter.Visibility" Value="Collapsed" />
-                                    </VisualState.Setters>
-                                </VisualState>
+                                <!-- Neither state touches PART_RowExpanderGutter.Visibility: the
+                                     base value is Collapsed, so a state that undoes another state's
+                                     setter would only revert to Collapsed again. TableViewRow sets
+                                     the visibility directly. The states remain so a retemplating app
+                                     can key off them. -->
+                                <VisualState x:Name="NotHierarchical" />
                                 <VisualState x:Name="Hierarchical" />
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>

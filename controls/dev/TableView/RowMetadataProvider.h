@@ -67,6 +67,11 @@ public:
     void ExpandAllGroups() override;
     void CollapseAllGroups() override;
 
+    bool IsHierarchicalSource() const override
+    {
+        return m_sourceKind == SourceKind::Hierarchical || m_sourceKind == SourceKind::GroupedHierarchical;
+    }
+
     enum class SourceKind
     {
         Flat,

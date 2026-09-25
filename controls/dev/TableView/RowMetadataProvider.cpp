@@ -310,12 +310,24 @@ TableViewRowInfo RowMetadataProvider::GetRowInfo(int32_t index)
         const auto entry = TryGetGroupHeaderEntry(index);
         if (entry)
         {
-            // A header over a hierarchy is still a header, and its count is the number of rows
-            // currently in the group -- which under a hierarchy means roots PLUS their visible
-            // descendants, because that is what layer 2 put in the group.
+            // A header over a hierarchy is still a header, but its count is the number of ROOTS it
+            // owns, not the number of rows it spans: the group's rows are its roots plus every
+            // visible descendant, so using the row count would make the header's count climb every
+            // time a node anywhere inside it was expanded. The projection publishes the root count
+            // on the group; fall back to the row count only if it did not.
             kind = TableViewRowKind::GroupHeader;
             childCount = entry->GroupItemCount();
-            isExpandable = childCount > 0;
+            if (auto const counted = entry->Group().try_as<ShapingHelpers::IGroupChildCount>())
+            {
+                const int32_t rootCount = counted->GroupChildCount();
+                if (rootCount >= 0)
+                {
+                    childCount = rootCount;
+                }
+            }
+            // Expandability still follows the rows: a group with roots always has rows, and this
+            // keeps an empty group a leaf under either count.
+            isExpandable = entry->GroupItemCount() > 0;
             isExpanded = entry->IsExpanded();
             break;
         }

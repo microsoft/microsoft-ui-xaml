@@ -76,6 +76,16 @@ void ShapedGroup::GroupKey(winrt::hstring const& value)
     m_groupKey = value;
 }
 
+int32_t ShapedGroup::GroupChildCount() const
+{
+    return m_groupChildCount;
+}
+
+void ShapedGroup::GroupChildCount(int32_t value)
+{
+    m_groupChildCount = value;
+}
+
 void ShapedGroup::Key(winrt::IInspectable const& value)
 {
     m_key = value;

@@ -1483,9 +1483,11 @@ void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t
     }
 
     // A grouped source also reports Level 1 for its data rows, but never IsExpandable - a data row
-    // under a group has nothing to expand. Gating on IsExpandable OR a level past the first keeps
-    // grouped tables rendering exactly as they did.
-    const bool isHierarchicalRow = rowInfo.IsExpandable || rowInfo.Level > 1;
+    // under a group has nothing to expand. Asking the SOURCE whether it is a tree, rather than
+    // inferring it from this row, is what keeps a leaf root (Level 1, not expandable) aligned with
+    // its expandable siblings while leaving a merely grouped table rendering exactly as before.
+    const bool isHierarchicalRow =
+        m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource();
     rowImpl->SetHierarchyStateInternal(
         isHierarchicalRow ? (std::max)(1, rowInfo.Level) : 0,
         rowInfo.IsExpandable,

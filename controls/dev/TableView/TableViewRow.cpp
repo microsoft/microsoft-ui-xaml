@@ -556,6 +556,15 @@ void TableViewRow::ApplyHierarchyAffordance()
 
     if (auto const gutter = m_rowExpanderGutter.get())
     {
+        // Visibility is set here rather than by a visual state: the template's base value is
+        // Collapsed (a flat table must never reserve chevron space), and leaving a state to undo
+        // that only reverts to the base, which is the collapsed value again.
+        const auto visibility = isHierarchical ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
+        if (gutter.Visibility() != visibility)
+        {
+            gutter.Visibility(visibility);
+        }
+
         const winrt::Thickness gutterMargin{ indent, 0, 0, 0 };
         if (gutter.Margin().Left != gutterMargin.Left)
         {

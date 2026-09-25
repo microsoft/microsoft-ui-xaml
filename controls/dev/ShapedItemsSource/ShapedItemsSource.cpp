@@ -1724,6 +1724,9 @@ void ShapedItemsSource::ResliceGroupsFromHierarchy()
     auto guard = wil::scope_exit([this]() noexcept { m_reslicingGroups = false; });
 
     std::vector<std::vector<winrt::IInspectable>> slices(m_hierarchyGroups.size());
+    // Roots per bucket, tracked separately from the slice size: the slice also carries every
+    // visible descendant, and a header must count the children it owns, not the rows it spans.
+    std::vector<int32_t> rootCounts(m_hierarchyGroups.size(), 0);
 
     auto const entries = m_hierarchicalAdapter->Entries();
     const int32_t count = entries ? entries.Count() : 0;
@@ -1754,6 +1757,10 @@ void ShapedItemsSource::ResliceGroupsFromHierarchy()
             }
             currentBucket = it->second;
             haveBucket = true;
+            if (currentBucket < rootCounts.size())
+            {
+                ++rootCounts[currentBucket];
+            }
         }
 
         if (haveBucket && currentBucket < slices.size())
@@ -1764,6 +1771,9 @@ void ShapedItemsSource::ResliceGroupsFromHierarchy()
 
     for (size_t i = 0; i < m_hierarchyGroups.size(); ++i)
     {
+        // Count before items: SetItems notifies the grouped adapter, which re-mints the header
+        // entry, and the header must never be built from a stale count.
+        m_hierarchyGroups[i]->GroupChildCount(rootCounts[i]);
         m_hierarchyGroups[i]->SetItems(slices[i]);
     }
 }

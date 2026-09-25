@@ -46,6 +46,12 @@ struct ITableViewRowMetadataProvider
 
     virtual void ExpandAllGroups() = 0;
     virtual void CollapseAllGroups() = 0;
+
+    // True when the rows come from a tree projection. A LEAF root reports Level 1 and
+    // IsExpandable false, which is indistinguishable per row from a grouped data row, yet it still
+    // has to reserve the chevron's width or its text would sit left of its expandable siblings'.
+    // Only the source knows the difference, so the answer lives here and not in the row info.
+    virtual bool IsHierarchicalSource() const { return false; }
 };
 
 using TableViewRowMetadataProvider = std::shared_ptr<ITableViewRowMetadataProvider>;
