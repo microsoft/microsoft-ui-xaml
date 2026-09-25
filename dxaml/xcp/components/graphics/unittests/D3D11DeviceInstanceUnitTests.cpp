@@ -446,6 +446,7 @@ void D3D11DeviceInstanceUnitTests::CheckForStaleDeviceSubTest(_In_ CreateDXGIFac
     VERIFY_SUCCEEDED(deviceInstance->EnsureResources());
 
     // Invalidate the current factory and populate with new adapters
+    const bool wasWarpDevice = deviceInstance->IsWarpDevice();
     DXGIMock.InvalidateCurrentFactory();
     if (newAdapter1 != nullptr) DXGIMock.Factory->AddAdapter(newAdapter1);
     if (newAdapter2 != nullptr) DXGIMock.Factory->AddAdapter(newAdapter2);
@@ -455,6 +456,7 @@ void D3D11DeviceInstanceUnitTests::CheckForStaleDeviceSubTest(_In_ CreateDXGIFac
     {
         VERIFY_SUCCEEDED(deviceInstance->EnsureDXGIAdapters());
         VERIFY_ARE_EQUAL(CD3D11DeviceInstance::s_sharedDeviceWeak.lock().get(), deviceInstance.get());
+        VERIFY_ARE_EQUAL(wasWarpDevice, deviceInstance->IsWarpDevice());
     }
     else
     {

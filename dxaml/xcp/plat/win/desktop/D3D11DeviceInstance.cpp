@@ -677,7 +677,6 @@ CD3D11DeviceInstance::EnsureDXGIAdapters()
     IFC(pfnCreateDXGIFactory1(__uuidof(IDXGIFactory1), reinterpret_cast<void **>(m_dxgiFactory.ReleaseAndGetAddressOf())));
 
     // Find the best hardware and warp adapters available
-    m_fIsWarpDevice = false;
     m_fIsHardwareOutput = false;
 
     for (UINT i = 0; SUCCEEDED(m_dxgiFactory->EnumAdapters1(i, enumeratedAdapter.ReleaseAndGetAddressOf())); i++)
