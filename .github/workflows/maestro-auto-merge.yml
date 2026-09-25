@@ -1,0 +1,108 @@
+name: Enable Maestro auto-merge
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: Pull request number to evaluate
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable-auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 1
+
+      - name: Load pull request
+        id: pull-request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          INPUT_PR_NUMBER: ${{ inputs.pull_request_number }}
+        run: |
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            pr_number="$INPUT_PR_NUMBER"
+          else
+            pr_number="$EVENT_PR_NUMBER"
+          fi
+
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$pr_number" \
+            --jq '{author: .user.login, baseRefName: .base.ref, body: .body, url: .html_url}' \
+            > "$RUNNER_TEMP/pull-request.json"
+
+          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
+
+      - name: Match configured Maestro subscription
+        id: match
+        env:
+          CONFIG_PATH: .github/policies/maestro-auto-merge-subscriptions.config
+        run: |
+          author="$(jq -r '.author' "$RUNNER_TEMP/pull-request.json")"
+          base_branch="$(jq -r '.baseRefName' "$RUNNER_TEMP/pull-request.json")"
+          body="$(jq -r '.body // ""' "$RUNNER_TEMP/pull-request.json")"
+          expected_author="$(jq -r '.pullRequestAuthor' "$CONFIG_PATH")"
+
+          if [[ "$author" != "$expected_author" ]]; then
+            echo "PR author '$author' does not match '$expected_author'."
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          branch_matched=false
+          while IFS= read -r pattern; do
+            if [[ "$pattern" == */\* ]]; then
+              if [[ "$base_branch" == "${pattern%\*}"* ]]; then
+                branch_matched=true
+                break
+              fi
+            elif [[ "$base_branch" == "$pattern" ]]; then
+              branch_matched=true
+              break
+            fi
+          done < <(jq -r '.targetBranches[]' "$CONFIG_PATH")
+
+          if [[ "$branch_matched" != true ]]; then
+            echo "Target branch '$base_branch' is not configured for Maestro auto-merge."
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          subscription="$(jq -c --arg body "$body" '
+            .subscriptions[]
+            | . as $subscription
+            | select($body | contains("Begin:" + $subscription.id))
+          ' "$CONFIG_PATH" | head -n 1)"
+
+          if [[ -z "$subscription" ]]; then
+            echo "No configured Maestro subscription marker was found."
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          category="$(jq -r '.category' <<< "$subscription")"
+          subscription_id="$(jq -r '.id' <<< "$subscription")"
+          echo "Matched $category ($subscription_id)."
+          echo "matched=true" >> "$GITHUB_OUTPUT"
+          echo "merge_method=$(jq -r '.mergeMethod' "$CONFIG_PATH")" >> "$GITHUB_OUTPUT"
+
+      - name: Enable auto-merge
+        if: steps.match.outputs.matched == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MERGE_METHOD: ${{ steps.match.outputs.merge_method }}
+          PR_NUMBER: ${{ steps.pull-request.outputs.number }}
+        run: gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --auto "--$MERGE_METHOD"
