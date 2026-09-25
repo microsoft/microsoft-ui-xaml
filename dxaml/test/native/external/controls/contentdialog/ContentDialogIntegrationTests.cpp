@@ -23,6 +23,7 @@
 #include <FocusTestHelper.h>
 #include <WUCRenderingScopeGuard.h>
 #include <RuntimeEnabledFeatureOverride.h>
+#include <StoryboardMonitorWrapper.h>
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace Microsoft::UI::Xaml::Media;
@@ -131,6 +132,304 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
 
         CloseContentDialog(contentDialog);
+    }
+
+    // Detects whether a started storyboard is the ContentDialog show (entrance) animation.
+    //
+    // There are two forms depending on how the dialog is shown:
+    //   * In-tree (ContentDialogPlacement::InPlace): ChangeVisualState runs GoToState(true, "DialogShowing"),
+    //     playing the "DialogShowingStates" VisualTransition. That storyboard animates the template's named
+    //     "ScaleTransform" (ScaleX/ScaleY 1.05 -> 1.0).
+    //   * Popup (default ShowAsync, EntireControlInPopup): the entrance is the ContentDialogOpenCloseThemeTransition
+    //     set on the popup's ChildTransitions. Its storyboard has no target name and animates
+    //     "(UIElement.TransitionTarget).(TransitionTarget.CompositeTransform).ScaleX/ScaleY" (1.05 -> 1.0).
+    //
+    // In both cases the scale keyframe starting above 1.0 (1.05) uniquely identifies the entrance (show)
+    // transition; the reverse (hide) starts its scale at 1.0. This was the regression in GitHub #11257.
+    static bool IsContentDialogShowEntranceStoryboard(xaml_animation::Storyboard^ storyboard)
+    {
+        if (storyboard == nullptr)
+        {
+            return false;
+        }
+
+        auto children = storyboard->Children;
+        for (unsigned int i = 0; i < children->Size; ++i)
+        {
+            auto scaleAnimation = dynamic_cast<xaml_animation::DoubleAnimationUsingKeyFrames^>(children->GetAt(i));
+            if (scaleAnimation == nullptr || scaleAnimation->KeyFrames->Size == 0)
+            {
+                continue;
+            }
+
+            auto targetProperty = xaml_animation::Storyboard::GetTargetProperty(scaleAnimation);
+            if (targetProperty == nullptr)
+            {
+                continue;
+            }
+
+            const std::wstring property = targetProperty->Data();
+            const bool targetsScale =
+                property.find(L"ScaleX") != std::wstring::npos ||
+                property.find(L"ScaleY") != std::wstring::npos;
+
+            if (targetsScale)
+            {
+                // Entrance animation starts scaled up (1.05). Exit starts at 1.0.
+                const double firstKeyFrameValue = scaleAnimation->KeyFrames->GetAt(0)->Value;
+                if (firstKeyFrameValue > 1.0)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    void ContentDialogIntegrationTests::ShowingAnimationPlaysWithoutOptimizeApplyStyles()
+    {
+        ShowingAnimationPlaysWorker(
+            false /* expectOptimizeApplyStylesEnabled */,
+            ContentDialogStyleSource::ExplicitInMarkup);
+    }
+
+    void ContentDialogIntegrationTests::ShowingAnimationPlaysWithOptimizeApplyStyles()
+    {
+        ShowingAnimationPlaysWorker(
+            true /* expectOptimizeApplyStylesEnabled */,
+            ContentDialogStyleSource::ExplicitInMarkup);
+    }
+
+    void ContentDialogIntegrationTests::ShowingAnimationPlaysWithCodeExplicitStyleAndOptimizeApplyStyles()
+    {
+        ShowingAnimationPlaysWorker(
+            true /* expectOptimizeApplyStylesEnabled */,
+            ContentDialogStyleSource::ExplicitInCode);
+    }
+
+    void ContentDialogIntegrationTests::ApplyTemplateUsesExplicitAndImplicitStylesWithoutOptimizeApplyStyles()
+    {
+        ApplyTemplateUsesExplicitAndImplicitStylesWorker(false /* expectOptimizeApplyStylesEnabled */);
+    }
+
+    void ContentDialogIntegrationTests::ApplyTemplateUsesExplicitAndImplicitStylesWithOptimizeApplyStyles()
+    {
+        ApplyTemplateUsesExplicitAndImplicitStylesWorker(true /* expectOptimizeApplyStylesEnabled */);
+    }
+
+    void ContentDialogIntegrationTests::ShowingAnimationPlaysWorker(
+        bool expectOptimizeApplyStylesEnabled,
+        ContentDialogStyleSource styleSource)
+    {
+        TestCleanupWrapper cleanup;
+
+        // Ensure the entrance transition actually runs even if the machine running the test has
+        // system-wide animations turned off (common on test/VM machines). Without this, layout
+        // transitions are skipped entirely (see LayoutTransitionStorage::RegisterElementForTransitions).
+        RuntimeEnabledFeatureOverride enableGlobalAnimations(
+            RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableGlobalAnimations, true);
+
+        // Confirm this test instance is actually running in the intended OptimizeApplyStyles configuration.
+        // The behavior below should be identical regardless of the value of this optional change - the
+        // ContentDialog entrance animation must always play. This is the regression covered by GitHub #11257,
+        // where the animation stopped playing when OptimizeApplyStyles was enabled.
+        VERIFY_ARE_EQUAL(
+            expectOptimizeApplyStylesEnabled,
+            (bool)xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles),
+            L"Test is not running in the expected OptimizeApplyStyles configuration.");
+
+        // The ContentDialog "show" (entrance) animation for a dialog shown via ShowAsync() (i.e. hosted in a
+        // Popup, ContentDialogPlacement::EntireControlInPopup) is the ContentDialogOpenCloseThemeTransition
+        // applied to the hosting Popup's ChildTransitions. When the dialog's content enters the tree, the Load
+        // trigger begins the entrance Storyboard (scale 1.05 -> 1.0, opacity 0 -> 1). A StoryboardMonitor can
+        // observe that Storyboard begin. This is the regression covered by GitHub #11257: with OptimizeApplyStyles
+        // enabled the entrance animation stopped playing.
+
+        xaml_controls::ContentDialog^ contentDialog = nullptr;
+        auto contentDialogStyle = safe_cast<xaml::Style^>(
+            LoadXamlFileOnUIThread(GetResourcesPath() + L"ContentDialogWithSmokeBackgroundPart.xaml"));
+        auto windowLoadedEvent = std::make_shared<Event>();
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::Grid, Loaded);
+        Platform::String^ styleMarker = L"ShowingAnimationCustomStyle";
+
+        RunOnUIThread([&]()
+        {
+            auto windowContent = ref new xaml_controls::Grid();
+            windowContent->Background = ref new SolidColorBrush(Microsoft::UI::Colors::White);
+
+            contentDialogStyle->Setters->Append(
+                ref new xaml::Setter(xaml_controls::ContentDialog::TagProperty, styleMarker));
+
+            loadedRegistration.Attach(windowContent, ref new xaml::RoutedEventHandler(
+                [windowLoadedEvent](Platform::Object^, xaml::RoutedEventArgs^) { windowLoadedEvent->Set(); }));
+            TestServices::WindowHelper->WindowContent = windowContent;
+        });
+
+        windowLoadedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Monitor storyboards so we can detect whether the ContentDialog's show (entrance) transition runs.
+        bool showEntranceAnimationStarted = false;
+        int totalStoryboardsStarted = 0;
+        auto storyboardMonitor = ref new StoryboardMonitorWrapper();
+        storyboardMonitor->AttachStartedHandler(
+            [&](xaml_animation::Storyboard^ storyboard, xaml::UIElement^ /*target*/)
+        {
+            ++totalStoryboardsStarted;
+
+            if (IsContentDialogShowEntranceStoryboard(storyboard))
+            {
+                showEntranceAnimationStarted = true;
+            }
+        });
+
+        RunOnUIThread([&]()
+        {
+            if (styleSource == ContentDialogStyleSource::ExplicitInMarkup)
+            {
+                Platform::String^ styleResourceKey = L"ShowingAnimationContentDialogStyle";
+                auto applicationResources = xaml::Application::Current->Resources;
+                applicationResources->Insert(styleResourceKey, contentDialogStyle);
+                auto removeStyleResource = wil::scope_exit([&]()
+                {
+                    applicationResources->Remove(styleResourceKey);
+                });
+
+                contentDialog = safe_cast<xaml_controls::ContentDialog^>(xaml_markup::XamlReader::Load(
+                    L"<ContentDialog xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                    L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                    L"Title='ContentDialog Title' Content='ContentDialog Content' "
+                    L"PrimaryButtonText='OK' CloseButtonText='Custom close' "
+                    L"Style='{StaticResource ShowingAnimationContentDialogStyle}' />"));
+            }
+            else
+            {
+                contentDialog = safe_cast<xaml_controls::ContentDialog^>(xaml_markup::XamlReader::Load(
+                    L"<ContentDialog xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                    L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                    L"Title='ContentDialog Title' Content='ContentDialog Content' "
+                    L"PrimaryButtonText='OK' CloseButtonText='Custom close' />"));
+
+                if (styleSource == ContentDialogStyleSource::ExplicitInCode)
+                {
+                    contentDialog->Style = contentDialogStyle;
+                }
+            }
+
+            VERIFY_IS_NOT_NULL(contentDialog);
+
+            contentDialog->XamlRoot = TestServices::WindowHelper->WindowContent->XamlRoot;
+            contentDialog->ShowAsync();
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        storyboardMonitor->DetachStartedHandler();
+
+        LOG_OUTPUT(
+            L"OptimizeApplyStyles enabled: %d, style source: %d, total storyboards started: %d, ContentDialog show entrance animation started: %d",
+            expectOptimizeApplyStylesEnabled ? 1 : 0,
+            static_cast<int>(styleSource),
+            totalStoryboardsStarted,
+            showEntranceAnimationStarted ? 1 : 0);
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(
+                styleMarker,
+                safe_cast<Platform::String^>(contentDialog->Tag),
+                L"The custom ContentDialog style should be applied.");
+        });
+
+        VERIFY_IS_TRUE(
+            showEntranceAnimationStarted,
+            L"The ContentDialog show (entrance) animation should play when the dialog is shown, regardless of "
+            L"whether OptimizeApplyStyles is enabled. Regression coverage for GitHub #11257.");
+
+        CloseContentDialog(contentDialog);
+    }
+
+    void ContentDialogIntegrationTests::ApplyTemplateUsesExplicitAndImplicitStylesWorker(
+        bool expectOptimizeApplyStylesEnabled)
+    {
+        TestCleanupWrapper cleanup;
+
+        VERIFY_ARE_EQUAL(
+            expectOptimizeApplyStylesEnabled,
+            (bool)xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles),
+            L"Test is not running in the expected OptimizeApplyStyles configuration.");
+
+        auto windowLoadedEvent = std::make_shared<Event>();
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::Grid, Loaded);
+
+        RunOnUIThread([&]()
+        {
+            auto windowContent = ref new xaml_controls::Grid();
+            loadedRegistration.Attach(windowContent, ref new xaml::RoutedEventHandler(
+                [windowLoadedEvent](Platform::Object^, xaml::RoutedEventArgs^) { windowLoadedEvent->Set(); }));
+            TestServices::WindowHelper->WindowContent = windowContent;
+        });
+
+        windowLoadedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto contentDialogStyle = safe_cast<xaml::Style^>(
+            LoadXamlFileOnUIThread(GetResourcesPath() + L"ContentDialogStyleWithTemplateMarker.xaml"));
+
+        RunOnUIThread([&]()
+        {
+            Platform::String^ styleResourceKey = L"ApplyTemplateContentDialogStyle";
+            auto applicationResources = xaml::Application::Current->Resources;
+
+            for (const auto styleSource :
+                { ContentDialogStyleSource::ExplicitInMarkup, ContentDialogStyleSource::Implicit })
+            {
+                xaml_controls::ContentDialog^ contentDialog = nullptr;
+                Platform::Object^ applicationResourceKey =
+                    styleSource == ContentDialogStyleSource::ExplicitInMarkup
+                    ? safe_cast<Platform::Object^>(styleResourceKey)
+                    : ref new Platform::Box<::Windows::UI::Xaml::Interop::TypeName>(
+                        xaml_controls::ContentDialog::typeid);
+
+                applicationResources->Insert(applicationResourceKey, contentDialogStyle);
+                auto removeStyleResource = wil::scope_exit([&]()
+                {
+                    applicationResources->Remove(applicationResourceKey);
+                });
+
+                if (styleSource == ContentDialogStyleSource::ExplicitInMarkup)
+                {
+                    LOG_OUTPUT(L"TESTING: ExplicitInMarkup");
+                    contentDialog = safe_cast<xaml_controls::ContentDialog^>(xaml_markup::XamlReader::Load(
+                        L"<ContentDialog xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                        L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                        L"Title='ContentDialog Title' Content='ContentDialog Content' "
+                        L"PrimaryButtonText='OK' CloseButtonText='Custom close' "
+                        L"Style='{StaticResource ApplyTemplateContentDialogStyle}' />"));
+                }
+                else
+                {
+                    LOG_OUTPUT(L"TESTING: Implicit");
+                    contentDialog = safe_cast<xaml_controls::ContentDialog^>(xaml_markup::XamlReader::Load(
+                        L"<ContentDialog xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                        L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+                        L"Title='ContentDialog Title' Content='ContentDialog Content' "
+                        L"PrimaryButtonText='OK' CloseButtonText='Custom close' />"));
+                }
+
+                VERIFY_IS_NOT_NULL(contentDialog);
+                contentDialog->XamlRoot = TestServices::WindowHelper->WindowContent->XamlRoot;
+
+                VERIFY_IS_TRUE(contentDialog->ApplyTemplate(), L"ApplyTemplate should expand the ContentDialog template.");
+                VERIFY_ARE_EQUAL(1, xaml_media::VisualTreeHelper::GetChildrenCount(contentDialog), L"The ContentDialog should have a template root.");
+
+                auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(contentDialog, 0));
+                VERIFY_IS_NOT_NULL(templateRoot);
+                VERIFY_IS_NOT_NULL(dynamic_cast<xaml_controls::Grid^>(templateRoot->FindName(L"PART_VerifyThisTemplateWasUsed")),
+                    L"ApplyTemplate should use the template supplied by the explicit or implicit style.");
+            }
+        });
     }
 
     void ContentDialogIntegrationTests::ValidateUnconstrainedPopupPlacementBehavior()

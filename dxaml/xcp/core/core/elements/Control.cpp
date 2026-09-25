@@ -327,31 +327,7 @@ CControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams pa
     // Apply any built-in styles.
     if (params.fIsLive)
     {
-        if (SupportsBuiltInStyles() && !m_fIsBuiltInStyleApplied)
-        {
-            // When we apply the built-in style, we may resolve theme resources in doing so
-            // that haven't yet been resolved - for example, if a property value references
-            // a resource that then references another resource.
-            // We need to make sure we're operating under the correct theme during that resolution.
-            bool removeRequestedTheme = false;
-            const auto theme = GetTheme();
-            const auto oldRequestedThemeForSubTree = GetRequestedThemeForSubTreeFromCore();
-
-            if (theme != Theming::Theme::None && Theming::GetBaseValue(theme) != oldRequestedThemeForSubTree)
-            {
-                SetRequestedThemeForSubTreeOnCore(theme);
-                removeRequestedTheme = true;
-            }
-
-            auto themeGuard = wil::scope_exit([&] {
-                if (removeRequestedTheme)
-                {
-                    SetRequestedThemeForSubTreeOnCore(oldRequestedThemeForSubTree);
-                }
-            });
-
-            IFC_RETURN(ApplyBuiltInStyle());
-        }
+        IFC_RETURN(EnsureBuiltInStyleApplied());
 
         // Initialize StateTriggers at this time.  We need to wait for this to enter a visual tree
         // since we need for it to be part of the main visual tree to know which visual tree's
@@ -359,6 +335,72 @@ CControl::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams pa
         // may have changed since the last enter.
         IFC_RETURN(CVisualStateManager2::InitializeStateTriggers(this, true /* forceUpdate */));
     }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT
+CControl::EnsureBuiltInStyleApplied()
+{
+    if (SupportsBuiltInStyles() && !m_fIsBuiltInStyleApplied)
+    {
+        // When we apply the built-in style, we may resolve theme resources in doing so
+        // that haven't yet been resolved - for example, if a property value references
+        // a resource that then references another resource.
+        // We need to make sure we're operating under the correct theme during that resolution.
+        bool removeRequestedTheme = false;
+        const auto theme = GetTheme();
+        const auto oldRequestedThemeForSubTree = GetRequestedThemeForSubTreeFromCore();
+
+        if (theme != Theming::Theme::None && Theming::GetBaseValue(theme) != oldRequestedThemeForSubTree)
+        {
+            SetRequestedThemeForSubTreeOnCore(theme);
+            removeRequestedTheme = true;
+        }
+
+        auto themeGuard = wil::scope_exit([&] {
+            if (removeRequestedTheme)
+            {
+                SetRequestedThemeForSubTreeOnCore(oldRequestedThemeForSubTree);
+            }
+        });
+
+        IFC_RETURN(ApplyBuiltInStyle());
+    }
+
+    return S_OK;
+}
+
+//-------------------------------------------------------------------------
+//
+//  Function:   CControl::ApplyTemplate
+//
+//  Synopsis:   Ensures deferred styles have been applied before the base class
+//              expands the template.
+//
+//              Under OptimizeApplyStyles, explicit, implicit, and built-in
+//              styles are applied lazily when the control becomes active (see
+//              CFrameworkElement::CreationComplete and EnterImpl). However
+//              ApplyTemplate can be invoked on a control that is not yet live -
+//              for example ContentDialog::ShowAsync() explicitly applies the
+//              template before hosting the dialog in a popup. Apply the
+//              effective style and then the built-in style in the same order as
+//              CreationComplete so the correct template is expanded now.
+//
+//-------------------------------------------------------------------------
+_Check_return_ HRESULT
+CControl::ApplyTemplate(_Out_ bool& fAddedVisuals)
+{
+    // Only force style application when CreationComplete deferred it. Controls
+    // created in code do not run CreationComplete and retain their existing
+    // ApplyTemplate fallback behavior.
+    if (OptionalChangeState::IsOptimizeApplyStylesEnabled() && m_fCreationCompleteCalled)
+    {
+        IFC_RETURN(EnsureInitialStyleApplied());
+        IFC_RETURN(EnsureBuiltInStyleApplied());
+    }
+
+    IFC_RETURN(CFrameworkElement::ApplyTemplate(fAddedVisuals));
 
     return S_OK;
 }
@@ -1030,6 +1072,8 @@ CControl::CreationComplete()
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     });
 #endif
+
+    m_fCreationCompleteCalled = true;
 
     // Call base implementation. This will apply any explicit styles.
     IFC_RETURN(CFrameworkElement::CreationComplete());
