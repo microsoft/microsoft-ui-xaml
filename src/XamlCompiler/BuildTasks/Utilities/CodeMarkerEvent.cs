@@ -43,6 +43,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Tracing
       perfXC_SearchIxmpAndBindableStart,
       perfXC_SearchIxmpAndBindableEnd,
       perfXC_CreatingSchemaContext,
-      perfXC_CreatedSchemaContext
+      perfXC_CreatedSchemaContext,
+      perfXC_XamlOptimization
     };
 }

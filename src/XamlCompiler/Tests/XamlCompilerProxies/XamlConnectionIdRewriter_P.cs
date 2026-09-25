@@ -15,6 +15,8 @@ namespace Win8Xaml.CompilerProxies
         static MethodInfo _parseMethod;
         static MethodInfo _editMethod;
         static PropertyInfo _errorsProperty;
+        static PropertyInfo _optimizationRootProperty;
+        static PropertyInfo _optimizationDecisionsProperty;
 
         List<XamlCompileError> _errorList = new List<XamlCompileError>();
         object _instance;
@@ -25,6 +27,8 @@ namespace Win8Xaml.CompilerProxies
             _parseMethod = _xamlEditorType.GetMethod("Parse");
             _editMethod = _xamlEditorType.GetMethod("Edit");
             _errorsProperty = _xamlEditorType.GetProperty("Errors");
+            _optimizationRootProperty = _xamlEditorType.GetProperty("OptimizationRoot");
+            _optimizationDecisionsProperty = _xamlEditorType.GetProperty("OptimizationDecisions");
         }
 
         public XamlConnectionIdRewriter()
@@ -37,6 +41,20 @@ namespace Win8Xaml.CompilerProxies
             Object[] args = new Object[] { xamlText, codeInfo.Instance, fileInfo.Instance };
             Object result = _parseMethod.Invoke(_instance, args);
             return (string)result;
+        }
+
+        public void EnableOptimizations(CompilerDomRootToken root)
+        {
+            _optimizationRootProperty.SetValue(_instance, root.Instance, null);
+        }
+
+        public string[] OptimizationReasons
+        {
+            get
+            {
+                var decisions = (IEnumerable)_optimizationDecisionsProperty.GetValue(_instance, null);
+                return decisions.Cast<object>().Select(d => d.GetType().GetProperty("Reason").GetValue(d, null).ToString()).ToArray();
+            }
         }
 
         public String Edit(String xamlFileName, XamlClassCodeInfo codeInfo, XamlFileCodeInfo fileInfo)

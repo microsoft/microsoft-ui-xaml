@@ -17,6 +17,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\CodeGenerators\CodeGeneratorBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\SuccinctCollectionSyntaxVerifier.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\XamlSourceInfoFixer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\Optimization\XamlOptimization.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\Optimization\InlineThicknessPaddingRule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Microsoft\Xaml\XamlCompiler\xProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\ILog.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ClassCodeGenFile.cs" />
