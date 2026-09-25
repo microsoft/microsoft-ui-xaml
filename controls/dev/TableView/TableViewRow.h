@@ -5,8 +5,10 @@
 
 #include "pch.h"
 #include "common.h"
+#include <optional>
 
 #include "TableViewRow.g.h"
+#include "TableViewContextMenu.h"
 #include "TableViewRow.properties.h"
 
 class TableViewRow :
@@ -36,6 +38,7 @@ public:
 
     // Typed accessor for the owning TableView.
     winrt::TableView GetOwningTableView();
+    bool IsContextMenuTargetCurrent(TableViewDetails::ContextMenuTarget const& target) const;
 
     void RefreshGridLines();
     void RefreshRowBackground();
@@ -110,6 +113,9 @@ private:
     winrt::TableViewColumn ResolvePressedColumn(
         const winrt::IInspectable& originalSource,
         const winrt::Point& hostPoint);
+    void OnContextRequested(winrt::ContextRequestedEventArgs const& args);
+    std::optional<TableViewDetails::ContextMenuTarget> ResolveContextMenuTarget(
+        winrt::ContextRequestedEventArgs const& args);
 
     void OnDataContextChanged(
         const winrt::FrameworkElement& sender,
@@ -143,6 +149,7 @@ private:
     tracker_ref<winrt::Panel> m_cellsHost{ this };
     // Use auto_revoke for self-event subscriptions instead of manual token cleanup.
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_contextRequestedRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
     // Auto-revoking subscription prevents stale delegates during row teardown.

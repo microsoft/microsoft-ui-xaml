@@ -11,6 +11,7 @@
 #include <optional>
 
 #include "TableView.g.h"
+#include "TableViewContextMenu.h"
 #include "TableView.properties.h"
 #include "TableViewRowInfo.h"
 
@@ -218,6 +219,10 @@ public:
 
     // Test hook for moving keyboard focus to a row; false for invalid indexes or before rows exist.
     bool FocusRow(int32_t index);
+
+    TableViewDetails::ContextMenuResult ProcessContextMenuRequest(
+        TableViewDetails::ContextMenuTarget target,
+        winrt::ContextRequestedEventArgs const& args);
 
     // IFrameworkElement override. Must be PUBLIC: C++/WinRT dispatches overrides through a base
     // subobject that can only reach public members; a protected override is silently never called.
@@ -776,6 +781,7 @@ private:
     tracker_ref<winrt::FrameworkElement> m_headerRow{ this };
     tracker_ref<winrt::Panel> m_headerHost{ this };
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
+    winrt::UIElement::ContextRequested_revoker m_headerContextRequestedRevoker{};
     // Keeps the header band locked to the body when focus moves to an off-screen header.
     winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
     tracker_ref<winrt::ScrollViewer> m_bodyScroller{ this };
@@ -820,6 +826,17 @@ private:
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     void OnTableViewUnloaded();
     bool m_rowsSourceDrained{ false };
+
+    bool IsContextMenuTargetCurrent(TableViewDetails::ContextMenuTarget const& target) const;
+    winrt::FlyoutBase ResolveContextFlyout(TableViewDetails::ContextMenuTarget const& target);
+    winrt::TableViewContextFlyoutRequestedEventArgs RaiseContextFlyoutRequested(
+        TableViewDetails::ContextMenuTarget const& target,
+        winrt::FlyoutBase const& resolvedFlyout);
+    void ShowContextFlyout(
+        TableViewDetails::ContextMenuTarget const& target,
+        winrt::FlyoutBase const& flyout,
+        winrt::ContextRequestedEventArgs const& args);
+    bool m_isProcessingContextMenu{ false };
 
     // Leading-frozen columns are offset against horizontal scroll and clipped out of non-frozen cells.
     double ComputeLeadingFrozenWidth();

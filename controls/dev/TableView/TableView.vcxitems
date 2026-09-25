@@ -23,6 +23,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewCellsPanel.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TableViewGroupHeader.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewContextMenu.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewColumn.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTextColumn.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewTemplateColumn.h" />
@@ -60,6 +61,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRowTemplateSelector.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableView_ContextMenu.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Columns.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Keyboard.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Layout.cpp" />

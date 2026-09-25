@@ -130,6 +130,7 @@ void TableViewRow::OnIsEnabledChanged(
 
 void TableViewRow::OnApplyTemplate()
 {
+    m_contextRequestedRevoker.revoke();
     __super::OnApplyTemplate();
 
     m_cellsHost.set(GetTemplateChild(hstring{ s_CellsHostPartName }).try_as<winrt::Panel>());
@@ -139,6 +140,15 @@ void TableViewRow::OnApplyTemplate()
     {
         winrt::get_self<TableViewCellsPanel>(cellsPanel)->SetOwningRowInternal(*this);
     }
+
+    m_contextRequestedRevoker = ContextRequested(winrt::auto_revoke,
+        [weakThis = get_weak()](auto&&, winrt::ContextRequestedEventArgs const& args)
+        {
+            if (auto self = weakThis.get())
+            {
+                self->OnContextRequested(args);
+            }
+        });
 
     RebuildCells();
 
@@ -155,6 +165,70 @@ winrt::TableView TableViewRow::GetOwningTableView()
 {
     // Keep the owner weak; callers acquire a strong ref only for synchronous work.
     return m_owningTableView.get();
+}
+
+bool TableViewRow::IsContextMenuTargetCurrent(
+    TableViewDetails::ContextMenuTarget const& target) const
+{
+    using TableViewDetails::ContextMenuTargetKind;
+
+    if (target.Kind != ContextMenuTargetKind::Body || !target.Row ||
+        winrt::get_self<TableViewRow>(target.Row) != this ||
+        !target.Row.IsLoaded() || !target.Item || target.ScopeRoot != m_cellsHost.get() ||
+        !target.ScopeRoot || !target.Anchor)
+    {
+        return false;
+    }
+
+    auto const owner = m_owningTableView.get();
+    if (!owner)
+    {
+        return false;
+    }
+
+    auto* ownerImpl = winrt::get_self<TableView>(owner);
+    if (!TableView::SameInspectableIdentity(
+            ownerImpl->UnwrapEditingDataItem(target.Row.DataContext()),
+            target.Item))
+    {
+        return false;
+    }
+
+    auto const repeater = ownerImpl->GetRowsRepeaterInternal();
+    if (!repeater)
+    {
+        return false;
+    }
+
+    auto const index = repeater.GetElementIndex(target.Row);
+    auto const view = repeater.ItemsSourceView();
+    if (!view || index < 0 || index >= view.Count() ||
+        !TableView::SameInspectableIdentity(
+            ownerImpl->UnwrapEditingDataItem(view.GetAt(index)),
+            target.Item))
+    {
+        return false;
+    }
+
+    auto node = target.ScopeRoot.as<winrt::DependencyObject>();
+    while (node && node != target.Row)
+    {
+        node = winrt::VisualTreeHelper::GetParent(node);
+    }
+    if (!node)
+    {
+        return false;
+    }
+
+    if (!target.Column)
+    {
+        return target.Anchor == target.Row;
+    }
+
+    return target.Column.Visibility() == winrt::Visibility::Visible &&
+        target.Anchor.Visibility() == winrt::Visibility::Visible &&
+        TableViewCellsPanel::CellForColumn(target.ScopeRoot, target.Column) == target.Anchor &&
+        winrt::VisualTreeHelper::GetParent(target.Anchor) == target.ScopeRoot;
 }
 
 winrt::TableViewColumn TableViewRow::GetCellOwningColumn(const winrt::UIElement& cellElement) const
@@ -1150,6 +1224,115 @@ void TableViewRow::ResetPressState()
     m_lastPressPosition = {};
     m_lastPressColumn.set(nullptr);
     m_lastPressItem.set(nullptr);
+}
+
+void TableViewRow::OnContextRequested(winrt::ContextRequestedEventArgs const& args)
+{
+    if (args.Handled())
+    {
+        return;
+    }
+
+    auto const owner = GetOwningTableView();
+    if (!owner)
+    {
+        return;
+    }
+
+    auto const target = ResolveContextMenuTarget(args);
+    if (!target)
+    {
+        return;
+    }
+
+    auto const result = winrt::get_self<TableView>(owner)->ProcessContextMenuRequest(*target, args);
+    if (result != TableViewDetails::ContextMenuResult::Unhandled)
+    {
+        args.Handled(true);
+    }
+}
+
+std::optional<TableViewDetails::ContextMenuTarget> TableViewRow::ResolveContextMenuTarget(
+    winrt::ContextRequestedEventArgs const& args)
+{
+    auto const owner = GetOwningTableView();
+    auto const host = m_cellsHost.get();
+    if (!owner || !host)
+    {
+        return std::nullopt;
+    }
+
+    auto node = args.OriginalSource().try_as<winrt::DependencyObject>();
+    bool reachedRow = false;
+    while (node)
+    {
+        if (node == *this)
+        {
+            reachedRow = true;
+            break;
+        }
+
+        if (node.try_as<winrt::TableView>() || node.try_as<winrt::TableViewRow>())
+        {
+            return std::nullopt;
+        }
+
+        if (auto const element = node.try_as<winrt::FrameworkElement>())
+        {
+            if (auto const tagged = element.Tag().try_as<winrt::TableViewColumn>())
+            {
+                if (winrt::get_self<TableViewColumn>(tagged)->GetOwningTableView() != owner)
+                {
+                    return std::nullopt;
+                }
+            }
+        }
+
+        node = winrt::VisualTreeHelper::GetParent(node);
+    }
+
+    if (!reachedRow)
+    {
+        return std::nullopt;
+    }
+
+    auto* ownerImpl = winrt::get_self<TableView>(owner);
+    winrt::Point hostPoint{};
+    bool const hasPosition = args.TryGetPosition(nullptr, hostPoint);
+    auto column = hasPosition
+        ? ResolvePressedColumn(args.OriginalSource(), hostPoint)
+        : ownerImpl->CurrentColumn();
+    uint32_t index{};
+    if (column && (column.Visibility() != winrt::Visibility::Visible ||
+        winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != owner ||
+        !owner.Columns().IndexOf(column, index)))
+    {
+        column = nullptr;
+    }
+
+    auto anchor = column ? TableViewCellsPanel::CellForColumn(host, column) : nullptr;
+    if (!anchor)
+    {
+        column = nullptr;
+    }
+
+    auto const item = ownerImpl->UnwrapEditingDataItem(DataContext());
+    if (!item)
+    {
+        return std::nullopt;
+    }
+
+    TableViewDetails::ContextMenuTarget target;
+    target.Row = *this;
+    target.Item = item;
+    target.Column = column;
+    target.Anchor = *this;
+    if (anchor)
+    {
+        target.Anchor = anchor;
+    }
+    target.ScopeRoot = host;
+    return target;
 }
 
 void TableViewRow::OnPointerPressedForEditing(
