@@ -606,7 +606,10 @@ HRESULT OnCoreCreateScrollBar(_Outptr_ CDependencyObject **ppObject, _In_ CREATE
     RRETURN(CScrollBar::Create(ppObject, pCreate));
 }
 
-
+HRESULT OnCoreCreateSelector(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CSelector::Create(ppObject, pCreate));
+}
 
 HRESULT OnCoreCreateSelectorItem(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
