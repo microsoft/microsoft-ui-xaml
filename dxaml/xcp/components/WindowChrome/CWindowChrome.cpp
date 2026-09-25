@@ -238,8 +238,10 @@ _Check_return_ HRESULT CWindowChrome::UpdateDwmFrameMargins(int topBorderHeight)
             exStyle,
             dpi));
 
-        // Windows 10 needs the complete top frame extended into the client area.
-        // Extending only the uncovered row gives incorrect inactive-window colors.
+        // Follow Terminal's _UpdateFrameMargins workaround: extend the standard
+        // caption/resize-frame height, not just the visible row. On Windows 10
+        // 1809, a one-pixel extension leaves the inactive row untinted. XAML
+        // still starts at y=1 and covers the rest of this extended frame.
         topFrameMargin = static_cast<int>(std::max<LONG>(-frame.top, topBorderVisibleHeight));
     }
 

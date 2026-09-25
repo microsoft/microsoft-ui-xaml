@@ -116,6 +116,33 @@ row identically when the top-level HWND has an opaque GDI redirection surface.
 The visible one-pixel row is not the complete resize target. Windows uses its
 DPI-aware resize-frame metrics to provide a larger top resize target.
 
+#### Windows 10 frame workaround
+
+The optional change `AlignExtendsContentIntoTitleBarBehavior` makes both ECITB
+entry points reserve the same row. On systems where
+`DWMWA_VISIBLE_FRAME_BORDER_THICKNESS` is unsupported, WinUI also extends the DWM
+frame into the client area. The top margin comes from `AdjustWindowRectExForDpi`
+using the window's styles and DPI. It is the standard caption/resize-frame
+height, not the visible border height or an additional offset for XAML.
+
+This follows Windows Terminal's
+[`_UpdateFrameMargins` workaround](https://github.com/microsoft/terminal/blob/0b94a7ea041a0b67f13ac281a645a82e077e4578/src/cascadia/WindowsTerminal/NonClientIslandWindow.cpp#L884-L943).
+On Windows 10 1809, extending only one pixel exposes the untinted backdrop in
+the inactive top row; extending the standard top-frame height makes that row
+match the side borders. This is precedent for the selected margin, not a claim
+that it is the minimum working value. Frame extension can also change the
+colors of other borders: in the observed light-frame configuration, active
+borders become white even though only the top margin is nonzero.
+
+For a top-level HWND with a GDI redirection surface, `WM_ERASEBKGND` retains the
+normal background fill and paints the reserved row with the stock `BLACK_BRUSH`.
+This exposes the DWM frame as described in
+[Custom Window Frame Using DWM](https://learn.microsoft.com/windows/win32/dwm/customframe).
+It does not require a buffered-paint bitmap or explicit alpha writes. HWNDs
+with `WS_EX_NOREDIRECTIONBITMAP` skip this GDI workaround. The margins remain
+top-only rather than requesting whole-client frame rendering with negative
+values.
+
 ### Min/Max/Close buttons and dragging
 
 `CWindowChrome` converts the custom title-bar bounds from XAML logical coordinates to physical client coordinates and
