@@ -889,7 +889,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "When the user presses shift-f10 to show a button flyout, the FocusState of the MenuFlyoutItem should be 'Keyboard' so that the focus rect shows")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ButtonContextFlyoutShowsFocusRectAfterShiftF10()
         {
             using (TestServices.Utilities.CreateRenderingScopeGuard(

@@ -580,7 +580,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
 */
         [TestMethod]
         [TestProperty("Description", "Validates that the different strategies work in FindNExtElement")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFindNextElementOverrideNavigationStrategy()
         {
             const string rootPanelXaml =
@@ -675,7 +675,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
         */
         [TestMethod]
         [TestProperty("Description", "Validates that the different strategies work in TryMoveFocus")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyTryMoveFocusOverrideNavigationStrategy()
         {
             const string rootPanelXaml =
@@ -799,7 +799,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
          */
         [TestMethod]
         [TestProperty("Description", "Validates that the Rectangles in the options in FindNextElement behave as expected")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFindNextElementHintAndExclusionRectAreRespected()
         {
             const string rootPanelXaml =
@@ -922,7 +922,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
          */
         [TestMethod]
         [TestProperty("Description", "Validates that the Rectangles in the options in FindNextElement behave as expected")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue not empty
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyTryMoveFocusHintAndExclusionRectAreRespected()
         {
             const string rootPanelXaml =
@@ -1022,7 +1022,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
          */
         [TestMethod]
         [TestProperty("Description", "Verifies that focus cannot be changed using options when the exclusion rect covers all focusable elements")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyNoFocusChangeWhenExclusionRectCoversAllFocusableElements()
         {
             StackPanel rootPanel = null;
@@ -1205,7 +1205,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
  */
         [TestMethod]
         [TestProperty("Description", "Validates that navigation strategy Auto.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCorrectStrategyChosenOnNavigationStrategyAuto()
         {
             const string rootPanelXaml =
@@ -1373,7 +1373,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
         */
         [TestMethod]
         [TestProperty("Description", "Verifies that the Projection strategy respects the exclusion rect")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyProjectionRespectsExclusionRectangle()
         {
             const string rootPanelXaml =
@@ -1746,7 +1746,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
 
         [TestMethod]
         [TestProperty("Description", "Verifies that we do not update the manifold when using the XYFocus APIs")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ManifoldsAreNotSetWhenUsingFindNextElement()
         {
             const string rootPanelXaml =
@@ -2046,7 +2046,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
 
         [TestMethod]
         [TestProperty("Description", "Verifies that any overridden elements are within the search scope")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void IgnoreXYFocusPropertiesIfOverrideNotChildOfSearchRoot()
         {
             const string rootPanelXaml =
@@ -2248,7 +2248,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
 
         [TestMethod]
         [TestProperty("Description", "When opening a flyout, we should cache the current manifolds and reset them. Once we close, restore the manifolds")]
-        [TestProperty("Hosting:Mode", "UAP")]  // it selects Core Window content root instead of XAML Island
+        [TestProperty("Hosting:Mode", "WPF")]
         public void XYFocusManifoldsCachedAndResetWhenOpeningFlyout()
         {
             const string rootPanelXaml =

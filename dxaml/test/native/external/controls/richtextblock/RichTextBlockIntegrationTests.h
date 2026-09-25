@@ -22,7 +22,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifySelectingTextWithTouchShowsSelectionFlyout)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that selecting text with touch shows the selection flyout.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
     };
 

@@ -34,7 +34,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(StretchAlignmentInListView)
                 TEST_METHOD_PROPERTY(L"Description", L"Tests alignment of ScrollContentPresenter content with a Stretch alignment switched off and on within a ListView.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
 #ifndef MUX_PRERELEASE
                 // Test disabled in release

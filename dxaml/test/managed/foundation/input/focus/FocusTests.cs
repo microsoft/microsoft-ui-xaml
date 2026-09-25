@@ -102,7 +102,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "If we have a hyperlink that is currently focused, and we call Focus with a different focus state, verify the focus state changes")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyHyperlinkFocusStateChangesEvenAfterFocusingSameHyperlink()
         {
             const string rootPanelXaml =
@@ -244,7 +244,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "When a hyperlink is focused and the visibility of one of it's parents is changed to collapse, we should move focus to the next element")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public void FocusShouldBeMovedWhenParentOfFocusedHyperlinkCollapsed()
         {
             const string rootPanelXaml =
@@ -456,7 +456,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]   // Focus engagement bugs in lifted islands
         public void VerifyCyclingWithTabIndexWhenTabFocusNavigationSet()
         {
             const string rootPanelXaml =
@@ -534,7 +534,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]   // Focus engagement bugs in lifted islands
         public void VerifyShiftTabWhenOnceTabFocusNavigationSet()
         {
             const string rootPanelXaml =
@@ -775,7 +775,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Validates Hyperlink TabIndex property affects focus order.")]
-        [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]   // Focus engagement bugs in lifted islands
         public void VerifyHyperlinkTabIndex()
         {
             StackPanel rootPanel = null;
@@ -854,7 +854,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Validates Hyperlink TabIndex property affects focus order in RichTextBlock.")]
-        [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]   // Focus engagement bugs in lifted islands
         public void VerifyHyperlinkTabIndexWithRichTextBlock()
         {
             StackPanel rootPanel = null;
@@ -935,7 +935,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Validates Hyperlink TabIndex property affects focus order with tab index once.")]
-        [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]   // Focus engagement bugs in lifted islands
         public void VerifyHyperlinkTabIndexWithTabNavigationOnce()
         {
             StackPanel rootPanel = null;
@@ -1068,7 +1068,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that TryAsync can be awaited")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public async Task VerifyTryFocusAsync()
         {
             string expectedString = "[element1LosingFocus:1][FocusManagerLosingFocus][element2GettingFocus][FocusManagerGettingFocus][element1LostFocus][FocusManagerLostFocus][element2GotFocus][FocusManagerGotFocus]";
@@ -1077,7 +1077,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that TryAsync can be awaited, StackPanel variant")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public async Task VerifyTryFocusAsyncForStackPanel()
         {
             string expectedString = "[element1LosingFocus:1][FocusManagerLosingFocus][element2GettingFocus][FocusManagerGettingFocus][element1LostFocus][FocusManagerLostFocus][element2GotFocus][FocusManagerGotFocus]";
@@ -1086,7 +1086,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that TryAsync can be awaited, TextBlock variant")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public async Task VerifyTryFocusAsyncForTextBlock()
         {
             string expectedString = "[element1LosingFocus:1][FocusManagerLosingFocus][element2GettingFocus][FocusManagerGettingFocus][element1LostFocus][FocusManagerLostFocus][element2GotFocus][FocusManagerGotFocus]";
@@ -1095,7 +1095,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that TryAsync can be awaited, RichTextBlock")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public async Task VerifyTryFocusAsyncForRichTextBlock()
         {
             string expectedString = "[element1LosingFocus:1][FocusManagerLosingFocus][element2GettingFocus][FocusManagerGettingFocus][element1LostFocus][FocusManagerLostFocus][element2GotFocus][FocusManagerGotFocus]";
@@ -1104,7 +1104,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that we successfully await the operation, but the Succeeded value is false")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public async Task VerifyTryFocusAsyncUnsuccessful()
         {
             string expectedString = "[element1LosingFocus:1][FocusManagerLosingFocus][element2GettingFocus][FocusManagerGettingFocus:Canceled]";
@@ -1113,7 +1113,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that we successfully await the operation, but the Succeeded value is false, StackPanel variant")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public async Task VerifyTryFocusAsyncUnsuccessfulForStackPanel()
         {
             string expectedString = "[element1LosingFocus:1][FocusManagerLosingFocus][element2GettingFocus][FocusManagerGettingFocus:Canceled]";
@@ -1122,7 +1122,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that we successfully await the operation, but the Succeeded value is false, TextBlock variant")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public async Task VerifyTryFocusAsyncUnsuccessfulForTextBlock()
         {
             string expectedString = "[element1LosingFocus:1][FocusManagerLosingFocus][element2GettingFocus][FocusManagerGettingFocus:Canceled]";
@@ -1131,7 +1131,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that we successfully await the operation, but the Succeeded value is false, RichTextBlock variant")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public async Task VerifyTryFocusAsyncUnsuccessfulForRichTextBlock()
         {
             string expectedString = "[element1LosingFocus:1][FocusManagerLosingFocus][element2GettingFocus][FocusManagerGettingFocus:Canceled]";
@@ -1250,7 +1250,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that TryAsync fails when trying to focus a non-focusable element")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to final release queue is not empty cleanup issue
+        [TestProperty("Hosting:Mode", "WPF")]
         public async Task VerifyTryFocusAsyncFailsOnNonFocusableElements()
         {
             const string rootPanelXaml =
@@ -1487,7 +1487,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that we can[can't] focus focusable[non-focusable] stackpanel with Tab/ Shift+Tab")]
-        [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFocusBehaviorWithTabOnFocusDisabledUIElement()
         {
             const string rootPanelXaml =

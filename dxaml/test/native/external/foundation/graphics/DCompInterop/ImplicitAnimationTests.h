@@ -388,7 +388,7 @@ public:
     BEGIN_TEST_METHOD(Popup4)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - Popup.IsOpen = False plays Hide")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Popup4b)
@@ -399,7 +399,7 @@ public:
     BEGIN_TEST_METHOD(Popup6)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - Removing Popup from tree plays Hide")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Popup6b)
@@ -410,7 +410,7 @@ public:
     BEGIN_TEST_METHOD(Popup7)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - Interrupt Show with Hide, variation #1 - open and close popup")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Popup7b)
@@ -421,7 +421,7 @@ public:
     BEGIN_TEST_METHOD(Popup8)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - Interrupt Show with Hide, variation #2 - close and open popup")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Popup8b)
@@ -432,7 +432,7 @@ public:
     BEGIN_TEST_METHOD(Popup11)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - Interrupt Show with Hide, variation #3 - open and remove from tree")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Popup11b)
@@ -443,7 +443,7 @@ public:
     BEGIN_TEST_METHOD(Popup12)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - Interrupt Show with Hide, variation #4 - remove from tree, add to tree and open")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Popup12b)
@@ -464,35 +464,35 @@ public:
     BEGIN_TEST_METHOD(Popup14)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - Nested Popups play Hide")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Popup14b)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(Popup17)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - Windowed Popups play Show")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Popup17b)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(Popup18)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - Windowed Popups play Hide")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Popup18b)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
@@ -506,7 +506,7 @@ public:
     BEGIN_TEST_METHOD(Popup20)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - end to end typical scenario")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(Popup20b)
@@ -515,7 +515,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(HideAnimation_CollapseOrRemovePopupChild)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -553,7 +553,7 @@ public:
 
     BEGIN_TEST_METHOD(CollapsePopup)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(CollapsePopup2)
@@ -572,7 +572,7 @@ public:
 
     BEGIN_TEST_METHOD(CollapsePopupAncestor)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(CollapsePopupAncestor2)
@@ -582,12 +582,12 @@ public:
 
     BEGIN_TEST_METHOD(CollapseWhilePopupDescendantHasHideAnimation)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes, crash in WUX.dll
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
     BEGIN_TEST_METHOD(CollapseWhilePopupDescendantHasHideAnimation2)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp nodes
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -684,21 +684,21 @@ public:
     BEGIN_TEST_METHOD(GridView1WUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - GridView items play Show on load")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(GridView2WUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - GridView items play Hide on unload")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(GridView3WUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - GridView items play Hide on tree removal")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 

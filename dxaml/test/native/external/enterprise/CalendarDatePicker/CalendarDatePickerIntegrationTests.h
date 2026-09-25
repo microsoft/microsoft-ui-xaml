@@ -71,13 +71,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateVisualStates)
             TEST_METHOD_PROPERTY(L"Description", L"Validates all Visual States.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DonotResizeCalendarView)
             TEST_METHOD_PROPERTY(L"Description", L"Validates where there is limited space, the calendarview is not resized.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanPresetDate)
@@ -90,13 +90,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(TestDateChangedEventWhenAssignDateToSameValue)
             TEST_METHOD_PROPERTY(L"Description", L"[CalendarDatePicker] DateChanged event gets fired even when the selected date hasn't changed.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateOverlayBrush)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the brush used for the Overlay matches the 'CalendarDatePickerLightDismissOverlayBackground' resource.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
     };
 
