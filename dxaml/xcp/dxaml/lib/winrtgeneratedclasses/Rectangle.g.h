@@ -79,15 +79,18 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) RectangleFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Shapes::IRectangleFactory
         , public ABI::Microsoft::UI::Xaml::Shapes::IRectangleStatics
     {
-        BEGIN_INTERFACE_MAP(RectangleFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(RectangleFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(RectangleFactory, ABI::Microsoft::UI::Xaml::Shapes::IRectangleFactory)
             INTERFACE_ENTRY(RectangleFactory, ABI::Microsoft::UI::Xaml::Shapes::IRectangleStatics)
-        END_INTERFACE_MAP(RectangleFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(RectangleFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Shapes::IRectangle** ppInstance);
 
         // Static properties.
 
