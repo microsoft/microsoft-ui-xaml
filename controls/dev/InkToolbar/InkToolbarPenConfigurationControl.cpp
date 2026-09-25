@@ -18,6 +18,7 @@
 #include "InkToolbar.h"
 #include "InkToolbarPenButton.h"
 #include "InkToolbarTrace.h"
+#include "ResourceAccessor.h"
 
 #include <winrt/Microsoft.UI.Xaml.Shapes.h>
 #include <winrt/Windows.UI.ViewManagement.h>
@@ -98,6 +99,7 @@ void InkToolbarPenConfigurationControl::OnApplyTemplate()
 
     ConfigureStrokeWidthSlider(nullptr);
     ConfigureStrokeWidthPreview();
+    ConfigureLocalizableElements(nullptr);
 
     if (penButton)
     {
@@ -109,7 +111,6 @@ void InkToolbarPenConfigurationControl::OnApplyTemplate()
         RemoveColorPicker(nullptr);
     }
 
-    ConfigureLocalizableElements(nullptr);
     ConfigureHighContrast();
 }
 
@@ -195,8 +196,41 @@ void InkToolbarPenConfigurationControl::ConfigureStrokeWidthSlider(winrt::Contro
 void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Control const& me)
 {
     UNREFERENCED_PARAMETER(me);
-    // Titles/automation names come from string resources (a lift resource gap) - left to the template's
-    // default text. Structure preserved; nothing to set without a resource provider.
+
+    // An older app-local PRI may not contain the new strings. Keep the template defaults in that case.
+    auto tryGetString = [](std::wstring_view name) -> winrt::hstring
+    {
+        try
+        {
+            return ResourceAccessor::GetLocalizedStringResource(name);
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            InkToolbarLogHResult(e.code(), L"pen flyout string lookup");
+            return {};
+        }
+    };
+
+    if (auto colorsTitle = GetTemplateChild(L"PenColorPaletteTitle").try_as<winrt::TextBlock>())
+    {
+        if (auto text = tryGetString(SR_InkToolbarPenConfigurationColorsLabel); !text.empty())
+        {
+            colorsTitle.Text(text);
+        }
+    }
+
+    if (auto sizeTitle = GetTemplateChild(L"PenStrokeWidthTitle").try_as<winrt::TextBlock>())
+    {
+        if (auto text = tryGetString(SR_InkToolbarPenConfigurationSizeLabel); !text.empty())
+        {
+            sizeTitle.Text(text);
+        }
+    }
+
+    if (auto text = tryGetString(SR_InkToolbarNonSolidColorName); !text.empty())
+    {
+        m_nonSolidColorString = text;
+    }
 }
 
 void InkToolbarPenConfigurationControl::RemoveColorPicker(winrt::Control const& me)

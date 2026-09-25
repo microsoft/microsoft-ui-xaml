@@ -3,6 +3,7 @@
 
 using Common;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
@@ -835,8 +836,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         $"{tool} should advertise its configuration dropdown.");
 
                     const string paletteHelpText = "Open to choose a color from the palette";
-                    Verify.AreEqual(paletteHelpText, peer.GetHelpText(),
-                        $"{tool} should explain how to access its color palette.");
+                    var selectedColorHelpText = AutomationProperties.GetHelpText(button);
+                    Verify.IsFalse(string.IsNullOrEmpty(selectedColorHelpText),
+                        $"{tool} should expose its localized selected-color description.");
+                    Verify.AreEqual($"{selectedColorHelpText}, {paletteHelpText}", peer.GetHelpText(),
+                        $"{tool} should preserve the selected-color description before the palette hint.");
                     AutomationProperties.SetHelpText(button, "Custom tool help");
                     Verify.AreEqual($"Custom tool help, {paletteHelpText}", peer.GetHelpText(),
                         $"{tool} should preserve explicit help text before the palette hint.");
@@ -1199,6 +1203,128 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(isSelected, selection.IsSelected, $"{name} should expose its selected state.");
             Verify.IsNotNull(peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider,
                 $"{name} should retain IInvokeProvider.");
+        }
+
+        [TestMethod]
+        public void InkToolbarPenConfigurationLocalizesHeadingsTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var configuration = new InkToolbarPenConfigurationControl
+                {
+                    Template = (ControlTemplate)XamlReader.Load(
+                        "<ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
+                        "xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='InkToolbarPenConfigurationControl'>" +
+                        "<StackPanel>" +
+                        "<TextBlock x:Name='PenColorPaletteTitle' Text='Unlocalized colors' />" +
+                        "<TextBlock x:Name='PenStrokeWidthTitle' Text='Unlocalized size' />" +
+                        "</StackPanel></ControlTemplate>")
+                };
+                Content = configuration;
+                configuration.ApplyTemplate();
+                configuration.UpdateLayout();
+
+                var colors = FindChildByName(configuration, "PenColorPaletteTitle") as TextBlock;
+                var size = FindChildByName(configuration, "PenStrokeWidthTitle") as TextBlock;
+                Verify.IsNotNull(colors, "The colors heading must be realized.");
+                Verify.IsNotNull(size, "The size heading must be realized.");
+                Verify.AreEqual("Colors", colors.Text, "The colors resource should replace the template default.");
+                Verify.AreEqual("Size", size.Text, "The size resource should replace the template default.");
+            });
+        }
+
+        [TestMethod]
+        public void InkToolbarPaletteLocalizesDescriptionsTest()
+        {
+            InkToolbar toolbar = null;
+            InkToolbarPenButton pen = null;
+            Flyout flyout = null;
+            using var loaded = new ManualResetEvent(false);
+            using var opened = new ManualResetEvent(false);
+            using var closed = new ManualResetEvent(false);
+            EventHandler<object> openedHandler = (s, e) => opened.Set();
+            EventHandler<object> closedHandler = (s, e) => closed.Set();
+            RunOnUIThread.Execute(() =>
+            {
+                toolbar = new InkToolbar { InitialControls = InkToolbarInitialControls.PensOnly };
+                toolbar.Loaded += (s, e) => loaded.Set();
+                Content = toolbar;
+            });
+            Verify.IsTrue(loaded.WaitOne(DefaultWaitTimeInMS), "The toolbar must load.");
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                pen = toolbar.GetToolButton(InkToolbarTool.BallpointPen) as InkToolbarPenButton;
+                Verify.IsNotNull(pen, "The stock pen must be created.");
+                pen.Palette = new List<Brush>
+                {
+                    new SolidColorBrush(Colors.Black),
+                    new SolidColorBrush(Colors.White),
+                    new SolidColorBrush(ColorHelper.FromArgb(255, 1, 2, 3)),
+                    new SolidColorBrush(ColorHelper.FromArgb(255, 18, 52, 86)),
+                    new SolidColorBrush(ColorHelper.FromArgb(255, 68, 200, 245)),
+                    new SolidColorBrush(ColorHelper.FromArgb(255, 236, 0, 140)),
+                    new LinearGradientBrush()
+                };
+                pen.SelectedBrushIndex = 0;
+                pen.ApplyTemplate();
+                flyout = FlyoutBase.GetAttachedFlyout(pen) as Flyout;
+                Verify.IsNotNull(flyout, "The pen must have a configuration flyout.");
+                flyout.Opened += openedHandler;
+                flyout.Closed += closedHandler;
+            });
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(pen);
+                    var expand = peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                    Verify.IsNotNull(expand, "The pen flyout must be expandable.");
+                    expand.Expand();
+                });
+                Verify.IsTrue(opened.WaitOne(DefaultWaitTimeInMS), "The pen flyout must open.");
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var configuration = flyout.Content as InkToolbarPenConfigurationControl;
+                    Verify.IsNotNull(configuration, "The stock pen configuration must be present.");
+                    var palette = FindChildByName(configuration, "PenColorPalette") as ListViewBase;
+                    Verify.IsNotNull(palette, "The palette must be realized.");
+                    palette.UpdateLayout();
+                    var expected = new[] { "Black", "White", "Black", "RGB 18, 52, 86", "Light blue", "Pink", "Custom color" };
+                    for (int i = 0; i < expected.Length; i++)
+                    {
+                        var container = palette.ContainerFromIndex(i) as DependencyObject;
+                        Verify.IsNotNull(container, $"Palette entry {i} must be realized.");
+                        Verify.AreEqual(expected[i], ToolTipService.GetToolTip(container) as string,
+                            $"Palette entry {i} should use its localized description.");
+                    }
+
+                    pen.SelectedBrushIndex = 1;
+                    Verify.AreEqual("White", AutomationProperties.GetHelpText(pen));
+                    pen.SelectedBrushIndex = 3;
+                    Verify.AreEqual(string.Empty, AutomationProperties.GetHelpText(pen),
+                        "An unnamed color must not retain the previous color name.");
+                    pen.SelectedBrushIndex = 0;
+                    pen.SelectedBrushIndex = 6;
+                    Verify.AreEqual(string.Empty, AutomationProperties.GetHelpText(pen),
+                        "A non-solid brush must not retain the previous color name.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => flyout.Hide());
+                if (opened.WaitOne(0))
+                {
+                    Verify.IsTrue(closed.WaitOne(DefaultWaitTimeInMS), "The pen flyout must close.");
+                }
+                RunOnUIThread.Execute(() =>
+                {
+                    flyout.Opened -= openedHandler;
+                    flyout.Closed -= closedHandler;
+                });
+            }
         }
 
         private static T FindDescendant<T>(DependencyObject root) where T : class
