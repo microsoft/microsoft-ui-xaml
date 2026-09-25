@@ -285,7 +285,10 @@ HWWalk::Render(
                     &skipRenderWhileTransformTooSmall
                     ));
 
-                HWWalk::TraceElementAccessibility(pUIElement);
+                if (EventEnabledElementAccessibilityInfo())
+                {
+                    HWWalk::TraceElementAccessibility(pUIElement);
+                }
             }
 
             {
