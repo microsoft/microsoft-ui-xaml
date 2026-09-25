@@ -66,6 +66,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void FlyoutPlacementIsRespected()
+        {
+            var setupOptions = new TestSetupHelper.TestSetupHelperOptions
+            {
+                AutomationIdOfSafeItemToClick = null
+            };
+
+            using (var setup = new TestSetupHelper("SplitButton Tests", setupOptions))
+            {
+                const int alignmentTolerance = 12;
+
+                SplitButton defaultPlacementSplitButton = FindElement.ByName<SplitButton>("DefaultPlacementSplitButton");
+                defaultPlacementSplitButton.ExpandAndWait();
+
+                MenuItem defaultPlacementFlyoutItem = new MenuItem(FindElement.ById("DefaultPlacementFlyoutItem"));
+                var defaultButtonBounds = defaultPlacementSplitButton.BoundingRectangle;
+                var defaultFlyoutBounds = defaultPlacementFlyoutItem.BoundingRectangle;
+
+                Log.Comment("Verify that an unset placement preserves the existing bottom-left alignment.");
+                Verify.IsGreaterThan(defaultFlyoutBounds.Y, defaultButtonBounds.Y + defaultButtonBounds.Height);
+                Verify.IsLessThan(Math.Abs(defaultFlyoutBounds.X - defaultButtonBounds.X), alignmentTolerance);
+
+                defaultPlacementSplitButton.CollapseAndWait();
+
+                SplitButton autoPlacementSplitButton = FindElement.ByName<SplitButton>("AutoPlacementSplitButton");
+                autoPlacementSplitButton.ExpandAndWait();
+
+                MenuItem autoPlacementFlyoutItem = new MenuItem(FindElement.ById("AutoPlacementFlyoutItem"));
+                var autoButtonBounds = autoPlacementSplitButton.BoundingRectangle;
+                var autoFlyoutBounds = autoPlacementFlyoutItem.BoundingRectangle;
+
+                Log.Comment("Verify that an explicit Auto placement preserves the existing bottom-left alignment.");
+                Verify.IsGreaterThan(autoFlyoutBounds.Y, autoButtonBounds.Y + autoButtonBounds.Height);
+                Verify.IsLessThan(Math.Abs(autoFlyoutBounds.X - autoButtonBounds.X), alignmentTolerance);
+
+                autoPlacementSplitButton.CollapseAndWait();
+
+                SplitButton topPlacementSplitButton = FindElement.ByName<SplitButton>("TopPlacementSplitButton");
+                topPlacementSplitButton.ExpandAndWait();
+
+                MenuItem topPlacementFlyoutItem = new MenuItem(FindElement.ById("TopPlacementFlyoutItem"));
+                var topButtonBounds = topPlacementSplitButton.BoundingRectangle;
+                var topFlyoutBounds = topPlacementFlyoutItem.BoundingRectangle;
+                var topButtonCenter = topButtonBounds.X + topButtonBounds.Width / 2;
+                var topFlyoutCenter = topFlyoutBounds.X + topFlyoutBounds.Width / 2;
+
+                Log.Comment("Verify that an explicit Top placement centers the flyout above the SplitButton.");
+                Verify.IsLessThan(topFlyoutBounds.Y + topFlyoutBounds.Height, topButtonBounds.Y);
+                Verify.IsLessThan(Math.Abs(topFlyoutCenter - topButtonCenter), alignmentTolerance);
+
+                topPlacementSplitButton.CollapseAndWait();
+            }
+        }
+
+        [TestMethod]
         public void CommandTest()
         {
             using (var setup = new TestSetupHelper("SplitButton Tests"))
