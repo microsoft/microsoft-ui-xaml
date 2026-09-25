@@ -226,7 +226,8 @@ public:
     static
     _Check_return_ HRESULT GetTextFormatter(
         _In_ CCoreServices *pCore,
-        _Outptr_ RichTextServices::TextFormatter **ppTextFormatter
+        _Outptr_ RichTextServices::TextFormatter **ppTextFormatter,
+        _In_opt_ RichTextServices::TextFormatter *pPreferredTextFormatter = nullptr
         );
 
     static 
