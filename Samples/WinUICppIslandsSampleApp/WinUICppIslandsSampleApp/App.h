@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <atomic>
+
 #pragma push_macro("GetCurrentTime")
 #undef GetCurrentTime
 
@@ -19,7 +21,14 @@ namespace winrt::WinUICppIslandsSampleApp::implementation
 
         void OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&);
 
+        static uint32_t InstanceCount()
+        {
+            return s_instanceCount.load();
+        }
+
         winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager m_initialWindowsXamlManager{ nullptr };
-        static inline bool s_hasExistedInProcess{ false };
+
+    private:
+        static inline std::atomic_uint32_t s_instanceCount{ 0 };
     };
 }

@@ -33,6 +33,7 @@ namespace DirectUI
         void ResetInstance();
         static void Reset();
         static void Destroy();
+        static void Abandon();
 
         void DestroyCustomPropertiesAndDPs()
         {
@@ -167,6 +168,15 @@ namespace DirectUI
             {
                 DirectUI::CStaticLock lock;
                 DynamicMetadataStorage::Destroy();
+            }
+        }
+
+        static void Abandon()
+        {
+            if (DirectUI::CStaticLock::IsInitialized())
+            {
+                DirectUI::CStaticLock lock;
+                DynamicMetadataStorage::Abandon();
             }
         }
 

@@ -1,0 +1,8 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Windows Community Toolkit has dependent packages. Pick the version that's anonymously downloadable from shine-oss. -->
+    <WindowsAppSdkPackageVersion Condition="'$(WindowsAppSdkPackageVersion)' == ''">2.4.0</WindowsAppSdkPackageVersion>
+  </PropertyGroup>
+
+  <Import Project="..\..\Packages.props" />
+</Project>

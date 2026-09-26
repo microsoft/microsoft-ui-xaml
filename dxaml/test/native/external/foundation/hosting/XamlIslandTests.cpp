@@ -442,7 +442,15 @@ void XamlIslandTests::WindowsXamlManagerKeptAlive()
         IUnknown* rawUnk3 {reinterpret_cast<IUnknown*>(wxm3)};
         VERIFY_ARE_EQUAL(rawUnk1, rawUnk3);
 
+        Platform::WeakReference weakWxm(wxm3);
+        wxm2 = nullptr;
+        wxm3 = nullptr;
+
+        VERIFY_IS_NOT_NULL(weakWxm.Resolve<WindowsXamlManager>());
+
         dqc->ShutdownQueue();
+
+        VERIFY_IS_NULL(weakWxm.Resolve<WindowsXamlManager>());
     });
 
     WaitForSingleObjectWithTimeout(uiThread);
@@ -868,7 +876,9 @@ void XamlIslandTests::IslandStressWorker(IslandSceneKind sceneKind)
     app = nullptr;
     dqcOuter->ShutdownQueue();
 
-    VERIFY_IS_TRUE(XamlIslandTests_ApplicationWithMuxc::DidDestructorRun());
+    // Third-party components may have registered custom DPs that need to stay valid in order to restart WinUI after
+    // shutdown, so MUX no longer cleans up metadata after shutdown. That means the Application object stays alive
+    // for the duration of the process.
 }
 
 void XamlIslandTests::IslandsOnDifferentThreadsStress()
@@ -3984,7 +3994,7 @@ void XamlIslandTests::ValidateUiaFindAllWithWindowedPopup()
     ::Sleep(500);
 
     LowBudgetWaitForIdle(ih1);
-    
+
     RunOnIslandUIThread(ih1, [&]()
     {
         popup->IsOpen = true;
@@ -4026,10 +4036,10 @@ void XamlIslandTests::ValidateUiaFindAllWithWindowedPopup()
         };
 
         visitElement(L"Root", windowElement.Get());
-        
+
         wrl::ComPtr<IUIAutomationCondition> trueCondition;
         LogThrow_IfFailed(automation->CreateTrueCondition(&trueCondition));
-        
+
         wrl::ComPtr<IUIAutomationElementArray> children;
         LogThrow_IfFailed(windowElement->FindAll(TreeScope_Descendants, trueCondition.Get(), &children));
 
@@ -4066,7 +4076,7 @@ void XamlIslandTests::ValidateNavigationView()
     XamlIslandTestHelper testHelper(this);
     testHelper.StartAppOnCurrentThread();
 
-    IUnknown* unk {nullptr};    
+    IUnknown* unk {nullptr};
 
     LOG_OUTPUT(L"Create MyNavView...");
     {
@@ -4077,10 +4087,10 @@ void XamlIslandTests::ValidateNavigationView()
         unk->AddRef();
         unk->AddRef();
         unk->AddRef();
-        
+
         navView->SelectedItem = 1;
     }
-    
+
     int refcount = GetRefCount(unk);
     VERIFY_ARE_EQUAL(3, refcount);
 
@@ -4355,7 +4365,7 @@ void XamlIslandTests::PopupsWorkInHwndlessIslands()
                                     <Flyout x:Name="WindowlessFlyout">
                                         <TextBlock Text="Flyout content" />
                                     </Flyout>
-                                </Button.Flyout>    
+                                </Button.Flyout>
                             </Button>
                             <Button x:Name="WindowedFlyoutButton" Content="Click to open windowed flyout">
                                 <Button.Flyout>
@@ -4364,7 +4374,7 @@ void XamlIslandTests::PopupsWorkInHwndlessIslands()
                                         <MenuFlyoutItem Text="Item 2" />
                                         <MenuFlyoutItem Text="Item 3" />
                                     </MenuFlyout>
-                                </Button.Flyout>    
+                                </Button.Flyout>
                             </Button>
                         </StackPanel>
                     </Grid>)"));
