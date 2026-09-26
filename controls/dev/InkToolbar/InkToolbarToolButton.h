@@ -43,6 +43,11 @@ public:
     // InkToolbarToolButton::OnApplyTemplate applies it as the tooltip + AutomationProperties.Name.
     virtual winrt::hstring GetLocalizedToolName() { return {}; }
 
+    // UWP IToolButtonDerived::GetFlyoutName: leaf buttons supply the accessible name of their
+    // attached flyout; InkToolbarToolButton::OnApplyTemplate applies it via AutomationProperties.Name
+    // so Narrator announces e.g. "Ballpoint pen flyout" instead of "popup".
+    virtual winrt::hstring GetFlyoutName() { return {}; }
+
 protected:
     void SetToolKind(winrt::InkToolbarTool kind) { m_toolKind = kind; }
 

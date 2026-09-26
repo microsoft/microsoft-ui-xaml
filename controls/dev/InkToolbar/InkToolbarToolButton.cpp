@@ -11,6 +11,7 @@
 #include "InkToolbarToolButton.h"
 #include "InkToolbarToolButtonAutomationPeer.h"
 #include "InkToolbar.h"
+#include "InkToolbarFlyoutHelper.h"
 #include "InkToolbarTrace.h"
 
 InkToolbarToolButton::InkToolbarToolButton()
@@ -23,16 +24,9 @@ InkToolbarToolButton::InkToolbarToolButton()
     auto flyout = winrt::Flyout{};
     flyout.ShouldConstrainToRootBounds(false);
 
-    if (auto resources = Resources())
-    {
-        if (resources.HasKey(winrt::box_value(L"InkToolbarFlyoutStyle")))
-        {
-            if (auto style = resources.Lookup(winrt::box_value(L"InkToolbarFlyoutStyle")).try_as<winrt::Style>())
-            {
-                flyout.FlyoutPresenterStyle(style);
-            }
-        }
-    }
+    // The keyed InkToolbarFlyoutStyle in generic.xaml is not reachable from the button's resources, so
+    // apply the equivalent (zero-padding) presenter style in code to match WinUI 2 flyout padding.
+    ApplyInkToolbarFlyoutStyle(flyout);
 
     winrt::FlyoutBase::SetAttachedFlyout(*this, flyout);
 }
@@ -58,6 +52,25 @@ void InkToolbarToolButton::OnApplyTemplate()
     {
         winrt::ToolTipService::SetToolTip(*this, winrt::box_value(localizedToolName));
         winrt::AutomationProperties::SetName(*this, localizedToolName);
+    }
+
+    // UWP InkToolbarToolButton also names the attached flyout; without it Narrator announces the
+    // flyout as "popup". Guarded like the tool name above.
+    winrt::hstring flyoutName;
+    try
+    {
+        flyoutName = GetFlyoutName();
+    }
+    catch (winrt::hresult_error const& e)
+    {
+        InkToolbarLogHResult(e.code(), L"tool button flyout name lookup");
+    }
+    if (!flyoutName.empty())
+    {
+        if (auto flyout = winrt::FlyoutBase::GetAttachedFlyout(*this))
+        {
+            winrt::AutomationProperties::SetName(flyout, flyoutName);
+        }
     }
 
     // Run derived-class template work (pen palette, eraser flyout, etc.). See OnApplyTemplateCore.

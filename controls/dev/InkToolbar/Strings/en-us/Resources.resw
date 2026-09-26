@@ -282,4 +282,36 @@
     <value>Pink</value>
     <comment>Name of the InkToolbar highlighter palette color #EC008C.</comment>
   </data>
+  <data name="InkToolbarToolButtonSelectedStateName" xml:space="preserve">
+    <value>selected</value>
+    <comment>Appended to an InkToolbar tool button's accessible name when it is the active tool, so Narrator announces the selected tool. The Custom control type suppresses the native selected-state read.</comment>
+  </data>
+  <data name="InkToolbarPenConfigurationSizeSliderName" xml:space="preserve">
+    <value>Pen Size</value>
+    <comment>Accessible name for the stroke-width slider in the InkToolbar pen flyout; Narrator reads this before the value. UWP IDS_INKTOOLBAR_PENL3STROKEWIDTHSLIDERNAME = 6422.</comment>
+  </data>
+  <data name="InkToolbarStrokeWidthSliderRangeFormat" xml:space="preserve">
+    <value>Minimum %1!s!, maximum %2!s!</value>
+    <comment>Narrator help text for the InkToolbar pen-size slider, announcing the smallest and largest stroke width. %1!s! is the minimum value and %2!s! is the maximum value.</comment>
+  </data>
+  <data name="InkToolbarBallpointPenFlyoutName" xml:space="preserve">
+    <value>Ballpoint pen flyout</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar ballpoint-pen button; without it the flyout is announced as "popup". UWP IDS_INKTOOLBAR_BALLPOINTPENFLYOUT = 6440.</comment>
+  </data>
+  <data name="InkToolbarPencilFlyoutName" xml:space="preserve">
+    <value>Pencil flyout</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar pencil button. UWP IDS_INKTOOLBAR_PENCILFLYOUT = 6441.</comment>
+  </data>
+  <data name="InkToolbarHighlighterFlyoutName" xml:space="preserve">
+    <value>Highlighter flyout</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar highlighter button. UWP IDS_INKTOOLBAR_HIGHLIGHTERFLYOUT = 6442.</comment>
+  </data>
+  <data name="InkToolbarEraserFlyoutName" xml:space="preserve">
+    <value>Eraser flyout</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar eraser button. UWP IDS_INKTOOLBAR_ERASERFLYOUT = 6443.</comment>
+  </data>
+  <data name="InkToolbarStencilFlyoutName" xml:space="preserve">
+    <value>Stencil flyout</value>
+    <comment>Accessible name for the flyout opened by the InkToolbar stencil button. UWP IDS_INKTOOLBAR_STENCILFLYOUT = 6444.</comment>
+  </data>
 </root>

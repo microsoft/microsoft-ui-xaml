@@ -454,10 +454,12 @@ void InkToolbar::ExecuteToolAction(winrt::InkToolbarToolButton const& toolButton
     {
     case winrt::InkToolbarButtonFlyoutPlacement::Auto:
     case winrt::InkToolbarButtonFlyoutPlacement::Bottom:
-        flyoutPlacement = winrt::FlyoutPlacementMode::Bottom;
+        // Edge-aligned (not centred) so a button near the window's left edge doesn't push the wide
+        // pen-config flyout off-screen and clip it; it opens directly under the button instead.
+        flyoutPlacement = winrt::FlyoutPlacementMode::BottomEdgeAlignedLeft;
         break;
     case winrt::InkToolbarButtonFlyoutPlacement::Top:
-        flyoutPlacement = winrt::FlyoutPlacementMode::Top;
+        flyoutPlacement = winrt::FlyoutPlacementMode::TopEdgeAlignedLeft;
         break;
     case winrt::InkToolbarButtonFlyoutPlacement::Left:
         flyoutPlacement = winrt::FlyoutPlacementMode::Left;
@@ -764,6 +766,32 @@ void InkToolbar::OnFlyoutOpened(winrt::IInspectable const& sender, winrt::IInspe
         }
     }
 
+    // The flyout name is set on the flyout content, but ShouldConstrainToRootBounds(false) hosts it in
+    // a separate popup window that Narrator reads as "Popup". Copy the name onto that popup so the
+    // flyout is announced by name instead of "popup".
+    auto flyoutName = winrt::AutomationProperties::GetName(flyout);
+    if (!flyoutName.empty())
+    {
+        winrt::UIElement contentRoot{ nullptr };
+        if (found->m_penL3)
+        {
+            contentRoot = found->m_penL3.try_as<winrt::UIElement>();
+        }
+        else if (auto asFlyout = flyout.try_as<winrt::Flyout>())
+        {
+            contentRoot = asFlyout.Content().try_as<winrt::UIElement>();
+        }
+
+        for (winrt::DependencyObject node = contentRoot; node; node = winrt::VisualTreeHelper::GetParent(node))
+        {
+            if (node.try_as<winrt::Microsoft::UI::Xaml::Controls::FlyoutPresenter>() ||
+                node.try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::Popup>())
+            {
+                winrt::AutomationProperties::SetName(node, flyoutName);
+            }
+        }
+    }
+
     auto button = found->m_toolButton
         ? found->m_toolButton.as<winrt::UIElement>()
         : found->m_menuButton.as<winrt::UIElement>();
@@ -875,6 +903,13 @@ void InkToolbar::OnActiveToolChanged(winrt::DependencyPropertyChangedEventArgs c
     if (oldTool)
     {
         UpdateToolButtonVisuals(oldTool, newTool);
+
+        // The tool name carries its selected state, so refresh it for the tool that just lost selection.
+        if (auto oldPeer = winrt::FrameworkElementAutomationPeer::FromElement(oldTool))
+        {
+            oldPeer.RaisePropertyChangedEvent(
+                winrt::AutomationElementIdentifiers::NameProperty(), winrt::box_value(L""), winrt::box_value(oldPeer.GetName()));
+        }
     }
 
     winrt::InkToolbarPenButton penButton{ nullptr };
@@ -882,6 +917,25 @@ void InkToolbar::OnActiveToolChanged(winrt::DependencyPropertyChangedEventArgs c
     {
         UpdateToolButtonVisuals(newTool, newTool);
         penButton = newTool.try_as<winrt::InkToolbarPenButton>();
+
+        // Announce the new tool to Narrator; without an ElementSelected event, picking a tool is silent.
+        if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::SelectionItemPatternOnElementSelected))
+        {
+            auto peer = winrt::FrameworkElementAutomationPeer::FromElement(newTool);
+            if (!peer)
+            {
+                peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(newTool);
+            }
+            if (peer)
+            {
+                peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+
+                // "selected" is folded into the name, so re-raise Name; without this Narrator only reads
+                // the selected state the first time and stays silent on later tool changes.
+                peer.RaisePropertyChangedEvent(
+                    winrt::AutomationElementIdentifiers::NameProperty(), winrt::box_value(L""), winrt::box_value(peer.GetName()));
+            }
+        }
     }
 
     if (penButton)

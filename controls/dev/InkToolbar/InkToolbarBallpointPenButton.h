@@ -28,6 +28,11 @@ public:
         return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarBallpointPenButtonName);
     }
 
+    winrt::hstring GetFlyoutName() override
+    {
+        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarBallpointPenFlyoutName);
+    }
+
     // UWP InkToolbarBallpointPenButton::CreateInkDrawingAttributes: solid color, circle tip.
     winrt::InkDrawingAttributes CreateInkDrawingAttributes() override
     {

@@ -619,6 +619,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Applying the pen configuration template must actually run ConfigureLocalizableElements: both
+        // headings get their localized text and the otherwise-anonymous palette and slider get an
+        // automation name. The palette/slider names are set only in code (the template leaves them
+        // empty), so this test fails if ConfigureLocalizableElements is ever reduced to a no-op - which
+        // the makepri key-existence check alone would not catch.
+        [TestMethod]
+        public void InkToolbarPenConfigurationControlLocalizesHeadingsTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var config = new InkToolbarPenConfigurationControl();
+
+                // PenButton has no public setter; set the DP directly so OnApplyTemplate takes the
+                // pen (color-picker) path. Without a pen button the eraser path removes the Colors heading.
+                config.SetValue(InkToolbarPenConfigurationControl.PenButtonProperty, new InkToolbarBallpointPenButton());
+
+                Content = config;
+                Content.UpdateLayout();
+
+                var colorsTitle = config.FindVisualChildByName("PenColorPaletteTitle") as TextBlock;
+                var sizeTitle = config.FindVisualChildByName("PenStrokeWidthTitle") as TextBlock;
+                var palette = config.FindVisualChildByName("PenColorPalette") as FrameworkElement;
+                var slider = config.FindVisualChildByName("PenStrokeWidthSlider") as FrameworkElement;
+
+                Verify.IsNotNull(colorsTitle, "PenColorPaletteTitle should be realized after template apply.");
+                Verify.IsNotNull(sizeTitle, "PenStrokeWidthTitle should be realized after template apply.");
+                Verify.IsNotNull(palette, "PenColorPalette should be realized after template apply.");
+                Verify.IsNotNull(slider, "PenStrokeWidthSlider should be realized after template apply.");
+
+                Verify.IsFalse(string.IsNullOrEmpty(colorsTitle.Text), "Colors heading should carry localized text.");
+                Verify.IsFalse(string.IsNullOrEmpty(sizeTitle.Text), "Size heading should carry localized text.");
+
+                var paletteName = AutomationProperties.GetName(palette);
+                var sliderName = AutomationProperties.GetName(slider);
+                Verify.IsFalse(string.IsNullOrEmpty(paletteName), "Palette automation name should be set by ConfigureLocalizableElements.");
+                Verify.IsFalse(string.IsNullOrEmpty(sliderName), "Slider automation name should be set by ConfigureLocalizableElements.");
+                Verify.AreEqual(colorsTitle.Text, paletteName, "Palette automation name should match the Colors heading text.");
+            });
+        }
+
         // ====================================================================
         // Missing API coverage: EraserButton, CustomPen, CustomPenButton, Events
         // ====================================================================
@@ -640,16 +680,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // NOTE: InkToolbarCustomPen has a protected constructor in IDL — must be subclassed; not directly instantiable.
-        // Test disabled until a concrete derived test helper is added.
-        // NOTE: InkToolbarCustomPen has a protected constructor in IDL — must be subclassed; not directly instantiable.
-        // Test disabled until a concrete derived test helper is added.
+        // InkToolbarCustomPen has a protected constructor in IDL, so it is exercised through a concrete subclass.
+        private sealed class TestInkToolbarCustomPen : InkToolbarCustomPen
+        {
+            public int CoreCallCount { get; private set; }
+
+            protected override InkDrawingAttributes CreateInkDrawingAttributesCore(Brush brush, double strokeWidth)
+            {
+                CoreCallCount++;
+                return base.CreateInkDrawingAttributesCore(brush, strokeWidth);
+            }
+        }
+
         [TestMethod]
-        [Ignore]
         public void InkToolbarCustomPenTest()
         {
-            // Body intentionally empty — needs a concrete subclass of InkToolbarCustomPen for instantiation.
-            // Original assertions covered: CreateInkDrawingAttributes(brush, size) including null-brush path.
+            RunOnUIThread.Execute(() =>
+            {
+                var pen = new TestInkToolbarCustomPen();
+                Verify.IsNotNull(pen, "A derived InkToolbarCustomPen should be constructible via its protected constructor.");
+
+                // A solid brush maps its color and the requested width onto the returned attributes.
+                var attrs = pen.CreateInkDrawingAttributes(new SolidColorBrush(Colors.Red), 5.0);
+                Verify.IsNotNull(attrs, "CreateInkDrawingAttributes should return attributes for a solid brush.");
+                Verify.AreEqual(Colors.Red, attrs.Color, "Color should come from the solid color brush.");
+                Verify.AreEqual(5.0f, attrs.Size.Width, "Size.Width should match the requested stroke width.");
+                Verify.AreEqual(5.0f, attrs.Size.Height, "Size.Height should match the requested stroke width.");
+
+                // The null-brush path must not throw and still honors the requested width.
+                var nullBrushAttrs = pen.CreateInkDrawingAttributes(null, 3.0);
+                Verify.IsNotNull(nullBrushAttrs, "CreateInkDrawingAttributes should tolerate a null brush.");
+                Verify.AreEqual(3.0f, nullBrushAttrs.Size.Width, "Size.Width should match even when the brush is null.");
+
+                // The public method must dispatch through the overridable core.
+                Verify.AreEqual(2, pen.CoreCallCount, "CreateInkDrawingAttributes should route through CreateInkDrawingAttributesCore.");
+            });
         }
 
         [TestMethod]
@@ -853,6 +918,72 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(ExpandCollapseState.Collapsed, expandCollapse.ExpandCollapseState,
                         $"{tool} should report Collapsed before its flyout is opened.");
                 }
+            });
+        }
+
+        [TestMethod]
+        public void InkToolbarToolButtonAutomationPeerSelectedStateTest()
+        {
+            var toolbar = CreateLoadedInkToolbar();
+            RunOnUIThread.Execute(() =>
+            {
+                var ballpoint = toolbar.GetToolButton(InkToolbarTool.BallpointPen);
+                var pencil = toolbar.GetToolButton(InkToolbarTool.Pencil);
+                Verify.IsNotNull(ballpoint, "Ballpoint tool button should be present after load.");
+                Verify.IsNotNull(pencil, "Pencil tool button should be present after load.");
+
+                toolbar.ActiveTool = ballpoint;
+                toolbar.UpdateLayout();
+
+                var activePeer = FrameworkElementAutomationPeer.CreatePeerForElement(ballpoint);
+                var inactivePeer = FrameworkElementAutomationPeer.CreatePeerForElement(pencil);
+                Verify.IsNotNull(activePeer, "Active tool button should create an automation peer.");
+                Verify.IsNotNull(inactivePeer, "Inactive tool button should create an automation peer.");
+
+                // The active (checked) tool folds its localized selected state into the accessible name so
+                // Narrator announces the current tool; inactive tools must not.
+                Verify.IsTrue(activePeer.GetName().IndexOf("selected", StringComparison.OrdinalIgnoreCase) >= 0,
+                    $"Active tool name should include the selected state. Actual: '{activePeer.GetName()}'");
+                Verify.IsTrue(inactivePeer.GetName().IndexOf("selected", StringComparison.OrdinalIgnoreCase) < 0,
+                    $"Inactive tool name should not include the selected state. Actual: '{inactivePeer.GetName()}'");
+            });
+        }
+
+        [TestMethod]
+        public void InkToolbarStrokeWidthSliderAutomationPeerValueTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var slider = new InkToolbarStrokeWidthSlider { Minimum = 2, Maximum = 9, Value = 5 };
+                Content = slider;
+                Content.UpdateLayout();
+
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(slider);
+                Verify.IsNotNull(peer, "Stroke-width slider should create an automation peer.");
+
+                // A plain Slider exposes RangeValue (a percentage); this peer exposes Value so Narrator
+                // announces the absolute stroke width.
+                var valueProvider = peer.GetPattern(PatternInterface.Value) as IValueProvider;
+                Verify.IsNotNull(valueProvider, "Stroke-width slider peer should expose IValueProvider.");
+                Verify.IsFalse(valueProvider.IsReadOnly, "Stroke-width slider should be writable via UIA.");
+                Verify.AreEqual("5", valueProvider.Value, "Value should report the absolute stroke width.");
+
+                valueProvider.SetValue("7");
+                Verify.AreEqual(7.0, slider.Value, "SetValue should update the slider value.");
+                Verify.AreEqual("7", valueProvider.Value, "Value should reflect the updated stroke width.");
+
+                valueProvider.SetValue("100");
+                Verify.AreEqual(9.0, slider.Value, "SetValue should clamp above the maximum.");
+
+                valueProvider.SetValue("-5");
+                Verify.AreEqual(2.0, slider.Value, "SetValue should clamp below the minimum.");
+
+                // The name folds in the reachable range so it is announced even though Narrator does not
+                // reliably speak the RangeValue bounds for a Value-pattern slider.
+                var name = peer.GetName();
+                Verify.IsFalse(string.IsNullOrEmpty(name), "Slider peer name should include its range.");
+                Verify.IsTrue(name.Contains("2") && name.Contains("9"),
+                    $"Slider peer name should fold in the minimum and maximum. Actual: '{name}'");
             });
         }
 
