@@ -680,16 +680,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // NOTE: InkToolbarCustomPen has a protected constructor in IDL — must be subclassed; not directly instantiable.
-        // Test disabled until a concrete derived test helper is added.
-        // NOTE: InkToolbarCustomPen has a protected constructor in IDL — must be subclassed; not directly instantiable.
-        // Test disabled until a concrete derived test helper is added.
+        // InkToolbarCustomPen has a protected constructor in IDL, so it is exercised through a concrete subclass.
+        private sealed class TestInkToolbarCustomPen : InkToolbarCustomPen
+        {
+            public int CoreCallCount { get; private set; }
+
+            protected override InkDrawingAttributes CreateInkDrawingAttributesCore(Brush brush, double strokeWidth)
+            {
+                CoreCallCount++;
+                return base.CreateInkDrawingAttributesCore(brush, strokeWidth);
+            }
+        }
+
         [TestMethod]
-        [Ignore]
         public void InkToolbarCustomPenTest()
         {
-            // Body intentionally empty — needs a concrete subclass of InkToolbarCustomPen for instantiation.
-            // Original assertions covered: CreateInkDrawingAttributes(brush, size) including null-brush path.
+            RunOnUIThread.Execute(() =>
+            {
+                var pen = new TestInkToolbarCustomPen();
+                Verify.IsNotNull(pen, "A derived InkToolbarCustomPen should be constructible via its protected constructor.");
+
+                // A solid brush maps its color and the requested width onto the returned attributes.
+                var attrs = pen.CreateInkDrawingAttributes(new SolidColorBrush(Colors.Red), 5.0);
+                Verify.IsNotNull(attrs, "CreateInkDrawingAttributes should return attributes for a solid brush.");
+                Verify.AreEqual(Colors.Red, attrs.Color, "Color should come from the solid color brush.");
+                Verify.AreEqual(5.0f, attrs.Size.Width, "Size.Width should match the requested stroke width.");
+                Verify.AreEqual(5.0f, attrs.Size.Height, "Size.Height should match the requested stroke width.");
+
+                // The null-brush path must not throw and still honors the requested width.
+                var nullBrushAttrs = pen.CreateInkDrawingAttributes(null, 3.0);
+                Verify.IsNotNull(nullBrushAttrs, "CreateInkDrawingAttributes should tolerate a null brush.");
+                Verify.AreEqual(3.0f, nullBrushAttrs.Size.Width, "Size.Width should match even when the brush is null.");
+
+                // The public method must dispatch through the overridable core.
+                Verify.AreEqual(2, pen.CoreCallCount, "CreateInkDrawingAttributes should route through CreateInkDrawingAttributesCore.");
+            });
         }
 
         [TestMethod]
