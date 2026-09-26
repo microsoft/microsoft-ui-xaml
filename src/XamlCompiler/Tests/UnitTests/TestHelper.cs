@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Win8Xaml.CompilerProxies;
@@ -523,7 +524,20 @@ namespace UnitTests
                 sharedCodeInfo.AddXamlFileInfo(fileInfo);
             }
 
-            if (!cpx.IsPass1 && lang == CodeGenLanguage.Cpp)
+            if (!cpx.IsPass1)
+            {
+                // Mirror CompileXamlInternal, which parses the bind universes once every file has
+                // been harvested and before any code is generated. Without this the x:Binds have
+                // no path steps and no binding code is emitted at all.
+                foreach (BindUniverse bindUniverse in sharedCodeInfo.BindUniverses)
+                {
+                    IEnumerable<XamlCompileError> errors = bindUniverse.Parse(sharedCodeInfo);
+                    Assert.AreEqual(0, errors.Count(),
+                        String.Join(", ", errors.Select(error => error.ErrorCode + ": " + error.Message)));
+                }
+            }
+
+            if (!cpx.IsPass1 && (lang == CodeGenLanguage.Cpp || lang == CodeGenLanguage.CppWinRT))
             {
                 cpx.ProjectInfo.ClassToHeaderFileMap = new Dictionary<string, string>();
                 cpx.ProjectInfo.ClassToHeaderFileMap.Add(sharedCodeInfo.ClassName.FullName, sharedCodeInfo.ClassName.ShortName + ".h");
@@ -560,6 +574,9 @@ namespace UnitTests
 
                 case CodeGenLanguage.Cpp:
                     return Language.Parse("C++");
+
+                case CodeGenLanguage.CppWinRT:
+                    return Language.Parse("CppWinRT");
 
                 default:
                     throw new ArgumentOutOfRangeException("Bad Code Language");

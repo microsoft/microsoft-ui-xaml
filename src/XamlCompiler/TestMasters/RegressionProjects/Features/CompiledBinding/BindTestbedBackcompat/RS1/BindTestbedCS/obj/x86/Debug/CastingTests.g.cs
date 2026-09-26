@@ -913,10 +913,7 @@ namespace BindTestbed
             }
             private void Update_DataContext_Cast_DataContext_To_CastingTestsVM_Prefix(global::System.String obj, int phase)
             {
-                if (obj != null)
-                {
-                    this.Update_DataContext_Cast_DataContext_To_CastingTestsVM_M_CombineStringWithInt_1807171632(phase);
-                }
+                this.Update_DataContext_Cast_DataContext_To_CastingTestsVM_M_CombineStringWithInt_1807171632(phase);
             }
             private void Update_DataContext_Cast_DataContext_To_CastingTestsVM_Postfix(global::System.Double obj, int phase)
             {

@@ -958,7 +958,9 @@ private:
     {
         ::Platform::String^ p0;
         if (!TryGet_BindTestbedModel_DataModel_StaticStringProperty(p0)) { return; }
-        ::Platform::String^ result = this->GetDataRoot()->Model->FunctionOnModelOneStringArg(p0);
+        ::BindTestbedModel::DataModel^ instance;
+        if (!TryGet_Model(instance) || instance == nullptr) { return; }
+        ::Platform::String^ result = instance->FunctionOnModelOneStringArg(p0);
         if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
         {
             // FunctionTests.xaml line 52
@@ -1472,14 +1474,7 @@ private:
                 this->UpdateFallback_Model_ReentrancyString(phase);
             }
         }
-        if (obj != nullptr)
-        {
-            this->Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
-        }
-        else
-        {
-            this->UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
-        }
+        this->Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
     }
     void Update_Model_M_FunctionOnModelNoArgs_757602046(int phase)
     {
@@ -1605,10 +1600,7 @@ private:
     }
     void Update_Model_StaticStringProperty(::Platform::String^ obj, int phase)
     {
-        if (obj != nullptr)
-        {
-            this->Update_Model_M_FunctionOnModelOneStringArg_2484059362(phase);
-        }
+        this->Update_Model_M_FunctionOnModelOneStringArg_2484059362(phase);
     }
     void Update_Model_M_FunctionOnModelOneStringArg_2484059362(int phase)
     {
@@ -1653,10 +1645,7 @@ private:
                 this->Update_BindTestbedModel_DataModel_StaticStringProperty_M_ToString_757602046(phase);
             }
         }
-        if (obj != nullptr)
-        {
-            this->Update_Model_M_FunctionOnModelOneStringArg_1668010001(phase);
-        }
+        this->Update_Model_M_FunctionOnModelOneStringArg_1668010001(phase);
     }
     void Update_BindTestbedModel_DataModel_StaticStringProperty_M_ToString_757602046(int phase)
     {
@@ -1836,11 +1825,8 @@ private:
                 this->Update_Model_Employees_I0_Name_M_ToString_757602046(phase);
             }
         }
-        if (obj != nullptr)
-        {
-            this->Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase);
-            this->Update_Model_M_FunctionOnModelOneStringArg_2532831189(phase);
-        }
+        this->Update_Model_M_FunctionOnModelThreeArgs_2448615814(phase);
+        this->Update_Model_M_FunctionOnModelOneStringArg_2532831189(phase);
     }
     void Update_Model_Employees_I0_Name_M_ToString_757602046(int phase)
     {
@@ -1902,10 +1888,7 @@ private:
     }
     void Update_Model_NullEmployee_Name(::Platform::String^ obj, int phase)
     {
-        if (obj != nullptr)
-        {
-            this->Update_Model_M_FunctionOnModelNullArg_3348340388(phase);
-        }
+        this->Update_Model_M_FunctionOnModelNullArg_3348340388(phase);
     }
     void Update_Model_M_FunctionOnModelNullArg_3348340388(int phase)
     {
@@ -1929,10 +1912,7 @@ private:
     }
     void Update_Model_StringPropertyDP(::Platform::String^ obj, int phase)
     {
-        if (obj != nullptr)
-        {
-            this->Update_Model_M_FunctionOnModelThreeArgs_706606279(phase);
-        }
+        this->Update_Model_M_FunctionOnModelThreeArgs_706606279(phase);
     }
     void Update_Model_M_FunctionOnModelThreeArgs_706606279(int phase)
     {
@@ -1985,14 +1965,7 @@ private:
                 this->UpdateFallback_Model_NullEmployee_FirstName_M_ToString_757602046(phase);
             }
         }
-        if (obj != nullptr)
-        {
-            this->Update_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
-        }
-        else
-        {
-            this->UpdateFallback_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
-        }
+        this->Update_Model_M_FunctionOnModelThreeArgs_1187614766(phase);
     }
     void Update_Model_NullEmployee_FirstName_M_ToString_757602046(int phase)
     {
@@ -2071,10 +2044,7 @@ private:
     }
     void Update_Model_Employees_I2_Name(::Platform::String^ obj, int phase)
     {
-        if (obj != nullptr)
-        {
-            this->Update_Model_M_FunctionOnModelOneStringArg_2530340821(phase);
-        }
+        this->Update_Model_M_FunctionOnModelOneStringArg_2530340821(phase);
     }
     void Update_Model_M_FunctionOnModelOneStringArg_2530340821(int phase)
     {
@@ -2088,14 +2058,7 @@ private:
     }
     void Update_Model_ReentrancyString(::Platform::String^ obj, int phase)
     {
-        if (obj != nullptr)
-        {
-            this->Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
-        }
-        else
-        {
-            this->UpdateFallback_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
-        }
+        this->Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(phase);
     }
     void Update_BindTestbedModel_DataModel_M_UpdateReentrancyString_1481343332(int phase)
     {
