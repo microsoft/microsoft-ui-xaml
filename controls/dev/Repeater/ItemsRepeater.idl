@@ -322,8 +322,23 @@ unsealed runtimeclass VirtualizingLayout : Layout
 
 [MUX_PUBLIC_V5]
 [webhosthidden]
-runtimeclass ItemCollectionTransition
+unsealed runtimeclass ItemCollectionTransition
 {
+    [method_name("CreateInstanceWithOperation")]
+    protected ItemCollectionTransition(
+        ItemCollectionTransitionProvider owningProvider,
+        Microsoft.UI.Xaml.UIElement element,
+        ItemCollectionTransitionOperation operation,
+        ItemCollectionTransitionTriggers triggers);
+
+    [method_name("CreateInstanceWithBounds")]
+    protected ItemCollectionTransition(
+        ItemCollectionTransitionProvider owningProvider,
+        Microsoft.UI.Xaml.UIElement element,
+        ItemCollectionTransitionTriggers triggers,
+        Windows.Foundation.Rect oldBounds,
+        Windows.Foundation.Rect newBounds);
+
     ItemCollectionTransitionOperation Operation{ get; };
     ItemCollectionTransitionTriggers Triggers{ get; };
     Windows.Foundation.Rect OldBounds{ get; };
