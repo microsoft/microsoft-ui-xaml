@@ -922,6 +922,72 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void InkToolbarToolButtonAutomationPeerSelectedStateTest()
+        {
+            var toolbar = CreateLoadedInkToolbar();
+            RunOnUIThread.Execute(() =>
+            {
+                var ballpoint = toolbar.GetToolButton(InkToolbarTool.BallpointPen);
+                var pencil = toolbar.GetToolButton(InkToolbarTool.Pencil);
+                Verify.IsNotNull(ballpoint, "Ballpoint tool button should be present after load.");
+                Verify.IsNotNull(pencil, "Pencil tool button should be present after load.");
+
+                toolbar.ActiveTool = ballpoint;
+                toolbar.UpdateLayout();
+
+                var activePeer = FrameworkElementAutomationPeer.CreatePeerForElement(ballpoint);
+                var inactivePeer = FrameworkElementAutomationPeer.CreatePeerForElement(pencil);
+                Verify.IsNotNull(activePeer, "Active tool button should create an automation peer.");
+                Verify.IsNotNull(inactivePeer, "Inactive tool button should create an automation peer.");
+
+                // The active (checked) tool folds its localized selected state into the accessible name so
+                // Narrator announces the current tool; inactive tools must not.
+                Verify.IsTrue(activePeer.GetName().IndexOf("selected", StringComparison.OrdinalIgnoreCase) >= 0,
+                    $"Active tool name should include the selected state. Actual: '{activePeer.GetName()}'");
+                Verify.IsTrue(inactivePeer.GetName().IndexOf("selected", StringComparison.OrdinalIgnoreCase) < 0,
+                    $"Inactive tool name should not include the selected state. Actual: '{inactivePeer.GetName()}'");
+            });
+        }
+
+        [TestMethod]
+        public void InkToolbarStrokeWidthSliderAutomationPeerValueTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var slider = new InkToolbarStrokeWidthSlider { Minimum = 2, Maximum = 9, Value = 5 };
+                Content = slider;
+                Content.UpdateLayout();
+
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(slider);
+                Verify.IsNotNull(peer, "Stroke-width slider should create an automation peer.");
+
+                // A plain Slider exposes RangeValue (a percentage); this peer exposes Value so Narrator
+                // announces the absolute stroke width.
+                var valueProvider = peer.GetPattern(PatternInterface.Value) as IValueProvider;
+                Verify.IsNotNull(valueProvider, "Stroke-width slider peer should expose IValueProvider.");
+                Verify.IsFalse(valueProvider.IsReadOnly, "Stroke-width slider should be writable via UIA.");
+                Verify.AreEqual("5", valueProvider.Value, "Value should report the absolute stroke width.");
+
+                valueProvider.SetValue("7");
+                Verify.AreEqual(7.0, slider.Value, "SetValue should update the slider value.");
+                Verify.AreEqual("7", valueProvider.Value, "Value should reflect the updated stroke width.");
+
+                valueProvider.SetValue("100");
+                Verify.AreEqual(9.0, slider.Value, "SetValue should clamp above the maximum.");
+
+                valueProvider.SetValue("-5");
+                Verify.AreEqual(2.0, slider.Value, "SetValue should clamp below the minimum.");
+
+                // The name folds in the reachable range so it is announced even though Narrator does not
+                // reliably speak the RangeValue bounds for a Value-pattern slider.
+                var name = peer.GetName();
+                Verify.IsFalse(string.IsNullOrEmpty(name), "Slider peer name should include its range.");
+                Verify.IsTrue(name.Contains("2") && name.Contains("9"),
+                    $"Slider peer name should fold in the minimum and maximum. Actual: '{name}'");
+            });
+        }
+
+        [TestMethod]
         public void InkToolbarMenuButtonAutomationPeerExpandCollapseTest()
         {
             var toolbar = CreateLoadedInkToolbar();
