@@ -20,8 +20,6 @@ namespace winrt::BindTestbed::implementation
     BindTestbedModel::DataModel App::Model = nullptr;
     BindTestbedModel::DOModel App::DOModel = nullptr;
     wux::Window window = nullptr;
-    //TODO: Convert BindTestbedModelCX to C++/WinRT
-    //BindTestbedCXModel::ModelCX App::ModelCX = nullptr;
 
     /// <summary>
     /// Initializes the singleton application object.  This is the first line of authored code
@@ -30,7 +28,6 @@ namespace winrt::BindTestbed::implementation
     App::App()
     {
         InitializeComponent();
-        Suspending({ this, &App::OnSuspending });
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
         UnhandledException([this](IInspectable const&, wux::UnhandledExceptionEventArgs const& e)
@@ -45,9 +42,6 @@ namespace winrt::BindTestbed::implementation
 
         Model = BindTestbedModel::DataModel();
         DOModel = BindTestbedModel::DOModel();
-        //TODO: Convert BindTestbedModelCX to C++/WinRT
-        //ModelCX = BindTestbedCXModel::ModelCX();
-        //ModelCX = BindTestbedCXModel::ModelCX();
     }
 
     /// <summary>
@@ -59,15 +53,11 @@ namespace winrt::BindTestbed::implementation
     {
         wuxc::Frame rootFrame(nullptr);
 
-#ifdef DESKTOP
+        // Desktop (Win32) app model: the window is created by the app, not supplied by
+        // the platform as Window::Current() did in the app-container model.
         window = wux::Window::Window();
         auto content = window.Content();
         rootFrame = content.try_as<wuxc::Frame>();
-#else
-        window = wux::Window::Current();
-        auto content = wux::Window::Current().Content();
-        if (content) rootFrame = content.try_as<wuxc::Frame>();
-#endif
         // Do not repeat app initialization when the Window already has content,
         // just ensure that the window is active
         if (rootFrame == nullptr)
@@ -98,21 +88,6 @@ namespace winrt::BindTestbed::implementation
         // Ensure the current window is active
         window.Activate();
 
-    }
-
-    /// <summary>
-    /// Invoked when application execution is being suspended.  Application state is saved
-    /// without knowing whether the application will be terminated or resumed with the contents
-    /// of memory still intact.
-    /// </summary>
-    /// <param name="sender">The source of the suspend request.</param>
-    /// <param name="e">Details about the suspend request.</param>
-    void App::OnSuspending(IInspectable const& sender, wa::SuspendingEventArgs const& e)
-    {
-        (void)sender;  // Unused parameter
-        (void)e;   // Unused parameter
-
-                   //Save application state and stop any background activity
     }
 
     /// <summary>

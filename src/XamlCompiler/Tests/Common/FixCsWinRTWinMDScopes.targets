@@ -1,0 +1,240 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<!--
+  C#/WinRT's WinRTTypeWriter.GetTypeReference chooses a TypeRef's assembly scope from
+  WindowsRuntimeTypeAttribute when one is present. For mapped types without that attribute, it uses
+  the hard-coded mappings in TypeMapper.cs. The 13 Microsoft.UI.Xaml.* mappings name Microsoft.UI
+  as their assembly even though those types are defined by Microsoft.UI.Xaml. For example:
+
+      { "System.ComponentModel.INotifyPropertyChanged",
+            new MappedType("Microsoft.UI.Xaml.Data", "INotifyPropertyChanged", "Microsoft.UI") },
+
+  The authored WinMD consequently references both assemblies but scopes these TypeRefs to
+  Microsoft.UI, which does not define them. Consumers that search outside the declared scope can
+  hide the mismatch. The XAML compiler intentionally resolves the declared ResolutionScope and then
+  calls GetType(name, throwOnError: true), so it reports WMC9999 for the missing type and stops before
+  code generation.
+
+  This target scans the authored WinMD for Microsoft.UI.Xaml.* TypeRefs scoped to Microsoft.UI and
+  rewrites their ResolutionScope to the existing Microsoft.UI.Xaml AssemblyRef. Both scopes use the
+  AssemblyRef coded-index tag and width, so the task can update the rows in place without moving
+  metadata or renumbering tokens. It verifies the written file afterward, preserving strict XAML
+  compiler resolution while leaving unrelated metadata untouched.
+-->
+<Project>
+
+  <UsingTask TaskName="FixCsWinRTWinMDScopes"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <WinMD ParameterType="System.String" Required="true" />
+      <BadAssembly ParameterType="System.String" Required="true" />
+      <GoodAssembly ParameterType="System.String" Required="true" />
+      <NamespacePrefix ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="$(MSBuildToolsPath)\System.Reflection.Metadata.dll" />
+      <Reference Include="$(MSBuildToolsPath)\System.Collections.Immutable.dll" />
+      <Code Type="Class" Language="cs"><![CDATA[
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
+using System.Reflection.PortableExecutable;
+using Microsoft.Build.Framework;
+
+public class FixCsWinRTWinMDScopes : Microsoft.Build.Utilities.Task
+{
+    public string WinMD { get; set; }
+    public string BadAssembly { get; set; }
+    public string GoodAssembly { get; set; }
+    public string NamespacePrefix { get; set; }
+
+    public override bool Execute()
+    {
+        if (!File.Exists(WinMD))
+        {
+            Log.LogMessage(MessageImportance.Low, "FixCsWinRTWinMDScopes: '" + WinMD + "' does not exist; nothing to do.");
+            return true;
+        }
+
+        byte[] image = File.ReadAllBytes(WinMD);
+
+        var offsets = new List<int>();
+        var names = new List<string>();
+        int codedIndexWidth;
+        int goodRid;
+        int badRid;
+
+        if (!Scan(image, offsets, names, out codedIndexWidth, out goodRid, out badRid))
+        {
+            return false;
+        }
+
+        if (offsets.Count == 0)
+        {
+            Log.LogMessage(MessageImportance.Low,
+                "FixCsWinRTWinMDScopes: " + Path.GetFileName(WinMD) + " has no mis-scoped TypeRefs.");
+            return true;
+        }
+
+        // The ResolutionScope coded index keeps the same tag (AssemblyRef) and therefore the same
+        // width, so this is a fixed-width, in-place edit: nothing moves and no token is renumbered.
+        int expected = (badRid << 2) | 2;
+        int replacement = (goodRid << 2) | 2;
+
+        for (int i = 0; i < offsets.Count; i++)
+        {
+            int current = codedIndexWidth == 2
+                ? BitConverter.ToUInt16(image, offsets[i])
+                : BitConverter.ToInt32(image, offsets[i]);
+
+            // Never write on an assumption: the bytes must decode to exactly the row we read.
+            if (current != expected)
+            {
+                Log.LogError("FixCsWinRTWinMDScopes: " + WinMD + ": expected ResolutionScope 0x" +
+                    expected.ToString("X") + " at offset 0x" + offsets[i].ToString("X") + " for '" +
+                    names[i] + "' but found 0x" + current.ToString("X") + ". Refusing to patch.");
+                return false;
+            }
+
+            byte[] bytes = codedIndexWidth == 2
+                ? BitConverter.GetBytes((ushort)replacement)
+                : BitConverter.GetBytes(replacement);
+            Array.Copy(bytes, 0, image, offsets[i], codedIndexWidth);
+
+            Log.LogMessage(MessageImportance.Normal,
+                "FixCsWinRTWinMDScopes: " + Path.GetFileName(WinMD) + ": re-scoped " + names[i] +
+                " from " + BadAssembly + " to " + GoodAssembly + ".");
+        }
+
+        File.WriteAllBytes(WinMD, image);
+
+        // Verify against the file we just wrote rather than trusting the edit.
+        var verifyOffsets = new List<int>();
+        var verifyNames = new List<string>();
+        int w2, g2, b2;
+        if (!Scan(File.ReadAllBytes(WinMD), verifyOffsets, verifyNames, out w2, out g2, out b2))
+        {
+            return false;
+        }
+        if (verifyOffsets.Count != 0)
+        {
+            Log.LogError("FixCsWinRTWinMDScopes: " + WinMD + " still has " + verifyOffsets.Count +
+                " mis-scoped TypeRef(s) after patching.");
+            return false;
+        }
+
+        Log.LogMessage(MessageImportance.High,
+            "FixCsWinRTWinMDScopes: repaired " + offsets.Count + " TypeRef scope(s) in " +
+            Path.GetFileName(WinMD) + " (C#/WinRT TypeMapper defect workaround).");
+        return true;
+    }
+
+    private bool Scan(byte[] image, List<int> offsets, List<string> names,
+                      out int codedIndexWidth, out int goodRid, out int badRid)
+    {
+        codedIndexWidth = 0;
+        goodRid = 0;
+        badRid = 0;
+
+        using (var stream = new MemoryStream(image, false))
+        using (var pe = new PEReader(stream))
+        {
+            var md = pe.GetMetadataReader();
+
+            int metadataStart = pe.PEHeaders.MetadataStartOffset;
+            int tableOffset = md.GetTableMetadataOffset(TableIndex.TypeRef);
+            int rowSize = md.GetTableRowSize(TableIndex.TypeRef);
+
+            // ResolutionScope is a coded index over Module | ModuleRef | AssemblyRef | TypeRef
+            // (2 tag bits), and is the first column of a TypeRef row.
+            int maxRows = md.GetTableRowCount(TableIndex.Module);
+            maxRows = Math.Max(maxRows, md.GetTableRowCount(TableIndex.ModuleRef));
+            maxRows = Math.Max(maxRows, md.GetTableRowCount(TableIndex.AssemblyRef));
+            maxRows = Math.Max(maxRows, md.GetTableRowCount(TableIndex.TypeRef));
+            codedIndexWidth = maxRows < (1 << 14) ? 2 : 4;
+
+            foreach (var handle in md.AssemblyReferences)
+            {
+                string name = md.GetString(md.GetAssemblyReference(handle).Name);
+                if (string.Equals(name, GoodAssembly, StringComparison.Ordinal))
+                {
+                    goodRid = MetadataTokens.GetRowNumber(handle);
+                }
+                else if (string.Equals(name, BadAssembly, StringComparison.Ordinal))
+                {
+                    badRid = MetadataTokens.GetRowNumber(handle);
+                }
+            }
+
+            // No reference to the mis-scoped assembly at all means there is nothing to repair.
+            if (badRid == 0)
+            {
+                return true;
+            }
+
+            foreach (var handle in md.TypeReferences)
+            {
+                var typeRef = md.GetTypeReference(handle);
+                if (typeRef.ResolutionScope.Kind != HandleKind.AssemblyReference)
+                {
+                    continue;
+                }
+                if (MetadataTokens.GetRowNumber((AssemblyReferenceHandle)typeRef.ResolutionScope) != badRid)
+                {
+                    continue;
+                }
+
+                string ns = md.GetString(typeRef.Namespace);
+                if (!ns.StartsWith(NamespacePrefix, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                if (goodRid == 0)
+                {
+                    Log.LogError("FixCsWinRTWinMDScopes: " + WinMD + " scopes '" + ns + "." +
+                        md.GetString(typeRef.Name) + "' to " + BadAssembly +
+                        ", but has no reference to " + GoodAssembly + " to repoint it at.");
+                    return false;
+                }
+
+                int row = MetadataTokens.GetRowNumber(handle);
+                offsets.Add(metadataStart + tableOffset + ((row - 1) * rowSize));
+                names.Add(ns + "." + md.GetString(typeRef.Name));
+            }
+        }
+
+        return true;
+    }
+}
+]]></Code>
+    </Task>
+  </UsingTask>
+
+  <!--
+    Repair the WinMD copy consumed by midlrt, cppwinrt, and the XAML compiler. The task is
+    idempotent and skips metadata without matching TypeRefs.
+  -->
+  <Target Name="FixCsWinRTWinMDTypeRefScopes"
+          AfterTargets="CsWinRTPlaceWinMDInOutputFolder"
+          Condition="'$(CsWinRTComponent)' == 'true'">
+
+    <ItemGroup>
+      <_CsWinRTAuthoredWinMD Include="$(OutDir)$(AssemblyName).winmd"
+                             Condition="Exists('$(OutDir)$(AssemblyName).winmd')" />
+      <_CsWinRTAuthoredWinMD Include="$(CsWinRTGeneratedFilesDir)$(AssemblyName).winmd"
+                             Condition="'$(CsWinRTGeneratedFilesDir)' != '' And Exists('$(CsWinRTGeneratedFilesDir)$(AssemblyName).winmd')" />
+    </ItemGroup>
+
+    <FixCsWinRTWinMDScopes WinMD="%(_CsWinRTAuthoredWinMD.FullPath)"
+                           BadAssembly="Microsoft.UI"
+                           GoodAssembly="Microsoft.UI.Xaml"
+                           NamespacePrefix="Microsoft.UI.Xaml"
+                           Condition="'@(_CsWinRTAuthoredWinMD)' != ''" />
+  </Target>
+
+</Project>

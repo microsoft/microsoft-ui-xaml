@@ -25,17 +25,55 @@ namespace UnitTests
             _testHelper.TestProxies();
         }
 
+        [TestMethod]
+        public void XamlTypeUniverseDisposalIsSharedAcrossProxies()
+        {
+            var universe = new XamlTypeUniverse(false);
+            var alias = new XamlTypeUniverse(universe.Instance);
+
+            universe.Dispose();
+            universe.Dispose();
+            alias.Dispose();
+
+            AssertObjectDisposed(() => Assert.IsNotNull(alias.Instance));
+            AssertObjectDisposed(() => alias.GetSystemAssembly());
+            AssertObjectDisposed(() => Assert.IsFalse(alias.IsSystemAssemblyLoaded));
+        }
+
+        [TestMethod]
+        public void DirectUISystemProxyExposesUnderlyingCollections()
+        {
+            DirectUISchemaContext schema = _testHelper.LoadSchema(SchemaMode.ManagedRuntime);
+            DirectUISystem system = schema.DirectUISystem;
+
+            Assert.IsTrue(system.PlatformAssemblies.Count > 0);
+            Assert.AreEqual(system.PlatformAssemblies.Count, system.XamlTypeUniverses.Count);
+            foreach (DirectUIAssembly assembly in system.PlatformAssemblies)
+            {
+                Assert.IsNotNull(assembly.WrappedAssembly);
+            }
+            foreach (XamlTypeUniverse universe in system.XamlTypeUniverses)
+            {
+                Assert.IsNotNull(universe.Instance);
+            }
+        }
+
+        private static void AssertObjectDisposed(Action action)
+        {
+            try
+            {
+                action();
+                Assert.Fail("Expected ObjectDisposedException.");
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+        }
+
         /// <summary>
         /// Simple 'just test some XAML' basic test.
         /// </summary>
         [TestMethod]
-        // Create a dependencies that cause MsTest.exe to copy the specified file to the Test folder.
-        [DeploymentItem(@"LibManagedDll.dll")]
-        [DeploymentItem(@"LibManagedDllSatellite.dll")]
-        [DeploymentItem(@"LibManagedWinmd.Winmd")]
-        [DeploymentItem(@"Microsoft.UI.Xaml.Markup.Compiler.dll")]
-        [DeploymentItem(ProxyHelper.WinUIWinmdFile)]
-        [DeploymentItem(@"GenXbf.dll")]
         public void Basic01()
         {
             string xaml = @"

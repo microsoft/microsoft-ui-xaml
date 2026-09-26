@@ -45,12 +45,6 @@ namespace winrt::BindTestbed::implementation
         {
             return _domodel;
         }
-        
-        //TODO: Convert BindTestbedModelCX to C++/WinRT
-        // BindTestbedCXModel::ModelCX ModelCX()
-        // {
-        //     return _modelCX;
-        // }
 
         wfc::IObservableVector<BindTestbedModel::IEmployee> Employees()
         {
@@ -82,8 +76,6 @@ namespace winrt::BindTestbed::implementation
     private:
         BindTestbedModel::DataModel _model = nullptr;
         BindTestbedModel::DOModel _domodel = nullptr;
-        //TODO: Convert BindTestbedModelCX to C++/WinRT
-        //BindTestbedCXModel::ModelCX _modelCX = nullptr;
         wfc::IObservableVector<BindTestbedModel::IEmployee> _employees = nullptr;
         wfc::IObservableVector<hstring> _allFirstNames = nullptr;
         wfc::IObservableVector<hstring> _allLastNames = nullptr;

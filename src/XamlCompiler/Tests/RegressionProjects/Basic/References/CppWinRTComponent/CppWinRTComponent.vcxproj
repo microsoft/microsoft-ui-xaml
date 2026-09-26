@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7c8d2b51-b3c2-490c-859e-13ff73ae618f}</ProjectGuid>
+    <ProjectName>CppWinRTComponent</ProjectName>
+    <RootNamespace>CppWinRTComponent</RootNamespace>
+    <AppContainerApplication>false</AppContainerApplication>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <DesktopCompatible>true</DesktopCompatible>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(CommonFilesPath)RuntimeComponentPreamble.vcxproj" />
+
+  <ItemGroup>
+    <ClInclude Include="CppWinRTUserControlFromWinRTComponent.xaml.h">
+      <DependentUpon>CppWinRTUserControlFromWinRTComponent.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Class.h">
+      <DependentUpon>Class.cpp</DependentUpon>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CppWinRTUserControlFromWinRTComponent.xaml.cpp">
+      <DependentUpon>CppWinRTUserControlFromWinRTComponent.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Class.cpp" />
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="Class.idl">
+      <SubType>Code</SubType>
+      <DependentUpon>Class.cpp</DependentUpon>
+    </Midl>
+    <Midl Include="CppWinRTUserControlFromWinRTComponent.idl">
+      <DependentUpon>CppWinRTUserControlFromWinRTComponent.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CppWinRTComponent.def" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="CppWinRTUserControlFromWinRTComponent.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
+  <Import Project="$(CommonFilesPath)RuntimeComponentPostamble.vcxproj" />
+</Project>

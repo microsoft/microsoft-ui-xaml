@@ -21,11 +21,8 @@ namespace winrt::BindTestbed::implementation
 
         static BindTestbedModel::DataModel Model;
         static BindTestbedModel::DOModel DOModel;
-        //TODO: Convert BindTestbedModelCX to C++/WinRT
-        //static BindTestbedCXModel::ModelCX ModelCX
 
         void OnLaunched(wux::LaunchActivatedEventArgs const& e);
-        void OnSuspending(IInspectable const& sender, wa::SuspendingEventArgs const& e);
         void OnNavigationFailed(IInspectable const& sender, wux::Navigation::NavigationFailedEventArgs const& e);
     };
 }

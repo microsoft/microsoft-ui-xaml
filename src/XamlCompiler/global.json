@@ -3,5 +3,9 @@
         "version": "5.0.301",
         "rollForward": "LatestMajor",
         "allowPrerelease": true
+    },
+    "msbuild-sdks": {
+        "Microsoft.Build.NoTargets": "3.3.0"
     }
+
 }

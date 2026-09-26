@@ -22,7 +22,6 @@ namespace Simple
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    [CLSCompliant(false)]
     public sealed partial class BlankPage : Page
     {
         public BlankPage()

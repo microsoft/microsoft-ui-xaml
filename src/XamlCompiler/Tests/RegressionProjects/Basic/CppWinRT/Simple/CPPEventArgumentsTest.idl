@@ -1,0 +1,24 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+//
+// Exercises XamlTypeInfo generation for native events whose delegates cover pass, fill, and
+// receive arrays plus an out string.
+//
+namespace Simple
+{
+    delegate void MyFirstEvent(UInt32[] args);
+    delegate void MySecondEvent(ref UInt32[] args);
+    delegate void MyThirdEvent(out UInt32[] args);
+    delegate void MyFourthEvent(out String args);
+
+    [Windows.Foundation.Metadata.WebHostHidden]
+    runtimeclass CPPEventArgumentsTest : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        CPPEventArgumentsTest();
+
+        event MyFirstEvent TheFirstEvent;
+        event MySecondEvent TheSecondEvent;
+        event MyThirdEvent TheThirdEvent;
+        event MyFourthEvent TheFourthEvent;
+    };
+}

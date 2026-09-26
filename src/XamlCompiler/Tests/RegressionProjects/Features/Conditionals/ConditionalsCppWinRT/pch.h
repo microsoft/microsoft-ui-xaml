@@ -9,6 +9,9 @@
 
 #include "hstring.h"
 #include "windows.h"
+// windows.h defines GetCurrentTime as a macro, which collides with the
+// Microsoft.UI.Xaml.Media.Animation.Timeline.GetCurrentTime projection.
+#undef GetCurrentTime
 
 #include "winrt/Windows.ApplicationModel.Activation.h"
 #include "winrt/Windows.Foundation.h"
@@ -28,13 +31,12 @@
 #include "winrt/Microsoft.UI.Xaml.Shapes.h"
 
 #include "winrt/ConditionalControls.h"
-#include "winrt/ConditionalControls.ConditionalsModel_XamlTypeInfo.h"
 
 namespace winrt::ConditionalsCppWinRT::implementation
 {
-    namespace wa = ::Windows::ApplicationModel;
-    namespace wf = ::Windows::Foundation;
-    namespace wfc = ::Windows::Foundation::Collections;
+    namespace wa = ::winrt::Windows::ApplicationModel;
+    namespace wf = ::winrt::Windows::Foundation;
+    namespace wfc = ::winrt::Windows::Foundation::Collections;
     namespace wux = Microsoft::UI::Xaml;
     namespace wuxc = Microsoft::UI::Xaml::Controls;
 }

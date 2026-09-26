@@ -1,0 +1,24 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+//
+// Exercises XAML-attached event handlers whose delegates cover C++/WinRT pass, fill, and
+// receive arrays plus an out string.
+//
+namespace EventHandling_968976
+{
+    delegate void MyFirstEvent(UInt32[] args);
+    delegate void MySecondEvent(ref UInt32[] args);
+    delegate void MyThirdEvent(out UInt32[] args);
+    delegate void MyFourthEvent(out String args);
+
+    [Windows.Foundation.Metadata.WebHostHidden]
+    runtimeclass MyUserControl : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        MyUserControl();
+
+        event MyFirstEvent TheFirstEvent;
+        event MySecondEvent TheSecondEvent;
+        event MyThirdEvent TheThirdEvent;
+        event MyFourthEvent TheFourthEvent;
+    }
+}

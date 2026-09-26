@@ -13,8 +13,6 @@ namespace BindTestbed
     {
         public BindTestbedModel.DataModel Model { get; set; }
         public BindTestbedModel.DOModel DOModel { get; set; }
-        //TODO: Convert BindTestbedModelCX to C++/WinRT
-        //public BindTestbedCXModel.ModelCX ModelCX { get; set; }
 
         public LanguageSpecific LanguageModel { get; set; }
 
@@ -37,8 +35,6 @@ namespace BindTestbed
             this.Model.UpdateValues();
             this.DOModel.UpdateValues();
             this.LanguageModel.UpdateValues();
-            //TODO: Convert BindTestbedModelCX to C++/WinRT
-            //this.ModelCX.UpdateValues();
         }
 
         private void ResetValuesClick(object sender, RoutedEventArgs e)
@@ -46,8 +42,6 @@ namespace BindTestbed
             this.Model.InitializeValues();
             this.DOModel.UpdateValues();
             this.LanguageModel.InitializeValues();
-            //TODO: Convert BindTestbedModelCX to C++/WinRT
-            //this.ModelCX.InitializeValues();
         }
     }
 }

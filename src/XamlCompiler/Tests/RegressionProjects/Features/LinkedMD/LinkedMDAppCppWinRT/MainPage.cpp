@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 #include "pch.h"
 #include "MainPage.h"
+#include "MainPage.g.cpp"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
@@ -47,18 +48,6 @@ namespace winrt::LinkedMDAppCppWinRT::implementation
         EnsureMemberExists(t, L"StringPropertyOnS");
         EnsureMemberExists(t, L"TPropertyOnS");
         t = EnsureTypeExists(L"LinkedMDSubControlsCppWinRT.T");
-        EnsureMemberExists(t, L"StringPropertyOnT");
-
-        // CX
-        t = EnsureTypeExists(L"ControlsCX.A");
-        EnsureMemberExists(t, L"StringPropertyOnA");
-        EnsureMemberExists(t, L"BPropertyOnA");
-        t = EnsureTypeExists(L"ControlsCX.B");
-        EnsureMemberExists(t, L"StringPropertyOnB");
-        t = EnsureTypeExists(L"SubControlsCX.S");
-        EnsureMemberExists(t, L"StringPropertyOnS");
-        EnsureMemberExists(t, L"TPropertyOnS");
-        t = EnsureTypeExists(L"SubControlsCX.T");
         EnsureMemberExists(t, L"StringPropertyOnT");
     }
 }

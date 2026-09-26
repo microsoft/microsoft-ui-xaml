@@ -1,0 +1,34 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace BindTestbedCppWinRTModel
+{
+    struct Coordinates
+    {
+        Int32 x;
+        Int32 y;
+    };
+
+    [bindable]
+    runtimeclass ModelCppWinRT 
+    {
+        ModelCppWinRT();
+
+        Windows.Foundation.Collections.IObservableVector<String> ObservableVectorOfStrings{ get; };
+        BindTestbedCppWinRTModel.Coordinates Location{ get; };
+
+        void InitializeValues();
+        void UpdateValues();
+        static BindTestbedCppWinRTModel.Coordinates MakeStarCppWinRT(String args);
+    }
+
+    [bindable]
+    runtimeclass StarCppWinRT : Microsoft.UI.Xaml.FrameworkElement
+    {
+        StarCppWinRT();
+
+        BindTestbedCppWinRTModel.Coordinates Coords;
+        String TestString;
+        static Microsoft.UI.Xaml.DependencyProperty CoordsProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty TestStringProperty{ get; };
+    }
+}

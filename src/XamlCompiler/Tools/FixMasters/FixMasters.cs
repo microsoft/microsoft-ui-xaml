@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+// Normalizes volatile lines in copied XAML compiler masters for stable codegen comparisons while
+// preserving each file's UTF-8 byte order mark.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -33,42 +36,62 @@ namespace FixMasters
 
         static void FixMasters(FileInfo file)
         {
+            // Preserve each generated file's existing UTF-8 BOM so unchanged baselines remain
+            // byte-stable.
+            bool hasByteOrderMark = HasUtf8ByteOrderMark(file);
+
+            var lines = new Queue<string>();
             using (var contents = file.OpenText())
             {
-                var encoding = contents.CurrentEncoding;
-                var lines = new Queue<string>();
                 while (!contents.EndOfStream)
                 {
                     lines.Enqueue(FixLine(contents.ReadLine()));
                 }
-                contents.Close();
-                Console.WriteLine(file.FullName);
-                using (var writer = new StreamWriter(File.Open(file.FullName, FileMode.Truncate), Encoding.UTF8))
+            }
+
+            Console.WriteLine(file.FullName);
+            using (var writer = new StreamWriter(File.Open(file.FullName, FileMode.Truncate), new UTF8Encoding(hasByteOrderMark)))
+            {
+                while (lines.Count > 0)
                 {
-                    while(lines.Count > 0)
-                    {
-                        writer.WriteLine(lines.Dequeue());
-                    }
+                    writer.WriteLine(lines.Dequeue());
                 }
             }
         }
 
+        static bool HasUtf8ByteOrderMark(FileInfo file)
+        {
+            byte[] preamble = Encoding.UTF8.GetPreamble();
+            byte[] start = new byte[preamble.Length];
+
+            using (var stream = file.OpenRead())
+            {
+                if (stream.Read(start, 0, start.Length) < start.Length)
+                {
+                    return false;
+                }
+            }
+
+            for (int i = 0; i < preamble.Length; i++)
+            {
+                if (start[i] != preamble[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         static string FixLine(string line)
         {
+            // Lines that are truncated because they carry a checksum or a tool version that
+            // legitimately changes between builds. CodegenTests.IsException skips the same set when
+            // diffing, so the two must be kept in agreement.
             string[] ignoreLines = {
                 "#pragma checksum",
                 "#ExternalChecksum",
                 "// WARNING: Please don't edit this file",
-            };
-
-            string[] find = {
-                "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Microsoft.UI.Xaml.Markup.Compiler\",\" 0.0.0.0\")]",
-                "<Global.System.CodeDom.Compiler.GeneratedCodeAttribute(\"Microsoft.UI.Xaml.Markup.Compiler\", \" 0.0.0.0\")>  _",
-            };
-
-            string[] replace = {
-                "[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"Microsoft.Windows.UI.Xaml.Build.Tasks\",\" 0.0.0.0\")]",
-                "<Global.System.CodeDom.Compiler.GeneratedCodeAttribute(\"Microsoft.Windows.UI.Xaml.Build.Tasks\", \" 0.0.0.0\")>  _",
             };
 
             foreach (var ignoreLine in ignoreLines)
@@ -79,13 +102,6 @@ namespace FixMasters
                 }
             }
 
-            for (int i = 0; i < find.Length; i++)
-            {
-                if (line.Contains(find[i]))
-                {
-                    return line.Replace(find[i], replace[i]);
-                }
-            }
             return line;
         }
     }

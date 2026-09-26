@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{ffd1f043-f81f-4f08-9596-0ac849d85ede}</ProjectGuid>
+    <ProjectName>NonStandardCppWinRT</ProjectName>
+    <RootNamespace>NonStandardCppWinRT</RootNamespace>
+    <!--
+      Win32 desktop app model. AppContainerApplication=false is what makes the produced
+      binary a desktop app; the AppContainer ("WinUI 3 in UWP") app model is not supported.
+      ApplicationType selects the C++ toolset flavor that provides WinRT metadata, XAML and
+      MSIX support - it is required by every C++/WinRT XAML project in this repo and does
+      not by itself imply an app container.
+    -->
+    <AppContainerApplication>false</AppContainerApplication>
+    <DesktopCompatible>true</DesktopCompatible>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(CommonFilesPath)AppPreamble.vcxproj" />
+
+  <!--
+    The point of this project is that the code-behind files deliberately do NOT use the
+    standard .h/.cpp extensions, which proves the XAML compiler honours whatever code-behind
+    file a page is associated with rather than inferring one from the .xaml file name.
+    BlankPage drops the ".xaml" infix as well; MainPage keeps it. App.xaml is left with the
+    standard extensions so that both shapes are covered in a single project.
+
+    Because cl.exe picks its input language from the file extension, the two non-standard
+    translation units are compiled explicitly as C++.
+  -->
+  <ItemGroup>
+    <ClInclude Include="App.h">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="BlankPage.h++WinRT">
+      <DependentUpon>BlankPage.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="MainPage.xaml.h++WinRT">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="App.cpp">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="BlankPage.c++WinRT">
+      <DependentUpon>BlankPage.xaml</DependentUpon>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="MainPage.xaml.c++WinRT">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+      <CompileAs>CompileAsCpp</CompileAs>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="App.idl">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Midl>
+    <Midl Include="BlankPage.idl">
+      <DependentUpon>BlankPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+    <Midl Include="MainPage.idl">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Page Include="BlankPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MainPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\LockScreenLogo.scale-200.png" />
+    <Image Include="Assets\SplashScreen.scale-200.png" />
+    <Image Include="Assets\Square150x150Logo.scale-200.png" />
+    <Image Include="Assets\Square44x44Logo.scale-200.png" />
+    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Image Include="Assets\StoreLogo.png" />
+    <Image Include="Assets\Wide310x150Logo.scale-200.png" />
+  </ItemGroup>
+
+  <Import Project="$(CommonFilesPath)RuntimeComponentPostamble.vcxproj" />
+</Project>
