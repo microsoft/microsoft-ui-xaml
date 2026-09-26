@@ -147,26 +147,55 @@ if ($lastexitcode -ne 0)
 
 if ($InstallPackage)
 {
-    $PackageCache = Join-Path "$scriptDirectory\..\.." "packages"
+    $PackageCache = [System.IO.Path]::GetFullPath((Join-Path "$scriptDirectory\..\.." "packages"))
     $NugetConfigPath = Join-Path "$scriptDirectory\..\.." "NuGet.config"
-    $ExistingPackagePath = Join-Path $PackageCache "Microsoft.WindowsAppSDK.WinUI.$VersionOverride"
-    $PackageRefCachePath = Join-Path $PackageCache "microsoft.windowsappsdk.winui\$VersionOverride"
+    $PackageId = "Microsoft.WindowsAppSDK.WinUI"
 
-    if (Test-Path $ExistingPackagePath)
+    function Remove-CachedPackage([string]$CacheRoot)
     {
-        Write-Host "Removing stale package: $ExistingPackagePath" -ForegroundColor Yellow
-        Remove-Item $ExistingPackagePath -Recurse -Force
-    }
-    # Also remove the PackageReference-style cache folder (lowercase, nested version directory)
-    # so that NuGet re-extracts the updated package for C# projects using PackageReference.
-    if (Test-Path $PackageRefCachePath)
-    {
-        Write-Host "Removing stale PackageReference cache: $PackageRefCachePath" -ForegroundColor Yellow
-        Remove-Item $PackageRefCachePath -Recurse -Force
+        $PackagePaths = @(
+            (Join-Path $CacheRoot "$PackageId\$version"),
+            (Join-Path $CacheRoot "$PackageId.$version")
+        )
+
+        foreach ($PackagePath in $PackagePaths)
+        {
+            if (Test-Path $PackagePath)
+            {
+                $MetadataPath = Join-Path $PackagePath ".nupkg.metadata"
+                if (Test-Path $MetadataPath)
+                {
+                    Remove-Item $MetadataPath -Force -ErrorAction Stop
+                }
+
+                Write-Host "Removing stale package: $PackagePath" -ForegroundColor Yellow
+                Remove-Item $PackagePath -Recurse -Force -ErrorAction Stop
+            }
+        }
     }
 
-    Write-Host "nuget install Microsoft.WindowsAppSDK.WinUI -Version $VersionOverride -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath"
-    nuget install Microsoft.WindowsAppSDK.WinUI -Version $VersionOverride -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath
+    $EffectivePackageCache = $PackageCache
+    if ($env:NUGET_PACKAGES)
+    {
+        if (![System.IO.Path]::IsPathRooted($env:NUGET_PACKAGES))
+        {
+            Write-Warning "Skipping cleanup for relative NUGET_PACKAGES path: $env:NUGET_PACKAGES"
+        }
+        else
+        {
+            $EffectivePackageCache = [System.IO.Path]::GetFullPath($env:NUGET_PACKAGES)
+        }
+    }
+
+    $PackageCaches = @($PackageCache, $EffectivePackageCache) | Sort-Object -Unique
+
+    foreach ($CacheRoot in $PackageCaches)
+    {
+        Remove-CachedPackage $CacheRoot
+    }
+
+    Write-Host "nuget install $PackageId -Version $version -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath"
+    nuget install $PackageId -Version $version -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath
 
     if ($lastexitcode -ne 0)
     {
