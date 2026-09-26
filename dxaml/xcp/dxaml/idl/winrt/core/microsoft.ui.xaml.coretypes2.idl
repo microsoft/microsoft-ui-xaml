@@ -1854,10 +1854,10 @@ namespace Microsoft.UI.Xaml.Shapes
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass Rectangle
+    unsealed runtimeclass Rectangle
         : Microsoft.UI.Xaml.Shapes.Shape
     {
-        Rectangle();
+        [method_name("CreateInstance")] Rectangle();
         Double RadiusX;
         Double RadiusY;
         static Microsoft.UI.Xaml.DependencyProperty RadiusXProperty{ get; };
