@@ -150,7 +150,7 @@ namespace Microsoft.UI.Xaml.Controls
     [ContentProperty("Content")]
     [PropertyChange(PropertyChangeCallbackType.NoCallback)]
     [Guids(ClassGuid = "6a56efac-16c1-401d-86bf-78777519b5c0")]
-    public sealed class PickerFlyout : Microsoft.UI.Xaml.Controls.Primitives.PickerFlyoutBase
+    public class PickerFlyout : Microsoft.UI.Xaml.Controls.Primitives.PickerFlyoutBase
     {
         [EventHandlerType(EventHandlerKind.TypedSenderAndArgs)]
         public event Microsoft.UI.Xaml.Controls.PickerConfirmedEventHandler Confirmed;
