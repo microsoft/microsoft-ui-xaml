@@ -25,6 +25,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     [TestClass]
     public class ItemCollectionTransitionProviderTests : ApiTestBase
     {
+        private sealed class DerivedItemCollectionTransitionProgress : ItemCollectionTransitionProgress
+        {
+            public DerivedItemCollectionTransitionProgress(ItemCollectionTransition transition)
+                : base(transition)
+            {
+            }
+        }
+
+        [TestMethod]
+        public void CanDeriveFromItemCollectionTransitionProgress()
+        {
+            Verify.IsTrue(
+                typeof(DerivedItemCollectionTransitionProgress).IsSubclassOf(
+                    typeof(ItemCollectionTransitionProgress)));
+        }
+
         
         [TestMethod]
         [TestProperty("Ignore", "True")] // Task 35797826: ElementAnimatorTests.ValidateElementAnimator test disabled
