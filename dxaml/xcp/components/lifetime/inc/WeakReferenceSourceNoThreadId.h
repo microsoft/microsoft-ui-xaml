@@ -208,13 +208,17 @@ namespace ctl
         // several independent fields (m_ulPegRefCount, m_bIsPeggedNoRef, m_bReferenceTrackerPeg, bRefCountPeg,
         // m_ulExpectedRefCount, m_bIsDisconnected). Every peer-lifetime defect is ultimately a place where those
         // bits disagree. This exposes a single, explicit lifetime state plus one transition choke point so that
-        // the disagreement becomes observable (and, in debug, asserted).
+        // the disagreement is caught wherever it occurs.
         //
-        // NOTE (migration/compat-shim phase): PeerLifetimeState is *derived* from the existing bookkeeping rather
-        // than stored, so it can never drift out of sync with the fields the rest of the framework still mutates
-        // directly. TransitionPeerState is an assertion + tracing gate that the peg primitives announce through;
-        // it does not itself mutate the peg fields yet. Once every peg/unpeg call site funnels through the
-        // transition API the derived getter can be promoted to a stored authority and the scattered fields retired.
+        // This is the *enforcing* phase of Pillar A (see PR history):
+        //   (a) The lifetime state is now STORED in m_peerLifetimeState, the single authority for the answer.
+        //   (b) TransitionPeerState is the SOLE MUTATOR of that stored state. The peg primitives compute the
+        //       target state via ComputeDerivedPeerLifetimeState() and hand it to TransitionPeerState; nothing
+        //       else writes m_peerLifetimeState.
+        //   (c) TransitionPeerState is compiled into EVERY build (no #if DBG around it or its call sites) and
+        //       ENFORCES the state-machine invariant: an illegal edge or a desynced 'expectedFrom' asserts in
+        //       debug and (opt-in via PEER_STATE_ENFORCE_FATAL) fail-fasts in retail; otherwise retail emits
+        //       telemetry and reconciles. This is deliberately stricter than the earlier debug-only observer.
         enum class PeerLifetimeState : std::uint8_t
         {
             Detached,   // No strong root and not held by a tracker source (collectible / not yet rooted).
@@ -224,12 +228,17 @@ namespace ctl
             TornDown     // Terminal; peer disconnected. All further access must no-op.
         };
 
+        // (a) Returns the stored, authoritative lifetime state. Written only by TransitionPeerState.
         PeerLifetimeState GetPeerLifetimeState() const;
 
-        // Single choke point that replaces ad-hoc Peg/Unpeg reasoning. Validates that 'expectedFrom' -> 'to' is a
-        // legal edge of the lifetime state machine and (in debug) that 'expectedFrom' matches the currently derived
-        // state, then records the transition for diagnostics. Non-fatal: it never destabilizes retail, so it can be
-        // safely woven into existing peg paths during migration.
+        // (b) Computes the lifetime state implied by the current peg/tracker bookkeeping. The peg primitives
+        // call this to derive the target state to hand to TransitionPeerState. Const: never perturbs state.
+        PeerLifetimeState ComputeDerivedPeerLifetimeState() const;
+
+        // (b)(c) Single choke point AND sole writer of the stored lifetime state. Validates that 'expectedFrom'
+        // matches the stored state and that 'expectedFrom' -> 'to' is a legal edge, commits the new state, and
+        // enforces the invariant (ASSERT in debug; opt-in FAIL_FAST in retail via PEER_STATE_ENFORCE_FATAL,
+        // non-fatal telemetry + reconcile otherwise). Compiled into every build.
         _Check_return_ HRESULT TransitionPeerState(PeerLifetimeState expectedFrom, PeerLifetimeState to);
 
         static bool IsLegalPeerStateTransition(PeerLifetimeState from, PeerLifetimeState to);
@@ -376,6 +385,10 @@ namespace ctl
         bool m_bIsDisconnectedFromCore : 1;   // Disconnected from core DO
         bool m_bHasState : 1;         // DXaml peer is stateful, can't be re-created
         bool m_bCastedAsControl : 1;         // Whether or not we've tried to QI cast this DO as a Control
+
+        // (a) Stored, authoritative peer-lifetime state. Detached (== 0) on construction so a zero-initialized
+        // object is valid. Written *only* by TransitionPeerState (the sole mutator); read by GetPeerLifetimeState.
+        PeerLifetimeState m_peerLifetimeState = PeerLifetimeState::Detached;
 
     public:
         // ITrackerOwner - These should only be called from the public API
