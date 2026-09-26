@@ -268,10 +268,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass ListPickerFlyout
+    unsealed runtimeclass ListPickerFlyout
         : Microsoft.UI.Xaml.Controls.Primitives.PickerFlyoutBase
     {
-        ListPickerFlyout();
+        [method_name("CreateInstance")] ListPickerFlyout();
         Object ItemsSource;
         Microsoft.UI.Xaml.DataTemplate ItemTemplate;
         String DisplayMemberPath;

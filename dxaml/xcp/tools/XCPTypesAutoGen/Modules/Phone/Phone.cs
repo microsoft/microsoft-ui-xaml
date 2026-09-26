@@ -194,7 +194,7 @@ namespace Microsoft.UI.Xaml.Controls
     [CodeGen(partial: true)]
     [PropertyChange(PropertyChangeCallbackType.OnPropertyChangeCallback)]
     [Guids(ClassGuid = "85f354c0-e063-4129-a76c-5950923d950a")]
-    public sealed class ListPickerFlyout : Microsoft.UI.Xaml.Controls.Primitives.PickerFlyoutBase
+    public class ListPickerFlyout : Microsoft.UI.Xaml.Controls.Primitives.PickerFlyoutBase
     {
         public Windows.Foundation.Object ItemsSource
         {
