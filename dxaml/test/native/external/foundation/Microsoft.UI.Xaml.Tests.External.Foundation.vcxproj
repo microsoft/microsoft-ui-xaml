@@ -128,6 +128,7 @@
     <ClInclude Include="graphics\rendering\ShutdownTests.h" />
     <ClInclude Include="graphics\rendering\SISTests.h" />
     <ClInclude Include="graphics\rendering\SuspendResumeTests.h" />
+    <ClInclude Include="graphics\rendering\SwitcherTests.h" />
     <ClInclude Include="graphics\rendering\TextBlockClippingTests.h" />
     <ClInclude Include="graphics\rendering\TextBlockTests.h" />
     <ClInclude Include="graphics\rendering\TextBoxTests.h" />
@@ -265,6 +266,7 @@
     <ClCompile Include="graphics\rendering\ShapeTests.cpp" />
     <ClCompile Include="graphics\rendering\Matrix3DProjectionTests.cpp" />
     <ClCompile Include="graphics\rendering\SuspendResumeTests.cpp" />
+    <ClCompile Include="graphics\rendering\SwitcherTests.cpp" />
     <ClCompile Include="graphics\rendering\CompositionTargetTests.cpp" />
     <ClCompile Include="graphics\rendering\DebugCounterTests.cpp" />
     <ClCompile Include="graphics\rendering\ShutdownTests.cpp" />
