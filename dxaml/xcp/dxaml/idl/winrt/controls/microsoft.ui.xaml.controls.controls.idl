@@ -1378,10 +1378,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [contentproperty("Height")]
-    runtimeclass RowDefinition
+    unsealed runtimeclass RowDefinition
         : Microsoft.UI.Xaml.DependencyObject
     {
-        RowDefinition();
+        [method_name("CreateInstance")] RowDefinition();
         Microsoft.UI.Xaml.GridLength Height;
         Double MaxHeight;
         Double MinHeight;
