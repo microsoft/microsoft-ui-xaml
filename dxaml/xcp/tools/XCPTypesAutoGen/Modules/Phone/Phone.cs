@@ -275,9 +275,9 @@ namespace Microsoft.UI.Xaml.Controls
     [CodeGen(partial: true)]
     [PropertyChange(PropertyChangeCallbackType.NoCallback)]
     [Guids(ClassGuid = "a31cbece-710f-40ea-9068-ad9ae5f1cad6")]
-    public sealed class ListPickerFlyoutPresenter : Controls.Control
+    public class ListPickerFlyoutPresenter : Controls.Control
     {
-        internal ListPickerFlyoutPresenter() { }
+        public ListPickerFlyoutPresenter() { }
 
         [DependencyPropertyModifier(Modifier.Internal)]
         internal Microsoft.UI.Xaml.Controls.ListViewBase ItemsHost
