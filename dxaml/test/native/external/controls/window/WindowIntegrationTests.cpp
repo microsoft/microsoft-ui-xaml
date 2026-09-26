@@ -5,6 +5,8 @@
 #include "WindowIntegrationTests.h"
 
 #include <cmath>
+// Used to subclass the test HWND and inspect its native sizing request.
+#include <commctrl.h>
 #include <limits>
 #include <XamlTailored.h>
 #include <TestEvent.h>
@@ -17,6 +19,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+
+#pragma comment(lib, "comctl32.lib")
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
@@ -339,6 +343,236 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    void WindowIntegrationTests::WindowWidthHeightBeforeActivationUsesFinalConfiguration()
+    {
+        TestCleanupWrapper cleanup;
+        const double requestedWidth = 601.123456789;
+        const double requestedHeight = 401.987654321;
+        const Microsoft::UI::Windowing::AppWindowPresenterKind presenters[] = {
+            Microsoft::UI::Windowing::AppWindowPresenterKind::Default,
+            Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen,
+            Microsoft::UI::Windowing::AppWindowPresenterKind::CompactOverlay };
+
+        for (const auto presenter : presenters)
+        {
+            for (const bool extend : { false, true })
+            {
+                LOG_OUTPUT(L"Initial presenter=%d, final title-bar extension=%d", static_cast<int>(presenter), extend);
+                WindowAutoCloser window1;
+                HWND windowHandle = nullptr;
+
+                RunOnUIThread([&]()
+                {
+                    window1.Attach(ref new xaml::Window());
+                    window1->Content = ref new xaml_controls::Grid();
+                    window1->ExtendsContentIntoTitleBar = !extend;
+                    Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+                    VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(IID_PPV_ARGS(&windowNative)));
+                    VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+
+                    const auto boundsBefore = window1->Bounds;
+                    VERIFY_IS_TRUE(std::isfinite(window1->Width) && std::isfinite(window1->Height));
+                    VERIFY_ARE_EQUAL(static_cast<double>(boundsBefore.Width), window1->Width);
+                    VERIFY_ARE_EQUAL(static_cast<double>(boundsBefore.Height), window1->Height);
+
+                    window1->Width = requestedWidth - 25.0;
+                    window1->Width = requestedWidth;
+                    VERIFY_ARE_EQUAL(static_cast<double>(boundsBefore.Height), window1->Height);
+                    window1->Height = requestedHeight - 25.0;
+                    window1->Height = requestedHeight;
+                    VERIFY_ARE_EQUAL(requestedWidth, window1->Width);
+                    VERIFY_ARE_EQUAL(requestedHeight, window1->Height);
+                    VERIFY_ARE_EQUAL(boundsBefore.Width, window1->Bounds.Width);
+                    VERIFY_ARE_EQUAL(boundsBefore.Height, window1->Bounds.Height);
+                    VERIFY_IS_FALSE(!!::IsWindowVisible(windowHandle));
+
+                    RECT outerBefore{}, outerAfter{};
+                    VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &outerBefore));
+                    window1->ExtendsContentIntoTitleBar = extend;
+                    VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &outerAfter));
+                    VERIFY_IS_TRUE(!!::EqualRect(&outerBefore, &outerAfter),
+                        L"Title-bar toggles must not apply pending Height before activation");
+                    window1->AppWindow->SetPresenter(presenter);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    VERIFY_ARE_EQUAL(requestedWidth, window1->Width);
+                    VERIFY_ARE_EQUAL(requestedHeight, window1->Height);
+                    window1->Activate();
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                if (presenter != Microsoft::UI::Windowing::AppWindowPresenterKind::Default)
+                {
+                    RunOnUIThread([&]()
+                    {
+                        VERIFY_ARE_EQUAL(presenter, window1->AppWindow->Presenter->Kind);
+                        VERIFY_ARE_EQUAL(requestedWidth, window1->Width);
+                        VERIFY_ARE_EQUAL(requestedHeight, window1->Height);
+                        VERIFY_IS_TRUE(std::abs(window1->Bounds.Width - requestedWidth) > 2.0 ||
+                            std::abs(window1->Bounds.Height - requestedHeight) > 2.0,
+                            L"Activation in a non-sizing presenter must not apply the pending size");
+                        window1->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::Default);
+                    });
+                    TestServices::WindowHelper->WaitForIdle();
+                }
+
+                RunOnUIThread([&]()
+                {
+                    VERIFY_ARE_EQUAL(extend, window1->ExtendsContentIntoTitleBar);
+                    RECT client{};
+                    VERIFY_IS_TRUE(!!::GetClientRect(windowHandle, &client));
+                    const double scale = static_cast<double>(::GetDpiForWindow(windowHandle)) / USER_DEFAULT_SCREEN_DPI;
+                    VERIFY_ARE_EQUAL(std::lround(requestedWidth * scale), client.right - client.left);
+                    VERIFY_ARE_EQUAL(std::lround(requestedHeight * scale), client.bottom - client.top);
+                    VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Width), window1->Width);
+                    VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Height), window1->Height);
+
+                    // Once applied, a pending request must not mask a later native resize.
+                    RECT outer{};
+                    VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &outer));
+                    VERIFY_IS_TRUE(!!::SetWindowPos(windowHandle, nullptr, 0, 0,
+                        outer.right - outer.left + 37, outer.bottom - outer.top + 23,
+                        SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE));
+                    VERIFY_IS_TRUE(std::abs(window1->Width - requestedWidth) > 2.0);
+                    VERIFY_IS_TRUE(std::abs(window1->Height - requestedHeight) > 2.0);
+                    VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Width), window1->Width);
+                    VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Height), window1->Height);
+                });
+            }
+        }
+    }
+
+    void WindowIntegrationTests::WindowWidthHeightSettersPreserveOtherAxis()
+    {
+        TestCleanupWrapper cleanup;
+        enum class SizingState { Restored, Minimized, Maximized, FullScreen, CompactOverlay };
+        const SizingState states[] = { SizingState::Restored, SizingState::Minimized,
+            SizingState::Maximized, SizingState::FullScreen, SizingState::CompactOverlay };
+        const double requestedWidth = 641.625;
+        const double requestedHeight = 421.375;
+
+        for (const auto state : states)
+        {
+            for (const bool extend : { false, true })
+            {
+                LOG_OUTPUT(L"Single-axis sizing state=%d, title-bar extension=%d", static_cast<int>(state), extend);
+                WindowAutoCloser window1;
+                HWND windowHandle = nullptr;
+
+                RunOnUIThread([&]()
+                {
+                    window1.Attach(ref new xaml::Window());
+                    window1->Content = ref new xaml_controls::Grid();
+                    window1->ExtendsContentIntoTitleBar = extend;
+                    window1->Width = 500.0;
+                    window1->Height = 300.0;
+                    Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+                    VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(IID_PPV_ARGS(&windowNative)));
+                    VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+                    window1->Activate();
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    switch (state)
+                    {
+                    case SizingState::Minimized:
+                        ::ShowWindow(windowHandle, SW_MINIMIZE);
+                        break;
+                    case SizingState::Maximized:
+                        ::ShowWindow(windowHandle, SW_MAXIMIZE);
+                        break;
+                    case SizingState::FullScreen:
+                        window1->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen);
+                        break;
+                    case SizingState::CompactOverlay:
+                        window1->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::CompactOverlay);
+                        break;
+                    case SizingState::Restored:
+                        break;
+                    }
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                for (const bool setWidth : { true, false })
+                {
+                    RunOnUIThread([&]()
+                    {
+                        RECT outerBefore{}, outerAfter{}, clientBefore{}, clientAfter{};
+                        VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &outerBefore));
+                        VERIFY_IS_TRUE(!!::GetClientRect(windowHandle, &clientBefore));
+                        const double otherAxisBefore = setWidth ? window1->Height : window1->Width;
+                        const auto presenterBefore = window1->AppWindow->Presenter->Kind;
+                        const bool minimizedBefore = !!::IsIconic(windowHandle);
+                        const bool maximizedBefore = !!::IsZoomed(windowHandle);
+                        if (setWidth)
+                        {
+                            window1->Width = requestedWidth;
+                        }
+                        else
+                        {
+                            window1->Height = requestedHeight;
+                        }
+                        VERIFY_ARE_EQUAL(otherAxisBefore, setWidth ? window1->Height : window1->Width,
+                            L"A single-axis request must leave the other restored dimension unchanged");
+                        VERIFY_IS_TRUE(std::abs((setWidth ? window1->Width : window1->Height) -
+                            (setWidth ? requestedWidth : requestedHeight)) <= 2.0);
+                        VERIFY_ARE_EQUAL(presenterBefore, window1->AppWindow->Presenter->Kind);
+                        VERIFY_ARE_EQUAL(minimizedBefore, !!::IsIconic(windowHandle));
+                        VERIFY_ARE_EQUAL(maximizedBefore, !!::IsZoomed(windowHandle));
+                        VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &outerAfter));
+
+                        if (state == SizingState::Restored)
+                        {
+                            VERIFY_ARE_EQUAL(outerBefore.left, outerAfter.left);
+                            VERIFY_ARE_EQUAL(outerBefore.top, outerAfter.top);
+                            VERIFY_IS_TRUE(!!::GetClientRect(windowHandle, &clientAfter));
+                            const double scale = static_cast<double>(::GetDpiForWindow(windowHandle)) / USER_DEFAULT_SCREEN_DPI;
+                            VERIFY_ARE_EQUAL(std::lround((setWidth ? requestedWidth : requestedHeight) * scale),
+                                setWidth ? clientAfter.right - clientAfter.left : clientAfter.bottom - clientAfter.top,
+                                L"The setter must resize synchronously using the current DPI");
+                            VERIFY_ARE_EQUAL(setWidth ? clientBefore.bottom - clientBefore.top : clientBefore.right - clientBefore.left,
+                                setWidth ? clientAfter.bottom - clientAfter.top : clientAfter.right - clientAfter.left);
+                            VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Width), window1->Width);
+                            VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Height), window1->Height);
+                        }
+                        else
+                        {
+                            VERIFY_IS_TRUE(!!::EqualRect(&outerBefore, &outerAfter),
+                                L"A non-restored window must not resize or move when setting the restored size");
+                        }
+                    });
+                    TestServices::WindowHelper->WaitForIdle();
+                }
+
+                RunOnUIThread([&]()
+                {
+                    if (state == SizingState::Minimized || state == SizingState::Maximized)
+                    {
+                        ::ShowWindow(windowHandle, SW_RESTORE);
+                    }
+                    else if (state != SizingState::Restored)
+                    {
+                        window1->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::Default);
+                    }
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    VERIFY_IS_TRUE(std::abs(requestedWidth - window1->Bounds.Width) <= 2.0);
+                    VERIFY_IS_TRUE(std::abs(requestedHeight - window1->Bounds.Height) <= 2.0);
+                    VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Width), window1->Width);
+                    VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Height), window1->Height);
+                });
+            }
+        }
+    }
+
     void WindowIntegrationTests::SetWindowWidthHeightInMarkup()
     {
         TestCleanupWrapper cleanup;
@@ -415,12 +649,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_THROWS_SPECIFIC_WINRT(window1->Height = inf, Platform::Exception^, [](Platform::Exception^ ex){ return ex->HResult == E_INVALIDARG; });
             VERIFY_THROWS_SPECIFIC_WINRT(window1->Height = negInf, Platform::Exception^, [](Platform::Exception^ ex){ return ex->HResult == E_INVALIDARG; });
 
-            // Absurdly large values are rejected too: they'd overflow the int pixel math
-            // (value * dpiScale) used by the Win32 sizing calls. The cap is derived from INT_MAX.
-            const double tooLarge = 1.0e18;
-            VERIFY_THROWS_SPECIFIC_WINRT(window1->Width = tooLarge, Platform::Exception^, [](Platform::Exception^ ex){ return ex->HResult == E_INVALIDARG; });
-            VERIFY_THROWS_SPECIFIC_WINRT(window1->Height = tooLarge, Platform::Exception^, [](Platform::Exception^ ex){ return ex->HResult == E_INVALIDARG; });
-
             // The E_INVALIDARG carries a specific, developer-friendly message (originated via
             // RoOriginateError), not just the generic "The parameter is incorrect." Both Width and
             // Height share the message, so a substring check keeps this robust.
@@ -453,6 +681,623 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             window1->Width = 0.0;
             window1->Height = 0.0;
         });
+    }
+
+    void WindowIntegrationTests::WindowWidthHeightClampsLargeFiniteValues()
+    {
+        using namespace Microsoft::UI::Windowing;
+
+        TestCleanupWrapper cleanup;
+        constexpr int maxOuterSize = 65535;
+
+        struct SizeTestCase
+        {
+            double requestedClientDips;
+            int expectedOuterPixels;
+        };
+
+        for (const bool extend : { false, true })
+        {
+            WindowAutoCloser window1;
+            HWND windowHandle = nullptr;
+
+            RunOnUIThread([&]()
+            {
+                window1.Attach(ref new xaml::Window());
+                window1->Content = ref new xaml_controls::Grid();
+                window1->ExtendsContentIntoTitleBar = extend;
+                window1->Width = 320.0;
+                window1->Height = 240.0;
+                // Keep the rendered window small. Observe the native request before these limits apply.
+                window1->MaxWidth = 480.0;
+                window1->MaxHeight = 360.0;
+                Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+                VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(IID_PPV_ARGS(&windowNative)));
+                VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+                window1->Activate();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            for (const bool setWidth : { true, false })
+            {
+                std::vector<SizeTestCase> cases;
+                RunOnUIThread([&]()
+                {
+                    window1->Width = 320.0;
+                    window1->Height = 240.0;
+
+                    RECT initialOuter{}, initialClient{};
+                    VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &initialOuter));
+                    VERIFY_IS_TRUE(!!::GetClientRect(windowHandle, &initialClient));
+                    const int chrome = setWidth ?
+                        (initialOuter.right - initialOuter.left) - (initialClient.right - initialClient.left) :
+                        (initialOuter.bottom - initialOuter.top) - (initialClient.bottom - initialClient.top);
+                    const double scale = static_cast<double>(::GetDpiForWindow(windowHandle)) / USER_DEFAULT_SCREEN_DPI;
+                    VERIFY_IS_GREATER_THAN(scale, 0.0);
+
+                    cases = {
+                        { (maxOuterSize - 1.0 - chrome) / scale, maxOuterSize - 1 },
+                        { (maxOuterSize - chrome) / scale, maxOuterSize },
+                        { (maxOuterSize + 1.0 - chrome) / scale, maxOuterSize },
+                        { 1.0e18, maxOuterSize },
+                        { (std::numeric_limits<double>::max)(), maxOuterSize }
+                    };
+                });
+
+                for (const auto& testCase : cases)
+                {
+                    RunOnUIThread([&]()
+                    {
+                        window1->AppWindow->SetPresenter(AppWindowPresenterKind::Default);
+                        window1->Width = 320.0;
+                        window1->Height = 240.0;
+
+                        LOG_OUTPUT(L"Large finite %s: request=%g DIPs, expected outer=%d px, title-bar extension=%d",
+                            setWidth ? L"Width" : L"Height", testCase.requestedClientDips, testCase.expectedOuterPixels, extend);
+                        RECT outerBefore{}, outerAfter{};
+                        VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &outerBefore));
+                        const double otherAxisBefore = setWidth ? window1->Height : window1->Width;
+
+                        SIZE nativeRequest{ -1, -1 };
+                        const SUBCLASSPROC observeSize = [](HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam,
+                            UINT_PTR, DWORD_PTR data) -> LRESULT
+                        {
+                            if (message == WM_WINDOWPOSCHANGING)
+                            {
+                                const auto position = reinterpret_cast<const WINDOWPOS*>(lParam);
+                                if ((position->flags & SWP_NOSIZE) == 0)
+                                {
+                                    auto request = reinterpret_cast<SIZE*>(data);
+                                    if (request->cx == -1 && request->cy == -1)
+                                    {
+                                        request->cx = position->cx;
+                                        request->cy = position->cy;
+                                    }
+                                }
+                            }
+                            return ::DefSubclassProc(hwnd, message, wParam, lParam);
+                        };
+                        VERIFY_IS_TRUE(!!::SetWindowSubclass(windowHandle, observeSize, 0, reinterpret_cast<DWORD_PTR>(&nativeRequest)));
+                        auto removeSubclass = wil::scope_exit([&]()
+                        {
+                            ::RemoveWindowSubclass(windowHandle, observeSize, 0);
+                        });
+
+                        auto setRequestedSize = [&]()
+                        {
+                            if (setWidth)
+                            {
+                                window1->Width = testCase.requestedClientDips;
+                            }
+                            else
+                            {
+                                window1->Height = testCase.requestedClientDips;
+                            }
+                        };
+                        VERIFY_NO_THROW(setRequestedSize());
+
+                        LOG_OUTPUT(L"Native request=%ldx%ld px", nativeRequest.cx, nativeRequest.cy);
+                        VERIFY_ARE_EQUAL(testCase.expectedOuterPixels, setWidth ? nativeRequest.cx : nativeRequest.cy,
+                            L"Clamp the outer physical-pixel request, not the client DIPs or the OS-realized size");
+                        VERIFY_ARE_EQUAL(setWidth ? outerBefore.bottom - outerBefore.top : outerBefore.right - outerBefore.left,
+                            setWidth ? nativeRequest.cy : nativeRequest.cx);
+                        VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &outerAfter));
+                        VERIFY_ARE_EQUAL(outerBefore.left, outerAfter.left);
+                        VERIFY_ARE_EQUAL(outerBefore.top, outerAfter.top);
+                        VERIFY_IS_GREATER_THAN(setWidth ? outerAfter.right - outerAfter.left : outerAfter.bottom - outerAfter.top, 0);
+                        VERIFY_IS_LESS_THAN_OR_EQUAL(setWidth ? outerAfter.right - outerAfter.left : outerAfter.bottom - outerAfter.top, maxOuterSize);
+                        VERIFY_ARE_EQUAL(otherAxisBefore, setWidth ? window1->Height : window1->Width);
+                        VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Width), window1->Width);
+                        VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Height), window1->Height);
+                        // Read the restored cache before deferred size tracking can replace a huge request.
+                        const auto appliedBounds = window1->Bounds;
+                        window1->AppWindow->SetPresenter(AppWindowPresenterKind::FullScreen);
+                        VERIFY_ARE_EQUAL(static_cast<double>(appliedBounds.Width), window1->Width);
+                        VERIFY_ARE_EQUAL(static_cast<double>(appliedBounds.Height), window1->Height);
+                        window1->AppWindow->SetPresenter(AppWindowPresenterKind::Default);
+                    });
+                    TestServices::WindowHelper->WaitForIdle();
+                }
+            }
+
+            for (const bool setWidth : { true, false })
+            {
+                WindowAutoCloser maximizedWindow;
+                HWND maximizedWindowHandle = nullptr;
+
+                RunOnUIThread([&]()
+                {
+                    maximizedWindow.Attach(ref new xaml::Window());
+                    maximizedWindow->Content = ref new xaml_controls::Grid();
+                    maximizedWindow->ExtendsContentIntoTitleBar = extend;
+                    maximizedWindow->Width = 320.0;
+                    maximizedWindow->Height = 240.0;
+                    Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+                    VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(maximizedWindow.get())->QueryInterface(IID_PPV_ARGS(&windowNative)));
+                    VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&maximizedWindowHandle));
+                    maximizedWindow->Activate();
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    ::ShowWindow(maximizedWindowHandle, SW_MAXIMIZE);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    if (setWidth)
+                    {
+                        maximizedWindow->Width = (std::numeric_limits<double>::max)();
+                    }
+                    else
+                    {
+                        maximizedWindow->Height = (std::numeric_limits<double>::max)();
+                    }
+
+                    WINDOWPLACEMENT placement{};
+                    placement.length = sizeof(placement);
+                    VERIFY_IS_TRUE(!!::GetWindowPlacement(maximizedWindowHandle, &placement));
+                    VERIFY_ARE_EQUAL(
+                        maxOuterSize,
+                        setWidth ?
+                            placement.rcNormalPosition.right - placement.rcNormalPosition.left :
+                            placement.rcNormalPosition.bottom - placement.rcNormalPosition.top,
+                        L"Large finite requests must also clamp the maximized window's restored size");
+                });
+            }
+        }
+    }
+
+    void WindowIntegrationTests::WindowWidthHeightAfterClose()
+    {
+        TestCleanupWrapper cleanup;
+
+        enum class CloseState { BeforeActivation, Restored, Minimized, Maximized, FullScreen, CompactOverlay };
+        const CloseState states[] = { CloseState::BeforeActivation, CloseState::Restored, CloseState::Minimized,
+            CloseState::Maximized, CloseState::FullScreen, CloseState::CompactOverlay };
+        const double requestedWidth = 601.123456789;
+        const double requestedHeight = 401.987654321;
+
+        for (const auto state : states)
+        {
+            for (const bool setSize : { false, true })
+            {
+                LOG_OUTPUT(L"Close state=%d, explicit size=%d", static_cast<int>(state), setSize);
+                WindowAutoCloser window1;
+                auto sizeChangedRegistration = CreateSafeEventRegistration(xaml::Window, SizeChanged);
+                int sizeChangedCount = 0;
+                int sizeChangedCountAtClose = 0;
+                double expectedWidth = 0.0;
+                double expectedHeight = 0.0;
+                HWND windowHandle = nullptr;
+
+                RunOnUIThread([&]()
+                {
+                    window1.Attach(ref new xaml::Window());
+                    window1->Content = ref new xaml_controls::Grid();
+                    window1->ExtendsContentIntoTitleBar = setSize;
+                    if (setSize)
+                    {
+                        window1->Width = 400.0;
+                        window1->Height = 300.0;
+                    }
+
+                    Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+                    VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(IID_PPV_ARGS(&windowNative)));
+                    VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+
+                    if (state != CloseState::BeforeActivation)
+                    {
+                        window1->Activate();
+                        // Resize outside the properties, as a user or AppWindow caller would.
+                        window1->AppWindow->ResizeClient({ 560, 420 });
+                    }
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    switch (state)
+                    {
+                    case CloseState::Minimized:
+                        ::ShowWindow(windowHandle, SW_MINIMIZE);
+                        break;
+                    case CloseState::Maximized:
+                        ::ShowWindow(windowHandle, SW_MAXIMIZE);
+                        break;
+                    case CloseState::FullScreen:
+                        window1->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen);
+                        break;
+                    case CloseState::CompactOverlay:
+                        window1->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::CompactOverlay);
+                        break;
+                    case CloseState::BeforeActivation:
+                    case CloseState::Restored:
+                        break;
+                    }
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    if (setSize && state != CloseState::Restored)
+                    {
+                        window1->Width = requestedWidth;
+                        window1->Height = requestedHeight;
+                    }
+
+                    if (state == CloseState::Restored)
+                    {
+                        // Close before the deferred restored-size capture runs.
+                        window1->AppWindow->ResizeClient({ 580, 440 });
+                    }
+
+                    expectedWidth = window1->Width;
+                    expectedHeight = window1->Height;
+                    if (setSize && (state == CloseState::BeforeActivation ||
+                        state == CloseState::FullScreen || state == CloseState::CompactOverlay))
+                    {
+                        VERIFY_ARE_EQUAL(requestedWidth, expectedWidth);
+                        VERIFY_ARE_EQUAL(requestedHeight, expectedHeight);
+                    }
+                    if (state == CloseState::Restored)
+                    {
+                        VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Width), expectedWidth);
+                        VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Height), expectedHeight);
+                    }
+
+                    sizeChangedRegistration.Attach(window1.get(),
+                        ref new wf::TypedEventHandler<Platform::Object^, xaml::WindowSizeChangedEventArgs^>(
+                            [&](Platform::Object^, xaml::WindowSizeChangedEventArgs^) { ++sizeChangedCount; }));
+                    window1->Close();
+                    sizeChangedCountAtClose = sizeChangedCount;
+
+                    VERIFY_IS_FALSE(!!::IsWindow(windowHandle));
+                    VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                    VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+
+                    window1->Width = 800.0;
+                    VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                    VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+                    window1->Height = 600.0;
+                    VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                    VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+                    window1->Close();
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                    VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+                    VERIFY_ARE_EQUAL(sizeChangedCountAtClose, sizeChangedCount);
+                    Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+                    VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(IID_PPV_ARGS(&windowNative)));
+                    HWND closedHandle = windowHandle;
+                    VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&closedHandle));
+                    VERIFY_IS_NULL(closedHandle);
+                    VERIFY_THROWS_SPECIFIC_WINRT((void)window1->Bounds, Platform::Exception^,
+                        [](Platform::Exception^ ex) { return ex->HResult == HRESULT_FROM_WIN32(ERROR_INVALID_OPERATION); });
+                });
+            }
+        }
+    }
+
+    void WindowIntegrationTests::WindowWidthHeightAfterCloseValidatesArguments()
+    {
+        TestCleanupWrapper cleanup;
+
+        for (const bool setWidth : { false, true })
+        {
+            for (const bool largePendingRequest : { false, true })
+            {
+                WindowAutoCloser window1;
+                double expectedWidth = 0.0;
+                double expectedHeight = 0.0;
+                bool closed = false;
+
+                RunOnUIThread([&]()
+                {
+                    window1.Attach(ref new xaml::Window());
+                    // Pending requests retain their exact value, even beyond the native size limit.
+                    const double requestedSize = largePendingRequest ? (std::numeric_limits<double>::max)() :
+                        (setWidth ? 601.123456789 : 401.987654321);
+                    if (setWidth)
+                    {
+                        VERIFY_NO_THROW(window1->Width = requestedSize);
+                    }
+                    else
+                    {
+                        VERIFY_NO_THROW(window1->Height = requestedSize);
+                    }
+                    VERIFY_ARE_EQUAL(requestedSize, setWidth ? window1->Width : window1->Height);
+                    expectedWidth = window1->Width;
+                    expectedHeight = window1->Height;
+                    window1->Close();
+                    closed = true;
+                    VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                    VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+
+                    const double invalidValues[] = { -1.0, std::numeric_limits<double>::quiet_NaN(),
+                        std::numeric_limits<double>::infinity(), -std::numeric_limits<double>::infinity() };
+                    for (const double value : invalidValues)
+                    {
+                        VERIFY_THROWS_SPECIFIC_WINRT(window1->Width = value, Platform::Exception^,
+                            [](Platform::Exception^ ex) { return ex->HResult == E_INVALIDARG; });
+                        VERIFY_THROWS_SPECIFIC_WINRT(window1->Height = value, Platform::Exception^,
+                            [](Platform::Exception^ ex) { return ex->HResult == E_INVALIDARG; });
+                        VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                        VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+                    }
+
+                });
+
+                if (!closed)
+                {
+                    continue;
+                }
+
+                for (const bool assignWidth : { false, true })
+                {
+                    for (const double value : { 0.0, 1.0e18, (std::numeric_limits<double>::max)() })
+                    {
+                        RunOnUIThread([&]()
+                        {
+                            LOG_OUTPUT(L"Post-close %s: value=%g, large pending request=%d",
+                                assignWidth ? L"Width" : L"Height", value, largePendingRequest);
+                            if (assignWidth)
+                            {
+                                VERIFY_NO_THROW(window1->Width = value);
+                            }
+                            else
+                            {
+                                VERIFY_NO_THROW(window1->Height = value);
+                            }
+                            VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                            VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    void WindowIntegrationTests::WindowWidthHeightClosesDuringResize()
+    {
+        TestCleanupWrapper cleanup;
+        const double requestedWidth = 601.123456789;
+        const double requestedHeight = 401.987654321;
+
+        for (const bool closeDuringActivation : { false, true })
+        {
+            WindowAutoCloser window1;
+            auto sizeChangedRegistration = CreateSafeEventRegistration(xaml::Window, SizeChanged);
+            bool closeRequested = false;
+            double expectedWidth = 0.0;
+            double expectedHeight = 0.0;
+
+            RunOnUIThread([&]()
+            {
+                window1.Attach(ref new xaml::Window());
+                window1->Content = ref new xaml_controls::Grid();
+                if (!closeDuringActivation)
+                {
+                    window1->Activate();
+                }
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                sizeChangedRegistration.Attach(window1.get(),
+                    ref new wf::TypedEventHandler<Platform::Object^, xaml::WindowSizeChangedEventArgs^>(
+                        [&](Platform::Object^, xaml::WindowSizeChangedEventArgs^)
+                        {
+                            if (!closeRequested)
+                            {
+                                closeRequested = true;
+                                expectedWidth = window1->Width;
+                                expectedHeight = window1->Height;
+                                if (closeDuringActivation)
+                                {
+                                    VERIFY_ARE_EQUAL(requestedWidth, expectedWidth);
+                                    VERIFY_ARE_EQUAL(requestedHeight, expectedHeight);
+                                }
+                                window1->Close();
+                            }
+                        }));
+
+                window1->Width = requestedWidth;
+                if (closeDuringActivation)
+                {
+                    window1->Height = requestedHeight;
+                    window1->Activate();
+                }
+
+                VERIFY_IS_TRUE(closeRequested);
+                VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+                VERIFY_THROWS_SPECIFIC_WINRT((void)window1->Bounds, Platform::Exception^,
+                    [](Platform::Exception^ ex) { return ex->HResult == HRESULT_FROM_WIN32(ERROR_INVALID_OPERATION); });
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+            });
+        }
+    }
+
+    void WindowIntegrationTests::WindowWidthHeightAfterCloseChecksThread()
+    {
+        TestCleanupWrapper cleanup;
+        WindowAutoCloser window1;
+        DWORD owningThreadId = 0;
+
+        RunOnUIThread([&]()
+        {
+            owningThreadId = ::GetCurrentThreadId();
+            window1.Attach(ref new xaml::Window());
+            window1->Width = 600.0;
+            window1->Height = 400.0;
+        });
+
+        for (const bool close : { false, true })
+        {
+            if (close)
+            {
+                RunOnUIThread([&]() { window1->Close(); });
+            }
+
+            VERIFY_ARE_NOT_EQUAL(owningThreadId, ::GetCurrentThreadId());
+            VERIFY_THROWS_SPECIFIC_WINRT((void)window1->Width, Platform::Exception^,
+                [](Platform::Exception^ ex) { return ex->HResult == RPC_E_WRONG_THREAD; });
+            VERIFY_THROWS_SPECIFIC_WINRT((void)window1->Height, Platform::Exception^,
+                [](Platform::Exception^ ex) { return ex->HResult == RPC_E_WRONG_THREAD; });
+            for (const double value : { 800.0, -1.0 })
+            {
+                VERIFY_THROWS_SPECIFIC_WINRT(window1->Width = value, Platform::Exception^,
+                    [](Platform::Exception^ ex) { return ex->HResult == RPC_E_WRONG_THREAD; });
+                VERIFY_THROWS_SPECIFIC_WINRT(window1->Height = value, Platform::Exception^,
+                    [](Platform::Exception^ ex) { return ex->HResult == RPC_E_WRONG_THREAD; });
+            }
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_ARE_EQUAL(600.0, window1->Width);
+                VERIFY_ARE_EQUAL(400.0, window1->Height);
+            });
+        }
+    }
+
+    void WindowIntegrationTests::WindowWidthHeightDuringClose()
+    {
+        TestCleanupWrapper cleanup;
+
+        for (const bool activate : { false, true })
+        {
+            LOG_OUTPUT(L"Close-handler sizing after activation=%d", activate);
+            WindowAutoCloser window1;
+            auto closedRegistration = CreateSafeEventRegistration(xaml::Window, Closed);
+            auto finalClosedRegistration = CreateSafeEventRegistration(xaml::Window, Closed);
+            bool cancelClose = true;
+            int closedCount = 0;
+            double expectedWidth = 0.0;
+            double expectedHeight = 0.0;
+            const double handlerHeight = 401.987654321;
+
+            RunOnUIThread([&]()
+            {
+                window1.Attach(ref new xaml::Window());
+                window1->Content = ref new xaml_controls::Grid();
+                window1->Width = 400.0;
+                window1->Height = 300.0;
+                if (activate)
+                {
+                    window1->Activate();
+                }
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                closedRegistration.Attach(window1.get(),
+                    ref new wf::TypedEventHandler<Platform::Object^, xaml::WindowEventArgs^>(
+                        [&](Platform::Object^, xaml::WindowEventArgs^ args)
+                        {
+                            ++closedCount;
+                            VERIFY_IS_TRUE(std::abs(400.0 - window1->Width) <= 2.0);
+                            VERIFY_IS_TRUE(std::abs(300.0 - window1->Height) <= 2.0);
+                            window1->Width = 600.123456789;
+                            if (activate)
+                            {
+                                VERIFY_IS_TRUE(std::abs(600.123456789 - window1->Bounds.Width) <= 2.0);
+                            }
+                            else
+                            {
+                                VERIFY_ARE_EQUAL(600.123456789, window1->Width);
+                            }
+                            // Reentrant Close must not freeze values before the remaining handlers.
+                            window1->Close();
+                            args->Handled = cancelClose;
+                        }));
+                finalClosedRegistration.Attach(window1.get(),
+                    ref new wf::TypedEventHandler<Platform::Object^, xaml::WindowEventArgs^>(
+                        [&](Platform::Object^, xaml::WindowEventArgs^)
+                        {
+                            window1->Height = handlerHeight;
+                            if (activate)
+                            {
+                                VERIFY_IS_TRUE(std::abs(handlerHeight - window1->Bounds.Height) <= 2.0);
+                                // Close must capture this final native resize before its deferred tracking runs.
+                                window1->AppWindow->ResizeClient({ 620, 460 });
+                                expectedWidth = window1->Bounds.Width;
+                                expectedHeight = window1->Bounds.Height;
+                            }
+                            else
+                            {
+                                expectedWidth = window1->Width;
+                                expectedHeight = window1->Height;
+                                VERIFY_ARE_EQUAL(handlerHeight, expectedHeight);
+                            }
+                        }));
+
+                window1->Close();
+                VERIFY_ARE_EQUAL(1, closedCount);
+                VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+                VERIFY_IS_TRUE(window1->Bounds.Width > 0);
+
+                window1->Width = 400.0;
+                window1->Height = 300.0;
+                VERIFY_IS_TRUE(std::abs(400.0 - window1->Width) <= 2.0);
+                VERIFY_IS_TRUE(std::abs(300.0 - window1->Height) <= 2.0);
+                if (activate)
+                {
+                    VERIFY_IS_TRUE(std::abs(400.0 - window1->Bounds.Width) <= 2.0);
+                    VERIFY_IS_TRUE(std::abs(300.0 - window1->Bounds.Height) <= 2.0);
+                }
+                cancelClose = false;
+                window1->Close();
+                VERIFY_ARE_EQUAL(2, closedCount);
+                VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+                window1->Width = 800.0;
+                window1->Height = 600.0;
+                VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                VERIFY_ARE_EQUAL(expectedWidth, window1->Width);
+                VERIFY_ARE_EQUAL(expectedHeight, window1->Height);
+            });
+        }
     }
 
     void WindowIntegrationTests::WindowWidthHeightRejectsBindingInMarkup()
@@ -1298,7 +2143,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     {
         TestCleanupWrapper cleanup;
 
-        // Once a Width/Height has been set, toggling ExtendsContentIntoTitleBar (ECITB) preserves the
+        // Once Height has been set, toggling ExtendsContentIntoTitleBar (ECITB) preserves the
         // client size - the physical window shrinks/grows by the caption rather than the client area
         // changing. This covers two facets:
         //   Facet 1 (order independence): set-then-toggle and toggle-then-set end with the same
@@ -1432,7 +2277,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // If the app never set Width/Height, toggling ExtendsContentIntoTitleBar
         // does NOT change the window size. The outer window rect stays put; only the client area
         // changes as the caption folds in/out. This is the compat guarantee for non-users, and it
-        // guards the opt-in gate on the Width/Height-aware ECITB resize.
+        // guards the opt-in gate on the Height-aware ECITB resize.
         const double tolerance = 3.0;
         auto areClose = [tolerance](double a, double b) { return std::abs(a - b) <= tolerance; };
 
@@ -1505,14 +2350,230 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    void WindowIntegrationTests::ToggleECITBPreservesClientHeightOnlyAfterHeightSet()
+    {
+        TestCleanupWrapper cleanup;
+
+        const double requestedHeight = 300.0;
+        const double tolerance = 2.0;
+        auto areClose = [tolerance](double a, double b) { return std::abs(a - b) <= tolerance; };
+
+        for (const bool setBeforeActivation : { false, true })
+        {
+            for (const bool setHeight : { false, true })
+            {
+                for (const bool setWidth : { false, true })
+                {
+                    LOG_OUTPUT(L"Before activation=%d, set Height=%d, set Width=%d",
+                        setBeforeActivation, setHeight, setWidth);
+
+                    WindowAutoCloser window1;
+                    HWND windowHandle = nullptr;
+                    auto setSize = [&]()
+                    {
+                        if (setHeight)
+                        {
+                            window1->Height = requestedHeight;
+                        }
+                        if (setWidth)
+                        {
+                            // A later Width assignment must not clear the Height opt-in.
+                            window1->Width = 600.0;
+                        }
+                    };
+
+                    RunOnUIThread([&]()
+                    {
+                        window1.Attach(ref new xaml::Window());
+                        window1->Content = ref new xaml_controls::Grid();
+                        window1->ExtendsContentIntoTitleBar = false;
+                        if (setBeforeActivation)
+                        {
+                            setSize();
+                        }
+
+                        Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+                        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(IID_PPV_ARGS(&windowNative)));
+                        VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+                        window1->Activate();
+                    });
+                    TestServices::WindowHelper->WaitForIdle();
+
+                    RunOnUIThread([&]()
+                    {
+                        if (!setBeforeActivation)
+                        {
+                            setSize();
+                        }
+
+                        // Resize outside the properties so preservation must use the current height,
+                        // not the last assigned Height value.
+                        const double scale = static_cast<double>(::GetDpiForWindow(windowHandle)) / USER_DEFAULT_SCREEN_DPI;
+                        window1->AppWindow->ResizeClient({
+                            static_cast<int>(std::round(640.0 * scale)),
+                            static_cast<int>(std::round(480.0 * scale)) });
+                    });
+                    TestServices::WindowHelper->WaitForIdle();
+
+                    RunOnUIThread([&]()
+                    {
+                        VERIFY_IS_TRUE(areClose(480.0, window1->Height), L"The native resize should replace the assigned client height");
+                    });
+
+                    for (const bool extend : { true, false })
+                    {
+                        RECT outerBefore{};
+                        wf::Rect boundsBefore{};
+                        RunOnUIThread([&]()
+                        {
+                            VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &outerBefore));
+                            boundsBefore = window1->Bounds;
+                            LogWindowGeometry(L"Before title-bar toggle", windowHandle, window1.get());
+                            window1->ExtendsContentIntoTitleBar = extend;
+                        });
+                        TestServices::WindowHelper->WaitForIdle();
+
+                        RunOnUIThread([&]()
+                        {
+                            RECT outerAfter{};
+                            VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &outerAfter));
+                            const auto boundsAfter = window1->Bounds;
+                            const LONG outerHeightBefore = outerBefore.bottom - outerBefore.top;
+                            const LONG outerHeightAfter = outerAfter.bottom - outerAfter.top;
+                            LogWindowGeometry(L"After title-bar toggle", windowHandle, window1.get());
+
+                            VERIFY_ARE_EQUAL(outerBefore.right - outerBefore.left, outerAfter.right - outerAfter.left);
+                            VERIFY_IS_TRUE(areClose(boundsBefore.Width, boundsAfter.Width), L"Client width should not change");
+                            VERIFY_IS_TRUE(areClose(boundsAfter.Height, window1->Height), L"Height should reflect the current client height");
+                            if (setHeight)
+                            {
+                                VERIFY_IS_TRUE(areClose(boundsBefore.Height, boundsAfter.Height),
+                                    L"Setting Height should preserve the current client height, even after a native resize");
+                                VERIFY_IS_TRUE(extend ? outerHeightAfter < outerHeightBefore : outerHeightAfter > outerHeightBefore,
+                                    L"The outer height should change to preserve client height");
+                            }
+                            else
+                            {
+                                VERIFY_ARE_EQUAL(outerHeightBefore, outerHeightAfter,
+                                    L"Setting only Width must not enable client-height preservation");
+                                VERIFY_IS_TRUE(extend ? boundsAfter.Height > boundsBefore.Height + 5.0 :
+                                    boundsAfter.Height < boundsBefore.Height - 5.0,
+                                    L"Client height should change as the title bar enters or leaves the client area");
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    void WindowIntegrationTests::ToggleECITBInNonRestoredStateDoesNotPreserveClientHeight()
+    {
+        TestCleanupWrapper cleanup;
+        enum class WindowState { Minimized, Maximized, FullScreen, CompactOverlay };
+        const WindowState states[] = { WindowState::Minimized, WindowState::Maximized,
+            WindowState::FullScreen, WindowState::CompactOverlay };
+
+        for (const auto state : states)
+        {
+            for (const bool extend : { false, true })
+            {
+                LOG_OUTPUT(L"Title-bar toggle in state=%d, extend=%d", static_cast<int>(state), extend);
+                WindowAutoCloser window1;
+                HWND windowHandle = nullptr;
+                RECT restoredOuter{};
+                double restoredClientHeight = 0.0;
+
+                RunOnUIThread([&]()
+                {
+                    window1.Attach(ref new xaml::Window());
+                    window1->Content = ref new xaml_controls::Grid();
+                    window1->ExtendsContentIntoTitleBar = !extend;
+                    window1->Width = 500.0;
+                    window1->Height = 300.0;
+                    Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+                    VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(IID_PPV_ARGS(&windowNative)));
+                    VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+                    window1->Activate();
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &restoredOuter));
+                    restoredClientHeight = window1->Bounds.Height;
+                    switch (state)
+                    {
+                    case WindowState::Minimized:
+                        ::ShowWindow(windowHandle, SW_MINIMIZE);
+                        break;
+                    case WindowState::Maximized:
+                        ::ShowWindow(windowHandle, SW_MAXIMIZE);
+                        break;
+                    case WindowState::FullScreen:
+                        window1->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen);
+                        break;
+                    case WindowState::CompactOverlay:
+                        window1->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::CompactOverlay);
+                        break;
+                    }
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    const auto presenterBefore = window1->AppWindow->Presenter->Kind;
+                    const bool minimizedBefore = !!::IsIconic(windowHandle);
+                    const bool maximizedBefore = !!::IsZoomed(windowHandle);
+                    WINDOWPLACEMENT before{};
+                    before.length = sizeof(before);
+                    VERIFY_IS_TRUE(!!::GetWindowPlacement(windowHandle, &before));
+                    window1->ExtendsContentIntoTitleBar = extend;
+                    WINDOWPLACEMENT after{};
+                    after.length = sizeof(after);
+                    VERIFY_IS_TRUE(!!::GetWindowPlacement(windowHandle, &after));
+                    VERIFY_IS_TRUE(!!::EqualRect(&before.rcNormalPosition, &after.rcNormalPosition));
+                    VERIFY_ARE_EQUAL(presenterBefore, window1->AppWindow->Presenter->Kind);
+                    VERIFY_ARE_EQUAL(minimizedBefore, !!::IsIconic(windowHandle));
+                    VERIFY_ARE_EQUAL(maximizedBefore, !!::IsZoomed(windowHandle));
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    if (state == WindowState::Minimized || state == WindowState::Maximized)
+                    {
+                        ::ShowWindow(windowHandle, SW_RESTORE);
+                    }
+                    else
+                    {
+                        window1->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::Default);
+                    }
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    RECT outerAfter{};
+                    VERIFY_IS_TRUE(!!::GetWindowRect(windowHandle, &outerAfter));
+                    VERIFY_ARE_EQUAL(restoredOuter.right - restoredOuter.left, outerAfter.right - outerAfter.left);
+                    VERIFY_ARE_EQUAL(restoredOuter.bottom - restoredOuter.top, outerAfter.bottom - outerAfter.top,
+                        L"A title-bar toggle in a non-restored state must not schedule a resize on restore");
+                    VERIFY_IS_TRUE(extend ? window1->Bounds.Height > restoredClientHeight + 5.0 :
+                        window1->Bounds.Height < restoredClientHeight - 5.0,
+                        L"The changed chrome, not the previously assigned Height, determines restored client height");
+                    VERIFY_ARE_EQUAL(static_cast<double>(window1->Bounds.Height), window1->Height);
+                });
+            }
+        }
+    }
+
     void WindowIntegrationTests::GetWindowWidthHeightInPresenterHonorsValueSetBeforeSwitching()
     {
         TestCleanupWrapper cleanup;
 
-        // Per spec: in FullScreen/CompactOverlay the getter returns the live size ONLY if the app
-        // never set Width/Height. If you set a value before switching presenters, the getter must
-        // still honor that value (the size the window will return to), not jump to the live
-        // full-screen / compact size.
+        // In FullScreen/CompactOverlay the getter reports restored size, not live presenter size.
+        // A value set before switching presenters must still describe the size the window returns to.
         const double setWidth = 640.0;
         const double setHeight = 480.0;
         const double tolerance = 2.0;
