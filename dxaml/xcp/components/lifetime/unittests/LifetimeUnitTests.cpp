@@ -25,6 +25,28 @@ namespace
         STDMETHOD(FoundTrackerTarget)(IReferenceTrackerTarget *target) override { ++CallbacksCount; return S_OK; }
         unsigned CallbacksCount = 0;
     };
+
+    // Pillar C test peer: a minimal peer whose thread affinity and owning core can be controlled directly, so the
+    // off-thread final-release funnel (WeakReferenceSourceNoThreadId::OnFinalReleaseOffThread) can be exercised
+    // deterministically without standing up the full peer-registration / core-search machinery.
+    class ControllableThreadPeer
+        : public ctl::WeakReferenceSourceNoThreadId
+    {
+    public:
+        _Check_return_ HRESULT CheckThread() const override
+        {
+            return m_onOwningThread ? S_OK : RPC_E_WRONG_THREAD;
+        }
+
+        DirectUI::IDXamlCore* GetCoreForObject() override { return m_core; }
+
+        void SetOnOwningThread(bool value) { m_onOwningThread = value; }
+        void SetCore(DirectUI::IDXamlCore* core) { m_core = core; }
+
+    private:
+        bool m_onOwningThread = true;
+        DirectUI::IDXamlCore* m_core = nullptr;
+    };
 }
 
 namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace Lifetime {
@@ -237,10 +259,65 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
         return 0;
     }
 
+    // Pillar C - thread-affine release funnel.
+    // An off-thread final release must be marshaled to the owning core's release queue, never destroyed inline.
+    void LifetimeUnitTests::OffThreadFinalReleaseRoutesToOwningThread()
+    {
+        ctl::ComPtr<ControllableThreadPeer> peer;
+        THROW_IF_FAILED(ctl::ComObject<ControllableThreadPeer>::CreateInstance(peer.GetAddressOf()));
 
+        peer->SetCore(m_dxamlCore);
+        peer->SetOnOwningThread(false);
 
+        VERIFY_IS_TRUE(m_dxamlCore->IsFinalReleaseQueueEmpty());
 
-    
+        // allowOffThreadDelete = false: we assert the object is routed to the queue, and guarantee it is never
+        // deleted inline by this call (so the ComPtr below remains the sole owner).
+        const bool routed = peer->OnFinalReleaseOffThread(false /* allowOffThreadDelete */);
+
+        VERIFY_IS_TRUE(routed);
+        VERIFY_ARE_EQUAL(static_cast<size_t>(1), m_dxamlCore->GetFinalReleaseQueueCount());
+
+        // Cleanup: OnFinalReleaseOffThread set the ignore-releases guard (the object is "owned" by the queue).
+        // Undo it and drop the fake queue entry so the ComPtr can release/destroy normally on this (owning) thread.
+        peer->DisableIgnoreReleases();
+        m_dxamlCore->ClearFinalReleaseQueue();
+        peer->SetOnOwningThread(true);
+    }
+
+    // Pillar C - a final release already on the owning thread must proceed inline (not be routed).
+    void LifetimeUnitTests::OnThreadFinalReleaseIsNotRouted()
+    {
+        ctl::ComPtr<ControllableThreadPeer> peer;
+        THROW_IF_FAILED(ctl::ComObject<ControllableThreadPeer>::CreateInstance(peer.GetAddressOf()));
+
+        peer->SetCore(m_dxamlCore);
+        peer->SetOnOwningThread(true);
+
+        const bool routed = peer->OnFinalReleaseOffThread(false /* allowOffThreadDelete */);
+
+        VERIFY_IS_FALSE(routed);
+        VERIFY_IS_TRUE(m_dxamlCore->IsFinalReleaseQueueEmpty());
+    }
+
+    // Pillar C ties the off-thread funnel into the Pillar A peer-lifetime state machine by announcing the move into
+    // the Releasing state. Validate that this edge is legal from every state a peer can be in before release, and
+    // that Releasing is terminal-bound (only -> TornDown).
+    void LifetimeUnitTests::ReleasingIsALegalTransitionFromEveryPreReleaseState()
+    {
+        using PeerLifetimeState = ctl::WeakReferenceSourceNoThreadId::PeerLifetimeState;
+
+        VERIFY_IS_TRUE(ctl::WeakReferenceSourceNoThreadId::IsLegalPeerStateTransition(PeerLifetimeState::Detached, PeerLifetimeState::Releasing));
+        VERIFY_IS_TRUE(ctl::WeakReferenceSourceNoThreadId::IsLegalPeerStateTransition(PeerLifetimeState::Pegged, PeerLifetimeState::Releasing));
+        VERIFY_IS_TRUE(ctl::WeakReferenceSourceNoThreadId::IsLegalPeerStateTransition(PeerLifetimeState::Tracked, PeerLifetimeState::Releasing));
+
+        // Releasing only proceeds to teardown.
+        VERIFY_IS_TRUE(ctl::WeakReferenceSourceNoThreadId::IsLegalPeerStateTransition(PeerLifetimeState::Releasing, PeerLifetimeState::TornDown));
+
+        // A torn-down peer is terminal: it can never re-enter Releasing.
+        VERIFY_IS_FALSE(ctl::WeakReferenceSourceNoThreadId::IsLegalPeerStateTransition(PeerLifetimeState::TornDown, PeerLifetimeState::Releasing));
+    }
+
 } } } } }
 
 
