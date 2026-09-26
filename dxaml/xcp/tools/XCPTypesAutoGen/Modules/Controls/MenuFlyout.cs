@@ -181,7 +181,7 @@ namespace Microsoft.UI.Xaml.Controls
     [FrameworkTypePattern]
     [Implements(typeof(Microsoft.UI.Xaml.Controls.ISubMenuOwner))]
     [Guids(ClassGuid = "cb6688cb-2d2c-4270-9a0b-32cf8d447c9c")]
-    public sealed class MenuFlyoutSubItem
+    public class MenuFlyoutSubItem
      : Microsoft.UI.Xaml.Controls.MenuFlyoutItemBase
     {
         public MenuFlyoutSubItem() { }
