@@ -120,7 +120,7 @@ public:
     BEGIN_TEST_METHOD(HitTestPopup)
         TEST_METHOD_PROPERTY(L"Description", L"Validates DComp hit-test visibility with a Popup")
         TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 

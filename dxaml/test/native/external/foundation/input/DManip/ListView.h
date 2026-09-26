@@ -37,7 +37,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(Pan)
                 TEST_METHOD_PROPERTY(L"Description", L"Pans a ListView and validates the DComp tree with DManip-on-DComp enabled")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Poisons next test with crash in MockDComp
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -50,19 +50,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(ZoomOutWithMouseWheel)
                 TEST_METHOD_PROPERTY(L"Description", L"Zooms out a ListView with an inner VirtualizingStackPanel using the ctrl key and mouse wheel")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Intermittent MockDComp crash
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ZoomInWithMouseWheel)
                 TEST_METHOD_PROPERTY(L"Description", L"Zooms in a ListView with an inner VirtualizingStackPanel using the ctrl key and mouse wheel")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Intermittent MockDComp crash
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateEndOfInertiaView)
                 TEST_METHOD_PROPERTY(L"Description", L"Zooms and pans a ListView of variable-sized items and validates the ViewChanging's FinalView property after inertia")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Intermittent MockDComp crash
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
         private:

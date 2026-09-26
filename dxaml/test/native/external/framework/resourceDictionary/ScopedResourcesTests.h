@@ -28,7 +28,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD(OverrideLookupOnPage)
             TEST_METHOD(ThemeChange)
             BEGIN_TEST_METHOD(PickupOverrideFromAppXAML)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
             TEST_METHOD(HighContrast)
             TEST_METHOD(NoopForResourceDictionary)

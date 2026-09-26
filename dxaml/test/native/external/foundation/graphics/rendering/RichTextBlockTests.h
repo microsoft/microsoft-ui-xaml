@@ -28,7 +28,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(EmbeddedInlineElementPlacement)
                 TEST_METHOD_PROPERTY(L"Description", L"Test the embedded inline element placement when window size is changed.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing comp node
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -73,7 +73,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(SelectionChangedEvent)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify that the SelectionChanged event fires")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: RichTextBlockTests::SelectionChangedEvent isn't loading content on WPF
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TextUpdatesWithFocus)
@@ -128,7 +128,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(InlineUIContainerDirections)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify positioning of InlineUIContainer when text reading order is reverse of FlowDirection")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Different text offsets
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 

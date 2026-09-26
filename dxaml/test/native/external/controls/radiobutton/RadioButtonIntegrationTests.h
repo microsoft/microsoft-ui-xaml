@@ -95,7 +95,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateTraverseRadioButtonGroupByKeyboard)
             TEST_METHOD_PROPERTY(L"Description", L"Validates traversing through a named group of RadioButtons with keyboard input.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE - up/down arrow keys don't seem to have an effect
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanInteractWithRadioButtonsOnAPage)

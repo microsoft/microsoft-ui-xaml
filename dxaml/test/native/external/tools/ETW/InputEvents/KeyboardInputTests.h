@@ -23,7 +23,7 @@ public:
 
     BEGIN_TEST_METHOD(KeyTests)
         TEST_METHOD_PROPERTY(L"Description", L"Validates KeyDown and KeyUp events.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
             
 };

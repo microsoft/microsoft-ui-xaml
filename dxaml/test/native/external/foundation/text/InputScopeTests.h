@@ -31,7 +31,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(InputScopePropertyTest)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates setting/getting the InputScope property for TextBox and RichEditBox control.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
         private:

@@ -53,7 +53,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(RootVisualBackgroundHighContrast)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies XAML applies correct RootVisual background when switching between themes in High Contrast.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 

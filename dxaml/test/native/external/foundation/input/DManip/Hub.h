@@ -27,7 +27,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(Basics)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates Hub doesn't apply any DManip transforms to secondary content relationship Dependency Properties")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Intermittent test crash
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
         private:

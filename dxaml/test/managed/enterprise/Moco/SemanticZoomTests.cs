@@ -35,6 +35,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ZoomWithKeyboard()
         {
             using (TestServices.KeyboardHelper.CreateKeyboardWaitKindGuard(KeyboardWaitKind.None))
@@ -92,6 +93,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void TabNavigationInDifferentViews()
         {
             using (TestServices.KeyboardHelper.CreateKeyboardWaitKindGuard(KeyboardWaitKind.None))

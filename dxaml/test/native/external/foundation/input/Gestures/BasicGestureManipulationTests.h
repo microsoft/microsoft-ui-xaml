@@ -47,14 +47,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(ScaleARectangleInScrollViewer)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates scaling with touch via the Touch Interaction Engine within a ScrollViewer.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // GetForCurrentView no lonnger available in Desktop
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
              END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ScaleARectangleInScrollViewerWithInertia)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates scaling with touch via the Touch Interaction Engine within a ScrollViewer with inertia.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // GetForCurrentView no lonnger available in Desktop
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
@@ -62,13 +62,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Set up manipulation scaling within a ScrollViewer in PointerPressed handler.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // GetForCurrentView no lonnger available in Desktop
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ResetScaleInPointerPressed)
                 TEST_METHOD_PROPERTY(L"Description", L"Reset manipulation scaling in PointerPressed handler and zoom in ScrollViewer with DManip.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // GetForCurrentView no lonnger available in Desktop
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(PanAZoomableRectangle)

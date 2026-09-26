@@ -155,7 +155,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies Focus Rect renders correctly on sticky headers / ListViewItem headers")
                 TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // TODO: remove after the associated issue is fixed
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // BuildTreeService drains endlessly in a loop
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -163,7 +163,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Renders some controls then moves between them with keyboard focus.")
                 TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method") // TODO: remove after the associated issue is fixed
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // ChromeFocusRectangleTests::CheckFocusChromeVisuals fails on WPF
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 

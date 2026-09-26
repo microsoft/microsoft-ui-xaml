@@ -53,7 +53,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Test Controls.ItemsPresenterTests.ItemsPresenterTests fails on WPF
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyHeaderGetsMaxDesiredSizeOrAvailableSize()
         {
             ListView list = PrepareListView();
@@ -69,7 +69,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Test Controls.ItemsPresenterTests.ItemsPresenterTests fails on WPF
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanNavigateByLineOrPage()
         {
             ListView list = PrepareListView();
@@ -141,7 +141,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanUseMouseWheelToNavigate()
         {
             ListView list = PrepareListView();
@@ -199,7 +199,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanUseMouseWheelToZoomOut()
         {
             CanUseMouseWheelToZoom(zoomIn: false);
@@ -207,7 +207,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanUseMouseWheelToZoomIn()
         {
             CanUseMouseWheelToZoom(zoomIn: true);
@@ -258,7 +258,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Test Controls.ItemsPresenterTests.ItemsPresenterTests fails on WPF
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanProcessScrollIntoViewAfterCollectionChange()
         {
             ListView list = PrepareListView();

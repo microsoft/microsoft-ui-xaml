@@ -30,7 +30,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(TestSelection)
                 TEST_METHOD_PROPERTY(L"Description", L"Testing TOM (Text Object Model API exposed through Windows.UI.Text namesapce by RichEdit) Selection API on RichEditBox's Document property.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestClipboardCopyFormats)
@@ -130,7 +130,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(VerifyClearUndoRedoHistory)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies ClearUndoRedoHistory clears the undo/redo history.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyProgrammaticSelectionCutRaisesRichEditBoxEvent)

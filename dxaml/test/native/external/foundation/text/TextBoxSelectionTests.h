@@ -82,7 +82,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(VerifyTextBoxSelectionGrippersAreInteractibleWithTextCommandBarFlyout)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can interact with grippers when the TextCommandBarFlyout is showing.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // stress mode crash
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyTextBoxFocusAndSelectAll)

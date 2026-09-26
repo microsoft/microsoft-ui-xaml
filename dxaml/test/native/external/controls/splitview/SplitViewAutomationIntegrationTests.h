@@ -31,12 +31,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateLightDismissWindowPattern)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the SplitView control Overlay and CompactOverlay modes support window pattern, whereas Inline and CompactInline modes do not.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE: Can't find element "PaneRoot"
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateLightDismissCloseButton)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the SplitView control Overlay and CompactOverlay modes support lightdismiss button, whereas Inline and CompactInline modes do not.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE: Can't find element "LightDismiss"
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
     private:

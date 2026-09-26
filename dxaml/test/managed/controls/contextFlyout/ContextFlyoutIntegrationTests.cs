@@ -49,7 +49,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCorrectFlyoutOpensOnParentAndChild0()
         {
             // No flyouts
@@ -62,7 +62,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCorrectFlyoutOpensOnParentAndChild1()
         {
             // Both child & parent have flyout, NO drag
@@ -75,7 +75,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCorrectFlyoutOpensOnParentAndChild2()
         {
             // Both child & parent have flyout, WITH drag
@@ -88,7 +88,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCorrectFlyoutOpensOnParentAndChild3()
         {
             // Only child has flyout, NO drag
@@ -101,7 +101,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCorrectFlyoutOpensOnParentAndChild4()
         {
             // Only child has flyout, WITH drag
@@ -114,7 +114,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCorrectFlyoutOpensOnParentAndChild5()
         {
             // Only parent has flyout, NO drag
@@ -127,7 +127,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCorrectFlyoutOpensOnParentAndChild6()
         {
             // Only parent has flyout, WITH drag
@@ -358,7 +358,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyContextRequestedCanBeFiredWithPen()
         {
             Grid root = null;
@@ -399,7 +399,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyContextRequestedEventCanBeSeenWhenHandled()
         {
             Grid root = null;
