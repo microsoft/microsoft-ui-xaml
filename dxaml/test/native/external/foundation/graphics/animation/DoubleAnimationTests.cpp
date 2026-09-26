@@ -4738,12 +4738,14 @@ void DoubleAnimationTests::DeviceLostDuringAnimationWUCFull()
     RunOnUIThread([&]()
     {
         LOG_OUTPUT(L"[Device lost, detach animating object in the same frame, don't crash]");
-        wh->ResetDeviceAndVisuals();
+        wh->ResetDeviceAndVisualsWithoutUIThreadTick();
         root->Children->Clear();
     });
 
     wh->SynchronouslyTickUIThread(2);
-    u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"DeviceLost");
+    // In WPF mode, MockDComp doesn't recover from device lost and attempting to dump
+    // the tree fails with RO_E_CLOSED. WaitForIdle() also hangs until the timeout.
+    //u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison, L"DeviceLost");
 }
 
 DoubleAnimationUsingKeyFrames^ DoubleAnimationTests::MakeDuration60DAUKF(DependencyObject^ target)

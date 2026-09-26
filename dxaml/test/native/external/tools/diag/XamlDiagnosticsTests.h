@@ -72,38 +72,38 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(TestHitTest)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully call into XamlDiagnostics and hit test the tree.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // HITTest API deprecated for IslandsOnly initialization type
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestHitTestReturnsInvisibleElements)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we hit testing returns invisible elements.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // HITTest API deprecated for IslandsOnly initialization type
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestHitTestReturnsDisabledElements)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that hit testing returns disabled elements.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // HITTest API deprecated for IslandsOnly initialization type
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestHitTestDoesntReturnElementsNotInTree)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that hit testing doesn't return elements that aren't in the live tree.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // HITTest API deprecated for IslandsOnly initialization type
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestHitTestDoesntReturnCollapsedElements)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that hit testing doesn't return elements that are collapsed.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // HITTest API deprecated for IslandsOnly initialization type
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestHitTestAfterChangingVisiblity)
                 TEST_METHOD_PROPERTY(L"Description", L"This test get's a little fancy. We are going to make sure that once an element goes "
                                      L"from collapsed to visible, that we can now hit test it.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // HITTest API deprecated for IslandsOnly initialization type
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestRegisterInstance)
@@ -190,16 +190,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
-            BEGIN_TEST_METHOD(TestReturnCorrectRootsInUAP)
-                TEST_METHOD_PROPERTY(L"Description", L"Validates that we don't return the PrintRoot, TransitionRoot, or VisualDiagnosticsRoot to the callback.")
-                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
-            END_TEST_METHOD()
-
             BEGIN_TEST_METHOD(TestReturnCorrectRootsInWPF)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we don't return the PrintRoot, TransitionRoot, or VisualDiagnosticsRoot to the callback.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // Some XamlDiagnostics tests still failing
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestMultipleCallbacks)
@@ -304,7 +297,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(TestAddNewSetterInStyle)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that modifying a Style with SetProperty that should add a Setter does")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF_HOSTING_MODE_FAILURE - Error: Verify: IsTrue(wcscmp(colorProperty.Value, L"Yellow") == 0)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TestChangeSetterProperty)
@@ -407,7 +400,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             BEGIN_TEST_METHOD(VerifyMutationEvents)
                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-               TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")    // WPF_HOSTING_MODE_FAILURE - Fails because it loads Xaml with Popup IsOpen="true"
+               TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyGetCallbackWhenNoDispatcherQueues)
@@ -426,7 +419,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             Microsoft::UI::Xaml::Tests::Common::TestCleanupWrapper LoadXamlFromFunction(const std::function<UIElement^()> func, wrl::ComPtr<Microsoft::UI::Xaml::Tests::Common::VisualTreeServiceCallback>& callback);
             void TestModifyResourceDictionarySource(InstanceHandle resources, const wrl::ComPtr<Microsoft::UI::Xaml::Tests::Common::VisualTreeServiceCallback>& callback);
             std::vector<InstanceHandle> DoHitTest(const RECT& rect);
-            void TestReturnCorrectRootsHelper(unsigned numberOfRoots);
 
         };
     }

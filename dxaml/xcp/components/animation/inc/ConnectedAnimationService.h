@@ -3,6 +3,7 @@
 
 #pragma once
 #include "ConnectedAnimation.h"
+#include "ConnectedAnimationRoot.h"
 #include "CDependencyObject.h"
 
 class CEasingFunctionBase;
@@ -26,6 +27,7 @@ public:
     _Check_return_ HRESULT GetAnimation(const xstring_ptr_view& key, _Outptr_opt_result_maybenull_ CConnectedAnimation ** animation);
 
     const std::vector<xref_ptr<CUIElement>>& GetUnloadingElements();
+    bool IsUnloadingElementForRoot(_In_ CUIElement* element, _In_ CConnectedAnimationRoot* root) const;
     _Check_return_ HRESULT OnUnloadingElement(_In_ CUIElement* unloadingElement, _Out_ bool* shouldRetain);
     _Check_return_ HRESULT PreRenderWalk();
     _Check_return_ HRESULT PreCommit();
@@ -49,6 +51,7 @@ private:
 
     std::vector<xref_ptr<CConnectedAnimation>> m_animations;
     std::vector<xref_ptr<CUIElement>> m_retainedElements;
+    std::vector<xref_ptr<CConnectedAnimationRoot>> m_retainedElementRoots;
     Microsoft::WRL::ComPtr<WUComp::ICompositionEasingFunction> m_defaultEasingFunction;
     wf::TimeSpan m_defaultDuration;
     bool m_waitForCommitCompletion = false;

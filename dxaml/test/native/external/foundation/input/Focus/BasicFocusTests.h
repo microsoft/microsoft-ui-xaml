@@ -76,7 +76,7 @@ namespace Microsoft::UI::Xaml::Tests {
             BEGIN_TEST_METHOD(TabStopWrapsFocusForListView)
                 TEST_METHOD_PROPERTY(L"Description", L"Hitting tab on the last focused element on a page should wrap focus to the first element.")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Focus state mismatch after first run
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(FireEventWhenFocusedElementLeavesTree)
@@ -87,20 +87,19 @@ namespace Microsoft::UI::Xaml::Tests {
             BEGIN_TEST_METHOD(ValidateFocusApisWithInvalidSearchRootInUAP)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates TryMoveFocus and FindNextElement with FindElementOptions with invalid SearchRoot works fine in UAP")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") 
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(FindNextFocusableElementReturnsCorrectElement)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that calling FindNextFocusableElement returns the appropriate element")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // FindNextFocusableElement is only useful in UAP hosting mode, and so is deprecated.
-                                                              // Please use FindNextElement with a search root set to XamlRoot.Content instead.
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(FindNextFocusableElementForUIElement)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that calling FindNextFocusableElement returns the appropriate element, UIElement variant")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CannotSetRichTextBlockOverflowAsTabStop)
@@ -111,7 +110,7 @@ namespace Microsoft::UI::Xaml::Tests {
             BEGIN_TEST_METHOD(FindNextElementReturnsDependencyObject)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that calling FindNextElement will return a DependencyObject element")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(FireEventWhenFocusedElementChangesState)
@@ -128,12 +127,12 @@ namespace Microsoft::UI::Xaml::Tests {
             BEGIN_TEST_METHOD(VerifyShiftTabWhenOnceTabNavigationSet)
                 TEST_METHOD_PROPERTY(L"Description", L"When TabNavigation is set to Once, verify that pressing shift+tab functions correctly")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") 
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyShiftTabWithNavigationOnceWithNestedButtons)
                 TEST_METHOD_PROPERTY(L"Description", L"When TabNavigation is set to Once, verify that pressing shift+tab honors the setting for nested elements")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") 
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyCyclingWithTabIndexWhenTabNavigationSet)
@@ -157,7 +156,7 @@ namespace Microsoft::UI::Xaml::Tests {
                 TEST_CLASS_PROPERTY(L"IsolationLevel", L"Method") //We need to wait for CoreWindowActivated event
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Event timed out
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(DoNotSetFocusOnElementWithCollapsedParent)
@@ -171,7 +170,7 @@ namespace Microsoft::UI::Xaml::Tests {
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"Ignore", L"True")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Event times out
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Event times out
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 

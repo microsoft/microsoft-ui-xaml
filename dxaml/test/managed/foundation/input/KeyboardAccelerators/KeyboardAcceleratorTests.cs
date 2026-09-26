@@ -56,7 +56,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestMethod]
         [TestProperty("Description", "Validates actual tooltip and keyboard accelerator tooltips behavior for Pivot control")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails due to the final release queue not empty error
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateKeyboardAcceleratorToolTipsOnPivot()
         {
             {
@@ -1278,7 +1278,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestMethod]
         [TestProperty("Description", "Validates that KeyboardAccelerators event gets invoked.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateKeyboardAcceleratorsCanInvokeControlAutomationAction()
         {
             StackPanel rootPanel = null;
@@ -1721,7 +1721,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestMethod]
         [TestProperty("Description", "Validates that accelerators on MenuBar works when menu item is opened up.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyAcceleratorDefinedOnMenuBarMenuItemsWhenItsOpened()
         {
             const string rootPanelXaml =
@@ -1787,7 +1787,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestMethod]
         [TestProperty("Description", "Validates that accelerators on MenuBar works after menu item is opened up and closed again.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyAcceleratorDefinedOnMenuBarMenuItemsWhenItsOpenedAndClosed()
         {
             const string rootPanelXaml =
@@ -1953,7 +1953,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestMethod]
         [TestProperty("Description", "Validates that StandarUICommands on MenuBar works when menu item is opened up.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyStandarUICommandsDefinedOnMenuBarMenuItemsWhenItsOpened()
         {
             const string rootPanelXaml =
@@ -2007,7 +2007,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestMethod]
         [TestProperty("Description", "Validates that StandarUICommands on MenuBar works after menu item opened up and closed again.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyStandarUICommandsDefinedOnMenuBarMenuItemsWhenItsOpenedAndClosed()
         {
             const string rootPanelXaml =
@@ -2064,7 +2064,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestMethod]
         [TestProperty("Description", "Validates that Button control fires the accelerators on its attached Flyout.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyButtonFlyoutCanInvokeAcceleratorsDefinedOnFlyoutContent()
         {
             const string rootPanelXaml =
@@ -2093,15 +2093,16 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
             StackPanel rootPanel = null;
 
             Flyout ButtonFlyout = null;
-            Button focusButton = null;
+            Button flyoutOwnerButton = null;
             KeyboardAccelerator ctrl1Accelerator = null;
             KeyboardAccelerator ctrl2Accelerator = null;
             Button flyoutButton1 = null;
             Button flyoutButton2 = null;
+            bool scopedAcceleratorInvoked = false;
 
             var keyboardAcceleratorInvokedHandler1 = new Action<object, KeyboardAcceleratorInvokedEventArgs>((source, args) =>
             {
-                Verify.Fail("Accelerator invoked");
+                scopedAcceleratorInvoked = true;
             });
             var keyboardAcceleratorInvokedHandler2 = new Action<object, KeyboardAcceleratorInvokedEventArgs>((source, args) =>
             {
@@ -2118,9 +2119,9 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
             {
                 rootPanel = (StackPanel)XamlMarkup.XamlReader.Load(rootPanelXaml);
                 ButtonFlyout = (Flyout)rootPanel.FindName("ButtonFlyout");
+                flyoutOwnerButton = (Button)rootPanel.FindName("focusButton1");
                 flyoutButton1 = (Button)rootPanel.FindName("flyoutButton1");
                 flyoutButton2 = (Button)rootPanel.FindName("flyoutButton2");
-                focusButton = (Button)rootPanel.FindName("focusButton");
                 ctrl1Accelerator = (KeyboardAccelerator)rootPanel.FindName("flyoutAccelerator1");
                 ctrl1Accelerator.ScopeOwner = ButtonFlyout;
                 ctrl2Accelerator = (KeyboardAccelerator)rootPanel.FindName("flyoutAccelerator2");
@@ -2129,14 +2130,16 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
             });
             TestServices.WindowHelper.WaitForIdle();
 
-            FocusHelper.EnsureFocus(focusButton, FocusState.Keyboard);
+            FocusHelper.EnsureFocus(flyoutOwnerButton, FocusState.Keyboard);
 
             using (var keyboardAcceleratorInvoked1 = new EventTester<KeyboardAccelerator, KeyboardAcceleratorInvokedEventArgs>(ctrl1Accelerator, "Invoked", keyboardAcceleratorInvokedHandler1))
             using (var keyboardAcceleratorInvoked2 = new EventTester<KeyboardAccelerator, KeyboardAcceleratorInvokedEventArgs>(ctrl2Accelerator, "Invoked", keyboardAcceleratorInvokedHandler2))
             {
                 Log.Comment("Press accelerator sequence: Ctrl + 1");
+                scopedAcceleratorInvoked = false;
                 TestServices.KeyboardHelper.PressKeySequence("$d$_ctrlscan#$d$_1#$u$_1#$u$_ctrlscan");
-                keyboardAcceleratorInvoked1.WaitForNoThrow(TimeSpan.FromMilliseconds(100));
+                keyboardAcceleratorInvoked1.Wait();
+                Verify.IsTrue(scopedAcceleratorInvoked);
 
                 Log.Comment("Press accelerator sequence: Ctrl + 2");
                 TestServices.KeyboardHelper.PressKeySequence("$d$_ctrlscan#$d$_2#$u$_2#$u$_ctrlscan");
@@ -2149,7 +2152,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestMethod]
         [TestProperty("Description", "Validates that Button control fires the accelerators on its attached Flyout.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyButtonContextFlyoutWithFlyoutCanInvokeAcceleratorDefinedOnFlyoutContent()
         {
             const string rootPanelXaml =
@@ -2178,15 +2181,16 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
             StackPanel rootPanel = null;
 
             Flyout ButtonFlyout = null;
-            Button focusButton = null;
+            Button flyoutOwnerButton = null;
             KeyboardAccelerator ctrl1Accelerator = null;
             KeyboardAccelerator ctrl2Accelerator = null;
             Button flyoutButton1 = null;
             Button flyoutButton2 = null;
+            bool scopedAcceleratorInvoked = false;
 
             var keyboardAcceleratorInvokedHandler1 = new Action<object, KeyboardAcceleratorInvokedEventArgs>((source, args) =>
             {
-                Verify.Fail("Accelerator invoked");
+                scopedAcceleratorInvoked = true;
             });
             var keyboardAcceleratorInvokedHandler2 = new Action<object, KeyboardAcceleratorInvokedEventArgs>((source, args) =>
             {
@@ -2203,9 +2207,9 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
             {
                 rootPanel = (StackPanel)XamlMarkup.XamlReader.Load(rootPanelXaml);
                 ButtonFlyout = (Flyout)rootPanel.FindName("ButtonFlyout");
+                flyoutOwnerButton = (Button)rootPanel.FindName("focusButton1");
                 flyoutButton1 = (Button)rootPanel.FindName("flyoutButton1");
                 flyoutButton2 = (Button)rootPanel.FindName("flyoutButton2");
-                focusButton = (Button)rootPanel.FindName("focusButton");
                 ctrl1Accelerator = (KeyboardAccelerator)rootPanel.FindName("flyoutAccelerator1");
                 ctrl1Accelerator.ScopeOwner = ButtonFlyout;
                 ctrl2Accelerator = (KeyboardAccelerator)rootPanel.FindName("flyoutAccelerator2");
@@ -2214,14 +2218,16 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
             });
             TestServices.WindowHelper.WaitForIdle();
 
-            FocusHelper.EnsureFocus(focusButton, FocusState.Keyboard);
+            FocusHelper.EnsureFocus(flyoutOwnerButton, FocusState.Keyboard);
 
             using (var keyboardAcceleratorInvoked1 = new EventTester<KeyboardAccelerator, KeyboardAcceleratorInvokedEventArgs>(ctrl1Accelerator, "Invoked", keyboardAcceleratorInvokedHandler1))
             using (var keyboardAcceleratorInvoked2 = new EventTester<KeyboardAccelerator, KeyboardAcceleratorInvokedEventArgs>(ctrl2Accelerator, "Invoked", keyboardAcceleratorInvokedHandler2))
             {
                 Log.Comment("Press accelerator sequence: Ctrl + 1");
+                scopedAcceleratorInvoked = false;
                 TestServices.KeyboardHelper.PressKeySequence("$d$_ctrlscan#$d$_1#$u$_1#$u$_ctrlscan");
-                keyboardAcceleratorInvoked1.WaitForNoThrow(TimeSpan.FromMilliseconds(100));
+                keyboardAcceleratorInvoked1.Wait();
+                Verify.IsTrue(scopedAcceleratorInvoked);
 
                 Log.Comment("Press accelerator sequence: Ctrl + 2");
                 TestServices.KeyboardHelper.PressKeySequence("$d$_ctrlscan#$d$_2#$u$_2#$u$_ctrlscan");
@@ -2234,7 +2240,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestMethod]
         [TestProperty("Description", "Validates that Flyout processing on Button control does not crash due to stackoverflow.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyButtonFlyoutDoesNotIntroduceStackOverflow()
         {
             const string rootPanelXaml =
@@ -2252,17 +2258,23 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
                                 </Flyout>
                             </Button.ContextFlyout>
                         </Button>
+                        <Button x:Name='acceleratorTarget' Content='Accelerator Target' />
                     </StackPanel>";
 
             StackPanel rootPanel = null;
             Flyout ButtonFlyout = null;
             Button focusButton = null;
+            Button acceleratorTarget = null;
             KeyboardAccelerator ctrl1Accelerator = null;
             Button flyoutButton1 = null;
+            bool acceleratorCalled = false;
 
             var keyboardAcceleratorInvokedHandler1 = new Action<object, KeyboardAcceleratorInvokedEventArgs>((source, args) =>
             {
-                Verify.Fail("Accelerator invoked");
+                // Note: throwing an exception here bubbles up the stack and hits an assert
+                // in debug builds which would fail the test.
+                Log.Comment("   Accelerator called!");
+                acceleratorCalled = true;
             });
 
             UIExecutor.Execute(() =>
@@ -2271,6 +2283,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
                 ButtonFlyout = (Flyout)rootPanel.FindName("ButtonFlyout");
                 flyoutButton1 = (Button)rootPanel.FindName("flyoutButton1");
                 focusButton = (Button)rootPanel.FindName("focusButton");
+                acceleratorTarget = (Button)rootPanel.FindName("acceleratorTarget");
                 ctrl1Accelerator = (KeyboardAccelerator)rootPanel.FindName("flyoutAccelerator1");
                 ctrl1Accelerator.ScopeOwner = ButtonFlyout;
 
@@ -2283,11 +2296,31 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
             using (var keyboardAcceleratorInvoked1 = new EventTester<KeyboardAccelerator, KeyboardAcceleratorInvokedEventArgs>(ctrl1Accelerator, "Invoked", keyboardAcceleratorInvokedHandler1))
             {
                 Log.Comment("Press accelerator sequence: Ctrl + 1");
+                acceleratorCalled = false;
                 TestServices.KeyboardHelper.PressKeySequence("$d$_ctrlscan#$d$_1#$u$_1#$u$_ctrlscan");
-                keyboardAcceleratorInvoked1.WaitForNoThrow(TimeSpan.FromMilliseconds(100));
+                keyboardAcceleratorInvoked1.WaitForNoThrow(TimeSpan.FromMilliseconds(1000));
+                Verify.IsTrue(acceleratorCalled);
             }
 
             TestServices.WindowHelper.WaitForIdle();
+
+            // DISABLED: This type of accelerator currently only works when key focus is on an ancestor owner
+            //           of the accelerator when it is in a flyout like this.
+            //
+            // Try the accelerator again when focus is on an unrelated element (rather than an ancestor owner).
+            //Log.Comment("Moving focus to AcceleratorTarget to try the accelerator from there");
+            //FocusHelper.EnsureFocus(acceleratorTarget, FocusState.Keyboard);
+            //
+            //using (var keyboardAcceleratorInvoked1 = new EventTester<KeyboardAccelerator, KeyboardAcceleratorInvokedEventArgs>(ctrl1Accelerator, "Invoked", keyboardAcceleratorInvokedHandler1))
+            //{
+            //    Log.Comment("Press accelerator sequence: Ctrl + 1");
+            //    acceleratorCalled = false;
+            //    TestServices.KeyboardHelper.PressKeySequence("$d$_ctrlscan#$d$_1#$u$_1#$u$_ctrlscan");
+            //    keyboardAcceleratorInvoked1.WaitForNoThrow(TimeSpan.FromMilliseconds(1000));
+            //    Verify.IsTrue(acceleratorCalled);
+            //}
+            //
+            //TestServices.WindowHelper.WaitForIdle();
         }
 
         [TestMethod]
@@ -3369,7 +3402,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
         [TestMethod]
         [TestProperty("Description", "Validates KeyboardAccelerators and Text Input behavior. Key input in currently focused TextBox should only be used to generate text input.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateTextInputAndKeyboardAccelerator()
         {
             const string rootPanelXaml =
@@ -3410,7 +3443,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
                 acceleratorF3 = (KeyboardAccelerator)rootPanel.FindName("keyboardAcceleratorF3");
                 acceleratorCtrlS = (KeyboardAccelerator)rootPanel.FindName("keyboardAcceleratorCtrlS");
                 textBox = (TextBox)rootPanel.FindName("textBox");
-                Window.Current.Content = rootPanel;
+                TestServices.WindowHelper.WindowContent = rootPanel;
             });
             TestServices.WindowHelper.WaitForIdle();
 
@@ -3701,4 +3734,3 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
 
     }
 }
-

@@ -23,7 +23,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(ValidateWindowContentAccessor)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates the WindowHelper getter/setters operate as expected.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateWaitForIdle)

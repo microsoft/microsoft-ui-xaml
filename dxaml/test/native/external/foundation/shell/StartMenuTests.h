@@ -16,7 +16,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"32301317-5c46-4350-8af6-a06552076e89;3192b2bd-30c5-4c19-a6c1-9856b940df63")
-                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP") // Test uses private APIs that will never be available in Win32
+                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"WPF") // Test uses private APIs that will never be available in Win32
             END_TEST_CLASS()
 
             TEST_CLASS_SETUP(ClassSetup)
@@ -26,10 +26,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(SetAtlasSizeHint)
                 TEST_METHOD_PROPERTY(L"Description", L"Tests the internal API for shell to override the atlas size hint for DComp.")
+                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Atlas size hints are not supported in WPF/islands.
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AtlasRequest)
                 TEST_METHOD_PROPERTY(L"Description", L"Tests IAtlasRequestProvider callback")
+                TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Atlas requests are not supported in WPF/islands.
             END_TEST_METHOD()
 
         private:

@@ -27,19 +27,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         //
         BEGIN_TEST_METHOD(CanHideAndShowWindow)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can hide and show the window.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanMoveWindow)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can move the window.")
-            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore, WindowsCore") // This scenario is not supported on OneCore. Excluded on WindowsCore due to Bug TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"OneCore, WindowsCore") // This scenario is not supported on OneCore.
             TEST_METHOD_PROPERTY(L"Ignore", L"True")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanGetSetTitle)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can get and set the window title.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         //

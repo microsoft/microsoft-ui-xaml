@@ -106,7 +106,7 @@ public:
         bool parentIsPopupRoot,
         bool isAbsolutelyPositioned);
 
-    void RemoveTestLTE(_In_ CUIElement *lte);
+    bool RemoveTestLTE(_In_ CUIElement *lte);
 
     void ClearTestLTEs();
 

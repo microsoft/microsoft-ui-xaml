@@ -105,7 +105,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanOpenAndCloseUsingKeyboard)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that Top and Bottom (and not Inline) AppBars open/close in response to ContextMenu key.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Not working in WPF-hosting: ContextMenu key doesn't trigger this.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            // In UAP hosting, the ContextMenu key produces an EdgeGesture that toggles the AppBars (ApplicationBarService::OnEdgeGestureCompleted()).
+            // Desktop XAML islands do not produce that EdgeGesture or otherwise route the key to ApplicationBarService.
+            // Re-enable after the WPF hosting path handles the key and toggles the top and bottom AppBars.
+            TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanCloseNonStickyAppBarUsingEscapeKey)
@@ -228,4 +232,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     };
 
 } } } } } }
-

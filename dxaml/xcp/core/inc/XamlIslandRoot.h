@@ -95,6 +95,7 @@ public:
         _In_opt_ CContentPresenter *pRootContentPresenter);
 
     CUIElement* GetPublicRootVisual();
+    CUIElement* GetRootScrollViewerOrPublicRoot();
 
     _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override;
     _Check_return_ HRESULT LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams params) override;
@@ -385,4 +386,3 @@ private:
 
     _Check_return_ HRESULT EnsurePartnerPointerPointStatics();
 };
-

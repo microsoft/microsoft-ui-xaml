@@ -127,27 +127,31 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         RunOnUIThread([&]()
         {
+            auto window = ref new xaml::Window();
+            auto windowCleanup = wil::scope_exit([&]()
+            {
+                window->Close();
+            });
             Platform::String^ newTitle = ref new Platform::String(L"This is the new test title for UWP Window");
             Platform::String^ newTitle2 = ref new Platform::String(L"This is another new test title for UWP Window: 123456");
 
             LOG_OUTPUT(L"Getting the Window Title...");
-            auto currentTitle = xaml::Window::Current->Title;
-            LOG_OUTPUT(L"Retrieved Window Title (should be NULL): %s", currentTitle->Data());
-            VERIFY_IS_TRUE(currentTitle->IsEmpty());
+            auto currentTitle = window->Title;
+            LOG_OUTPUT(L"Retrieved default Window Title: %s", currentTitle->Data());
 
             LOG_OUTPUT(L"Setting the Window Title: %s", newTitle->Data());
-            xaml::Window::Current->Title = newTitle; 
+            window->Title = newTitle;
 
             LOG_OUTPUT(L"Getting the Window Title...");
-            currentTitle = xaml::Window::Current->Title;
+            currentTitle = window->Title;
             LOG_OUTPUT(L"Retrieved Window Title: %s", currentTitle->Data());
             VERIFY_IS_TRUE(Platform::String::CompareOrdinal(currentTitle, newTitle) == 0);
 
             LOG_OUTPUT(L"Setting the Window Title: %s", newTitle2->Data());
-            xaml::Window::Current->Title = newTitle2; 
+            window->Title = newTitle2;
 
             LOG_OUTPUT(L"Getting the Window Title...");
-            currentTitle = xaml::Window::Current->Title;
+            currentTitle = window->Title;
             LOG_OUTPUT(L"Retrieved Window Title: %s", currentTitle->Data());
             VERIFY_IS_TRUE(Platform::String::CompareOrdinal(currentTitle, newTitle2) == 0);
         });

@@ -1085,6 +1085,17 @@ _Check_return_ HRESULT CXamlIslandRoot::SetPublicRootVisual(
     return S_OK;
 }
 
+CUIElement* CXamlIslandRoot::GetRootScrollViewerOrPublicRoot()
+{
+    if (m_contentRoot)
+    {
+        VisualTree* visualTree = m_contentRoot->GetVisualTreeNoRef();
+        CUIElement* rootScrollViewer = visualTree->GetRootScrollViewer();
+        return rootScrollViewer != nullptr ? rootScrollViewer : visualTree->GetPublicRootVisual();
+    }
+    return nullptr;
+}
+
 VisualTree* CXamlIslandRoot::GetVisualTreeNoRef()
 {
     if (m_contentRoot)
@@ -2091,4 +2102,3 @@ void CXamlIslandRoot::UpdateLastPointerPointForReplay(const UINT uMsg, _In_ ixp:
         popupRoot->ClearLastPointerPointForReplay();
     }
 }
-

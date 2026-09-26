@@ -201,7 +201,7 @@
                               </ExpressionAnimation>
                             </TransformMatrix>
                             <Visual Tag="ContentVisual">
-                              <Visual Tag="PrependVisual">
+                              <Visual Tag="PrependVisual" SizeX="55.5" SizeY="56">
                                 <Visual VisualId="1" Tag="PrimaryVisual" SizeX="55.5" SizeY="56" OffsetX="9" OffsetY="9" OffsetZ="0">
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />

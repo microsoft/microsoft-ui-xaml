@@ -1223,9 +1223,12 @@ void XamlLightTests::LightDisconnectedAfterTreeReset()
     testLight->VerifyElementsAndReset(root, nullptr);
     testLight2->VerifyElementsAndReset(grid, nullptr);
 
-    LOG_OUTPUT(L"> Reset the visual tree like we do during shutdown.");
-    wh->ResetVisualTree();
-    wh->WaitForTreeReset();
+    LOG_OUTPUT(L"> Replace the window content.");
+    RunOnUIThread([&]()
+    {
+        wh->WindowContent = ref new Canvas();
+    });
+    wh->WaitForIdle();
     testLight->VerifyElementsAndReset(nullptr, root);
     testLight2->VerifyElementsAndReset(nullptr, grid);
 }
@@ -1672,7 +1675,6 @@ void XamlLightTests::LightTargetsBrushShared()
 
         popup = ref new Popup();
         popup->Child = CreateCanvas(brush1);
-        popup->IsOpen = true;
 
         testLight1 = ref new TestLight(CreateSpotLight(), L"Dummy");
         testLight2 = ref new TestLight(CreateSpotLight(), L"dUMMY");
@@ -1683,6 +1685,9 @@ void XamlLightTests::LightTargetsBrushShared()
 
         root->Children->Append(grid);
         wh->WindowContent = root;
+
+        popup->XamlRoot = root->XamlRoot;
+        popup->IsOpen = true;
     });
     wh->WaitForIdle();
 
@@ -2393,9 +2398,11 @@ void XamlLightTests::RootIsGridCommon(unsigned int expectedLightTargetCount)
 
         popup = ref new Popup();
         popup->Child = CreateCanvas(brush1);
-        popup->IsOpen = true;
 
         wh->WindowContent = root;
+
+        popup->XamlRoot = root->XamlRoot;
+        popup->IsOpen = true;
     });
     wh->WaitForIdle();
 
@@ -2516,11 +2523,6 @@ void XamlLightTests::WindowedPopup_RemoveLightsFromPopupRoot()
 void XamlLightTests::MuxLightsInIslands()
 {
     MuxLightsCommon(true);
-}
-
-void XamlLightTests::MuxLightsInCoreWindow()
-{
-    MuxLightsCommon(false);
 }
 
 void XamlLightTests::MuxLightsCommon(bool isInIsland)
@@ -2683,4 +2685,3 @@ SpotLight^ XamlLightTests::CreateSpotLight()
 }
 
 }}}}}}
-

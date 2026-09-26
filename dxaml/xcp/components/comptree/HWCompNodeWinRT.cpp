@@ -43,6 +43,7 @@
 #include <FrameworkTheming.h>
 #include "hwwalk.h"
 #include <RootVisual.h>
+#include <XamlIslandRoot.h>
 #include <ProjectedShadowManager.h>
 #include <ThemeShadow.h>
 #include <WindowRenderTarget.h>
@@ -2819,9 +2820,11 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualLights(_In_ DCompTreeHost* dcompTre
     if (m_shouldUpdateLightsAttachedToElement)
     {
         CUIElement* uiElementWithLightsNoRef = m_pUIElementNoRef;
-        const bool liftLights = m_pUIElementNoRef->OfTypeByIndex<KnownTypeIndex::RootVisual>();
+        const bool liftLightsFromRootVisual = m_pUIElementNoRef->OfTypeByIndex<KnownTypeIndex::RootVisual>();
+        const bool liftLightsFromXamlIslandRoot = m_pUIElementNoRef->OfTypeByIndex<KnownTypeIndex::XamlIslandRoot>();
+        const bool liftLights = liftLightsFromRootVisual || liftLightsFromXamlIslandRoot;
 
-        if (liftLights)
+        if (liftLightsFromRootVisual)
         {
             // If there are lights set on the root scroll viewer, we assume that the app put them there with the intention of
             // applying them to the entire tree, and only placed them there because that's as high as the app can reach in the
@@ -2829,6 +2832,15 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualLights(_In_ DCompTreeHost* dcompTre
             // that if Window.Content is a canvas, then there is no root scroll viewer, so we get them from the canvas instead.
             CRootVisual* rootVisualNoRef = static_cast<CRootVisual*>(m_pUIElementNoRef);
             uiElementWithLightsNoRef = rootVisualNoRef->GetRootScrollViewerOrCanvas();
+        }
+        else if (liftLightsFromXamlIslandRoot)
+        {
+            // If there are lights set on the root scroll viewer, we assume that the app put them there with the intention of
+            // applying them to the entire tree, and only placed them there because that's as high as the app can reach in the
+            // public UIElement tree. So when attaching lights to the root visual, get them from the root scroll viewer. Note
+            // that if island .Content is a canvas, then there is no root scroll viewer, so we get them from the canvas instead.
+            CXamlIslandRoot* xamlIslandRootNoRef = static_cast<CXamlIslandRoot*>(m_pUIElementNoRef);
+            uiElementWithLightsNoRef = xamlIslandRootNoRef->GetRootScrollViewerOrPublicRoot();
         }
 
         if (uiElementWithLightsNoRef != nullptr)

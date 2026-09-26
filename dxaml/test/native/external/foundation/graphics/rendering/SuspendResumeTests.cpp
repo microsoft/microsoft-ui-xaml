@@ -281,7 +281,7 @@ void SuspendResumeTests::MakeLISOnSuspend()
         s.y = 200;
         spriteVisual->Size = s;
         spriteVisual->Brush = rootVisual->Compositor->CreateSurfaceBrush(lis);
-        Hosting::ElementCompositionPreview::SetElementChildVisual(Window::Current->Content, spriteVisual);
+        Hosting::ElementCompositionPreview::SetElementChildVisual(wh->WindowContent, spriteVisual);
     });
     loadCompletedEvent->WaitForDefault();
 
@@ -290,4 +290,3 @@ void SuspendResumeTests::MakeLISOnSuspend()
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
 }
-

@@ -10712,6 +10712,14 @@ xref_ptr<CLayoutTransitionElement> CCoreServices::AddTestLTE(
     bool parentIsPopupRoot,
     bool isAbsolutelyPositioned)
 {
+    if (parentIsPopupRoot)
+    {
+        if (auto visualTree = VisualTree::GetForElementNoRef(lteTarget))
+        {
+            return visualTree->AddTestLTE(lteTarget, lteParent, parentIsRootVisual, parentIsPopupRoot, isAbsolutelyPositioned);
+        }
+    }
+
     // Only used for testing. Calling without a visual tree is unsupported.
     XCP_FAULT_ON_FAILURE(m_pMainVisualTree != nullptr);
 
@@ -10720,6 +10728,14 @@ xref_ptr<CLayoutTransitionElement> CCoreServices::AddTestLTE(
 
 void CCoreServices::RemoveTestLTE(_In_ CUIElement *lte)
 {
+    if (auto visualTree = VisualTree::GetForElementNoRef(lte))
+    {
+        if (visualTree->RemoveTestLTE(lte))
+        {
+            return;
+        }
+    }
+
     // Only used for testing. Calling without a visual tree is unsupported.
     XCP_FAULT_ON_FAILURE(m_pMainVisualTree != nullptr);
 

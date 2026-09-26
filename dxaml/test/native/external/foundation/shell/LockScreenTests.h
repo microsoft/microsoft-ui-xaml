@@ -25,8 +25,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_CLEANUP(TestCleanup)
 
             BEGIN_TEST_METHOD(TransparentBackground)
-                TEST_METHOD_PROPERTY(L"Description", L"Simulates the jupiter app being in lock screen and rendering a transparent background.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that island content renders with a transparent background.")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -36,4 +36,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     } }
 } } } }
-
