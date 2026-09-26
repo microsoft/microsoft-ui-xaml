@@ -189,47 +189,6 @@ if ($InstallPackage)
 
     $PackageCaches = @($PackageCache, $EffectivePackageCache) | Sort-Object -Unique
 
-    if ($env:NUGET_FALLBACK_PACKAGES)
-    {
-        $StaleFallbackPaths = @()
-        foreach ($FallbackRoot in $env:NUGET_FALLBACK_PACKAGES.Split(';', [System.StringSplitOptions]::RemoveEmptyEntries))
-        {
-            if (![System.IO.Path]::IsPathRooted($FallbackRoot))
-            {
-                Write-Warning "Skipping cleanup check for relative NUGET_FALLBACK_PACKAGES path: $FallbackRoot"
-                continue
-            }
-
-            $FallbackRoot = [System.IO.Path]::GetFullPath($FallbackRoot)
-            $FallbackPackagePaths = @(
-                (Join-Path $FallbackRoot "$PackageId\$version"),
-                (Join-Path $FallbackRoot "$PackageId.$version")
-            )
-
-            $StaleFallbackPaths += $FallbackPackagePaths | Where-Object { Test-Path $_ }
-        }
-
-        if ($StaleFallbackPaths.Count -gt 0)
-        {
-            $StaleFallbackPaths = $StaleFallbackPaths | Sort-Object -Unique
-            $Paths = $StaleFallbackPaths -join [Environment]::NewLine
-            $RemovalCommands = ($StaleFallbackPaths | ForEach-Object {
-                "Remove-Item `"$_`" -Recurse -Force"
-            }) -join [Environment]::NewLine
-            Write-Error @"
-The fixed-version development package exists in an active NuGet fallback folder:
-$Paths
-
-Close Visual Studio and any active builds, run:
-$RemovalCommands
-
-Then rerun pack.component.cmd. If a fallback is shared or read-only, disable it for this
-build or ask its owner to remove the stale package.
-"@
-            Exit 1
-        }
-    }
-
     foreach ($CacheRoot in $PackageCaches)
     {
         Remove-CachedPackage $CacheRoot
