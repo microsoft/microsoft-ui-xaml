@@ -55,7 +55,8 @@ namespace DirectUI
         public:
             virtual ~XamlCore();
             _Check_return_ HRESULT Initialize(msy::IDispatcherQueue* dq);
-            _Check_return_ HRESULT Close();
+            _Check_return_ HRESULT Close(_Out_ bool* shouldRaiseProcessShutdownEvents);
+            void RaiseProcessShutdownEvents();
 
             enum class State {
                 Normal,
@@ -73,13 +74,21 @@ namespace DirectUI
             virtual _Check_return_ HRESULT OnFrameworkShutdownStarting(
                 _In_ msy::IDispatcherQueueShutdownStartingEventArgs* args) = 0;
 
+            void RecordThreadShutdownCompleted();
+
         private:
+            void PrepareForDllUnloadIfReady(bool requestDllUnload, bool threadShutdownCompleted);
+
             wrl::ComPtr<msy::IDispatcherQueue> m_dispatcherQueue;
             wrl::ComPtr<msy::IDispatcherQueue3> m_dispatcherQueue3;
             EventRegistrationToken m_frameworkShutdownStartingToken {};
             State m_state {State::Normal};
 
             inline static std::atomic<int> s_instancesInProcess{};
+            inline static int s_threadShutdownCompletionsPending{};
+            inline static bool s_processShutdownInProgress{ false };
+            inline static bool s_dllUnloadRequested{ false };
+            inline static bool s_dllUnloadPreparationInProgress{ false };
         };
 
         friend class XamlCoreLegacyShutdown;
@@ -98,4 +107,3 @@ namespace DirectUI
         inline static thread_local std::shared_ptr<WindowsXamlManager::XamlCore> tls_xamlCore;
     };
 }
-

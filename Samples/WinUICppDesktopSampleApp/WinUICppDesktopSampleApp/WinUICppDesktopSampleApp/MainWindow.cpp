@@ -121,6 +121,15 @@ namespace winrt::WinUICppDesktopSampleApp::implementation
                 // Xaml is no longer safe to interact with here.
             });
 
+        MUXH::WindowsXamlManager::WinUIProcessShutdownStarting([](const auto&, const auto&)
+            {
+                ShutdownOrderValidation::Log(L"WinUIProcessShutdownStarting raised.");
+            });
+
+        MUXH::WindowsXamlManager::WinUIProcessShutdownCompleted([](const auto&, const auto&)
+            {
+                ShutdownOrderValidation::Log(L"WinUIProcessShutdownCompleted raised.");
+            });
 
         DispatcherQueue().ShutdownCompleted([](auto&&, auto&&) {
             ShutdownOrderValidation::Log(L"ShutdownCompleted raised.");

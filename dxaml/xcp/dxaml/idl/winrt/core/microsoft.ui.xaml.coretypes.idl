@@ -5272,6 +5272,13 @@ namespace Microsoft.UI.Xaml.Media.Media3D
 }
 namespace Microsoft.UI.Xaml.Hosting
 {
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [webhosthidden]
+    runtimeclass WinUIProcessShutdownCompletedEventArgs
+    {
+        Boolean RequestDllUnload;
+    };
+
     [contract(Microsoft.UI.Xaml.WinUIContract, 6)]
     [webhosthidden]
     runtimeclass XamlShutdownCompletedOnThreadEventArgs

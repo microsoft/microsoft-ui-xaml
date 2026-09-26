@@ -11,7 +11,7 @@
   - [First WindowsXamlManager on a thread must be the last one destroyed: FIXED](#first-windowsxamlmanager-on-a-thread-must-be-the-last-one-destroyed-fixed)
   - [WindowsXamlManager shutdown is async: MITIGATED by requiring DispatcherQueue](#windowsxamlmanager-shutdown-is-async-mitigated-by-requiring-dispatcherqueue)
   - [Thread poisoning: FIXED FOR XAML](#thread-poisoning-fixed-for-xaml)
-  - [Process poisoning: Xaml cannot be restart in a process: NOT FIXED](#process-poisoning-xaml-cannot-be-restart-in-a-process-not-fixed)
+  - [Process poisoning: Xaml can be restarted in a process: FIXED](#process-poisoning-xaml-can-be-restarted-in-a-process-fixed)
   - [Application lifetime: FIXED](#application-lifetime-fixed)
   - [Application / WindowsXamlManager startup entanglement: NOT FIXED](#application--windowsxamlmanager-startup-entanglement-not-fixed)
 - [FAQ](#faq)
@@ -123,7 +123,11 @@ this:
           * App's App::~App called
             * App::window is cleared (typically this is the last ref on the window object)
               * App's Window::~Window called
+        * When the final Xaml thread shuts down, Xaml resets its process-wide metadata and activation-factory caches.
         * Xaml raises the XamlShutdownCompletedOnThread event.  This signals to the app that Xaml is now finished on the thread.
+        * If this thread closed the final Xaml core, after its XamlShutdownCompletedOnThread handlers have returned:
+          * Xaml raises WindowsXamlManager.WinUIProcessShutdownStarting so process-wide frameworks can clear state tied to the previous Xaml generation.
+          * Xaml raises WindowsXamlManager.WinUIProcessShutdownCompleted. Apps may retry Xaml initialization after receiving this event.
       * DispatcherQueue.PlatformShutdownStarting fires
         * Any active WinAppSDK platform object closes itself, including the Compositor, islands, and input objects
 
@@ -163,10 +167,21 @@ thread anymore.  (We added an explicit block for this).  Lifted Xaml now support
 Note there may be other WinAppSDK objects that don't yet behave well in this scenario, so we don't yet claim that thread
 poisoning is fixed end-to-end for WinAppSDK scenarios generally.
 
-### Process poisoning: Xaml cannot be restart in a process: NOT FIXED
+### Process poisoning: Xaml can be restarted in a process: FIXED
 
-Once all WindowsXamlManagers in a process are released, XAML will unload its metadata.  If the app tries to use XAML
-again in the process, it won't work -- the MUXC metadata has been unloaded. 
+When the final Xaml thread shuts down, Xaml marks process shutdown as active so another thread cannot initialize Xaml
+while cleanup is pending, then resets its process-wide metadata and activation-factory caches. After the thread that
+closes the final Xaml core has raised `XamlShutdownCompletedOnThread` and its synchronous handlers have returned, Xaml
+raises `WindowsXamlManager.WinUIProcessShutdownStarting` on that same thread. Controls frameworks use this event to
+synchronously clear dependency properties, metadata objects, and other state associated with the previous Xaml
+generation. No ordering is guaranteed between the process events and `XamlShutdownCompletedOnThread` notifications on
+other threads.
+
+After the process shutdown handlers finish, Xaml raises `WindowsXamlManager.WinUIProcessShutdownCompleted` on the same
+thread. The app may retry Xaml initialization after receiving this event. Another shutdown can begin before the retry runs, so
+`InitializeForCurrentThread` remains the authoritative check and can still return `ERROR_INVALID_STATE`. These events
+allow Xaml to be fully shut down and restarted in the same process without retaining state from the previous Xaml
+generation.
 
 ### Application lifetime: FIXED
 System XAML holds a reference to the app's Application object, and doesn't do the final release until the DLL is
@@ -218,8 +233,8 @@ In the past we have found this to be difficult because there are lots of IXP obj
 "Organized Shutdown" effort, let's talk with IXP about the best way to do leak testing between our two teams.
 
 ### Microsoft.ui.xaml.dll can't unload quite yet
-We don't yet support XAML getting completely cleaned up in a thread or process yet -- e.g., the memory use doesn't need
-to go down to exactly what it was before XAML was used.  We don't yet support fully-unloading microsoft.ui.xaml.dll.
+Xaml can fully shut down its runtime state on a thread and in a process, and can be restarted afterward. This does not
+yet unload `microsoft.ui.xaml.dll` or guarantee that memory use returns to exactly what it was before Xaml was used.
 
 ### Specific Scenarios
 ASK: It would be nice if we went over specific real-world scenarios to explain things here.  Example: when File Explorer

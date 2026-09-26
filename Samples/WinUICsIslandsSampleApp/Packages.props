@@ -1,0 +1,7 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <WindowsAppSdkPackageVersion Condition="'$(WindowsAppSdkPackageVersion)' == ''">2.2.2-experimental9</WindowsAppSdkPackageVersion>
+  </PropertyGroup>
+
+  <Import Project="..\..\Packages.props" />
+</Project>
