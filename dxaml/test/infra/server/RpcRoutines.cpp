@@ -277,6 +277,15 @@ HRESULT RpcEnableTracingByEventId(int eventId)
     COM_END
 }
 
+HRESULT RpcTraceConsumerBeginCountingForProcess(unsigned int processId, __int64 startTimestamp)
+{
+    COM_START_GROUP(L"RpcTraceConsumerBeginCountingForProcess")
+    {
+        TraceConsumerRoutineHelper::BeginCountingForProcess(processId, startTimestamp);
+    }
+    COM_END
+}
+
 #pragma endregion
 
 #pragma region ETWWaiter

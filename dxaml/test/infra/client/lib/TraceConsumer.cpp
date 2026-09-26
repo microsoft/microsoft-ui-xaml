@@ -76,4 +76,16 @@ namespace Private { namespace Infrastructure {
         }
         COM_END
     }
+
+    HRESULT TraceConsumerStatics::BeginCountingForCurrentProcess()
+    {
+        COM_START
+        {
+            RpcClientEnsureConnected();
+            LARGE_INTEGER timestamp{};
+            Throw::IfFalse(QueryPerformanceCounter(&timestamp), E_FAIL, L"Unable to timestamp the trace counting scope.");
+            LogThrow_IfFailed(RpcTraceConsumerBeginCountingForProcess(GetCurrentProcessId(), timestamp.QuadPart));
+        }
+        COM_END
+    }
 } }
