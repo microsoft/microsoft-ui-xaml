@@ -2212,6 +2212,7 @@ namespace DirectUI
         OptimizeApplyStyles = 61697456,
         DefaultStyleOptimizations = 60995620,
         DeferContextFlyoutInit = 61098986,
+        AlignExtendsContentIntoTitleBarBehavior = 8948,
     };
     DEFINE_ENUM_FLAG_OPERATORS(XamlChangeId);
 

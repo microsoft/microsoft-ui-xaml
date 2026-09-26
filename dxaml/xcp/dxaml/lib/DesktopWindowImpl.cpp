@@ -1240,6 +1240,52 @@ LRESULT LResultFromHResult(HRESULT hr)
     return 0;
 }
 
+bool DesktopWindowImpl::TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF backgroundColor)
+{
+    ASSERT(WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_hwnd.get()));
+
+    const int topBorderHeight = m_windowChrome ? m_windowChrome->GetTopBorderHeight() : 0;
+    const RECT rc = WindowHelpers::GetClientWindowCoordinates(m_hwnd.get());
+
+    if (topBorderHeight <= 0 ||
+        (rc.top + topBorderHeight) > rc.bottom ||
+        (::GetWindowLongPtrW(m_hwnd.get(), GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP) != 0)
+    {
+        return false;
+    }
+
+    // Preserve the normal background erase under the composition island.
+    // A composition-only host has no redirected surface, so the style check
+    // above skips this path.
+    const auto oldColor = ::SetBkColor(hdc, backgroundColor);
+    if (oldColor == CLR_INVALID)
+    {
+        TRACE_HR_NORETURN(E_FAIL);
+        return false;
+    }
+
+    const BOOL backgroundErased = ::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
+    ::SetBkColor(hdc, oldColor);
+    if (!backgroundErased)
+    {
+        TRACE_HR_NORETURN(E_FAIL);
+        return false;
+    }
+
+    // BLACK_BRUSH exposes the extended DWM frame through the redirected GDI
+    // surface, without allocating a client-sized paint buffer to set alpha.
+    // See https://learn.microsoft.com/windows/win32/dwm/customframe.
+    RECT borderRect = rc;
+    borderRect.bottom = rc.top + topBorderHeight;
+    if (!::FillRect(hdc, &borderRect, static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH))))
+    {
+        TRACE_HR_NORETURN(E_FAIL);
+        return false;
+    }
+
+    return true;
+}
+
 LRESULT DesktopWindowImpl::OnMessage(
     UINT uMsg,
     WPARAM wParam,
@@ -1311,6 +1357,14 @@ LRESULT DesktopWindowImpl::OnMessage(
 
             auto hdc = (HDC)wParam;
             auto color = ColorUtils::GetWUColor(dxamlCore->GetHandle()->GetFrameworkTheming()->GetHwndBackground(appTheme));
+            if (WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_hwnd.get()))
+            {
+                if (TryEraseBackgroundForWindowTopBorder(hdc, RGB(color.R, color.G, color.B)))
+                {
+                    return 1;
+                }
+            }
+
             RECT rc = WindowHelpers::GetClientWindowCoordinates(m_hwnd.get());
             auto oldColor  = ::SetBkColor(hdc, RGB(color.R, color.G, color.B));
             ASSERT(oldColor != CLR_INVALID);
