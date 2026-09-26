@@ -287,7 +287,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
                 Assembly a = this.Assembly;
                 Debug.Assert(a != null);
-                string aqn = a.GetName().ToString();
+                string aqn = a.FullName;
 
                 return System.Reflection.Assembly.CreateQualifiedName(aqn, t);
             }

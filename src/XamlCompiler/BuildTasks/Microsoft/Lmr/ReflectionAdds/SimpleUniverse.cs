@@ -26,6 +26,9 @@ namespace System.Reflection.Adds
         // Mapping to cache types for GetBuiltInType, GetTypeXFromName
         Dictionary<string, Type> m_hash = new Dictionary<string, Type>();
 
+        private readonly Dictionary<Tuple<Module, AssemblyReferenceHandle>, Assembly> m_assemblyReferences =
+            new Dictionary<Tuple<Module, AssemblyReferenceHandle>, Assembly>();
+
         // List of loaded assemblies. We need this so that we know what to unload.
         // This can also be used to search for resolving assembly refs.
         private List<Assembly> m_loadedAssemblies = new List<Assembly>();
@@ -244,10 +247,21 @@ namespace System.Reflection.Adds
         // so that it knows which context the resolution is occurring in.
         public virtual Assembly ResolveAssembly(Module scope, AssemblyReferenceHandle assemblyRefHandle)
         {
+            var key = Tuple.Create(scope, assemblyRefHandle);
+            if (m_assemblyReferences.TryGetValue(key, out var assembly))
+            {
+                return assembly;
+            }
+
             // Provide a default implementation that forwards to the name-based overload.
             IModule2 im2 = (IModule2)scope;
             var name = im2.GetAssemblyNameFromAssemblyRef(assemblyRefHandle);
-            return this.ResolveAssembly(name);
+            assembly = this.ResolveAssembly(name);
+            if (assembly != null)
+            {
+                m_assemblyReferences[key] = assembly;
+            }
+            return assembly;
         }
 
         // Impl ITU        
@@ -373,6 +387,7 @@ namespace System.Reflection.Adds
             if (disposing)
             {
                 // Free managed resources and call Dispose() on children.
+                m_assemblyReferences.Clear();
                 
                 // Walk all assemblies (which will walk modules) disposing to free up native metadata objects.
                 if (m_loadedAssemblies != null)
