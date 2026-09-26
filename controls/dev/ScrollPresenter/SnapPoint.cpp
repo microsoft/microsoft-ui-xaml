@@ -514,8 +514,10 @@ void ScrollSnapPoint::Combine(
     }
     else
     {
-        // TODO: Provide custom error message
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(
+            StringUtil::FormatString(
+                L"Cannot combine ScrollSnapPoint with snap point type '%1!s!'.",
+                winrt::get_class_name(snapPoint).c_str()));
     }
 }
 
@@ -800,8 +802,11 @@ std::tuple<double, double> RepeatedScrollSnapPoint::DetermineActualApplicableZon
     // We only need to check the nextSnapPoint because of the symmetry in the algorithm.
     if (nextSnapPoint && *static_cast<SnapPointBase*>(this) == (nextSnapPoint))
     {
-        // TODO: Provide custom error message
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(
+            StringUtil::FormatString(
+                L"Adjacent repeated ScrollSnapPoints cannot have the same range [%1!s!, %2!s!].",
+                winrt::to_hstring(ActualStart()).c_str(),
+                winrt::to_hstring(ActualEnd()).c_str()));
     }
 
     return actualApplicableZoneReturned;
@@ -984,8 +989,12 @@ double RepeatedScrollSnapPoint::Influence(double edgeOfMidpoint) const
     else
     {
         // Snap points are not allowed within the bounds (Start thru End) of repeated snap points
-        // TODO: Provide custom error message
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(
+            StringUtil::FormatString(
+                L"A snap point at %1!s! cannot lie inside repeated ScrollSnapPoint range [%2!s!, %3!s!].",
+                winrt::to_hstring(edgeOfMidpoint).c_str(),
+                winrt::to_hstring(actualStart).c_str(),
+                winrt::to_hstring(actualEnd).c_str()));
     }
     return 0.0;
 }
@@ -1020,8 +1029,11 @@ void RepeatedScrollSnapPoint::Combine(
     winrt::SnapPointBase const& snapPoint) const
 {
     // Snap points are not allowed within the bounds (Start thru End) of repeated snap points
-    // TODO: Provide custom error message
-    throw winrt::hresult_error(E_INVALIDARG);
+    throw winrt::hresult_invalid_argument(
+        StringUtil::FormatString(
+            L"Cannot combine a snap point with repeated ScrollSnapPoint range [%1!s!, %2!s!].",
+            winrt::to_hstring(ActualStart()).c_str(),
+            winrt::to_hstring(ActualEnd()).c_str()));
 }
 
 int RepeatedScrollSnapPoint::SnapCount() const
@@ -1404,8 +1416,10 @@ void ZoomSnapPoint::Combine(
     }
     else
     {
-        // TODO: Provide custom error message
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(
+            StringUtil::FormatString(
+                L"Cannot combine ZoomSnapPoint with snap point type '%1!s!'.",
+                winrt::get_class_name(snapPoint).c_str()));
     }
 }
 
@@ -1688,8 +1702,11 @@ std::tuple<double, double> RepeatedZoomSnapPoint::DetermineActualApplicableZone(
     // We only need to check the nextSnapPoint because of the symmetry in the algorithm.
     if (nextSnapPoint && *static_cast<SnapPointBase*>(this) == (nextSnapPoint))
     {
-        // TODO: Provide custom error message
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(
+            StringUtil::FormatString(
+                L"Adjacent repeated ZoomSnapPoints cannot have the same range [%1!s!, %2!s!].",
+                winrt::to_hstring(m_start).c_str(),
+                winrt::to_hstring(m_end).c_str()));
     }
 
     return actualApplicableZoneReturned;
@@ -1844,8 +1861,12 @@ double RepeatedZoomSnapPoint::Influence(double edgeOfMidpoint) const
     else
     {
         // Snap points are not allowed within the bounds (Start thru End) of repeated snap points
-        // TODO: Provide custom error message
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(
+            StringUtil::FormatString(
+                L"A snap point at %1!s! cannot lie inside repeated ZoomSnapPoint range [%2!s!, %3!s!].",
+                winrt::to_hstring(edgeOfMidpoint).c_str(),
+                winrt::to_hstring(m_start).c_str(),
+                winrt::to_hstring(m_end).c_str()));
     }
     return 0.0;
 }
@@ -1880,8 +1901,11 @@ void RepeatedZoomSnapPoint::Combine(
     winrt::SnapPointBase const& snapPoint) const
 {
     // Snap points are not allowed within the bounds (Start thru End) of repeated snap points
-    // TODO: Provide custom error message
-    throw winrt::hresult_error(E_INVALIDARG);
+    throw winrt::hresult_invalid_argument(
+        StringUtil::FormatString(
+            L"Cannot combine a snap point with repeated ZoomSnapPoint range [%1!s!, %2!s!].",
+            winrt::to_hstring(m_start).c_str(),
+            winrt::to_hstring(m_end).c_str()));
 }
 
 int RepeatedZoomSnapPoint::SnapCount() const
