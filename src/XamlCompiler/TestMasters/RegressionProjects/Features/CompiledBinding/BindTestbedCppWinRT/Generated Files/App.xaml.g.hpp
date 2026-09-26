@@ -48,7 +48,7 @@ extern "C"
 #endif // (defined(_M_IX86) || defined(_M_AMD64)) && !defined(_VSDESIGNER_DONT_LOAD_AS_DLL)
 
 #ifndef DISABLE_XAML_GENERATED_MAIN
-int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
+int __stdcall wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR, _In_ int)
 {
     winrt::init_apartment();
     ::winrt::Windows::UI::Xaml::Application::Start(
