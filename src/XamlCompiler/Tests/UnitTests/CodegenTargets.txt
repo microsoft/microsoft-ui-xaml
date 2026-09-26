@@ -1,6 +1,7 @@
 # Shared codegen-to-master mapping consumed by copynewmasters.cmd and CodegenTests.cs.
 # Format: <master directory>|<codegen directory>
-# Master directories are relative to TestMasters\RegressionProjects\<chk|fre>.
+# Master directories are relative to TestMasters\RegressionProjects\<common|chk|fre>.
+# Common files appear once under common; flavor-only or differing files are under chk or fre.
 # Codegen directories are $(GeneratedFilesDir) paths relative to the build flavor root.
 # The two paths are independent and do not need matching names.
 # Blank lines and lines starting with # are ignored.
