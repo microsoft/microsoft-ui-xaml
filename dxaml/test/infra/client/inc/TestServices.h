@@ -63,6 +63,8 @@ namespace Private { namespace Infrastructure {
 
         IFACEMETHOD(DeInitializeHost)() override;
 
+        IFACEMETHOD(EnableLeakDetection)(boolean expectLeaks) override;
+
         static bool IsInitialized();
 
         static wrl::ComPtr<IXamlTestHooks> GetTestHooks();

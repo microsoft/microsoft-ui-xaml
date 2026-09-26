@@ -52,6 +52,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     //  Loads simple markup with CommandBar and verifies AutomationProperties are correct.
     void CommandBarAutomationIntegrationTests::VerifyAutomationProperties()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
         xaml_controls::CommandBar^ cmdBar = nullptr;
         xaml_controls::Page^ page = nullptr;
@@ -141,6 +144,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarAutomationIntegrationTests::VerifyAutomationWindowPattern()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
 
         xaml_controls::CommandBar^ cmdBar = nullptr;
@@ -224,6 +230,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarAutomationIntegrationTests::VerifyPositionAndSize()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
         xaml_controls::Page^ page = nullptr;
         xaml_controls::CommandBar^ commandBar = nullptr;
@@ -377,6 +386,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void CommandBarAutomationIntegrationTests::VerifyNonTabStopAppBarButtonsAreStillKeyboardFocusable()
     {
+        // WPF shutdown reports top-level XamlRoot and CXamlIslandRoot leaks.
+        TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
         TestCleanupWrapper cleanup;
         xaml_controls::Page^ page = nullptr;
         xaml_controls::CommandBar^ commandBar = nullptr;

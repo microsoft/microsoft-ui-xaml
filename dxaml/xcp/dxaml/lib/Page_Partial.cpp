@@ -39,9 +39,14 @@ Page::Page()
 
 Page::~Page()
 {
-    if (const auto xamlRoot = XamlRoot::GetImplementationForElementStatic(this))
+    // The helper getter creates the helper and subscribes to XamlRoot events.
+    // Avoid creating either during destruction when there is no callback to remove.
+    if (m_tokLayoutBoundsChanged.value)
     {
-        xamlRoot->GetLayoutBoundsHelperNoRef()->RemoveLayoutBoundsChangedCallback(&m_tokLayoutBoundsChanged);
+        if (const auto xamlRoot = XamlRoot::GetImplementationForElementStatic(this))
+        {
+            xamlRoot->GetLayoutBoundsHelperNoRef()->RemoveLayoutBoundsChangedCallback(&m_tokLayoutBoundsChanged);
+        }
     }
 
     // Line service's LsTextFormatter may have created lots of memory blocks to format text, and will not release those
@@ -542,9 +547,14 @@ Page::OnUnloaded(
     _In_ IInspectable* pSender,
     _In_ IRoutedEventArgs* pArgs)
 {
-    if (const auto xamlRoot = XamlRoot::GetImplementationForElementStatic(this))
+    // The helper getter creates the helper and subscribes to XamlRoot events.
+    // Avoid creating either during unload when there is no callback to remove.
+    if (m_tokLayoutBoundsChanged.value)
     {
-        xamlRoot->GetLayoutBoundsHelperNoRef()->RemoveLayoutBoundsChangedCallback(&m_tokLayoutBoundsChanged);
+        if (const auto xamlRoot = XamlRoot::GetImplementationForElementStatic(this))
+        {
+            xamlRoot->GetLayoutBoundsHelperNoRef()->RemoveLayoutBoundsChangedCallback(&m_tokLayoutBoundsChanged);
+        }
     }
 
     return S_OK;

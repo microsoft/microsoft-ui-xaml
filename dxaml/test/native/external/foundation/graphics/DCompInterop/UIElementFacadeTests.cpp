@@ -3519,6 +3519,8 @@ void UIElementFacadeTests::MultiAnimation()
 
 void UIElementFacadeTests::AnimationAndReference()
 {
+    TestCleanupWrapper cleanup;
+
     auto wh = TestServices::WindowHelper;
     auto u = TestServices::Utilities;
 

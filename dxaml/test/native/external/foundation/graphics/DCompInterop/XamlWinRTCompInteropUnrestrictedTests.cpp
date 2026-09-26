@@ -1385,6 +1385,10 @@ void XamlWinRTCompInteropUnrestrictedTests::HitTestHandOffVisualInternal()
 
 void XamlWinRTCompInteropUnrestrictedTests::HitTestHandOffVisualScaleRotate()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+    // and Canvas/weak-reference allocations from the hand-off visual hit-test setup.
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
      TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
 
      Canvas^ rootCanvas = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetResourcesPath() + L"XamlDCompInteropTests-HitTest.xaml"));
@@ -2548,6 +2552,10 @@ void XamlWinRTCompInteropUnrestrictedTests::Projection1Internal()
 
 void XamlWinRTCompInteropUnrestrictedTests::HitTestHandOffVisualProjection()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+    // and Canvas/weak-reference allocations from the hand-off visual hit-test setup.
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     const auto& wh = TestServices::WindowHelper;
     const auto& ih = TestServices::InputHelper;
 

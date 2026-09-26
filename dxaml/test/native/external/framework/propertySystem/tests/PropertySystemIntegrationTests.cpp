@@ -778,6 +778,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void PropertySystemIntegrationTests::CanUseCustomDependencyPropertyWithBadDefaultValue()
         {
+            TestCleanupWrapper cleanup;
+
             RunOnUIThread([&]()
             {
                 auto brush = ref new SolidColorBrush(Colors::Red);
@@ -1062,6 +1064,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void PropertySystemIntegrationTests::ImageSourceDoesNotReturnStaleValue()
         {
+            TestCleanupWrapper cleanup;
+
             RunOnUIThread([&]()
             {
                 auto image = ref new Image();
@@ -1086,6 +1090,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void PropertySystemIntegrationTests::ThemeExpressionEvaluationDoesNotOverwriteBaseValueSource()
         {
+            TestCleanupWrapper cleanup;
+
             RunOnUIThread([&]()
             {
                 Platform::String^ xamlString =
@@ -1124,6 +1130,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void PropertySystemIntegrationTests::NewStyleClearsThemeResourceExpression()
         {
+            TestCleanupWrapper cleanup;
+
             RunOnUIThread([&]()
             {
                 Platform::String^ xamlString =

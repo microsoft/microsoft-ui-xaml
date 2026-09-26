@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using Private.Infrastructure;
 
 using WEX.Logging.Interop;
 using WEX.TestExecution;
@@ -38,6 +39,9 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         [ClassCleanup]
         public void ClassCleanup()
         {
+            // Managed tests check for leaks during class cleanup, not after each test.
+            TestServices.ErrorHandlingHelper.IgnoreLeaksForTest();
+
             base.CommonClassCleanup();
         }
 

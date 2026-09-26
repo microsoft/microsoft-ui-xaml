@@ -60,6 +60,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::TestCollections()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+            // and diagnostics RuntimeElement allocations from SignalRootMutation during island attachment.
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -105,6 +109,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::TestNestedCollections()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+            // and diagnostics RuntimeElement allocations from SignalRootMutation during island attachment.
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -216,6 +224,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::VerifyDontLeakCollection()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+            // and diagnostics RuntimeElement allocations from SignalRootMutation during island attachment.
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback = m_connectionHelper->Advise();
             auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
 
@@ -369,6 +381,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::VerifyRowDefinitionsReportAsCollections()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+            // and diagnostics RuntimeElement allocations from SignalRootMutation during island attachment.
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             wrl::ComPtr<VisualTreeServiceCallback> callback;
             auto cleanup = m_connectionHelper->Advise(XamlDiagnosticsTestHelpers::gridString, callback);
 
@@ -584,6 +600,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::ClearingSettersUpdatesApp()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+            // and diagnostics RuntimeElement allocations from SignalRootMutation during island attachment.
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='parent'>\r\n"
@@ -646,6 +666,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void CollectionTests::RemovingSettersFromImplicitStyleUpdatesApp()
         {
+            // WPF shutdown reports DesktopWindowXamlSource, its TakeFocusRequested event source,
+            // and diagnostics RuntimeElement allocations from SignalRootMutation during island attachment.
+            TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
             auto content = ref new Platform::String(
                 L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'\r\n"
                 L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='parent'>\r\n"

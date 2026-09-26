@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "LoggingHelper.h"
 #include <string>
+#include <utility>
 #include <XamlLogging.h>
 
 using namespace WEX::Common;
@@ -11,6 +12,16 @@ using namespace ErrorHandling;
 
 namespace {
     std::function<void(CONTEXT)> s_stackLogger;
+
+    enum class ExpectedLeakState
+    {
+        Inactive,
+        Expecting,
+        Detected
+    };
+
+    // Leaks on other threads must not satisfy or be hidden by the current scan.
+    thread_local ExpectedLeakState s_expectedLeakState = ExpectedLeakState::Inactive;
 
     LPTOP_LEVEL_EXCEPTION_FILTER s_previousHandler = nullptr;
     LONG WINAPI WriteStackOnException(EXCEPTION_POINTERS* exception)
@@ -94,7 +105,12 @@ void LoggingHelper::LogMessage(const wchar_t* pMessage, ErrorHandling::LoggingLe
             WEX::Logging::Log::Error(pMessage);
             break;
         case LoggingLevel::Leak:
-            if (m_ignoreLeaksForTest)
+            if (s_expectedLeakState != ExpectedLeakState::Inactive)
+            {
+                s_expectedLeakState = ExpectedLeakState::Detected;
+                WEX::Logging::Log::Comment(pMessage);
+            }
+            else if (m_ignoreLeaksForTest)
             {
                 // If opted out of leak detection, then just display warning.
                 WEX::Logging::Log::Warning(pMessage);
@@ -115,6 +131,50 @@ bool LoggingHelper::GetIgnoreLeaksForTest() const
 
 void LoggingHelper::SetIgnoreLeaksForTest(bool ignore)
 {
-    m_ignoreLeaksForTest = ignore;
+    m_ignoreLeaksForTest = ignore && !IsLeakDetectionForced();
+}
+
+bool LoggingHelper::IsLeakDetectionForced()
+{
+    WEX::Common::NoThrowString value;
+    if (FAILED(WEX::TestExecution::RuntimeParameters::TryGetValue(L"ForceLeakDetection", value)))
+    {
+        return false;
+    }
+
+    if (value.IsEmpty() || value.CompareNoCase(L"true") == 0)
+    {
+        return true;
+    }
+
+    if (value.CompareNoCase(L"false") == 0)
+    {
+        return false;
+    }
+
+    WEX::Logging::Log::Error(L"ForceLeakDetection must be empty, 'true', or 'false'.");
+    return false;
+}
+
+void LoggingHelper::VerifyExpectedLeaks(const std::function<void()>& checkForLeaks)
+{
+    bool leakDetected = false;
+    {
+        auto previousExpectation = std::exchange(s_expectedLeakState, ExpectedLeakState::Expecting);
+        auto restoreExpectation = wil::scope_exit([previousExpectation]() {
+            s_expectedLeakState = previousExpectation;
+        });
+        checkForLeaks();
+        leakDetected = s_expectedLeakState == ExpectedLeakState::Detected;
+    }
+
+    if (leakDetected)
+    {
+        WEX::Logging::Log::Comment(L"Detected the expected native leak.");
+    }
+    else
+    {
+        WEX::Logging::Log::Error(L"Expected a native leak, but the shutdown-time scan reported none.");
+    }
 }
 } }

@@ -422,6 +422,12 @@ HRESULT TestServicesStatics::EnsureInitializedForBVT()
     return TestServicesStatics::EnsureInitialized();
 }
 
+HRESULT TestServicesStatics::EnableLeakDetection(boolean expectLeaks)
+{
+    m_spWindowHelper->EnableLeakDetection(!!expectLeaks);
+    return S_OK;
+}
+
 HRESULT TestServicesStatics::get_Utilities(test_infra::IUtilities** ppUtilities)
 {
     COM_START

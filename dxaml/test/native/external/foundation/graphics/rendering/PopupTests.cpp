@@ -191,6 +191,10 @@ void PopupTests::WindowedPopupHasForcedBackground()
 
 void PopupTests::ParentedPopup_ValidateRequestedThemePropagation()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, Grid, Border, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations from this popup scenario.
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     const auto& wh = TestServices::WindowHelper;
 
     Popup^ popup = MakeRTLPopupInLTRTree();
