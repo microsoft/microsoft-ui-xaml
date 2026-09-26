@@ -2212,6 +2212,7 @@ namespace DirectUI
         OptimizeApplyStyles = 61697456,
         DefaultStyleOptimizations = 60995620,
         DeferContextFlyoutInit = 61098986,
+        GamepadKeyRouting = 63117108,
     };
     DEFINE_ENUM_FLAG_OPERATORS(XamlChangeId);
 
