@@ -1040,6 +1040,7 @@ namespace Controls {
     interface IUserControlFactory;
     interface IUserControlStatics;
     interface IVariableSizedWrapGrid;
+    interface IVariableSizedWrapGridFactory;
     interface IVariableSizedWrapGridStatics;
     interface IViewbox;
     interface IViewboxStatics;

@@ -5555,7 +5555,7 @@ namespace Microsoft.UI.Xaml.Controls
     [Implements(typeof(Microsoft.UI.Xaml.Controls.IOrientedPanel))]
     [ControlPattern]
     [Guids(ClassGuid = "285d58ab-d64c-49f4-9740-060a0aabecb7")]
-    public sealed class VariableSizedWrapGrid
+    public class VariableSizedWrapGrid
      : Microsoft.UI.Xaml.Controls.Panel
     {
         public Windows.Foundation.Double ItemHeight
