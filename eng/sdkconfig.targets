@@ -60,5 +60,6 @@
     <KnownAppHostPack Update="Microsoft.NETCore.App" AppHostPackVersion="$(Net8TargetingPackVersion)" />
     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2" Crossgen2PackVersion="$(Net8TargetingPackVersion)" />
     <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler" ILCompilerPackVersion="$(Net8TargetingPackVersion)" />
+    <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks" ILLinkPackVersion="$(Net8TargetingPackVersion)" />
   </ItemGroup>
 </Project>

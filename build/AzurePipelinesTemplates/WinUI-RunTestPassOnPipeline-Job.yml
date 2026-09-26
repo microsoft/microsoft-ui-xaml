@@ -17,7 +17,9 @@ parameters:
 jobs:
 - job: ${{ parameters.runTestJobName }} #${{ parameters.testOS }}${{ parameters.buildPlatform }}${{ parameters.buildConfiguration }}
   dependsOn: ${{ parameters.dependsOn }}
-  condition: not(failed())
+  # succeeded() rather than not(failed()): if CreateTestPayload is canceled/skipped it publishes no payload,
+  # and not(failed()) would still run this job, failing later with a cryptic PathNotFound.
+  condition: succeeded()
   pool:
     type: windows
     isCustom: true
@@ -97,6 +99,18 @@ jobs:
       arguments: -WorkItemProjFileNameFilter $(workItemsProjNameFilter) -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
       errorActionPreference: stop
       workingDirectory: $(Build.SourcesDirectory)\build\PipelineScripts
+
+  # Total this shard's native lifetime crash/warning signals. Non-gating; reports 0 when no lifetime work
+  # items ran. See Helix\common\pipeline\Report-LifetimeNativeCrashTotals.ps1.
+  - task: powershell@2
+    displayName: 'PostTestRun: Total lifetime native crashes/warnings'
+    condition: always()
+    inputs:
+      targetType: filePath
+      filePath: Helix\common\pipeline\Report-LifetimeNativeCrashTotals.ps1
+      arguments: -SearchRoot "$(uploadRootInner)"
+      errorActionPreference: continue
+      workingDirectory: $(Build.SourcesDirectory)
 
   - task: PublishTestResults@2
     condition: always()

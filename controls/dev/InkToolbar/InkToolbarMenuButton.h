@@ -50,7 +50,7 @@ public:
     void UpdateMenuButtonToolTip();
 
     // Methods for use by the automation peer.
-    bool HasL3();
+    virtual bool HasL3();
     bool IsL3Open();
     void OpenL3();
     void CloseL3();
@@ -72,4 +72,3 @@ private:
     winrt::InkToolbarButtonFlyoutPlacement m_direction{ winrt::InkToolbarButtonFlyoutPlacement::Auto };
     winrt::weak_ref<winrt::InkToolbar> m_parentInkToolbar{ nullptr };
 };
-

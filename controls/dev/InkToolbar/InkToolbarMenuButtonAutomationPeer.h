@@ -8,6 +8,7 @@
 #include "common.h"
 
 #include "InkToolbarMenuButton.h"
+#include "InkToolbarTrace.h"
 #include "ResourceAccessor.h"
 #include "InkToolbarMenuButtonAutomationPeer.g.h"
 
@@ -20,10 +21,15 @@ public:
     InkToolbarMenuButtonAutomationPeer(winrt::InkToolbarMenuButton const& owner)
         : ReferenceTracker(owner)
     {
-        // Resolve here (peer creation, UI thread) and cache. The same lookup from the
-        // GetLocalizedControlTypeCore UIA callback can escape as a fatal error and fail-fast.
-        try { m_localizedControlType = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarMenuButtonControlTypeName); }
-        catch (...) { m_localizedControlType = L"menu button"; }
+        try
+        {
+            m_dropDownControlType = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilDropDownControlTypeName);
+            m_persistentName = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStencilButtonName);
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            InkToolbarLogHResult(e.code(), L"menu button accessibility resource lookup");
+        }
     }
 
     // IAutomationPeerOverrides
@@ -31,56 +37,68 @@ public:
     {
         if (patternInterface == winrt::PatternInterface::ExpandCollapse)
         {
-            return *this;
+            if (auto owner = GetImpl(); owner && owner->HasL3())
+            {
+                return *this;
+            }
+            return nullptr;
+        }
+        if (patternInterface == winrt::PatternInterface::Toggle)
+        {
+            if (auto owner = GetImpl(); owner && owner->HasL3())
+            {
+                // The dropdown reports expansion, not the stencil's on/off state.
+                return nullptr;
+            }
         }
         return __super::GetPatternCore(patternInterface);
     }
 
     winrt::AutomationControlType GetAutomationControlTypeCore()
     {
-        return winrt::AutomationControlType::Custom;
+        return winrt::AutomationControlType::Button;
     }
 
-    // Custom would make Narrator read "custom"; return the cached "menu button" instead. Never looks
-    // up a resource here - doing so from this callback can fail-fast.
     hstring GetLocalizedControlTypeCore()
     {
-        return m_localizedControlType;
+        if (auto owner = GetImpl(); owner && owner->HasL3() && !m_dropDownControlType.empty())
+        {
+            return m_dropDownControlType;
+        }
+        return __super::GetLocalizedControlTypeCore();
     }
 
     hstring GetNameCore()
     {
-        // The base name is only the selected stencil (Ruler/Protractor). Prefix the persistent identity
-        // ("Measuring tools") so Narrator announces the button's purpose plus the current selection.
-        auto value = __super::GetNameCore();
-        if (auto owner = GetImpl())
+        auto name = __super::GetNameCore();
+        if (auto owner = GetImpl(); owner && owner->MenuKind() == winrt::InkToolbarMenuKind::Stencil && !m_persistentName.empty())
         {
-            if (auto identity = owner->GetPersistentToolName(); !identity.empty())
-            {
-                return value.empty() ? identity
-                                     : winrt::hstring{ std::wstring{ identity.c_str() } + L", " + std::wstring{ value.c_str() } };
-            }
+            return name.empty() ? m_persistentName
+                : winrt::hstring{ std::wstring{ m_persistentName.c_str() } + L", " + std::wstring{ name.c_str() } };
         }
-        return value;
+        return name;
     }
 
     // IExpandCollapseProvider
     winrt::ExpandCollapseState ExpandCollapseState()
     {
-        auto state = winrt::ExpandCollapseState::Collapsed;
         if (auto owner = GetImpl())
         {
-            if (owner->HasL3() && owner->IsL3Open())
+            if (owner->IsL3Open())
             {
-                state = winrt::ExpandCollapseState::Expanded;
+                return winrt::ExpandCollapseState::Expanded;
+            }
+            if (owner->HasL3())
+            {
+                return winrt::ExpandCollapseState::Collapsed;
             }
         }
-        return state;
+        return winrt::ExpandCollapseState::LeafNode;
     }
 
     void Expand()
     {
-        if (auto owner = GetImpl())
+        if (auto owner = GetImpl(); owner && owner->HasL3())
         {
             owner->OpenL3();
         }
@@ -95,7 +113,8 @@ public:
     }
 
 private:
-    winrt::hstring m_localizedControlType;
+    winrt::hstring m_dropDownControlType;
+    winrt::hstring m_persistentName;
 
     com_ptr<InkToolbarMenuButton> GetImpl()
     {
@@ -107,4 +126,3 @@ private:
         return impl;
     }
 };
-

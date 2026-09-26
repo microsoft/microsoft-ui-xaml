@@ -54,9 +54,11 @@ steps:
         controls\dev\ProgressBar\Strings\en-us\Resources.resw
         controls\dev\ProgressRing\Strings\en-us\Resources.resw
         controls\dev\RatingControl\Strings\en-us\Resources.resw
+        controls\dev\ResizeGripper\Strings\en-us\Resources.resw
         controls\dev\SelectorBar\Strings\en-us\Resources.resw
         controls\dev\SplitButton\Strings\en-us\Resources.resw
         controls\dev\TabView\Strings\en-us\Resources.resw
+        controls\dev\TableView\Strings\en-us\Resources.resw
         controls\dev\TeachingTip\Strings\en-us\Resources.resw
         controls\dev\TitleBar\Strings\en-us\Resources.resw
         controls\dev\TreeView\Strings\en-us\Resources.resw
@@ -95,6 +97,7 @@ steps:
       command: push
       publishVstsFeed: 1103ce32-f206-4cab-b967-dcc556dacd13
       packagesToPush: '${{ parameters.nupkgDir }}\Microsoft.Internal.WinUILocalizationResources.${{ parameters.packageVersion }}.nupkg'
+      packageParentPath: '${{ parameters.nupkgDir }}'
 
   # Check for changes and create a new branch if required
   - powershell: |

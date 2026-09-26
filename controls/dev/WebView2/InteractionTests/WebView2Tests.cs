@@ -773,6 +773,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void Focus_DisabledParentTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("Focus_DisabledParentTest", false /* waitForLoadCompleted */);
+                CompleteTestAndWaitForResult("Focus_DisabledParentTest");
+            }
+        }
+
         // For each of the Focus_* tests:
         // 1) We Tab/Shift+Tab/Click amongst xaml controls(x1, x2) and web controls(w1, w2).
         // 2) After each such change:

@@ -365,8 +365,26 @@ void InkCanvas::UpdateInkPresenterSize()
     // Local DIPs, not root coordinates: the ink visual sits under the canvas's placement visual, so
     // XAML already applies any RenderTransform. Transforming here would double-apply it, and for a
     // rotation the axis-aligned bounds would hand the presenter swapped extents.
+    float width = static_cast<float>(ActualWidth());
+    float height = static_cast<float>(ActualHeight());
+
+    // On the lifted-compositor path the ink is hosted through a ContentExternalOutputLink whose
+    // PlacementVisual is sized in physical (output) pixels (see PositionInkVisual). The OS presenter
+    // must match that space or pen input is clipped on the right/bottom at rasterization scales above
+    // 100%. The system-compositor path authors in DIPs (the framework applies the rasterization scale
+    // to the child visual), so it stays unscaled.
+    if (m_systemVisualLink)
+    {
+        if (auto xamlRoot = XamlRoot())
+        {
+            const float scale = static_cast<float>(xamlRoot.RasterizationScale());
+            width *= scale;
+            height *= scale;
+        }
+    }
+
     winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem(
-        [width = static_cast<float>(ActualWidth()), height = static_cast<float>(ActualHeight())](inking::InkPresenter const& presenter)
+        [width, height](inking::InkPresenter const& presenter)
         {
             presenter.as<IInkPresenterDesktop>()->SetSize(width, height);
         });
@@ -550,10 +568,7 @@ void InkCanvas::AttachToLiftedCompositor()
     auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
 
     m_systemVisualLink = ContentExternalLinkHelper::OutputLink::Create(compositor);
-
-    // Leaving this at the default (true) composes the ink above all sibling XAML, so an element laid
-    // over the canvas is hidden by ink while still receiving pointer input.
-    m_systemVisualLink.IsAboveContent(false);
+    m_systemVisualLink.IsAboveContent(true);
 
     winrt::com_ptr<IDCompositionTarget> target = m_systemVisualLink.DCompTarget();
     SetInkRootVisual(target.get());

@@ -48,6 +48,13 @@ if(!(Test-Path $dumpsDir))
 }
 
 
+# Missing proj dir usually means the upstream CreateTestPayload job didn't publish its payload artifact.
+# Fail with a clear message instead of a cryptic Get-ChildItem PathNotFound.
+if (-not (Test-Path $WorkItemProjDir))
+{
+    Throw "Work item proj dir '$WorkItemProjDir' does not exist. The upstream CreateTestPayload job likely did not publish its test-payload artifact (canceled/timed out), so no helix work item proj files were available to run."
+}
+
 $projFiles = Get-ChildItem -Path $WorkItemProjDir -Filter $WorkItemProjFileNameFilter
 
 $workItems =@()
@@ -121,8 +128,13 @@ foreach($workItem in $workItemsToRun)
     Get-ChildItem -Path $workItemUploadRoot -Filter *_subresults.json | Move-Item -Destination $uploadRoot
 }
 
-# Upload at most 3 dumps from this run
-$files = Get-ChildItem -Path $dumpsDir -Filter *.dmp | Select-Object -First 3
+# Upload dumps from this slice, prioritizing lifetime-stress dumps (renamed LifetimeStress-*) and raising the
+# cap so they aren't crowded out by unrelated dumps sharing the folder.
+$maxDumpsToUpload = 10
+$allDumps = @(Get-ChildItem -Path $dumpsDir -Filter *.dmp)
+$lifetimeDumps = @($allDumps | Where-Object { $_.Name -like 'LifetimeStress-*' })
+$otherDumps = @($allDumps | Where-Object { $_.Name -notlike 'LifetimeStress-*' })
+$files = @($lifetimeDumps + $otherDumps) | Select-Object -First $maxDumpsToUpload
 foreach($file in $files)
 {
     Move-Item $file.FullName $uploadRoot -Force

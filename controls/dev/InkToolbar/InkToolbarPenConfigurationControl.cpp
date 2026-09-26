@@ -119,6 +119,7 @@ void InkToolbarPenConfigurationControl::OnApplyTemplate()
 
     ConfigureStrokeWidthSlider(nullptr);
     ConfigureStrokeWidthPreview();
+    ConfigureLocalizableElements(nullptr);
 
     if (penButton)
     {
@@ -130,7 +131,6 @@ void InkToolbarPenConfigurationControl::OnApplyTemplate()
         RemoveColorPicker(nullptr);
     }
 
-    ConfigureLocalizableElements(nullptr);
     ConfigureHighContrast();
 }
 
@@ -222,9 +222,7 @@ void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Cont
 {
     UNREFERENCED_PARAMETER(me);
 
-    // ResourceAccessor throws ERROR_NOT_FOUND when a name is absent, which an app carrying an older
-    // merged PRI than the framework will hit; this runs from OnApplyTemplate, so a missing string
-    // must not take the app down.
+    // An older app-local PRI may not contain the new strings. Keep the template defaults in that case.
     auto tryGetString = [](std::wstring_view name) -> winrt::hstring
     {
         try
@@ -233,13 +231,11 @@ void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Cont
         }
         catch (winrt::hresult_error const& e)
         {
-            InkToolbarLogHResult(e.code(), L"pen flyout heading string lookup");
+            InkToolbarLogHResult(e.code(), L"pen flyout string lookup");
             return {};
         }
     };
 
-    // The template ships English defaults for these two headings, so they must be replaced here or
-    // they never localize.
     if (auto colorsTitle = GetTemplateChild(L"PenColorPaletteTitle").try_as<winrt::TextBlock>())
     {
         if (auto text = tryGetString(SR_InkToolbarPenConfigurationColorsLabel); !text.empty())
@@ -267,21 +263,18 @@ void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Cont
     }
 
     // Narrator announces the slider value with no name unless this is set, so "3" is read with no hint
-    // that it is the pen size. UWP ConfigureLocalizableElements -> IDS_INKTOOLBAR_PENL3STROKEWIDTHSLIDERNAME.
-    auto sliderName = PenButton() ? L"PenStrokeWidthSlider" : L"EraserStrokeWidthSlider";
-    if (auto slider = GetTemplateChild(sliderName))
+    // that it is the pen size. The slider's own peer folds the min/max range onto this base name.
+    if (auto slider = GetTemplateChild(L"PenStrokeWidthSlider"))
     {
-        auto sliderText = tryGetString(SR_InkToolbarPenConfigurationSizeSliderName);
-        if (!sliderText.empty())
+        if (auto text = tryGetString(SR_InkToolbarPenConfigurationSizeSliderName); !text.empty())
         {
-            winrt::AutomationProperties::SetName(slider, sliderText);
+            winrt::AutomationProperties::SetName(slider, text);
         }
     }
 
-    auto nonSolidText = tryGetString(SR_InkToolbarNonSolidColorName);
-    if (!nonSolidText.empty())
+    if (auto text = tryGetString(SR_InkToolbarNonSolidColorName); !text.empty())
     {
-        m_nonSolidColorString = nonSolidText;
+        m_nonSolidColorString = text;
     }
 }
 

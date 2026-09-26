@@ -182,6 +182,7 @@ void InkToolbarStencilButton::OnApplyTemplateCore()
             panel.Children().Append(MakeFlyoutItem(STENCIL_RULERITEMNAME, L"InkToolbarStencilRuler", RULER_ICON, SR_InkToolbarStencilRulerName));
             panel.Children().Append(MakeFlyoutItem(STENCIL_PROTRACTORITEMNAME, L"InkToolbarStencilProtractor", PROTRACTOR_ICON, SR_InkToolbarStencilProtractorName));
             flyout.Content(panel);
+            UpdateStencilFlyoutItems();
         }
     }
 }
@@ -212,6 +213,8 @@ void InkToolbarStencilButton::OnPropertyChanged(winrt::DependencyPropertyChanged
 
 void InkToolbarStencilButton::OnL3ItemsVisibilitiesChanged()
 {
+    UpdateStencilFlyoutItems();
+
     // The extension glyph is only meaningful once this button has been realized as a ToggleButton and
     // is checked. A visibility property can change before the button is fully realized (immediately
     // after construction, or in a bare test host with no visual tree), so guard the cast: an
@@ -227,6 +230,29 @@ void InkToolbarStencilButton::OnL3ItemsVisibilitiesChanged()
     IsExtensionGlyphShown(shouldShowExtensionGlyph);
 
     InkToolbarMenuButton::UpdateMenuButtonToolTip();
+}
+
+void InkToolbarStencilButton::UpdateStencilFlyoutItems()
+{
+    if (auto flyoutBase = winrt::FlyoutBase::GetAttachedFlyout(*this))
+    {
+        if (auto flyout = flyoutBase.try_as<winrt::Flyout>())
+        {
+            int position = 0;
+            int size = static_cast<int>(NumberOfStencils());
+            for (auto kind : { winrt::InkToolbarStencilKind::Ruler, winrt::InkToolbarStencilKind::Protractor })
+            {
+                auto itemName = kind == winrt::InkToolbarStencilKind::Ruler ? STENCIL_RULERITEMNAME : STENCIL_PROTRACTORITEMNAME;
+                if (auto item = FindChild(flyout.Content(), itemName))
+                {
+                    bool isVisible = GetIsItemVisible(kind);
+                    item.Visibility(isVisible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+                    winrt::AutomationProperties::SetPositionInSet(item, isVisible ? ++position : 0);
+                    winrt::AutomationProperties::SetSizeOfSet(item, isVisible ? size : 0);
+                }
+            }
+        }
+    }
 }
 
 void InkToolbarStencilButton::OnSelectedStencilChanged(winrt::DependencyPropertyChangedEventArgs const& args)
@@ -461,8 +487,6 @@ void InkToolbarStencilButton::ConfigureStencilFlyoutItems(
         token = itemAsButtonBase.Click(handler);
         // ButtonManager::PutLocalizedContent(itemAsButtonBase, stringId) - localized content is a lift gap.
     }
-
-    itemAsControl.Visibility(GetIsItemVisible(kind) ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
 }
 
 void InkToolbarStencilButton::HookUpToStencilEvents(winrt::RoutedEventHandler const& handler, bool& eventHookedUp, winrt::event_token& token)
@@ -475,6 +499,7 @@ void InkToolbarStencilButton::HookUpToStencilEvents(winrt::RoutedEventHandler co
         bool shouldHookup = (eventHookedUp == false);
         ConfigureStencilFlyoutItems(handler, shouldHookup, flyoutContent, winrt::InkToolbarStencilKind::Ruler, token);
         ConfigureStencilFlyoutItems(handler, shouldHookup, flyoutContent, winrt::InkToolbarStencilKind::Protractor, token);
+        UpdateStencilFlyoutItems();
         eventHookedUp = true;
     }
 }
