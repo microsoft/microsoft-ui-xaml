@@ -307,6 +307,10 @@ TableView::TableView()
             if (auto strongThis = weakThis.get())
             {
                 strongThis->QueueRebuildHeaders();
+                // Body cells carry the same stamp as a one-sided BorderThickness, and realized rows
+                // are not rebuilt by the header pass - refresh them or the body grid lines stay on
+                // the edge the previous direction chose.
+                strongThis->RefreshGridLinesOnRealizedRows();
             }
         });
 
@@ -1551,10 +1555,13 @@ void TableView::RebuildHeaders()
             // The header cell, not the gripper, is the keyboard target: column commands live here,
             // and a bare focusable Grid is unnamed and Raw to a screen reader. Only a tab stop when
             // focusing it can actually do something -- otherwise every column costs a Tab press for
-            // nothing. Same condition that decides whether a gripper is created at all.
+            // nothing. Both commands count: Left/Right resizes and Enter/Space sorts, so a column
+            // that is sortable but not resizable must still be reachable or sorting is mouse-only.
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
-            headerCell.IsTabStop(headerIsResizable);
-            headerCell.UseSystemFocusVisuals(headerIsResizable);
+            const bool headerIsSortable = canUserSortColumns && column.CanSort();
+            const bool headerIsInteractive = headerIsResizable || headerIsSortable;
+            headerCell.IsTabStop(headerIsInteractive);
+            headerCell.UseSystemFocusVisuals(headerIsInteractive);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
@@ -1609,16 +1616,8 @@ void TableView::RebuildHeaders()
 
             // Sort affordance. Gated on both the control-wide and the per-column opt-in, so an
             // opted-out column carries no chevron and no click handler at all.
-            if (canUserSortColumns && column.CanSort())
+            if (headerIsSortable)
             {
-                // The header cell is a Grid, and a Grid with a null Background is not hit-test
-                // visible in its empty regions. The header content presenter and the chevron host
-                // below are both effectively non-hit-testable in their padding, so without an
-                // explicit brush a tap that misses the header glyphs never reaches the Tapped
-                // handler and the column never sorts. A transparent fill makes the WHOLE cell the
-                // click target, matching the group-header band and WPF DataGrid column headers.
-                headerCell.Background(winrt::SolidColorBrush{ winrt::Colors::Transparent() });
-
                 // Hosted in its own panel so the chevron sits on the logical trailing edge without
                 // competing with the header content's Stretch alignment.
                 winrt::StackPanel indicatorHost;

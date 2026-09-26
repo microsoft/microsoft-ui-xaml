@@ -18,6 +18,5 @@ public:
     // IAutomationPeerOverrides
     hstring GetClassNameCore();
     hstring GetNameCore();
-    hstring GetAutomationIdCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
 };

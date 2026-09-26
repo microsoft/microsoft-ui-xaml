@@ -74,6 +74,11 @@
                     <ToggleButton x:Name="HeaderTmplToggle" Content="Score HeaderTemplate" Click="HeaderTmpl_Toggle"/>
                     <ToggleButton x:Name="EmptyToggle" Content="Clear data" Click="Empty_Toggle"/>
                 </StackPanel>
+
+                <TextBlock Text="Layout direction" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                <TextBlock Opacity="0.7" FontSize="12" TextWrapping="Wrap"
+                           Text="Mirrors only the TableView, so the panel stays readable. Check that columns order right-to-left, the frozen Leading edge pins to the right, sort chevrons and resize grippers sit on the logical trailing edge, and keyboard arrows still follow the logical order."/>
+                <ToggleButton x:Name="RtlToggle" Content="RightToLeft" Click="Rtl_Toggle" HorizontalAlignment="Left"/>
             </StackPanel>
         </ScrollViewer>
 

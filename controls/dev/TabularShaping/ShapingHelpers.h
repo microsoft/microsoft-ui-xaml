@@ -166,19 +166,26 @@ namespace ShapingHelpers
     //
     // Callbacks (all supplied by the adapter, which owns the WinRT-coupled policy):
     //   resolveKey(item)            -> the group key (adapter wraps its selector incl. throw->null).
-    //   resolveIdentity(key,id,why) -> false signals the caller MUST degrade to a flat projection
-    //                                  (e.g. unstable/unresolvable identity); *why is a static reason.
+    //   resolveIdentity(key,id,why) -> false signals the bucketization CANNOT be produced (unstable
+    //                                  or unresolvable identity); *why is a static reason string.
     //   keysConsideredEqual(a,b)    -> false on a genuine identity COLLISION (same identity string,
-    //                                  logically-different keys) which also forces a flat degrade.
+    //                                  logically-different keys), which also fails the bucketization.
     // Returns true with outBuckets populated (first-seen order); returns false and sets
-    // degradeReason when the adapter must fall back to flat.
+    // rejectReason otherwise.
+    //
+    // This function itself does not throw and has no opinion about recovery -- it is pure, so it
+    // reports and the caller decides. What the caller decides is NOT open, though: the shipped
+    // policy is FAIL FAST. ShapedItemsSource::RebuildGroupedRows turns a false return into
+    // hresult_invalid_argument. It deliberately does NOT fall back to a flat projection: a
+    // grouping request that silently renders ungrouped is a bug an app ships without noticing.
+    // A new caller that "recovers" by flattening is reintroducing exactly that bug.
     bool BucketizeToGroups(
         std::vector<winrt::IInspectable> const& items,
         std::function<winrt::IInspectable(winrt::IInspectable const& item)> const& resolveKey,
         std::function<bool(winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason)> const& resolveIdentity,
         std::function<bool(winrt::IInspectable const& existingKey, winrt::IInspectable const& newKey)> const& keysConsideredEqual,
         std::vector<KeyedBucket>& outBuckets,
-        wchar_t const*& degradeReason);
+        wchar_t const*& rejectReason);
 
     // Upper-bound insertion index shared by the incremental fast-paths. Given an already-sorted
     // range of `count` items, returns the position where a newly-arrived item should be inserted

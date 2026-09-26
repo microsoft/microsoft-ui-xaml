@@ -16,6 +16,10 @@ static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
 namespace
 {
     constexpr winrt::Thickness s_verticalThickness{ 0, 0, 1, 0 };
+    // The cell's trailing edge is its LEFT edge under RTL. The cells panel arranges at explicit
+    // physical coordinates, so this subtree is not auto-mirrored and a right-sided thickness would
+    // draw every body grid line one full column away from the header grid line above it.
+    constexpr winrt::Thickness s_verticalThicknessRtl{ 1, 0, 0, 0 };
     constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
 
     // Shared transparent fill for cell wrappers. Cached because rows and cells are rebuilt on every
@@ -888,6 +892,11 @@ void TableViewRow::RefreshGridLines()
 
     const bool wantVertical = WantsVerticalLines(visibility);
     winrt::Brush gridLineBrush{ nullptr };
+    // Read the direction from the owner, the same source RebuildHeaders stamps the header grid line
+    // from, so the two edges cannot disagree.
+    const auto verticalThickness = owner.FlowDirection() == winrt::FlowDirection::RightToLeft
+        ? s_verticalThicknessRtl
+        : s_verticalThickness;
     if (wantVertical)
     {
         gridLineBrush = winrt::get_self<TableView>(owner)->GetGridLineBrush();
@@ -901,7 +910,7 @@ void TableViewRow::RefreshGridLines()
         {
             if (wantVertical)
             {
-                cellWrapper.BorderThickness(s_verticalThickness);
+                cellWrapper.BorderThickness(verticalThickness);
                 cellWrapper.BorderBrush(gridLineBrush);
             }
             else

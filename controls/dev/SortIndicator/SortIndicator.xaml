@@ -17,24 +17,33 @@
         <Setter Property="UseSystemFocusVisuals" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
-                <!-- Required parts: LayoutRoot (any FrameworkElement, control drives its Opacity)
-                     and GlyphIcon (must be a FontIcon, control sets its Glyph). DirectionStates
-                     needs NoSort/Ascending/Descending. Omitting a part renders nothing. -->
+                <!-- DirectionStates needs NoSort/Ascending/Descending. -->
                 <ControlTemplate TargetType="privatecontrols:SortIndicator">
-                    <Grid x:Name="LayoutRoot" Opacity="0">
+                    <Grid x:Name="LayoutRoot" Visibility="Collapsed">
 
                         <VisualStateManager.VisualStateGroups>
-                            <!-- Empty by design: Opacity/Glyph are written imperatively after
-                                 GoToState. Hook DirectionStateRoot for extra styling. -->
                             <VisualStateGroup x:Name="DirectionStates">
-                                <VisualState x:Name="NoSort" />
-                                <VisualState x:Name="Ascending" />
-                                <VisualState x:Name="Descending" />
+                                <VisualState x:Name="NoSort">
+                                    <VisualState.Setters>
+                                        <Setter Target="LayoutRoot.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Ascending">
+                                    <VisualState.Setters>
+                                        <Setter Target="LayoutRoot.Visibility" Value="Visible" />
+                                        <Setter Target="GlyphIcon.Glyph" Value="&#xE96D;" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Descending">
+                                    <VisualState.Setters>
+                                        <Setter Target="LayoutRoot.Visibility" Value="Visible" />
+                                        <Setter Target="GlyphIcon.Glyph" Value="&#xE96E;" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid x:Name="DirectionStateRoot">
-                            <!-- Glyph set imperatively; None hides via LayoutRoot.Opacity=0. -->
                             <FontIcon x:Name="GlyphIcon"
                                       Glyph="&#xE96D;"
                                       FontFamily="{ThemeResource SymbolThemeFontFamily}"

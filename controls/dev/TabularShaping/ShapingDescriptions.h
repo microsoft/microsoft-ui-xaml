@@ -151,8 +151,4 @@ namespace ShapingHelpers
     // instance-based otherwise. It is total and never degrades to flat. Consumers needing their own
     // identity or collision policy bucketize with BucketizeToGroups directly instead.
     void Reshape(ShapingState& state, ShapingSpec const& spec, ShapingDelta const& delta);
-
-    // Convenience for the full-rebuild path: discards any prior projection and reshapes from
-    // Source.
-    void Reshape(ShapingState& state, ShapingSpec const& spec);
 }
