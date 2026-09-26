@@ -2202,10 +2202,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass WrapGrid
+    unsealed runtimeclass WrapGrid
         : Microsoft.UI.Xaml.Controls.Primitives.OrientedVirtualizingPanel
     {
-        WrapGrid();
+        [method_name("CreateInstance")] WrapGrid();
         Double ItemWidth;
         Double ItemHeight;
         Microsoft.UI.Xaml.Controls.Orientation Orientation;
