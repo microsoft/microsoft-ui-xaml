@@ -28,7 +28,7 @@ jobs:
     displayName: 'Merge runtime code coverage'
     inputs:
       targetType: filePath
-      filePath: Helix\common\pipeline\coverage\Merge-CodeCoverage.ps1
+      filePath: build\PipelineScripts\coverage\Merge-CodeCoverage.ps1
       arguments: -InputDir "$(coverageInputDir)" -OutputDir "$(coverageOutDir)"
 
   - task: PublishCodeCoverageResults@2

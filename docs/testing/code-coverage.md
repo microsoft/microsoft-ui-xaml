@@ -23,9 +23,9 @@ These pipelines are **MS internal only**:
 | Phase | Implementation |
 | --- | --- |
 | Build | [Build template](../../build/AzurePipelinesTemplates/WinUI-BuildWinUI-Stage.yml) sets `WinUICollectCodeCoverage=true`. Debug MUXC gains linker fixup metadata; MUXC incremental linking is disabled. MUX already has fixups. |
-| Prepare | [Payload template](../../build/AzurePipelinesTemplates/WinUI-CreateTestPayload-Job.yml) replaces loose runtime copies with final product DLLs and downloads their two matching PDBs. |
-| Instrument | [Instrumentation script](../../Helix/common/pipeline/coverage/Instrument-CoveragePayload.ps1) distributes instrumented DLLs, `static_covrun*.dll`, and the bundled VS collector. |
-| Collect | [Collector wrapper](../../Helix/common/pipeline/coverage/Invoke-WithCodeCoverage.ps1) starts a collector per parallel test job (*slice*) around the normal test runner. |
+| Prepare | [Preparation script](../../build/PipelineScripts/coverage/Prepare-CoveragePayload.ps1) replaces loose runtime copies with final product DLLs. The [payload template](../../build/AzurePipelinesTemplates/WinUI-CreateTestPayload-Job.yml) downloads their two matching PDBs. |
+| Instrument | [Instrumentation script](../../build/PipelineScripts/coverage/Instrument-CoveragePayload.ps1) distributes instrumented DLLs, `static_covrun*.dll`, and the bundled VS collector. |
+| Collect | [Collector wrapper](../../build/PipelineScripts/coverage/Invoke-WithCodeCoverage.ps1) starts a collector per parallel test job (*slice*) around the normal test runner. |
 | Merge | [Merge job](../../build/AzurePipelinesTemplates/WinUI-MergeCodeCoverage-Job.yml) validates and merges successful-slice reports, populates Azure's **Code Coverage** tab, and saves downloadable reports. |
 
 Coverage instrumentation requires each DLL's matching PDB. Matching source code
@@ -181,7 +181,7 @@ Coverage is not a measure of every repository line or every compiled instance.
 
 ### Report completeness and failures
 
-[Merge-CodeCoverage.ps1](../../Helix/common/pipeline/coverage/Merge-CodeCoverage.ps1)
+[Merge-CodeCoverage.ps1](../../build/PipelineScripts/coverage/Merge-CodeCoverage.ps1)
 converts each downloaded report separately and requires source-line data because
 the VS tool can silently skip corrupt inputs. No inputs, empty reports, failed
 conversions, and reports without source-line data fail the merge.
@@ -236,7 +236,7 @@ tests but has not yet been exercised in a pipeline.
 
 ## Maintaining the coverage flow
 
-Use the local [Pester suite and optional native smoke test](../../Helix/common/pipeline/coverage/tests/README.md)
+Use the local [Pester suite and optional native smoke test](../../build/PipelineScripts/coverage/tests/README.md)
 for script changes. Local validation passed 100 tests per PowerShell host and 54
 template comparisons. These local checks do not exercise Azure's retry scheduling
 or every TAEF host's collector access.
