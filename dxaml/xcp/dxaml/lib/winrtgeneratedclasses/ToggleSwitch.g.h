@@ -121,21 +121,24 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) ToggleSwitchFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::IToggleSwitchFactory
         , public ABI::Microsoft::UI::Xaml::Controls::IToggleSwitchStatics
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
         , public ABI::Microsoft::UI::Xaml::Controls::IToggleSwitchStaticsFeature_HeaderPlacement
 #endif
     {
-        BEGIN_INTERFACE_MAP(ToggleSwitchFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(ToggleSwitchFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(ToggleSwitchFactory, ABI::Microsoft::UI::Xaml::Controls::IToggleSwitchFactory)
             INTERFACE_ENTRY(ToggleSwitchFactory, ABI::Microsoft::UI::Xaml::Controls::IToggleSwitchStatics)
 #if WI_IS_FEATURE_PRESENT(Feature_HeaderPlacement)
             INTERFACE_ENTRY(ToggleSwitchFactory, ABI::Microsoft::UI::Xaml::Controls::IToggleSwitchStaticsFeature_HeaderPlacement)
 #endif
-        END_INTERFACE_MAP(ToggleSwitchFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(ToggleSwitchFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IToggleSwitch** ppInstance);
 
         // Static properties.
 
