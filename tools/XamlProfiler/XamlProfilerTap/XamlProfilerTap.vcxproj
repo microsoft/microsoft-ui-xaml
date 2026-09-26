@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- Versions for the native tap. Kept self-contained so the project does not
        depend on any repo-wide or sample-specific build infrastructure. These match
@@ -7,7 +8,7 @@
   <PropertyGroup>
     <XamlProfilerTapWinAppSdkVersion>2.0.1</XamlProfilerTapWinAppSdkVersion>
     <XamlProfilerTapWindowsSdkBuildToolsVersion>10.0.26100.4654</XamlProfilerTapWindowsSdkBuildToolsVersion>
-    <XamlProfilerTapCppWinRTVersion>2.0.250303.1</XamlProfilerTapCppWinRTVersion>
+    <XamlProfilerTapCppWinRTVersion>3.0.260818.1</XamlProfilerTapCppWinRTVersion>
     <XamlProfilerTapWilVersion>1.0.240803.1</XamlProfilerTapWilVersion>
   </PropertyGroup>
 
