@@ -9848,14 +9848,15 @@ Cleanup:
 _Check_return_ HRESULT 
 TimePickerFlyoutGenerated::RuntimeClassInitialize()
 {
-    RRETURN(InitializeImpl());
+    RRETURN(InitializeImpl(nullptr));
 }
 
 _Check_return_ HRESULT
-TimePickerFlyoutGenerated::InitializeImpl()
+TimePickerFlyoutGenerated::InitializeImpl(_In_opt_ IInspectable* pOuter)
 {
     HRESULT hr = S_OK;
 
+    UNREFERENCED_PARAMETER(pOuter);
 
     // When types are created internally there is no guarantee that
     // the factory has been previously instantiated. 
@@ -10137,22 +10138,20 @@ void TimePickerFlyoutFactory::ClearProperties()
         s_MinuteIncrementProperty.Reset();
 }
 
-IFACEMETHODIMP
-TimePickerFlyoutFactory::ActivateInstance(
-    _Outptr_ IInspectable** ppInspectable)
+IFACEMETHODIMP TimePickerFlyoutFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyout** ppInstance)
 {
     HRESULT hr = S_OK;
-    wrl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyout> timePickerFlyout;
 
-    IFCPTR(ppInspectable);
-    IFC(wrl::MakeAndInitialize<TimePickerFlyout>(&timePickerFlyout));
-
-    *ppInspectable = timePickerFlyout.Detach();
+    IFC((pctl::AggregableComObject<
+            ABI::Microsoft::UI::Xaml::Controls::TimePickerFlyout,
+            ABI::Microsoft::UI::Xaml::Controls::ITimePickerFlyout>::CreateInstance(
+            pOuter,
+            ppInner,
+            ppInstance)));
 
 Cleanup:
     RRETURN(hr);
 }
-
 // Static properties.
 
 // Dependency properties initializing functions
