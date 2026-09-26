@@ -133,6 +133,12 @@ stages:
         ob_sdl_apiscan_enabled: true
         ob_sdl_apiscan_softwareFolder: '$(Build.SourcesDirectory)\BuildOutput\APIScanTarget'
         ob_sdl_apiscan_symbolsFolder: '$(Build.SourcesDirectory)\out\Symbols;SRV*$(WinUISymbolServerUri)'
+      # VersionTag is empty on stable branches (WindowsAppSDKConfig convention). Passing /p:ProductPrereleaseTag=""
+      # breaks the SDLNativeRules (PREfast) task: Guardian re-quotes the commandline, the empty "" collapses into a
+      # single unterminated quote and MSBuild fails with MSB1003. MSBuild treats an unset ProductPrereleaseTag the
+      # same as an empty one, so omit the property entirely when VersionTag is empty. This must be a runtime
+      # expression: VersionTag is not visible to compile-time ${{ }} expressions inside this stage template.
+      prereleaseTagMSBuildOption: $[replace(format('/p:ProductPrereleaseTag="{0}"', variables['VersionTag']), '/p:ProductPrereleaseTag=""', '')]
 
     steps:
     # This is a temporarily workaround to avoid getting non-fatal "folder C:\__t\NativeCompilerPrefast not found"
@@ -151,7 +157,7 @@ stages:
 
     - template: WinUI-BuildMUXProject-Steps.yml
       parameters:
-        additionalMSBuildOptions: '/p:ProductMajorVersion="$(transportPackageMajorVersion)" /p:ProductMinorVersion="$(transportPackageMinorVersion)" /p:ProductBuildVersion="$(versionDate_YYMM)" /p:ProductPatchVersion="$(transportPackagePatchVersion)" /p:ProductPrereleaseTag="$(VersionTag)"'
+        additionalMSBuildOptions: '/p:ProductMajorVersion="$(transportPackageMajorVersion)" /p:ProductMinorVersion="$(transportPackageMinorVersion)" /p:ProductBuildVersion="$(versionDate_YYMM)" /p:ProductPatchVersion="$(transportPackagePatchVersion)" $(prereleaseTagMSBuildOption)'
         pipelineKind: ${{ parameters.pipelineKind }}
         buildScenarioApps: ${{ parameters.buildScenarioApps }}
         signOutput: ${{ parameters.signOutput }}
