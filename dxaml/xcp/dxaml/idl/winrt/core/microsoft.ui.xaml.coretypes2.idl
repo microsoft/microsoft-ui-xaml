@@ -1842,10 +1842,10 @@ namespace Microsoft.UI.Xaml.Shapes
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass Polyline
+    unsealed runtimeclass Polyline
         : Microsoft.UI.Xaml.Shapes.Shape
     {
-        Polyline();
+        [method_name("CreateInstance")] Polyline();
         Microsoft.UI.Xaml.Media.FillRule FillRule;
         Microsoft.UI.Xaml.Media.PointCollection Points;
         static Microsoft.UI.Xaml.DependencyProperty FillRuleProperty{ get; };
