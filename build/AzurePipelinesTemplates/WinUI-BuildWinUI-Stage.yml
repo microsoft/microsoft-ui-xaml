@@ -10,6 +10,7 @@ parameters:
   projectCaching: false
   pgoBuildModeMSBuildArg: '/p:PGOBuildMode=$(pgoBuildMode)'
   buildProductOnly: false
+  collectCodeCoverage: false
   dependsOn: ''
 
 stages:
@@ -116,6 +117,9 @@ stages:
             normalizedConfiguration: 'chk'
             shouldPgo: false
     variables:
+      ${{ if eq(parameters.collectCodeCoverage, true) }}:
+        # MSBuild imports environment variables as properties.
+        WinUICollectCodeCoverage: true
       ob_outputDirectory: '$(Build.SourcesDirectory)\out'
       ob_artifactBaseName: 'drop_$(buildOutput)$(normalizedConfiguration)'
       ob_sdl_codeSignValidation_excludes: '-|WinUIComponentPackage\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'

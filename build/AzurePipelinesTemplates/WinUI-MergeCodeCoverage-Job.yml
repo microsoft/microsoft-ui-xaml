@@ -1,0 +1,39 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  dependsOn: []
+
+jobs:
+- job: MergeCodeCoverage
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: succeeded()
+  timeoutInMinutes: 90
+  pool:
+    type: windows
+  variables:
+    coverageInputDir: '$(Build.SourcesDirectory)\coverageInput'
+    coverageOutDir: '$(Build.SourcesDirectory)\out\CodeCoverage'
+    ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+    ob_artifactBaseName: 'MergeCodeCoverage'
+
+  steps:
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download per-slice coverage'
+    inputs:
+      buildType: current
+      itemPattern: '*_Succeeded/**/coverage-*.coverage'
+      targetPath: '$(coverageInputDir)'
+
+  - task: PowerShell@2
+    displayName: 'Merge runtime code coverage'
+    inputs:
+      targetType: filePath
+      filePath: Helix\common\pipeline\coverage\Merge-CodeCoverage.ps1
+      arguments: -InputDir "$(coverageInputDir)" -OutputDir "$(coverageOutDir)"
+
+  - task: PublishCodeCoverageResults@2
+    displayName: 'Publish runtime code coverage'
+    inputs:
+      summaryFileLocation: '$(coverageOutDir)\merged.cobertura.xml'
+      pathToSources: '$(Build.SourcesDirectory)'
+      failIfCoverageEmpty: true
