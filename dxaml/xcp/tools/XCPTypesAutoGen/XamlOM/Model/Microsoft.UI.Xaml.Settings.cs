@@ -20,6 +20,7 @@ namespace Microsoft.UI.Xaml.Settings
         OptimizeApplyStyles = 61697456,
         DefaultStyleOptimizations = 60995620,
         DeferContextFlyoutInit = 61098986,
+        SkipWindowRedirectionSurface = 63530879,
     }
 
     // Provides static methods to opt in to or out of individual breaking or

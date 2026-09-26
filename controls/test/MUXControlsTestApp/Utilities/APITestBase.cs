@@ -64,6 +64,9 @@ namespace MUXControlsTestApp.Utilities
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.OptimizeApplyStyles));
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.DefaultStyleOptimizations));
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.DeferContextFlyoutInit));
+            // SkipWindowRedirectionSurface is deliberately not enabled here. It changes how every test window
+            // paints (no GDI redirection surface at all), so it is opted into per test through the
+            // Data:XamlOptionalChanges test property rather than turned on for the whole suite.
         }
 
         public void UpdateXamlOptionalChanges()
@@ -169,6 +172,10 @@ namespace MUXControlsTestApp.Utilities
                         else if (string.Equals(name, "DeferContextFlyoutInit", StringComparison.OrdinalIgnoreCase))
                         {
                             changeId = XamlChangeId.DeferContextFlyoutInit;
+                        }
+                        else if (string.Equals(name, "SkipWindowRedirectionSurface", StringComparison.OrdinalIgnoreCase))
+                        {
+                            changeId = XamlChangeId.SkipWindowRedirectionSurface;
                         }
 
                         Verify.AreNotEqual(changeId, XamlChangeId._Reserved, "Unknown XamlChangeId: " + name);
