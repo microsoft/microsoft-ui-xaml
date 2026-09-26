@@ -77,56 +77,105 @@ namespace UnitTests
             }
         }
 
-        /// <summary>
-        /// Helper method for diffing codegenned files against their masters. This method 
-        /// actually does the diffing of the passed in directories, and will recurisvely 
-        /// call itself against other directories present in codegenDir.
-        /// </summary>
-        private static void DiffCodegenDirs(string codegenDir, string mastersDir, List<string> forbiddenLines)
+        [TestMethod]
+        public void Codegen_DiffCodegenFiles_ValidatesLayeredMasters()
         {
-            string[] codegenFiles = Directory.GetFiles(codegenDir, "*.g.*");
-            Array.Sort(codegenFiles);
-
-            /* Normal case, where the codegen directory has files and should also have a corresponding master directory.*/
-            if (codegenFiles.Length > 0)
+            // Unit-test DiffCodegenFiles with synthetic output: the regression tests use real
+            // codegen, while this fixture checks flavor selection and invalid file sets.
+            string root = Path.Combine(Path.GetTempPath(), "XamlCompilerMasters-" + Guid.NewGuid().ToString("N"));
+            const string target = "generated";
+            try
             {
-                Assert.IsTrue(Directory.Exists(mastersDir), 
-                    $"Masters directory '{mastersDir}' does not exist for non-empty codegen directory '{codegenDir}'. " +
-                    "Use copynewmasters.cmd to generate masters for it.");
-
-                string[] masterFiles = Directory.GetFiles(mastersDir, "*.g.*");
-                Array.Sort(masterFiles);
-                Assert.AreEqual(codegenFiles.Length, masterFiles.Length, 
-                    $"Differing number of generated files in '{mastersDir}' vs '{codegenDir}'.");
-
-                for (int i = 0; i < codegenFiles.Length; i++)
+                foreach (string layer in new[] { "common", "chk", "fre" })
                 {
-                    string codegenFile = codegenFiles[i];
-                    string masterFile = masterFiles[i];
+                    string directory = Path.Combine(root, layer, target);
+                    Directory.CreateDirectory(directory);
+                    File.WriteAllText(Path.Combine(directory, layer + ".g.cs"), layer);
+                }
 
-                    string codegenLocalFile = Path.GetFileName(codegenFile);
-                    string masterLocalFile = Path.GetFileName(masterFile);
-                    Assert.AreEqual(codegenLocalFile, masterLocalFile, 
-                        $"File name mismatch for '{codegenLocalFile}' and '{masterLocalFile}'." +
-                        "If you have deleted or renamed a file recently, make sure you've also deleted " +
-                        "its master file and reran copynewmasters.cmd.");
+                string actual = Path.Combine(root, "actual");
+                Directory.CreateDirectory(actual);
+                File.WriteAllText(Path.Combine(actual, "common.g.cs"), "common");
+                File.WriteAllText(Path.Combine(actual, "chk.g.cs"), "chk");
+                DiffCodegenFiles(actual, root, target, "chk", null);
 
-                    DiffFiles(codegenFile, masterFile, forbiddenLines);
+                // Switch the generated flavor while keeping the same shared file.
+                File.Delete(Path.Combine(actual, "chk.g.cs"));
+                File.WriteAllText(Path.Combine(actual, "fre.g.cs"), "fre");
+                DiffCodegenFiles(actual, root, target, "fre", null);
+                File.Delete(Path.Combine(actual, "fre.g.cs"));
+                File.WriteAllText(Path.Combine(actual, "chk.g.cs"), "chk");
+
+                // Reject both an unexpected generated file and an orphaned master.
+                string extra = Path.Combine(actual, "extra.g.cs");
+                File.WriteAllText(extra, "extra");
+                AssertCodegenDiffFails(() => DiffCodegenFiles(actual, root, target, "chk", null), "No master");
+                File.Delete(extra);
+
+                File.Delete(Path.Combine(actual, "chk.g.cs"));
+                AssertCodegenDiffFails(() => DiffCodegenFiles(actual, root, target, "chk", null), "Stale master");
+
+                // A flavor-specific file must not shadow a shared master.
+                File.WriteAllText(Path.Combine(root, "chk", target, "common.g.cs"), "duplicate");
+                AssertCodegenDiffFails(() => DiffCodegenFiles(actual, root, target, "chk", null), "both common and chk");
+            }
+            finally
+            {
+                if (Directory.Exists(root))
+                {
+                    Directory.Delete(root, true);
+                }
+            }
+        }
+
+        // Verify the expected mismatch, not an unrelated assertion failure.
+        private static void AssertCodegenDiffFails(Action comparison, string expectedMessage)
+        {
+            bool failed = false;
+            try
+            {
+                comparison();
+            }
+            catch (AssertFailedException exception)
+            {
+                StringAssert.Contains(exception.Message, expectedMessage);
+                failed = true;
+            }
+            Assert.IsTrue(failed, $"Expected comparison to fail with '{expectedMessage}'.");
+        }
+
+        private static void DiffCodegenFiles(string codegenPath, string mastersRoot, string masterDir, string flavor, List<string> forbiddenLines)
+        {
+            // Each generated path must match exactly once in the union of common and the selected flavor;
+            // extra masters must not survive a rename or deletion.
+            var masters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string layer in new[] { "common", flavor })
+            {
+                string directory = Path.Combine(mastersRoot, layer, masterDir);
+                if (Directory.Exists(directory))
+                {
+                    foreach (string file in Directory.GetFiles(directory, "*.g.*", SearchOption.AllDirectories))
+                    {
+                        string relativePath = file.Substring(directory.Length + 1);
+                        Assert.IsFalse(masters.ContainsKey(relativePath),
+                            $"Master '{relativePath}' exists in both common and {flavor} for '{masterDir}'.");
+                        masters.Add(relativePath, file);
+                    }
                 }
             }
 
-            /* Also search the code-genned folders subdirectories.  We need to pull out
-             * the local directory name from the full path given by GetDirectories to construct
-             * the masters' directory name.
-             */
-            string[] codegenDirs = Directory.GetDirectories(codegenDir);
-            foreach (var dir in Directory.GetDirectories(codegenDir))
+            foreach (string codegenFile in Directory.GetFiles(codegenPath, "*.g.*", SearchOption.AllDirectories))
             {
-                //codegenDir doesn't include the slash preceding the filename, so we have to add one to its file length
-                //to remove it properly
-                string dirLocalName = new DirectoryInfo(dir).Name;
-                DiffCodegenDirs(dir, Path.Combine(mastersDir, dirLocalName), forbiddenLines);
+                string relativePath = codegenFile.Substring(codegenPath.Length + 1);
+                string masterFile;
+                Assert.IsTrue(masters.TryGetValue(relativePath, out masterFile),
+                    $"No master for '{relativePath}' in '{masterDir}'. Run copynewmasters.cmd for this flavor.");
+                DiffFiles(codegenFile, masterFile, forbiddenLines);
+                masters.Remove(relativePath);
             }
+
+            Assert.AreEqual(0, masters.Count,
+                $"Stale master(s) in '{masterDir}': {string.Join(", ", masters.Keys)}. Run copynewmasters.cmd for this flavor.");
         }
 
         private static void DiffCodegen(string targetDir, List<string> forbiddenLines = null)
@@ -142,7 +191,6 @@ namespace UnitTests
                 "test and copynewmasters.cmd agree on where its codegen is written.");
 
             string codegenPath = Path.Combine(CodegenRoot.Value, codegenDir);
-            string mastersPath = Path.Combine(MastersRoot.Value, masterDir);
 
             // Require codegen to actually be there. Without this, a project that failed to build
             // leaves an empty directory behind and the diff below passes over nothing at all,
@@ -151,7 +199,7 @@ namespace UnitTests
             Assert.IsTrue(Directory.Exists(codegenPath) && Directory.EnumerateFiles(codegenPath, "*.g.*", SearchOption.AllDirectories).Any(),
                 $"No codegen in '{codegenPath}'. Build the project behind '{masterDir}' before running this test.");
 
-            DiffCodegenDirs(codegenPath, mastersPath, forbiddenLines);
+            DiffCodegenFiles(codegenPath, MastersRoot.Value, masterDir, GetBuildType(BuildOutput.Value.Flavor), forbiddenLines);
         }
 
         private const string CodegenTargetsFileName = "CodegenTargets.txt";
@@ -185,8 +233,7 @@ namespace UnitTests
         private static readonly Lazy<string> MastersRoot = new Lazy<string>(() =>
             Path.Combine(
                 FindInEnlistmentOrNextToTests(@"src\XamlCompiler\TestMasters", "TestMasters", Directory.Exists),
-                "RegressionProjects",
-                GetBuildType(BuildOutput.Value.Flavor)));
+                "RegressionProjects"));
 
         private static Dictionary<string, string> LoadCodegenTargets()
         {
