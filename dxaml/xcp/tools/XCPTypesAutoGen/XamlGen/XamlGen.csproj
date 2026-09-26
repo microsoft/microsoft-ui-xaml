@@ -732,6 +732,12 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="Templates\Metadata\TrackerTargetTraits.cs">
+      <DependentUpon>TrackerTargetTraits.tt</DependentUpon>
+      <SubType>Code</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Include="TypeTableOptimizer.cs" />
     <Compile Include="DependencyGenerator.cs" />
     <Compile Include="IndexGenerator.cs" />
@@ -1473,6 +1479,10 @@
     <None Include="Templates\Metadata\DependencyObjectTraits.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>DependencyObjectTraits.cs</LastGenOutput>
+    </None>
+    <None Include="Templates\Metadata\TrackerTargetTraits.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>TrackerTargetTraits.cs</LastGenOutput>
     </None>
     <None Include="Templates\Metadata\TypeTableHeader.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>

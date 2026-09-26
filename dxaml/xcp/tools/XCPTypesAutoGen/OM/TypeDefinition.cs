@@ -227,6 +227,22 @@ namespace OM
             set;
         }
 
+        /// <summary>
+        /// Gets whether references to this type are, by default, stored through the reference
+        /// tracker (TrackerPtr) so that cross-boundary references are visible to the GC walk.
+        /// True for reference (peer) types; false for value types and strings, which are stored
+        /// by value / HString. This is the single authority for the "tracked storage by default"
+        /// rule and is also emitted as the is_tracker_target&lt;T&gt; trait table consumed by the
+        /// PeerComPtrFieldCheck lint.
+        /// </summary>
+        public bool IsTrackerTarget
+        {
+            get
+            {
+                return !IsValueType && !IsStringType;
+            }
+        }
+
         public bool IsConstexprConstructible
         {
             get;

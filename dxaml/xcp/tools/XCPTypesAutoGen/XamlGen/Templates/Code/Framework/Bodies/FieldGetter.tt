@@ -13,6 +13,12 @@
     IFC(CValueBoxer::CopyValue(<#= Model.FrameworkFieldName #>.Get(), <#= Model.PropertyType.AbiReturnParameterName #>));
 <# } else if (Model.PropertyType.IsValueType) { #>
     IFC(CValueBoxer::CopyValue(<#= Model.FrameworkFieldName #>, <#= Model.PropertyType.AbiReturnParameterName #>));
+<# } else if (Model.XamlPropertyFlags.WeakRef) { #>
+    {
+        ctl::ComPtr<<#= Model.PropertyType.AbiFullName #>> spResolved;
+        IFC(<#= Model.FrameworkFieldName #>.As(&spResolved));
+        IFC(spResolved.CopyTo(<#= Model.PropertyType.AbiReturnParameterName #>));
+    }
 <# } else if (Model.XamlPropertyFlags.UseComPtr) { #>
     IFC(<#= Model.FrameworkFieldName #>.CopyTo(<#= Model.PropertyType.AbiReturnParameterName #>));
 <# } else { #>
