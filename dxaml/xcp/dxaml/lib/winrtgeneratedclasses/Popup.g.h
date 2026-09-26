@@ -164,19 +164,22 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) PopupFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopupFactory
         , public ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopupStatics
         , public ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopupStatics2
         , public ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopupStatics3
     {
-        BEGIN_INTERFACE_MAP(PopupFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(PopupFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(PopupFactory, ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopupFactory)
             INTERFACE_ENTRY(PopupFactory, ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopupStatics)
             INTERFACE_ENTRY(PopupFactory, ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopupStatics2)
             INTERFACE_ENTRY(PopupFactory, ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopupStatics3)
-        END_INTERFACE_MAP(PopupFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(PopupFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup** ppInstance);
 
         // Static properties.
 
