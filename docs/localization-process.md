@@ -62,6 +62,9 @@ package.
    This is CASE SENSITIVE because currently the Touchdown localization service is unable to ignore character case. 
    It will treat the same source file as two different files if the character case in the file path is changed. 
    To keep consistent with the other english source files, we should keep the 'en-us' folder name lower case.
+   Add the source file to `resourceFilePath` in
+   `build\AzurePipelinesTemplates\WinUI-LocalizeResources-Steps.yml`. The update script
+   requires a returned resource file for every English control resource.
 2. For new strings, give a time window of more than 3-4 days so that Touchdown has time for their 
    localization process. 
 3. The pipeline should be run (Run all stages) at least once after we make changes to the Major and/or Minor version 

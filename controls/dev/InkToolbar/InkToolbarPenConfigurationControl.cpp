@@ -99,6 +99,7 @@ void InkToolbarPenConfigurationControl::OnApplyTemplate()
 
     ConfigureStrokeWidthSlider(nullptr);
     ConfigureStrokeWidthPreview();
+    ConfigureLocalizableElements(nullptr);
 
     if (penButton)
     {
@@ -110,7 +111,6 @@ void InkToolbarPenConfigurationControl::OnApplyTemplate()
         RemoveColorPicker(nullptr);
     }
 
-    ConfigureLocalizableElements(nullptr);
     ConfigureHighContrast();
 }
 
@@ -197,10 +197,7 @@ void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Cont
 {
     UNREFERENCED_PARAMETER(me);
 
-    // ResourceAccessor throws ERROR_NOT_FOUND when a name is absent. In framework-package mode it reads
-    // the framework's own version-matched resources.pri, so that never happens there; the risk is the
-    // in-app / self-contained (and unpackaged) case, where the app's merged resources.pri can lag the
-    // WinUI binaries it bundles. This runs from OnApplyTemplate, so a missing string must not crash.
+    // An older app-local PRI may not contain the new strings. Keep the template defaults in that case.
     auto tryGetString = [](std::wstring_view name) -> winrt::hstring
     {
         try
@@ -209,13 +206,11 @@ void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Cont
         }
         catch (winrt::hresult_error const& e)
         {
-            InkToolbarLogHResult(e.code(), L"pen flyout heading string lookup");
+            InkToolbarLogHResult(e.code(), L"pen flyout string lookup");
             return {};
         }
     };
 
-    // The template ships English defaults for these two headings, so they must be replaced here or
-    // they never localize.
     if (auto colorsTitle = GetTemplateChild(L"PenColorPaletteTitle").try_as<winrt::TextBlock>())
     {
         if (auto text = tryGetString(SR_InkToolbarPenConfigurationColorsLabel); !text.empty())
@@ -230,6 +225,11 @@ void InkToolbarPenConfigurationControl::ConfigureLocalizableElements(winrt::Cont
         {
             sizeTitle.Text(text);
         }
+    }
+
+    if (auto text = tryGetString(SR_InkToolbarNonSolidColorName); !text.empty())
+    {
+        m_nonSolidColorString = text;
     }
 }
 

@@ -33,6 +33,7 @@
 #include "InkCanvas.h"
 #include "InkPresenter.h"
 #include "InkToolbarIsStencilButtonCheckedChangedEventArgs.h"
+#include "SharedHelpers.h"
 
 namespace mux = winrt::Microsoft::UI::Xaml;
 namespace muxc = winrt::Microsoft::UI::Xaml::Controls;
@@ -725,7 +726,12 @@ void InkToolbar::OnFlyoutClosed(winrt::IInspectable const& sender, winrt::IInspe
         }
     }
 
+    auto button = found->m_toolButton
+        ? found->m_toolButton.as<winrt::UIElement>()
+        : found->m_menuButton.as<winrt::UIElement>();
     m_openFlyouts.erase(found);
+    SharedHelpers::RaiseAutomationPropertyChangedEvent(
+        button, winrt::ExpandCollapseState::Expanded, winrt::ExpandCollapseState::Collapsed);
 }
 
 // When an L3 opens, move focus into the relevant control (pen color / eraser / stencil selection).
@@ -757,6 +763,12 @@ void InkToolbar::OnFlyoutOpened(winrt::IInspectable const& sender, winrt::IInspe
             winrt::get_self<InkToolbarEraserButton>(eraserButton)->SetFocusToSelectedEraser(winrt::FocusState::Programmatic);
         }
     }
+
+    auto button = found->m_toolButton
+        ? found->m_toolButton.as<winrt::UIElement>()
+        : found->m_menuButton.as<winrt::UIElement>();
+    SharedHelpers::RaiseAutomationPropertyChangedEvent(
+        button, winrt::ExpandCollapseState::Collapsed, winrt::ExpandCollapseState::Expanded);
 }
 
 // ---- Visual / flyout helpers ---------------------------------------------------------------
