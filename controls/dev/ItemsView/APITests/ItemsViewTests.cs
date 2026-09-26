@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -1109,6 +1109,107 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 });
 
                 IdleSynchronizer.Wait();
+
+                Log.Comment("Done");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Timeout", "0:1:0")]
+        [TestProperty("Description", "Collapses the target of a pending ItemsView.StartBringItemIntoView operation and verifies that a subsequent StartBringItemIntoView still reaches its item.")]
+        public void CanBringItemIntoViewAfterCollapsingPendingTarget()
+        {
+            // Companion coverage for https://github.com/microsoft/microsoft-ui-xaml/issues/11865. The existing
+            // tests only prove that invalidating the retained target stops throwing; this one proves the ItemsView
+            // is still usable afterwards. Collapsing is the invalidation that discriminates, because the resulting
+            // zero-height container corrupts StackLayout's average element size and therefore the estimated extent.
+            using (PrivateLoggingHelper privateIVLoggingHelper = new PrivateLoggingHelper(
+                new List<string>() { "ItemsView", "ItemsRepeater", "ScrollView" },
+                isLoggingInfoLevel: true,
+                isLoggingVerboseLevel: true))
+            {
+                ItemsView itemsView = null;
+                ScrollView scrollView = null;
+                ObservableCollection<string> itemsSource = null;
+                AutoResetEvent itemsViewLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollViewBringingIntoViewEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollViewScrollCompletedEvent = new AutoResetEvent(false);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    itemsView = new ItemsView();
+
+                    SetupDefaultUI(itemsView, itemsViewLoadedEvent);
+                });
+
+                WaitForEvent("Waiting for Loaded event", itemsViewLoadedEvent);
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    scrollView = itemsView.GetValue(ItemsView.ScrollViewProperty) as ScrollView;
+
+                    scrollView.BringingIntoView += (sender, args) =>
+                    {
+                        Log.Comment("ScrollView.BringingIntoView raised - CorrelationId=" + args.CorrelationId + ", TargetVerticalOffset=" + args.TargetVerticalOffset);
+
+                        scrollViewBringingIntoViewEvent.Set();
+                    };
+
+                    scrollView.ScrollCompleted += (sender, args) =>
+                    {
+                        Log.Comment("ScrollView.ScrollCompleted raised - CorrelationId=" + args.CorrelationId + ", VerticalOffset=" + scrollView.VerticalOffset);
+
+                        scrollViewScrollCompletedEvent.Set();
+                    };
+
+                    Log.Comment("Setting ItemsSource with 200 items.");
+
+                    itemsSource = new ObservableCollection<string>(Enumerable.Range(0, 200).Select(k => "Item " + k));
+
+                    itemsView.ItemsSource = itemsSource;
+
+                    // A template rather than ItemContainer instances in the ItemsSource, so that the
+                    // ItemsRepeater owns and recycles the containers the way an app would.
+                    itemsView.ItemTemplate = XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <ItemContainer Height='100'>
+                              <TextBlock Text='{Binding}'/>
+                            </ItemContainer>
+                          </DataTemplate>") as DataTemplate;
+                });
+
+                IdleSynchronizer.Wait();
+
+                // Scroll the future target into view first, so that its container is realized. The invalidation
+                // below has to act on the very element ItemsView retains.
+                BringItemIntoView(150, itemsView, scrollViewBringingIntoViewEvent, scrollViewScrollCompletedEvent);
+
+                IdleSynchronizer.Wait();
+
+                // Start a fresh bring-into-view and invalidate its target in the same tick. The retained element
+                // is only released a few rendering frames after the operation completes, so yielding here would
+                // let it expire and the invalidation would never reach OnScrollViewAnchorRequested.
+                RunOnUIThread.Execute(() =>
+                {
+                    ItemsRepeater itemsRepeater = ItemsViewTestHooks.GetItemsRepeaterPart(itemsView);
+                    ItemContainer pendingTarget = itemsRepeater.TryGetElement(150) as ItemContainer;
+
+                    Verify.IsNotNull(pendingTarget, "Expecting the bring-into-view target to be realized.");
+
+                    Log.Comment("Invoking ItemsView.StartBringItemIntoView(150) and collapsing its target.");
+
+                    itemsView.StartBringItemIntoView(150, new BringIntoViewOptions() { AnimationDesired = false });
+
+                    pendingTarget.Visibility = Visibility.Collapsed;
+                });
+
+                // Polled rather than IdleSynchronizer.Wait(): on a regression the layout never goes idle, and this
+                // reports the resulting offset as a failed assertion instead of hanging until the test times out.
+                WaitForScrollOffsetToSettle(scrollView);
+
+                VerifyBringItemIntoViewReachesItem(160, itemsView, scrollView, scrollViewBringingIntoViewEvent, scrollViewScrollCompletedEvent);
 
                 Log.Comment("Done");
             }
@@ -2331,6 +2432,70 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 BringItemIntoView(150, itemsView, scrollViewBringingIntoViewEvent, scrollViewScrollCompletedEvent);
                 BringItemIntoView(160, itemsView, scrollViewBringingIntoViewEvent, scrollViewScrollCompletedEvent);
             }
+        }
+
+        // Bounded alternative to IdleSynchronizer.Wait(): waits for the vertical offset to stop changing rather
+        // than for the UI thread to report idle, which it never does while a layout regression keeps it busy.
+        private void WaitForScrollOffsetToSettle(ScrollView scrollView)
+        {
+            double previousOffset = double.NaN;
+            double currentOffset = double.NaN;
+            int stableSamples = 0;
+
+            for (int attempt = 0; attempt < 60 && stableSamples < 3; attempt++)
+            {
+                Thread.Sleep(50);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    currentOffset = scrollView.VerticalOffset;
+                });
+
+                stableSamples = currentOffset == previousOffset ? stableSamples + 1 : 0;
+                previousOffset = currentOffset;
+            }
+
+            Log.Comment("Vertical offset settled at " + currentOffset + ".");
+        }
+
+        // Equivalent of BringItemIntoView, but settles by polling rather than by waiting for idle.
+        private void VerifyBringItemIntoViewReachesItem(
+            int index,
+            ItemsView itemsView,
+            ScrollView scrollView,
+            AutoResetEvent scrollViewBringingIntoViewEvent,
+            AutoResetEvent scrollViewScrollCompletedEvent)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                scrollViewBringingIntoViewEvent.Reset();
+                scrollViewScrollCompletedEvent.Reset();
+
+                Log.Comment("Invoking ItemsView.StartBringItemIntoView(" + index + ")");
+
+                itemsView.StartBringItemIntoView(index, new BringIntoViewOptions() { AnimationDesired = false });
+            });
+
+            WaitForEvent("Waiting for BringingIntoView event", scrollViewBringingIntoViewEvent);
+
+            WaitForEvent("Waiting for ScrollCompleted event", scrollViewScrollCompletedEvent);
+
+            WaitForScrollOffsetToSettle(scrollView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                int topLeftElementIndex;
+                int bottomRightElementIndex;
+
+                itemsView.TryGetItemIndex(horizontalViewportRatio: 0.0, verticalViewportRatio: 0.0, out topLeftElementIndex);
+                itemsView.TryGetItemIndex(horizontalViewportRatio: 1.0, verticalViewportRatio: 1.0, out bottomRightElementIndex);
+
+                Log.Comment("Top left element index=" + topLeftElementIndex);
+                Log.Comment("Bottom right element index=" + bottomRightElementIndex);
+
+                Verify.IsGreaterThanOrEqual(index, topLeftElementIndex, "Expecting item " + index + " at or after the top of the viewport.");
+                Verify.IsLessThanOrEqual(index, bottomRightElementIndex, "Expecting item " + index + " at or before the bottom of the viewport.");
+            });
         }
 
         private void BringItemIntoView(
