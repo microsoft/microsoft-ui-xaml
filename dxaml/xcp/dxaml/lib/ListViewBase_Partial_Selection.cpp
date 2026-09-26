@@ -7,6 +7,7 @@
 #include "ListViewBaseItem.g.h"
 #include "ItemCollection.g.h"
 #include "ItemIndexRange.g.h"
+#include <OptionalChangeState.h>
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -140,11 +141,17 @@ _Check_return_ HRESULT ListViewBase::OnSelectionChanged(
         {
             bool movedExistingSelection = (newSelectedIndex != -1) && (oldSelectedIndex == -1);
             bool selectionChanged = oldSelectedIndex != newSelectedIndex;
+            const bool unchangedItemShifted = OptionalChangeState::IsCollectionMoveNotificationsEnabled() &&
+                m_inCollectionChange && oldSelectedIndex >= 0 && newSelectedIndex >= 0 &&
+                ctl::are_equal(pOldSelectedItem, pNewSelectedItem);
 
             // Only call base to focus the item if we actually moved
             // the selection or if there was a change when SelectionMode is Single
-            if (movedExistingSelection ||
-                (selectionChanged && (mode == xaml_controls::ListViewSelectionMode_Single)))
+            // Collection index adjustments precede removal of the old container mapping.
+            // Preserve the focused child instead of focusing the container at the new index.
+            if (!unchangedItemShifted &&
+                (movedExistingSelection ||
+                    (selectionChanged && (mode == xaml_controls::ListViewSelectionMode_Single))))
             {
                 // Focus the item.
                 IFC(ListViewBaseGenerated::OnSelectionChanged(

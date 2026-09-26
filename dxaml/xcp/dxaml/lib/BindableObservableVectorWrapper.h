@@ -8,6 +8,8 @@
 #pragma once
 
 #include "BindableVectorWrapper.h"
+#include <CollectionMoveView.h>
+#include <optional>
 
 namespace DirectUI
 {
@@ -32,6 +34,19 @@ namespace DirectUI
 
     public:
 
+        // IVector<IInspectable *> and IIterable<IInspectable *>
+        IFACEMETHOD(GetAt)(unsigned index, _Out_ IInspectable **item) override;
+        IFACEMETHOD(get_Size)(_Out_ unsigned *size) override;
+        IFACEMETHOD(GetView)(_Outptr_result_maybenull_ wfc::IVectorView<IInspectable *> **view) override;
+        IFACEMETHOD(IndexOf)(_In_opt_ IInspectable *value, _Out_ unsigned *index, _Out_ boolean *found) override;
+        IFACEMETHOD(First)(_Outptr_ wfc::IIterator<IInspectable *> **value) override;
+
+        IFACEMETHOD(SetAt)(unsigned index, _In_opt_ IInspectable *item) override;
+        IFACEMETHOD(InsertAt)(unsigned index, _In_ IInspectable *item) override;
+        IFACEMETHOD(RemoveAt)(unsigned index) override;
+        IFACEMETHOD(Append)(_In_opt_ IInspectable *item) override;
+        IFACEMETHOD(RemoveAtEnd)() override;
+        IFACEMETHOD(Clear)() override;
 
         // IObservableVector<IInspectable *>
         IFACEMETHOD(add_VectorChanged)(
@@ -81,12 +96,18 @@ namespace DirectUI
     private:
 
         _Check_return_ HRESULT ProcessCollectionChange(_In_ xaml_interop::INotifyCollectionChangedEventArgs *pArgs);
+        _Check_return_ HRESULT ProcessCollectionMove(_In_ xaml_interop::INotifyCollectionChangedEventArgs *pArgs);
         _Check_return_ HRESULT ProcessVectorChange(_In_ IInspectable *pArgs);
+        _Check_return_ HRESULT CheckMoveSourceUnchanged() const;
+        _Check_return_ HRESULT CheckMoveReentrancy() const;
 
         _Check_return_ HRESULT RaiseVectorChanged(_In_ wfc::CollectionChange action, UINT index);
         _Check_return_ HRESULT RaiseVectorChanged(wfc::IVectorChangedEventArgs* pArgs);
 
     private:
+
+        std::optional<Components::CollectionMoveView> m_moveView;
+        bool m_sourceChangedDuringMove = false;
 
         TrackerEventSource<
             wfc::VectorChangedEventHandler<IInspectable *>,
