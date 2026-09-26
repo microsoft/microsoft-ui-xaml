@@ -425,7 +425,30 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsSelected { get; };
 
+    // ----- Hierarchy -----
+    // Written only by the owning TableView, from the row metadata for this row's index. All three
+    // are 0/false for a flat or grouped source, which is what makes the hierarchy affordance
+    // vanish without a separate "is this a tree" switch.
+
+    // 1-based depth: a root row reports 1, its children 2. Zero means "not a hierarchical row".
+    // 1-based to match AutomationProperties.Level and the group-header Level, so a peer can hand
+    // it to UIA unmodified; the indent math subtracts one.
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 Level { get; };
+
+    // True when this row has children it could show. Drives ExpandabilityStates. Distinct from
+    // IsExpanded: a node can be expandable and collapsed, and a leaf is neither.
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsExpandable { get; };
+
+    // True when this row's children are currently projected as rows beneath it.
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsExpanded { get; };
+
     static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty LevelProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
 };
 
 [MUX_PREVIEW]
@@ -557,8 +580,13 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     // Expands or collapses every group in one batch. Individual groups are expanded and collapsed
     // through the group header's ExpandCollapse pattern or by clicking the header itself; these
     // are the programmatic bulk counterparts. Both are no-ops when the source is not grouped.
+    //
+    // These also drive a HIERARCHICAL source (TableViewSource.WithChildren), where the unit is a
+    // node rather than a group. The names are kept because the mechanism is the same expansion
+    // model, and a source is never both grouped and hierarchical.
     void ExpandAllGroups();
     void CollapseAllGroups();
+
 
     // ----- Sorting -----
     // Single-column sort. The control reshapes the rows itself: an ItemsSource that is not already

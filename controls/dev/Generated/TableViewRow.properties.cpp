@@ -13,7 +13,10 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Tabular
 
 #include "TableViewRow.g.cpp"
 
+GlobalDependencyProperty TableViewRowProperties::s_IsExpandableProperty{ nullptr };
+GlobalDependencyProperty TableViewRowProperties::s_IsExpandedProperty{ nullptr };
 GlobalDependencyProperty TableViewRowProperties::s_IsSelectedProperty{ nullptr };
+GlobalDependencyProperty TableViewRowProperties::s_LevelProperty{ nullptr };
 
 TableViewRowProperties::TableViewRowProperties()
 {
@@ -22,6 +25,28 @@ TableViewRowProperties::TableViewRowProperties()
 
 void TableViewRowProperties::EnsureProperties()
 {
+    if (!s_IsExpandableProperty)
+    {
+        s_IsExpandableProperty =
+            InitializeDependencyProperty(
+                L"IsExpandable",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TableViewRow>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                nullptr);
+    }
+    if (!s_IsExpandedProperty)
+    {
+        s_IsExpandedProperty =
+            InitializeDependencyProperty(
+                L"IsExpanded",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TableViewRow>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                nullptr);
+    }
     if (!s_IsSelectedProperty)
     {
         s_IsSelectedProperty =
@@ -33,11 +58,51 @@ void TableViewRowProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 nullptr);
     }
+    if (!s_LevelProperty)
+    {
+        s_LevelProperty =
+            InitializeDependencyProperty(
+                L"Level",
+                winrt::name_of<int>(),
+                winrt::name_of<winrt::TableViewRow>(),
+                false /* isAttached */,
+                ValueHelper<int>::BoxValueIfNecessary(0),
+                nullptr);
+    }
 }
 
 void TableViewRowProperties::ClearProperties()
 {
+    s_IsExpandableProperty = nullptr;
+    s_IsExpandedProperty = nullptr;
     s_IsSelectedProperty = nullptr;
+    s_LevelProperty = nullptr;
+}
+
+void TableViewRowProperties::IsExpandable(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewRow*>(this)->SetValue(s_IsExpandableProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TableViewRowProperties::IsExpandable()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TableViewRow*>(this)->GetValue(s_IsExpandableProperty));
+}
+
+void TableViewRowProperties::IsExpanded(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewRow*>(this)->SetValue(s_IsExpandedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TableViewRowProperties::IsExpanded()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TableViewRow*>(this)->GetValue(s_IsExpandedProperty));
 }
 
 void TableViewRowProperties::IsSelected(bool value)
@@ -51,4 +116,17 @@ void TableViewRowProperties::IsSelected(bool value)
 bool TableViewRowProperties::IsSelected()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TableViewRow*>(this)->GetValue(s_IsSelectedProperty));
+}
+
+void TableViewRowProperties::Level(int value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewRow*>(this)->SetValue(s_LevelProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    }
+}
+
+int TableViewRowProperties::Level()
+{
+    return ValueHelper<int>::CastOrUnbox(static_cast<TableViewRow*>(this)->GetValue(s_LevelProperty));
 }

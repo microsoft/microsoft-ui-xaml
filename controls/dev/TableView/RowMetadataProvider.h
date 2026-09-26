@@ -11,6 +11,7 @@
 #include "TableViewRowInfo.h"
 #include "GroupedEntry.h"
 #include "GroupedSourceAdapter.h"
+#include "HierarchicalSourceAdapter.h"
 
 namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives::implementation
 {
@@ -39,6 +40,22 @@ public:
         GroupedSourceAdapterPtr const& adapter,
         ItemKeySelector const& itemKeySelector = {});
 
+    // Hierarchical rows are all DATA rows -- there is no header type to discriminate -- so the
+    // adapter's per-row descriptor is the only source of level/expandability, and the expansion
+    // key is the node's path key rather than a "group:" key.
+    static TableViewRowMetadataProvider CreateForHierarchicalRows(
+        HierarchicalSourceAdapterPtr const& adapter,
+        ItemKeySelector const& itemKeySelector = {});
+
+    // Both axes: GroupBy applied to the roots of a hierarchy. The presented row axis is the
+    // GROUPED adapter's, so header rows exist and their indices interleave with data rows -- which
+    // means a data row's index here does NOT address the hierarchy adapter. The row's item does,
+    // via TryGetNodeRowForItem, and that is how level/expandability are recovered.
+    static TableViewRowMetadataProvider CreateForGroupedHierarchicalRows(
+        GroupedSourceAdapterPtr const& groupedAdapter,
+        HierarchicalSourceAdapterPtr const& hierarchicalAdapter,
+        ItemKeySelector const& itemKeySelector = {});
+
     TableViewRowInfo GetRowInfo(int32_t index) override;
     winrt::hstring GetIdentity(int32_t index) override;
     bool TryGetIndexForIdentity(winrt::hstring const& identity, int32_t& index) override;
@@ -50,10 +67,19 @@ public:
     void ExpandAllGroups() override;
     void CollapseAllGroups() override;
 
+    bool IsHierarchicalSource() const override
+    {
+        return m_sourceKind == SourceKind::Hierarchical || m_sourceKind == SourceKind::GroupedHierarchical;
+    }
+
     enum class SourceKind
     {
         Flat,
         Grouped,
+        Hierarchical,
+        // Grouped rows whose DATA rows are also tree nodes. Row kinds and identities come from the
+        // grouped axis; level, expandability and node expansion come from the hierarchy adapter.
+        GroupedHierarchical,
     };
 
     RowMetadataProvider(
@@ -61,7 +87,9 @@ public:
         winrt::ItemsSourceView const& flatRows,
         winrt::ItemsSourceView const& groupedRows,
         GroupedSourceAdapterPtr const& groupedAdapter,
-        ItemKeySelector const& itemKeySelector);
+        ItemKeySelector const& itemKeySelector,
+        winrt::ItemsSourceView const& hierarchicalRows = nullptr,
+        HierarchicalSourceAdapterPtr const& hierarchicalAdapter = nullptr);
 
 private:
     // Single implementation behind all six expand/collapse/toggle entry points. They differ only
@@ -69,6 +97,14 @@ private:
     // in the wrappers and the state change lives here exactly once. `desired` empty means toggle.
     // Returns the resulting expansion state; false when there is no group or no adapter.
     bool SetGroupExpandedCore(winrt::IInspectable const& group, std::optional<bool> desired);
+
+    // The hierarchy equivalent, keyed by node path rather than by a resolved group object. No
+    // resolution step: the path key IS the adapter's addressing scheme.
+    bool SetNodeExpandedCore(winrt::hstring const& pathKey, std::optional<bool> desired);
+
+    // True when `key` addresses a tree node rather than a group. Required because the composed
+    // projection routes both key spaces through the same Expand/Collapse/Toggle surface.
+    bool IsNodeExpansionKey(winrt::hstring const& key) const;
 
     winrt::IInspectable GetGroupedRow(int32_t index) const;
     winrt::com_ptr<GroupedEntry> TryGetGroupHeaderEntry(int32_t index) const;
@@ -89,6 +125,8 @@ private:
     winrt::ItemsSourceView m_flatRows{ nullptr };
     winrt::ItemsSourceView m_groupedRows{ nullptr };
     GroupedSourceAdapterPtr m_groupedAdapter{};
+    winrt::ItemsSourceView m_hierarchicalRows{ nullptr };
+    HierarchicalSourceAdapterPtr m_hierarchicalAdapter{};
     ItemKeySelector m_itemKeySelector{};
 
     // Lazily built identity -> row index over the rows this provider wraps. Rebuilt wholesale
@@ -112,6 +150,7 @@ private:
     // races teardown becomes a no-op under the weak lock -- GC / re-entrancy safety, not threading.
     winrt::event_token m_groupedRowsChangedToken{};
     winrt::event_token m_flatRowsChangedToken{};
+    winrt::event_token m_hierarchicalRowsChangedToken{};
     std::shared_ptr<bool> m_alive{ std::make_shared<bool>(true) };
 };
 

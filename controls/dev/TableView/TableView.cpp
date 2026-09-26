@@ -30,6 +30,10 @@ static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGri
 // Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
 // unusable.
 static constexpr double c_resizeGripperWidthFallback{ 8.0 };
+
+// Mirrors the TableViewRowIndentSize resource shipped in TableView.xaml. Used when the resource is
+// missing or unusable.
+static constexpr double c_defaultRowIndentSize{ 16.0 };
 static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator"sv };
 // ScrollViewer template names are documented; ancestors are resolved by walking from child parts.
 
@@ -1264,6 +1268,27 @@ double TableView::GetHeaderFontSize()
     return cache.font.headerFontSize;
 }
 
+double TableView::GetRowIndentSize()
+{
+    // Deliberately not cached, unlike the density and font metrics above. Those are invalidated by
+    // a property or theme change the control is told about; a resource an app swaps at runtime
+    // arrives with no notification at all, so a cache here could only ever go stale. The lookup is
+    // a short ancestor walk and runs a couple of times per realized row, not per measure.
+    double resolved = c_defaultRowIndentSize;
+    if (auto raw = LookupElementResource(*this, L"TableViewRowIndentSize"))
+    {
+        const double value = winrt::unbox_value_or<double>(raw, c_defaultRowIndentSize);
+        // A negative or non-finite indent would pull cell content left, under the chevron. Fall
+        // back rather than render an unreadable row.
+        if (std::isfinite(value) && value >= 0.0)
+        {
+            resolved = value;
+        }
+    }
+
+    return resolved;
+}
+
 void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (args.OldValue() == args.NewValue())
@@ -1367,6 +1392,7 @@ void TableView::OnRowElementPrepared(
         rowImpl->SetOwningTableViewInternal(*this);
         rowImpl->RefreshGridLines();
         rowImpl->RefreshRowBackground();
+        RefreshRowHierarchyState(row, args.Index());
         RefreshRowSelectionState(row);
         InvalidateMeasure();
     }
@@ -1444,10 +1470,50 @@ void TableView::OnRowElementIndexChanged(
         winrt::get_self<TableViewRow>(row)->RefreshRowBackground();
     }
 
+    // ...and so must the hierarchy affordance: a row whose index moved is at a new depth, which is
+    // exactly what an expand above it does to every row below.
+    RefreshRowHierarchyState(row, args.NewIndex());
+
     // ...and so must selected chrome. The element keeps its item here (only its index moved), so
     // this normally re-derives the same answer - it is the cheap guarantee that a row whose index
     // shifted under an insert cannot end up disagreeing with the model.
     RefreshRowSelectionState(row);
+}
+
+// Pushes this index's hierarchy metadata onto the row. A flat or grouped source reports Level 0
+// here, which is what makes the chevron and indent disappear without a mode switch.
+void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t index)
+{
+    if (!row)
+    {
+        return;
+    }
+
+    TableViewRowInfo rowInfo{};
+    // Trust the metadata only when it actually describes a data row. A realized row can be
+    // re-prepared at an index that has just become a GROUP HEADER, where the info is valid but
+    // describes the header - taking IsExpandable/IsExpanded from that would give a data row a
+    // chevron for someone else's group. Same window, same guard as PrepareGroupHeaderElement.
+    const bool hasRowInfo =
+        TryGetTableViewSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::Data;
+
+    auto const rowImpl = winrt::get_self<TableViewRow>(row);
+    if (!hasRowInfo)
+    {
+        rowImpl->SetHierarchyStateInternal(0, false, false);
+        return;
+    }
+
+    // A grouped source also reports Level 1 for its data rows, but never IsExpandable - a data row
+    // under a group has nothing to expand. Asking the SOURCE whether it is a tree, rather than
+    // inferring it from this row, is what keeps a leaf root (Level 1, not expandable) aligned with
+    // its expandable siblings while leaving a merely grouped table rendering exactly as before.
+    const bool isHierarchicalRow =
+        m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource();
+    rowImpl->SetHierarchyStateInternal(
+        isHierarchicalRow ? (std::max)(1, rowInfo.Level) : 0,
+        rowInfo.IsExpandable,
+        rowInfo.IsExpanded);
 }
 
 // One header-text extraction per column, shared by the header cell's automation name and the
@@ -1770,8 +1836,7 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
     QueueRebuildHeaders();
 }
 
-void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column){
-    // A column that just opted out must not keep an active sort applied to it.
+void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column){    // A column that just opted out must not keep an active sort applied to it.
     if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None)
     {
         SortByColumn(column, winrt::SortDirection::None);

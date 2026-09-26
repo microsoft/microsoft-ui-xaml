@@ -141,6 +141,12 @@ public:
     double GetCellFontSize();
     double GetHeaderFontSize();
 
+    // Per-level hierarchy indent, from the TableViewRowIndentSize resource. A resource rather than
+    // a property for the same reason the metrics above are: it is chrome geometry, themeable per
+    // app or per element subtree, and rows resolve it through the owner's cache instead of
+    // walking the tree themselves once per row.
+    double GetRowIndentSize();
+
     // Resolved grid-line brush (theme/HC-aware, cached); rows call this via get_self, like the
     // density/font accessors above.
     winrt::Brush GetGridLineBrush();
@@ -329,10 +335,12 @@ public:
     // Re-derives IsSelected for a realized or re-indexed row; it never survives recycling.
     void RefreshRowSelectionState(winrt::TableViewRow const& row);
     void RefreshRowSelectionState(winrt::TableViewRow const& row, int32_t selectedIndex);
+    void RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t index);
 
     // For the automation peers, which cannot reach the private members. Both read the model.
     int32_t SelectedIndexInternal() const;
     winrt::IInspectable SelectedItemInternal() const;
+
     // --- Grouped projections (TableView_Grouping.cpp) ---
     //
     // Which container type a row-source item realizes as. Item-based rather than index-based
@@ -881,6 +889,7 @@ private:
     bool m_focusLossCommitQueued{ false };
 
     int32_t m_navAnchorRow{ -1 };
+
     void OnPreviewKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
@@ -889,3 +898,4 @@ private:
     int32_t GetFocusedRowIndex() const;
     int32_t GetEstimatedRowsPerPage(); // Non-const — GetDensityRowMinHeight() mutates the resource cache.
 };
+

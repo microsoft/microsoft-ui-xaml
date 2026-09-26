@@ -12,6 +12,20 @@
 #include "TVDiag.h"
 
 static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
+static constexpr std::wstring_view s_RowExpanderGutterPartName{ L"PART_RowExpanderGutter"sv };
+
+// Must match PART_RowExpanderGutter's Width in the default template (TableViewRowExpanderSize).
+// Duplicated as a constant rather than read back off the element because the reservation below has
+// to be computed even on the pass that creates the cells, before the gutter has been measured.
+static constexpr double c_rowExpanderSize{ 24.0 };
+
+// Mirrors the TableViewRowIndentSize resource. Used only when there is no owner to ask.
+static constexpr double c_defaultRowIndentSize{ 16.0 };
+
+// Where a group header's own content starts: PART_ExpanderGutter's width plus its Grid's
+// ColumnSpacing in the group-header template. A root row under a header is a child of that header,
+// so it starts where the header's text does instead of hanging off its left edge.
+static constexpr double c_groupHeaderContentOffset{ 24.0 + 6.0 };
 
 namespace
 {
@@ -133,6 +147,18 @@ void TableViewRow::OnApplyTemplate()
     __super::OnApplyTemplate();
 
     m_cellsHost.set(GetTemplateChild(hstring{ s_CellsHostPartName }).try_as<winrt::Panel>());
+    m_rowExpanderGutter.set(GetTemplateChild(hstring{ s_RowExpanderGutterPartName }).try_as<winrt::FrameworkElement>());
+
+    // Subscribe once per template application, not per prepare: the container is pooled and
+    // re-prepared many times, and a per-prepare subscription would fan one tap into N toggles.
+    // Handled on PRESSED rather than released so the row's own release-time selection latch, armed
+    // in OnPointerPressed, never sees this press at all.
+    if (auto const gutter = m_rowExpanderGutter.get())
+    {
+        m_gutterPointerPressedRevoker = gutter.PointerPressed(
+            winrt::auto_revoke,
+            { this, &TableViewRow::OnExpanderGutterPointerPressed });
+    }
 
     // Let the panel recognise this row's editing cell so it can keep it out of the Auto-width pass.
     if (auto const cellsPanel = m_cellsHost.get().try_as<winrt::TableViewCellsPanel>())
@@ -141,6 +167,8 @@ void TableViewRow::OnApplyTemplate()
     }
 
     RebuildCells();
+
+    ApplyHierarchyAffordance();
 
     UpdateVisualState(false /* useTransitions */);
 }
@@ -494,6 +522,162 @@ void TableViewRow::SetIsSelectedInternal(bool isSelected)
     UpdateVisualState(true /* useTransitions */);
 }
 
+void TableViewRow::SetHierarchyStateInternal(int32_t level, bool isExpandable, bool isExpanded)
+{
+    // Publish through the DPs so an app template (or a peer) can bind to them.
+    Level(level);
+    IsExpandable(isExpandable);
+    IsExpanded(isExpanded);
+
+    // Unconditionally, even when the three values are unchanged: the indent also depends on the
+    // TableViewRowIndentSize resource and on whether the source is grouped, either of which can
+    // change while a row keeps the same level. Every write below is already guarded against
+    // writing an equal value, so this re-applies nothing and cannot re-invalidate layout from
+    // within layout.
+    ApplyHierarchyAffordance();
+}
+
+// Places the chevron and reserves the matching room in the first cell. Split from
+// SetHierarchyStateInternal because OnApplyTemplate and RebuildCells must re-apply it against
+// unchanged state: a re-templated row has a brand-new gutter, and a rebuilt row has brand-new cell
+// wrappers, neither of which carries the previous pass's margin or padding.
+void TableViewRow::ApplyHierarchyAffordance()
+{
+    const int32_t level = Level();
+    const bool isHierarchical = level > 0;
+
+    winrt::VisualStateManager::GoToState(
+        *this, isHierarchical ? L"Hierarchical" : L"NotHierarchical", false /* useTransitions */);
+    winrt::VisualStateManager::GoToState(
+        *this, IsExpandable() ? L"Expandable" : L"NotExpandable", false /* useTransitions */);
+    winrt::VisualStateManager::GoToState(
+        *this, IsExpanded() ? L"Expanded" : L"Collapsed", false /* useTransitions */);
+
+    const double indent = HierarchyIndent();
+
+    if (auto const gutter = m_rowExpanderGutter.get())
+    {
+        // Visibility is set here rather than by a visual state: the template's base value is
+        // Collapsed (a flat table must never reserve chevron space), and leaving a state to undo
+        // that only reverts to the base, which is the collapsed value again.
+        const auto visibility = isHierarchical ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
+        if (gutter.Visibility() != visibility)
+        {
+            gutter.Visibility(visibility);
+        }
+
+        const winrt::Thickness gutterMargin{ indent, 0, 0, 0 };
+        if (gutter.Margin().Left != gutterMargin.Left)
+        {
+            gutter.Margin(gutterMargin);
+        }
+    }
+
+    ApplyHierarchyIndentToCells();
+}
+
+// Level 1 (a root) gets no indent, only the gutter's own width. Level is 1-based because UIA is;
+// the subtraction is the one place that converts.
+double TableViewRow::HierarchyIndent()
+{
+    const int32_t level = Level();
+    if (level <= 0)
+    {
+        return 0.0;
+    }
+
+    double indentSize = c_defaultRowIndentSize;
+    double baseIndent = 0.0;
+    if (auto const owner = GetOwningTableView())
+    {
+        auto const ownerImpl = winrt::get_self<TableView>(owner);
+
+        // Resolved from the TableViewRowIndentSize resource, validated by the owner. Read through
+        // the owner rather than walked from here so one lookup serves the whole row.
+        indentSize = ownerImpl->GetRowIndentSize();
+
+        // Only when headers are actually present. An ungrouped tree's roots are top-level rows and
+        // must stay flush against the cell's leading edge.
+        if (ownerImpl->IsTableViewSourceGrouped())
+        {
+            baseIndent = c_groupHeaderContentOffset;
+        }
+    }
+
+    return baseIndent + (level - 1) * indentSize;
+}
+
+// Reserve the chevron's footprint inside the leading cell. Padding on the WRAPPER, not on the
+// generated content: the content is whatever the column produced (an app DataTemplate in a
+// TemplateColumn), and reaching into it would both fight the column's own layout and fail for any
+// element without a Padding property.
+//
+// Split out from ApplyHierarchyAffordance because a column-visibility change must move the
+// reservation WITHOUT re-running the visual-state transitions, which the caller may be in the
+// middle of.
+void TableViewRow::ApplyHierarchyIndentToCells()
+{
+    auto const host = m_cellsHost.get();
+    if (!host)
+    {
+        return;
+    }
+
+    const bool isHierarchical = Level() > 0;
+    const double indent = HierarchyIndent();
+
+    auto const children = host.Children();
+    bool leadAssigned = false;
+    for (uint32_t i = 0; i < children.Size(); ++i)
+    {
+        auto const wrapper = children.GetAt(i).try_as<winrt::Border>();
+        if (!wrapper)
+        {
+            continue;
+        }
+
+        // First VISIBLE cell, not children[0]: hiding the first column must move the indent to
+        // whichever column now leads, or the tree structure would become invisible. Every other
+        // wrapper is reset rather than skipped -- otherwise hiding the lead column at runtime
+        // would strand its reservation on a cell nobody can see, and re-showing it would leave two.
+        const bool isLead =
+            !leadAssigned && wrapper.Visibility() == winrt::Visibility::Visible;
+        leadAssigned = leadAssigned || isLead;
+
+        const double reserved = (isLead && isHierarchical) ? indent + c_rowExpanderSize : 0.0;
+        auto padding = wrapper.Padding();
+        if (padding.Left != reserved)
+        {
+            padding.Left = reserved;
+            wrapper.Padding(padding);
+        }
+    }
+}
+
+void TableViewRow::OnExpanderGutterPointerPressed(
+    winrt::IInspectable const& /*sender*/,
+    winrt::PointerRoutedEventArgs const& args)
+{
+    if (!IsExpandable())
+    {
+        // A leaf's gutter is empty space over the first cell. Leaving the press unhandled lets it
+        // bubble to the row, so clicking there still selects, exactly as clicking the text does.
+        return;
+    }
+
+    // Handled before the row sees it: without this the same press would also arm the row's
+    // release-time selection latch, so every toggle would drag selection along with it.
+    args.Handled(true);
+
+    if (auto const owner = GetOwningTableView())
+    {
+        // Same entry point group headers use. It resolves this container's identity while the
+        // index is still current, then defers the reshape off the pointer callout -- both of which
+        // matter identically here.
+        winrt::get_self<TableView>(owner)->ToggleGroupExpansion(*this);
+    }
+}
+
 void TableViewRow::RefreshDensity()
 {
     // Re-read density metrics and restamp built-in cell padding.
@@ -522,6 +706,11 @@ void TableViewRow::RefreshColumnVisibility(const winrt::TableViewColumn& column,
     {
         cell.Visibility(visibility);
     }
+
+    // Which cell leads may have just changed, and the indent reservation lives on the leading
+    // cell's wrapper. Indent only: this runs from the column's property-changed callback, so
+    // re-running the row's visual-state transitions here is both unnecessary and unwelcome.
+    ApplyHierarchyIndentToCells();
 }
 
 double TableViewRow::MeasuredWidthForColumn(const winrt::TableViewColumn& column) const
@@ -714,6 +903,7 @@ void TableViewRow::RebuildCells()
 
         RefreshGridLines();
         RefreshRowBackground();
+        ApplyHierarchyAffordance();
         return;
     }
 
@@ -801,6 +991,7 @@ void TableViewRow::RebuildCells()
 
     RefreshGridLines();
     RefreshRowBackground();
+    ApplyHierarchyAffordance();
 }
 
 // Recycle-out. Always walks: the restamp fast-path revives tooltips through the binding, so a
@@ -1311,3 +1502,4 @@ winrt::TableViewColumn TableViewRow::ResolvePressedColumn(
 
     return nullptr;
 }
+

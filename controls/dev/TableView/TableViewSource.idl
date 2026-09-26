@@ -15,6 +15,18 @@ delegate Object TableViewKeySelector(Object item);
 [webhosthidden]
 delegate String TableViewIdentitySelector(Object item);
 
+// An item's children, for WithChildren. Returns a collection accepted by the same rules as
+// From(items), or null/empty meaning "leaf".
+[MUX_PREVIEW]
+[webhosthidden]
+delegate Object TableViewChildrenSelector(Object item);
+
+// "Is this item expandable", answered WITHOUT enumerating its children. Optional, and the reason
+// a large tree stays affordable -- see WithChildren.
+[MUX_PREVIEW]
+[webhosthidden]
+delegate Boolean TableViewHasChildrenPredicate(Object item);
+
 [MUX_PREVIEW]
 [webhosthidden]
 // Sealed deliberately: TableView drives the concrete implementation, so an override of a shaping
@@ -82,6 +94,43 @@ runtimeclass TableViewSource
     TableViewSource ClearFilter();
     TableViewSource ClearGroupBy();
     TableViewSource ClearSort();
+
+    // Declares the source a HIERARCHY: every visible row is a real data row, and a row with
+    // children can be expanded to reveal them indented beneath it. Unlike GroupBy there are no
+    // synthetic header rows.
+    //
+    // childrenSelector: required, non-null (throws E_INVALIDARG when null; use ClearChildren() to
+    // remove). Called only for rows the projection has decided to descend into, so a collapsed
+    // subtree is never enumerated. It may return null or an empty collection for a leaf.
+    //
+    // Rows start COLLAPSED. That is not the expand/collapse default elsewhere in this control --
+    // groups start expanded -- and it is deliberate: a tree that expanded by default would
+    // realize every node on first layout, which for a large or lazily-loaded source is the entire
+    // cost the feature exists to avoid. Use TableView.ExpandAllGroups() to start expanded.
+    //
+    // Grouping COMPOSES with hierarchy: GroupBy applies to the ROOTS, so the top level is bucketed
+    // under headers and each root still expands into its own subtree beneath its header. A
+    // descendant is never pulled out from under its parent to join a bucket -- its depth is what
+    // makes it a descendant -- so headers appear at the top level and nowhere else.
+    //
+    // Cycles and structures deeper than 256 levels throw E_INVALIDARG, as does the same item
+    // appearing twice among one parent's children (rows are identified by object identity, so
+    // duplicate siblings cannot be told apart).
+    // Overload metadata is frozen at v1 — without it MIDL bakes WithChildren2 into the ABI.
+    [default_overload] [method_name("WithChildren")]
+    TableViewSource WithChildren(TableViewChildrenSelector childrenSelector);
+
+    // hasChildrenSelector is OPTIONAL but strongly preferred for anything large. Without it the
+    // projection must call childrenSelector on every visible row merely to decide whether to draw
+    // an expander, which realizes one level below every visible row. With it, a collapsed tree
+    // costs one cheap predicate per visible row and nothing else.
+    //
+    // It is also what allows children to be loaded on demand: a row can report "expandable" before
+    // its children exist, and populate them when it is expanded.
+    [method_name("WithChildrenAndHasChildren")]
+    TableViewSource WithChildren(TableViewChildrenSelector childrenSelector, TableViewHasChildrenPredicate hasChildrenSelector);
+
+    TableViewSource ClearChildren();
 
 }
 

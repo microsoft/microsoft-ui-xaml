@@ -47,6 +47,11 @@ RowMetadataProvider::~RowMetadataProvider()
         {
             m_flatRows.CollectionChanged(m_flatRowsChangedToken);
         }
+
+        if (m_hierarchicalRows && m_hierarchicalRowsChangedToken)
+        {
+            m_hierarchicalRows.CollectionChanged(m_hierarchicalRowsChangedToken);
+        }
     }
     catch (...)
     {
@@ -85,16 +90,53 @@ TableViewRowMetadataProvider RowMetadataProvider::CreateForGroupedRows(
     return CreateForGroupedRows(adapter ? adapter->Entries() : nullptr, adapter, itemKeySelector);
 }
 
+TableViewRowMetadataProvider RowMetadataProvider::CreateForHierarchicalRows(
+    HierarchicalSourceAdapterPtr const& adapter,
+    ItemKeySelector const& itemKeySelector)
+{
+    return std::make_shared<RowMetadataProvider>(
+        SourceKind::Hierarchical,
+        nullptr,
+        nullptr,
+        nullptr,
+        itemKeySelector,
+        adapter ? adapter->Entries() : nullptr,
+        adapter);
+}
+
+TableViewRowMetadataProvider RowMetadataProvider::CreateForGroupedHierarchicalRows(
+    GroupedSourceAdapterPtr const& groupedAdapter,
+    HierarchicalSourceAdapterPtr const& hierarchicalAdapter,
+    ItemKeySelector const& itemKeySelector)
+{
+    // Only the grouped rows are subscribed to. The hierarchy adapter's own entries are NOT the
+    // presented axis here; a node toggle reaches this provider as a change to the grouped adapter,
+    // because layer 2 re-slices the groups from the hierarchy on every splice. Subscribing to both
+    // would invalidate the identity index twice per toggle for one actual change.
+    return std::make_shared<RowMetadataProvider>(
+        SourceKind::GroupedHierarchical,
+        nullptr,
+        groupedAdapter ? groupedAdapter->Entries() : nullptr,
+        groupedAdapter,
+        itemKeySelector,
+        nullptr,
+        hierarchicalAdapter);
+}
+
 RowMetadataProvider::RowMetadataProvider(
     SourceKind sourceKind,
     winrt::ItemsSourceView const& flatRows,
     winrt::ItemsSourceView const& groupedRows,
     GroupedSourceAdapterPtr const& groupedAdapter,
-    ItemKeySelector const& itemKeySelector) :
+    ItemKeySelector const& itemKeySelector,
+    winrt::ItemsSourceView const& hierarchicalRows,
+    HierarchicalSourceAdapterPtr const& hierarchicalAdapter) :
     m_sourceKind(sourceKind),
     m_flatRows(flatRows),
     m_groupedRows(groupedRows),
     m_groupedAdapter(groupedAdapter),
+    m_hierarchicalRows(hierarchicalRows),
+    m_hierarchicalAdapter(hierarchicalAdapter),
     m_itemKeySelector(itemKeySelector)
 {
     // Subscribe to whichever source this provider indexes so the reverse map cannot outlive the
@@ -114,6 +156,10 @@ RowMetadataProvider::RowMetadataProvider(
     if (m_groupedRows)
     {
         m_groupedRowsChangedToken = m_groupedRows.CollectionChanged(onChanged);
+    }
+    else if (m_hierarchicalRows)
+    {
+        m_hierarchicalRowsChangedToken = m_hierarchicalRows.CollectionChanged(onChanged);
     }
     else if (m_flatRows)
     {
@@ -144,6 +190,12 @@ void RowMetadataProvider::EnsureIdentityIndex()
         rowCount = m_flatRows ? m_flatRows.Count() : 0;
         break;
     case SourceKind::Grouped:
+        rowCount = m_groupedRows ? m_groupedRows.Count() : 0;
+        break;
+    case SourceKind::Hierarchical:
+        rowCount = m_hierarchicalRows ? m_hierarchicalRows.Count() : 0;
+        break;
+    case SourceKind::GroupedHierarchical:
         rowCount = m_groupedRows ? m_groupedRows.Count() : 0;
         break;
     }
@@ -228,6 +280,74 @@ TableViewRowInfo RowMetadataProvider::GetRowInfo(int32_t index)
         }
         break;
     }
+
+    case SourceKind::Hierarchical:
+    {
+        // Every hierarchical row is a data row, so there is nothing to discriminate -- the
+        // descriptor answers everything.
+        if (m_hierarchicalAdapter)
+        {
+            if (auto const* const node = m_hierarchicalAdapter->TryGetNodeRow(index))
+            {
+                // Depth is 0-based so indent math is a plain multiply and roots render flush.
+                // Level is 1-based: grouped data rows already report 1, and UIA's
+                // AutomationProperties.Level is 1-based by definition, so a 0 here would be an
+                // invalid level handed to a screen reader. The conversion happens once, here.
+                groupLevel = node->Depth + 1;
+                isExpandable = node->HasChildren;
+                isExpanded = node->IsExpanded;
+                // -1 means "expandable but nobody has enumerated", which is the lazy contract.
+                // TableViewRowInfo::ChildCount is a plain count, so report 0 rather than leaking
+                // a sentinel a consumer would render as "-1 items".
+                childCount = node->ChildCount > 0 ? node->ChildCount : 0;
+            }
+        }
+        break;
+    }
+
+    case SourceKind::GroupedHierarchical:
+    {
+        const auto entry = TryGetGroupHeaderEntry(index);
+        if (entry)
+        {
+            // A header over a hierarchy is still a header, but its count is the number of ROOTS it
+            // owns, not the number of rows it spans: the group's rows are its roots plus every
+            // visible descendant, so using the row count would make the header's count climb every
+            // time a node anywhere inside it was expanded. The projection publishes the root count
+            // on the group; fall back to the row count only if it did not.
+            kind = TableViewRowKind::GroupHeader;
+            childCount = entry->GroupItemCount();
+            if (auto const counted = entry->Group().try_as<ShapingHelpers::IGroupChildCount>())
+            {
+                const int32_t rootCount = counted->GroupChildCount();
+                if (rootCount >= 0)
+                {
+                    childCount = rootCount;
+                }
+            }
+            // Expandability still follows the rows: a group with roots always has rows, and this
+            // keeps an empty group a leaf under either count.
+            isExpandable = entry->GroupItemCount() > 0;
+            isExpanded = entry->IsExpanded();
+            break;
+        }
+
+        // A data row. Its index addresses the GROUPED axis, which interleaves headers, so it
+        // cannot be used against the hierarchy adapter -- the row's item is the only shared
+        // handle between the two axes.
+        groupLevel = 1;
+        if (m_hierarchicalAdapter)
+        {
+            if (auto const* const node = m_hierarchicalAdapter->TryGetNodeRowForItem(GetGroupedRow(index)))
+            {
+                groupLevel = node->Depth + 1;
+                isExpandable = node->HasChildren;
+                isExpanded = node->IsExpanded;
+                childCount = node->ChildCount > 0 ? node->ChildCount : 0;
+            }
+        }
+        break;
+    }
     }
 
     return TableViewRowInfo{ kind, groupLevel, isExpandable, isExpanded, childCount };
@@ -257,6 +377,45 @@ winrt::hstring RowMetadataProvider::GetIdentity(int32_t index)
         }
         return GetItemKey(GetGroupedRow(index));
     }
+
+    case SourceKind::Hierarchical:
+    {
+        // The node's PATH key, not its item key. Two different rows can be backed by the same
+        // object at different places in the tree only if the app builds a DAG, but more
+        // importantly the path is what the adapter's expand/collapse takes, so identity and
+        // expansion must speak the same language or every toggle would miss.
+        if (m_hierarchicalAdapter)
+        {
+            if (auto const* const node = m_hierarchicalAdapter->TryGetNodeRow(index))
+            {
+                return node->PathKey;
+            }
+        }
+        throw winrt::hresult_out_of_bounds();
+    }
+
+    case SourceKind::GroupedHierarchical:
+    {
+        const auto entry = TryGetGroupHeaderEntry(index);
+        if (entry)
+        {
+            return GetGroupExpansionKey(entry->Group());
+        }
+
+        // A data row's identity is its node PATH, not its item key. Expand/collapse addresses
+        // nodes by path, and identity is what the control hands back to Toggle, so the two must
+        // agree. Falls back to the item key for a row the hierarchy no longer knows (mid-reshape),
+        // which keeps selection re-anchoring working even in that window.
+        auto const item = GetGroupedRow(index);
+        if (m_hierarchicalAdapter)
+        {
+            if (auto const* const node = m_hierarchicalAdapter->TryGetNodeRowForItem(item))
+            {
+                return node->PathKey;
+            }
+        }
+        return GetItemKey(item);
+    }
     }
 
     throw winrt::hresult_out_of_bounds();
@@ -276,17 +435,60 @@ bool RowMetadataProvider::SetGroupExpandedCore(winrt::IInspectable const& group,
 
 void RowMetadataProvider::Expand(winrt::hstring const& key)
 {
+    if (IsNodeExpansionKey(key))
+    {
+        SetNodeExpandedCore(key, true);
+        return;
+    }
     SetGroupExpandedCore(ResolveGroupFromKey(key), true);
 }
 
 void RowMetadataProvider::Collapse(winrt::hstring const& key)
 {
+    if (IsNodeExpansionKey(key))
+    {
+        SetNodeExpandedCore(key, false);
+        return;
+    }
     SetGroupExpandedCore(ResolveGroupFromKey(key), false);
 }
 
 bool RowMetadataProvider::Toggle(winrt::hstring const& key)
 {
+    if (IsNodeExpansionKey(key))
+    {
+        return SetNodeExpandedCore(key, std::nullopt);
+    }
     return SetGroupExpandedCore(ResolveGroupFromKey(key), std::nullopt);
+}
+
+// Under GroupedHierarchical BOTH kinds of key reach these entry points -- a header click produces
+// a "group:" key and a chevron click produces a node path -- so the dispatch cannot be made on
+// SourceKind alone. The two key spaces are disjoint by construction (distinct prefixes), which is
+// what makes routing on the key itself safe rather than merely convenient.
+bool RowMetadataProvider::IsNodeExpansionKey(winrt::hstring const& key) const
+{
+    if (!m_hierarchicalAdapter || key.empty())
+    {
+        return false;
+    }
+
+    // Positive prefix test. "Not a group key" would let a stale or foreign identity become node
+    // expansion intent under a path the adapter never minted -- intent that PruneExpansionIntent
+    // cannot prove dead, so it would survive every rebuild.
+    return HierarchicalSourceAdapter::IsNodePathKey(key);
+}
+
+bool RowMetadataProvider::SetNodeExpandedCore(winrt::hstring const& pathKey, std::optional<bool> desired)
+{
+    if (!m_hierarchicalAdapter || pathKey.empty())
+    {
+        return false;
+    }
+
+    const bool isExpanded = desired.value_or(!m_hierarchicalAdapter->IsNodeExpanded(pathKey));
+    m_hierarchicalAdapter->SetNodeExpanded(pathKey, isExpanded);
+    return isExpanded;
 }
 
 winrt::IInspectable RowMetadataProvider::GetGroupedRow(int32_t index) const
@@ -310,22 +512,32 @@ winrt::com_ptr<GroupedEntry> RowMetadataProvider::TryGetGroupHeaderEntry(int32_t
 
 void RowMetadataProvider::ExpandAllGroups()
 {
-    if (!m_groupedAdapter)
+    // Both, when both exist. Under the composed projection "expand all" that left every tree node
+    // collapsed would look broken: the user asked for everything open, and the groups alone are
+    // only half the expandable surface. The hierarchy goes first so the groups are re-sliced from
+    // a fully-expanded tree rather than being expanded over a stale slice.
+    if (m_hierarchicalAdapter)
     {
-        return;
+        m_hierarchicalAdapter->ExpandAll();
     }
 
-    m_groupedAdapter->ExpandAll();
+    if (m_groupedAdapter)
+    {
+        m_groupedAdapter->ExpandAll();
+    }
 }
 
 void RowMetadataProvider::CollapseAllGroups()
 {
-    if (!m_groupedAdapter)
+    if (m_hierarchicalAdapter)
     {
-        return;
+        m_hierarchicalAdapter->CollapseAll();
     }
 
-    m_groupedAdapter->CollapseAll();
+    if (m_groupedAdapter)
+    {
+        m_groupedAdapter->CollapseAll();
+    }
 }
 
 winrt::IInspectable RowMetadataProvider::GetFlatItem(int32_t index) const
