@@ -437,6 +437,7 @@ HRESULT OnCoreCreatePopup(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARA
 HRESULT OnCoreCreateRangeBase(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateRepeatButton(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateScrollBar(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateSelector(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateSelectorItem(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateSplitViewTemplateSettings(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateThumb(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
