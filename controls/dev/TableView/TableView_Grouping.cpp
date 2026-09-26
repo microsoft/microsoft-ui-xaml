@@ -342,6 +342,11 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     // told clients to re-read a structure that had not changed yet.
     if (changed)
     {
+        // The toggled row keeps its index, so the repeater never re-prepares it and never raises
+        // ElementIndexChanged for it -- only the rows BELOW shift. Without this, the row that was
+        // just expanded keeps IsExpanded=false, which is what both ExpandCollapsePattern and the
+        // chevron read off the DP.
+        RefreshRealizedRowHierarchyState();
         RaiseGroupStructureChanged();
     }
 
@@ -492,10 +497,32 @@ void TableView::SetAllGroupsExpansion(bool expand)
 
     if (changed)
     {
+        RefreshRealizedRowHierarchyState();
         RaiseGroupStructureChanged();
     }
 
     RestoreGroupHeaderFocusIfPending(focusedGroupIdentity);
+}
+
+// Re-derives Level/IsExpandable/IsExpanded for every row the repeater still holds. Needed after a
+// reshape, where a row that kept its index kept its stale state with it.
+void TableView::RefreshRealizedRowHierarchyState()
+{
+    auto const repeater = m_rowsRepeater.get();
+    if (!repeater)
+    {
+        return;
+    }
+
+    ForEachRealizedRow([this, repeater](winrt::TableViewRow const& row)
+    {
+        // A container awaiting recycle reports -1; its state is about to be re-derived on prepare.
+        const auto index = repeater.GetElementIndex(row);
+        if (index >= 0)
+        {
+            RefreshRowHierarchyState(row, index);
+        }
+    });
 }
 
 void TableView::RaiseGroupStructureChanged()

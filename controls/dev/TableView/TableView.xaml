@@ -276,33 +276,42 @@
                                               Foreground="{TemplateBinding Foreground}"
                                               HorizontalContentAlignment="Stretch"
                                               VerticalContentAlignment="Stretch">
-                                <!-- Left, matching PART_HeaderHost. -->
-                                <controls:TableViewCellsPanel x:Name="PART_CellsHost"
-                                                              HorizontalAlignment="Left" />
-                            </ContentPresenter>
+                                <Grid>
+                                    <!-- Left, matching PART_HeaderHost. -->
+                                    <controls:TableViewCellsPanel x:Name="PART_CellsHost"
+                                                                  HorizontalAlignment="Left" />
 
-                            <!-- Hierarchy chevron. Overlays the first cell rather than sitting in a
-                                 column of its own: a real gutter column would push every cell right
-                                 while the header row stayed put, breaking header/cell alignment,
-                                 the one thing a tree GRID must preserve. TableViewRow sets the left
-                                 Margin from Level and pads the first cell by the same amount, so the
-                                 chevron lands in the space it reserved rather than over the text.
-                                 Hit-testable (unlike the selection indicator) because it is the
-                                 toggle target. -->
-                            <Border x:Name="PART_RowExpanderGutter"
-                                    Width="{ThemeResource TableViewRowExpanderSize}"
-                                    Background="Transparent"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Stretch"
-                                    Visibility="Collapsed">
-                                <FontIcon x:Name="PART_RowExpanderIcon"
-                                          FontSize="12"
-                                          Glyph="&#xE76C;"
-                                          Foreground="{TemplateBinding Foreground}"
-                                          MirroredWhenRightToLeft="True"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center" />
-                            </Border>
+                                    <!-- Hierarchy chevron. Overlays the first cell rather than sitting in a
+                                         column of its own: a real gutter column would push every cell right
+                                         while the header row stayed put, breaking header/cell alignment,
+                                         the one thing a tree GRID must preserve. TableViewRow sets the left
+                                         Margin from Level and pads the first cell by the same amount, so the
+                                         chevron lands in the space it reserved rather than over the text.
+                                         Hit-testable (unlike the selection indicator) because it is the
+                                         toggle target, so it is the LATER child and stays on top.
+
+                                         It lives INSIDE PART_CellForegroundPresenter, and the icon carries no
+                                         Foreground of its own, so the chevron inherits whatever foreground the
+                                         Selected* states push onto the presenter — exactly like cell text.
+                                         Setting the icon's Foreground from the Selected* states instead would
+                                         put a by-name reference to PART_RowExpanderIcon inside CommonStates,
+                                         which is a REQUIRED state group, and would thereby make an optional
+                                         template part mandatory. -->
+                                    <Border x:Name="PART_RowExpanderGutter"
+                                            Width="{ThemeResource TableViewRowExpanderSize}"
+                                            Background="Transparent"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Stretch"
+                                            Visibility="Collapsed">
+                                        <FontIcon x:Name="PART_RowExpanderIcon"
+                                                  FontSize="12"
+                                                  Glyph="&#xE76C;"
+                                                  MirroredWhenRightToLeft="True"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+                            </ContentPresenter>
 
                             <!-- Fluent selection indicator: overlays the leading edge, Opacity 0 by
                                  default; the Selected* states animate it to 1. Not hit-testable, so it

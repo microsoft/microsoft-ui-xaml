@@ -173,6 +173,7 @@ namespace
         cache.density.hasHeaderCellPadding = false;
         cache.font.hasCellFontSize = false;
         cache.font.hasHeaderFontSize = false;
+        cache.hierarchy.hasRowIndentSize = false;
         cache.gridLine.hasBrush = false;
     }
 
@@ -1270,10 +1271,20 @@ double TableView::GetHeaderFontSize()
 
 double TableView::GetRowIndentSize()
 {
-    // Deliberately not cached, unlike the density and font metrics above. Those are invalidated by
-    // a property or theme change the control is told about; a resource an app swaps at runtime
-    // arrives with no notification at all, so a cache here could only ever go stale. The lookup is
-    // a short ancestor walk and runs a couple of times per realized row, not per measure.
+    // Cached like the density and font metrics: this is reached for every realized row on every
+    // scroll, recycle and reindex pass, and LookupElementResource walks control resources, then
+    // every ancestor, then application resources, then the generic dictionary before answering.
+    //
+    // A theme resource carries no change notification, so the cache cannot be refreshed on a swap.
+    // It is cleared by the same density / theme / high-contrast invalidation as the neighbouring
+    // metrics; swapping the resource outside one of those still requires the rows to be re-prepared
+    // before it is visible, which is the documented behaviour of every other resource here.
+    auto& cache = GetTableViewResourceCache(this);
+    if (cache.hierarchy.hasRowIndentSize)
+    {
+        return cache.hierarchy.rowIndentSize;
+    }
+
     double resolved = c_defaultRowIndentSize;
     if (auto raw = LookupElementResource(*this, L"TableViewRowIndentSize"))
     {
@@ -1286,6 +1297,8 @@ double TableView::GetRowIndentSize()
         }
     }
 
+    cache.hierarchy.rowIndentSize = resolved;
+    cache.hierarchy.hasRowIndentSize = true;
     return resolved;
 }
 

@@ -71,6 +71,17 @@ struct TableViewResourceCache
     };
     FontInfo font{};
 
+    // Per-level hierarchy indent, resolved from the fixed TableViewRowIndentSize key. Cached and
+    // cleared alongside the rest: a resource an app swaps at runtime arrives with no change
+    // notification, so a swap only takes effect once the cache is invalidated (density, theme or
+    // high-contrast change, or re-templating) AND the affected rows are re-prepared.
+    struct HierarchyInfo
+    {
+        bool hasRowIndentSize{ false };
+        double rowIndentSize{ 0.0 };
+    };
+    HierarchyInfo hierarchy{};
+
     // Resolved gridline brush; re-resolved when the theme or high-contrast state changes.
     struct GridLineInfo
     {
@@ -336,6 +347,10 @@ public:
     void RefreshRowSelectionState(winrt::TableViewRow const& row);
     void RefreshRowSelectionState(winrt::TableViewRow const& row, int32_t selectedIndex);
     void RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t index);
+
+    // Re-derives the hierarchy state of every realized row after a reshape. A row that kept its
+    // index is never re-prepared, so it would otherwise keep the state it had before the toggle.
+    void RefreshRealizedRowHierarchyState();
 
     // For the automation peers, which cannot reach the private members. Both read the model.
     int32_t SelectedIndexInternal() const;

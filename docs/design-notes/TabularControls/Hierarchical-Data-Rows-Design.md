@@ -1,6 +1,7 @@
 # TableView — Hierarchical (Tree-Grid) Data Rows — Design
 
-Status: **design proposal, not implemented.** No code for this feature exists yet.
+Status: **implemented.** This document is the behavioural contract for the shipped feature; where it
+and the code disagree, one of them is a bug.
 
 ## The feature
 
@@ -36,7 +37,7 @@ Three additions, and nothing else:
 
 | API | Purpose |
 | --- | --- |
-| `TableViewSource.WithChildren(childrenSelector [, hasChildrenSelector])` | Declares intrinsic hierarchy: how to reach an item's children, and optionally how to answer "is it expandable" without enumerating them. `ClearHierarchy()` removes it. |
+| `TableViewSource.WithChildren(childrenSelector [, hasChildrenSelector])` | Declares intrinsic hierarchy: how to reach an item's children, and optionally how to answer "is it expandable" without enumerating them. `ClearChildren()` removes it. |
 | `TableView.ExpandAllRows()` / `CollapseAllRows()` | Bulk expand/collapse of the row hierarchy, as an intent rather than a loop over live nodes. |
 | `TableViewRowIndentSize` theme resource | Per-level indent applied to the primary cell (Double, default 16). A theme resource rather than a property — see §7.2. |
 
@@ -117,16 +118,16 @@ delegate Object TableViewChildrenSelector(Object item);   // returns a collectio
 runtimeclass TableViewSource
 {
     // Declares intrinsic hierarchy. childrenSelector: required, non-null (E_INVALIDARG when null;
-    // use ClearHierarchy() to remove). Returning null / an empty collection means "leaf".
+    // use ClearChildren() to remove). Returning null / an empty collection means "leaf".
     [default_overload] [method_name("WithChildren")]
     TableViewSource WithChildren(TableViewChildrenSelector childrenSelector);
 
     // hasChildrenSelector is OPTIONAL and exists for LAZY trees: it answers "is this expandable"
     // without enumerating children, so a collapsed node never materializes its subtree.
     [method_name("WithChildrenAndHasChildren")]
-    TableViewSource WithChildren(TableViewChildrenSelector childrenSelector, TableViewPredicate hasChildrenSelector);
+    TableViewSource WithChildren(TableViewChildrenSelector childrenSelector, TableViewHasChildrenPredicate hasChildrenSelector);
 
-    TableViewSource ClearHierarchy();
+    TableViewSource ClearChildren();
 }
 ```
 
@@ -490,12 +491,9 @@ void RebuildHierarchical(std::vector<winrt::IInspectable>& rows);
    — a hierarchical projection is object-unique like every other one, and a shared child throws the
    existing duplicate-object diagnostic (§4.2).
 
-**Filter semantics (v1): ancestor retention.** A node is kept if it matches the predicate **or any
-descendant matches**, so a match is never orphaned and never silently invisible. The cost is that
-filtering forces a **full tree walk** (descendants of collapsed nodes must be tested), which
-defeats §4.3's visible-only walk. v1 therefore states the cost plainly: *filtering a hierarchical
-source is `O(tree)`.* The alternative — match-node-only — is cheaper but hides matches under
-collapsed parents and was rejected.
+**Filter semantics (v1): match-node-only.** A node is kept only if it matches the predicate itself;
+a node that fails is dropped even when a descendant would have matched. The alternative — **ancestor
+retention** — is deferred rather than approximated, for the reason spelled out immediately below.
 
 **Filter × lazy hierarchy: the direct contradiction, and v1's answer.** Ancestor retention has to
 test descendants; `HasChildrenSelector` exists precisely so the control will *not* enumerate
@@ -684,9 +682,12 @@ method, not silently mitigated.
   costs a grouped `Reset`.
 - **Ranged subtree updates on child-collection change.** v1 rebuilds, matching grouping's current
   behaviour; optimize against a benchmark.
-- **`Filter` + a lazy `hasChildrenSelector`.** v1 throws (§5). Unblocking it needs a filter that can
-  realize subtrees incrementally and answer asynchronously — a different shape of filter than the
-  synchronous predicate the shaping stack has today.
+- **Ancestor retention under `Filter`.** v1 filters match-node-only (§5), so a match under a
+  non-matching parent is dropped rather than pulling its ancestors back into view. Unblocking it
+  needs a filter that can realize subtrees incrementally and answer asynchronously — a different
+  shape of filter than the synchronous predicate the shaping stack has today — because deciding
+  whether a collapsed subtree contains a match means walking it, which is exactly what the
+  `hasChildrenSelector` overload exists to avoid.
 - **True DAG support (one object under two parents).** The path key is built for it, but
   `ShapedItemsSource`'s object-uniqueness validation and an item-based `SelectedItems` are not
   (§4.2). Needs a row-addressed selection API and an identity contract that is not the object

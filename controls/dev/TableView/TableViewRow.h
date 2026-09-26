@@ -27,6 +27,8 @@ public:
     void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
+    // Right/Left expand and collapse a tree row, mirrored under RTL.
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
     // Updates the weak owner ref, column subscription, and realized cells.
     void SetOwningTableViewInternal(winrt::TableView const& owner);
@@ -54,7 +56,14 @@ public:
     // after every cell rebuild, both of which discard the previous pass's layout.
     void ApplyHierarchyAffordance();
     void ApplyHierarchyIndentToCells();
+    // Overload for callers that have already resolved the indent, so a single row preparation pays
+    // for the TableViewRowIndentSize lookup once instead of twice.
+    void ApplyHierarchyIndentToCells(double indent);
     double HierarchyIndent();
+
+    // The state this row reports through ExpandCollapsePattern: LeafNode unless it is an
+    // expandable tree row.
+    winrt::ExpandCollapseState HierarchyExpandCollapseState();
 
     // Used by automation peers to enumerate live cells after template application.
     winrt::Panel GetCellsHostPanelInternal() const { return m_cellsHost.get(); }
@@ -109,6 +118,16 @@ public:
         const winrt::PointerRoutedEventArgs& args);
 
 private:
+    // Routes an expansion-state transition to this row's automation peer, if a client is listening.
+    void RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
+
+    // True when keyboard focus is on the row container itself rather than on something inside a
+    // cell, so cell content keeps its own arrow keys.
+    bool IsRowItselfFocused();
+
+    // Directional expand/collapse for the keyboard, routed through the owner like the chevron.
+    void RequestExpansion(bool expand);
+
     // Installs a generated display element as a cell's content, wiring the ContentPresenter Content
     // binding a template column needs. GenerateElement alone is not a complete cell.
     void AttachCellContent(const winrt::Border& cellWrapper, const winrt::FrameworkElement& cellElement);

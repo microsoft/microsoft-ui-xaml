@@ -62,7 +62,6 @@ namespace ShapingHelpers
 
         bool IsExpanded(winrt::hstring const& key) const;
         void SetExpanded(winrt::hstring const& key, bool isExpanded);
-        void Toggle(winrt::hstring const& key) { SetExpanded(key, !IsExpanded(key)); }
 
         // Moves the baseline and drops every exception, so keys that do not exist yet also
         // resolve to `isExpanded`. This is "expand all" as an intent, not as a loop over the
