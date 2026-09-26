@@ -18,16 +18,12 @@ using namespace WinUICppIslandsSampleApp::implementation;
 // To learn more about WinUI and the WinUI project structure,
 // see: https://learn.microsoft.com/windows/apps/winui/
 
-void OnAppCreated();
-void OnAppDestructed();
-
 /// <summary>
 /// Initializes the singleton application object.  This is the first line of authored code
 /// executed, and as such is the logical equivalent of main() or WinMain().
 /// </summary>
 App::App()
 {
-    s_hasExistedInProcess = true;
     ::OutputDebugString(L">>> App::App has been called.\n");
 
     m_initialWindowsXamlManager = winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::InitializeForCurrentThread();
@@ -44,12 +40,14 @@ App::App()
         }
     });
 #endif
+
+    ++s_instanceCount;
 }
 
 App::~App()
 {
     ::OutputDebugString(L">>> App::~App has been called.\n");
-    OnAppDestructed();
+    --s_instanceCount;
 }
 
 /// <summary>

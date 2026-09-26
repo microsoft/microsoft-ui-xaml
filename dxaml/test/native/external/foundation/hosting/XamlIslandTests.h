@@ -72,6 +72,9 @@ public:
     TEST_METHOD(WindowsXamlManagerCreationScenarios)
     TEST_METHOD(ValidateXamlShutdownCompletedOnThread)
     TEST_METHOD(ValidateXamlShutdownCompletedOnThreadWithDeferral)
+    BEGIN_TEST_METHOD(XamlShutdownStartingForProcessInvokesAllHandlersOnFailure)
+        TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+    END_TEST_METHOD()
     TEST_METHOD(XamlUnloadsAutomatically)
     TEST_METHOD(WindowsXamlManagerKeptAlive)    
 
