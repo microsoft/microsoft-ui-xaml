@@ -4719,7 +4719,7 @@ namespace Microsoft.UI.Xaml.Controls
 
     [CodeGen(partial: true)]
     [Guids(ClassGuid = "6546b3de-b086-4913-af0b-d70231a8a826")]
-    public sealed class VirtualizingStackPanel
+    public class VirtualizingStackPanel
      : Microsoft.UI.Xaml.Controls.Primitives.OrientedVirtualizingPanel
     {
         public Windows.Foundation.Boolean AreScrollSnapPointsRegular

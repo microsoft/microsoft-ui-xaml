@@ -1048,6 +1048,7 @@ namespace Controls {
     interface IVirtualizingPanelOverrides;
     interface IVirtualizingPanelProtected;
     interface IVirtualizingStackPanel;
+    interface IVirtualizingStackPanelFactory;
     interface IVirtualizingStackPanelOverrides;
     interface IVirtualizingStackPanelStatics;
     interface IWrapGrid;
