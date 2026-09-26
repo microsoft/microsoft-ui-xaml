@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif
 #include "ItemsControl.g.h"
 #include "ItemsControlAutomationPeer.g.h"
 #include "ItemCollection.g.h"
@@ -1812,7 +1815,12 @@ ItemsControl::PrepareItemContainer(
     _In_ xaml::IDependencyObject* pContainer,
     _In_ IInspectable* pItem)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::PrepareContainerStart(pContainer ? reinterpret_cast<uint64_t>(static_cast<DependencyObject*>(pContainer)->GetHandle()) : 0);
+#else
     TracePrepareContainerBegin();
+#endif
+
     HRESULT hr = S_OK;
     ctl::ComPtr<IGroupItem> spGroupItem;
 
@@ -1842,7 +1850,11 @@ ItemsControl::PrepareItemContainer(
     }
 
 Cleanup:
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::PrepareContainerStop();
+#else
     TracePrepareContainerEnd();
+#endif
     RRETURN(hr);
 }
 

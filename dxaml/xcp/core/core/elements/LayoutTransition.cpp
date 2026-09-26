@@ -16,6 +16,7 @@
 #include "CFrame.g.h"
 
 #include <vsm\inc\DynamicTimelineHelper.h>
+#include "XamlProfilerTracing.h"
 
 using namespace DirectUI;
 
@@ -651,7 +652,11 @@ HRESULT CTransition::OnLayoutChanged(_In_ CUIElement* pTarget)
     CLayoutManager* pLayoutManager = NULL;
     LayoutTransitionStorage* pStorage = NULL;
     TransitionTrigger currentTrigger = DirectUI::TransitionTrigger::NoTrigger;
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::ProcessLayoutForTransitionStart(reinterpret_cast<uint64_t>(pTarget));
+#else
     TraceProcessLayoutForTransitionBegin();
+#endif
 
     IFCEXPECT(pTarget);
 
@@ -804,7 +809,11 @@ Cleanup:
     {
         CTransition::SetNextGenerationInformationFromLayout(pTarget, pStorage, pLayoutManager->GetNextLayoutCounter());
     }
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::ProcessLayoutForTransitionStop();
+#else
     TraceProcessLayoutForTransitionEnd();
+#endif
     RRETURN(hr);
 }
 
@@ -1413,7 +1422,11 @@ _Check_return_ HRESULT CTransition::CancelTransitions(_In_ CUIElement* pTarget)
     bool bWasUnloading = false;
     CLayoutTransitionElement* pDestinationElement = NULL;
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::CancelTransitionsStart(reinterpret_cast<uint64_t>(pTarget));
+#else
     TraceCancelTransitionsBegin();
+#endif
 
     // it is expected that storage does not have a valid pointer to the transition at this point
     // since it is removed in RegisterTransition on layoutmanager before calling this method.
@@ -1466,7 +1479,11 @@ _Check_return_ HRESULT CTransition::CancelTransitions(_In_ CUIElement* pTarget)
         }
     }
 Cleanup:
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::CancelTransitionsStop();
+#else
     TraceCancelTransitionsEnd();
+#endif
     RRETURN(hr);
 }
 

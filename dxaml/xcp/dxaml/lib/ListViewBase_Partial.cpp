@@ -5,6 +5,9 @@
 //      ListViewBase displays a rich, interactive collection of items.
 
 #include "precomp.h"
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif
 #include "ListViewBase.g.h"
 #include "ListViewBaseAutomationPeer.g.h"
 #include "ScrollViewer.g.h"
@@ -752,8 +755,15 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
 
     // ETW Trace, we want to raise an ETW event here if we can determine that the configuration
-    // does not allow virtualization to happen
+    // does not allow virtualization to happen. Gate on whichever provider this build emits to:
+    // the profiler provider when XAMLPROFILER_ENABLED, the retail Microsoft-Windows-XAML provider
+    // otherwise. A profiler-only session never enables the retail provider, so gating solely on
+    // EventEnabledVirtualizationIsEnabledByLayoutInfo() would drop the profiler event.
+#ifdef XAMLPROFILER_ENABLED
+    if (XamlProfilerTracing::IsEnabled())
+#else
     if (EventEnabledVirtualizationIsEnabledByLayoutInfo())
+#endif
     {
         BOOLEAN isVirtualizationActive = TRUE;
         ctl::ComPtr<IPanel> spItemsPanel;
@@ -785,6 +795,10 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
             }
             ctl::ComPtr<xaml::IDependencyObject> spParent;
             IFC(static_cast<ListViewBase*>(this)->get_Parent(&spParent));
+#ifdef XAMLPROFILER_ENABLED
+            (void)isVirtualizationActive; // consumed by the retail event; the profiler copy carries the element only
+            XamlProfilerTracing::VirtualizationIsEnabledByLayout(reinterpret_cast<uint64_t>(GetHandle()));
+#else
             TraceVirtualizationIsEnabledByLayoutInfo1(
                 isVirtualizationActive,
                 reinterpret_cast<UINT64>(GetHandle()),
@@ -792,6 +806,7 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
                 GetHandle()->GetClassName().GetBuffer(),
                 (spParent) ? static_cast<DependencyObject*>(spParent.Get())->GetHandle()->GetClassName().GetBuffer() : L"NULL"
             );
+#endif
         } // else if not modern panel, we shouldn't trace it here.
     }
 
