@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using OM;
 using System;
@@ -30,7 +30,7 @@ namespace Microsoft.UI.Xaml
         internal event Windows.Foundation.TypedEventHandler<FrameworkElement, Windows.Foundation.Object> HighContrastChanged;
 
         [CodeGen(CodeGenLevel.IdlAndStub)]
-        protected void InvalidateViewport()
+        public void InvalidateViewport()
         {
         }
     }
