@@ -62,6 +62,20 @@
     <FoundationPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.19-experimental</FoundationPackageVersion>
     <IXPPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.11-experimental</IXPPackageVersion>
     <!-- ====================================================================================== -->
+    <!-- A mono-build checkout can stage its authoritative package-version file above this repository. -->
+    <WindowsAppSDKPackageVersionProps>$([MSBuild]::GetPathOfFileAbove('WindowsAppSDK.PackageVersion.props', '$(MSBuildThisFileDirectory)..\'))</WindowsAppSDKPackageVersionProps>
+  </PropertyGroup>
+  <Import Project="$(WindowsAppSDKPackageVersionProps)" Condition="'$(WindowsAppSDKPackageVersionProps)' != ''" />
+  <PropertyGroup Condition="'$(WindowsAppSDKPackageVersionProps)' != ''">
+    <FoundationTransportPackageVersion>$(MicrosoftWindowsAppSDKFoundationTransportPackagePackageVersion)</FoundationTransportPackageVersion>
+    <FrameworkUdkPackageVersion>$(MicrosoftFrameworkUdkPackageVersion)</FrameworkUdkPackageVersion>
+    <IxpTransportPackageVersion>$(MicrosoftProjectReunionInteractiveExperiencesTransportPackagePackageVersion)</IxpTransportPackageVersion>
+    <BasePackageVersion>$(MicrosoftWindowsAppSDKBasePackagePackageVersion)</BasePackageVersion>
+    <WinUIDetailsNugetVersion>$(MicrosoftInternalWinUIDetailsPackageVersion)</WinUIDetailsNugetVersion>
+    <FoundationPackageVersion>$(MicrosoftWindowsAppSDKFoundationPackagePackageVersion)</FoundationPackageVersion>
+    <IXPPackageVersion>$(MicrosoftWindowsAppSDKInteractiveExperiencesPackagePackageVersion)</IXPPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
     <!-- It is at this point that we might want our non-product code to be able to use a package version different than the primary configuration -->
     <!-- If so, this would probably be the point at which we would override the above version with what is configured for the app                 -->
     <!-- The package version identifies the targeted package version based on the configured packages. -->
