@@ -10,7 +10,7 @@ namespace MUXControlsTestApp
     // Harness page for the InkToolbar interaction tests. The selectors and toggles let the
     // tests exercise InitialControls, Orientation, ButtonFlyoutPlacement, ruler and stencil
     // state, and observe the active tool without needing any product code changes.
-    [TopLevelTestPage(Name = "InkToolbar Tests")]
+    [TopLevelTestPage(Name = "InkToolbar")]
     public sealed partial class InkToolbarPage : TestPage
     {
         public InkToolbarPage()

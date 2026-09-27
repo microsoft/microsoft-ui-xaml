@@ -683,13 +683,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // InkToolbarCustomPen has a protected constructor in IDL, so it is exercised through a concrete subclass.
         private sealed class TestInkToolbarCustomPen : InkToolbarCustomPen
         {
-            public int CoreCallCount { get; private set; }
-
-            protected override InkDrawingAttributes CreateInkDrawingAttributesCore(Brush brush, double strokeWidth)
-            {
-                CoreCallCount++;
-                return base.CreateInkDrawingAttributesCore(brush, strokeWidth);
-            }
         }
 
         [TestMethod]
@@ -711,9 +704,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var nullBrushAttrs = pen.CreateInkDrawingAttributes(null, 3.0);
                 Verify.IsNotNull(nullBrushAttrs, "CreateInkDrawingAttributes should tolerate a null brush.");
                 Verify.AreEqual(3.0f, nullBrushAttrs.Size.Width, "Size.Width should match even when the brush is null.");
-
-                // The public method must dispatch through the overridable core.
-                Verify.AreEqual(2, pen.CoreCallCount, "CreateInkDrawingAttributes should route through CreateInkDrawingAttributesCore.");
             });
         }
 

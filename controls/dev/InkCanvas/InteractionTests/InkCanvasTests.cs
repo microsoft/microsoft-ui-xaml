@@ -35,7 +35,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void InkCanvasRendersInVisualTree()
         {
-            using (var setup = new TestSetupHelper("InkCanvas"))
+            using (var setup = new TestSetupHelper("InkCanvas Tests"))
             {
                 var inkCanvas = FindElement.ByName("TestInkCanvas");
                 Verify.IsNotNull(inkCanvas, "InkCanvas should be present in the visual tree.");
