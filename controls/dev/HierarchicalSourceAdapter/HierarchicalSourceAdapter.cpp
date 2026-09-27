@@ -103,6 +103,21 @@ void HierarchicalSourceAdapter::ShapeSiblings(ShapingHelpers::ShapeSiblingsFn fn
     Rebuild();
 }
 
+void HierarchicalSourceAdapter::ReleaseCallbacks()
+{
+    // Same reason the setters assert: clearing m_shapeSiblings from inside itself would destroy
+    // the std::function currently executing.
+    AssertNotInShapeSiblings();
+
+    m_childrenSelector = nullptr;
+    m_hasChildrenSelector = nullptr;
+    m_shapeSiblings = nullptr;
+
+    // Deliberately no Rebuild: the caller has already detached the source and dropped the projection
+    // callback, and the three setters' own rebuilds would publish three Resets over rows the
+    // non-hierarchical projection is about to replace wholesale.
+}
+
 void HierarchicalSourceAdapter::ProjectionChanged(std::function<void()> fn){
     m_projectionChanged = std::move(fn);
 }
@@ -146,9 +161,9 @@ winrt::hstring HierarchicalSourceAdapter::ObjectIdentity(winrt::IInspectable con
     return winrt::hstring{ buffer };
 }
 
-winrt::hstring HierarchicalSourceAdapter::MakePathKey(winrt::hstring const& parentPath, winrt::IInspectable const& item)
+winrt::hstring HierarchicalSourceAdapter::MakePathKey(winrt::hstring const& parentPath, winrt::hstring const& itemIdentity)
 {
-    return parentPath + L"/" + ObjectIdentity(item);
+    return parentPath + L"/" + itemIdentity;
 }
 
 bool HierarchicalSourceAdapter::IsNodePathKey(winrt::hstring const& key)
@@ -252,21 +267,58 @@ void HierarchicalSourceAdapter::Rebuild()
         UnsubscribeFromAllNodes();
         m_nodeSubscriptions = std::move(subscriptions);
 
-        PruneExpansionIntent(liveKeys, enumeratedPrefixes);
+        // The index map is built into a LOCAL. Both the reserve and the inserts allocate, and
+        // filling m_indexByPathKey in place means a failure part-way leaves a published map that
+        // describes only some of the published descriptors -- worse than either the old or the new
+        // state, because RowMetadataProvider would resolve some identities and silently miss others.
+        std::unordered_map<winrt::hstring, int32_t> indexByPathKey;
+        indexByPathKey.reserve(descriptors.size());
+        for (size_t i = 0; i < descriptors.size(); ++i)
+        {
+            indexByPathKey.emplace(descriptors[i].PathKey, static_cast<int32_t>(i));
+        }
 
         // Publish the descriptor side-table and the index map BEFORE the Reset, so a consumer that
         // reacts synchronously to the collection change sees metadata that already agrees with the
-        // rows it is being told about.
-        m_descriptors = std::move(descriptors);
-        m_indexByPathKey.clear();
-        m_indexByPathKey.reserve(m_descriptors.size());
-        for (size_t i = 0; i < m_descriptors.size(); ++i)
+        // rows it is being told about. Both hand-offs are moves and cannot throw, so the pair goes
+        // live together or not at all.
+        auto previousDescriptors = std::exchange(m_descriptors, std::move(descriptors));
+        auto previousIndex = std::exchange(m_indexByPathKey, std::move(indexByPathKey));
+        m_indexByItemValid = false;
+
+        // ReplaceAll has two failure modes that want OPPOSITE answers, and the exception cannot tell
+        // them apart. It assigns the container first and raises the single Reset afterwards, so:
+        //   - a throw from the assignment leaves the OLD rows published, and the new metadata has to
+        //     be rolled back or it describes rows nobody can see;
+        //   - a throw out of a consumer's Reset handler happens once the new rows are already live,
+        //     and rolling back there would be the actual corruption -- old metadata over new rows.
+        // So the guard decides on the published row count instead. The count is conclusive: an
+        // assignment that fits in the existing capacity cannot allocate and so cannot throw, meaning
+        // a failed assignment always implies a growth that did not happen, and the old count must
+        // therefore differ from the one we were trying to publish.
+        const auto publishedCount = static_cast<uint32_t>(built.size());
+        auto publishGuard = wil::scope_exit([this, publishedCount, &previousDescriptors, &previousIndex]() noexcept
         {
-            m_indexByPathKey.emplace(m_descriptors[i].PathKey, static_cast<int32_t>(i));
-        }
+            if (m_entries.Size() == publishedCount)
+            {
+                // The rows went in; only a handler objected. The new pair is the coherent one.
+                return;
+            }
+
+            m_descriptors = std::move(previousDescriptors);
+            m_indexByPathKey = std::move(previousIndex);
+            m_indexByItemValid = false;
+        });
 
         // One Reset for the whole projection.
         m_entries.ReplaceAll(built);
+        publishGuard.release();
+
+        // Pruned only once the new projection is actually live. Pruning first would drop intent for
+        // keys the rollback path then brings back, so a node that stayed visible would quietly
+        // resolve to the baseline expansion rather than to what the user chose. Nothing observes
+        // intent during the Reset, so deferring it costs no coherence.
+        PruneExpansionIntent(liveKeys, enumeratedPrefixes);
 
         // resetGuard runs here, publishing into runPending whether a re-entrant request arrived.
     } while (runPending);
@@ -297,8 +349,10 @@ void HierarchicalSourceAdapter::Emit(
             L"structure.");
     }
 
-    const auto path = MakePathKey(parentPath, item);
+    // One identity per node, shared by the path key and the cycle check below. Both need it and it
+    // costs a QI plus a string; MakePathKey takes it rather than recomputing it from the item.
     const auto selfId = ObjectIdentity(item);
+    const auto path = MakePathKey(parentPath, selfId);
 
     // Cycle detection is path-local by construction: the same object under two different parents is
     // not a cycle and stays legal, while an item that is its own ancestor is rejected.
@@ -346,6 +400,14 @@ void HierarchicalSourceAdapter::Emit(
             childrenCollection = nullptr;
             children.clear();
         }
+
+        // Subscribed as soon as the collection exists, NOT only once the node is expanded. Without a
+        // HasChildrenSelector a COLLAPSED node still realizes its children here, purely to answer
+        // expandability. Leaving that collection unobserved means an app removing the last child
+        // while the parent stays collapsed never reaches the adapter, and the row keeps a chevron
+        // that opens onto nothing. The collection was realized either way, so this costs a
+        // subscription, not a materialization.
+        SubscribeToNode(path, childrenCollection, subscriptions);
     };
 
     if (m_hasChildrenSelector)
@@ -408,10 +470,21 @@ void HierarchicalSourceAdapter::Emit(
     // some -- so it is written back here rather than at push time.
     descriptors.back().ChildCount = static_cast<int32_t>(children.size());
 
+    if (children.empty())
+    {
+        // Expandability was promised (by a HasChildrenSelector, or by a child set that has since
+        // emptied) but nothing survives to show: the selector returned none, or ShapeSiblings
+        // filtered them all away. Publishing HasChildren here would draw a chevron on a row with
+        // nothing under it, and IsExpanded would mark it open onto an empty run. It is a leaf for
+        // this publish. The recorded intent is deliberately left alone, so the node re-expands by
+        // itself if children come back.
+        descriptors.back().HasChildren = false;
+        descriptors.back().IsExpanded = false;
+        return;
+    }
+
     // This child set was seen in full, so intent stored beneath it is safe to prune.
     enumeratedPrefixes.insert(path);
-
-    SubscribeToNode(path, childrenCollection, subscriptions);
 
     ancestorIds.insert(selfId);
     for (auto const& child : children)
@@ -617,6 +690,17 @@ bool HierarchicalSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& pa
 
     InvokeShapeSiblings(children);
 
+    if (children.empty())
+    {
+        // The node was marked expandable but has nothing left to show -- the last child was removed
+        // from a collection that raised no notification, or a HasChildrenSelector promised children
+        // the selector no longer returns. Splicing anyway would publish an expanded, empty, still
+        // expandable row that only an unrelated rebuild could clear. Decline instead: the caller's
+        // authoritative Rebuild re-walks the node, sees the empty set, republishes it as a leaf and
+        // restamps the realized rows.
+        return false;
+    }
+
     std::vector<winrt::IInspectable> built;
     std::vector<NodeRow> descriptors;
     std::unordered_set<winrt::hstring> liveKeys;
@@ -712,6 +796,7 @@ void HierarchicalSourceAdapter::InsertRows(
     // consumer that reacts to it must find the descriptor side-table and the index map already
     // agreeing with the rows it is being told about. The reverse order publishes a torn triple.
     m_descriptors.insert(m_descriptors.begin() + index, descriptors.begin(), descriptors.end());
+    m_indexByItemValid = false;
 
     // Shift every tracked index at or after the insertion point. O(visible rows) in integer
     // compares -- the cost RowIdentity documents for the same reason: a hash map keyed by identity
@@ -751,6 +836,7 @@ void HierarchicalSourceAdapter::RemoveRows(int32_t index, int32_t count)
     }
 
     m_descriptors.erase(m_descriptors.begin() + index, m_descriptors.begin() + index + count);
+    m_indexByItemValid = false;
 
     for (auto& entry : m_indexByPathKey)
     {
@@ -785,21 +871,43 @@ HierarchicalSourceAdapter::NodeRow const* HierarchicalSourceAdapter::TryGetNodeR
         return nullptr;
     }
 
-    // Linear over the VISIBLE rows, not the tree: a collapsed subtree contributes nothing to
-    // m_descriptors, so this is bounded by what is on screen plus whatever is expanded above it.
-    // No item->index map is maintained for it because the map would have to be swept on every
-    // splice exactly as m_indexByPathKey is, doubling that cost to serve a lookup the ungrouped
-    // path never performs at all.
-    void* const target = winrt::get_abi(item);
-    for (auto const& descriptor : m_descriptors)
+    // O(1) against a cache rebuilt lazily after any mutation, rather than the O(visible rows) scan
+    // this used to be. The scan was not expensive by itself, but the grouped hierarchical path
+    // performs it once per row, and an identity-index rebuild performs it once per row per row.
+    EnsureItemIndex();
+
+    const auto found = m_indexByItem.find(winrt::get_abi(item));
+    if (found == m_indexByItem.end() ||
+        found->second < 0 ||
+        static_cast<size_t>(found->second) >= m_descriptors.size())
     {
-        if (winrt::get_abi(descriptor.Item) == target)
+        return nullptr;
+    }
+
+    return &m_descriptors[static_cast<size_t>(found->second)];
+}
+
+void HierarchicalSourceAdapter::EnsureItemIndex() const
+{
+    if (m_indexByItemValid)
+    {
+        return;
+    }
+
+    m_indexByItem.clear();
+    m_indexByItem.reserve(m_descriptors.size());
+
+    // Front to back with first-match-wins, which is what the linear scan answered: an object that
+    // appears at two places in the tree resolves to its topmost row, as it always has.
+    for (size_t i = 0; i < m_descriptors.size(); ++i)
+    {
+        if (auto const& descriptorItem = m_descriptors[i].Item)
         {
-            return &descriptor;
+            m_indexByItem.emplace(winrt::get_abi(descriptorItem), static_cast<int32_t>(i));
         }
     }
 
-    return nullptr;
+    m_indexByItemValid = true;
 }
 
 bool HierarchicalSourceAdapter::TryGetIndexForPathKey(winrt::hstring const& pathKey, int32_t& index) const{

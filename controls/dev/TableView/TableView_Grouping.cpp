@@ -443,18 +443,28 @@ void TableView::FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt
 
 void TableView::ExpandAllGroups()
 {
-    SetAllGroupsExpansion(true);
+    SetBulkExpansion(true, BulkExpansionAxis::Groups);
 }
 
 void TableView::CollapseAllGroups()
 {
-    SetAllGroupsExpansion(false);
+    SetBulkExpansion(false, BulkExpansionAxis::Groups);
 }
 
-// Bulk counterpart of ApplyGroupExpansionByIdentity. No UIA callout to unwind here - the caller is
-// the app - so this runs inline, but it still has to coalesce behind an in-flight edit for the same
-// reason: the edit sits over a row that the reshape is about to move.
-void TableView::SetAllGroupsExpansion(bool expand)
+void TableView::ExpandAllRows()
+{
+    SetBulkExpansion(true, BulkExpansionAxis::Rows);
+}
+
+void TableView::CollapseAllRows()
+{
+    SetBulkExpansion(false, BulkExpansionAxis::Rows);
+}
+
+// Bulk counterpart of ApplyGroupExpansionByIdentity, for either axis. No UIA callout to unwind here
+// - the caller is the app - so this runs inline, but it still has to coalesce behind an in-flight
+// edit for the same reason: the edit sits over a row that the reshape is about to move.
+void TableView::SetBulkExpansion(bool expand, BulkExpansionAxis axis)
 {
     if (!m_tableViewSourceRowMetadata)
     {
@@ -465,27 +475,36 @@ void TableView::SetAllGroupsExpansion(bool expand)
     {
         if (m_editState == EditState::Ending)
         {
-            QueueCoalescedEditReshape([this, expand]()
+            QueueCoalescedEditReshape([this, expand, axis]()
             {
-                SetAllGroupsExpansion(expand);
+                SetBulkExpansion(expand, axis);
             });
         }
         return;
     }
 
+    // Captured for both axes: expanding the rows of a grouped tree reshapes the row stream under
+    // the headers, which recycles the focused header container just as a group toggle does.
     auto const focusedGroupIdentity = CaptureFocusedGroupHeaderForRestore();
 
     bool changed = false;
     try
     {
-        if (expand)
+        switch (axis)
         {
-            m_tableViewSourceRowMetadata->ExpandAllGroups();
+        case BulkExpansionAxis::Groups:
+            expand
+                ? m_tableViewSourceRowMetadata->ExpandAllGroups()
+                : m_tableViewSourceRowMetadata->CollapseAllGroups();
+            break;
+
+        case BulkExpansionAxis::Rows:
+            expand
+                ? m_tableViewSourceRowMetadata->ExpandAllRows()
+                : m_tableViewSourceRowMetadata->CollapseAllRows();
+            break;
         }
-        else
-        {
-            m_tableViewSourceRowMetadata->CollapseAllGroups();
-        }
+
         changed = true;
     }
     catch (...)
@@ -498,6 +517,9 @@ void TableView::SetAllGroupsExpansion(bool expand)
     if (changed)
     {
         RefreshRealizedRowHierarchyState();
+
+        // Raised for both axes: a UIA client's view of the table changed shape either way, and
+        // under a grouped tree a row-axis expansion changes what each group contains.
         RaiseGroupStructureChanged();
     }
 

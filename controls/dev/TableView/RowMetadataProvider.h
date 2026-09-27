@@ -66,6 +66,8 @@ public:
     // Bulk group commands. No-ops when the source is not grouped.
     void ExpandAllGroups() override;
     void CollapseAllGroups() override;
+    void ExpandAllRows() override;
+    void CollapseAllRows() override;
 
     bool IsHierarchicalSource() const override
     {

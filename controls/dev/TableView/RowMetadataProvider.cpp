@@ -512,15 +512,11 @@ winrt::com_ptr<GroupedEntry> RowMetadataProvider::TryGetGroupHeaderEntry(int32_t
 
 void RowMetadataProvider::ExpandAllGroups()
 {
-    // Both, when both exist. Under the composed projection "expand all" that left every tree node
-    // collapsed would look broken: the user asked for everything open, and the groups alone are
-    // only half the expandable surface. The hierarchy goes first so the groups are re-sliced from
-    // a fully-expanded tree rather than being expanded over a stale slice.
-    if (m_hierarchicalAdapter)
-    {
-        m_hierarchicalAdapter->ExpandAll();
-    }
-
+    // GROUPS only, even under the composed projection. A group header opens a bucket whose rows the
+    // grouped adapter already holds, so this is bounded by the number of groups. Driving the
+    // hierarchy from here as well would move the tree's expansion baseline, and that realizes every
+    // node the children selector can reach -- the whole point of the lazy walk, spent by an app that
+    // only asked for its headers. Tree nodes have their own verb; see ExpandAllRows.
     if (m_groupedAdapter)
     {
         m_groupedAdapter->ExpandAll();
@@ -529,14 +525,31 @@ void RowMetadataProvider::ExpandAllGroups()
 
 void RowMetadataProvider::CollapseAllGroups()
 {
-    if (m_hierarchicalAdapter)
-    {
-        m_hierarchicalAdapter->CollapseAll();
-    }
-
     if (m_groupedAdapter)
     {
         m_groupedAdapter->CollapseAll();
+    }
+}
+
+void RowMetadataProvider::ExpandAllRows()
+{
+    // The expensive one, and deliberately so: moving the hierarchy baseline realizes every node the
+    // children selector can reach. The cost is inherent to "expand every node" over a materialized
+    // row axis; what A3 fixed is that an app now only pays it when it asks for it by name.
+    //
+    // Under the composed projection this does NOT also open the group headers. A node that becomes
+    // visible inside a collapsed bucket stays behind that bucket, which is what the header means.
+    if (m_hierarchicalAdapter)
+    {
+        m_hierarchicalAdapter->ExpandAll();
+    }
+}
+
+void RowMetadataProvider::CollapseAllRows()
+{
+    if (m_hierarchicalAdapter)
+    {
+        m_hierarchicalAdapter->CollapseAll();
     }
 }
 

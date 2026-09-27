@@ -329,6 +329,11 @@ private:
 
     ShapingHelpers::ChildrenFn m_childrenSelector{ nullptr };
     ShapingHelpers::HasChildrenFn m_hasChildrenSelector{ nullptr };
+    // Set by the children verbs, consumed by ApplyShapingChange. The hierarchy axis re-projects
+    // rather than filtering/bucketing/sorting, so it has no description in the pipeline spec and
+    // the spec diff cannot report it. Survives a shaping batch: the batch's own flag only defers
+    // the apply, it does not consume this one.
+    bool m_hierarchyAxisDirty{ false };
     // The shaped ROOT sibling set handed to the adapter. Separate from m_rows because m_rows stays
     // the flat shaped projection of every visible row, while this is only the top level.
     winrt::IObservableVector<winrt::IInspectable> m_hierarchySource{ nullptr };

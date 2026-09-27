@@ -535,10 +535,24 @@ void TableViewRow::SetHierarchyStateInternal(int32_t level, bool isExpandable, b
     // connected client the provider it holds genuinely now describes a different expansion state.
     const winrt::ExpandCollapseState oldState = HierarchyExpandCollapseState();
 
-    // Publish through the DPs so an app template (or a peer) can bind to them.
-    Level(level);
-    IsExpandable(isExpandable);
-    IsExpanded(isExpanded);
+    // Publish through the DPs so an app template (or a peer) can bind to them. Guarded on
+    // inequality: the generated setters box the value before SetValue, so an unguarded write costs
+    // an allocation per property per preparation, and a recycled row re-prepared onto the same node
+    // -- the common case while scrolling -- writes three values that have not changed.
+    if (Level() != level)
+    {
+        Level(level);
+    }
+
+    if (IsExpandable() != isExpandable)
+    {
+        IsExpandable(isExpandable);
+    }
+
+    if (IsExpanded() != isExpanded)
+    {
+        IsExpanded(isExpanded);
+    }
 
     // Unconditionally, even when the three values are unchanged: the indent also depends on the
     // TableViewRowIndentSize resource and on whether the source is grouped, either of which can

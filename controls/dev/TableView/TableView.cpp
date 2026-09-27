@@ -986,6 +986,7 @@ void TableView::RefreshRowsPipeline()
 
         UpdateEmptyStateCollectionChangedSubscription();
         UpdateEmptyState();
+        UpdateRowHierarchyResetSubscription();
 
         // Re-point selection at the new source. SelectionModel::Source clears unconditionally, so a
         // swap always drops the selection; then drain anything requested before a source existed.
@@ -1006,6 +1007,85 @@ void TableView::OnTableViewSourceProjectionChanged()
     }
 
     RefreshRowsPipeline();
+
+    // The pipeline above only re-points the repeater when the projected view OBJECT changed; a
+    // verb that rewrites the projection in place (declaring or retracting a hierarchy over the same
+    // view) tears nothing down, so no row is re-prepared and every realized row keeps the level and
+    // chevron it was stamped with under the previous shape. Deferred, because the repeater has not
+    // necessarily reconciled the new shape at the moment this notification is raised.
+    QueueRefreshRealizedRowHierarchyState();
+}
+
+void TableView::UpdateRowHierarchyResetSubscription()
+{
+    winrt::ItemsSourceView view{ nullptr };
+    if (auto const repeater = m_rowsRepeater.get())
+    {
+        view = repeater.ItemsSourceView();
+    }
+
+    if (m_rowHierarchyResetRevoker && SameInspectableIdentity(view, m_rowHierarchyResetView))
+    {
+        return;
+    }
+
+    // auto_revoke drops the prior source's subscription.
+    m_rowHierarchyResetRevoker = {};
+    m_rowHierarchyResetView = nullptr;
+
+    if (view)
+    {
+        m_rowHierarchyResetRevoker = view.CollectionChanged(
+            winrt::auto_revoke, { this, &TableView::OnRowsSourceResetForHierarchy });
+        m_rowHierarchyResetView = view;
+    }
+}
+
+void TableView::OnRowsSourceResetForHierarchy(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::NotifyCollectionChangedEventArgs& args)
+{
+    // Reset ONLY. An expand/collapse splices rows in and out, and every realized row it affects
+    // either moves index (ElementIndexChanged restamps it) or is the toggled row itself (already
+    // restamped by the verb) -- restamping on those would be pure overhead on the hot path. A Reset
+    // is the projection saying "every index you hold may now describe a different node", which is
+    // exactly the case nothing else covers: a rebuild that republishes metadata for the same rows,
+    // such as a node whose last child was removed while it was collapsed.
+    if (!args || args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    {
+        return;
+    }
+
+    QueueRefreshRealizedRowHierarchyState();
+}
+
+void TableView::QueueRefreshRealizedRowHierarchyState()
+{
+    // Deferred and coalesced: the notifications that bring us here are raised from inside the
+    // projection's own rebuild, before the repeater has reconciled it. Reading element indices then
+    // would stamp one row's level onto another, and a rebuild can raise several notifications.
+    if (m_rowHierarchyRefreshQueued)
+    {
+        return;
+    }
+    m_rowHierarchyRefreshQueued = true;
+
+    auto weakThis = get_weak();
+    if (auto const queue = winrt::DispatcherQueue::GetForCurrentThread())
+    {
+        queue.TryEnqueue([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->m_rowHierarchyRefreshQueued = false;
+                strongThis->RefreshRealizedRowHierarchyState();
+            }
+        });
+    }
+    else
+    {
+        m_rowHierarchyRefreshQueued = false;
+    }
 }
 
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)

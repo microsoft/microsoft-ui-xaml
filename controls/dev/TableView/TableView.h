@@ -352,6 +352,18 @@ public:
     // index is never re-prepared, so it would otherwise keep the state it had before the toggle.
     void RefreshRealizedRowHierarchyState();
 
+    // Deferred form, for the edges where the notification arrives while the repeater has not yet
+    // reconciled: element indices are only trustworthy once it has, and a stale index would stamp
+    // one row's level onto another. Coalesced, so a burst of notifications costs one pass.
+    void QueueRefreshRealizedRowHierarchyState();
+
+    // Watches the projected row view for the wholesale-change notification. Rewired whenever the
+    // pipeline re-reads the view, on the same identity-guard pattern as the selection detectors.
+    void UpdateRowHierarchyResetSubscription();
+    void OnRowsSourceResetForHierarchy(
+        const winrt::IInspectable& sender,
+        const winrt::NotifyCollectionChangedEventArgs& args);
+
     // For the automation peers, which cannot reach the private members. Both read the model.
     int32_t SelectedIndexInternal() const;
     winrt::IInspectable SelectedItemInternal() const;
@@ -373,9 +385,11 @@ public:
     void ToggleGroupExpansion(winrt::UIElement const& container);
     void SetGroupExpansion(winrt::UIElement const& container, bool expand);
 
-    // Public grouping commands (from TableView IDL).
+    // Public bulk expansion commands (from TableView IDL), one pair per axis.
     void ExpandAllGroups();
     void CollapseAllGroups();
+    void ExpandAllRows();
+    void CollapseAllRows();
 
     // The peer resolves the row index of its header through the repeater rather than a tree walk.
     winrt::ItemsRepeater GetRowsRepeaterForPeer() const { return m_rowsRepeater.get(); }
@@ -726,7 +740,16 @@ private:
     void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired);    void QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired);
     void ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation);
     void RaiseGroupStructureChanged();
-    void SetAllGroupsExpansion(bool expand);
+
+    // Which expandable axis a bulk command drives. Both axes share the edit-coalescing, focus
+    // restore and restamping machinery; only the verb they hand the metadata provider differs.
+    enum class BulkExpansionAxis
+    {
+        Groups,
+        Rows,
+    };
+
+    void SetBulkExpansion(bool expand, BulkExpansionAxis axis);
 
     // Keyboard-driven group toggle loses focus without this: the Enter/Space toggle defers a
     // structural reshape that recycles the focused header container, dropping focus (and its
@@ -825,6 +848,12 @@ private:
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
     winrt::ItemsSourceView::CollectionChanged_revoker m_emptyStateCollectionChangedRevoker{};
+    // Hierarchy metadata can be rewritten without the row set changing (a node losing its last
+    // child, a hierarchy declared or retracted over the same items). Nothing re-prepares a row in
+    // that case, so this subscription is the only edge that tells realized rows to re-read.
+    winrt::ItemsSourceView::CollectionChanged_revoker m_rowHierarchyResetRevoker{};
+    winrt::ItemsSourceView m_rowHierarchyResetView{ nullptr };
+    bool m_rowHierarchyRefreshQueued{ false };
     // ActualThemeChanged refreshes imperatively-resolved brushes that ItemsRepeater rows do not re-pump.
     winrt::event_token m_actualThemeChangedToken{};
 

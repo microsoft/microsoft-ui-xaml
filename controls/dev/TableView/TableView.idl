@@ -607,16 +607,27 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
 
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs> SelectionChanged;
 
-    // ----- Grouping commands -----
+    // ----- Bulk expansion commands -----
     // Expands or collapses every group in one batch. Individual groups are expanded and collapsed
     // through the group header's ExpandCollapse pattern or by clicking the header itself; these
     // are the programmatic bulk counterparts. Both are no-ops when the source is not grouped.
     //
-    // These also drive a HIERARCHICAL source (TableViewSource.WithChildren), where the unit is a
-    // node rather than a group. The names are kept because the mechanism is the same expansion
-    // model, and a source is never both grouped and hierarchical.
+    // GROUPS ONLY. A source CAN be both grouped and hierarchical (TableViewSource.GroupBy composed
+    // with WithChildren), and under that projection these open and close the headers while leaving
+    // every tree node's expansion alone.
     void ExpandAllGroups();
     void CollapseAllGroups();
+
+    // The hierarchy counterpart: expands or collapses every NODE of a hierarchical source
+    // (TableViewSource.WithChildren). No-ops when the source is not hierarchical.
+    //
+    // Separate verbs rather than one "expand everything", because the two axes cost different
+    // things. A group header opens a bucket whose rows already exist; a node's expansion calls the
+    // app's children selector and materializes that subtree. ExpandAllRows therefore realizes every
+    // node the selector can reach -- unavoidable for "expand every node" over a materialized row
+    // axis, and the reason it is not folded into ExpandAllGroups.
+    void ExpandAllRows();
+    void CollapseAllRows();
 
 
     // ----- Sorting -----

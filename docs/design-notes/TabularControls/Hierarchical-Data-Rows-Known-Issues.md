@@ -99,7 +99,7 @@ adapter exposes only per-node `SetNodeExpanded`, plus `ExpandAll`/`CollapseAll` 
 recursive expansion of a lazily materialized subtree is new adapter work, and it is entangled with
 A3 below, which has to decide what bulk expansion over a lazy tree should mean in the first place.
 
-## A3 · Bulk group commands drive the row axis and defeat lazy loading
+## A3 · Bulk group commands drive the row axis and defeat lazy loading — FIXED
 
 **Impact:** blocking · **Area:** public API, performance · `TableView.idl:584`
 
@@ -125,6 +125,32 @@ hierarchical" (`TableView.idl:584-586`), while the grouped-hierarchical projecti
 and restrict the group verbs to the grouped adapter. Under a grouped hierarchical source, group
 verbs affect headers and row verbs affect nodes. Correct the IDL comment. Resolve this while the
 surface is still `[MUX_PREVIEW]`.
+
+**Fixed.** `TableView.ExpandAllRows()` / `CollapseAllRows()` were added to the IDL and routed
+through a new `ExpandAllRows` / `CollapseAllRows` pair on `ITableViewRowMetadataProvider` to the
+hierarchical adapter alone; `ExpandAllGroups` / `CollapseAllGroups` now reach only the grouped
+adapter. Under the composed projection the axes are independent: group verbs open and close
+buckets, row verbs expand and collapse nodes, and a node made visible inside a collapsed bucket
+stays behind that bucket, which is what the header means. This also brings the surface back in line
+with the design document, whose API table specified these four verbs all along.
+
+`SetAllGroupsExpansion` became `SetBulkExpansion(bool, BulkExpansionAxis)` rather than growing a
+parallel copy: the edit-coalescing, the focused-header capture/restore and the post-change
+restamping apply to both axes unchanged, and only the verb handed to the metadata provider differs.
+The structure-changed event is raised for both, because a row-axis expansion under grouping changes
+what each group contains.
+
+Two comments were corrected alongside. `TableView.idl` claimed "a source is never both grouped and
+hierarchical", which the grouped-hierarchical projection contradicts, and `TableViewSource.idl`
+pointed apps at `ExpandAllGroups()` to start a tree expanded.
+
+Verified at runtime with a call-counting children selector plus a has-children predicate, over a
+source that is both grouped and hierarchical, so expandability costs no enumeration and every call
+is a real materialization. `CollapseAllGroups` then `ExpandAllGroups` moved the visible rows 5 → 0 →
+5 with **zero** selector calls and no node expanded — before the fix this walked the whole tree.
+`ExpandAllRows` then cost 9 calls and produced 28 rows to level 5 with the headers still open, and
+`CollapseAllRows` returned to the 5 roots without closing them. The same pair behaves identically
+after `ClearGroupBy()`.
 
 ## A4 · The toggled row is not restamped after an expand or collapse — FIXED
 
@@ -152,7 +178,7 @@ notification would make the repeater discard and re-realize a container that is 
 valid. Verified in the sample: an expanded root now reports `IsExpanded=true` immediately, and a
 second `Expand()` in the same client turn is a no-op rather than a second toggle.
 
-## A5 · Child collections realized for a collapsed row are not observed
+## A5 · Child collections realized for a collapsed row are not observed — FIXED
 
 **Impact:** blocking · **Area:** correctness · `HierarchicalSourceAdapter.cpp:397`
 
@@ -168,6 +194,34 @@ rebuild.
 **Resolution.** Subscribe to any child collection realized for the purpose of computing
 expandability, refreshing metadata only on change; or recompute expandability on expansion when the
 realized child count turns out to be zero.
+
+**Resolved.** Both halves, because either alone leaves a hole.
+
+1. `Emit`'s `realizeChildren` lambda now calls `SubscribeToNode` itself, so a collection is observed
+   the moment it is realized rather than only once its owner is expanded. The expanded path's own
+   `SubscribeToNode` call was removed — the lambda is idempotent, so the node is still subscribed
+   exactly once. This costs a subscription, never a materialization: the only nodes newly subscribed
+   are those whose children were already enumerated to answer expandability.
+2. `Emit` now clamps a node whose realized-and-shaped child set is empty to a leaf
+   (`HasChildren=false`, `IsExpanded=false`) instead of publishing an expanded, empty, expandable
+   row. This covers the case a subscription cannot: a has-children predicate that promises children
+   the selector no longer returns, and a `ShapeSiblings` filter that removes every child.
+3. `TryApplyExpansionSplice` declines (returns `false`) when the children it realizes are empty,
+   handing the node to the caller's authoritative `Rebuild` rather than splicing an expansion with
+   nothing in it. The recorded intent is deliberately left alone in all three paths, so a node
+   re-expands by itself if its children come back.
+
+Verified in the sample. Clearing a collapsed node's children in no-predicate mode now reaches the
+adapter and republishes the node as a leaf (`src[L1+]` → `src[L1-]`). Expanding a node whose
+children were emptied while collapsed leaves it a non-expandable leaf with the row count unchanged
+(5 → 5) instead of producing an expanded empty row. Clearing an *expanded* node's children still
+removes its child rows and drops its chevron, and an untouched folder still expands normally to its
+full subtree — so neither the clamp nor the splice decline costs a healthy expansion.
+
+One residue, which is A20 rather than this finding: the chevron on the emptied collapsed row keeps
+drawing until something re-prepares that row. The adapter's metadata is already correct at that
+point — forcing a reshape restamps the row to a leaf immediately. **Fixed under A20**; the same
+case now reads `L2.` (leaf, no chevron) with no intervening verb.
 
 ## A6 · Duplicate descendant objects bypass row-identity validation
 
@@ -223,7 +277,7 @@ rows to be re-prepared, which was already true of every neighbouring metric in t
 Verified in the sample, which overrides the resource to 24: leading text sits at x = 25 for level 1
 and x = 49 for level 2, and stays correct through expand-all to five levels.
 
-## A8 · Grouped hierarchical row metadata is resolved by linear search
+## A8 · Grouped hierarchical row metadata is resolved by linear search — FIXED
 
 **Impact:** important · **Area:** performance · `RowMetadataProvider.cpp:341`
 
@@ -240,7 +294,26 @@ trees.
 keyed by canonical `IUnknown` and updated alongside `m_indexByPathKey`; or carry descriptor metadata
 into the grouped slices so the metadata provider never searches by item.
 
-## A9 · Unchanged hierarchy properties are written on every row preparation
+**Resolved** in the adapter, with one deliberate departure from the suggestion above: the map is a
+LAZY cache (`m_indexByItem` plus `m_indexByItemValid`), not a second exact index. Every mutation site
+— the `Rebuild` publish, its rollback, `InsertRows` and `RemoveRows` — sets one bool, and the next
+lookup rebuilds the map from `m_descriptors` in a single O(V) pass. Keeping it exact instead would
+add a second index sweep to every splice, next to the one `m_indexByPathKey` already pays, to serve a
+lookup the ungrouped path never performs; the lazy form pays O(V) once per mutation rather than O(V)
+per lookup, which is what turns the identity-index rebuild from O(V²) into O(V).
+
+Two properties are preserved exactly, so this is a cost change and not a behaviour change: the map is
+keyed by the same raw ABI pointer the scan compared, and it is filled front to back with
+first-match-wins, so an object that legitimately appears twice in the tree still resolves to its
+topmost row.
+
+Verified in the sample on a grouped hierarchy (group by Folders/Files, has-children predicate on).
+`ExpandAllRows` produced the full 28-row tree with every level resolved through the new lookup
+(L1 → L5, chevrons and expanded states correct), a level-3 node stayed selected across both a
+descending re-sort and a `ClearSort` — that is the identity index being rebuilt and re-anchored
+through this path twice — and `CollapseAllRows` returned to the 5 roots under their two headers.
+
+## A9 · Unchanged hierarchy properties are written on every row preparation — FIXED
 
 **Impact:** important · **Area:** performance · `TableViewRow.cpp:528`
 
@@ -252,7 +325,17 @@ against equal values.
 **Resolution.** Guard each property write on inequality. `ApplyHierarchyAffordance()` must stay
 unconditional, because the indent depends on state outside the row.
 
-## A10 · Path identity is computed twice for every emitted node
+**Fixed.** Each of the three writes in `SetHierarchyStateInternal` is now guarded on inequality.
+`ApplyHierarchyAffordance()` stays unconditional for the reason above, and the existing comment
+already records it. The saving is the boxing, not the notification: `SetValue` suppresses an equal
+write's change callback but the generated setter has already allocated by the time it gets there.
+Verified at runtime by watching the three DPs on a realized row through
+`RegisterPropertyChangedCallback` across an expand, two full reshapes (`Sort` then `ClearSort`,
+each of which re-prepares every realized row) and a collapse: `Level` and `IsExpandable` reported
+zero notifications throughout, `IsExpanded` reported exactly the two real transitions, and the
+dumped level/expandability markers were unchanged from before the guard.
+
+## A10 · Path identity is computed twice for every emitted node — FIXED
 
 **Impact:** minor · **Area:** performance · `HierarchicalSourceAdapter.cpp:151`
 
@@ -263,7 +346,20 @@ cost twice during a rebuild or a large expansion, in addition to the O(depth) pa
 **Resolution.** Compute the identity once in `Emit()` and pass it to a
 `MakePathKey(parentPath, selfId)` overload, reusing it for cycle detection.
 
-## A11 · Clearing the hierarchy leaves the application's delegates rooted
+**Fixed.** `MakePathKey` now takes the identity string instead of the item, and `Emit` computes
+`ObjectIdentity(item)` once and feeds it to both the path key and the path-local cycle check. It is
+a replacement rather than an overload: the item-taking form had exactly one caller, and keeping it
+would leave the cheaper contract optional for the next one. Each emitted node now pays one QI for
+`IUnknown` and one string instead of two; the O(depth) concatenation is inherent to a path key and
+is unchanged.
+
+Verified at runtime that the keys are still the same keys — a wrong identity would show up as
+expansion intent landing on no row. Nested expansion reached level 4 (`src` → `controls` →
+`TableView` → `Automation`), `ExpandAllGroups` produced 28 rows to level 5 with zero unexpanded
+expandables, collapsing a single expanded node removed exactly its own subtree (28 → 14), and
+`CollapseAllGroups` returned the original five roots.
+
+## A11 · Clearing the hierarchy leaves the application's delegates rooted — FIXED
 
 **Impact:** important · **Area:** lifetime · `ShapedItemsSource.cpp:1597`
 
@@ -278,7 +374,30 @@ until the source is destroyed, so clearing the hierarchy does not release the ap
 **Resolution.** Clear the adapter's callbacks while it is detached, or reset the adapter once the
 callbacks held by row metadata have been safely released.
 
-## A12 · A rebuild can publish inconsistent metadata if an allocation fails
+**Fixed.** The adapter grew `ReleaseCallbacks()`, which clears the children selector, the
+has-children predicate and the sibling-shaping callback in one step, and
+`ReleaseHierarchyProjection()` calls it after dropping the projection callback and detaching the
+source. Releasing the callbacks rather than resetting `m_hierarchicalAdapter` keeps every existing
+lifetime contract intact: a `RowMetadataProvider` built against the adapter holds it by
+`shared_ptr` and keeps reading descriptors, and the next hierarchy declaration reuses the same
+instance — `EnsureHierarchicalAdapter` reinstalls all three callbacks unconditionally, so there is
+nothing to restore.
+
+`ReleaseCallbacks` deliberately does not rebuild, unlike the three individual setters. Their
+rebuilds are right when a hierarchy is re-declared and wrong when one is retracted: the source is
+already detached, so three walks would publish three empty Resets over rows the non-hierarchical
+projection is about to replace wholesale. It also asserts `AssertNotInShapeSiblings` for the same
+reason `ShapeSiblings` does — clearing the callback from inside itself would destroy the
+`std::function` currently executing.
+
+Verified at runtime with a 64 KB array captured by a children selector and tracked through a
+`WeakReference`: alive after three full GCs while the hierarchy was declared, collected after
+`ClearChildren()` plus three more. Before the fix the same probe stayed alive indefinitely.
+
+**Note.** This exposed a separate defect, filed as A20: after `ClearChildren()` the realized rows
+keep reporting the level and chevron they had while the hierarchy was declared.
+
+## A12 · A rebuild can publish inconsistent metadata if an allocation fails — FIXED
 
 **Impact:** important · **Area:** exception safety · `HierarchicalSourceAdapter.cpp:260`
 
@@ -289,6 +408,24 @@ rows, so `RefreshRowHierarchyState` reads the wrong depth and expandability for 
 
 **Resolution.** Build the new index map locally and swap the descriptors and index immediately before
 replacing the entries, with a scope guard that restores the previous state if the replacement throws.
+
+**Fixed.** The publish sequence in `Rebuild` is now: (1) the index map is built into a *local*
+`unordered_map`, so a throwing `reserve`/`emplace` can no longer leave `m_indexByPathKey` describing
+only part of the new descriptors — the state that is worse than either the old or the new map,
+because some identities resolve and others silently miss; (2) descriptors and index are published
+together through `std::exchange`, which moves and cannot throw, keeping the existing invariant that a
+synchronous `Reset` consumer sees metadata agreeing with the rows; (3) a `wil::scope_exit` decides
+rollback on the *published row count*, not on the exception. The count is conclusive because
+`observable_vector_base::ReplaceAll` assigns first and raises `Reset` afterwards: an assignment that
+fits existing capacity cannot allocate and so cannot throw, meaning a failed assign always implies a
+growth that did not happen. So `m_entries.Size() == built.size()` means the rows went in and only a
+consumer handler objected — the new pair is kept; anything else rolls both back. Finally,
+`PruneExpansionIntent` moved *after* a successful `ReplaceAll`: pruning first would drop intent for
+keys the rollback path brings back, leaving a still-visible node silently resolving to the baseline
+expansion. `RowExpansionModel::RetainOnlyUnder` raises no handler, so the reorder is observationally
+safe. Verified at runtime: expand, reshape via `Sort`/`ClearSort` (both full rebuilds), then
+`ExpandAllGroups` yields 28 rows to level 5 with zero unexpanded expandables, and `CollapseAllGroups`
+returns the original five roots — descriptors and index stay coherent across republish.
 
 ## A13 · Indent and chevron do not mirror in right-to-left layouts — NOT A DEFECT
 
@@ -487,6 +624,64 @@ with no tests. The minimum suite, cheapest and highest-value first:
 | 8 | Accessibility | UIA / UI | `LeafNode` for leaves, expand/collapse through the pattern, 1-based `Level`, sibling-relative position and set size, and exactly one state-change event carrying the correct old and new values. |
 
 Suites 1 to 3 are headless and should land first — they are the regression net for everything else.
+
+---
+
+## A20 · Retracting the hierarchy leaves realized rows stamped as tree nodes — FIXED
+
+**Impact:** important · **Area:** correctness · `TableView.cpp:1498`
+
+Found while verifying A11. After `ClearChildren()` the projection is flat and the row metadata
+correctly reports no hierarchy, but the realized rows keep the `Level` and the chevron they had while
+the hierarchy was declared: a dump immediately after the retraction still reads `L1-` for the former
+folder rows. Any later reshape restamps them (`Sort` then `ClearSort` yields `L0.` for every row), so
+this is stale row state, not stale metadata.
+
+`RefreshRowHierarchyState()` runs only from element-prepared and index-changed. A retraction that
+leaves the row set identical — the common case, since retracting a hierarchy just drops the
+descendants — re-prepares nothing, so nothing restamps the rows. This is the same class of gap A4
+fixed for group expansion, on the declaration axis instead of the expansion axis.
+
+**Resolution.** Call `RefreshRealizedRowHierarchyState()` when the projection kind changes, not only
+when group expansion changes.
+
+Seen a second time while verifying A5, which widens the trigger beyond retraction: a rebuild that
+changes a node's expandability without changing the row set (removing the last child of a collapsed
+node) leaves that row's chevron drawn even though the metadata already reports a leaf. So the fix
+should hang off "the published metadata changed for a realized row", not off retraction alone.
+
+**Resolution (implemented).** Two defects, one symptom. The restamp gap was real, but it was not the
+primary cause: instrumenting the retraction showed the rows were still *correctly* stamped, because
+the projection had never retracted at all.
+
+1. `ShapedItemsSource::SetChildren` / `ClearChildren` mutated only their own selector members and
+   then called `ApplyShapingChange`, which decides everything from the pipeline's spec diff. The
+   hierarchy axis has no description in that spec — it re-projects rather than filtering, bucketing
+   or sorting — so a children verb against an otherwise unchanged shape committed a **no-op delta
+   and returned**. `ClearChildren()` and a re-declared `WithChildren()` were silently doing nothing
+   until some unrelated verb forced a rebuild, which is exactly why a `Sort`/`ClearSort` "fixed" the
+   rows. Fixed with an `m_hierarchyAxisDirty` flag set by both children verbs and consumed by
+   `ApplyShapingChange`, which now treats it as a change and always takes the rebuild path (no
+   in-place splice can convert a flat projection into a hierarchical one). `ClearChildren` against a
+   source with nothing declared still returns early, so it cannot fire a gratuitous Reset.
+2. The restamp gap itself: `TableView::OnTableViewSourceProjectionChanged` now queues
+   `RefreshRealizedRowHierarchyState()`, and a new subscription on the projected row view queues the
+   same pass on a **Reset** — the notification that says "every index you hold may describe a
+   different node". Splices are deliberately excluded: a spliced row either moves index
+   (`ElementIndexChanged` restamps it) or is the toggled row (already restamped by the verb). The
+   pass is deferred through the dispatcher queue and coalesced, because the notification is raised
+   from inside the projection's own rebuild, before the repeater has reconciled it, when element
+   indices cannot be trusted.
+
+**Runtime verification.** Harness on the ungrouped hierarchy page, rows sorted by transformed Y:
+
+| phase | result |
+|---|---|
+| initial | `L1-:src | L1-:assets | L1-:docs | L1.:LICENSE | L1.:version.txt` |
+| after `ClearChildren()` | `L0.` for **all five** rows — level and chevron dropped in place, no intervening verb (was `L1-`) |
+| after `WithChildren(...)` again | `L1-` chevrons restored |
+| expand `src` | `L1+:src | L2-:controls | L2.:pch.h | …` |
+| clear collapsed `controls`'s children | `L2.:controls` — chevron dropped immediately (the A5 residue, gone) |
 
 ---
 

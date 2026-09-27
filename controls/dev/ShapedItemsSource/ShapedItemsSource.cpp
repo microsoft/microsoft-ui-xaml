@@ -147,6 +147,14 @@ void ShapedItemsSource::SetChildren(
     m_childrenSelector = children;
     m_hasChildrenSelector = hasChildren;
 
+    // The hierarchy axis lives here, NOT in the pipeline spec: it does not filter, bucket or sort,
+    // it re-projects. So the spec diff cannot see it, and without this flag a children verb
+    // declared against an otherwise unchanged shape commits a no-op delta and returns, leaving the
+    // projection - and every realized row's level and chevron - describing the previous shape.
+    // Re-declaration always counts as a change, matching every other verb: the selectors are
+    // delegates, so "same shape" is not decidable here.
+    m_hierarchyAxisDirty = true;
+
     // Grouping is NOT retracted. The two axes compose: GroupBy buckets the roots, and each root
     // still expands into its own subtree beneath its bucket's header. See
     // RebuildGroupedHierarchical for the row stream that produces.
@@ -155,8 +163,16 @@ void ShapedItemsSource::SetChildren(
 
 void ShapedItemsSource::ClearChildren()
 {
+    // Nothing declared: genuinely a no-op, so do not fire a Reset that would drop every realized
+    // row for a shape that is already flat.
+    if (!m_childrenSelector && !m_hasChildrenSelector)
+    {
+        return;
+    }
+
     m_childrenSelector = nullptr;
     m_hasChildrenSelector = nullptr;
+    m_hierarchyAxisDirty = true;
     ApplyShapingChange();
 }
 
@@ -215,7 +231,12 @@ void ShapedItemsSource::ApplyShapingChange()
     // change that has already been applied.
     auto const delta = m_pipeline.CommitSpec();
 
-    if (delta.IsNoOp())
+    // Consumed here regardless of the spec delta: the hierarchy axis is invisible to the diff, so
+    // this flag is the only record that the projection kind must change.
+    const bool hierarchyChanged = m_hierarchyAxisDirty;
+    m_hierarchyAxisDirty = false;
+
+    if (delta.IsNoOp() && !hierarchyChanged)
     {
         // Re-declaring the identical shape. The projection already satisfies it, and a rebuild
         // would fire a Reset that drops every realized row for nothing. Reachable only from a
@@ -224,7 +245,9 @@ void ShapedItemsSource::ApplyShapingChange()
         return;
     }
 
-    if (TryApplyShapingDeltaInPlace(delta))
+    // The in-place paths splice the EXISTING projection; none of them can turn a flat projection
+    // into a hierarchical one or back. A hierarchy change therefore always takes the rebuild.
+    if (!hierarchyChanged && TryApplyShapingDeltaInPlace(delta))
     {
         RaiseShapingChanged(true /* reorderOnly */);
         return;
@@ -1601,6 +1624,12 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
         // Callback first: DetachSourceQuietly must not be able to drive a re-slice on the way out.
         m_hierarchicalAdapter->ProjectionChanged(nullptr);
         m_hierarchicalAdapter->DetachSourceQuietly();
+
+        // The adapter is REUSED across hierarchy declarations, so it outlives the one being
+        // retracted here. Its three contract callbacks are app code -- a children selector that
+        // captured a view model roots that view model for the adapter's lifetime. Clearing the
+        // shaping-layer copies (ClearChildren) is not enough; the adapter holds its own.
+        m_hierarchicalAdapter->ReleaseCallbacks();
     }
 
     if (m_hierarchySource)

@@ -106,7 +106,8 @@ runtimeclass TableViewSource
     // Rows start COLLAPSED. That is not the expand/collapse default elsewhere in this control --
     // groups start expanded -- and it is deliberate: a tree that expanded by default would
     // realize every node on first layout, which for a large or lazily-loaded source is the entire
-    // cost the feature exists to avoid. Use TableView.ExpandAllGroups() to start expanded.
+    // cost the feature exists to avoid. Use TableView.ExpandAllRows() to start expanded, accepting
+    // that it realizes every node the children selector can reach.
     //
     // Grouping COMPOSES with hierarchy: GroupBy applies to the ROOTS, so the top level is bucketed
     // under headers and each root still expands into its own subtree beneath its header. A

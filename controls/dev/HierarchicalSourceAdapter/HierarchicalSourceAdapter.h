@@ -77,6 +77,20 @@ public:
     void HasChildrenSelector(ShapingHelpers::HasChildrenFn fn);
     void ShapeSiblings(ShapingHelpers::ShapeSiblingsFn fn);
 
+    // Drops all three contract callbacks in one step, WITHOUT rebuilding.
+    //
+    // The three setters above each end in a Rebuild, which is right when a hierarchy is being
+    // re-declared but wrong when one is being retracted: the caller has already dropped the
+    // projection callback and detached the source, so three more walks would publish three Resets
+    // over rows that the non-hierarchical projection is about to replace anyway.
+    //
+    // This exists because the callbacks are APP code. A children selector that captured a view
+    // model keeps it alive for as long as the adapter does, and the adapter outlives the hierarchy
+    // declaration -- it is reused when the next one arrives. Retracting the hierarchy must
+    // therefore release them explicitly; clearing only the shaping-layer copies leaves the app's
+    // state rooted here.
+    void ReleaseCallbacks();
+
     // "The published projection changed" -- raised ONCE per coherent publish, after the entries,
     // the descriptors and the index map all agree again.
     //
@@ -105,7 +119,7 @@ public:
     // ExpandAll is the single most expensive call on this type: it makes every node the children
     // selector can reach visible, bounded only by the cycle and depth guards below. On a lazy tree
     // it forces realization of the whole thing. That is inherent to "expand everything" over a
-    // materialized axis and is the same exposure ExpandAllGroups already has.
+    // materialized axis and is the same exposure ExpandAllRows already has.
     void ExpandAll();
     void CollapseAll();
 
@@ -276,8 +290,16 @@ private:
     // is the bare prefix "node:", which doubles as the sentinel for "the root sibling set" in
     // enumeratedPrefixes.
     static winrt::hstring ObjectIdentity(winrt::IInspectable const& item);
-    static winrt::hstring MakePathKey(winrt::hstring const& parentPath, winrt::IInspectable const& item);
+
+    // Takes the item's already-computed identity rather than the item. Every caller needs that
+    // identity for something else too -- Emit uses it for path-local cycle detection -- and
+    // recomputing it here would QI for IUnknown and mint a second string per emitted node.
+    static winrt::hstring MakePathKey(winrt::hstring const& parentPath, winrt::hstring const& itemIdentity);
     static winrt::hstring ParentPathOf(winrt::hstring const& pathKey);
+
+    // Rebuilds m_indexByItem from m_descriptors if a mutation has invalidated it. const because
+    // the lookup it serves is const; the cache members are mutable for the same reason.
+    void EnsureItemIndex() const;
 
     winrt::IInspectable m_source{ nullptr };
 
@@ -311,6 +333,24 @@ private:
     // exact rather than approximate, so any detected desync falls back to Rebuild instead of being
     // repaired lazily.
     std::unordered_map<winrt::hstring, int32_t> m_indexByPathKey;
+
+    // Item ABI pointer -> descriptor index, for the ONE lookup that has no path key to offer: the
+    // grouped hierarchical path, where a row's index addresses the grouped axis and the item is the
+    // only handle the two axes share. Without it that lookup is an O(visible rows) scan per row,
+    // and RowMetadataProvider::EnsureIdentityIndex -- which asks for every row's identity in turn --
+    // pays it V times over, making an identity-index rebuild O(V^2).
+    //
+    // Deliberately a LAZY cache rather than a second exact map: every mutation just invalidates it,
+    // and the next lookup rebuilds it in one O(V) pass. Keeping it exact would mean a second index
+    // sweep on every splice, alongside the one m_indexByPathKey already pays, to serve a lookup the
+    // ungrouped path never performs. Rebuilding from m_descriptors in order also reproduces the
+    // scan's first-match-wins answer exactly, which matters when the same object legitimately
+    // appears at two places in the tree.
+    //
+    // Keyed by the raw ABI pointer, matching what the scan it replaces compared. Entries are only
+    // as long-lived as m_descriptors, which owns a strong reference to every item in it.
+    mutable std::unordered_map<void*, int32_t> m_indexByItem;
+    mutable bool m_indexByItemValid{ false };
 
     // Expand/collapse intent, keyed by path so it survives reshapes at every level. Baseline is
     // flipped to collapsed in the constructor; see the note there.
