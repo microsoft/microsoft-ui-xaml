@@ -10,23 +10,20 @@
 #include <cstdint>
 
 // UIA peer for a TableView column header; reports header name, type, identity, and bounds.
-// The peer takes the TableView as its owner so headers can be enumerated before the header
-// templates realize. Because every header peer therefore shares the same owner, the identity
-// the owner would supply is not unique, so this peer derives its own stable per-column
-// RuntimeId and AutomationId from the column instead - see GetRuntimeIdCore.
+// The owner is the actual header cell, shared by focus, tree navigation and TablePattern.
 class TableViewColumnHeaderAutomationPeer :
     public ReferenceTracker<TableViewColumnHeaderAutomationPeer, winrt::implementation::TableViewColumnHeaderAutomationPeerT>
 {
 public:
     TableViewColumnHeaderAutomationPeer(winrt::TableView const& owner, winrt::TableViewColumn const& column);
+    TableViewColumnHeaderAutomationPeer(winrt::FrameworkElement const& header,
+        winrt::TableView const& table, winrt::TableViewColumn const& column);
 
     // IAutomationPeerOverrides
     hstring GetClassNameCore();
     hstring GetNameCore();
+    bool IsEnabledCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
-    // Stable, distinct per-column identity. Both are derived from the column rather than the
-    // shared TableView owner, so headers are individually addressable by assistive technology.
-    winrt::com_array<int32_t> GetRuntimeIdCore();
     hstring GetAutomationIdCore();
     // Reports the column's current sort state, so a screen-reader user can tell a sorted header
     // from an unsorted one without relying on the chevron.
@@ -42,19 +39,13 @@ public:
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
 
-    // Prevent each header from exposing the whole TableView subtree.
-    winrt::Windows::Foundation::Collections::IVector<winrt::AutomationPeer> GetChildrenCore();
-
-    // Resolve bounds from this header's realized cell, not the TableView owner.
-    winrt::Windows::Foundation::Rect GetBoundingRectangleCore();
-    winrt::Windows::Foundation::Point GetClickablePointCore();
-
 private:
     winrt::FrameworkElement GetHeaderElement();
     bool IsSortableColumn();
     int32_t GetColumnIndex();
 
     winrt::weak_ref<winrt::TableViewColumn> m_column{ nullptr };
+    winrt::weak_ref<winrt::TableView> m_table{ nullptr };
     // Captured at construction from the column's stable IUnknown so identity survives the
     // column being released; the peer must not resurrect the column just to report an id.
     std::array<int32_t, 2> m_columnRuntimeIdParts{ 0, 0 };

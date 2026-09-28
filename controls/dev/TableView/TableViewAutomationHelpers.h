@@ -5,6 +5,8 @@
 
 #include <optional>
 #include <string_view>
+#include "TableView.h"
+#include "TableViewCellsPanel.h"
 #include "TableViewColumn.h"
 #include "ResourceAccessor.h"
 
@@ -29,6 +31,26 @@ inline winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceNam
 inline bool IsVisibleColumn(winrt::TableViewColumn const& column)
 {
     return column && column.Visibility() == winrt::Visibility::Visible;
+}
+
+inline winrt::AutomationPeer GetRealizedColumnHeaderPeer(
+    winrt::TableView const& table,
+    winrt::TableViewColumn const& column)
+{
+    if (!table || !IsVisibleColumn(column) ||
+        winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table)
+    {
+        return nullptr;
+    }
+
+    if (auto const host = winrt::get_self<TableView>(table)->GetHeaderHostInternal())
+    {
+        if (auto const header = TableViewCellsPanel::CellForColumn(host, column))
+        {
+            return winrt::FrameworkElementAutomationPeer::CreatePeerForElement(header);
+        }
+    }
+    return nullptr;
 }
 
 // Stringifies a data item for UIA. Shared by the TableView peer's item search and the row peer's
@@ -159,17 +181,27 @@ inline winrt::hstring GetCellContentName(
     return {};
 }
 
-inline winrt::hstring GetCellDisplayText(winrt::FrameworkElement const& cell, bool allowPeerCreation = true)
+inline winrt::FrameworkElement GetCellContentElement(winrt::FrameworkElement const& cell)
 {
     if (!cell)
     {
-        return {};
+        return nullptr;
     }
-    auto content = cell;
     if (auto const border = cell.try_as<winrt::Border>())
     {
-        content = border.Child().try_as<winrt::FrameworkElement>();
+        return border.Child().try_as<winrt::FrameworkElement>();
     }
+    if (auto const grid = cell.try_as<winrt::Grid>(); grid && grid.Tag().try_as<winrt::TableViewColumn>())
+    {
+        auto const children = grid.Children();
+        return children.Size() ? children.GetAt(0).try_as<winrt::FrameworkElement>() : nullptr;
+    }
+    return cell;
+}
+
+inline winrt::hstring GetCellDisplayText(winrt::FrameworkElement const& cell, bool allowPeerCreation = true)
+{
+    auto const content = GetCellContentElement(cell);
     uint32_t remaining = 32;
     return GetCellContentName(content, allowPeerCreation, 8, remaining);
 }

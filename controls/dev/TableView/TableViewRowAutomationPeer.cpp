@@ -250,9 +250,7 @@ bool TableViewRowAutomationPeer::TryGetGroupPosition(int32_t rowIndex, int32_t& 
 }
 
 winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
-    winrt::FrameworkElement const& cell,
-    winrt::TableViewColumn const& column,
-    int32_t visibleColumnIndex)
+    winrt::FrameworkElement const& cell)
 {
     if (!cell)
     {
@@ -282,7 +280,14 @@ winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
             [](CellPeerCacheEntry const& entry) { return !entry.peer || !entry.cell.get(); }),
         m_cellPeerCache.end());
 
-    winrt::AutomationPeer const peer = winrt::make<TableViewCellAutomationPeer>(cell, row, column, visibleColumnIndex);
+    auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(cell);
+    if (!peer)
+    {
+        return nullptr;
+    }
+    // GetChildren normally establishes this relationship, but Grid.GetItem can be
+    // the first and only acquisition route. Connect that same peer before publishing it.
+    peer.SetParent(*this);
     m_cellPeerCache.emplace_back(this, cell, peer);
     return peer;
 }
@@ -383,7 +388,6 @@ winrt::IVector<winrt::AutomationPeer> TableViewRowAutomationPeer::GetChildrenCor
 
     const auto cellChildren = cellsHost.Children();
     const auto count = cellChildren.Size();
-    int32_t visibleColumnIndex = 0;
 
     // Rebuilt wholesale: peers for cells dropped by a rebuild or recycle are released, while a
     // surviving cell keeps the same peer and therefore the same provider identity.
@@ -403,13 +407,12 @@ winrt::IVector<winrt::AutomationPeer> TableViewRowAutomationPeer::GetChildrenCor
             if (auto const cellFE = cellElement.try_as<winrt::FrameworkElement>())
             {
                 // Dedicated cell peers provide names, coordinates, and header references.
-                if (auto const cellPeer = GetOrCreateCellPeer(cellFE, column, visibleColumnIndex))
+                if (auto const cellPeer = GetOrCreateCellPeer(cellFE))
                 {
                     liveCache.emplace_back(this, cellFE, cellPeer);
                     children.Append(cellPeer);
                 }
             }
-            ++visibleColumnIndex;
         }
     }
 

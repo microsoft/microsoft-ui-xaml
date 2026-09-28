@@ -552,9 +552,9 @@ Placement and ownership match the cell path, including leaving an app-set toolti
 
 String content is reported as the header's UIA help text by
 `TableViewColumnHeaderAutomationPeer`, joined with the column's sort state when it has one — the
-header peer is virtual, so it publishes the text itself rather than through
-`AutomationProperties.HelpText`, and it reads the value from the column so the answer does not
-depend on whether the header is currently realized. As with cells, non-string content is
+header peer publishes the text itself rather than through
+`AutomationProperties.HelpText`, and it reads the value from the column rather than the
+tooltip visual. The provider is available once the header is realized. As with cells, non-string content is
 mouse-only: pair it with `Header` text that carries the same information when it matters.
 
 ## TableViewTextColumn class
@@ -737,7 +737,7 @@ These peers expose the table structure to assistive technologies. Cell peers als
 
 Rows report `PositionInSet` / `SizeOfSet` and compose their name from their visible cells, so a virtualized row still announces "row *i* of *n*" and what it contains. When the source is grouped, both values are **relative to the containing group** and exclude the group-header bands, matching `ItemsControlAutomationPeer`. An app-set `AutomationProperties.PositionInSet` / `SizeOfSet` / `Level` always takes precedence over the computed value.
 
-Row and group names honor explicit `AutomationProperties.Name` and `LabeledBy`. For template cells, naming reads the realized visible template rather than stringifying the data object. Layout-wrapper traversal is bounded; a named interactive control describes its own content without also concatenating its inner editors. Column-header set metadata comes from the header element, not the table that owns the synthesized peer.
+Row and group names honor explicit `AutomationProperties.Name` and `LabeledBy`. For template cells, naming reads the realized visible template rather than stringifying the data object. Layout-wrapper traversal is bounded; a named interactive control describes its own content without also concatenating its inner editors. Column-header set metadata comes from the actual header element.
 
 `FindItemByProperty(Name)` returns only an exact public peer name. Data text can identify an unrealized candidate, but its name is checked again after preparation. Arbitrary template or application names cannot be inferred for never-realized items; clients can enumerate with a null property and read each returned peer's name.
 
@@ -745,7 +745,11 @@ Successful text-cell edits notify an already-cached cell provider of changed `Va
 
 Accessible labels name a cell but do not replace its intrinsic text `Value`. For example, a text display labeled "Employee name" still exposes `Al` or `Alice` through ValuePattern, while its accessible name can remain unchanged. Snapshot reads, notification preparation and dispatcher submission are advisory: exceptions from a custom name/label peer are logged and must not prevent beginning or completing an edit. A failed snapshot is discarded rather than partially reused by a later edit.
 
-A cell provider and a column-header provider each keep a stable identity: the row peer owns its cell peers and the TableView peer owns its column-header peers, so tree navigation, `IGridProvider.GetItem` and `ITableItemProvider.GetColumnHeaderItems` all resolve to the same provider for the same element. (`ITableProvider.GetColumnHeaders` is a known pre-existing exception — it returns an empty array because the header peers are never parented into the UIA tree, so the provider lookup it performs yields nothing to return.)
+A cell visual owns its peer through normal `OnCreateAutomationPeer` discovery; the row peer caches that same instance. Both tree enumeration and `IGridProvider.GetItem` connect it to its row before returning it. Child-parent queries and framework automation walks therefore cannot replace the visual's native peer association behind a retained provider. The implementation-only single-child Grid keeps the cell's border chrome and inherited data binding while allowing peer creation to be overridden (`Border` is sealed). Grid-only clients do not need a preliminary tree walk to establish the parent relationship.
+
+Each realized column-header visual owns its `HeaderItem` peer. `ITableProvider.GetColumnHeaders`, `ITableItemProvider.GetColumnHeaderItems`, tree navigation, focus, and hit-testing use that same peer. Names and set metadata honor overrides on the header itself. The existing Grid layout and keyboard/mouse handlers are unchanged; sortable headers expose Invoke on the actual keyboard target. Surviving header visuals retain identity, while a header rebuild creates new visuals and identities; a retained old header cannot invoke sorting on its replacement. No provider is fabricated before header realization. Cell names still include the semantic column name when the header strip is hidden. The preview peer constructor requires a realized header for its column and returns `E_INVALIDARG` before realization or when that column has no header in the table.
+
+Header `IsEnabled` reflects the owning table's effective state and disabled control ancestors between the header visual and the table (including template controls); Invoke rejects a disabled header without changing sort state. Cell header lookup resolves the realized visual independently of the table's peer type, so application-supplied table peers preserve canonical header identity. A cell with no reachable header (including a collapsed or removed column) returns an empty header array.
 
 `ScrollItem` is not implemented explicitly — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a row or cell into view after reaching it through `IGridProvider.GetItem`.
 

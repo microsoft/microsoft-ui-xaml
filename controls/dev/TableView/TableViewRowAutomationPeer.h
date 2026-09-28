@@ -42,10 +42,7 @@ public:
     // Single source of cell-peer identity: GetChildrenCore and TableViewAutomationPeer::GetItem
     // both route through here. UIA compares providers by identity, so a fresh peer per query makes
     // grid addressing and tree navigation disagree and drops Narrator focus on every re-query.
-    winrt::AutomationPeer GetOrCreateCellPeer(
-        winrt::FrameworkElement const& cell,
-        winrt::TableViewColumn const& column,
-        int32_t visibleColumnIndex);
+    winrt::AutomationPeer GetOrCreateCellPeer(winrt::FrameworkElement const& cell);
     winrt::AutomationPeer TryGetCellPeer(winrt::FrameworkElement const& cell);
 
 private:

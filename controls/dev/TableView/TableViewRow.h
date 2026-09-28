@@ -101,7 +101,7 @@ public:
 private:
     // Installs a generated display element as a cell's content, wiring the ContentPresenter Content
     // binding a template column needs. GenerateElement alone is not a complete cell.
-    void AttachCellContent(const winrt::Border& cellWrapper, const winrt::FrameworkElement& cellElement);
+    void AttachCellContent(const winrt::Grid& cellWrapper, const winrt::FrameworkElement& cellElement);
 
     // Drops begin-edit gesture state (recycle, owner change).
     void ResetPressState();
@@ -166,7 +166,7 @@ private:
     // Open cell edit, if any. The display child is parked here rather than regenerated on commit
     // so the cell returns to the exact element (and bindings) it had before the edit.
     tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
-    tracker_ref<winrt::Border> m_editingCellWrapper{ this };
+    tracker_ref<winrt::Grid> m_editingCellWrapper{ this };
     tracker_ref<winrt::FrameworkElement> m_editingElement{ this };
     tracker_ref<winrt::UIElement> m_editingDisplayElement{ this };
     winrt::weak_ref<winrt::TableViewCellAutomationPeer> m_editingAutomationPeer{ nullptr };

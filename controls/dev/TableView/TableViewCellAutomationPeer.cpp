@@ -58,7 +58,7 @@ winrt::IInspectable TableViewCellAutomationPeer::GetPatternCore(winrt::PatternIn
 
 hstring TableViewCellAutomationPeer::GetClassNameCore()
 {
-    // The cell is a Border, so report a stable TableView cell class name.
+    // Keep the logical cell class independent of its implementation-only visual.
     return L"TableViewCell";
 }
 
@@ -112,11 +112,7 @@ winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText()
 
 winrt::hstring TableViewCellAutomationPeer::GetCellValueText()
 {
-    auto content = Owner().try_as<winrt::FrameworkElement>();
-    if (auto const border = content.try_as<winrt::Border>())
-    {
-        content = border.Child().try_as<winrt::FrameworkElement>();
-    }
+    auto const content = GetCellContentElement(Owner().try_as<winrt::FrameworkElement>());
     // ValuePattern describes editable text, not the accessibility label naming that text.
     if (auto const text = content.try_as<winrt::TextBlock>())
     {
@@ -259,27 +255,17 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewCellAutomationPeer::
         {
             if (auto const owner = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
             {
-                // Through the TableView's peer so this cell's header reference and the table's own
-                // header peer are one provider; a client correlates a cell to its column by that
-                // identity.
-                winrt::AutomationPeer headerPeer{ nullptr };
-                if (auto const ownerPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(owner)
-                        .try_as<winrt::TableViewAutomationPeer>())
-                {
-                    headerPeer = winrt::get_self<TableViewAutomationPeer>(ownerPeer)
-                        ->GetOrCreateColumnHeaderPeer(owner, column);
-                }
-
-                if (!headerPeer)
-                {
-                    headerPeer = winrt::make<TableViewColumnHeaderAutomationPeer>(owner, column);
-                }
+                // Resolve the visual's peer even when the app supplies a custom table peer.
+                auto const headerPeer = GetRealizedColumnHeaderPeer(owner, column);
 
                 // A provider array must not contain nulls - UIA marshals every element. An empty
                 // array correctly reports "this cell has no reachable column header".
-                if (auto const provider = ProviderFromPeer(headerPeer))
+                if (headerPeer)
                 {
-                    headers.push_back(provider);
+                    if (auto const provider = ProviderFromPeer(headerPeer))
+                    {
+                        headers.push_back(provider);
+                    }
                 }
             }
         }
