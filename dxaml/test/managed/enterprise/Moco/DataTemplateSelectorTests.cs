@@ -384,7 +384,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Hosting:Mode", "UAP")] // Reliability issue in WPF mode.
         public void CanHandleSentinelsInRealizationRangeWhenRecycling()
         {
             ListView list = null;

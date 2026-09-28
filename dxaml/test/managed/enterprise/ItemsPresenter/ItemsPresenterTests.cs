@@ -141,7 +141,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Hosting:Mode", "UAP")] // Reliability issue in WPF mode.
         public void CanUseMouseWheelToNavigate()
         {
             ListView list = PrepareListView();

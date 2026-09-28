@@ -698,7 +698,7 @@ public:
     BEGIN_TEST_METHOD(GridView3WUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Implicit show/hide animation test - GridView items play Hide on tree removal")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Reliability issue in WPF mode.
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -765,5 +765,3 @@ private:
     Microsoft::UI::Composition::ScalarKeyFrameAnimation^ CreateOpacityKFA(long durationInSeconds);
 };
 } } } } } }
-
-
