@@ -16,11 +16,11 @@
     </DataTemplate>
 
     <DataTemplate x:Key="DatePickerCell" x:DataType="models:Person">
-        <DatePicker Date="{Binding JoinDate, Mode=TwoWay}" IsTabStop="True"/>
+        <DatePicker Date="{Binding JoinDate, Mode=TwoWay}" AutomationProperties.Name="Join date" IsTabStop="True"/>
     </DataTemplate>
 
     <DataTemplate x:Key="DepartmentComboCell" x:DataType="models:Person">
-        <ComboBox SelectedItem="{Binding Department, Mode=TwoWay}" Loaded="OnDepartmentComboBoxLoaded" IsTabStop="True"/>
+        <ComboBox SelectedItem="{Binding Department, Mode=TwoWay}" AutomationProperties.Name="Department" Loaded="OnDepartmentComboBoxLoaded" IsTabStop="True"/>
     </DataTemplate>
 
     <DataTemplate x:Key="DetailsButtonCell" x:DataType="models:Person">
@@ -37,7 +37,7 @@
     </DataTemplate>
 
     <DataTemplate x:Key="ShiftMenuCell" x:DataType="models:Person">
-        <muxc:DropDownButton Content="{Binding ShiftStart}" IsTabStop="True">
+        <muxc:DropDownButton Content="{Binding ShiftStart}" AutomationProperties.HelpText="Shift start" IsTabStop="True">
             <muxc:DropDownButton.Flyout>
                 <MenuFlyout>
                     <MenuFlyoutItem Text="7:00 AM"/>

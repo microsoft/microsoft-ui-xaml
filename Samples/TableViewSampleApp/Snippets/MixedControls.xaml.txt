@@ -1,10 +1,12 @@
-<!-- Host non-text controls (DatePicker, TimePicker, ComboBox, CheckBox)
-     directly inside read-only cells using TableViewTemplateColumn. -->
+<!-- Display-only controls: disabled semantics and OneWay values match the
+     intentionally noninteractive TableViewTemplateColumn example. -->
 
 <Page.Resources>
     <DataTemplate x:Key="JoinDateCell" x:DataType="models:Person">
         <DatePicker
-            Date="{Binding JoinDate, Mode=TwoWay}"
+            AutomationProperties.Name="{Binding JoinDateAccessibleName, Mode=OneWay}"
+            Date="{Binding JoinDate, Mode=OneWay}"
+            IsEnabled="False"
             IsHitTestVisible="False"
             IsTabStop="False"
             Margin="6,2"
@@ -14,7 +16,9 @@
 
     <DataTemplate x:Key="ShiftStartCell" x:DataType="models:Person">
         <TimePicker
-            Time="{Binding ShiftStart, Mode=TwoWay}"
+            AutomationProperties.Name="{Binding ShiftStartAccessibleName, Mode=OneWay}"
+            Time="{Binding ShiftStart, Mode=OneWay}"
+            IsEnabled="False"
             IsHitTestVisible="False"
             IsTabStop="False"
             ClockIdentifier="24HourClock"
@@ -26,8 +30,9 @@
 
     <DataTemplate x:Key="DepartmentCell" x:DataType="models:Person">
         <ComboBox
-            SelectedItem="{Binding Department, Mode=TwoWay}"
-            AutomationProperties.AccessibilityView="Raw"
+            AutomationProperties.Name="Department"
+            SelectedItem="{Binding Department, Mode=OneWay}"
+            IsEnabled="False"
             Loaded="OnDepartmentComboBoxLoaded"
             IsHitTestVisible="False"
             IsTabStop="False"
@@ -38,8 +43,9 @@
 
     <DataTemplate x:Key="IsActiveCell" x:DataType="models:Person">
         <CheckBox
-            IsChecked="{Binding IsActive, Mode=TwoWay}"
-            AutomationProperties.AccessibilityView="Raw"
+            AutomationProperties.Name="Active"
+            IsChecked="{Binding IsActive, Mode=OneWay}"
+            IsEnabled="False"
             IsHitTestVisible="False"
             IsTabStop="False"
             MinWidth="0"

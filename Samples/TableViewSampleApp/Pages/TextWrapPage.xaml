@@ -110,10 +110,11 @@
                 </StackPanel>
 
                 <StackPanel Spacing="4" AutomationProperties.Name="Column width options">
-                    <TextBlock Text="Bio column width" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock x:Name="ColumnWidthLabel" Text="Bio column width" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                     <TextBlock Text="Narrow widths force more wrapping and should produce taller rows." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
                     <Slider
                         x:Name="ColumnWidthSlider"
+                        AutomationProperties.LabeledBy="{Binding ElementName=ColumnWidthLabel}"
                         Minimum="220"
                         Maximum="520"
                         StepFrequency="20"
@@ -124,9 +125,10 @@
                 </StackPanel>
 
                 <StackPanel Spacing="4" AutomationProperties.Name="Line limit options">
-                    <TextBlock Text="Max lines" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock x:Name="MaxLinesLabel" Text="Max lines" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                     <ComboBox
                         x:Name="MaxLinesComboBox"
+                        AutomationProperties.LabeledBy="{Binding ElementName=MaxLinesLabel}"
                         SelectedIndex="0"
                         SelectionChanged="OnMaxLinesSelectionChanged"
                         AutomationProperties.AutomationId="TextWrapMaxLinesComboBox">
