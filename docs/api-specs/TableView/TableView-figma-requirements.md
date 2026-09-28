@@ -75,6 +75,18 @@ Two points worth carrying forward:
 
 > Banded is the default table type
 
+The table frame holding the four row-style examples (*inspect panel*):
+
+| Property | Value |
+| --- | --- |
+| Flow | Vertical |
+| Width | Fixed (720px) |
+| Height | Hug (160px) |
+
+720px is three 240px columns with no column gap, and 160px is four 40px rows with **no row
+gap** — rows butt directly against each other. This matches the `Section` component's fixed
+720px width.
+
 **Row selection** variants: `Single`, `Multi`.
 
 `Multi` rows carry a leading checkbox. Selected rows show a row-wide fill plus a leading
