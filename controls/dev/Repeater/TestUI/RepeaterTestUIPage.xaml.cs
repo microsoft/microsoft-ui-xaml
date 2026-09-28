@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.UI.Private.Controls;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using MUXControlsTestApp.Samples;
 
@@ -248,25 +249,42 @@ namespace MUXControlsTestApp
                         Orientation = orientation.IsOn ? Orientation.Horizontal : Orientation.Vertical,
                     });
             };
+
+            ApplyDebugLoggingOptions();
         }
 
         private void CmbOutputDebugStringLevels_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (chkScrollView != null && chkScrollView.IsChecked == true)
-            {
-                MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                    "ScrollView",
-                    cmbOutputDebugStringLevels.SelectedIndex == 1 || cmbOutputDebugStringLevels.SelectedIndex == 2,
-                    cmbOutputDebugStringLevels.SelectedIndex == 2);
-            }
+            ApplyDebugLoggingOptions();
+        }
 
-            if (chkLinedFlowLayout != null && chkLinedFlowLayout.IsChecked == true)
-            {
-                MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                    "LinedFlowLayout",
-                    cmbOutputDebugStringLevels.SelectedIndex == 1 || cmbOutputDebugStringLevels.SelectedIndex == 2,
-                    cmbOutputDebugStringLevels.SelectedIndex == 2);
-            }
+        private void ChkOutputDebugStringLevel_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            ApplyDebugLoggingOptions();
+        }
+
+        // Applies the OutputDebugString logging level selected in the ComboBox to every checked type, and
+        // turns logging off for unchecked types. Reading the current ComboBox selection together with all
+        // CheckBox states makes the configuration order-independent: the user can toggle the checkboxes and
+        // pick the ComboBox value in any order and still get the requested logging.
+        private void ApplyDebugLoggingOptions()
+        {
+            int selectedLevel = cmbOutputDebugStringLevels?.SelectedIndex ?? 0;
+            bool isLoggingInfoLevel = selectedLevel == 1 || selectedLevel == 2;
+            bool isLoggingVerboseLevel = selectedLevel == 2;
+
+            SetOutputDebugStringLevelForType("ScrollView", chkScrollView, isLoggingInfoLevel, isLoggingVerboseLevel);
+            SetOutputDebugStringLevelForType("LinedFlowLayout", chkLinedFlowLayout, isLoggingInfoLevel, isLoggingVerboseLevel);
+        }
+
+        private static void SetOutputDebugStringLevelForType(string type, CheckBox checkBox, bool isLoggingInfoLevel, bool isLoggingVerboseLevel)
+        {
+            bool isChecked = checkBox != null && checkBox.IsChecked == true;
+
+            MUXControlsTestHooks.SetOutputDebugStringLevelForType(
+                type,
+                isChecked && isLoggingInfoLevel,
+                isChecked && isLoggingVerboseLevel);
         }
 
         private VirtualizingLayout GetStackLayout()
