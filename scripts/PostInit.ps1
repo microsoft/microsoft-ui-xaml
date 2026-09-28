@@ -64,14 +64,10 @@ Write-Progress "Restoring packages for build platform $buildPlatform..." -Comple
 . $repoRoot\build\DownloadDotNetCoreSdk.ps1
 . $repoRoot\build\DownloadDotNetRuntimeInstaller.ps1
 
-Write-Host "Restoring Maestro and ensuring authentication..."
-msbuild -nologo -t:Restore $repoRoot\eng\Microsoft.MaestroRestore.csproj -v:$Verbosity -p:Configuration=Release -p:NugetInteractive=true -p:PublishReadyToRun=true
-
 Write-Host "Restoring additional packages..."
 $projectPackages = @(
     'perf\packages.config',
     'eng\BuildGenXbfForMSBuild\BuildGenXbfForMSBuild.csproj',
-    'eng\Microsoft.MaestroRestore.csproj',
     'controls\dev\dll\packages.config',
     'XamlCompilerPrerequisites.sln',
     'dxaml\Microsoft.UI.Xaml.sln',

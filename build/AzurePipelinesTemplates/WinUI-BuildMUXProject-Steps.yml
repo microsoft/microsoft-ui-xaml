@@ -1,6 +1,38 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+#
+# WinUI-BuildMUXProject-Steps.yml
+#
+# Step template for building Microsoft.UI.Xaml.sln (full controls solution),
+# Microsoft.UI.Xaml-Product.sln (shipping product solution), and optionally
+# MUXControls.sln (test infra). Used by BOTH the standalone WinUI pipelines
+# (PR / Official / Nightly) AND the WindowsAppSDK monobuild pipeline.
+#
+# Caller distinguishes via the IsMonobuild parameter (default false). When
+# IsMonobuild=true the template uses the monobuild-coherent version coming
+# from WindowsAppSDK-DetermineVersion-Steps.yml, restores from the staged
+# local feed + the standalone WinUI.Dependencies feed (so the BUILD compiles
+# against the same pinned upstream binaries as the standalone build —
+# mirrors Foundation's monobuild pattern, which does NOT inject monobuild-
+# coherent upstream versions at BUILD time; that injection happens at PACK
+# time in WinUI-CreateTransportNupkg-Steps.yml via the monobuildPinnedVersion
+# parameter), and skips the standalone-
+# only mock-package / scenario-apps / ESRP steps (in the monobuild, WinUI binaries are signed
+# per-platform in the monorepo's WinUI-Build-Stage.yml).
+#
+# This file replaces the prior parallel WinUI-MonoBuild-BuildMUXProject-Steps.yml
+# (since deleted) per the reuse pattern used by Foundation/Widgets.
+
 parameters:
+  # NOTE: Parameters below are intentionally declared in untyped (legacy) form to preserve the
+  # historical contract where downstream conditional checks (and callers in this and other repos)
+  # use string comparisons like `eq(parameters.buildProductOnly, 'false')` and
+  # `eq(parameters.runStaticAnalysis, 'true')`. Switching them to `type: boolean` causes
+  # `eq(false, 'false')` to evaluate FALSE (no string coercion happens for typed booleans) —
+  # which silently skips Microsoft.UI.Xaml.sln, MUXControls.sln, and other gated steps.
+  # Untyped string values keep coercion intact for ALL existing comparisons.
+  # Mixing typed + untyped in one parameters block is not allowed; we keep the whole block
+  # untyped for consistency. New monobuild-specific parameters added below for the same reason.
   buildArtifactsDirectory: $(Build.SourcesDirectory)\BuildOutput
   additionalMSBuildOptions: ''
   pipelineKind: ''
@@ -10,11 +42,44 @@ parameters:
   runStaticAnalysis: true
   projectCaching: false
   buildProductOnly: false
+  # When set (mono-build test pipeline only), download the WinUI product from the parent mono-build
+  # instead of rebuilding it: for Release x86/x64/arm64 jobs, skip the Microsoft.UI.Xaml.sln product
+  # build and lay the mono-build's Build-WinUI-<plat>-Release output into BuildOutput\bin so
+  # MUXControls.sln (test) + scenario apps consume it via eng\consumebinaries.targets. Empty
+  # (default) = standalone behavior (build the product). Debug and arm64ec jobs always build the
+  # product (the mono-build publishes Release x86/x64/arm64 only).
+  consumeProductFromBuildId: ''
+  consumeProductFromPipeline: ''
   pgoBuildModeMSBuildArg: '/p:PGOBuildMode=$(pgoBuildMode)'
+  IsMonobuild: false
+  IsOfficial: false
+  # Version string injected into the Product .sln msbuild as /p:WinUIVersion.
+  # Standalone defaults to $(versionFinal) (computed locally by GenerateVersionInfo earlier in
+  # the job). Monobuild caller passes $(WindowsAppSDKFormattedVersion) so the produced binaries
+  # carry the monobuild-coherent version.
+  winUIVersion: '$(versionFinal)'
+  # Product version macros baked into dxaml/xcp/inc/WindowsAppSDK-ProductInfo.h. Standalone
+  # uses $(MajorVersion)/$(MinorVersion) from WinUI's Versions.yml (currently 3 / 0). Monobuild
+  # caller passes literals '3' / '0' because the monobuild's MajorVersion/MinorVersion variables
+  # describe the Foundation version schema (currently 0 / 0), not the WinUI product version
+  # schema.
+  productMajor: '$(MajorVersion)'
+  productMinor: '$(MinorVersion)'
+  # Suffix appended to the staged-bin output folder. Standalone uses bare '\drop' (single-
+  # platform standalone build). Monobuild caller passes '_$(buildOutput)$(normalizedConfiguration)'
+  # so the PackWinUI job can consume three per-platform artifacts
+  # (Build-WinUI-{x86,x64,arm64}-Release) without collisions.
+  dropSuffix: ''
+  # Declared so the cleanup rmdir at end of build can reference them in BOTH standalone and
+  # monobuild paths. Standalone leaves them empty (matching the pre-refactor undeclared-
+  # parameter behavior, which silently produced `if exist  rmdir /s /q ` no-ops). Monobuild
+  # path uses .dotnet only.
+  msbuildInstallDir: ''
+  msbuildInstallLogsDir: ''
 
 steps:
   - task: NuGetAuthenticate@1
-  
+
   # Set values of common build variables
   - powershell: |
       $buildConfigTable = @{ "chk" = "Debug"; "fre" = "Release"}
@@ -22,6 +87,7 @@ steps:
 
       Write-Host "buildConfiguration = $buildConfiguration"
       Write-Host "versionFinal = $env:versionFinal"
+      Write-Host "WindowsAppSDKFormattedVersion = $env:WindowsAppSDKFormattedVersion"
       Write-Host "##vso[task.setvariable variable=buildConfiguration;]$buildConfiguration"
 
       # PublishAot must be specified at restore, as it conditionally generates nuget.g.* imports
@@ -38,8 +104,6 @@ steps:
 
   # Cleans anything left over from previous builds (including VS build tools) and installs NuGet
   - template: WinUI-InitializeMachineState-Steps.yml
-
-  - checkout: WindowsAppSDKConfig
 
   # Ensure the VS preinstalled on the image is up-to-date, or install the VS build tools if enableVsBuildTools=true. Also installs latest build tools preview if pipelineKind = Preview
   - template: WinUI-Install-MSBuildTools.yml
@@ -59,14 +123,59 @@ steps:
     inputs:
       filePath: '$(REPOROOT)\build\PipelineScripts\GenerateVersionInfo.ps1'
       arguments: >
-        -ProductMajor "$(MajorVersion)"
-        -ProductMinor "$(MinorVersion)"
+        -ProductMajor "${{ parameters.productMajor }}"
+        -ProductMinor "${{ parameters.productMinor }}"
         -VersionInfoPath "$(REPOROOT)\dxaml\xcp\inc\WindowsAppSDK-ProductInfo.h"
 
   - script: |
       echo ##vso[task.setvariable variable=pgoBuildMode]Optimize
     condition: and(eq(variables['shouldPgo'], 'true'), ne(variables['PGODisable'], 'true'), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
     displayName: Enable PGO
+
+  # The consumed WinUI bits were built against the mono-build's source-built component set, not the
+  # eng\Versions.props fallbacks. Stage the mono-build's Base/Foundation/IXP(+FrameworkUdk)/WinUIDetails
+  # nupkgs into the local packagestore and pin WindowsAppSDKVersionPinned to their version, so every
+  # later restore resolves the matching versions (stale versions => CS0012 in the generated CsWinRT
+  # projections). This must precede WinUI-InstallDependencies-Steps.yml: that template restores the
+  # component packages at these versions, so pinning afterwards leaves the build looking for a version
+  # that was never restored (W1007 on the Foundation transport winmd).
+  - ${{ if ne(parameters.consumeProductFromBuildId, '') }}:
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Consume product: download mono-build component packages'
+      condition: and(succeeded(), eq(variables['normalizedConfiguration'],'fre'), in(variables['buildPlatform'],'x86','x64','arm64'))
+      inputs:
+        source: specific
+        runVersion: specific
+        project: $(System.TeamProjectId)
+        pipeline: ${{ parameters.consumeProductFromPipeline }}
+        pipelineId: ${{ parameters.consumeProductFromBuildId }}
+        patterns: |
+          Component-Base-Final/**/*.nupkg
+          Component-Foundation-Final/**/*.nupkg
+          Component-InteractiveExperiences-Final/**/*.nupkg
+          Component-WinUIDetails-Final/**/*.nupkg
+        targetPath: $(Build.ArtifactStagingDirectory)\MonobuildComponents
+    - task: PowerShell@2
+      displayName: 'Consume product: stage component packages + pin version'
+      condition: and(succeeded(), eq(variables['normalizedConfiguration'],'fre'), in(variables['buildPlatform'],'x86','x64','arm64'))
+      inputs:
+        targetType: inline
+        script: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference = 'Stop'
+          $src = "$(Build.ArtifactStagingDirectory)\MonobuildComponents"
+          $store = "$(Build.SourcesDirectory)\packagestore"
+          New-Item -ItemType Directory -Force -Path $store | Out-Null
+          $nupkgs = @(Get-ChildItem -Path $src -Recurse -Filter '*.nupkg' -File)
+          if ($nupkgs.Count -eq 0) { throw "No mono-build component .nupkg found under $src (expected Component-*-Final)." }
+          foreach ($p in $nupkgs) { Copy-Item -Path $p.FullName -Destination $store -Force }
+          Write-Host "Staged $($nupkgs.Count) mono-build component packages into $store"
+          $basePkg = Get-ChildItem -Path $store -Filter 'Microsoft.WindowsAppSDK.Base.*.nupkg' -File |
+              Where-Object { $_.BaseName -match '^Microsoft\.WindowsAppSDK\.Base\.\d' } | Select-Object -First 1
+          if (-not $basePkg) { throw "Microsoft.WindowsAppSDK.Base.<version>.nupkg not found in $store; cannot pin mono-build version." }
+          $version = $basePkg.BaseName -replace '^Microsoft\.WindowsAppSDK\.Base\.', ''
+          Write-Host "Pinning WindowsAppSDKVersionPinned to mono-build version: $version"
+          Write-Host "##vso[task.setvariable variable=WindowsAppSDKVersionPinned]$version"
 
   - template: WinUI-InstallDependencies-Steps.yml
 
@@ -104,13 +213,15 @@ steps:
       nuget install $env:LkgVcToolsName -version $env:LkgVcToolsVersion -source $(WinUILKGCompilerFeedUri) -ConfigFile $(Build.SourcesDirectory)\nuget.config
     displayName: Install native compiler override
 
-  # Inject the Azure Maps token into the MapControl test page
-  - task: PowerShell@2
-    displayName: 'Inject AzureMaps Token'
-    condition: and(succeeded(), ne(variables['System.PullRequest.IsFork'], 'True'))
-    inputs:
-      filePath: 'scripts\InjectAzureMapsToken.ps1'
-      arguments: "-MapsToken '$(WinUIAzureMapsKey)'"
+  # Inject the Azure Maps token into the MapControl test page. Standalone only — the MapControl
+  # test page is part of MUXControls.sln test infra which monobuild does NOT build (gated by IsMonobuild).
+  - ${{ if ne(parameters.IsMonobuild, 'true') }}:
+    - task: PowerShell@2
+      displayName: 'Inject AzureMaps Token'
+      condition: and(succeeded(), ne(variables['System.PullRequest.IsFork'], 'True'))
+      inputs:
+        filePath: 'scripts\InjectAzureMapsToken.ps1'
+        arguments: "-MapsToken '$(WinUIAzureMapsKey)'"
 
   # When we build the XAML compiler as part of the same build that consumes the XAML compiler,
   # we can hit build breaks caused by MSBuild instances trying to produce DLLs that it's
@@ -138,11 +249,69 @@ steps:
         solutionName: Microsoft.UI.Xaml.sln
         solutionPath: $(Build.SourcesDirectory)\dxaml
         nugetConfigPath: nuget.config
-        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue)'
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:WinUIVersion=${{ parameters.winUIVersion }} /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue)'
         msbuildInstallDir: $(_buildToolsDirectory)
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+        ${{ if ne(parameters.consumeProductFromBuildId, '') }}:
+          # Consuming the mono-build product: skip building it for the configs the mono-build
+          # publishes (Release x86/x64/arm64); still build it for Debug / arm64ec.
+          condition: and(succeeded(), or(ne(variables['normalizedConfiguration'],'fre'), not(in(variables['buildPlatform'],'x86','x64','arm64'))))
       # Build log is published by the WinUI-BuildProject-Steps.yml pipeline
+
+    # Download the mono-build's WinUI product into BuildOutput\bin for the consumed configs so the
+    # MUXControls.sln test build + scenario apps below compile against it (eng\consumebinaries.targets
+    # references $(ArtifactsBinDir)\Product). Only emitted when consuming; standalone is unaffected.
+    - ${{ if ne(parameters.consumeProductFromBuildId, '') }}:
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Consume product: download Build-WinUI-$(buildPlatform)-Release from mono-build'
+        condition: and(succeeded(), eq(variables['normalizedConfiguration'],'fre'), in(variables['buildPlatform'],'x86','x64','arm64'))
+        inputs:
+          source: specific
+          runVersion: specific
+          project: $(System.TeamProjectId)
+          pipeline: ${{ parameters.consumeProductFromPipeline }}
+          pipelineId: ${{ parameters.consumeProductFromBuildId }}
+          artifactName: Build-WinUI-$(buildPlatform)-Release
+          targetPath: $(Build.ArtifactStagingDirectory)\MonobuildProduct
+      - task: PowerShell@2
+        displayName: 'Consume product: lay mono-build product into BuildOutput\bin'
+        condition: and(succeeded(), eq(variables['normalizedConfiguration'],'fre'), in(variables['buildPlatform'],'x86','x64','arm64'))
+        inputs:
+          targetType: inline
+          script: |
+            Set-StrictMode -Version 2.0
+            $ErrorActionPreference = 'Stop'
+            $flavor = "$(buildOutput)$(normalizedConfiguration)"
+            $artRoot = "$(Build.ArtifactStagingDirectory)\MonobuildProduct"
+            $binDst = "$(Build.SourcesDirectory)\BuildOutput\bin"
+
+            # Build-WinUI-<plat>-Release stages BuildOutput\bin under drop_<flavor>\ (with the
+            # <flavor>\ product tree and a sibling GenXBF\ folder), plus a top-level packaging\
+            # folder (license.txt, AppxManifest, lib/runtimes) that the mock + component package
+            # builds need at BuildOutput\packaging\<Configuration>\.
+            $dropSrc = Join-Path $artRoot "drop_$flavor"
+            if (-not (Test-Path (Join-Path $dropSrc $flavor))) {
+                throw "Mono-build product not found at $dropSrc\$flavor (expected inside Build-WinUI-$(buildPlatform)-Release)."
+            }
+            New-Item -ItemType Directory -Force -Path $binDst | Out-Null
+            # Copy the whole drop_<flavor> contents (the <flavor>\Product tree + GenXBF) into BuildOutput\bin.
+            Copy-Item -Path "$dropSrc\*" -Destination $binDst -Recurse -Force
+            Write-Host "Laid mono-build product bin into $binDst"
+
+            # Lay the packaging output (license.txt etc.) into BuildOutput\packaging.
+            $pkgSrc = Join-Path $artRoot 'packaging'
+            $pkgDst = "$(Build.SourcesDirectory)\BuildOutput\packaging"
+            if (Test-Path $pkgSrc) {
+                New-Item -ItemType Directory -Force -Path $pkgDst | Out-Null
+                Copy-Item -Path "$pkgSrc\*" -Destination $pkgDst -Recurse -Force
+                Write-Host "Laid mono-build packaging into $pkgDst"
+            } else {
+                Write-Host "##[warning]No packaging\ folder in the mono-build artifact; mock/component package builds may fail."
+            }
+
+            $licenseProbe = "$pkgDst\$(buildConfiguration)\license.txt"
+            Write-Host "license.txt present ($licenseProbe): $(Test-Path $licenseProbe)"
 
   - ${{ if eq(parameters.buildProductOnly, 'true') }}:
     - template: WinUI-BuildProject-Steps.yml
@@ -150,57 +319,90 @@ steps:
         solutionName: Microsoft.UI.Xaml-Product.sln
         solutionPath: $(Build.SourcesDirectory)
         nugetConfigPath: nuget.config
-        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue)'
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:WinUIVersion=${{ parameters.winUIVersion }} /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue)'
         msbuildInstallDir: $(_buildToolsDirectory)
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
       # Build log is published by the WinUI-BuildProject-Steps.yml pipeline
 
-  # Build WinUI component package before copying to output directory. The BuildScenarioApps
-  # stage downloads this package and sample apps reference Microsoft.WindowsAppSDK.WinUI.
-  - powershell: |
-      if ($env:BUILD_REPOSITORY_PROVIDER -notin @('GitHub', 'GitHubEnterprise'))
-      {
-        & "$(Build.SourcesDirectory)\build\NuSpecs\build-nupkg.ps1" `
-          -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec `
-          -VersionOverride $(versionFinal) `
-          -PackageRoot '$(Build.SourcesDirectory)\BuildOutput\packaging\$(buildConfiguration)' `
-          -OutputDir '$(Build.SourcesDirectory)\PackageStore' `
-          -InstallPackage
-      }
-      else
-      {
-        & "$(Build.SourcesDirectory)\build\NuSpecs\build-nupkg.ps1" `
-          -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec `
-          -VersionOverride $(versionFinal) `
-          -PackageRoot '$(Build.SourcesDirectory)\BuildOutput\packaging\$(buildConfiguration)' `
-          -OutputDir '$(Build.SourcesDirectory)\PackageStore' `
-          -UseDependencyOverrides `
-          -InstallPackage
-      }
-    displayName: Build WinUI component package
+  # The build step below using buildMockWinAppSdkPackage.ps1 does not directly benefit from compiler override via invoking the WinUndockNativeCompiler
+  # task because at this point the <root>\WindowsAppSDKAggregator path for the target .sln file has not been setup yet, so such a path can't be passed to
+  # the WinUndockNativeCompiler task.
 
-  # Copy the Microsoft.WindowsAppSDK.WinUI component package to the output directory so the
-  # BuildScenarioApps stage can download and install it for the sample/test apps.
-  - task: CopyFiles@2
-    displayName: Move WinUI Component Package To Output Directory
-    condition: succeeded()
-    inputs:
-      SourceFolder: '$(Build.SourcesDirectory)\PackageStore'
-      TargetFolder: '$(ob_outputDirectory)\WinUIComponentPackage'
-      Contents: |
-        Microsoft.WindowsAppSDK.WinUI.*.nupkg
+  # Note: Microsoft.UI.Xaml.sln builds Microsoft.UI.Xaml.Controls.dll, so we can build the mock package at this stage.
+  # Standalone only — depends on the WindowsAppSDKAggregator submodule which monobuild does NOT clone, and on
+  # the mock package being consumed by BuildScenarioApps (also standalone-only).
+  - ${{ if ne(parameters.IsMonobuild, 'true') }}:
+    - task: PowerShell@2
+      displayName: 'Build mock Windows App SDK package'
+      condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      inputs:
+        filePath: 'scripts\buildMockWinAppSdkPackage.ps1'
+        arguments: "-RepoRoot '$(Build.SourcesDirectory)' -Platform $(buildPlatform) -Configuration $(buildConfiguration) -WinUITransportPackageVersion $(versionFinal) -CleanOutput -AzurePipelineBuild"
+      env:
+        LkgVcToolsName: $(compilerOverridePackageName)
+        LkgVcToolsVersion: $(compilerOverrideNupkgVersion)
 
-  - ${{ if eq(parameters.buildProductOnly, 'false') }}:
+    # Build WinUI component package before copying to output directory so it's included
+    # in the mock output alongside the mock WindowsAppSDK package. The BuildScenarioApps
+    # stage downloads these packages and sample apps reference Microsoft.WindowsAppSDK.WinUI.
+    # Monobuild centralizes the per-platform produced bits into Pack — see
+    # WinUI-CreateTransportNupkg-Steps.yml (IsMonobuild=true path).
+    - powershell: |
+        if ($env:BUILD_REPOSITORY_PROVIDER -notin @('GitHub', 'GitHubEnterprise'))
+        {
+          & "$(Build.SourcesDirectory)\build\NuSpecs\build-nupkg.ps1" `
+            -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec `
+            -VersionOverride $(versionFinal) `
+            -PackageRoot '$(Build.SourcesDirectory)\BuildOutput\packaging\$(buildConfiguration)' `
+            -OutputDir '$(Build.SourcesDirectory)\PackageStore' `
+            -InstallPackage
+        }
+        else
+        {
+          & "$(Build.SourcesDirectory)\build\NuSpecs\build-nupkg.ps1" `
+            -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec `
+            -VersionOverride $(versionFinal) `
+            -PackageRoot '$(Build.SourcesDirectory)\BuildOutput\packaging\$(buildConfiguration)' `
+            -OutputDir '$(Build.SourcesDirectory)\PackageStore'
+        }
+      displayName: Build WinUI component package
+
+    # Now, this task is also responsible for copying Microsoft.WindowsAppSDK.WinUI package to output directory.
+    - task: CopyFiles@2
+      displayName: Move MockPackage To Output Directory
+      condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      inputs:
+        SourceFolder: '$(WindowsAppSDKMockPackagePath)'
+        TargetFolder: '$(ob_outputDirectory)\mock'
+        Contents: |
+          Microsoft.WindowsAppSDK.*.nupkg
+          !Microsoft.WindowsAppSDK.Base.*.nupkg
+
+  # MUXControls.sln is test infra; monobuild skips it (depends on AzureMaps token,
+  # mock package, and WindowsAppSDKConfig overlay — all standalone-only).
+  - ${{ if and(eq(parameters.buildProductOnly, 'false'), ne(parameters.IsMonobuild, 'true')) }}:
     - template: WinUI-BuildProject-Steps.yml
       parameters:
         solutionName: MUXControls.sln
         solutionPath: $(Build.SourcesDirectory)\controls
         nugetConfigPath: nuget.config
-        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue)'
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=${{ parameters.winUIVersion }} /p:PublishAot=$(publishAotValue)'
         msbuildInstallDir: $(_buildToolsDirectory)
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  # Build the two WinUI test-helper projects (mono-build only — standalone gets them from the full
+  # MUXControls.sln build above). Runs after the product build so the WinUI component package
+  # (built + installed inside this template) and product binaries are available.
+  - ${{ if eq(parameters.IsMonobuild, 'true') }}:
+    - template: WinUI-BuildTestInfra-Steps.yml
+      parameters:
+        winUIVersion: ${{ parameters.winUIVersion }}
+        buildConfiguration: $(buildConfiguration)
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+        additionalMSBuildOptions: ${{ parameters.additionalMSBuildOptions }}
+        msbuildInstallDir: $(_buildToolsDirectory)
 
   # Tabular builds as part of MUXControls.sln. Microsoft.UI.Xaml.Controls.Tabular.vcxproj carries
   # build-order-only ProjectReferences to MergedWinMD and to MUXC's controls DLL, so the solution
@@ -218,12 +420,24 @@ steps:
         MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
-  - script: |
-      if exist ${{ parameters.msbuildInstallDir }} rmdir /s /q ${{ parameters.msbuildInstallDir }}
-      if exist ${{ parameters.msbuildInstallLogsDir }} rmdir /s /q ${{ parameters.msbuildInstallLogsDir }}
-      if exist .dotnet rmdir /s /q .dotnet
-    displayName: Remove VS build tools and .NET SDK installs to free up disk space
+  # Cleanup before staging artifacts to free disk. Monobuild path keeps only .dotnet because
+  # _enableVsBuildTools=false there (VS is preinstalled on the OneBranch image), so the
+  # msbuildInstallDir / msbuildInstallLogsDir are not used.
+  - ${{ if eq(parameters.IsMonobuild, 'true') }}:
+    - script: |
+        if exist .dotnet rmdir /s /q .dotnet
+      displayName: Remove .NET SDK install to free up disk space
+      continueOnError: true
+  - ${{ else }}:
+    - script: |
+        if exist ${{ parameters.msbuildInstallDir }} rmdir /s /q ${{ parameters.msbuildInstallDir }}
+        if exist ${{ parameters.msbuildInstallLogsDir }} rmdir /s /q ${{ parameters.msbuildInstallLogsDir }}
+        if exist .dotnet rmdir /s /q .dotnet
+      displayName: Remove VS build tools and .NET SDK installs to free up disk space
 
+  # Copy built binaries to the staging directory. Monobuild appends a per-platform suffix
+  # ('_$(buildOutput)$(normalizedConfiguration)') so PackWinUI can ingest x86/x64/arm64
+  # artifacts side by side. Standalone is single-platform per job and uses bare '\drop'.
   - task: CopyFiles@2
     displayName: 'Copy built binaries to artifact staging directory'
     condition: always()
@@ -233,11 +447,13 @@ steps:
       contents: |
         **\*
         !**\*.pdb
-      targetFolder: $(ob_outputDirectory)\drop
+      targetFolder: $(ob_outputDirectory)\drop${{ parameters.dropSuffix }}
 
   # An app that includes the transport package won't run properly if these files aren't present,
   # since then they're part of the NuGet package that are detected to be missing.
-  - ${{ if eq(parameters.buildProductOnly, 'false') }}:
+  # Monobuild skips this because the source path (MUXControlsTestApp under UnpackagedApps)
+  # is produced by MUXControls.sln, which monobuild does not build.
+  - ${{ if and(eq(parameters.buildProductOnly, 'false'), ne(parameters.IsMonobuild, 'true')) }}:
     - task: CopyFiles@2
       displayName: 'Copy Microsoft.WindowsAppSDK.Foundation.TransportPackage symbols to artifact staging directory'
       condition: and(always(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
@@ -248,7 +464,7 @@ steps:
           !AppTestAutomationHelpers.pdb
           !Microsoft.WinUI.pdb
           !MUXControlsTestApp.pdb
-        targetFolder: $(ob_outputDirectory)\drop\$(buildOutput)$(normalizedConfiguration)\Test\UnpackagedApps\MUXControlsTestApp
+        targetFolder: $(ob_outputDirectory)\drop${{ parameters.dropSuffix }}\$(buildOutput)$(normalizedConfiguration)\Test\UnpackagedApps\MUXControlsTestApp
 
   - task: PowerShell@2
     displayName: 'Generate fusion manifest'
@@ -289,7 +505,8 @@ steps:
     env:
       LIB: $(Build.SourcesDirectory)
 
-  - ${{ if eq(parameters.buildProductOnly, 'false') }}:
+  # Test infra symbols come from MUXControls.sln, which monobuild does not build.
+  - ${{ if and(eq(parameters.buildProductOnly, 'false'), ne(parameters.IsMonobuild, 'true')) }}:
     - task: PublishSymbols@2
       displayName: 'Publish test infra symbols to internal symbol server'
       condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
@@ -344,31 +561,36 @@ steps:
         targetFolder: ${{ parameters.buildArtifactsDirectory }}\APIScanTarget
       continueOnError: true
 
+  # ESRP signing — WinUI binaries. Routed through WinUI-EsrpCodeSigning-Wrapper.yml (same-repo relative
+  # ref), which dispatches the shared signing template to @self (monobuild) or @WinAppSDK (standalone),
+  # so this runs in BOTH contexts with no dependence on the legacy WindowsAppSDKConfig repo.
   - ${{ if eq(parameters.signOutput, true) }}:
-    - template: AzurePipelinesTemplates/WindowsAppSDK-EsrpCodeSigning-Steps.yml@WindowsAppSDKConfig
+    - template: WinUI-EsrpCodeSigning-Wrapper.yml
       parameters:
-        FolderPath: '$(ob_outputDirectory)'
-        Pattern: |
-          **/Microsoft.WinUI.dll
-          **/Microsoft.UI.Text.winmd
-          **/Microsoft.UI.Xaml.winmd
-          **/Microsoft.UI.Xaml.Controls.dll
-          **/Microsoft.UI.Xaml.Controls.Tabular.dll
-          **/Microsoft.ui.xaml.dll
-          **/Microsoft.ui.xaml.dll.mui
-          **/Microsoft.UI.Xaml.Internal.dll
-          **/Microsoft.UI.Xaml.Phone.dll
-          **/Microsoft.UI.Xaml.Phone.dll.mui
-          **/Microsoft.ui.xaml.resources.19h1.dll
-          **/Microsoft.ui.xaml.resources.common.dll
-          **/WinUIEdit.dll
-          **/Microsoft.UI.Xaml.Markup.Compiler.dll
-          **/Microsoft.UI.Xaml.Markup.Compiler.IO.dll
-          **/Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll
-          **/Microsoft.UI.Xaml.Design.dll
-          **/XamlCompiler.exe
-          **/GenXbf.dll
-          **/Add-AppDevPackage.psd1
-        KeyCode: 'CP-230012'
-        UseMinimatch: true
-        DisplayName: 'CodeSign'
+        IsMonobuild: ${{ parameters.IsMonobuild }}
+        InnerParams:
+          FolderPath: '$(ob_outputDirectory)'
+          Pattern: |
+            **/Microsoft.WinUI.dll
+            **/Microsoft.UI.Text.winmd
+            **/Microsoft.UI.Xaml.winmd
+            **/Microsoft.UI.Xaml.Controls.dll
+            **/Microsoft.UI.Xaml.Controls.Tabular.dll
+            **/Microsoft.ui.xaml.dll
+            **/Microsoft.ui.xaml.dll.mui
+            **/Microsoft.UI.Xaml.Internal.dll
+            **/Microsoft.UI.Xaml.Phone.dll
+            **/Microsoft.UI.Xaml.Phone.dll.mui
+            **/Microsoft.ui.xaml.resources.19h1.dll
+            **/Microsoft.ui.xaml.resources.common.dll
+            **/WinUIEdit.dll
+            **/Microsoft.UI.Xaml.Markup.Compiler.dll
+            **/Microsoft.UI.Xaml.Markup.Compiler.IO.dll
+            **/Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll
+            **/Microsoft.UI.Xaml.Design.dll
+            **/XamlCompiler.exe
+            **/GenXbf.dll
+            **/Add-AppDevPackage.psd1
+          KeyCode: 'CP-230012'
+          UseMinimatch: true
+          DisplayName: 'CodeSign WinUI binaries'
