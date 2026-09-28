@@ -937,10 +937,12 @@ void TableViewRow::RefreshRowBackground()
             // RowBackground is the base for every row; AlternatingRowBackground overrides the
             // banded ones. Setting RowBackground alone must fill all rows uniformly.
             //
-            // Parity is over the repeater's flattened index, which includes group headers, so
-            // with grouping the first data row is not necessarily banded. Whether banding should
-            // restart per group is an open design question; do not "fix" this to odd indices,
-            // which would flip every app that already sets AlternatingRowBackground.
+            // KNOWN LIMITATION: parity is over the repeater's flattened index, which counts group
+            // headers as rows. With grouping the first data row may be unbanded and the phase
+            // flips between groups. Excluding headers needs a data-row ordinal the metadata
+            // provider does not expose yet; whether banding should also restart per group is an
+            // open design question. Do not "fix" this by flipping to odd indices, which would
+            // invert every app that already sets AlternatingRowBackground.
             auto background = owner.RowBackground();
             if ((rowIndex % 2) == 0 && owner.AlternatingRowBackground() != nullptr)
             {
