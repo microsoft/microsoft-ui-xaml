@@ -1,0 +1,37 @@
+<Page.Resources>
+    <local:TextWrapState x:Key="TextWrapState"/>
+    <local:PersonAvatarBrushConverter x:Key="PersonAvatarBrushConverter"/>
+    <local:PersonAvatarColorNameConverter x:Key="PersonAvatarColorNameConverter"/>
+
+    <DataTemplate x:Key="AvatarCell" x:DataType="models:Person">
+        <Border Width="28" Height="28" CornerRadius="14"
+                Background="{Binding Department, Converter={StaticResource PersonAvatarBrushConverter}}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsHitTestVisible="False"
+                AutomationProperties.Name="{Binding FullName}"
+                AutomationProperties.HelpText="{Binding Department, Converter={StaticResource PersonAvatarColorNameConverter}}">
+            <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="SemiBold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+    </DataTemplate>
+
+    <DataTemplate x:Key="BioCell" x:DataType="models:Person">
+        <TextBlock
+            Text="{Binding Bio}"
+            TextWrapping="{Binding TextWrapping, Source={StaticResource TextWrapState}}"
+            TextTrimming="{Binding TextTrimming, Source={StaticResource TextWrapState}}"
+            MaxLines="{Binding MaxLines, Source={StaticResource TextWrapState}}"
+            Margin="8,6"/>
+    </DataTemplate>
+</Page.Resources>
+
+<adv:TableView x:Name="DemoTable" SelectionMode="Single">
+    <adv:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
+    <adv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" SortMemberPath="Bio" CellTemplate="{StaticResource BioCell}" CanSort="False"/>
+    <adv:TableViewTextColumn Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
+    <adv:TableViewTemplateColumn Header="Image" Width="{StaticResource ColWidthAvatar}" SortMemberPath="Initial" CellTemplate="{StaticResource AvatarCell}" CanSort="False"/>
+</adv:TableView>
+
+<ToggleSwitch Header="TextWrapping" IsOn="True" OnContent="Wrap" OffContent="NoWrap" Toggled="OnWrapToggled"/>
+<Slider Minimum="220" Maximum="520" StepFrequency="20" Value="360" ValueChanged="OnColumnWidthChanged"/>

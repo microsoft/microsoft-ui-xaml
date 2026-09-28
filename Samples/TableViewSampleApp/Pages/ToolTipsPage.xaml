@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.ToolTipsPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls"
+    xmlns:local="using:TableViewSampleApp.Pages">
+
+    <Page.Resources>
+        <local:RowCardConverter x:Key="RowCard"/>
+
+        <!-- A cell whose OWN content carries an app-set tooltip. The control must never replace or
+             clear this one: hovering the text shows the app's tooltip, not a control-owned one. -->
+        <DataTemplate x:Key="AppToolTipCell">
+            <TextBlock
+                Text="{Binding Email}"
+                Margin="8,0"
+                VerticalAlignment="Center"
+                ToolTipService.ToolTip="App-owned tooltip, set in the cell template"/>
+        </DataTemplate>
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="Tooltips"
+        Description="Both tooltips are opt-in and both are per column. HeaderToolTip is a plain object — a header is not bound against a row, so there is nothing to defer and no binding involved. CellToolTipBinding is a Binding evaluated against each row's data item, which is why it is a CLR property rather than a dependency property: XAML has to hand the Binding over unevaluated instead of resolving it once. Set neither and no tooltip appears — the control never invents one, and never touches a tooltip the cell's own template already set."
+        SourceCaption="ToolTipsPage.xaml (excerpt)"
+        SourceSnippet="ToolTips.xaml.txt"
+        AdditionalSnippetCaption="ToolTipsPage.xaml.cs (excerpt)"
+        AdditionalSnippet="ToolTips.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Try it"
+                    Message="Hover a Name cell for rich content built from the whole row, a Department cell to see a DIFFERENT property, and a Salary cell to see nothing at all. Then press Mutate role and hover Department again: the tooltip followed the data with no invalidation call."
+                    MinHeight="104"/>
+
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="PeopleTable"
+                        SelectionMode="Single"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <!-- Rich, non-string cell tooltip built from the whole row by a converter. -->
+                        <adv:TableViewTextColumn x:Name="NameColumn" Header="Name"
+                                                 Binding="{Binding FullName}"
+                                                 Width="{StaticResource ColWidthLongName}"
+                                                 HeaderToolTip="Full name, as entered"/>
+                        <!-- Cell tooltip repeats the cell's own text: right for a column that
+                             truncates, and the automation peer drops the duplicate so a screen
+                             reader reads it once. -->
+                        <adv:TableViewTextColumn x:Name="BioColumn" Header="Bio"
+                                                 Binding="{Binding Bio}"
+                                                 Width="{StaticResource ColWidthWrappedText}"
+                                                 CanSort="False"/>
+                        <!-- Cell tooltip shows a DIFFERENT property, so it survives as help text
+                             and updates in place when the underlying value changes. -->
+                        <adv:TableViewTextColumn x:Name="DepartmentColumn" Header="Department"
+                                                 Binding="{Binding Department}"
+                                                 Width="{StaticResource ColWidthDepartment}"
+                                                 HeaderToolTip="Team the person reports into"/>
+                        <!-- No CellToolTipBinding at all: nothing should appear over these cells. -->
+                        <adv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary"
+                                                 Binding="{Binding Salary}"
+                                                 Width="{StaticResource ColWidthNumber}"/>
+                        <adv:TableViewTemplateColumn Header="Email" Width="*" CanSort="False"
+                                                     CellTemplate="{StaticResource AppToolTipCell}"/>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Cell tooltips" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Clearing the binding retracts the tooltip; there is no separate remove call."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <StackPanel Spacing="8">
+                    <Button x:Name="ToggleButton" Content="Detach cell tooltips" Click="OnToggleClick"
+                            AutomationProperties.AutomationId="ToggleToolTipsButton"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button Content="Mutate role" Click="OnMutateClick"
+                            AutomationProperties.AutomationId="MutateRoleButton"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+
+                <TextBlock Text="Header tooltips" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Changed in place on one column and retracted on another, to exercise both update paths."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <StackPanel Spacing="8">
+                    <Button Content="Change header tooltips" Click="OnMutateHeadersClick"
+                            AutomationProperties.AutomationId="MutateHeaderToolTipsButton"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button Content="What is attached?" Click="OnInspectClick"
+                            AutomationProperties.AutomationId="InspectToolTipsButton"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+
+                <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Cell bindings" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="AttachedText" Text="attached"
+                               Style="{StaticResource StatusReadoutValueStyle}"
+                               AutomationProperties.AutomationId="AttachedText"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Data revision" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RevisionText" Text="0"
+                               Style="{StaticResource StatusReadoutValueStyle}"
+                               AutomationProperties.AutomationId="RevisionText"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Per column" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="InspectText" Text="(press &quot;What is attached?&quot;)"
+                               Style="{StaticResource StatusReadoutValueStyle}"
+                               AutomationProperties.AutomationId="InspectText"
+                               TextWrapping="Wrap"/>
+                </Grid>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+    </controls:SamplePresenter>
+</Page>

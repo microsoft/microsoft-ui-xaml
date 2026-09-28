@@ -1,0 +1,68 @@
+<!-- Host non-text controls (DatePicker, TimePicker, ComboBox, CheckBox)
+     directly inside read-only cells using TableViewTemplateColumn. -->
+
+<Page.Resources>
+    <DataTemplate x:Key="JoinDateCell" x:DataType="models:Person">
+        <DatePicker
+            Date="{Binding JoinDate, Mode=TwoWay}"
+            IsHitTestVisible="False"
+            IsTabStop="False"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="ShiftStartCell" x:DataType="models:Person">
+        <TimePicker
+            Time="{Binding ShiftStart, Mode=TwoWay}"
+            IsHitTestVisible="False"
+            IsTabStop="False"
+            ClockIdentifier="24HourClock"
+            MinuteIncrement="15"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DepartmentCell" x:DataType="models:Person">
+        <ComboBox
+            SelectedItem="{Binding Department, Mode=TwoWay}"
+            Loaded="OnDepartmentComboBoxLoaded"
+            IsHitTestVisible="False"
+            IsTabStop="False"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="IsActiveCell" x:DataType="models:Person">
+        <CheckBox
+            IsChecked="{Binding IsActive, Mode=TwoWay}"
+            IsHitTestVisible="False"
+            IsTabStop="False"
+            MinWidth="0"
+            Margin="14,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Left"/>
+    </DataTemplate>
+</Page.Resources>
+
+<adv:TableView x:Name="PeopleTable" SelectionMode="Single">
+    <adv:TableViewTextColumn Header="Name" Binding="{Binding FullName}" CanUserSort="False"/>
+    <adv:TableViewTemplateColumn Header="Join date" SortMemberPath="JoinDate" CellTemplate="{StaticResource JoinDateCell}" CanUserSort="False"/>
+    <adv:TableViewTemplateColumn Header="Shift start" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftStartCell}" CanUserSort="False"/>
+    <adv:TableViewTemplateColumn Header="Department" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentCell}" CanUserSort="False"/>
+    <adv:TableViewTemplateColumn Header="Active" SortMemberPath="IsActive" CellTemplate="{StaticResource IsActiveCell}" CanUserSort="False"/>
+</adv:TableView>
+
+// Code-behind wires the source and ComboBox choices in this split-binary host.
+People = new ObservableCollection<Person>(PersonData.Take(18));
+PeopleTable.ItemsSource = People;
+
+private void OnDepartmentComboBoxLoaded(object sender, RoutedEventArgs e)
+{
+    if (sender is ComboBox comboBox)
+    {
+        comboBox.ItemsSource = PersonData.Departments;
+    }
+}

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.HeadersVisibilityPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Headers visibility"
+        Description="Show or hide the table's column headers with the HeadersVisibility property. The aligned control supports Column and None."
+        SourceCaption="HeadersVisibilityPage.xaml (excerpt)"
+        SourceSnippet="HeadersVisibility.xaml.txt"
+        AdditionalSnippetCaption="HeadersVisibilityPage.xaml.cs (excerpt)"
+        AdditionalSnippet="HeadersVisibility.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Try it"
+                    Message="Pick a mode to show or hide the column headers."
+                    MinHeight="104"/>
+                <Border
+                    Grid.Row="1"
+                    Style="{StaticResource TableHostBorderStyle}"
+                    Padding="0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="DemoTable"
+                        SelectionMode="Single"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <adv:TableViewTextColumn Header="Column 1" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value1}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Column 2" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value2}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Column 3" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value3}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Column 4" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value4}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Column 5" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value5}" CanSort="False"/>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12" AutomationProperties.Name="Headers visibility options">
+                <TextBlock Text="Headers visibility" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Choose which header surfaces are visible."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <RadioButton Content="Column" Tag="Column" GroupName="HeadersVisibility" IsChecked="True" Checked="OnHeadersVisibilityChecked"/>
+                <RadioButton Content="None" Tag="None" GroupName="HeadersVisibility" Checked="OnHeadersVisibilityChecked"/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

@@ -1,0 +1,18 @@
+// ColumnReorderPage.xaml.cs — programmatic reorder + autosize
+
+// Move "Email" to the leading edge.
+int from = PeopleTable.Columns.IndexOf(emailColumn);
+if (from > 0)
+{
+    PeopleTable.Columns.RemoveAt(from);
+    PeopleTable.Columns.Insert(0, emailColumn);
+}
+
+// Fit one column to its content (header + every realized cell):
+emailColumn.Width = GridLength.Auto;
+
+// Fit all columns:
+foreach (var column in PeopleTable.Columns)
+{
+    column.Width = GridLength.Auto;
+}

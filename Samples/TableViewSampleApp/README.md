@@ -1,8 +1,14 @@
-# TableView sample
+# TableView gallery
 
-A small WinUI 3 desktop app that exercises the live public API of the
-`Microsoft.UI.Xaml.Controls.Tabular.TableView` control. The left panel lets you tweak columns,
-sizing, headers, grid lines, density, backgrounds, and more while the table updates in real time.
+A multi-page WinUI 3 desktop gallery that exercises the live public API of
+`Microsoft.UI.Xaml.Controls.Tabular.TableView`. It replaces the old single-window Playground
+with scenario pages, live examples, options, and embedded source snippets.
+The 27 gallery destinations are joined by **Grouped rows** and the existing
+**Filter / sort / group** page, for 29 navigation destinations.
+
+Grouping uses the current `TableViewSource.GroupBy` API; row identity comes from the item
+objects, not an app-supplied `KeyBy` selector. Selection remains `None` or `Single`;
+this integration does not add multi-selection or change the control's visual defaults.
 
 `TableView` ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`, separate from the main framework DLL,
 but its API is published through the WindowsAppSDK NuGet package: type information reaches the

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.FilterPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+
+    <Grid Padding="24" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="4">
+            <TextBlock Text="Filtering" Style="{ThemeResource TitleTextBlockStyle}"/>
+            <TextBlock Opacity="0.8" TextWrapping="Wrap"
+                       Text="TableViewSource.Filter(predicate) narrows the rows the control renders without mutating the underlying collection. Type to match name / department / role / email, and toggle Active only. ClearFilter() restores the full set."/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+            <TextBox x:Name="SearchBox" Width="280" PlaceholderText="Filter by name, department, role, email…"
+                     TextChanged="OnSearchChanged"
+                     AutomationProperties.Name="Filter query"/>
+            <ToggleSwitch x:Name="ActiveOnlyToggle" Header="Active only" OffContent="Off" OnContent="On"
+                          Toggled="OnActiveToggled"/>
+        </StackPanel>
+
+        <TextBlock Grid.Row="2" x:Name="ReadoutText" Opacity="0.7" FontSize="12"/>
+
+        <Border Grid.Row="3"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1" CornerRadius="6">
+            <tv:TableView x:Name="FilterTable"
+                          SelectionMode="Single"
+                          AutomationProperties.AutomationId="FilterTable"/>
+        </Border>
+    </Grid>
+</Page>
