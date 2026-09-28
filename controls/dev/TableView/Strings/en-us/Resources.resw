@@ -108,6 +108,10 @@
     <value>Column %1!s! width: %2!s! pixels.</value>
     <comment>Assistive-technology announcement raised when a TableView column is resized, by pointer or by keyboard, while its header has focus. %1!s! is the column header text; %2!s! is the whole-pixel width.</comment>
   </data>
+  <data name="TableViewCellLocalizedControlType" xml:space="preserve">
+    <value>cell</value>
+    <comment>Localized control type announced by assistive technology for a single cell in a TableView. Lower case: screen readers read it inline after the cell's name.</comment>
+  </data>
   <!-- Sort direction names (used in SaveLayoutToJson serialization — not localized at runtime but
        kept here for documentation; code uses invariant English for round-trip fidelity) -->
 </root>

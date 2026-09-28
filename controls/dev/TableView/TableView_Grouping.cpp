@@ -8,6 +8,7 @@
 #include "TableViewSource.h"
 #include "TableViewRow.h"
 #include "TableViewAutomationPeer.h"
+#include "TableViewAutomationHelpers.h"
 #include "RowMetadataProvider.h"
 #include "TableViewGroupHeader.h"
 #include "TableViewGroupInfo.h"
@@ -18,6 +19,15 @@
 
 namespace
 {
+    winrt::IInspectable GetGroupHeaderKey(GroupedEntry const& entry)
+    {
+        auto const groupObject = entry.Group();
+        if (auto const group = groupObject.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>())
+        {
+            return group.Group();
+        }
+        return groupObject;
+    }
     // Every step can fail on a locale-starved or self-contained host, and this runs during
     // measure, so nothing is allowed to escape.
     winrt::hstring LocalizedOrFallback(std::wstring_view resourceName, std::wstring_view fallback) noexcept
@@ -605,6 +615,13 @@ winrt::hstring TableView::StringifyGroupKey(winrt::IInspectable const& key)
 // Group-header containers
 // ---------------------------------------------------------------------------------------------
 
+winrt::hstring TableView::GetGroupHeaderNameCandidate(GroupedEntry const& entry)
+{
+    auto const key = GetGroupHeaderKey(entry);
+    return GroupInfoToName(winrt::make<::TableViewGroupInfo>(
+        key, entry.GroupItemCount(), 0, false, false, StringifyGroupKey(key)));
+}
+
 void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& header, int32_t index)
 {
     if (!header)
@@ -654,15 +671,7 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         // internal group object. entry->Group() is the ShapedGroup (an ICollectionViewGroup);
         // unwrap it to the key it carries so an app template binding {Binding Key} sees the key
         // value, not the projection wrapper. KeyText / display is unaffected either way.
-        auto const groupObject = entry->Group();
-        if (auto const collectionViewGroup = groupObject.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>())
-        {
-            groupKey = collectionViewGroup.Group();
-        }
-        else
-        {
-            groupKey = groupObject;
-        }
+        groupKey = GetGroupHeaderKey(*entry);
         itemCount = entry->GroupItemCount();
         isExpanded = hasRowInfo ? rowInfo.IsExpanded : entry->IsExpanded();
         isExpandable = hasRowInfo ? rowInfo.IsExpandable : (entry->GroupItemCount() > 0);

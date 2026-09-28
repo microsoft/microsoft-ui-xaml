@@ -88,6 +88,7 @@ struct TableViewResourceCache
 };
 
 namespace ShapingHelpers { class CustomSortRankAdapter; }
+class GroupedEntry;
 
 // The control's half of the TableViewSource sort axis. The projection is addressed by an opaque
 // axis token, so re-sorting the same column replaces its axis rather than stacking a second one.
@@ -338,6 +339,7 @@ public:
     // Which container type a row-source item realizes as. Item-based rather than index-based
     // because the element factory is only ever handed the item.
     TableViewRowKind GetRowKindForItem(winrt::IInspectable const& item) const;
+    winrt::hstring GetGroupHeaderNameCandidate(GroupedEntry const& entry);
     bool TryGetTableViewSourceRowInfo(int32_t rowIndex, TableViewRowInfo& rowInfo) const;
     bool IsTableViewSourceGrouped() const;
     // True when the flat row at `index` is a group header rather than a data row. Group headers
@@ -863,6 +865,19 @@ private:
     // Left/Right resize for the column whose header has focus; the gripper is a pointer
     // affordance here, not a tab stop.
     bool TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args);
+    // Enter / Space on a focused, sortable column header: the keyboard path to sorting.
+    bool TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args);
+    // Space completes on key up, per XAML activation semantics.
+    bool TryHandleHeaderSortKeyUp(const winrt::KeyRoutedEventArgs& args);
+    winrt::TableViewColumn ResolveHeaderSortKeyTarget(const winrt::KeyRoutedEventArgs& args);
+    // Set while Space is held on a sortable header, cleared when it is released or the key up
+    // lands somewhere else.
+    winrt::weak_ref<winrt::TableViewColumn> m_headerSortSpaceArmedColumn{ nullptr };
+    winrt::UIElement::LostFocus_revoker m_headerSortLostFocusRevoker{};
+    winrt::KeyEventHandler m_keyUpHandler{ nullptr };
+    void OnKeyUpForHeaderSort(
+        const winrt::IInspectable& sender,
+        const winrt::KeyRoutedEventArgs& args);
     // Redirects a header's bring-into-view onto the body scroller, so the header cannot scroll
     // independently of the columns it labels.
     void OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args);

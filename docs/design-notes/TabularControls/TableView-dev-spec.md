@@ -166,16 +166,30 @@ Cell generation is column-specific:
 
 Keyboard handling is row-oriented. `TableView` listens to bubbling `KeyDown` so template-column descendants handle input first; unhandled `Up`, `Down`, `Home`, `End`, `PageUp`, and `PageDown` move focus between rows. The internal `GridCoordinateHelper` performs the row/column ↔ flat-index math, wrap behavior, and overflow guards.
 
-Accessibility exposes a read-only UIA grid/table model:
+Accessibility exposes a UIA grid/table model:
 
-- `TableViewAutomationPeer`: `IGridProvider`, `ITableProvider`, `IItemContainerProvider`
-- `TableViewRowAutomationPeer`: `DataItem` control type, no grid/table provider (exposes its cell peers as children)
-- `TableViewCellAutomationPeer`: `IGridItemProvider`, `ITableItemProvider`
-- `TableViewColumnHeaderAutomationPeer`: column-header name/bounds
+- `TableViewAutomationPeer`: `IGridProvider`, `ITableProvider`, `ISelectionProvider`, `IItemContainerProvider`
+- `TableViewRowAutomationPeer`: `DataItem` control type, `ISelectionItemProvider`, composed name and group-relative `PositionInSet`/`SizeOfSet`; no grid/table provider (exposes its cell peers as children)
+- `TableViewCellAutomationPeer`: `IGridItemProvider`, `ITableItemProvider`, `IValueProvider`, localized `cell` control type
+- `TableViewColumnHeaderAutomationPeer`: column-header name/bounds, `IInvokeProvider` (sort), `PositionInSet`/`SizeOfSet`
+- `TableViewGroupHeaderAutomationPeer`: `IExpandCollapseProvider`, `IGridItemProvider`, `Level`
+
+`ScrollItem` is not implemented explicitly on any of these — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer.
+
+Peers that compute `PositionInSet`, `SizeOfSet` or `Level` report `0` — UIA's "not specified" — when the value cannot be resolved, never `-1`, and an app-set `AutomationProperties` value always wins over the computed one.
+
+Tabular's compiled `ResourceAccessor` reads `Microsoft.UI.Xaml.Controls.Tabular/Resources`, matching its PRI subtree. The in-box MUXC build retains `Microsoft.UI.Xaml/Resources`. A missing resource still falls back safely, but a correctly merged Tabular PRI now supplies the localized cell, sort, group and resize strings.
+
+One known hierarchy gap remains:
+- **`ITableProvider::GetColumnHeaders` returns an empty array.** The synthesized header peers are never parented into the UIA tree, so `ProviderFromPeer` yields null for each and every entry is filtered out. A cell's `GetColumnHeaderItems` is unaffected and does return the header provider.
 
 Lifetime rules: columns and rows use weak owner back-pointers (`GetOwningTableView()` resolves a strong owner for synchronous work); runtime classes use `ReferenceTracker` where required; cross-object events use `auto_revoke`; recycled rows reset transient visual state before reuse.
 
 Theme values resolve through `TabularSurfaces` resources and re-resolve across theme (and high-contrast) changes. Dark `TabularSurfaceGridLineBrush` is `#29FFFFFF`; the C++ fallback uses the same 16% white.
+
+`TableView.xaml` does not redeclare the `TabularSurface*` brush keys: generic-style fallbacks would shadow the canonical palette and bypass its HighContrast system-color brushes. Consumers merge `TabularControlsResources` as documented by the sample.
+
+Template naming unwraps realized presenters and reads public visible text or peer names, with an eight-level/32-element budget per cell. Explicit names and labels win. Name-based item search rechecks the realized public name instead of treating item text as an alias. Text edits capture only an existing cached cell peer; changed Value/Name notifications are deferred until teardown, guarded against recycling/newer values, and never cause peer creation. Space header activation is disarmed on completed focus loss, header replacement, template replacement and unload; autorepeat is consumed only while the same header remains armed.
 
 ## Sort ownership and reconciliation
 
@@ -262,7 +276,7 @@ they can be obsoleted while the API is still `[MUX_PREVIEW]`.
 
 **`TableViewRow`** — `Control` representing one realized item row. `GetOwningTableView()`.
 
-**Automation peers** — `TableViewAutomationPeer`, `TableViewRowAutomationPeer`, `TableViewCellAutomationPeer`, `TableViewColumnHeaderAutomationPeer` (providers: `IGridProvider`, `ITableProvider`, `IGridItemProvider`, `ITableItemProvider`, `IItemContainerProvider`).
+**Automation peers** — `TableViewAutomationPeer`, `TableViewRowAutomationPeer`, `TableViewCellAutomationPeer`, `TableViewColumnHeaderAutomationPeer`, `TableViewGroupHeaderAutomationPeer` (providers: `IGridProvider`, `ITableProvider`, `ISelectionProvider`, `IItemContainerProvider`, `IGridItemProvider`, `ITableItemProvider`, `ISelectionItemProvider`, `IValueProvider`, `IInvokeProvider`, `IExpandCollapseProvider`).
 
 **Enums** — `TableViewFrozenEdge` (`None`/`Leading`/`Trailing`), `TableViewHeadersVisibility` (`None`/`Column`), `TableViewGridLinesVisibility` (`All`/`Horizontal`/`None`/`Vertical`), `TableViewDensity` (`Compact`/`Standard`/`Comfortable`), `TableViewEditingUnit` (`Cell`/`Row`), `TableViewEditAction` (`Commit`/`Cancel`/`Discard`).
 

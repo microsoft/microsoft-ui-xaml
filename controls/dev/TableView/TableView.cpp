@@ -285,6 +285,26 @@ TableView::TableView()
     // AddHandler takes the handler as IInspectable, so the delegate must be boxed (see RoutedEventHelpers.h).
     AddHandler(winrt::UIElement::KeyDownEvent(), winrt::box_value(m_keyDownHandler), true /* handledEventsToo */);
 
+    // Space on a focused header arms on key down and sorts here, on key up. handledEventsToo:
+    // the ancestor ScrollViewer marks Space handled for page-scrolling.
+    m_keyUpHandler = winrt::KeyEventHandler(
+        [weakThis](winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->OnKeyUpForHeaderSort(sender, args);
+            }
+        });
+    AddHandler(winrt::UIElement::KeyUpEvent(), winrt::box_value(m_keyUpHandler), true /* handledEventsToo */);
+
+    m_headerSortLostFocusRevoker = LostFocus(winrt::auto_revoke,
+        [weakThis](winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->m_headerSortSpaceArmedColumn = nullptr;
+            }
+        });
     // Tunneling PreviewKeyDown runs before the framework's built-in focus navigation; snapshot the
     // currently focused row there so OnKeyDownForNavigation anchors on the pre-move index.
     m_previewKeyDownHandler = winrt::KeyEventHandler(
@@ -413,6 +433,7 @@ void TableView::OnThemeSettingsChanged(
 
 void TableView::OnApplyTemplate()
 {
+    m_headerSortSpaceArmedColumn = nullptr;
     __super::OnApplyTemplate();
     InvalidateTableViewResourceCache(this);
 
@@ -1497,6 +1518,7 @@ void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
 
 void TableView::RebuildHeaders()
 {
+    m_headerSortSpaceArmedColumn = nullptr;
     auto host = m_headerHost.get();
     if (!host)
     {
@@ -1551,10 +1573,16 @@ void TableView::RebuildHeaders()
             // The header cell, not the gripper, is the keyboard target: column commands live here,
             // and a bare focusable Grid is unnamed and Raw to a screen reader. Only a tab stop when
             // focusing it can actually do something -- otherwise every column costs a Tab press for
-            // nothing. Same condition that decides whether a gripper is created at all.
+            // nothing.
+            //
+            // Actionable is resize OR sort: gating on resize alone left the common
+            // CanUserSortColumns=true / CanUserResizeColumns=false case with a header that sorts on
+            // click but has no tab stop, so a keyboard-only user could never sort it.
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
-            headerCell.IsTabStop(headerIsResizable);
-            headerCell.UseSystemFocusVisuals(headerIsResizable);
+            const bool headerIsSortable = canUserSortColumns && column.CanSort();
+            const bool headerIsActionable = headerIsResizable || headerIsSortable;
+            headerCell.IsTabStop(headerIsActionable);
+            headerCell.UseSystemFocusVisuals(headerIsActionable);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {
@@ -1609,7 +1637,7 @@ void TableView::RebuildHeaders()
 
             // Sort affordance. Gated on both the control-wide and the per-column opt-in, so an
             // opted-out column carries no chevron and no click handler at all.
-            if (canUserSortColumns && column.CanSort())
+            if (headerIsSortable)
             {
                 // The header cell is a Grid, and a Grid with a null Background is not hit-test
                 // visible in its empty regions. The header content presenter and the chevron host
@@ -1846,6 +1874,7 @@ void TableView::QueueRebuildHeaders()
 
 void TableView::OnTableViewUnloaded()
 {
+    m_headerSortSpaceArmedColumn = nullptr;
     if (m_pendingFocusLayoutToken.value)
     {
         LayoutUpdated(m_pendingFocusLayoutToken);

@@ -34,19 +34,6 @@ namespace
             static_cast<int32_t>((identity >> 32) & 0xffffffffull)
         };
     }
-
-    // Help text is supplementary: degrade instead of letting a resource failure escape into UIA.
-    winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceName)
-    {
-        try
-        {
-            return ResourceAccessor::GetLocalizedStringResource(resourceName);
-        }
-        catch (...)
-        {
-            return {};
-        }
-    }
 }
 
 TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
@@ -233,14 +220,33 @@ bool TableViewColumnHeaderAutomationPeer::IsSortableColumn()
 
 int32_t TableViewColumnHeaderAutomationPeer::GetPositionInSetCore()
 {
-    // Complements the distinct RuntimeId and GetNameCore: expose the 1-based visible column
-    // position so AT (Narrator) can announce "column i of n" as the user moves across headers.
+    // This peer is owned by the table; only the header's attached override applies.
+    if (auto const header = GetHeaderElement())
+    {
+        if (const auto provided = winrt::AutomationProperties::GetPositionInSet(header); provided > 0)
+        {
+            return provided;
+        }
+    }
+
+    // 1-based visible column position, so AT can announce "column i of n".
     const auto index = GetColumnIndex();
-    return index >= 0 ? index + 1 : -1;
+
+    // 0 is UIA's "not specified"; valid values are 1-based, so -1 reached the client as a nonsense
+    // position.
+    return index >= 0 ? index + 1 : 0;
 }
 
 int32_t TableViewColumnHeaderAutomationPeer::GetSizeOfSetCore()
 {
+    if (auto const header = GetHeaderElement())
+    {
+        if (const auto provided = winrt::AutomationProperties::GetSizeOfSet(header); provided > 0)
+        {
+            return provided;
+        }
+    }
+
     // Total visible column count, so PositionInSet reads as "i of n".
     if (auto const owner = Owner().try_as<winrt::TableView>())
     {
@@ -254,7 +260,8 @@ int32_t TableViewColumnHeaderAutomationPeer::GetSizeOfSetCore()
             if (count > 0) { return count; }
         }
     }
-    return -1;
+
+    return 0;
 }
 
 winrt::Windows::Foundation::Rect TableViewColumnHeaderAutomationPeer::GetBoundingRectangleCore()

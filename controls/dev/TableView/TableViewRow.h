@@ -169,6 +169,10 @@ private:
     tracker_ref<winrt::Border> m_editingCellWrapper{ this };
     tracker_ref<winrt::FrameworkElement> m_editingElement{ this };
     tracker_ref<winrt::UIElement> m_editingDisplayElement{ this };
+    winrt::weak_ref<winrt::TableViewCellAutomationPeer> m_editingAutomationPeer{ nullptr };
+    tracker_ref<winrt::IInspectable> m_editingAutomationItem{ this };
+    winrt::hstring m_editingAutomationValue;
+    winrt::hstring m_editingAutomationName;
 
     // Begin-edit gesture state. Held per row rather than on the control: a double-click that starts
     // on one row and finishes on another is not a double-click, and per-row state makes that fall
