@@ -955,10 +955,9 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
     auto onExit = wil::scope_exit([this]()
     {
         m_fRequestTemplateBindingRefresh = FALSE;
+        TraceRefreshTemplateBindingsEnd();
 #ifdef XAMLPROFILER_ENABLED
         XamlProfilerTracing::RefreshTemplateBindingsStop();
-#else
-        TraceRefreshTemplateBindingsEnd();
 #endif
 
         TraceLoggingProviderWrite(
@@ -968,10 +967,9 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     });
 
+    TraceRefreshTemplateBindingsBegin();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::RefreshTemplateBindingsStart(reinterpret_cast<uint64_t>(this));
-#else
-    TraceRefreshTemplateBindingsBegin();
 #endif
 
     TraceLoggingProviderWrite(
@@ -1121,41 +1119,55 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
 
     IFCPTR(ppStyle);
 
-#ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::GetBuiltInStyleStart(reinterpret_cast<uint64_t>(this));
-#else
     TraceGetBuiltInStyleBegin();
+    {
+#ifdef XAMLPROFILER_ENABLED
+        // Balance the profiler activity on every exit, including the IFC error paths below that the
+        // retail End (which only runs after the style is resolved) intentionally does not cover. The
+        // resolved style name is captured after retrieval and read back here on the Stop edge; pStyle
+        // is cleared before Cleanup, so it cannot be read from the lambda directly.
+        xstring_ptr profilerStyleName;
+        XamlProfilerTracing::GetBuiltInStyleStart(reinterpret_cast<uint64_t>(this));
+        auto profilerGuard = wil::scope_exit([this, &profilerStyleName]()
+        {
+            XamlProfilerTracing::GetBuiltInStyleStop(reinterpret_cast<uint64_t>(this),
+                profilerStyleName.IsNull() ? L"None" : profilerStyleName.GetBuffer());
+        });
 #endif
 
-    // If the CLR is initialized, then get the builtin style from the managed side.
-    // else, retrieve the native builtin style.
+        // If the CLR is initialized, then get the builtin style from the managed side.
+        // else, retrieve the native builtin style.
 
-    // If there's no managed peer, create one. This is necessary for retrieval of
-    // built-in styles
-    IFC(EnsurePeer());
+        // If there's no managed peer, create one. This is necessary for retrieval of
+        // built-in styles
+        IFC(EnsurePeer());
 
-    IFC(FxCallbacks::Control_GetBuiltInStyle(this, &pStyle));
+        IFC(FxCallbacks::Control_GetBuiltInStyle(this, &pStyle));
 
 #ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::GetBuiltInStyleStop();
-#else
-    if (EventEnabledGetBuiltInStyleEnd())
-    {
-        if (pStyle)
+        if (pStyle && XamlProfilerTracing::IsEnabled())
         {
-            xstring_ptr strStyle;
-            IFC(pStyle->GetTargetTypeName(&strStyle));
-            TraceGetBuiltInStyleEnd(strStyle.GetBuffer());
+            IGNOREHR(pStyle->GetTargetTypeName(&profilerStyleName));
         }
-        else
-        {
-            TraceGetBuiltInStyleEnd(L"None");
-        }
-    }
 #endif
 
-    *ppStyle = pStyle;
-    pStyle = NULL;
+        if (EventEnabledGetBuiltInStyleEnd())
+        {
+            if (pStyle)
+            {
+                xstring_ptr strStyle;
+                IFC(pStyle->GetTargetTypeName(&strStyle));
+                TraceGetBuiltInStyleEnd(strStyle.GetBuffer());
+            }
+            else
+            {
+                TraceGetBuiltInStyleEnd(L"None");
+            }
+        }
+
+        *ppStyle = pStyle;
+        pStyle = NULL;
+    }
 
 Cleanup:
 

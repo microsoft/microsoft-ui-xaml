@@ -652,10 +652,9 @@ HRESULT CTransition::OnLayoutChanged(_In_ CUIElement* pTarget)
     CLayoutManager* pLayoutManager = NULL;
     LayoutTransitionStorage* pStorage = NULL;
     TransitionTrigger currentTrigger = DirectUI::TransitionTrigger::NoTrigger;
+    TraceProcessLayoutForTransitionBegin();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::ProcessLayoutForTransitionStart(reinterpret_cast<uint64_t>(pTarget));
-#else
-    TraceProcessLayoutForTransitionBegin();
 #endif
 
     IFCEXPECT(pTarget);
@@ -809,10 +808,9 @@ Cleanup:
     {
         CTransition::SetNextGenerationInformationFromLayout(pTarget, pStorage, pLayoutManager->GetNextLayoutCounter());
     }
+    TraceProcessLayoutForTransitionEnd();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::ProcessLayoutForTransitionStop();
-#else
-    TraceProcessLayoutForTransitionEnd();
 #endif
     RRETURN(hr);
 }
@@ -1422,10 +1420,9 @@ _Check_return_ HRESULT CTransition::CancelTransitions(_In_ CUIElement* pTarget)
     bool bWasUnloading = false;
     CLayoutTransitionElement* pDestinationElement = NULL;
 
+    TraceCancelTransitionsBegin();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::CancelTransitionsStart(reinterpret_cast<uint64_t>(pTarget));
-#else
-    TraceCancelTransitionsBegin();
 #endif
 
     // it is expected that storage does not have a valid pointer to the transition at this point
@@ -1479,10 +1476,9 @@ _Check_return_ HRESULT CTransition::CancelTransitions(_In_ CUIElement* pTarget)
         }
     }
 Cleanup:
+    TraceCancelTransitionsEnd();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::CancelTransitionsStop();
-#else
-    TraceCancelTransitionsEnd();
 #endif
     RRETURN(hr);
 }

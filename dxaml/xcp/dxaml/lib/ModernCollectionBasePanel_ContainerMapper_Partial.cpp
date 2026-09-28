@@ -341,20 +341,18 @@ void ModernCollectionBasePanel::ContainerManager::UpdateDataIndexForFirstValidEl
 // that it is realized.
 _Check_return_ HRESULT ModernCollectionBasePanel::ContainerManager::PlaceInValidElements(_In_ xaml_controls::ElementType type, _In_ INT32 dataIndex, _In_ const ctl::ComPtr<IUIElement>& spElement)
 {
-#ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::PlaceElementStart(spElement ? reinterpret_cast<uint64_t>(spElement.Cast<UIElement>()->GetHandle()) : 0);
-    auto guard = wil::scope_exit([]()
-    {
-        XamlProfilerTracing::PlaceElementStop();
-    });
-#else
     TracePlaceElementBegin(dataIndex);
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::PlaceElementStart(spElement ? reinterpret_cast<uint64_t>(spElement.Cast<UIElement>()->GetHandle()) : 0, dataIndex);
+#endif
 
     auto guard = wil::scope_exit([]()
     {
         TracePlaceElementEnd();
-    });
+#ifdef XAMLPROFILER_ENABLED
+        XamlProfilerTracing::PlaceElementStop();
 #endif
+    });
 
     ctl::WeakRefPtr weakRef;
     IFC_RETURN(ctl::ComPtr<IUIElement>(spElement).AsWeak(&weakRef));
