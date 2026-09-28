@@ -1,0 +1,16 @@
+private void OnGridLinesVisibilityChecked(object sender, RoutedEventArgs e)
+{
+    if (sender is RadioButton rb && rb.Tag is string tag &&
+        Enum.TryParse<TableViewGridLinesVisibility>(tag, out var v))
+    {
+        EnsureTableStyle().GridLinesVisibility = v;
+    }
+}
+
+private TableStyle EnsureTableStyle()
+{
+    return DemoTable.TableStyle ??= new TableStyle
+    {
+        HeadersVisibility = TableViewHeadersVisibility.Column,
+    };
+}

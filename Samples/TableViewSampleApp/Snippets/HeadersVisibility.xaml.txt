@@ -1,0 +1,17 @@
+<!-- TableStyle.HeadersVisibility controls the TableView header surfaces:
+     Column  => column headers visible (default)
+     None    => headers hidden; the body row band occupies the freed top edge -->
+
+<StackPanel Orientation="Horizontal" Spacing="18">
+    <RadioButton Content="Column" Tag="Column" GroupName="HeadersVisibility" IsChecked="True" Checked="OnHeadersVisibilityChecked"/>
+    <RadioButton Content="None"   Tag="None"   GroupName="HeadersVisibility" Checked="OnHeadersVisibilityChecked"/>
+</StackPanel>
+
+<adv:TableView x:Name="DemoTable"
+               SelectionMode="Single">
+    <adv:TableViewTextColumn Header="Column 1" Binding="{Binding Value1}"/>
+    <adv:TableViewTextColumn Header="Column 2" Binding="{Binding Value2}"/>
+    <adv:TableViewTextColumn Header="Column 3" Binding="{Binding Value3}"/>
+    <adv:TableViewTextColumn Header="Column 4" Binding="{Binding Value4}"/>
+    <adv:TableViewTextColumn Header="Column 5" Binding="{Binding Value5}"/>
+</adv:TableView>

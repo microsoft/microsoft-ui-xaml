@@ -1,0 +1,32 @@
+// CellToolTipBinding is a CLR property rather than a DP, so XAML passes the Binding through
+// UNEVALUATED — it has to be evaluated per row, against that row's data item.
+
+// Same text as the cell: right for a column that truncates. The peer drops the duplicate
+// help text so a screen reader reads it once.
+BioColumn.CellToolTipBinding = new Binding { Path = new PropertyPath(nameof(Person.Bio)) };
+
+// A DIFFERENT property, and an observable one: Person raises PropertyChanged for Role, so
+// the tooltip follows the data with no invalidation call from the app.
+DepartmentColumn.CellToolTipBinding = new Binding { Path = new PropertyPath(nameof(Person.Role)) };
+
+// No Path, so the binding produces the ROW ITEM and the converter turns it into content.
+NameColumn.CellToolTipBinding = new Binding { Converter = new RowCardConverter() };
+
+// Clearing the binding retracts the tooltip. There is no separate remove call.
+NameColumn.CellToolTipBinding = null;
+
+// Header tooltips update in place, and null retracts.
+NameColumn.HeaderToolTip = "Changed in place";
+DepartmentColumn.HeaderToolTip = null;
+
+public sealed partial class RowCardConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        // A FRESH element per evaluation: the result is parented by the cell's ToolTip, and
+        // one element cannot have two parents, so this must not be cached.
+        var panel = new StackPanel { Spacing = 4 };
+        panel.Children.Add(new TextBlock { Text = ((Person)value).FullName });
+        return panel;
+    }
+}

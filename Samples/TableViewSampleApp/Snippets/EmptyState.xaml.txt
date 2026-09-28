@@ -1,0 +1,34 @@
+<!-- TableView.EmptyTemplate renders (centered over the row area) whenever
+     ItemsSource is null or resolves to zero rows. Keep the content to text +
+     shapes — a FontIcon inside EmptyTemplate crashes at startup. -->
+
+<Page.Resources>
+    <DataTemplate x:Key="EmptyStateTemplate">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+            <Grid Width="64" Height="64" HorizontalAlignment="Center">
+                <Ellipse Fill="{ThemeResource SubtleFillColorSecondaryBrush}"
+                         Stroke="{ThemeResource CardStrokeColorDefaultBrush}" StrokeThickness="1"/>
+                <Rectangle Width="26" Height="20" RadiusX="3" RadiusY="3"
+                           Stroke="{ThemeResource TextFillColorTertiaryBrush}" StrokeThickness="2"/>
+            </Grid>
+            <TextBlock Text="No rows to display" HorizontalAlignment="Center"
+                       Style="{ThemeResource SubtitleTextBlockStyle}"/>
+            <TextBlock Text="The table's ItemsSource is null or empty. Load the sample data."
+                       TextAlignment="Center" TextWrapping="Wrap"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+        </StackPanel>
+    </DataTemplate>
+</Page.Resources>
+
+<adv:TableView x:Name="DemoTable"
+               SelectionMode="Single"
+               EmptyTemplate="{StaticResource EmptyStateTemplate}">
+    <adv:TableViewTextColumn Header="Name"       Binding="{Binding FullName}"/>
+    <adv:TableViewTextColumn Header="Department" Binding="{Binding Department}"/>
+    <adv:TableViewTextColumn Header="Role"       Binding="{Binding Role}"/>
+    <adv:TableViewTextColumn Header="Email"      Binding="{Binding Email}"/>
+</adv:TableView>
+
+<!-- Toggle the data source to show / hide the empty state -->
+<RadioButton Content="Populated"    Tag="Populated" GroupName="EmptyStateSource" IsChecked="True" Checked="OnDataSourceChecked"/>
+<RadioButton Content="Empty (null)" Tag="Empty"     GroupName="EmptyStateSource" Checked="OnDataSourceChecked"/>

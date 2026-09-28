@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.CellFlyoutsPage"
+    NavigationCacheMode="Disabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls"
+    xmlns:local="using:TableViewSampleApp.Pages"
+    xmlns:models="using:TableViewSampleApp.Models">
+
+    <Page.Resources>
+        <local:PersonAvatarBrushConverter x:Key="PersonAvatarBrushConverter"/>
+        <local:PersonAvatarColorNameConverter x:Key="PersonAvatarColorNameConverter"/>
+
+        <DataTemplate x:Key="AvatarCell" x:DataType="models:Person">
+            <Border
+                Width="28"
+                Height="28"
+                CornerRadius="14"
+                Background="{Binding Department, Converter={StaticResource PersonAvatarBrushConverter}}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsHitTestVisible="False"
+                AutomationProperties.AutomationId="CellFlyoutsAvatar"
+                AutomationProperties.Name="{Binding FullName}"
+                AutomationProperties.HelpText="{Binding Department, Converter={StaticResource PersonAvatarColorNameConverter}}">
+                <TextBlock
+                    Text="{Binding Initial}"
+                    Foreground="White"
+                    FontWeight="SemiBold"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"/>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DatePickerCell" x:DataType="models:Person">
+            <DatePicker
+                Date="{Binding JoinDate, Mode=TwoWay}"
+                IsTabStop="True"
+                Loaded="OnDatePickerLoaded"
+                Margin="6,2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"
+                AutomationProperties.AutomationId="CellFlyoutsDatePicker"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DepartmentComboCell" x:DataType="models:Person">
+            <ComboBox
+                SelectedItem="{Binding Department, Mode=TwoWay}"
+                IsTabStop="True"
+                Loaded="OnDepartmentComboBoxLoaded"
+                Margin="6,2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"
+                AutomationProperties.AutomationId="CellFlyoutsDepartmentComboBox"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DetailsButtonCell" x:DataType="models:Person">
+            <Button
+                Content="Details"
+                IsTabStop="True"
+                Click="OnDetailsButtonClick"
+                Margin="6,2"
+                HorizontalAlignment="Stretch"
+                AutomationProperties.AutomationId="CellFlyoutsDetailsButton">
+                <FlyoutBase.AttachedFlyout>
+                    <Flyout>
+                        <StackPanel Spacing="6" MaxWidth="280">
+                            <TextBlock Text="Details flyout from a table cell" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                            <TextBlock Text="This Button uses FlyoutBase.AttachedFlyout and opens from inside a TableViewTemplateColumn." TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+            </Button>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ShiftMenuCell" x:DataType="models:Person">
+            <muxc:DropDownButton
+                Content="{Binding ShiftStart}"
+                IsTabStop="True"
+                Margin="6,2"
+                HorizontalAlignment="Stretch"
+                AutomationProperties.AutomationId="CellFlyoutsShiftDropDownButton">
+                <muxc:DropDownButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="7:00 AM" Tag="07:00" Click="OnShiftMenuItemClick"/>
+                        <MenuFlyoutItem Text="8:00 AM" Tag="08:00" Click="OnShiftMenuItemClick"/>
+                        <MenuFlyoutItem Text="9:00 AM" Tag="09:00" Click="OnShiftMenuItemClick"/>
+                        <MenuFlyoutItem Text="10:00 AM" Tag="10:00" Click="OnShiftMenuItemClick"/>
+                    </MenuFlyout>
+                </muxc:DropDownButton.Flyout>
+            </muxc:DropDownButton>
+        </DataTemplate>
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="Interactive cell flyouts"
+        Description="Template cells with controls that keep hit testing and keyboard focus enabled: DatePicker, ComboBox, Button.Flyout, and a DropDownButton MenuFlyout. This intentionally opens popups from inside TableView cells so placement and clipping can be verified."
+        SourceCaption="CellFlyoutsPage.xaml (excerpt)"
+        SourceSnippet="CellFlyouts.xaml.txt"
+        AdditionalSnippetCaption="CellFlyoutsPage.xaml.cs (excerpt)"
+        AdditionalSnippet="CellFlyouts.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Try it"
+                    Message="Open a date picker, department combo, details flyout, or shift menu directly from a cell. Popups should appear anchored to the invoking cell and remain visible."
+                    MinHeight="104"/>
+                <Border
+                    Grid.Row="1"
+                    Style="{StaticResource TableHostBorderStyle}"
+                    Padding="0"
+                    VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="PeopleTable"
+                        SelectionMode="Single"
+                        IsReadOnly="False"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <adv:TableViewTextColumn Header="Name" Width="180" Binding="{Binding FullName}" CanSort="False"/>
+                        <adv:TableViewTemplateColumn Header="Join date" Width="220" SortMemberPath="JoinDate" CellTemplate="{StaticResource DatePickerCell}" CanSort="False"/>
+                        <adv:TableViewTemplateColumn Header="Department" Width="130" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentComboCell}" CanSort="False"/>
+                        <adv:TableViewTemplateColumn Header="Details flyout" Width="130" SortMemberPath="FullName" CellTemplate="{StaticResource DetailsButtonCell}" CanSort="False"/>
+                        <adv:TableViewTemplateColumn Header="Shift menu" Width="130" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftMenuCell}" CanSort="False"/>
+                        <adv:TableViewTemplateColumn Header="Image" Width="{StaticResource ColWidthAvatar}" SortMemberPath="Initial" CellTemplate="{StaticResource AvatarCell}" CanSort="False"/>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Live data readout" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock Text="The first row updates when an interactive cell commits a value." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <TextBlock
+                    x:Name="LiveReadout"
+                    FontFamily="Consolas"
+                    FontSize="12"
+                    TextWrapping="Wrap"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <muxc:InfoBar
+                    AutomationProperties.AutomationId="CellFlyoutsStatusInfoBar"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Status"
+                    Message="{x:Bind StatusText, Mode=OneWay}"
+                    MinHeight="64"/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+    </controls:SamplePresenter>
+</Page>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.GridLinesVisibilityPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <Page.Resources>
+        <!-- Custom banding demo brushes moved to App.xaml as SampleCustom*Brush
+             so the Showcase and Grid-lines pages share one definition. -->
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="Grid lines visibility"
+        Description="GridLinesVisibility property — None / Horizontal / Vertical / All — controls per-row bottom borders and per-cell right borders for WPF DataGrid parity. The same property works across flat and grouped modes, with default theme banding or custom row colors."
+        SourceCaption="GridLinesVisibilityPage.xaml (excerpt)"
+        SourceSnippet="GridLinesVisibility.xaml.txt"
+        AdditionalSnippetCaption="GridLinesVisibilityPage.xaml.cs (excerpt)"
+        AdditionalSnippet="GridLinesVisibility.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Try it"
+                    Message="Choose which grid lines show — All, Horizontal, Vertical, or None. Switch mode or banding to see the lines stay on-theme."
+                    MinHeight="104"/>
+                <Border
+                    Grid.Row="1"
+                    Style="{StaticResource TableHostBorderStyle}"
+                    Padding="0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="DemoTable"
+                        AutomationProperties.AutomationId="GridLinesDemoTable"
+                        SelectionMode="Single"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <adv:TableViewTextColumn Header="First"      Width="{StaticResource ColWidthShortName}"  Binding="{Binding FirstName}"     CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Last"       Width="{StaticResource ColWidthShortName}"  Binding="{Binding LastName}"      CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"    CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding Role}"          CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Email"      Width="*" MinWidth="200"      Binding="{Binding Email}"         CanSort="False"/>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <StackPanel Spacing="4" AutomationProperties.Name="Grid lines visibility options">
+                    <TextBlock Text="Grid lines" Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <RadioButton Content="None"          Tag="None"        GroupName="GridLinesVisibility" Checked="OnGridLinesVisibilityChecked" AutomationProperties.AutomationId="GridLinesRadioNone"/>
+                    <RadioButton Content="Horizontal"    Tag="Horizontal"  GroupName="GridLinesVisibility" Checked="OnGridLinesVisibilityChecked" AutomationProperties.AutomationId="GridLinesRadioHorizontal"/>
+                    <RadioButton Content="Vertical"      Tag="Vertical"    GroupName="GridLinesVisibility" Checked="OnGridLinesVisibilityChecked" AutomationProperties.AutomationId="GridLinesRadioVertical"/>
+                    <RadioButton Content="All (default)" Tag="All"         GroupName="GridLinesVisibility" IsChecked="True" Checked="OnGridLinesVisibilityChecked" AutomationProperties.AutomationId="GridLinesRadioAll"/>
+                </StackPanel>
+
+                <StackPanel Spacing="4" AutomationProperties.Name="Grid lines layout options">
+                    <TextBlock Text="Mode" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <RadioButton Content="Flat"          Tag="Flat"         GroupName="GridLinesMode" IsChecked="True" Checked="OnModeRadioChecked" AutomationProperties.AutomationId="GridLinesModeFlatRadio"/>
+                    <RadioButton Content="Grouped"       Tag="Grouped"      GroupName="GridLinesMode" Checked="OnModeRadioChecked" AutomationProperties.AutomationId="GridLinesModeGroupedRadio"/>
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Row banding" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <RadioButton Content="Default theme" GroupName="GridLinesBanding" IsChecked="True"
+                                 x:Name="DefaultBandingRadio"
+                                 Checked="OnBandingRadioChecked"
+                                 AutomationProperties.AutomationId="GridLinesBandingDefaultRadio"/>
+                    <RadioButton Content="Custom colors"
+                                 x:Name="CustomBandingRadio"
+                                 GroupName="GridLinesBanding"
+                                 Checked="OnBandingRadioChecked"
+                                 AutomationProperties.AutomationId="GridLinesBandingCustomRadio"/>
+                </StackPanel>
+
+                <muxc:InfoBar
+                    AutomationProperties.AutomationId="GridLinesStatusInfoBar"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Status"
+                    Message="{x:Bind StatusText, Mode=OneWay}"
+                    MinHeight="64"/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

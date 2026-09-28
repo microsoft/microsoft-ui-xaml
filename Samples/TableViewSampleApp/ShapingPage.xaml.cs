@@ -18,7 +18,7 @@ public sealed partial class ShapingPage : Page
     // Observable so the page can mutate the collection after binding. That is what makes a Reset
     // reach the TableView on an ItemsSourceView it already holds - the shaping verbs each swap in a
     // new view instead, so they never exercise that path.
-    private readonly ObservableCollection<Item> _items = new(Data.Make());
+    private readonly ObservableCollection<Item> _items = new(ShapingData.Make());
     private TableViewSource _source = null!;
     private bool _ready;   // guards combo SelectionChanged that fires during XAML load
 

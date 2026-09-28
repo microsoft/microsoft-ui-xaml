@@ -1,0 +1,7 @@
+<!-- GroupsPage.xaml declares columns only; code-behind assigns the source. -->
+
+<adv:TableView x:Name="PeopleTableControl">
+    <adv:TableViewTextColumn Header="First name" Binding="{Binding FirstName}"/>
+    <adv:TableViewTextColumn Header="Last name"  Binding="{Binding LastName}"/>
+    <adv:TableViewTextColumn Header="Role"       Binding="{Binding Role}"/>
+</adv:TableView>

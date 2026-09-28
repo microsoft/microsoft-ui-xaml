@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.TextWrapPage"
+    NavigationCacheMode="Disabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls"
+    xmlns:local="using:TableViewSampleApp.Pages"
+    xmlns:models="using:TableViewSampleApp.Models">
+
+    <Page.Resources>
+        <local:TextWrapState x:Key="TextWrapState"/>
+        <local:PersonAvatarBrushConverter x:Key="PersonAvatarBrushConverter"/>
+        <local:PersonAvatarColorNameConverter x:Key="PersonAvatarColorNameConverter"/>
+
+        <DataTemplate x:Key="AvatarCell" x:DataType="models:Person">
+            <Border
+                Width="28"
+                Height="28"
+                CornerRadius="14"
+                Background="{Binding Department, Converter={StaticResource PersonAvatarBrushConverter}}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsHitTestVisible="False"
+                AutomationProperties.AutomationId="TextWrapAvatar"
+                AutomationProperties.Name="{Binding FullName}"
+                AutomationProperties.HelpText="{Binding Department, Converter={StaticResource PersonAvatarColorNameConverter}}">
+                <TextBlock
+                    Text="{Binding Initial}"
+                    Foreground="White"
+                    FontWeight="SemiBold"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"/>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="BioCell" x:DataType="models:Person">
+            <TextBlock
+                Text="{Binding Bio}"
+                TextWrapping="{Binding TextWrapping, Source={StaticResource TextWrapState}}"
+                TextTrimming="{Binding TextTrimming, Source={StaticResource TextWrapState}}"
+                MaxLines="{Binding MaxLines, Source={StaticResource TextWrapState}}"
+                Margin="8,6"
+                VerticalAlignment="Top"
+                TextAlignment="Left"
+                Loaded="OnBioTextBlockLoaded"
+                Unloaded="OnBioTextBlockUnloaded"
+                SizeChanged="OnBioTextBlockSizeChanged"
+                AutomationProperties.AutomationId="TextWrapBioCell"/>
+        </DataTemplate>
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="Text wrap + variable row height"
+        Description="A wrapping TextBlock hosted in a TableViewTemplateColumn. Toggle wrapping and column width to see whether TableView rows are measured to their cell content instead of staying at a fixed height."
+        SourceCaption="TextWrapPage.xaml (excerpt)"
+        SourceSnippet="TextWrap.xaml.txt"
+        AdditionalSnippetCaption="TextWrapPage.xaml.cs (excerpt)"
+        AdditionalSnippet="TextWrap.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Try it"
+                    Message="Turn wrapping on, narrow the Bio column, and compare the measured row / cell heights in the options pane."
+                    MinHeight="104"/>
+                <Border
+                    Grid.Row="1"
+                    Style="{StaticResource TableHostBorderStyle}"
+                    Padding="0"
+                    VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="DemoTable"
+                        SelectionMode="Single"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <adv:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
+                        <adv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" SortMemberPath="Bio" CellTemplate="{StaticResource BioCell}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
+                        <adv:TableViewTemplateColumn Header="Image" Width="{StaticResource ColWidthAvatar}" SortMemberPath="Initial" CellTemplate="{StaticResource AvatarCell}" CanSort="False"/>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <StackPanel Spacing="4" AutomationProperties.Name="Wrap options">
+                    <TextBlock Text="Wrapping" Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Switch the Bio cell TextBlock between Wrap and NoWrap." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ToggleSwitch
+                        x:Name="WrapToggle"
+                        Header="TextWrapping"
+                        IsOn="True"
+                        OnContent="Wrap"
+                        OffContent="NoWrap"
+                        Toggled="OnWrapToggled"
+                        AutomationProperties.AutomationId="TextWrapToggle"/>
+                </StackPanel>
+
+                <StackPanel Spacing="4" AutomationProperties.Name="Column width options">
+                    <TextBlock Text="Bio column width" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Narrow widths force more wrapping and should produce taller rows." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <Slider
+                        x:Name="ColumnWidthSlider"
+                        Minimum="220"
+                        Maximum="520"
+                        StepFrequency="20"
+                        Value="360"
+                        ValueChanged="OnColumnWidthChanged"
+                        AutomationProperties.AutomationId="TextWrapColumnWidthSlider"/>
+                    <TextBlock Text="{x:Bind ColumnWidthText, Mode=OneWay}" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TextWrapColumnWidthText"/>
+                </StackPanel>
+
+                <StackPanel Spacing="4" AutomationProperties.Name="Line limit options">
+                    <TextBlock Text="Max lines" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <ComboBox
+                        x:Name="MaxLinesComboBox"
+                        SelectedIndex="0"
+                        SelectionChanged="OnMaxLinesSelectionChanged"
+                        AutomationProperties.AutomationId="TextWrapMaxLinesComboBox">
+                        <ComboBoxItem Content="Unlimited" Tag="0"/>
+                        <ComboBoxItem Content="2 lines + trimming" Tag="2"/>
+                        <ComboBoxItem Content="3 lines + trimming" Tag="3"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <muxc:InfoBar
+                    AutomationProperties.AutomationId="TextWrapStatusInfoBar"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Measured result"
+                    Message="{x:Bind StatusText, Mode=OneWay}"
+                    MinHeight="96"/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

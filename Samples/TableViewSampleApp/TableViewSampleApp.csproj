@@ -43,6 +43,28 @@
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
+  <!-- Source snippets shown in each page's Source expander. Embedded rather than loose content so
+       CodeBlock can resolve them by name with no file I/O and no deployment step. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Snippets\*.txt">
+      <WithCulture>false</WithCulture>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="BuildInfo.cs" />
+  </ItemGroup>
+
+  <!-- Keep build identity out of the checked-in placeholder. -->
+  <Target Name="_GenerateBuildInfo" BeforeTargets="PrepareForBuild">
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Generate-BuildInfo.ps1&quot; -OutFile &quot;$(IntermediateOutputPath)BuildInfo.g.cs&quot; -ProjectDir &quot;$(MSBuildProjectDirectory)&quot;"
+          EnvironmentVariables="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier)" />
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)BuildInfo.g.cs" />
+      <FileWrites Include="$(IntermediateOutputPath)BuildInfo.g.cs" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>

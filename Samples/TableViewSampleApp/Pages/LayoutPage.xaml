@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.LayoutPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Layout"
+        Description="Validate TableView column sizing strategies in one place: interactive Width / MinWidth / MaxWidth tweaking, Auto sizing to content, Star distribution, fixed Pixel columns that force horizontal scrolling, and realistic Mixed layouts."
+        SourceCaption="LayoutPage.xaml (excerpt)"
+        SourceSnippet="Layout.xaml.txt"
+        AdditionalSnippetCaption="LayoutPage.xaml.cs (excerpt)"
+        AdditionalSnippet="Layout.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid Padding="12" RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Grid.Row="0"
+                    x:Name="ModeDescription"
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    AutomationProperties.AutomationId="ModeDescription"/>
+
+                <muxc:InfoBar
+                    Grid.Row="1"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Horizontal scroll sync">
+                    <TextBlock
+                        x:Name="HorizontalSyncText"
+                        TextWrapping="Wrap"
+                        AutomationProperties.AutomationId="HorizontalSyncText"/>
+                </muxc:InfoBar>
+
+                <Border
+                    Grid.Row="2"
+                    Style="{StaticResource TableHostBorderStyle}"
+                    Padding="0"
+                    VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="WidthsTable"
+                        SelectionMode="Single"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320"
+                        AutomationProperties.AutomationId="WidthsTable"/>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Layout mode" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock Text="Choose the column-layout scenario to rebuild the table." Style="{StaticResource SectionDescriptionTextStyle}"/>
+                <muxc:RadioButtons
+                    x:Name="ModeSelector"
+                    MaxColumns="1"
+                    SelectedIndex="0"
+                    SelectionChanged="OnModeChanged"
+                    AutomationProperties.Name="Column width strategy">
+                    <x:String>Playground</x:String>
+                    <x:String>Auto</x:String>
+                    <x:String>Star</x:String>
+                    <x:String>Pixel</x:String>
+                    <x:String>Mixed</x:String>
+                </muxc:RadioButtons>
+
+                <StackPanel x:Name="PlaygroundPanel" Spacing="12">
+                    <TextBlock Text="Column sizing" Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Select a column and drive MinWidth, Width, and MaxWidth from code." Style="{StaticResource SectionDescriptionTextStyle}"/>
+                    <ComboBox x:Name="ColumnCombo" SelectionChanged="OnColumnComboChanged" AutomationProperties.Name="Column to adjust" HorizontalAlignment="Stretch"/>
+                    <TextBlock Text="MinWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <Slider x:Name="MinWidthSlider" Minimum="0" Maximum="400" StepFrequency="10" Value="20" ValueChanged="OnMinWidthSliderChanged" AutomationProperties.AutomationId="MinWidthSlider" AutomationProperties.Name="Minimum column width" HorizontalAlignment="Stretch"/>
+                    <TextBlock x:Name="MinWidthValue" Text="20" Style="{StaticResource StatusReadoutValueStyle}" TextAlignment="Right"/>
+                    <TextBlock Text="Width" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <Slider x:Name="WidthSlider" Minimum="0" Maximum="500" StepFrequency="10" Value="160" ValueChanged="OnWidthSliderChanged" AutomationProperties.AutomationId="WidthSlider" AutomationProperties.Name="Column width" HorizontalAlignment="Stretch"/>
+                    <TextBlock x:Name="WidthValue" Text="160" Style="{StaticResource StatusReadoutValueStyle}" TextAlignment="Right"/>
+                    <TextBlock Text="MaxWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <Slider x:Name="MaxWidthSlider" Minimum="50" Maximum="500" StepFrequency="10" Value="500" ValueChanged="OnMaxWidthSliderChanged" AutomationProperties.AutomationId="MaxWidthSlider" AutomationProperties.Name="Maximum column width" HorizontalAlignment="Stretch"/>
+                    <TextBlock x:Name="MaxWidthValue" Text="500" Style="{StaticResource StatusReadoutValueStyle}" TextAlignment="Right"/>
+                    <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid ColumnSpacing="12" RowSpacing="4">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Selected column" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SelectedColumnText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedColumnText"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Width / ActualWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="WidthReadoutText" Text="?" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="WidthReadoutText"/>
+                    </Grid>
+                </StackPanel>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

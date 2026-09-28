@@ -1,0 +1,27 @@
+// The control owns sort STATE; the consumer owns the DATA shape. When Sorted
+// fires, read the single active sorted column and re-order the bound collection.
+private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
+{
+    IEnumerable<LeagueTeam> ordered = _master;
+
+    var column = TeamsTable.SortedColumns.FirstOrDefault();
+    if (column is not null &&
+        !string.IsNullOrEmpty(column.SortMemberPath) &&
+        s_keySelectors.TryGetValue(column.SortMemberPath, out var key))
+    {
+        ordered = column.SortDirection == SortDirection.Descending
+            ? _master.OrderByDescending(key)
+            : _master.OrderBy(key);
+    }
+
+    Teams.Clear();
+    foreach (var team in ordered.ToList())
+    {
+        Teams.Add(team);
+    }
+}
+
+// Programmatic single-column sort APIs:
+TeamsTable.SortByColumn(PointsColumn, SortDirection.Descending);
+TeamsTable.ToggleSortDirection(PointsColumn);
+TeamsTable.ClearSort();

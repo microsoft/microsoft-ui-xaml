@@ -1,0 +1,25 @@
+// React to a width change you made elsewhere.
+EmailColumn.Width = new GridLength(320);
+
+// EmailColumn.Width.Value      == 320.0  // user intent
+// EmailColumn.ActualWidth      == 320.0  // rendered
+
+// Push MinWidth above the configured Width — Width is preserved, ActualWidth clamps.
+EmailColumn.MinWidth = 360.0;
+// EmailColumn.Width            == 320.0
+// EmailColumn.ActualWidth      == 360.0
+
+// Drop MaxWidth below the configured Width — same idea, opposite direction.
+EmailColumn.MinWidth = 100.0;
+EmailColumn.MaxWidth = 200.0;
+// EmailColumn.Width            == 320.0
+// EmailColumn.ActualWidth      == 200.0
+
+// MinWidth wins if the consumer accidentally crosses the bounds —
+// ActualWidth is never less than MinWidth, even when MinWidth > MaxWidth.
+EmailColumn.MinWidth = 250.0;
+EmailColumn.MaxWidth = 100.0;
+// EmailColumn.ActualWidth      == 250.0  (floor wins)
+
+// Opt out of the resize gripper for a column. Programmatic Width still works.
+RoleColumn.CanUserResize = false;
