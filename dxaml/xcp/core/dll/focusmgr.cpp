@@ -1849,10 +1849,9 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
     bool shouldBringIntoView = false;
     GUID correlationId = m_asyncOperation != nullptr ? m_asyncOperation->GetCorrelationId() : movement.GetCorrelationId();
 
+    TraceUpdateFocusBegin();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::UpdateFocusStart(reinterpret_cast<uint64_t>(movement.GetTarget()));
-#else
-    TraceUpdateFocusBegin();
 #endif
 
     DirectUI::InputDeviceType lastInputDeviceType = DirectUI::InputDeviceType::None;
@@ -2150,13 +2149,12 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
     }
 
 Cleanup:
+    TraceUpdateFocusEnd((UINT64)pNewFocus);
 #ifdef XAMLPROFILER_ENABLED
     // Carry the element identity on both edges: Start records the requested target
     // (movement.GetTarget()) and Stop records pNewFocus, matching the attribution the retail
     // UpdateFocusEnd event records after synchronous GettingFocus/LosingFocus handlers run.
     XamlProfilerTracing::UpdateFocusStop(reinterpret_cast<uint64_t>(pNewFocus));
-#else
-    TraceUpdateFocusEnd((UINT64)pNewFocus);
 #endif
     ReleaseInterface(pOldFocusedElement);
 
@@ -2600,32 +2598,40 @@ CDependencyObject* CFocusManager::FindNextFocus(
         direction == DirectUI::FocusNavigationDirection::Right || direction == DirectUI::FocusNavigationDirection::Up ||
         direction == DirectUI::FocusNavigationDirection::Next || direction == DirectUI::FocusNavigationDirection::Previous);
 
-#ifndef XAMLPROFILER_ENABLED
-     switch (direction)
-     {
-         case DirectUI::FocusNavigationDirection::Next:
-           TraceXYFocusEnteredBegin(L"Next");
-           break;
-         case DirectUI::FocusNavigationDirection::Previous:
-           TraceXYFocusEnteredBegin(L"Previous");
-           break;
-         case DirectUI::FocusNavigationDirection::Up:
-           TraceXYFocusEnteredBegin(L"Up");
-           break;
-         case DirectUI::FocusNavigationDirection::Down:
-           TraceXYFocusEnteredBegin(L"Down");
-           break;
-         case DirectUI::FocusNavigationDirection::Left:
-           TraceXYFocusEnteredBegin(L"Left");
-           break;
-         case DirectUI::FocusNavigationDirection::Right:
-           TraceXYFocusEnteredBegin(L"Right");
-           break;
-         default:
-           TraceXYFocusEnteredBegin(L"Invalid");
-     }
-#else
-    XamlProfilerTracing::XYFocusEnteredStart(reinterpret_cast<uint64_t>(m_pFocusedElement));
+    PCWSTR xyFocusDirectionName = L"Invalid";
+    switch (direction)
+    {
+        case DirectUI::FocusNavigationDirection::Next:
+          xyFocusDirectionName = L"Next";
+          break;
+        case DirectUI::FocusNavigationDirection::Previous:
+          xyFocusDirectionName = L"Previous";
+          break;
+        case DirectUI::FocusNavigationDirection::Up:
+          xyFocusDirectionName = L"Up";
+          break;
+        case DirectUI::FocusNavigationDirection::Down:
+          xyFocusDirectionName = L"Down";
+          break;
+        case DirectUI::FocusNavigationDirection::Left:
+          xyFocusDirectionName = L"Left";
+          break;
+        case DirectUI::FocusNavigationDirection::Right:
+          xyFocusDirectionName = L"Right";
+          break;
+        default:
+          xyFocusDirectionName = L"Invalid";
+          break;
+    }
+    TraceXYFocusEnteredBegin(xyFocusDirectionName);
+#ifdef XAMLPROFILER_ENABLED
+    // Balance the profiler activity across the early ProcessTabStopInternal failure returns below,
+    // which the retail End (emitted only on the normal exit) intentionally does not cover.
+    XamlProfilerTracing::XYFocusEnteredStart(reinterpret_cast<uint64_t>(m_pFocusedElement), xyFocusDirectionName);
+    auto xyFocusProfilerGuard = wil::scope_exit([]()
+    {
+        XamlProfilerTracing::XYFocusEnteredStop();
+    });
 #endif
 
     xref_ptr<CDependencyObject> nextFocusedElement;
@@ -2694,11 +2700,7 @@ CDependencyObject* CFocusManager::FindNextFocus(
         nextFocusedElement = m_xyFocus.GetNextFocusableElement(direction, currentFocusedElementOrComponent, engagedControl, m_contentRoot.GetVisualTreeNoRef(), updateManifolds, xyFocusOptions);
     }
 
-#ifdef XAMLPROFILER_ENABLED
-    XamlProfilerTracing::XYFocusEnteredStop();
-#else
     TraceXYFocusEnteredEnd();
-#endif
 
     return nextFocusedElement;
 }

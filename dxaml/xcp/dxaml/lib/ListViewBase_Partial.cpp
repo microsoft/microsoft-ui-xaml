@@ -755,15 +755,16 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
 
     // ETW Trace, we want to raise an ETW event here if we can determine that the configuration
-    // does not allow virtualization to happen. Gate on whichever provider this build emits to:
-    // the profiler provider when XAMLPROFILER_ENABLED, the retail Microsoft-Windows-XAML provider
-    // otherwise. A profiler-only session never enables the retail provider, so gating solely on
-    // EventEnabledVirtualizationIsEnabledByLayoutInfo() would drop the profiler event.
+    // does not allow virtualization to happen. Compute the layout state when EITHER provider is
+    // enabled, then independently guard the retail (Microsoft-Windows-XAML) and profiler
+    // (Microsoft-Windows-XAML-Profiler) emissions below. A profiler-only session never enables the
+    // retail provider, so gating the computation solely on EventEnabledVirtualizationIsEnabledByLayoutInfo()
+    // would drop the profiler event; a retail-only session likewise never enables the profiler.
+    if (EventEnabledVirtualizationIsEnabledByLayoutInfo()
 #ifdef XAMLPROFILER_ENABLED
-    if (XamlProfilerTracing::IsEnabled())
-#else
-    if (EventEnabledVirtualizationIsEnabledByLayoutInfo())
+        || XamlProfilerTracing::IsEnabled()
 #endif
+        )
     {
         BOOLEAN isVirtualizationActive = TRUE;
         ctl::ComPtr<IPanel> spItemsPanel;
@@ -795,17 +796,28 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
             }
             ctl::ComPtr<xaml::IDependencyObject> spParent;
             IFC(static_cast<ListViewBase*>(this)->get_Parent(&spParent));
+
+            // Independently guard each provider's emission so the computation above can be shared.
+            if (EventEnabledVirtualizationIsEnabledByLayoutInfo())
+            {
+                TraceVirtualizationIsEnabledByLayoutInfo1(
+                    isVirtualizationActive,
+                    reinterpret_cast<UINT64>(GetHandle()),
+                    GetHandle()->m_strName.GetBuffer(),
+                    GetHandle()->GetClassName().GetBuffer(),
+                    (spParent) ? static_cast<DependencyObject*>(spParent.Get())->GetHandle()->GetClassName().GetBuffer() : L"NULL"
+                );
+            }
 #ifdef XAMLPROFILER_ENABLED
-            (void)isVirtualizationActive; // consumed by the retail event; the profiler copy carries the element only
-            XamlProfilerTracing::VirtualizationIsEnabledByLayout(reinterpret_cast<uint64_t>(GetHandle()));
-#else
-            TraceVirtualizationIsEnabledByLayoutInfo1(
-                isVirtualizationActive,
-                reinterpret_cast<UINT64>(GetHandle()),
-                GetHandle()->m_strName.GetBuffer(),
-                GetHandle()->GetClassName().GetBuffer(),
-                (spParent) ? static_cast<DependencyObject*>(spParent.Get())->GetHandle()->GetClassName().GetBuffer() : L"NULL"
-            );
+            if (XamlProfilerTracing::IsEnabled())
+            {
+                XamlProfilerTracing::VirtualizationIsEnabledByLayout(
+                    reinterpret_cast<uint64_t>(GetHandle()),
+                    !!isVirtualizationActive,
+                    GetHandle()->m_strName.GetBuffer(),
+                    GetHandle()->GetClassName().GetBuffer(),
+                    (spParent) ? static_cast<DependencyObject*>(spParent.Get())->GetHandle()->GetClassName().GetBuffer() : L"NULL");
+            }
 #endif
         } // else if not modern panel, we shouldn't trace it here.
     }

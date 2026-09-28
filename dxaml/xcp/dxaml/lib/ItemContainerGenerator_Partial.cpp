@@ -1353,10 +1353,9 @@ ItemContainerGenerator::Generator::GenerateNext(
     _Out_ BOOLEAN* isNewlyRealized,
     _Outptr_ xaml::IDependencyObject** returnValue)
 {
+    TraceGenerateContainerBegin();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::GenerateContainerStart();
-#else
-    TraceGenerateContainerBegin();
 #endif
     HRESULT hr = S_OK;
     ctl::ComPtr<xaml::IDependencyObject> spContainer;
@@ -1490,10 +1489,9 @@ ItemContainerGenerator::Generator::GenerateNext(
     IFC(spContainer.CopyTo(returnValue));
 
 Cleanup:
+    TraceGenerateContainerEnd();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::GenerateContainerStop(spContainer ? reinterpret_cast<uint64_t>(spContainer.Cast<DependencyObject>()->GetHandle()) : 0);
-#else
-    TraceGenerateContainerEnd();
 #endif
     RRETURN(hr);
 }

@@ -251,10 +251,9 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
 
     m_isInUpdateLayout = TRUE;
 
+    TraceLayoutBegin();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::LayoutStart(reinterpret_cast<uint64_t>(pRoot));
-#else
-    TraceLayoutBegin();
 #endif
 
     XUINT32 count = MaxLayoutIterations;
@@ -296,19 +295,17 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
                 m_arrangeRect.Height = (XFLOAT) controlHeight;
             }
 
+            TraceMeasureBegin();
 #ifdef XAMLPROFILER_ENABLED
             XamlProfilerTracing::MeasureStart(reinterpret_cast<uint64_t>(pRoot));
-            auto scopeGuard = wil::scope_exit([&]
-            {
-                XamlProfilerTracing::MeasureStop();
-            });
-#else
-            TraceMeasureBegin();
+#endif
             auto scopeGuard = wil::scope_exit([&]
             {
                 TraceMeasureEnd();
-            });
+#ifdef XAMLPROFILER_ENABLED
+                XamlProfilerTracing::MeasureStop();
 #endif
+            });
 
             if (StoreLayoutCycleWarningContexts())
             {
@@ -336,19 +333,17 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
         }
         else if (pRoot->GetRequiresArrange())
         {
+            TraceArrangeBegin();
 #ifdef XAMLPROFILER_ENABLED
             XamlProfilerTracing::ArrangeStart(reinterpret_cast<uint64_t>(pRoot));
-            auto scopeGuard = wil::scope_exit([&]
-            {
-                XamlProfilerTracing::ArrangeStop();
-            });
-#else
-            TraceArrangeBegin();
+#endif
             auto scopeGuard = wil::scope_exit([&]
             {
                 TraceArrangeEnd();
-            });
+#ifdef XAMLPROFILER_ENABLED
+                XamlProfilerTracing::ArrangeStop();
 #endif
+            });
 
             if (StoreLayoutCycleWarningContexts())
             {
@@ -414,19 +409,17 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             // Fire any size changed events
             if (!m_sizeChangedQueue.empty())
             {
+                TraceFireSizeChangedBegin();
 #ifdef XAMLPROFILER_ENABLED
                 XamlProfilerTracing::FireSizeChangedStart(reinterpret_cast<uint64_t>(pRoot));
-                auto scopeGuard = wil::scope_exit([&]
-                {
-                    XamlProfilerTracing::FireSizeChangedStop();
-                });
-#else
-                TraceFireSizeChangedBegin();
+#endif
                 auto scopeGuard = wil::scope_exit([&]
                 {
                     TraceFireSizeChangedEnd();
-                });
+#ifdef XAMLPROFILER_ENABLED
+                    XamlProfilerTracing::FireSizeChangedStop();
 #endif
+                });
 
                 if (StoreLayoutCycleWarningContexts())
                 {
@@ -451,19 +444,17 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             // Fire layout updated events
             if (m_nLayoutUpdatedSubscriberCounter != 0)
             {
+                TraceFireLayoutUpdatedBegin();
 #ifdef XAMLPROFILER_ENABLED
                 XamlProfilerTracing::FireLayoutUpdatedStart(reinterpret_cast<uint64_t>(pRoot));
-                auto scopeGuard = wil::scope_exit([&]
-                {
-                    XamlProfilerTracing::FireLayoutUpdatedStop();
-                });
-#else
-                TraceFireLayoutUpdatedBegin();
+#endif
                 auto scopeGuard = wil::scope_exit([&]
                 {
                     TraceFireLayoutUpdatedEnd();
-                });
+#ifdef XAMLPROFILER_ENABLED
+                    XamlProfilerTracing::FireLayoutUpdatedStop();
 #endif
+                });
 
                 if (StoreLayoutCycleWarningContexts())
                 {
@@ -524,10 +515,9 @@ Cleanup:
 
     m_isInUpdateLayout = FALSE;
 
+    TraceLayoutEnd();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::LayoutStop();
-#else
-    TraceLayoutEnd();
 #endif
 
     // Firing a UIAutomation automation properties change check
@@ -659,10 +649,9 @@ void CLayoutManager::RaiseSizeChangedEvents()
 
         for (auto& item : tmp.m_vector)
         {
+            TraceIndividualSizeChangedBegin();
 #ifdef XAMLPROFILER_ENABLED
             XamlProfilerTracing::IndividualSizeChangedStart(reinterpret_cast<uint64_t>(item.m_pElement));
-#else
-            TraceIndividualSizeChangedBegin();
 #endif
 
             if (auto layoutStorage = item.m_pElement->GetLayoutStorage())
@@ -676,10 +665,9 @@ void CLayoutManager::RaiseSizeChangedEvents()
                     args));
             }
 
+            TraceIndividualSizeChangedEnd(UINT64(item.m_pElement));
 #ifdef XAMLPROFILER_ENABLED
             XamlProfilerTracing::IndividualSizeChangedStop();
-#else
-            TraceIndividualSizeChangedEnd(UINT64(item.m_pElement));
 #endif
         }
 
@@ -936,9 +924,7 @@ CLayoutManager::RealizeRegisteredLayoutTransitions()
     // keep a list of targets that we are setting up transitions for
     Jupiter::stack_vector<xref_ptr<CUIElement>, 16> elementsTransitioned;
 
-#ifndef XAMLPROFILER_ENABLED
     TraceRealizeTransitionBegin();
-#endif
 
     // fill the groups dictionary with layoutslots
     for(const auto& element: m_elementsWithDeferredTransitions)
@@ -1050,9 +1036,7 @@ Cleanup:
 
     m_isInTransitionRealization = FALSE;
     m_elementsWithDeferredTransitions.clear();
-#ifndef XAMLPROFILER_ENABLED
     TraceRealizeTransitionEnd();
-#endif
 
     RRETURN(hr);
 }

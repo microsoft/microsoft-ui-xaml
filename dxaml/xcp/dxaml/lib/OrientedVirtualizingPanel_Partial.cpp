@@ -2669,10 +2669,9 @@ OrientedVirtualizingPanel::MeasureChild(
     _In_ wf::Size layoutSlotSize,
     _Out_opt_ wf::Size* returnValue)
 {
+    TraceMeasureChildBegin();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::MeasureChildStart(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
-#else
-    TraceMeasureChildBegin();
 #endif
 
     HRESULT hr = S_OK;
@@ -2700,10 +2699,9 @@ OrientedVirtualizingPanel::MeasureChild(
     }
 
 Cleanup:
+    TraceMeasureChildEnd();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::MeasureChildStop();
-#else
-    TraceMeasureChildEnd();
 #endif
     RRETURN(hr);
 }

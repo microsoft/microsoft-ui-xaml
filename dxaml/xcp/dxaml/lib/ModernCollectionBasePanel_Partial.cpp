@@ -1009,21 +1009,18 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Generate(
     _In_ xaml_controls::LayoutReference referenceInformation,
     _In_ BOOLEAN goForward)
 {
+    TraceGenerateItemsBegin();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::GenerateItemsStart(reinterpret_cast<uint64_t>(GetHandle()));
-
-    auto guard = wil::scope_exit([]()
-    {
-        XamlProfilerTracing::GenerateItemsStop();
-    });
-#else
-    TraceGenerateItemsBegin();
+#endif
 
     auto guard = wil::scope_exit([]()
     {
         TraceGenerateItemsEnd();
-    });
+#ifdef XAMLPROFILER_ENABLED
+        XamlProfilerTracing::GenerateItemsStop();
 #endif
+    });
 
     // needed for Sticky Headers
     ctl::ComPtr<IScrollViewer> spScrollViewer = m_wrScrollViewer.AsOrNull<IScrollViewer>();

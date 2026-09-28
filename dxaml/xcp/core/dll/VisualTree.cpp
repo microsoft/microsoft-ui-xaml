@@ -432,13 +432,15 @@ _Check_return_ HRESULT VisualTree::SetPublicRootVisual(
     // NOTE: This doesn't check for the root scroll viewer changing independently of the root visual.
     if (pRoot == m_publicRootVisual.get())
     {
-        goto Cleanup;
+        // Return before opening the PutRootVisual activity so its Start/Stop stay balanced: the Stop
+        // lives after Cleanup, so jumping to Cleanup here would emit an orphaned Stop (on both the
+        // retail and profiler providers) with no matching Start.
+        return S_OK;
     }
 
+    TracePutRootVisualBegin();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::PutRootVisualStart(reinterpret_cast<uint64_t>(pRoot));
-#else
-    TracePutRootVisualBegin();
 #endif
 
     // If the public root visual changes, we need to remove and re-add the existing roots so that
@@ -525,10 +527,9 @@ Cleanup:
         RECORDFAILURE(ResetRoots(nullptr));
     }
 
+    TracePutRootVisualEnd();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::PutRootVisualStop();
-#else
-    TracePutRootVisualEnd();
 #endif
 
     return hr;
