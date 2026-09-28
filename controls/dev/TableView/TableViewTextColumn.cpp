@@ -78,6 +78,7 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
     // Match the display cell's metrics so swapping the TextBlock for the TextBox does not shift the
     // text or resize the row as the edit opens.
     textBox.VerticalAlignment(winrt::VerticalAlignment::Top);
+    textBox.VerticalContentAlignment(winrt::VerticalAlignment::Top);
     textBox.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
     textBox.FontWeight(winrt::FontWeights::Normal());
     textBox.Padding(owner
