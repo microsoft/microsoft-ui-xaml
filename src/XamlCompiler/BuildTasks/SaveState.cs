@@ -27,6 +27,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public String LocalAssemblyName { get; set; }
 
         public string XamlFeatureControlFlags { get; set; }
+        public bool XamlCompilerOptimizationsEnabledAtLastPass2 { get; set; }
         public string EnabledXamlOptionalChanges { get; set; }
         public string DisabledXamlOptionalChanges { get; set; }
         public bool? XamlTypeInfoHasMetadataProvider { get; set; }
@@ -195,6 +196,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         private const string XMLNAME_XamlSourceFileDataList = "XamlSourceFileDataList";
         private const string XMLNAME_XamlSourceFileData = "XamlSourceFileData";
         private const string XMLNAME_XamlFeatureControlFlags = "XamlFeatureControlFlags";
+        private const string XMLNAME_XamlCompilerOptimizationsEnabledAtLastPass2 = "XamlCompilerOptimizationsEnabledAtLastPass2";
         private const string XMLNAME_EnabledXamlOptionalChanges = "EnabledXamlOptionalChanges";
         private const string XMLNAME_DisabledXamlOptionalChanges = "DisabledXamlOptionalChanges";
         private const string XMLNAME_XamlTypeInfoHasMetadataProvider = "XamlTypeInfoHasMetadataProvider";
@@ -227,6 +229,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                                     {
                                         case XMLNAME_XamlFeatureControlFlags:
                                             XamlFeatureControlFlags = child.InnerText;
+                                            break;
+
+                                        case XMLNAME_XamlCompilerOptimizationsEnabledAtLastPass2:
+                                            XamlCompilerOptimizationsEnabledAtLastPass2 = XmlConvert.ToBoolean(child.InnerText);
                                             break;
 
                                         case XMLNAME_EnabledXamlOptionalChanges:
@@ -329,6 +335,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 writer.WriteStartElement(XMLNAME_XamlCompilerSaveState);
 
                 writer.WriteElementString(XMLNAME_XamlFeatureControlFlags, XamlFeatureControlFlags);
+                if (XamlCompilerOptimizationsEnabledAtLastPass2)
+                {
+                    writer.WriteElementString(XMLNAME_XamlCompilerOptimizationsEnabledAtLastPass2, XmlConvert.ToString(true));
+                }
                 writer.WriteElementString(XMLNAME_EnabledXamlOptionalChanges, EnabledXamlOptionalChanges);
                 writer.WriteElementString(XMLNAME_DisabledXamlOptionalChanges, DisabledXamlOptionalChanges);
                 if (XamlTypeInfoHasMetadataProvider.HasValue)

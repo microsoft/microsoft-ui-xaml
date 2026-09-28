@@ -22,6 +22,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         public string SourceXamlGivenPath { get; set; }
         public string XamlOutputFilename { get; set; }
+        internal XamlDom.XamlDomObject OptimizationRoot { get; set; }
         public bool HasEventAssignments { get; set; }
         public BindStatus BindStatus { get; set; }
         public xPropertyInfo XPropertyInfo { get; set; }

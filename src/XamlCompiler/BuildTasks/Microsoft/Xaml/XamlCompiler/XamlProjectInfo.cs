@@ -30,6 +30,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         EnableWin32Codegen = 0x08,
         UsingCSWinRT = 0x10,
         EnableBindingDiagnostics = 0x20,
+        EnableXamlCompilerOptimizations = 0x40,
     }
 
     internal class XamlProjectInfo
