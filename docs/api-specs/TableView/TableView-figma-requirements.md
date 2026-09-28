@@ -114,6 +114,24 @@ border and fill rather than by size. This matches the implementation's model, wh
 `GridLinesVisibility` drives row `BorderThickness` and `AlternatingRowBackground` drives the
 band fill, with the row style already carrying `ControlCornerRadius` (4px).
 
+### Banding parity: the first row is shaded
+
+Measured from the `02 Rows` banded example. Its four rows start at y = 3056, 3096, 3136 and
+3176 (a 40px pitch), and the band fills sit at y0 = 3058 and 3138 — inset 2px by the cell
+padding. The bands therefore fall on the **first and third** rows, i.e. **even 0-based
+indices**. The `Table / Table` component export shows the same pattern: first body row
+shaded, then alternating.
+
+> **Confirmed discrepancy.** `TableViewRow::RefreshRowBackground` applies
+> `AlternatingRowBackground` when `(rowIndex % 2) != 0`, shading the **second** and fourth
+> rows. That is deliberate WPF `DataGrid` parity, but it is the inverse of the Figma
+> design, and it now shows by default because this PR makes banding the default appearance.
+>
+> Not changed here, because flipping the parity would also change behaviour for apps that
+> already set `RowBackground` and `AlternatingRowBackground` explicitly and expect the
+> documented WPF semantics. This needs a decision: match Figma, or keep WPF parity and
+> accept that the default banding starts on the second row.
+
 **Row selection** variants: `Single`, `Multi`.
 
 `Multi` rows carry a leading checkbox. Selected rows show a row-wide fill plus a leading
@@ -473,6 +491,8 @@ Unresolved **in the source**:
    property exists on the component but appears nowhere in the sheet text.
 9. Whether the header affordance is a filter (component property `Filter options`) or a
    general overflow menu (annotation wording "More options").
+10. **Banding parity.** Figma shades the first body row; the implementation follows WPF
+    `DataGrid` and shades the second. Match the design, or keep WPF parity?
 
 Not covered by these sheets at all: contrast themes, keyboard navigation, announcements,
 sorting and filtering behaviour, column reorder, frozen columns, virtualization, editing
