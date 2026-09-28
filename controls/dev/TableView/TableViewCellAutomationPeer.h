@@ -24,6 +24,8 @@ public:
     hstring GetNameCore();
     hstring GetHelpTextCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
+    // Without this every cell announces as the generic "data item".
+    hstring GetLocalizedControlTypeCore();
 
     // IGridItemProvider — per-cell coordinates in the owning TableView.
     int32_t Row();
@@ -59,5 +61,6 @@ private:
 
     winrt::weak_ref<winrt::TableViewRow> m_row{ nullptr };
     winrt::weak_ref<winrt::TableViewColumn> m_column{ nullptr };
+    // Construction-time fallback only; Column() recomputes from the live cell host.
     int32_t m_columnIndex{ -1 };
 };

@@ -730,10 +730,24 @@ TableView provides UI Automation peers for grid/table accessibility, cell value 
 |---|---|---|
 | `TableViewAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionProvider`, `IGridProvider`, `ITableProvider`, `IItemContainerProvider` |
 | `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider` |
-| `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | (none) |
+| `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IInvokeProvider` (sort) |
 | `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
 
 These peers expose the table structure to assistive technologies. Cell peers also expose their value.
+
+Rows report `PositionInSet` / `SizeOfSet` and compose their name from their visible cells, so a virtualized row still announces "row *i* of *n*" and what it contains. When the source is grouped, both values are **relative to the containing group** and exclude the group-header bands, matching `ItemsControlAutomationPeer`. An app-set `AutomationProperties.PositionInSet` / `SizeOfSet` / `Level` always takes precedence over the computed value.
+
+Row and group names honor explicit `AutomationProperties.Name` and `LabeledBy`. For template cells, naming reads the realized visible template rather than stringifying the data object. Layout-wrapper traversal is bounded; a named interactive control describes its own content without also concatenating its inner editors. Column-header set metadata comes from the header element, not the table that owns the synthesized peer.
+
+`FindItemByProperty(Name)` returns only an exact public peer name. Data text can identify an unrealized candidate, but its name is checked again after preparation. Arbitrary template or application names cannot be inferred for never-realized items; clients can enumerate with a null property and read each returned peer's name.
+
+Successful text-cell edits notify an already-cached cell provider of changed `Value` and computed `Name`. Cancelled, vetoed, unchanged, or abandoned/recycled edits do not synthesize successful-commit notifications. Delivery is queued after edit teardown and rechecks the cell/item identity and current value; editing does not create automation peers solely to send events.
+
+Accessible labels name a cell but do not replace its intrinsic text `Value`. For example, a text display labeled "Employee name" still exposes `Al` or `Alice` through ValuePattern, while its accessible name can remain unchanged. Snapshot reads, notification preparation and dispatcher submission are advisory: exceptions from a custom name/label peer are logged and must not prevent beginning or completing an edit. A failed snapshot is discarded rather than partially reused by a later edit.
+
+A cell provider and a column-header provider each keep a stable identity: the row peer owns its cell peers and the TableView peer owns its column-header peers, so tree navigation, `IGridProvider.GetItem` and `ITableItemProvider.GetColumnHeaderItems` all resolve to the same provider for the same element. (`ITableProvider.GetColumnHeaders` is a known pre-existing exception — it returns an empty array because the header peers are never parented into the UIA tree, so the provider lookup it performs yields nothing to return.)
+
+`ScrollItem` is not implemented explicitly — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a row or cell into view after reaching it through `IGridProvider.GetItem`.
 
 `Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's provider when that row is realized; a selected row scrolled out of the realization window is reached through `IItemContainerProvider.FindItemByProperty`, which realizes it.
 

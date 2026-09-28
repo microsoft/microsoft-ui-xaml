@@ -9,6 +9,7 @@
 #include "TableViewColumn.h"
 #include "TableViewCellsPanel.h"
 #include "TableViewRowAutomationPeer.h"
+#include "TableViewCellAutomationPeer.h"
 #include "TVDiag.h"
 
 static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
@@ -1009,6 +1010,37 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
 
     // No local DataContext on the editing element, for the same reason the display cell sets none:
     // it inherits from the wrapper, which tracks the item across row recycle.
+    // Observe only a provider a client already obtained. Creating peers here would turn every
+    // ordinary edit into a UIA-tree allocation and could give the event a different identity.
+    try
+    {
+        if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
+            .try_as<winrt::TableViewRowAutomationPeer>())
+        {
+            if (auto const peer = winrt::get_self<TableViewRowAutomationPeer>(rowPeer)
+                ->TryGetCellPeer(cellWrapper).try_as<winrt::TableViewCellAutomationPeer>())
+            {
+                if (peer.GetPattern(winrt::PatternInterface::Value))
+                {
+                    auto const value = winrt::get_self<TableViewCellAutomationPeer>(peer)->Value();
+                    auto const name = peer.GetName();
+                    auto const weakPeer = winrt::make_weak(peer);
+                    m_editingAutomationItem.set(dataItem);
+                    m_editingAutomationValue = value;
+                    m_editingAutomationName = name;
+                    m_editingAutomationPeer = weakPeer;
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        m_editingAutomationPeer = nullptr;
+        m_editingAutomationItem.set(nullptr);
+        m_editingAutomationValue = {};
+        m_editingAutomationName = {};
+        TVDiag::LogRetailF(L"[TableView] Optional pre-edit UIA snapshot could not be captured.");
+    }
     m_editingDisplayElement.set(cellWrapper.Child());
     cellWrapper.Child(editingElement);
 
@@ -1028,6 +1060,25 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
 void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
 {
     auto const cellWrapper = m_editingCellWrapper.get();
+    auto const weakPeer = m_editingAutomationPeer;
+    winrt::IInspectable originalItem{ nullptr };
+    winrt::hstring oldValue;
+    winrt::hstring oldName;
+    try
+    {
+        originalItem = m_editingAutomationItem.get();
+        oldValue = std::move(m_editingAutomationValue);
+        oldName = std::move(m_editingAutomationName);
+    }
+    catch (...)
+    {
+        originalItem = nullptr;
+        TVDiag::LogRetailF(L"[TableView] Optional edit UIA snapshot could not be retrieved.");
+    }
+    m_editingAutomationPeer = nullptr;
+    m_editingAutomationItem.set(nullptr);
+    m_editingAutomationValue = {};
+    m_editingAutomationName = {};
     if (!cellWrapper)
     {
         m_editingColumn.set(nullptr);
@@ -1111,10 +1162,83 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
 
     // The bound value did not change, so only an explicit re-apply restores what the edit retracted.
     TableViewDetails::RefreshOwnedToolTip(cellWrapper);
+
+    try
+    {
+        if (action == winrt::TableViewEditAction::Commit && originalItem &&
+            TableView::SameInspectableIdentity(DataContext(), originalItem))
+        {
+            if (auto const peer = weakPeer.get())
+            {
+                auto const newValue = winrt::get_self<TableViewCellAutomationPeer>(peer)->Value();
+                auto const newName = peer.GetName();
+                if (oldValue != newValue || oldName != newName)
+                {
+                    // Publish after the table has left its Ending state. Reject recycled cells
+                    // and newer values rather than notifying an earlier item identity.
+                    if (auto const queue = DispatcherQueue())
+                    {
+                        auto const weakThis = get_weak();
+                        auto const weakCell = winrt::make_weak(cellWrapper);
+                        if (!queue.TryEnqueue([weakThis, weakPeer, weakCell, originalItem, oldValue, newValue, oldName, newName]()
+                        {
+                            try
+                            {
+                                auto const row = weakThis.get();
+                                auto const currentPeer = weakPeer.get();
+                                auto const cell = weakCell.get();
+                                if (!row || !currentPeer || !cell ||
+                                    currentPeer.Owner() != cell ||
+                                    winrt::VisualTreeHelper::GetParent(cell).try_as<winrt::Panel>() != row->GetCellsHostPanelInternal() ||
+                                    !TableView::SameInspectableIdentity(row->DataContext(), originalItem))
+                                {
+                                    return;
+                                }
+                                auto const peerImpl = winrt::get_self<TableViewCellAutomationPeer>(currentPeer);
+                                if (peerImpl->Row() < 0 || peerImpl->Value() != newValue || currentPeer.GetName() != newName)
+                                {
+                                    return;
+                                }
+                                if (oldValue != newValue)
+                                {
+                                    currentPeer.RaisePropertyChangedEvent(winrt::ValuePatternIdentifiers::ValueProperty(),
+                                        winrt::box_value(oldValue), winrt::box_value(newValue));
+                                }
+                                if (oldName != newName)
+                                {
+                                    currentPeer.RaisePropertyChangedEvent(winrt::AutomationElementIdentifiers::NameProperty(),
+                                        winrt::box_value(oldName), winrt::box_value(newName));
+                                }
+                            }
+                            catch (...)
+                            {
+                                TVDiag::LogRetailF(L"[TableView] A committed cell's UIA notification could not be delivered.");
+                            }
+                        }))
+                        {
+                            TVDiag::LogRetailF(L"[TableView] Optional committed-cell UIA notification queue rejected delivery.");
+                        }
+                    }
+                    else
+                    {
+                        TVDiag::LogRetailF(L"[TableView] Optional committed-cell UIA notification has no dispatcher.");
+                    }
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Optional committed-cell UIA notification could not be prepared.");
+    }
 }
 
 void TableViewRow::AbandonCellEdit()
 {
+    m_editingAutomationPeer = nullptr;
+    m_editingAutomationItem.set(nullptr);
+    m_editingAutomationValue = {};
+    m_editingAutomationName = {};
     // Restores the display child, but deliberately does NOT touch focus. Callers run inside a layout
     // pass, where moving focus re-enters the framework and trips the re-entrancy guard. Replacing
     // the child does not - and it must happen, or the row keeps showing a TextBox after the edit
