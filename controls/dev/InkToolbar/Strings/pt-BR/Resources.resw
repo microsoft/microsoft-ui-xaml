@@ -58,26 +58,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InkToolbarBallpointPenButtonLabel" xml:space="preserve">
-    <value>Caneta</value>
-    <comment>Label shown on the InkToolbar ballpoint-pen tool button.</comment>
-  </data>
-  <data name="InkToolbarPencilButtonLabel" xml:space="preserve">
-    <value>Lápis</value>
-    <comment>Label shown on the InkToolbar pencil tool button.</comment>
-  </data>
-  <data name="InkToolbarHighlighterButtonLabel" xml:space="preserve">
-    <value>Marca-texto</value>
-    <comment>Label shown on the InkToolbar highlighter tool button.</comment>
-  </data>
-  <data name="InkToolbarEraserButtonLabel" xml:space="preserve">
-    <value>Borracha</value>
-    <comment>Label shown on the InkToolbar eraser tool button.</comment>
-  </data>
-  <data name="InkToolbarToolButtonLabel" xml:space="preserve">
-    <value>Ferramenta</value>
-    <comment>Default label shown on an InkToolbar tool button whose tool kind is unrecognized.</comment>
-  </data>
   <data name="InkToolbarBallpointPenButtonName" xml:space="preserve">
     <value>Caneta esferográfica</value>
     <comment>Tooltip and accessible name for the InkToolbar ballpoint-pen tool button.</comment>
@@ -106,6 +86,10 @@
     <value>botão</value>
     <comment>Localized UIA control-type name for InkToolbar tool buttons; Narrator reads this instead of "custom". UWP IDS_INKTOOLBAR_TOOL_BUTTON_CONTROLTYPE_NAME.</comment>
   </data>
+  <data name="InkToolbarColorPaletteHelpText" xml:space="preserve">
+    <value>Abra para escolher uma cor da paleta</value>
+    <comment>Accessible help for the ballpoint-pen, pencil and highlighter dropdowns.</comment>
+  </data>
   <data name="InkToolbarStrokeEraserLabel" xml:space="preserve">
     <value>Borracha de traços</value>
     <comment>Display label for the InkToolbar eraser flyout stroke-eraser item. UWP IDS_INKTOOLBAR_ERASERSTROKEERASER.</comment>
@@ -121,5 +105,149 @@
   <data name="InkToolbarClearAllLabel" xml:space="preserve">
     <value>Apagar toda a tinta</value>
     <comment>Display label for the InkToolbar eraser flyout clear-all item. UWP IDS_INKTOOLBAR_ERASERCLEARALL = "Erase all ink" (verified against Windows.UI.Xaml.InkControls.dll resource 6400).</comment>
+  </data>
+  <data name="InkToolbarPenConfigurationColorsLabel" xml:space="preserve">
+    <value>Cores</value>
+    <comment>Heading above the color palette in the InkToolbar pen configuration flyout.</comment>
+  </data>
+  <data name="InkToolbarPenConfigurationSizeLabel" xml:space="preserve">
+    <value>Tamanho</value>
+    <comment>Heading above the stroke-width slider in the InkToolbar pen configuration flyout.</comment>
+  </data>
+  <data name="InkToolbarNonSolidColorName" xml:space="preserve">
+    <value>Cor personalizada</value>
+    <comment>Tooltip for an InkToolbar palette entry whose brush is not a solid color.</comment>
+  </data>
+  <data name="InkToolbarColorRgbFormat" xml:space="preserve">
+    <value>RGB %1!u!, %2!u!, %3!u!</value>
+    <comment>Tooltip for a palette color without a dedicated name. %1!u!, %2!u! and %3!u! are the red, green and blue values. Preserve the numbered inserts.</comment>
+  </data>
+  <data name="InkToolbarColorNameBlack" xml:space="preserve">
+    <value>Preto</value>
+    <comment>Name of the InkToolbar palette color #000000.</comment>
+  </data>
+  <data name="InkToolbarColorNameWhite" xml:space="preserve">
+    <value>Branco</value>
+    <comment>Name of the InkToolbar palette color #FFFFFF.</comment>
+  </data>
+  <data name="InkToolbarColorNameSilver" xml:space="preserve">
+    <value>Prata</value>
+    <comment>Name of the InkToolbar palette color #D1D3D4.</comment>
+  </data>
+  <data name="InkToolbarColorNameGray" xml:space="preserve">
+    <value>Cinza</value>
+    <comment>Name of the InkToolbar palette color #A7A9AC.</comment>
+  </data>
+  <data name="InkToolbarColorNameDarkGray" xml:space="preserve">
+    <value>Cinza-escuro</value>
+    <comment>Name of the InkToolbar palette color #808285.</comment>
+  </data>
+  <data name="InkToolbarColorNameCharcoal" xml:space="preserve">
+    <value>Carvão</value>
+    <comment>Name of the InkToolbar palette color #58595B.</comment>
+  </data>
+  <data name="InkToolbarColorNameMagenta" xml:space="preserve">
+    <value>Magenta</value>
+    <comment>Name of the InkToolbar palette color #B31564.</comment>
+  </data>
+  <data name="InkToolbarColorNameRed" xml:space="preserve">
+    <value>Vermelho</value>
+    <comment>Name of the InkToolbar palette color #E61B1B.</comment>
+  </data>
+  <data name="InkToolbarColorNameRedOrange" xml:space="preserve">
+    <value>Vermelho-alaranjado</value>
+    <comment>Name of the InkToolbar palette color #FF5500.</comment>
+  </data>
+  <data name="InkToolbarColorNameOrange" xml:space="preserve">
+    <value>Laranja</value>
+    <comment>Name of the InkToolbar palette color #FFAA00.</comment>
+  </data>
+  <data name="InkToolbarColorNameGold" xml:space="preserve">
+    <value>Ouro</value>
+    <comment>Name of the InkToolbar palette color #FFCE00.</comment>
+  </data>
+  <data name="InkToolbarColorNameYellow" xml:space="preserve">
+    <value>Amarelo</value>
+    <comment>Name of the InkToolbar palette color #FFE600.</comment>
+  </data>
+  <data name="InkToolbarColorNameGrassGreen" xml:space="preserve">
+    <value>Verde-grama</value>
+    <comment>Name of the InkToolbar palette color #A2E61B.</comment>
+  </data>
+  <data name="InkToolbarColorNameGreen" xml:space="preserve">
+    <value>Verde</value>
+    <comment>Name of the InkToolbar palette color #26E600.</comment>
+  </data>
+  <data name="InkToolbarColorNameDarkGreen" xml:space="preserve">
+    <value>Verde-escuro</value>
+    <comment>Name of the InkToolbar palette color #008055.</comment>
+  </data>
+  <data name="InkToolbarColorNameTeal" xml:space="preserve">
+    <value>Verde-azulado</value>
+    <comment>Name of the InkToolbar palette color #00AACC.</comment>
+  </data>
+  <data name="InkToolbarColorNameBlue" xml:space="preserve">
+    <value>Azul</value>
+    <comment>Name of the InkToolbar palette color #004DE6.</comment>
+  </data>
+  <data name="InkToolbarColorNameIndigo" xml:space="preserve">
+    <value>Índigo</value>
+    <comment>Name of the InkToolbar palette color #3D00B8.</comment>
+  </data>
+  <data name="InkToolbarColorNameViolet" xml:space="preserve">
+    <value>Lilás</value>
+    <comment>Name of the InkToolbar palette color #6600CC.</comment>
+  </data>
+  <data name="InkToolbarColorNamePurple" xml:space="preserve">
+    <value>Púrpura</value>
+    <comment>Name of the InkToolbar palette color #600080.</comment>
+  </data>
+  <data name="InkToolbarColorNameBeige" xml:space="preserve">
+    <value>Bege</value>
+    <comment>Name of the InkToolbar palette color #F7D7C4.</comment>
+  </data>
+  <data name="InkToolbarColorNameLightBrown" xml:space="preserve">
+    <value>Marrom claro</value>
+    <comment>Name of the InkToolbar palette color #BB9167.</comment>
+  </data>
+  <data name="InkToolbarColorNameBrown" xml:space="preserve">
+    <value>Marrom</value>
+    <comment>Name of the InkToolbar palette color #8E562E.</comment>
+  </data>
+  <data name="InkToolbarColorNameDarkBrown" xml:space="preserve">
+    <value>Marrom-escuro</value>
+    <comment>Name of the InkToolbar palette color #613D30.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelPink" xml:space="preserve">
+    <value>Rosa pastel</value>
+    <comment>Name of the InkToolbar palette color #FF80FF.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelOrange" xml:space="preserve">
+    <value>Laranja pastel</value>
+    <comment>Name of the InkToolbar palette color #FFC680.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelYellow" xml:space="preserve">
+    <value>Amarelo pastel</value>
+    <comment>Name of the InkToolbar palette color #FFFF80.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelGreen" xml:space="preserve">
+    <value>Verde pastel</value>
+    <comment>Name of the InkToolbar palette color #80FF9E.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelBlue" xml:space="preserve">
+    <value>Azul pastel</value>
+    <comment>Name of the InkToolbar palette color #80D6FF.</comment>
+  </data>
+  <data name="InkToolbarColorNamePastelPurple" xml:space="preserve">
+    <value>Púrpura pastel</value>
+    <comment>Name of the InkToolbar palette color #BCB3FF.</comment>
+  </data>
+  <data name="InkToolbarColorNameLightBlue" xml:space="preserve">
+    <value>Azul-claro</value>
+    <comment>Name of the InkToolbar highlighter palette color #44C8F5.</comment>
+  </data>
+  <data name="InkToolbarColorNamePink" xml:space="preserve">
+    <value>Rosa</value>
+    <comment>Name of the InkToolbar highlighter palette color #EC008C.</comment>
   </data>
 </root>
