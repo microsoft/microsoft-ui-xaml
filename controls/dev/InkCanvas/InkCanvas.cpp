@@ -153,9 +153,29 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
     InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::InkPresenter);
     EnsureInkPresenter();
 
-    // Hook up this ink canvas with the DComp tree.
+    // Hook up this ink canvas with the DComp tree. Attaching can throw on an OS build that lacks the
+    // system-composition splice interop, on a null XamlRoot, or on a transient composition/device
+    // failure; contain it here and detach so the canvas renders no ink instead of throwing out of
+    // Loaded and tearing down the app.
     InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::VisualLink);
-    AttachToVisualLink();
+    try
+    {
+        AttachToVisualLink();
+    }
+    catch (winrt::hresult_error const& e)
+    {
+        // InkCanvas has no logging channel; surface the HRESULT to the debugger so a degraded attach
+        // is diagnosable. The initialization scope_exit still records the failure telemetry.
+        wchar_t message[160];
+        swprintf_s(
+            message,
+            L"InkCanvas: attach to the composition tree failed (hr=0x%08X); rendering no ink.\n",
+            static_cast<unsigned int>(e.code()));
+        OutputDebugStringW(message);
+
+        DetachFromVisualLink();
+        return;
+    }
 
     // The composition target maintains position/clipping for our visual, but the presenter
     // does not see size changes, so explicitly update the presenter size when the rasterization
@@ -365,8 +385,26 @@ void InkCanvas::UpdateInkPresenterSize()
     // Local DIPs, not root coordinates: the ink visual sits under the canvas's placement visual, so
     // XAML already applies any RenderTransform. Transforming here would double-apply it, and for a
     // rotation the axis-aligned bounds would hand the presenter swapped extents.
+    float width = static_cast<float>(ActualWidth());
+    float height = static_cast<float>(ActualHeight());
+
+    // On the lifted-compositor path the ink is hosted through a ContentExternalOutputLink whose
+    // PlacementVisual is sized in physical (output) pixels (see PositionInkVisual). The OS presenter
+    // must match that space or pen input is clipped on the right/bottom at rasterization scales above
+    // 100%. The system-compositor path authors in DIPs (the framework applies the rasterization scale
+    // to the child visual), so it stays unscaled.
+    if (m_systemVisualLink)
+    {
+        if (auto xamlRoot = XamlRoot())
+        {
+            const float scale = static_cast<float>(xamlRoot.RasterizationScale());
+            width *= scale;
+            height *= scale;
+        }
+    }
+
     winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem(
-        [width = static_cast<float>(ActualWidth()), height = static_cast<float>(ActualHeight())](inking::InkPresenter const& presenter)
+        [width, height](inking::InkPresenter const& presenter)
         {
             presenter.as<IInkPresenterDesktop>()->SetSize(width, height);
         });

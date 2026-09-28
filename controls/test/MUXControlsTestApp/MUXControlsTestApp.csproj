@@ -321,6 +321,7 @@
   <Import Project="$(MUXCProjectRoot)dev\SystemBackdropElement\APITests\SystemBackdropElement_APITests.projitems" Label="Shared" Condition="$(FeatureSystemBackdropElementEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\InkCanvas\TestUI\InkCanvas_TestUI.projitems" Label="Shared" Condition="$(FeatureInkCanvasEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\InkCanvas\APITests\InkCanvas_APITests.projitems" Label="Shared" Condition="$(FeatureInkCanvasEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\InkToolbar\TestUI\InkToolbar_TestUI.projitems" Label="Shared" Condition="$(FeatureInkToolbarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\InkToolbar\APITests\InkToolbar_APITests.projitems" Label="Shared" Condition="$(FeatureInkToolbarEnabled) == 'true'" />
 
   <!-- For some reason, TAEF binplaces the wrong version of Wex.Logger.Interop.dll - we need to fix that.
