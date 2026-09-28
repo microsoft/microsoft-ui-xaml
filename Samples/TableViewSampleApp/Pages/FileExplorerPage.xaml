@@ -60,6 +60,7 @@
                          Grid.Column="2"
                          PlaceholderText="Enter a folder path"
                          AutomationProperties.Name="Folder path"
+                         AccessKey="L"
                          IsSpellCheckEnabled="False"
                          KeyDown="OnAddressBarKeyDown"
                          HorizontalAlignment="Stretch"
@@ -83,6 +84,7 @@
                 Sorted="OnTableSorted"
                 SelectionChanged="OnSelectionChanged"
                 DoubleTapped="OnRowDoubleTapped"
+                KeyDown="OnTableKeyDown"
                 MinHeight="420"
                 VerticalAlignment="Stretch">
                 <tabular:TableViewTemplateColumn Header="Name" CellTemplate="{StaticResource NameCellTemplate}" MinWidth="260" Width="*" CanSort="True" SortMemberPath="Name"/>

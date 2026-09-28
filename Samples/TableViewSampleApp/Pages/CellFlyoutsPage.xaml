@@ -37,6 +37,7 @@
 
         <DataTemplate x:Key="DatePickerCell" x:DataType="models:Person">
             <DatePicker
+                AutomationProperties.Name="Join date"
                 Date="{Binding JoinDate, Mode=TwoWay}"
                 IsTabStop="True"
                 Loaded="OnDatePickerLoaded"
@@ -48,6 +49,7 @@
 
         <DataTemplate x:Key="DepartmentComboCell" x:DataType="models:Person">
             <ComboBox
+                AutomationProperties.Name="Department"
                 SelectedItem="{Binding Department, Mode=TwoWay}"
                 IsTabStop="True"
                 Loaded="OnDepartmentComboBoxLoaded"
@@ -78,6 +80,7 @@
 
         <DataTemplate x:Key="ShiftMenuCell" x:DataType="models:Person">
             <muxc:DropDownButton
+                AutomationProperties.HelpText="Shift start"
                 Content="{Binding ShiftStart}"
                 IsTabStop="True"
                 Margin="6,2"

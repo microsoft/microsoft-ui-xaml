@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 // Tabular-namespace type aliases: disambiguate from the stale-mock base Microsoft.UI.Xaml.Controls TableView projection
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
@@ -90,6 +91,8 @@ public sealed class Person : INotifyPropertyChanged
     /// </summary>
     public string JoinDateText => _joinDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
+    public string JoinDateAccessibleName => $"Join date: {_joinDate.ToString("D", CultureInfo.CurrentCulture)}";
+
     /// <summary>
     /// Start of the daily work shift. Used by the MixedControlsPage sample
     /// to demonstrate a TimePicker hosted directly inside a
@@ -100,6 +103,10 @@ public sealed class Person : INotifyPropertyChanged
         get => _shiftStart;
         set => Set(ref _shiftStart, value);
     }
+
+    public string ShiftStartAccessibleName => string.Format(
+        CultureInfo.CurrentCulture, "Shift start: {0:00}{1}{2:00}",
+        _shiftStart.Hours, CultureInfo.CurrentCulture.DateTimeFormat.TimeSeparator, _shiftStart.Minutes);
 
     public double Salary
     {
@@ -131,6 +138,11 @@ public sealed class Person : INotifyPropertyChanged
         if (propertyName is nameof(JoinDate))
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(JoinDateText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(JoinDateAccessibleName)));
+        }
+        if (propertyName is nameof(ShiftStart))
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShiftStartAccessibleName)));
         }
     }
 }

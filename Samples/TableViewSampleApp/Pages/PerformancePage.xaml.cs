@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using TableViewSampleApp.Data;
 
@@ -31,6 +32,7 @@ public sealed partial class PerformancePage : Page
     private long _baselineWorkingSet;
     private long _baselineManagedHeap;
     private bool _hasBaseline;
+    private bool _runningAll;
 
     public PerformancePage()
     {
@@ -141,7 +143,7 @@ public sealed partial class PerformancePage : Page
             _allRows = data;
             Repopulate(_allRows);
         });
-        Load10kResult.Text = $"{ms} ms  ·  {_allRows.Count:N0} rows bound + first layout";
+        ReportResult(Load10kResult, $"{ms} ms  ·  {_allRows.Count:N0} rows bound + first layout");
     }
 
     private void OnLoad100kClick(object sender, RoutedEventArgs e)
@@ -152,33 +154,33 @@ public sealed partial class PerformancePage : Page
             _allRows = data;
             Repopulate(_allRows);
         });
-        Load100kResult.Text = $"{ms} ms  ·  {_allRows.Count:N0} rows bound + first layout";
+        ReportResult(Load100kResult, $"{ms} ms  ·  {_allRows.Count:N0} rows bound + first layout");
     }
 
     private void OnSortClick(object sender, RoutedEventArgs e)
     {
-        if (_allRows.Count == 0) { SortResult.Text = "Run a Load scenario first"; return; }
+        if (_allRows.Count == 0) { ReportResult(SortResult, "Run a Load scenario first"); return; }
         // Sort happens off-clock (pure C#); on-clock we time only the
         // collection swap + layout. That mirrors "user clicked a header,
         // the sort key was already computed, now repopulate".
         var sorted = _allRows.OrderBy(r => r.Name, StringComparer.Ordinal).ToList();
         var ms = TimedMutation(() => Repopulate(sorted));
-        SortResult.Text = $"{ms} ms  ·  {sorted.Count:N0} rows repopulated post-sort";
+        ReportResult(SortResult, $"{ms} ms  ·  {sorted.Count:N0} rows repopulated post-sort");
     }
 
     private void OnFilterClick(object sender, RoutedEventArgs e)
     {
-        if (_allRows.Count == 0) { FilterResult.Text = "Run a Load scenario first"; return; }
+        if (_allRows.Count == 0) { ReportResult(FilterResult, "Run a Load scenario first"); return; }
         var filtered = _allRows.Where(r => r.Salary >= 100_000).ToList();
         var ms = TimedMutation(() => Repopulate(filtered));
-        FilterResult.Text = $"{ms} ms  ·  {filtered.Count:N0} / {_allRows.Count:N0} rows match predicate";
+        ReportResult(FilterResult, $"{ms} ms  ·  {filtered.Count:N0} / {_allRows.Count:N0} rows match predicate");
     }
 
     private void OnClearFilterClick(object sender, RoutedEventArgs e)
     {
-        if (_allRows.Count == 0) { ClearFilterResult.Text = "Nothing to clear"; return; }
+        if (_allRows.Count == 0) { ReportResult(ClearFilterResult, "Nothing to clear"); return; }
         var ms = TimedMutation(() => Repopulate(_allRows));
-        ClearFilterResult.Text = $"{ms} ms  ·  restored {_allRows.Count:N0} rows";
+        ReportResult(ClearFilterResult, $"{ms} ms  ·  restored {_allRows.Count:N0} rows");
     }
 
     private void OnSnapshotClick(object sender, RoutedEventArgs e)
@@ -194,28 +196,48 @@ public sealed partial class PerformancePage : Page
         var wsDelta = ws - _baselineWorkingSet;
         var heapDelta = heap - _baselineManagedHeap;
         var sign = (long v) => v >= 0 ? "+" : "";
-        SnapshotResult.Text =
+        ReportResult(SnapshotResult,
             $"WorkingSet {ws / (1024 * 1024)} MB (Δ {sign(wsDelta)}{wsDelta / (1024 * 1024)} MB)" +
-            $"  ·  Managed heap {heap / (1024 * 1024)} MB (Δ {sign(heapDelta)}{heapDelta / (1024 * 1024)} MB)";
+            $"  ·  Managed heap {heap / (1024 * 1024)} MB (Δ {sign(heapDelta)}{heapDelta / (1024 * 1024)} MB)");
     }
 
     private void OnRebaselineClick(object sender, RoutedEventArgs e)
     {
         CaptureBaseline();
-        SnapshotResult.Text = $"Baseline reset @ {DateTime.Now:HH:mm:ss}. New deltas will be measured from here.";
+        ReportResult(SnapshotResult, $"Baseline reset @ {DateTime.Now:HH:mm:ss}. New deltas will be measured from here.");
     }
 
     private void OnRunAllClick(object sender, RoutedEventArgs e)
     {
-        OnLoad10kClick(sender, e);
-        OnLoad100kClick(sender, e);
-        OnSortClick(sender, e);
-        OnFilterClick(sender, e);
-        OnClearFilterClick(sender, e);
-        OnSnapshotClick(sender, e);
-        RunAllResult.Text =
+        // Announce the batch completion, not six intermediate results.
+        _runningAll = true;
+        try
+        {
+            OnLoad10kClick(sender, e);
+            OnLoad100kClick(sender, e);
+            OnSortClick(sender, e);
+            OnFilterClick(sender, e);
+            OnClearFilterClick(sender, e);
+            OnSnapshotClick(sender, e);
+        }
+        finally
+        {
+            _runningAll = false;
+        }
+        ReportResult(RunAllResult,
             $"Completed at {DateTime.Now:HH:mm:ss}. See per-row timings above.  " +
-            $"Build flavor: {(IsDebugBuild() ? "Debug (numbers are ~3-5x slower than Release)" : "Release")}";
+            $"Build flavor: {(IsDebugBuild() ? "Debug (numbers are ~3-5x slower than Release)" : "Release")}");
+    }
+
+    private void ReportResult(TextBlock result, string text)
+    {
+        result.Text = text;
+        if (!_runningAll && result.IsLoaded && AutomationPeer.ListenerExists(AutomationEvents.LiveRegionChanged))
+        {
+            var peer = FrameworkElementAutomationPeer.FromElement(result)
+                ?? FrameworkElementAutomationPeer.CreatePeerForElement(result);
+            peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        }
     }
 
     private static bool IsDebugBuild()

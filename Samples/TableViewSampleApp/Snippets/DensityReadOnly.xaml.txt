@@ -1,6 +1,6 @@
-<!-- Density lives on TableStyle; IsReadOnly is a table-level DP. v1 has no
-     built-in cell editing, so the editable TextBox cells bind their IsReadOnly
-     to a shared ReadOnlyState the page mirrors TableView.IsReadOnly into. -->
+<!-- Density and IsReadOnly are table-level properties. This page demonstrates
+     ordinary template TextBoxes, not framework edit transactions. The separate
+     Cell editing page uses built-in TableViewTextColumn editing and Escape cancel. -->
 
 <Page.Resources>
     <local:ReadOnlyState x:Key="ReadOnlyState"/>

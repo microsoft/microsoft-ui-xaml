@@ -165,6 +165,15 @@ public sealed partial class FileExplorerPage : Page
         }
     }
 
+    private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Enter && FileTable.SelectedItem is FileSystemEntry { IsFolder: true } entry)
+        {
+            e.Handled = true;
+            Navigate(entry.FullPath);
+        }
+    }
+
     private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
     {
         if (FileTable is null || Entries is null)

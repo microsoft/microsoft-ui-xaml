@@ -12,9 +12,8 @@
 
     <Page.Resources>
 
-        <!-- Read-only display templates hosting non-text controls. Input is disabled
-             here so this page stays focused on rich display content; Cell Editing
-             covers the aligned framework editing APIs. -->
+        <!-- Disabled controls retain their rich display while exposing the same
+             noninteractive state to mouse, keyboard, and automation clients. -->
 
         <DataTemplate x:Key="JoinDateCell" x:DataType="models:Person">
             <!-- MinYear/MaxYear are intentionally NOT set in XAML. The XAML
@@ -22,7 +21,9 @@
                  attribute values; setting these via XAML attributes fails
                  WMC0055. Defaults (1900-9999) are fine for this demo. -->
             <DatePicker
-                Date="{Binding JoinDate, Mode=TwoWay}"
+                AutomationProperties.Name="{Binding JoinDateAccessibleName, Mode=OneWay}"
+                Date="{Binding JoinDate, Mode=OneWay}"
+                IsEnabled="False"
                 IsHitTestVisible="False"
                 IsTabStop="False"
                 Margin="6,2"
@@ -32,7 +33,9 @@
 
         <DataTemplate x:Key="ShiftStartCell" x:DataType="models:Person">
             <TimePicker
-                Time="{Binding ShiftStart, Mode=TwoWay}"
+                AutomationProperties.Name="{Binding ShiftStartAccessibleName, Mode=OneWay}"
+                Time="{Binding ShiftStart, Mode=OneWay}"
+                IsEnabled="False"
                 IsHitTestVisible="False"
                 IsTabStop="False"
                 ClockIdentifier="24HourClock"
@@ -44,8 +47,9 @@
 
         <DataTemplate x:Key="DepartmentCell" x:DataType="models:Person">
             <ComboBox
-                SelectedItem="{Binding Department, Mode=TwoWay}"
-                AutomationProperties.AccessibilityView="Raw"
+                AutomationProperties.Name="Department"
+                SelectedItem="{Binding Department, Mode=OneWay}"
+                IsEnabled="False"
                 IsHitTestVisible="False"
                 IsTabStop="False"
                 Loaded="OnDepartmentComboBoxLoaded"
@@ -56,8 +60,9 @@
 
         <DataTemplate x:Key="IsActiveCell" x:DataType="models:Person">
             <CheckBox
-                IsChecked="{Binding IsActive, Mode=TwoWay}"
-                AutomationProperties.AccessibilityView="Raw"
+                AutomationProperties.Name="Active"
+                IsChecked="{Binding IsActive, Mode=OneWay}"
+                IsEnabled="False"
                 IsHitTestVisible="False"
                 IsTabStop="False"
                 MinWidth="0"
@@ -70,7 +75,7 @@
 
     <controls:SamplePresenter
         Header="Template cells"
-        Description="Host non-text controls — DatePicker, TimePicker, ComboBox, CheckBox — directly inside read-only cells via TableViewTemplateColumn."
+        Description="Display-only TableViewTemplateColumn examples. DatePicker, TimePicker, ComboBox, and CheckBox are disabled and bound OneWay: they show row values, but do not accept mouse, keyboard, or automation edits."
         SourceCaption="MixedControlsPage.xaml (excerpt)"
         SourceSnippet="MixedControls.xaml.txt"
         StretchExample="True">
@@ -86,8 +91,8 @@
                     IsOpen="True"
                     IsClosable="False"
                     Severity="Informational"
-                    Title="Try it"
-                    Message="Template cells can display rich control visuals while this sample stays read-only; use the Cell Editing page for framework editing APIs."
+                    Title="Display-only controls"
+                    Message="These pickers and checkboxes are disabled, not editable fields. Use Interactive cell flyouts for enabled template controls, or Cell editing for built-in text-column editing. Table row navigation is separate from editing these child controls."
                     MinHeight="104"/>
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tabular:TableView

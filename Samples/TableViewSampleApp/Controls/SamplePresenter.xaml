@@ -55,6 +55,8 @@
         <!-- Title — spans both columns; per-page Theme button removed (see file comment). -->
         <TextBlock
             x:Name="HeaderText"
+            TextWrapping="Wrap"
+            AutomationProperties.HeadingLevel="Level1"
             Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
             Style="{ThemeResource TitleTextBlockStyle}"
             VerticalAlignment="Center"/>

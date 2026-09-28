@@ -8,6 +8,8 @@
     <StackPanel Spacing="6">
         <TextBlock
             Text="{x:Bind Title, Mode=OneWay}"
+            TextWrapping="Wrap"
+            AutomationProperties.HeadingLevel="Level1"
             Style="{ThemeResource TitleTextBlockStyle}"/>
         <TextBlock
             Text="{x:Bind Description, Mode=OneWay}"

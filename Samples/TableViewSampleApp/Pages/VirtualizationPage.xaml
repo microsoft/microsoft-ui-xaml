@@ -78,6 +78,16 @@
                     <Button x:Name="RefreshButton" AutomationProperties.AutomationId="RefreshButton" Content="Refresh counts" Click="OnRefreshClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                 </StackPanel>
 
+                <TextBlock Text="Live row changes" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock Text="Select a row to update its Role or remove it. Insert adds a row before the selection (or at the start). Existing row IDs and objects are retained; reset restores the chosen dataset size." Style="{StaticResource SectionDescriptionTextStyle}"/>
+                <StackPanel Spacing="8">
+                    <Button x:Name="UpdateRowButton" AutomationProperties.AutomationId="VirtualizationUpdateRowButton" Content="Update role" Click="OnUpdateRowClick" IsEnabled="False" HorizontalAlignment="Stretch"/>
+                    <Button x:Name="InsertRowButton" AutomationProperties.AutomationId="VirtualizationInsertRowButton" Content="Insert row" Click="OnInsertRowClick" HorizontalAlignment="Stretch"/>
+                    <Button x:Name="RemoveRowButton" AutomationProperties.AutomationId="VirtualizationRemoveRowButton" Content="Remove row" Click="OnRemoveRowClick" IsEnabled="False" HorizontalAlignment="Stretch"/>
+                    <Button x:Name="ResetRowsButton" AutomationProperties.AutomationId="VirtualizationResetRowsButton" Content="Reset rows" Click="OnResetRowsClick" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+                <TextBlock x:Name="MutationStatusText" AutomationProperties.AutomationId="VirtualizationMutationStatusText" Text="Select a row to change its data." Style="{StaticResource StatusReadoutValueStyle}"/>
+
                 <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                 <Grid ColumnSpacing="12" RowSpacing="4">
                     <Grid.ColumnDefinitions>

@@ -27,13 +27,14 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Spacing="4">
-                    <TextBlock Text="Files" FontSize="18" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="FilesLabel" Text="Files" FontSize="18" FontWeight="SemiBold"/>
                     <TextBlock Text="Select a file from the app folder" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                 </StackPanel>
 
                 <ListView x:Name="FileList"
                           Grid.Row="1"
                           AutomationProperties.AutomationId="FilePropertiesFileList"
+                          AutomationProperties.LabeledBy="{Binding ElementName=FilesLabel}"
                           DisplayMemberPath="Name"
                           SelectionChanged="OnFileSelectionChanged"
                           SelectionMode="Single"

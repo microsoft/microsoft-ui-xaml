@@ -79,6 +79,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
                     <TextBlock Text="Processes" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     <ComboBox x:Name="ViewModeCombo" SelectedIndex="0" VerticalAlignment="Center"
+                              AutomationProperties.Name="Process view"
                               MinWidth="170" SelectionChanged="OnViewModeChanged"
                               AutomationProperties.Name="Process list view"
                               ToolTipService.ToolTip="Switch how the process list is shaped (TableViewSource GroupBy or flat list).">
@@ -90,6 +91,7 @@
                 <AutoSuggestBox x:Name="SearchBox"
                                 Grid.Column="1"
                                 PlaceholderText="Type a name, publisher, or PID to search"
+                                AutomationProperties.Name="Search processes"
                                 QueryIcon="Find"
                                 TextChanged="OnSearchBoxTextChanged"
                                 MinWidth="140"
