@@ -26,7 +26,7 @@ App::App()
 {
     ::OutputDebugString(L">>> App::App has been called.\n");
 
-    m_initialWindowsXamlManager = winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::InitializeForCurrentThread();
+    winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::InitializeForCurrentThread();
     
     InitializeComponent();
 

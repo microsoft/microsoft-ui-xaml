@@ -138,6 +138,7 @@ namespace
     // Calling DispatcherQueueController.ShutdownQueue will shutdown XAML on the thread, and automatically close some
     // other WinAppSDK objects too.
     ShutdownDispatcherQueueController();
+    g_app = nullptr;
 
     return retValue;
 }
@@ -575,8 +576,10 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
         // Show a context menu with some interesting options.
         HMENU contextMenu = ::CreatePopupMenu();
 
-        const bool startAppEnabled = (g_app == nullptr && !XamlUtil::IsXamlRunningInProcess());
-        const bool releaseAppEnabled = (g_app != nullptr);
+        const bool xamlRunning = XamlUtil::IsXamlRunningInProcess();
+        const bool shutdownInProgress = (s_winUIState == WinUIState::ShuttingDown);
+        const bool startAppEnabled = !xamlRunning && !shutdownInProgress;
+        const bool releaseAppEnabled = xamlRunning && !shutdownInProgress;
         ::AppendMenuW(contextMenu, MF_STRING | (startAppEnabled ? 0 : MF_GRAYED), IDM_START_APP, L"Start WinUI");
         ::AppendMenuW(contextMenu, MF_STRING | (releaseAppEnabled ? 0 : MF_GRAYED), IDM_RELEASE_APP, L"Shut down WinUI (public APIs)");
         ::AppendMenuW(contextMenu, MF_SEPARATOR, 0, nullptr);
@@ -660,6 +663,12 @@ bool MainWindow::StartXaml()
             winrt::make<winrt::WinUICppIslandsSampleApp::implementation::App>().as(g_app);
             LogCurrentWindowsXamlManager();
         }
+        else if (!XamlUtil::IsXamlRunningOnThread())
+        {
+            // With no current Application, XAML restores the retained App as Application.Current.
+            winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager::InitializeForCurrentThread();
+            LogCurrentWindowsXamlManager();
+        }
 
         s_winUIState = WinUIState::Running;
         return true;
@@ -694,12 +703,6 @@ void MainWindow::ShutdownXaml()
         {
             window->ClearXamlSources();
         }
-
-        if (g_app)
-        {
-            g_app->m_initialWindowsXamlManager = nullptr;
-        }
-        g_app = nullptr;
 
         ShutdownDispatcherQueueController();
         s_winUIState = WinUIState::ShutdownComplete;

@@ -26,8 +26,6 @@ namespace winrt::WinUICppIslandsSampleApp::implementation
             return s_instanceCount.load();
         }
 
-        winrt::Microsoft::UI::Xaml::Hosting::WindowsXamlManager m_initialWindowsXamlManager{ nullptr };
-
     private:
         static inline std::atomic_uint32_t s_instanceCount{ 0 };
     };
