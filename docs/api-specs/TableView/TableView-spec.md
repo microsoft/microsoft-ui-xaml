@@ -148,7 +148,15 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
-`GridLinesVisibility` controls gridlines. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
+`GridLinesVisibility` controls gridlines. The default style uses alternating bands without gridlines.
+`Density` controls row and cell spacing. Header height matches row height; header content is
+vertically centered, while built-in text-cell content and editors are top-aligned so a short cell
+stays aligned with the first line of a taller cell in the same row.
+
+Local property values override the style. To retain an unbanded grid, set
+`GridLinesVisibility="All"` and `AlternatingRowBackground="{x:Null}"`. Set a local
+`RowBackground` as well to provide a uniform custom fill. Custom cell templates continue to
+control their own content alignment.
 
 ```xaml
 <tabular:TableView
@@ -394,10 +402,10 @@ Template parts:
 | `ItemsSource` | `Object` | `null` | Source collection for table rows. |
 | `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
 | `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
-| `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls horizontal and vertical gridlines. |
+| `GridLinesVisibility` | `TableViewGridLinesVisibility` | `None` in the default style; `All` in DP metadata | Controls horizontal and vertical gridlines. A local value overrides the style. |
 | `Density` | `TableViewDensity` | `Standard` | Controls row/cell spacing. |
 | `RowBackground` | `Brush` | `null` | Background brush for rows. |
-| `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
+| `AlternatingRowBackground` | `Brush` | `TabularSurfaceRowBackgroundAlternatingBrush` in the default style; `null` in DP metadata | Alternating row background. A local `null` disables default banding. |
 | `EmptyTemplate` | `DataTemplate` | `null` | Template displayed when there are no rows. |
 | `IsReadOnly` | `Boolean` | `true` | Gates editing for the whole control. Editing is opt-in: while `true`, user gestures do not open an editor regardless of per-column `IsReadOnly`. Setting it to `true` while a cell is open closes that edit. |
 | `IsEditing` | `Boolean` | `false` | `true` while a cell editor is open, through the matching commit/cancel close. Read-only. |

@@ -468,7 +468,8 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("true")]
     Boolean CanUserResizeColumns { get; set; };
 
-    // Opt-in row banding; null brushes preserve the theme row background.
+    // The default style supplies AlternatingRowBackground for banding; a local null disables it.
+    // RowBackground supplies the base fill for every row.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Media.Brush RowBackground { get; set; };
 

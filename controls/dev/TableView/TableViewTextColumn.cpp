@@ -31,8 +31,8 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     // Let XAML binding pick up the row data item from the cell DataContext.
     winrt::TextBlock textBlock;
     auto const owner = GetOwningTableView();
-    // Cell content is left-aligned and vertically centered within the row (standard grid look).
-    textBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
+    // Keep short cells aligned with the first line of taller template cells in the same row.
+    textBlock.VerticalAlignment(winrt::VerticalAlignment::Top);
     // Fluent body text: theme font size / Normal.
     textBlock.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
     textBlock.FontWeight(winrt::FontWeights::Normal());
@@ -77,7 +77,7 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
 
     // Match the display cell's metrics so swapping the TextBlock for the TextBox does not shift the
     // text or resize the row as the edit opens.
-    textBox.VerticalAlignment(winrt::VerticalAlignment::Center);
+    textBox.VerticalAlignment(winrt::VerticalAlignment::Top);
     textBox.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
     textBox.FontWeight(winrt::FontWeights::Normal());
     textBox.Padding(owner

@@ -45,7 +45,7 @@
 
             <!-- Row backgrounds -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="#00FFFFFF" />                          <!-- SubtleFillColorTransparent -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundAlternatingBrush" Color="#0FFFFFFF" />               <!-- SubtleFillColorSecondary -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundAlternatingBrush" Color="#0AFFFFFF" />               <!-- SubtleFillColorTertiary: banding is quieter than hover -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPointerOverBrush" Color="#0FFFFFFF" />               <!-- SubtleFillColorSecondary -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPressedBrush" Color="#0AFFFFFF" />                   <!-- SubtleFillColorTertiary -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="#0FFFFFFF" />                  <!-- SubtleFillColorSecondary -->
@@ -143,7 +143,7 @@
 
             <!-- Row backgrounds -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="#00FFFFFF" />                          <!-- SubtleFillColorTransparent -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundAlternatingBrush" Color="#09000000" />               <!-- SubtleFillColorSecondary (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundAlternatingBrush" Color="#06000000" />               <!-- SubtleFillColorTertiary (Light): banding is quieter than hover -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPointerOverBrush" Color="#09000000" />               <!-- SubtleFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPressedBrush" Color="#06000000" />                   <!-- SubtleFillColorTertiary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="#09000000" />                  <!-- SubtleFillColorSecondary (Light) -->

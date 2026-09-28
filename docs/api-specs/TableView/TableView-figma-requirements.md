@@ -137,10 +137,26 @@ icon assets, numeric glyph IDs, and per-part resource mappings remain unresolved
 | D7 | Complete accessibility and state coverage. | Keyboard navigation, announcements, contrast themes, disabled/pressed/error states, complete dark cell states, text scaling, and RTL behavior are not established by the reviewed evidence. They may exist in unreviewed material and must not be fabricated. |
 | D8 | Finish the whole-canvas review. | Inspect and classify all 53 supplemental roots, component variants, archive content, and application examples. Proximity to TableView or appearance inside File Explorer does not make every surrounding app feature a TableView requirement. |
 
-## Later implementation-gap review
+## Implementation alignment in this draft
+
+The current changes address three concrete differences in existing visuals:
+
+| Requirement | Change | Compatibility |
+| --- | --- | --- |
+| TV-04 | Default style supplies alternating bands and hides gridlines. | Local gridline and background values override the style; DP metadata is unchanged. |
+| TV-04 / TV-18 | Alternating-band brushes use the weaker Fluent tertiary fill: Light `#06000000`, Dark `#0AFFFFFF`, rather than the hover fill. | Contrast-theme system-color mappings and hover brushes are unchanged. These are Fluent token values, not exact copies of rounded PDF alpha measurements. |
+| TV-15 / TV-17 | Built-in text and editors align to the top of the row. | Custom cell templates continue to control their own alignment. |
+
+The existing Standard/Compact minimum-height values already match 40/30 and are
+unchanged. These fixes do not complete all Figma requirements. The broader gap
+audit and native/runtime validation are still in progress. Test additions are
+reserved for a separate PR.
+
+## Remaining implementation-gap review
 
 For each TV ID, record the source node, resolved design decision (if any), relevant
 API/template/resource/code, and a reproducible sample or test. Classify the result
 as **matches**, **behavior gap**, **visual gap**, **intentional deviation**, or
 **design unresolved**. An unresolved D item is not automatically an implementation
-bug. This PR records the requirements baseline; that comparison has not run.
+bug. This PR records the requirements baseline and the limited alignment work
+above; it does not claim that the full comparison is complete.
