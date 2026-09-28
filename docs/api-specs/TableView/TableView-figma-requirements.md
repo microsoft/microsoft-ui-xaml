@@ -40,8 +40,34 @@ for review coverage and [TableView-spec.md](./TableView-spec.md) for the API.
 >
 > More options () can be removed at column level
 
-The "more options" affordance is drawn as a **down chevron** at the trailing edge of each
-header cell.
+The header cell is the **same `cell` component** with `Type: Header cell` (*inspect panel*,
+dark-theme table):
+
+| Component property | Value shown |
+| --- | --- |
+| Compact | False |
+| Type | Header cell |
+| Filter options | true |
+
+| Layout property | Value |
+| --- | --- |
+| Flow | Horizontal |
+| Width | Fixed (240px) |
+| Height | **Hug (32px)** |
+| Padding | 2px |
+| Gap | 8px |
+
+Border: 1px, all sides, outer alignment, `Dark/Fill Color/Subtle/Transparent` = `#FFFFFF` 0%.
+
+Two points worth carrying forward:
+
+1. **The header is shorter than a body row**: 32px versus the body cell's 40px at the same
+   `Compact: False` density. The measured Compact header is 26px. Header height is
+   therefore its own value, not a copy of the row height.
+2. The removable affordance is exposed as **`Filter options`**, while the annotation calls
+   it "More options". The drawn glyph is a down chevron. The component name suggests
+   filtering rather than a generic overflow menu; the two names should be reconciled with
+   design before an implementation picks a behaviour.
 
 ## 02 Rows
 
@@ -121,7 +147,65 @@ Sizing modes:
 | `Regular` | `minHeight: 40px` / `maxHeight: NA` |
 | `Compact` | `minHeight: 30px` / `maxHeight: NA` |
 
-Cell `Content` frame layout (*Dev Mode*):
+### Cell component
+
+The `cell` component's properties and layout (*inspect panel*, dark-theme table):
+
+| Component property | Value shown |
+| --- | --- |
+| Compact | False |
+| Type | Table cell |
+| Hover | false |
+
+| Layout property | Value |
+| --- | --- |
+| Flow | Horizontal |
+| Width | Fixed (240px) |
+| Height | Hug (40px) |
+| Padding | 2px |
+| Gap | 8px |
+
+Border: **1px, all sides, outer alignment**, bound to token
+`Dark/Fill Color/Subtle/Transparent` = `#FFFFFF` at **0%**. The border is present but fully
+transparent by default, reserving the 1px for gridline treatments.
+
+Density is modelled as a **boolean `Compact`**, not a Regular/Compact enum: `Compact: False`
+is the Regular cell. `Type` is `Table cell`, matching the annotated table-cell/header-cell
+split. `Hover` is a boolean property on the component rather than an interaction state.
+
+### Captured colour tokens
+
+Token names as reported by the inspect panel. The cell itself is transparent in **both**
+hover states, so hover must be painted on the `Content` child rather than the cell box.
+
+| Element | State | Token | Value |
+| --- | --- | --- | --- |
+| `cell` fill (dark) | `Hover: false` | `Dark/Fill Color/Subtle/Transparent` | `#FFFFFF` 0% |
+| `cell` fill (dark) | `Hover: true` | `Dark/Fill Color/Subtle/Transparent` | `#FFFFFF` 0% |
+| `cell` fill (light) | `Hover: true` | `Light/Fill Color/Subtle/Transparent` | `#FFFFFF` 0% |
+| `cell` border (dark) | both | `Dark/Fill Color/Subtle/Transparent` | `#FFFFFF` 0%, 1px all sides, outer alignment |
+| `cell` border (light) | both | `Light/Fill Color/Subtle/Transparent` | `#FFFFFF` 0%, 1px all sides, outer alignment |
+| `Header cell` border (dark) | — | `Dark/Fill Color/Subtle/Transparent` | `#FFFFFF` 0%, 1px all sides, outer alignment |
+
+Token names for the painted states — hover fill, band fill, selection accent, separator
+rule, chevron — have **not** been read from the panel yet; the values below come from the
+export. Selecting the `Content` child of a hovered cell would give the hover token name.
+
+### Cell and Content geometry reconcile exactly
+
+The cell's 2px padding accounts for the difference between the cell box and its `Content`
+child, for both densities:
+
+| Density | Cell | minus 2px padding | Content frame |
+| --- | --- | --- | --- |
+| Regular | 240 x 40 | -4 each axis | **236 x 36** |
+| Compact | 240 x 30 | -4 each axis | **236 x 26** |
+
+Both Content sizes match the frames measured in the export, and the cell heights match the
+written 40px / 30px minimums. The effective left text inset is 2px (cell) + 10px (Content) =
+**12px**, which matches the 12-unit inset measured from the cell origin in the export.
+
+Cell `Content` frame layout (*inspect panel*):
 
 | Property | Value |
 | --- | --- |
@@ -215,7 +299,9 @@ asserted from the export itself.
 
 ## Colours
 
-Source RGB with paint opacity, per theme. Opacity is part of the value; do not flatten it.
+Source RGB with paint opacity, per theme, read from the exported vectors. These are the
+rendered values; the **token names** behind them are still being collected (see
+[Captured colour tokens](#captured-colour-tokens)).
 
 | Part | Light | Dark |
 | --- | --- | --- |
@@ -224,6 +310,9 @@ Source RGB with paint opacity, per theme. Opacity is part of the value; do not f
 | Hover fill | `#000000` @ 3.73% | `#FFFFFF` @ 6.05% |
 | Section separator rule | `#000000` @ 16.22% | `#FFFFFF` @ 9.30% |
 | Section chevron | `#000000` @ 89.56% | `#FFFFFF` @ 100% |
+| Cell fill and border (rest and hover) | — | `#FFFFFF` @ 0% (`Subtle/Transparent`) |
+
+Opacity is part of the value; do not flatten it.
 
 Sheet A's **00 General** dark example retains light-theme chevron and rule paints; its
 dedicated **03 Sections** panel uses the correct dark paints, and Sheet B corrects the
@@ -236,24 +325,20 @@ Shell), so contrast tokens exist to map against once the appearance is designed.
 
 ## Measured example geometry
 
-*Measured* from the exported vectors. Only the cell `Content` row above is authoritative
-layout; these describe the drawn examples.
+*Measured* from the exported vectors, now superseded where an inspect panel exists.
 
 | Element | Value |
 | --- | --- |
-| Cell Content frame | 236 x 36 (Regular), 236 x 26 (Compact) |
 | Cell focus outer ring | 240 x 40 (Regular), 240 x 32 (Compact) |
 | Single-selection accent marker | 3 x 16 |
 | Checked checkbox | 20 x 20 (exported as a filled rect, not a stroked outline) |
 | Embedded editor (text field) | 238 x 30 |
-| Sample column pitch, equal-width examples | 240 (corroborated by the 728px row width) |
-| Header example frame height | 32 (Regular), 26 (Compact) |
+| Compact header cell height | 26 |
 
-Header example heights are drawn sizes, not stated minimums. The sheets state minimum
-heights for cells only. The 236 x 36 Content frame is painted with the hover fill in the
-hover examples, which is why the same rectangle carries both the frame geometry and the
-hover paint. Sheet B draws the embedded editor rectangle twice, so that geometry does not
-identify a unique element there.
+The Regular header height of 32px is confirmed by the inspect panel; the Compact 26px
+figure is still export-measured only. The focus ring is outer-aligned, so at Regular it
+coincides with the 240 x 40 cell box. Sheet B draws the embedded editor rectangle twice, so
+that geometry does not identify a unique element there.
 
 Body text renders at 14 units with a 20-unit wrapped-line step, matching the Body and Body
 Strong styles listed under [Typography](#typography).
@@ -272,6 +357,31 @@ All requirement text is identical. The illustrations differ:
 Neither sheet carries an approval marker or revision history, so neither is established as
 superseding the other.
 
+## Implementation status
+
+Addressed in this PR:
+
+| Requirement | Change |
+| --- | --- |
+| Banded is the default table type | Default style supplies `AlternatingRowBackground` and sets `GridLinesVisibility="None"`. Local values still override. |
+| Banding must stay distinguishable from hover | Band brushes moved to the weaker Fluent tertiary fill (Light `#06000000`, Dark `#0AFFFFFF`) instead of reusing the hover fill. Contrast-theme system colours unchanged. |
+
+Cell minimum heights already match: `TableViewRowMinHeight` is 40 Standard / 30 Compact.
+
+### Confirmed gap: header height
+
+The header cell is **32px** at Regular and 26px at Compact, independent of the body cell's
+40px / 30px. The implementation sets header cell `MinHeight` from
+`GetDensityRowMinHeight()`, so headers currently render at the row height. Closing this
+needs a separate header-height resource rather than reusing the row value. Not attempted
+here.
+
+### Not attempted
+
+Content alignment (`Top Left - Default`), the `Filter options` affordance, section
+`Expandable`, cross-highlight on cell selection, and the wrap/resize requirements are
+recorded but unimplemented. Several depend on the open questions below.
+
 ## Open questions carried by the design
 
 Unresolved **in the source**:
@@ -289,6 +399,8 @@ Unresolved **in the source**:
    supplements the annotated `Regular` / `Strong`.
 8. What a non-expandable section (`Expandable: false`) looks like and when it is used. The
    property exists on the component but appears nowhere in the sheet text.
+9. Whether the header affordance is a filter (component property `Filter options`) or a
+   general overflow menu (annotation wording "More options").
 
 Not covered by these sheets at all: contrast themes, keyboard navigation, announcements,
 sorting and filtering behaviour, column reorder, frozen columns, virtualization, editing
