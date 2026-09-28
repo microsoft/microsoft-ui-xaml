@@ -101,6 +101,25 @@ Cell `Content` frame layout (*Dev Mode*):
 | Padding | Top 8px, Right 10px, Bottom 8px, Left 10px |
 | Gap | 8px |
 
+Row layout in the `00 General` example table (*inspect panel*, node `Row2`):
+
+| Property | Value |
+| --- | --- |
+| Flow | Horizontal |
+| Width | Hug (728px) |
+| Height | Hug (32px) |
+| Radius | 4px |
+| Padding | Left 8px |
+
+The row width is exactly consistent with the measured column pitch: 8px left padding plus
+three 240px cells = 728px.
+
+> **Conflict to resolve.** This row hugs to **32px**, which matches neither the written
+> Regular minimum (40px) nor the Compact minimum (30px). Either the `00 General` example
+> tables are not drawn at the specced densities, or the cell minimums are not reflected in
+> them. The written `05 Cell` constraints are treated as the requirement until design
+> confirms; the 32px figure is recorded as an observation of that example only.
+
 ### Cell design patterns
 
 > Cell can have multiple elements
@@ -194,7 +213,7 @@ layout; these describe the drawn examples.
 | Single-selection accent marker | 3 x 16 |
 | Checked checkbox | 20 x 20 (exported as a filled rect, not a stroked outline) |
 | Embedded editor (text field) | 238 x 30 |
-| Sample column pitch, equal-width examples | 240 |
+| Sample column pitch, equal-width examples | 240 (corroborated by the 728px row width) |
 | Header example frame height | 32 (Regular), 26 (Compact) |
 
 Header example heights are drawn sizes, not stated minimums. The sheets state minimum
@@ -231,6 +250,8 @@ Unresolved **in the source**:
 4. How the row-and-column cross-highlight for a selected cell should look.
 5. Whether the 2-column / 2-row minimum is a composition rule or a runtime constraint, and
    whether a header row counts toward it.
+6. Why the `00 General` example rows hug to 32px when the written cell minimums are 40px
+   (Regular) and 30px (Compact).
 
 Not covered by these sheets at all: contrast themes, keyboard navigation, announcements,
 sorting and filtering behaviour, column reorder, frozen columns, virtualization, editing
