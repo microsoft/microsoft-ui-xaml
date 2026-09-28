@@ -149,7 +149,9 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
 `GridLinesVisibility` controls gridlines. The default style uses alternating bands without gridlines.
-`Density` controls row and cell spacing. Header height matches row height; built-in header and
+`Density` controls row and cell spacing. Column headers are shorter than body rows:
+`TableViewHeaderMinHeight` resolves 32 / 26 / 40 for Standard / Compact / Comfortable, against
+`TableViewRowMinHeight` at 40 / 30 / 48. Both keys are app-overridable. Built-in header and
 text-cell content remains vertically centered.
 
 Local property values override the style. To retain an unbanded grid, set

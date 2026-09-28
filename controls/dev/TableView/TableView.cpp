@@ -25,7 +25,6 @@ static constexpr std::wstring_view s_RowsRepeaterPartName{ L"PART_RowsRepeater"s
 static constexpr std::wstring_view s_HeaderRowPartName{ L"PART_HeaderRow"sv };
 static constexpr std::wstring_view s_HeaderHostPartName{ L"PART_HeaderHost"sv };
 static constexpr std::wstring_view s_EmptyStatePresenterPartName{ L"PART_EmptyStatePresenter"sv };
-static constexpr std::wstring_view s_HeaderGridLineName{ L"TableViewHeaderGridLine"sv };
 static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGripperWidth"sv };
 // Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
 // unusable.
@@ -149,12 +148,6 @@ namespace
             visibility == winrt::TableViewGridLinesVisibility::All;
     }
 
-    bool WantsVerticalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
-    {
-        return visibility == winrt::TableViewGridLinesVisibility::Vertical ||
-            visibility == winrt::TableViewGridLinesVisibility::All;
-    }
-
     TableViewResourceCache& GetTableViewResourceCache(TableView* owner)
     {
         // Per-instance member (not a process-global map) so multi-UI-thread instances never share state.
@@ -186,35 +179,28 @@ namespace
         return false;
     }
 
-    double DensityRowMinHeightFallback(winrt::TableViewDensity density)
+    // Fallback metrics per density, used only when the matching ThemeResource is missing.
+    // One table so a density's values stay consistent instead of drifting across parallel
+    // switches. Headers are shorter than rows by design; Comfortable is not covered by the
+    // design and keeps Standard's -8 delta.
+    struct DensityMetrics
     {
-        switch (density)
-        {
-        case winrt::TableViewDensity::Compact: return 30.0;
-        case winrt::TableViewDensity::Comfortable: return 48.0;
-        default: return 40.0; // Standard
-        }
-    }
+        double rowMinHeight;
+        double headerMinHeight;
+        winrt::Thickness cellPadding;
+    };
 
-    // Column headers are deliberately shorter than body rows: the design specifies 32 at Standard
-    // and 26 at Compact. Comfortable is not covered by the design, so it keeps Standard's -8 delta.
-    double DensityHeaderMinHeightFallback(winrt::TableViewDensity density)
+    DensityMetrics const& DensityMetricsFallback(winrt::TableViewDensity density)
     {
-        switch (density)
-        {
-        case winrt::TableViewDensity::Compact: return 26.0;
-        case winrt::TableViewDensity::Comfortable: return 40.0;
-        default: return 32.0; // Standard
-        }
-    }
+        static const DensityMetrics s_compact{ 30.0, 26.0, winrt::ThicknessHelper::FromLengths(8, 2, 8, 2) };
+        static const DensityMetrics s_standard{ 40.0, 32.0, winrt::ThicknessHelper::FromLengths(8, 4, 8, 4) };
+        static const DensityMetrics s_comfortable{ 48.0, 40.0, winrt::ThicknessHelper::FromLengths(8, 8, 8, 8) };
 
-    winrt::Thickness DensityCellPaddingFallback(winrt::TableViewDensity density)
-    {
         switch (density)
         {
-        case winrt::TableViewDensity::Compact: return winrt::ThicknessHelper::FromLengths(8, 2, 8, 2);
-        case winrt::TableViewDensity::Comfortable: return winrt::ThicknessHelper::FromLengths(8, 8, 8, 8);
-        default: return winrt::ThicknessHelper::FromLengths(8, 4, 8, 4); // Standard
+        case winrt::TableViewDensity::Compact: return s_compact;
+        case winrt::TableViewDensity::Comfortable: return s_comfortable;
+        default: return s_standard;
         }
     }
 
@@ -830,32 +816,8 @@ void TableView::ApplyGridLinesToHeader()
         return;
     }
 
-    // Column headers never carry vertical separators: the design draws vertical rules on body
-    // rows only, leaving the header row with just the horizontal rule beneath it. The gridline
-    // element is still stamped so the header keeps the same 1px trailing reservation as a body
-    // cell, but it stays collapsed regardless of GridLinesVisibility.
-    const bool wantVertical = false;
-    const auto headerGridLineName = winrt::hstring{ s_HeaderGridLineName };
-    const auto headerCells = host.Children();
-    const uint32_t headerCellCount = headerCells.Size();
-    for (uint32_t i = 0; i < headerCellCount; ++i)
-    {
-        if (auto headerCell = headerCells.GetAt(i).try_as<winrt::Panel>())
-        {
-            const auto children = headerCell.Children();
-            const uint32_t childCount = children.Size();
-            for (uint32_t childIndex = 0; childIndex < childCount; ++childIndex)
-            {
-                if (auto border = children.GetAt(childIndex).try_as<winrt::Border>())
-                {
-                    if (border.Name() == headerGridLineName)
-                    {
-                        border.Visibility(wantVertical ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
-                    }
-                }
-            }
-        }
-    }
+    // Vertical rules are body-only: the header band is separated by its horizontal rule alone,
+    // and group headers span the full width. Nothing else to apply here.
 }
 
 void TableView::ForEachRealizedRow(std::function<void(winrt::TableViewRow const&)> const& fn)
@@ -1182,7 +1144,7 @@ double TableView::GetDensityRowMinHeight()
 
     std::wstring key{ L"TableViewRowMinHeight" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityRowMinHeightFallback(Density());
+    const auto fallback = DensityMetricsFallback(Density()).rowMinHeight;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.rowMinHeight = winrt::unbox_value_or<double>(raw, fallback);
@@ -1207,7 +1169,7 @@ double TableView::GetDensityHeaderMinHeight()
 
     std::wstring key{ L"TableViewHeaderMinHeight" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityHeaderMinHeightFallback(Density());
+    const auto fallback = DensityMetricsFallback(Density()).headerMinHeight;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.headerMinHeight = winrt::unbox_value_or<double>(raw, fallback);
@@ -1229,7 +1191,7 @@ winrt::Thickness TableView::GetDensityCellPadding()
 
     std::wstring key{ L"TableViewCellPadding" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityCellPaddingFallback(Density());
+    const auto fallback = DensityMetricsFallback(Density()).cellPadding;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.cellPadding = winrt::unbox_value_or<winrt::Thickness>(raw, fallback);
@@ -1252,7 +1214,7 @@ winrt::Thickness TableView::GetDensityHeaderCellPadding()
 
     std::wstring key{ L"TableViewHeaderCellPadding" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityCellPaddingFallback(Density());
+    const auto fallback = DensityMetricsFallback(Density()).cellPadding;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.headerCellPadding = winrt::unbox_value_or<winrt::Thickness>(raw, fallback);
@@ -1551,8 +1513,6 @@ void TableView::RebuildHeaders()
 
     // Cache theme-resource padding once per header rebuild; values are stable for the pass.
     winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
-    // Always cache the header grid-line brush at rebuild time; visibility toggles do not reassign it later.
-    const auto cachedHeaderGridLineBrush = GetGridLineBrush();
     // Header cells are shorter than body rows by design (32 vs 40 at Standard).
     const double cachedHeaderMinHeight = GetDensityHeaderMinHeight();
     const double cachedHeaderFontSize = GetHeaderFontSize();
@@ -1628,20 +1588,6 @@ void TableView::RebuildHeaders()
             content.FontSize(cachedHeaderFontSize);
             content.FontWeight(winrt::FontWeights::SemiBold());
             headerCell.Children().Append(content);
-
-            // Resolve from TableView so header grid lines track theme.
-            {
-                winrt::Border headerGridLine;
-                headerGridLine.Name(winrt::hstring{ s_HeaderGridLineName });
-                headerGridLine.Width(1);
-                headerGridLine.HorizontalAlignment(logicalEndAlignment);
-                headerGridLine.IsHitTestVisible(false);
-                // Collapsed unconditionally: the design gives the header row no vertical
-                // separators, only the horizontal rule beneath it. See ApplyGridLinesToHeader.
-                headerGridLine.Visibility(winrt::Visibility::Collapsed);
-                headerGridLine.Background(cachedHeaderGridLineBrush);
-                headerCell.Children().Append(headerGridLine);
-            }
 
             // Tag header cells so frozen-column refresh can map them back to columns.
             headerCell.Tag(column);

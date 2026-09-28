@@ -934,13 +934,13 @@ void TableViewRow::RefreshRowBackground()
         }
         if (rowIndex >= 0)
         {
-            // RowBackground is the base for every row; AlternatingRowBackground overrides
-            // the banded rows only when set. Setting RowBackground alone
-            // must fill all rows uniformly, not stripe the other rows transparent.
+            // RowBackground is the base for every row; AlternatingRowBackground overrides the
+            // banded ones. Setting RowBackground alone must fill all rows uniformly.
             //
-            // The band falls on EVEN indices, so the FIRST row is shaded, matching the design.
-            // WPF DataGrid shades odd rows instead; the difference is visible by default here
-            // because the default style supplies AlternatingRowBackground.
+            // Parity is over the repeater's flattened index, which includes group headers, so
+            // with grouping the first data row is not necessarily banded. Whether banding should
+            // restart per group is an open design question; do not "fix" this to odd indices,
+            // which would flip every app that already sets AlternatingRowBackground.
             auto background = owner.RowBackground();
             if ((rowIndex % 2) == 0 && owner.AlternatingRowBackground() != nullptr)
             {

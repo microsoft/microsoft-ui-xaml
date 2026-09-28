@@ -458,7 +458,8 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("winrt::TableViewHeadersVisibility::Column")]
     TableViewHeadersVisibility HeadersVisibility { get; set; };
 
-    // Controls row dividers and column separators; row banding is separate.
+    // Controls row dividers and column separators; row banding is separate. The default style
+    // sets None, so ClearValue resolves to None rather than the All in this metadata.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::TableViewGridLinesVisibility::All")]
     TableViewGridLinesVisibility GridLinesVisibility { get; set; };
@@ -468,11 +469,12 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("true")]
     Boolean CanUserResizeColumns { get; set; };
 
-    // The default style supplies AlternatingRowBackground for banding; a local null disables it.
     // RowBackground supplies the base fill for every row.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Media.Brush RowBackground { get; set; };
 
+    // The default style supplies this for banding, so ClearValue resolves to that brush rather
+    // than null; a local null disables banding.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground { get; set; };
 
