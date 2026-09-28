@@ -140,6 +140,27 @@ drawn; the example grid labels the first cell **Top Left - Default**.
 The "Design patterns" note under Content alignment is an unfilled placeholder (`...`) and
 carries no requirement.
 
+## Typography
+
+The file's text style ramp, read from the Figma styles panel. Cell and header text use
+**Body** and **Body Strong** (both 14/20), which matches the 14-unit size and 20-unit
+wrapped-line step measured in the export.
+
+| Style | Size / line height |
+| --- | --- |
+| Caption | 12 / 16 |
+| Body | 14 / 20 |
+| Body Strong | 14 / 20 |
+| Body Large | 18 / 24 |
+| Body Large Strong | 18 / 24 |
+| Subtitle | 20 / 28 |
+| Title | 28 / 36 |
+| Title Large | 40 / 52 |
+| Display | 68 / 92 |
+
+The PDF export carries Type3 subset fonts with `n/a` base names, so no font family is
+asserted from the export itself.
+
 ## Colours
 
 Source RGB with paint opacity, per theme. Opacity is part of the value; do not flatten it.
@@ -156,7 +177,10 @@ Sheet A's **00 General** dark example retains light-theme chevron and rule paint
 dedicated **03 Sections** panel uses the correct dark paints, and Sheet B corrects the
 General panel. Use the Sections panel values.
 
-Contrast themes are not covered by either sheet.
+Neither sheet draws a contrast-theme table, so contrast appearance for TableView is not
+specified here. The library itself does carry a **Contrast** colour-style group alongside
+**Light** and **Dark** (each split into Fill Color, Elevation, Stroke Color, Background and
+Shell), so contrast tokens exist to map against once the appearance is designed.
 
 ## Measured example geometry
 
@@ -179,8 +203,8 @@ hover examples, which is why the same rectangle carries both the frame geometry 
 hover paint. Sheet B draws the embedded editor rectangle twice, so that geometry does not
 identify a unique element there.
 
-Body text renders at 14 units with a 20-unit wrapped-line step. The PDF export does not
-carry a trustworthy font family name, so no family is asserted from it.
+Body text renders at 14 units with a 20-unit wrapped-line step, matching the Body and Body
+Strong styles listed under [Typography](#typography).
 
 ## Sheet differences
 
