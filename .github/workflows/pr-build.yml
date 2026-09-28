@@ -1,4 +1,4 @@
-# PR build (OSS). Product-only compile gate; tests and signing run in internal ADO.
+﻿# PR build (OSS). Product-only compile gate; tests and signing run in internal ADO.
 
 name: PR Build
 
@@ -31,12 +31,12 @@ permissions:
   contents: read
 
 env:
-  DISABLE_PR_BUILD_MATRIX_VALIDATION: 'true'
+  DISABLE_PR_BUILD_MATRIX_VALIDATION: 'false'
 
 jobs:
   build:
     name: Build (${{ matrix.flavor }})
-    runs-on: windows-2022
+    runs-on: windows-latest
     timeout-minutes: 120
     strategy:
       fail-fast: false
