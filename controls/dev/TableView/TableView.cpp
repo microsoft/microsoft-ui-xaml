@@ -830,7 +830,11 @@ void TableView::ApplyGridLinesToHeader()
         return;
     }
 
-    const bool wantVertical = WantsVerticalLines(visibility);
+    // Column headers never carry vertical separators: the design draws vertical rules on body
+    // rows only, leaving the header row with just the horizontal rule beneath it. The gridline
+    // element is still stamped so the header keeps the same 1px trailing reservation as a body
+    // cell, but it stays collapsed regardless of GridLinesVisibility.
+    const bool wantVertical = false;
     const auto headerGridLineName = winrt::hstring{ s_HeaderGridLineName };
     const auto headerCells = host.Children();
     const uint32_t headerCellCount = headerCells.Size();
@@ -1548,7 +1552,6 @@ void TableView::RebuildHeaders()
     // Cache theme-resource padding once per header rebuild; values are stable for the pass.
     winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
     // Always cache the header grid-line brush at rebuild time; visibility toggles do not reassign it later.
-    const bool wantVerticalHeaderLines = WantsVerticalLines(GridLinesVisibility());
     const auto cachedHeaderGridLineBrush = GetGridLineBrush();
     // Header cells are shorter than body rows by design (32 vs 40 at Standard).
     const double cachedHeaderMinHeight = GetDensityHeaderMinHeight();
@@ -1633,7 +1636,9 @@ void TableView::RebuildHeaders()
                 headerGridLine.Width(1);
                 headerGridLine.HorizontalAlignment(logicalEndAlignment);
                 headerGridLine.IsHitTestVisible(false);
-                headerGridLine.Visibility(wantVerticalHeaderLines ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+                // Collapsed unconditionally: the design gives the header row no vertical
+                // separators, only the horizontal rule beneath it. See ApplyGridLinesToHeader.
+                headerGridLine.Visibility(winrt::Visibility::Collapsed);
                 headerGridLine.Background(cachedHeaderGridLineBrush);
                 headerCell.Children().Append(headerGridLine);
             }

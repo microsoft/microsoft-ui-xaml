@@ -4,8 +4,11 @@ Source: *Fluent Windows Visual Library - IDC*, file `Nv8iUI5i2SLf4vRxX16C17`, pa
 `72491:280393` (Lists & collections), TableView sheets **A** `182972:12908` and
 **B** `183907:68060`. Reviewed 28 September 2026.
 
-The two sheets carry **identical requirement text**: all 75 annotation blocks match.
-They differ only in illustrations (see [Sheet differences](#sheet-differences)).
+The two sheets carry **identical requirement text**: all 75 annotation blocks match. This is
+confirmed from `Section 1.pdf`, a single export containing both sheets side by side — a
+stronger check than diffing two separate exports. The only whole-sheet text difference is
+duplicated generic content on the right sheet (11 extra `Cell content`, one extra `Text`).
+They otherwise differ only in illustrations (see [Sheet differences](#sheet-differences)).
 
 Quoted text is **verbatim** from the sheets. Values marked *Dev Mode* come from the Figma
 inspect panel and take precedence over anything measured from the PDF export. Values marked
@@ -114,6 +117,55 @@ border and fill rather than by size. This matches the implementation's model, wh
 `GridLinesVisibility` drives row `BorderThickness` and `AlternatingRowBackground` drives the
 band fill, with the row style already carrying `ControlCornerRadius` (4px).
 
+### Vertical rules: header and section rows are excluded
+
+In the "Row dividers" panel's **`Grid`** example, vertical column separators appear on
+**body rows only**. The column-header row shows no vertical rules — just the horizontal rule
+beneath it — and section-title rows have none either, spanning the full width.
+
+This is corroborated by measurement in the exported `Content*.pdf` examples: the vertical
+rules are 1px at 16.2% black, and their y-extents (1128-1168, 1169-1209, 1239-1279,
+1280-1320) begin **below** the section-title bands (1098-1127, 1209-1238). Section-title rows
+therefore carry no vertical rules. Those PDFs contain no column-header row, so the header
+exclusion rests on the `Grid` screenshot, where the row is explicitly labelled "Cell header".
+
+The `Lined` example has horizontal rules throughout and no vertical rules anywhere, so the
+distinction is specific to `Grid`.
+
+> **Gap.** `TableView::RebuildHeaders` sets each header cell's separator to
+> `wantVerticalHeaderLines ? Visible : Collapsed`, where `wantVerticalHeaderLines` is
+> `WantsVerticalLines(GridLinesVisibility())`. Headers therefore draw vertical rules whenever
+> the mode includes them, which the design does not show.
+
+### Row component properties
+
+Three exported property panels define row-level variants. Each contains only the label and
+its choices — their preview slots are **empty**, so they document the property set without
+illustrating it:
+
+| Panel | Property | Values |
+| --- | --- | --- |
+| `ROW.pdf` | Rows | `Single`, `Two`, `Three or more` |
+| `ROW-1.pdf` | Header | `False`, `True` |
+| `ROW-2.pdf` | Column dividers | `False`, `True` |
+
+`Rows` controls the **number of rows**, not the number of text lines in a cell: in the
+content examples the row rhythm stays 40px and cell text stays a single line. `Column
+dividers` being a boolean means vertical rules are modelled independently of the
+banded/lined/grid treatment, rather than as one value in a four-way enum.
+
+The four-way treatment appears under a **"Row dividers"** label with chips `Banded`, `None`,
+`Lined`, `Grid` — note `Lined`, not `Horizontal lined`. That panel lives on a separate
+working board (`Frame.png`, 1360 x 4530), not in the main sheets; the sheets' `02 Rows`
+panel labels the same concept `Table rows` and spells the third value `Horizontal lined`.
+
+### Not covered anywhere in the exports
+
+Searching every exported sheet and board found **no** occurrence of an empty state, loading
+state, error state, inline editing, frozen or pinned first column, or horizontal scrolling.
+The standalone notes explicitly *ask* for loading and error designs rather than supplying
+them. Treat all of these as undesigned, not as designed-and-omitted.
+
 ### Banding parity: the first row is shaded
 
 Measured from the `02 Rows` banded example. Its four rows start at y = 3056, 3096, 3136 and
@@ -126,6 +178,18 @@ shaded, then alternating.
 `(rowIndex % 2) == 0`, so the first row is shaded. This intentionally departs from WPF
 `DataGrid`, which shades odd rows; apps that set both `RowBackground` and
 `AlternatingRowBackground` will see the two brushes swap rows.
+
+A separate **"Row dividers"** panel (variants `Banded`, `None`, `Lined`, `Grid` — note the
+different labels) shows banded tables containing sections. In its banded example the first
+section has two rows (shaded, unshaded) and the second has three (shaded, unshaded,
+shaded). Each section therefore *appears* to start shaded — but because the first section's
+row count is even, a single global even-index rule produces exactly the same result. **This
+example cannot distinguish global parity from per-section parity.** A section with an odd
+row count would separate them, and none is drawn.
+
+The implementation uses the repeater's global element index, i.e. global parity. If the
+design intends banding to restart at each section, that is a further change and needs a
+case with an odd-length section to confirm.
 
 **Row selection** variants: `Single`, `Multi`.
 
@@ -154,6 +218,20 @@ The accent marker is a component named **`Selector`** (*inspect panel*):
 
 A section title spans the table width above its rows, with a separator rule. Collapsed uses
 a right chevron, expanded an up chevron.
+
+Measured from `Section.pdf`, which stacks all four combinations:
+
+| Variant | Band height | Chevron bounds |
+| --- | --- | --- |
+| Regular, collapsed | 37px | 8.62 x 10.5, right-pointing |
+| Regular, expanded | 53px | 10.5 x 8.62, up |
+| Strong, collapsed | 37px | 8.62 x 10.5, right-pointing |
+| Strong, expanded | 56px | 10.5 x 8.62, up |
+
+Every separator rule is 712 x 1 at 16.2% black, matching the section-rule colour recorded
+below. `Strong` renders as heavier, slightly wider title text. Note these standalone band
+heights differ from the 29px the inspect panel reports for the `Section` component in a
+table, so they are presentation of the variant sheet rather than the in-table height.
 
 The `Section` component's actual properties and layout (*inspect panel*):
 
@@ -448,6 +526,22 @@ Addressed in this PR:
 | Selection accent uses `Fill Color/Accent/Default` | `TabularSurfaceSelectionIndicatorBrush` now resolves `SystemAccentColorDark1` in Light and `SystemAccentColorLight2` in Dark, matching `AccentFillColorDefaultBrush`. It previously used raw `SystemAccentColor`, which is the wrong shade and was identical in both themes. HighContrast keeps `SystemColorHighlightColor`. |
 | Header is shorter than a body row | New `TableViewHeaderMinHeight` resource (32 Standard / 26 Compact / 40 Comfortable), resolved by `GetDensityHeaderMinHeight()`. Headers previously reused the body row min-height. |
 | Banding shades the first row | `RefreshRowBackground` now bands even 0-based indices. Departs from WPF `DataGrid`, which bands odd rows. |
+| Column headers carry no vertical rules | The header separator is now stamped collapsed unconditionally instead of tracking `GridLinesVisibility`. Body rows still draw vertical rules in `All` / `Vertical`. |
+
+### Known divergences, not changed here
+
+A full audit of the implementation against the values above found these remaining gaps. They
+are recorded rather than fixed because each is either a layout-structure change or needs a
+design decision:
+
+| Gap | Symptom a reviewer would see |
+| --- | --- |
+| No `Content` capsule inside the cell | Text sits 8px from the cell edge instead of 12px (2px cell + 10px content), and there is no rounded 236x36 content area. |
+| Cell border is not reserved | The 1px border is added only when vertical gridlines are on, so content shifts horizontally when gridlines toggle. The design keeps a transparent 1px border in every state. |
+| Hover paints the whole row | The design washes the rounded `Content` area of the hovered cell; the implementation fills the entire row rectangle. |
+| Row corner radius has no effect | The row style sets `CornerRadius`, but the template root does not bind it, so banded rows render square. |
+| Section/group header geometry | Padding is `8,6,16,6` with a transparent border, versus the design's top-only 1px rule and 4px bottom padding. |
+| Built-in cell text is vertically centred | The design's stated default is top-left. Changing this was attempted and reverted; see below. |
 
 The `Selector` geometry already matches: the template draws a 3 x 16 rectangle with
 `RadiusX`/`RadiusY` of 1.5, which on a 3px width is the fully rounded shape Figma expresses
@@ -489,6 +583,10 @@ Unresolved **in the source**:
    property exists on the component but appears nowhere in the sheet text.
 9. Whether the header affordance is a filter (component property `Filter options`) or a
    general overflow menu (annotation wording "More options").
+10. Whether banding parity is global or restarts at each section. The drawn example cannot
+    distinguish the two; a section with an odd row count would.
+11. Why the row treatments are labelled `Banded` / `None` / `Horizontal lined` / `Grid` in
+    the `02 Rows` panel but `Banded` / `None` / `Lined` / `Grid` under "Row dividers".
 
 Not covered by these sheets at all: contrast themes, keyboard navigation, announcements,
 sorting and filtering behaviour, column reorder, frozen columns, virtualization, editing

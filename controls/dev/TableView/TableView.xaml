@@ -26,6 +26,11 @@
     <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedBrush" Color="{ThemeResource TextFillColorPrimary}" />
     <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPointerOverBrush" Color="{ThemeResource TextFillColorPrimary}" />
     <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPressedBrush" Color="{ThemeResource TextFillColorPrimary}" />
+    <!-- Last-resort fallback only, for hosts that do not merge TabularSurfaces_themeresources.xaml.
+         This root dictionary is theme-invariant, so it cannot supply the design's per-theme
+         Fill Color/Accent/Default (SystemAccentColorDark1 in Light, SystemAccentColorLight2 in
+         Dark) the way the canonical dictionary does. The canonical path is correct; this raw
+         accent is a deliberate compromise rather than the design value. -->
     <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColor}" />
     <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
     <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="{ThemeResource DividerStrokeColorDefault}" />
