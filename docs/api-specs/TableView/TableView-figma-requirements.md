@@ -75,10 +75,12 @@ Two points worth carrying forward:
 
 > Banded is the default table type
 
-The table frame holding the four row-style examples (*inspect panel*):
+The table frame holding the four row-style examples (*inspect panel*, identical in light and
+dark):
 
 | Property | Value |
 | --- | --- |
+| Name | `Frame 3465221` — a plain frame, **not a component instance** |
 | Flow | Vertical |
 | Width | Fixed (720px) |
 | Height | Hug (160px) |
@@ -86,6 +88,31 @@ The table frame holding the four row-style examples (*inspect panel*):
 720px is three 240px columns with no column gap, and 160px is four 40px rows with **no row
 gap** — rows butt directly against each other. This matches the `Section` component's fixed
 720px width.
+
+> **Row styling is not modelled as a component property.** The four row treatments are
+> hand-assembled frames, not variants of a table component, so there is no authoritative
+> per-variant token mapping to read. `Banded`, `None`, `Horizontal lined` and `Grid` are
+> specified only by the annotation chips and the drawn examples. An implementation must
+> derive each treatment's gridline and banding brushes from the measured paints rather than
+> from a component definition.
+>
+> Separately, nine `Table / Table` component instances exist elsewhere on the canvas at
+> different sizes (768 x 160, 768 x 120, 463 x 160). Whether that component supersedes or
+> predates these frames is unresolved.
+
+How the treatments differ at the **row** level, sampled from the `02 Rows` examples:
+
+| Treatment | Row radius | Row border | Row fill |
+| --- | --- | --- | --- |
+| `Banded` | 4px | none | alternating band fill |
+| `Horizontal lined` | none | Bottom 1px | none |
+| `None` | *not sampled* | *not sampled* | *not sampled* |
+| `Grid` | *not sampled* | *not sampled* | *not sampled* |
+
+Both sampled rows are Fill 720px x Hug 40px. The treatments therefore differ by radius,
+border and fill rather than by size. This matches the implementation's model, where
+`GridLinesVisibility` drives row `BorderThickness` and `AlternatingRowBackground` drives the
+band fill, with the row style already carrying `ControlCornerRadius` (4px).
 
 **Row selection** variants: `Single`, `Multi`.
 
@@ -188,12 +215,19 @@ The `cell` component's properties and layout (*inspect panel*, dark-theme table)
 | Flow | Horizontal |
 | Width | Fixed (240px) |
 | Height | Hug (40px) |
+| Min height | **40px** |
 | Padding | 2px |
 | Gap | 8px |
 
 Border: **1px, all sides, outer alignment**, bound to token
-`Dark/Fill Color/Subtle/Transparent` = `#FFFFFF` at **0%**. The border is present but fully
-transparent by default, reserving the 1px for gridline treatments.
+`Dark/Fill Color/Subtle/Transparent` = `#FFFFFF` at **0%** (and the `Light/...` equivalent
+in light examples). The border is present but fully transparent by default, reserving the
+1px for gridline treatments.
+
+`Min height: 40px` is a real auto-layout constraint on the component, not merely annotation
+text, so the written `minHeight: 40px` is enforced by the design itself. The cell's border
+stays transparent in the **Focus** examples too, so the focus ring measured at 240 x 40 is a
+separate element rather than the cell's own border.
 
 Density is modelled as a **boolean `Compact`**, not a Regular/Compact enum: `Compact: False`
 is the Regular cell. `Type` is `Table cell`, matching the annotated table-cell/header-cell
@@ -215,9 +249,11 @@ hover states, so hover must be painted on the `Content` child rather than the ce
 | `Header cell` border (dark) | — | `Dark/Fill Color/Subtle/Transparent` | `#FFFFFF` 0%, 1px all sides, outer alignment |
 
 Setting `Hover: true` adds a fill layer to the cell, but that layer resolves to
-`Subtle/Transparent` at 0%. The visible hover wash measured in the export is 236 x 36 — the
-`Content` frame size, not the 240 x 40 cell box — so the hover paint is applied to `Content`
-and the cell's own fill stays transparent in every state sampled.
+`Subtle/Transparent` at 0%. The `Content` child of a hovered cell reports **no Colors block
+at all**. So the visible hover wash — measured at 236 x 36, the Content frame size — is
+painted by neither the cell box nor the `Content` frame itself. The node that carries it has
+not been identified; it is likely a sibling or deeper child. Until it is, the hover fill is
+known only by its measured value.
 
 Token names for the painted states — hover fill, band fill, selection accent, separator
 rule, chevron — have **not** been read from the panel yet; the values below come from the
@@ -248,26 +284,25 @@ Cell `Content` frame layout (*inspect panel*):
 | Padding | Top 8px, Right 10px, Bottom 8px, Left 10px |
 | Gap | 8px |
 
-Row layout in the `00 General` example table (*inspect panel*). Two different row instances
-were sampled and they are **not** configured identically:
+Row layout (*inspect panel*). Header rows and body rows are different heights, and the
+earlier apparent conflict was a header row being compared against body rows:
 
-| Property | Sample 1 | Sample 2 |
-| --- | --- | --- |
-| Flow | Horizontal | Horizontal |
-| Width | Hug (728px) | Fill (712px) |
-| Height | Hug (32px) | Hug (40px) |
-| Radius | 4px | 4px |
-| Padding | Left 8px | none shown |
+| Property | Header row (`00 General`) | Body row (`02 Rows`) | Body row (`00 General`) |
+| --- | --- | --- | --- |
+| Flow | Horizontal | Horizontal | Horizontal |
+| Width | Hug (728px) | Fill (720px) | Fill (712px) |
+| Height | **Hug (32px)** | **Hug (40px)** | **Hug (40px)** |
+| Radius | 4px | 4px | 4px |
+| Padding | Left 8px | none | none shown |
 
-Sample 2's **40px** height matches the written Regular cell minimum, and its 712px fill
-width matches the 712-unit band fills measured in the export (720px section width minus the
-8px left inset). Sample 1's 728px is 8px + three 240px columns.
+This is fully consistent with the cell components: a `Header cell` is 240 x 32 and a
+`Table cell` is 240 x 40, so a header row hugs to 32px and a body row to 40px. The written
+Regular cell minimum of 40px applies to body cells.
 
-> **Unresolved.** Sample 1 hugs to **32px**, which matches neither the written Regular
-> minimum (40px) nor Compact (30px), and it hugs rather than fills. Since sample 2 does
-> honour the 40px figure, the written `05 Cell` minimums stand as the requirement; sample 1
-> looks like an inconsistently configured instance in the mock rather than a third density.
-> Worth confirming with design before treating either width mode as normative.
+The `02 Rows` body row is the reference case: it fills the table's 720px width exactly
+(three 240px columns, no padding) and hugs to 40px, matching the table frame's 160px ÷ 4
+rows. The `00 General` header row's extra 8px left inset — hence 728px rather than 720px —
+appears only in that mock and is not corroborated elsewhere.
 
 ### Cell design patterns
 
@@ -408,10 +443,10 @@ Cell minimum heights already match: `TableViewRowMinHeight` is 40 Standard / 30 
 ### Confirmed gap: header height
 
 The header cell is **32px** at Regular and 26px at Compact, independent of the body cell's
-40px / 30px. The implementation sets header cell `MinHeight` from
-`GetDensityRowMinHeight()`, so headers currently render at the row height. Closing this
-needs a separate header-height resource rather than reusing the row value. Not attempted
-here.
+40px / 30px, and the header *row* hugs to 32px to match. The implementation sets header
+`MinHeight` from `GetDensityRowMinHeight()`, so headers currently render at the body row
+height. Closing this needs a separate header-height resource rather than reusing the row
+value. Not attempted here.
 
 ### Not attempted
 
@@ -430,8 +465,8 @@ Unresolved **in the source**:
 4. How the row-and-column cross-highlight for a selected cell should look.
 5. Whether the 2-column / 2-row minimum is a composition rule or a runtime constraint, and
    whether a header row counts toward it.
-6. Why two `00 General` row instances differ: one hugs to 32px, the other fills at 712px
-   and hugs to 40px. Which configuration is intended?
+6. Whether the header row's extra 8px left inset in the `00 General` mock is intentional or
+   an artefact; body rows elsewhere have no inset.
 7. The `Section` component's full `Type` value set, and whether `Default` replaces or
    supplements the annotated `Regular` / `Strong`.
 8. What a non-expandable section (`Expandable: false`) looks like and when it is used. The
