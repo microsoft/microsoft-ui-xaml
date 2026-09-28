@@ -10,6 +10,7 @@
 #include "TableViewCellsPanel.h"
 #include "TableViewRowAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
+#include "TableViewCell.h"
 #include "TVDiag.h"
 
 static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
@@ -662,7 +663,7 @@ void TableViewRow::RebuildCells()
                 continue;
             }
 
-            auto cellWrapper = children.GetAt(childIndex).try_as<winrt::Border>();
+            auto cellWrapper = children.GetAt(childIndex).try_as<winrt::Grid>();
             if (!cellWrapper || cellWrapper.Tag().try_as<winrt::TableViewColumn>() != column)
             {
                 canRestampCells = false;
@@ -683,7 +684,7 @@ void TableViewRow::RebuildCells()
                 continue;
             }
 
-            auto cellWrapper = children.GetAt(childIndex).as<winrt::Border>();
+            auto cellWrapper = children.GetAt(childIndex).as<winrt::Grid>();
             // Do NOT re-push data here. Cells inherit the row's DataContext (ItemsRepeater updates it
             // on recycle) and bind to it reactively (TextColumn Text, TemplateColumn Content), so a
             // recycled row's *data* updates without setting DataContext/Content on a live, in-tree cell
@@ -696,7 +697,7 @@ void TableViewRow::RebuildCells()
             cellWrapper.Visibility(column.Visibility());
             cellWrapper.MinHeight(rowMinHeight);
 
-            if (auto cellElement = cellWrapper.Child().try_as<winrt::FrameworkElement>())
+            if (auto cellElement = TableViewCell::Child(cellWrapper).try_as<winrt::FrameworkElement>())
             {
                 if (auto textBlock = cellElement.try_as<winrt::TextBlock>())
                 {
@@ -750,6 +751,7 @@ void TableViewRow::RebuildCells()
 
     host.Children().Clear();
 
+    int32_t visibleColumnIndex = 0;
     for (auto const& column : columns)
     {
         // Skip entries this TableView rejected so a half-owned column cannot realize cells here.
@@ -759,12 +761,16 @@ void TableViewRow::RebuildCells()
         }
 
         // Cell wrapper root.
-        winrt::Border cellWrapper;
+        auto const cellWrapper = winrt::make<TableViewCell>(*this, column, visibleColumnIndex).as<winrt::Grid>();
+        if (column.Visibility() == winrt::Visibility::Visible)
+        {
+            ++visibleColumnIndex;
+        }
         cellWrapper.Tag(column);
         cellWrapper.Visibility(column.Visibility());
         cellWrapper.MinHeight(rowMinHeight);
 
-        // A Border with a null Background does not hit-test, so without this only the generated
+        // A cell with a null Background does not hit-test, so without this only the generated
         // content itself (a TextBlock, which is as wide as its text) would respond to a press. A
         // click anywhere in the cell's padding resolved no column at all: no current cell, and
         // double-click-to-edit silently did nothing on most of the cell's area. Transparent keeps
@@ -775,7 +781,7 @@ void TableViewRow::RebuildCells()
 
         // No local DataContext: the cell inherits the row's DataContext once appended, so recycled
         // rows update reactively via inheritance instead of a live per-recycle push. This is a
-        // load-bearing invariant: nothing on the cell path (wrapper Border, PART_CellsHost, or the
+        // load-bearing invariant: nothing on the cell path (wrapper Grid, PART_CellsHost, or the
         // built-in cell elements) may set a local DataContext, or it would shadow inheritance and the
         // cell would show stale data after recycle. Custom columns (overridable GenerateElementCore)
         // must likewise bind reactively to the inherited DataContext rather than baking in the initial
@@ -820,7 +826,7 @@ void TableViewRow::ClearOwnedCellToolTips(const winrt::Panel& host)
     const uint32_t count = children.Size();
     for (uint32_t i = 0; i < count; ++i)
     {
-        if (auto const cellWrapper = children.GetAt(i).try_as<winrt::Border>())
+        if (auto const cellWrapper = children.GetAt(i).try_as<winrt::Grid>())
         {
             TableViewDetails::ClearOwnedToolTip(cellWrapper);
         }
@@ -831,17 +837,17 @@ void TableViewRow::ClearOwnedCellToolTips(const winrt::Panel& host)
 // template column needs. Shared by the cell rebuild and by the post-commit refresh, because
 // GenerateElement alone is NOT a complete cell - forgetting the second half leaves a template
 // column's Content unbound and the cell blank.
-void TableViewRow::AttachCellContent(const winrt::Border& cellWrapper, const winrt::FrameworkElement& cellElement)
+void TableViewRow::AttachCellContent(const winrt::Grid& cellWrapper, const winrt::FrameworkElement& cellElement)
 {
     if (!cellWrapper || !cellElement)
     {
         return;
     }
 
-    cellWrapper.Child(cellElement);
+    TableViewCell::Child(cellWrapper, cellElement);
 
     // A ContentPresenter cell (built-in TemplateColumn) needs its Content wired to the row item.
-    // Bind Content to the WRAPPER Border's inherited DataContext -- which tracks the item across
+    // Bind Content to the WRAPPER Grid's inherited DataContext -- which tracks the item across
     // recycle -- rather than the presenter's own DataContext: ContentPresenter pins its DataContext
     // to its Content, so a self-referential binding would freeze after the first item and show stale
     // content on recycled rows. This binding persists across recycles (the restamp fast-path reuses
@@ -898,7 +904,7 @@ void TableViewRow::RefreshGridLines()
     const uint32_t childCount = children.Size();
     for (uint32_t i = 0; i < childCount; ++i)
     {
-        if (auto cellWrapper = children.GetAt(i).try_as<winrt::Border>())
+        if (auto cellWrapper = children.GetAt(i).try_as<winrt::Grid>())
         {
             if (wantVertical)
             {
@@ -907,8 +913,8 @@ void TableViewRow::RefreshGridLines()
             }
             else
             {
-                cellWrapper.ClearValue(winrt::Border::BorderThicknessProperty());
-                cellWrapper.ClearValue(winrt::Border::BorderBrushProperty());
+                cellWrapper.ClearValue(winrt::Grid::BorderThicknessProperty());
+                cellWrapper.ClearValue(winrt::Grid::BorderBrushProperty());
             }
         }
     }
@@ -983,14 +989,14 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         return false;
     }
 
-    winrt::Border cellWrapper{ nullptr };
+    winrt::Grid cellWrapper{ nullptr };
     for (auto const& child : host.Children())
     {
-        if (auto const border = child.try_as<winrt::Border>())
+        if (auto const cell = child.try_as<winrt::Grid>())
         {
-            if (border.Tag().try_as<winrt::TableViewColumn>() == column)
+            if (cell.Tag().try_as<winrt::TableViewColumn>() == column)
             {
-                cellWrapper = border;
+                cellWrapper = cell;
                 break;
             }
         }
@@ -1041,8 +1047,8 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         m_editingAutomationName = {};
         TVDiag::LogRetailF(L"[TableView] Optional pre-edit UIA snapshot could not be captured.");
     }
-    m_editingDisplayElement.set(cellWrapper.Child());
-    cellWrapper.Child(editingElement);
+    m_editingDisplayElement.set(TableViewCell::Child(cellWrapper));
+    TableViewCell::Child(cellWrapper, editingElement);
 
     m_editingColumn.set(column);
     m_editingCellWrapper.set(cellWrapper);
@@ -1152,7 +1158,7 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
 
     if (displayElement)
     {
-        cellWrapper.Child(displayElement);
+        TableViewCell::Child(cellWrapper, displayElement);
     }
 
     m_editingColumn.set(nullptr);
@@ -1246,7 +1252,7 @@ void TableViewRow::AbandonCellEdit()
     auto const cellWrapper = m_editingCellWrapper.get();
     if (cellWrapper)
     {
-        cellWrapper.Child(m_editingDisplayElement.get());
+        TableViewCell::Child(cellWrapper, m_editingDisplayElement.get());
     }
 
     m_editingColumn.set(nullptr);
@@ -1376,15 +1382,15 @@ void TableViewRow::OnPointerPressedForEditing(
 }
 
 // Which of this row's cells a press landed on. Walks up from OriginalSource to the cell wrapper
-// Border, whose Tag carries the owning column (set in RebuildCells). Once the row itself has focus
-// a press can arrive with the row as OriginalSource and no tagged Border on the chain, so fall back
+// Grid, whose Tag carries the owning column (set in RebuildCells). Once the row itself has focus
+// a press can arrive with the row as OriginalSource and no tagged cell on the chain, so fall back
 // to hit-testing this row's subtree.
 winrt::TableViewColumn TableViewRow::ResolvePressedColumn(
     const winrt::IInspectable& originalSource,
     const winrt::Point& hostPoint)
 {
     // A nested TableView's press bubbles through this row, and the walk would reach the INNER
-    // table's tagged Border before it ever reached this row - so filter on ownership rather than
+    // table's tagged cell before it ever reached this row - so filter on ownership rather than
     // trying to stop the walk. A column this table does not own is not ours to act on.
     auto const owner = GetOwningTableView();
     auto const ownedByThisTable = [&owner](winrt::TableViewColumn const& candidate)
@@ -1411,9 +1417,9 @@ winrt::TableViewColumn TableViewRow::ResolvePressedColumn(
     auto current = originalSource.try_as<winrt::DependencyObject>();
     while (current)
     {
-        if (auto const border = current.try_as<winrt::Border>())
+        if (auto const cell = current.try_as<winrt::Grid>())
         {
-            if (auto const tagged = border.Tag().try_as<winrt::TableViewColumn>())
+            if (auto const tagged = cell.Tag().try_as<winrt::TableViewColumn>())
             {
                 return ownedByThisTable(tagged) ? tagged : nullptr;
             }
@@ -1424,9 +1430,9 @@ winrt::TableViewColumn TableViewRow::ResolvePressedColumn(
 
     for (auto const& hit : winrt::VisualTreeHelper::FindElementsInHostCoordinates(hostPoint, *this))
     {
-        if (auto const border = hit.try_as<winrt::Border>())
+        if (auto const cell = hit.try_as<winrt::Grid>())
         {
-            if (auto const tagged = border.Tag().try_as<winrt::TableViewColumn>())
+            if (auto const tagged = cell.Tag().try_as<winrt::TableViewColumn>())
             {
                 return ownedByThisTable(tagged) ? tagged : nullptr;
             }

@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TableView.h"
+#include "TableViewHeaderCell.h"
 #include "TableViewColumn.h"
 #include "TableViewRow.h"
 #include "TableViewCellsPanel.h"
@@ -1568,7 +1569,7 @@ void TableView::RebuildHeaders()
             }
 
             // Header cell root.
-            winrt::Grid headerCell;
+            auto const headerCell = winrt::make<TableViewHeaderCell>(*this, column).as<winrt::Grid>();
             headerCell.Visibility(column.Visibility());
             // The header cell, not the gripper, is the keyboard target: column commands live here,
             // and a bare focusable Grid is unnamed and Raw to a screen reader. Only a tab stop when
@@ -1632,7 +1633,7 @@ void TableView::RebuildHeaders()
             // Tag header cells so frozen-column refresh can map them back to columns.
             headerCell.Tag(column);
 
-            // No HelpText: the header's peer is virtual and composes the text itself.
+            // No HelpText: the header's peer composes the text itself.
             TableViewDetails::ApplyHeaderToolTip(headerCell, column.HeaderToolTip());
 
             // Sort affordance. Gated on both the control-wide and the per-column opt-in, so an
