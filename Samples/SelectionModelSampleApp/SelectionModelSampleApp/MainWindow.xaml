@@ -1,0 +1,24 @@
+<Window
+    x:Class="SelectionModelSampleApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SelectionModelSampleApp"
+    Title="SelectionModel API Sample">
+
+    <Grid x:Name="RootGrid">
+    <NavigationView x:Name="NavView"
+                    PaneDisplayMode="Left"                    IsSettingsVisible="False"
+                    IsBackButtonVisible="Collapsed"
+                    SelectionChanged="OnNavigationSelectionChanged">
+        <NavigationView.MenuItems>
+            <NavigationViewItem Content="Flat selection" Tag="Flat" />
+            <NavigationViewItem Content="Grouped selection" Tag="Grouped" />
+            <NavigationViewItem Content="Range and anchor" Tag="Range" />
+            <NavigationViewItem Content="IndexPath" Tag="IndexPath" />
+            <NavigationViewItem Content="Events" Tag="Events" />
+            <NavigationViewItem Content="XAML binding" Tag="Binding" />
+        </NavigationView.MenuItems>
+        <Frame x:Name="ContentFrame" />
+    </NavigationView>
+    </Grid>
+</Window>
