@@ -1741,19 +1741,23 @@ namespace Microsoft::UI::Xaml::Tests {
 
             RunOnUIThread([&]
             {
-                Button^ button = safe_cast<Button^>(FocusManager::FindNextFocusableElement(FocusNavigationDirection::Down));
+                auto options = ref new xaml_input::FindNextElementOptions();
+                options->SearchRoot = rootPanel;
+
+                Button^ button = safe_cast<Button^>(FocusManager::FindNextElement(FocusNavigationDirection::Down, options));
                 VERIFY_IS_TRUE(button->Equals(btn2));
 
                 //Verify that using hint also works
-                ::Windows::Foundation::Rect rect(0, 50, 50, 50);
-                button = safe_cast<Button^>(FocusManager::FindNextFocusableElement(FocusNavigationDirection::Down, rect));
+                options->HintRect = ::Windows::Foundation::Rect(0, 50, 50, 50);
+                button = safe_cast<Button^>(FocusManager::FindNextElement(FocusNavigationDirection::Down, options));
                 VERIFY_IS_TRUE(button->Equals(btn3));
 
                 //Verify that next/prev works
-                button = safe_cast<Button^>(FocusManager::FindNextFocusableElement(FocusNavigationDirection::Next));
+                options->HintRect = {};
+                button = safe_cast<Button^>(FocusManager::FindNextElement(FocusNavigationDirection::Next, options));
                 VERIFY_IS_TRUE(button->Equals(btn3));
 
-                button = safe_cast<Button^>(FocusManager::FindNextFocusableElement(FocusNavigationDirection::Previous));
+                button = safe_cast<Button^>(FocusManager::FindNextElement(FocusNavigationDirection::Previous, options));
                 VERIFY_IS_TRUE(button->Equals(btn2));
             });
         }
@@ -1823,7 +1827,21 @@ namespace Microsoft::UI::Xaml::Tests {
             {
                 xaml_input::FindNextElementOptions^ options = ref new xaml_input::FindNextElementOptions;
                 options->SearchRoot = nullptr;
-                
+
+                bool invalidSearchRootRejected = false;
+                try
+                {
+                    xaml_input::FocusManager::TryMoveFocus(xaml_input::FocusNavigationDirection::Down, options);
+                }
+                catch (Platform::Exception^ e)
+                {
+                    VERIFY_ARE_EQUAL(E_UNEXPECTED, e->HResult);
+                    invalidSearchRootRejected = true;
+                }
+                VERIFY_IS_TRUE(invalidSearchRootRejected);
+
+                options->SearchRoot = rootPanel;
+
                 LOG_OUTPUT(L"Validating TryMoveFocus");
                 bool resultTryMoveFocus = xaml_input::FocusManager::TryMoveFocus(xaml_input::FocusNavigationDirection::Down, options);
                 VERIFY_IS_TRUE(resultTryMoveFocus);
@@ -1913,27 +1931,31 @@ namespace Microsoft::UI::Xaml::Tests {
 
             RunOnUIThread([&]
             {
-                StackPanel^ sp = safe_cast<StackPanel^>(FocusManager::FindNextFocusableElement(FocusNavigationDirection::Down));
+                auto options = ref new xaml_input::FindNextElementOptions();
+                options->SearchRoot = rootPanel;
+
+                StackPanel^ sp = safe_cast<StackPanel^>(FocusManager::FindNextElement(FocusNavigationDirection::Down, options));
                 VERIFY_IS_TRUE(sp->Equals(sp3));
 
                 //Verify that using hint also works
-                ::Windows::Foundation::Rect rect(0, 50, 50, 50);
-                sp = safe_cast<StackPanel^>(FocusManager::FindNextFocusableElement(FocusNavigationDirection::Down, rect));
+                options->HintRect = ::Windows::Foundation::Rect(0, 50, 50, 50);
+                sp = safe_cast<StackPanel^>(FocusManager::FindNextElement(FocusNavigationDirection::Down, options));
                 VERIFY_IS_TRUE(sp->Equals(sp3));
 
                 //Verify that next/prev works
-                sp = safe_cast<StackPanel^>(FocusManager::FindNextFocusableElement(FocusNavigationDirection::Next));
+                options->HintRect = {};
+                sp = safe_cast<StackPanel^>(FocusManager::FindNextElement(FocusNavigationDirection::Next, options));
                 VERIFY_IS_TRUE(sp->Equals(sp3));
 
-                sp = safe_cast<StackPanel^>(FocusManager::FindNextFocusableElement(FocusNavigationDirection::Previous));
+                sp = safe_cast<StackPanel^>(FocusManager::FindNextElement(FocusNavigationDirection::Previous, options));
                 VERIFY_IS_TRUE(sp->Equals(sp1));
 
                 FocusManager::TryFocusAsync(tb2, FocusState::Keyboard);
 
-                RichTextBlock^ rtbTest = safe_cast<RichTextBlock^>(FocusManager::FindNextFocusableElement(FocusNavigationDirection::Next));
+                RichTextBlock^ rtbTest = safe_cast<RichTextBlock^>(FocusManager::FindNextElement(FocusNavigationDirection::Next, options));
                 VERIFY_IS_TRUE(rtbTest->Equals(rtb));
 
-                TextBlock^ tbTest = safe_cast<TextBlock^>(FocusManager::FindNextFocusableElement(FocusNavigationDirection::Previous));
+                TextBlock^ tbTest = safe_cast<TextBlock^>(FocusManager::FindNextElement(FocusNavigationDirection::Previous, options));
                 VERIFY_IS_TRUE(tbTest->Equals(tb1));
             });
         }
@@ -2025,13 +2047,13 @@ namespace Microsoft::UI::Xaml::Tests {
 
             RunOnUIThread([&]
             {
-                //Verify that FindNextFocusableElement cannot return the hyperlink
-                UIElement^ element = FocusManager::FindNextFocusableElement(FocusNavigationDirection::Down);
-                VERIFY_IS_NULL(element);
+                auto options = ref new xaml_input::FindNextElementOptions();
+                options->SearchRoot = rootPanel;
 
-                // Verify that FindNextElement does return the hyperlink
-                DependencyObject^ object = FocusManager::FindNextElement(FocusNavigationDirection::Down);
+                // Verify that FindNextElement can return a non-UIElement focus candidate.
+                DependencyObject^ object = FocusManager::FindNextElement(FocusNavigationDirection::Down, options);
                 VERIFY_IS_TRUE(hyperlink->Equals(object));
+                VERIFY_IS_NULL(dynamic_cast<UIElement^>(object));
             });
         }
 
@@ -2670,10 +2692,6 @@ namespace Microsoft::UI::Xaml::Tests {
                 buttonGotFocusRegistration.Attach(button, [&]()
                 {
                     VERIFY_IS_TRUE(pageLoadedEvent->HasFired());
-                    wuc::CoreWindowActivationMode status = xaml::Window::Current->CoreWindow->ActivationMode;
-                    bool activatedStatus = ( status == wuc::CoreWindowActivationMode::ActivatedInForeground ||
-                                                            status == wuc::CoreWindowActivationMode::ActivatedNotForeground ) ;
-                    VERIFY_IS_TRUE( activatedStatus ); //Implicit verification that our plugin has focus
                     buttonGotFocusEvent->Set();
                 });
 
@@ -2685,6 +2703,12 @@ namespace Microsoft::UI::Xaml::Tests {
             TestServices::WindowHelper->WaitForIdle();
             buttonGotFocusEvent->WaitForDefault();
 
+            RunOnUIThread([&]()
+            {
+                bool isWindowFocused = false;
+                TestServices::Utilities->IsWindowFocused(&isWindowFocused, button->XamlRoot);
+                VERIFY_IS_TRUE(isWindowFocused); // Implicit verification that our island has focus.
+            });
             VERIFY_IS_FALSE(buttonLostFocusEvent->HasFired());
         }
 
