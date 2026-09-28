@@ -186,6 +186,9 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
         {
             // Full WinUI app: enable gamepad-to-key routing for the process, so XAML's
             // keyboard navigation responds to a gamepad the way it did in System XAML.
+            // Island hosts never reach here (they start via
+            // WindowsXamlManager.InitializeForCurrentThread()), so the host process is
+            // left untouched.
             VERIFYHR(EnableGamepadKeyRouting());
         }
 
