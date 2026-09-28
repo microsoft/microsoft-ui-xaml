@@ -61,18 +61,68 @@ Items referring to **D** decisions below are not ready for unconditional accepta
 | TV-18 | Preserve light/dark treatments across table density, headers, row styles, selection, sections, and unequal column widths. Dedicated cell-state/overflow/alignment panels are light-only; they do not establish the complete dark or contrast-theme state matrix. | Example, partial: A/B General through Cell; D7 |
 | TV-19 | A supplemental note says an optional header should remain visible when present. Treat this as sticky-header intent pending design confirmation, not a demonstrated scrolling implementation. | Note: N2; D6 |
 
-### Dimensional and styling guardrails
+## Measurements
+
+**Explicit** values below are written design constraints. **Measured** values
+describe the reviewed specimens, not approved defaults or hit targets. PDF
+measurements use exported coordinate units; their conversion to runtime DIPs or
+device pixels is not established. A/B source panels are listed in the crosswalk.
+
+| Part | Regular | Compact | Evidence and interpretation |
+| --- | --- | --- | --- |
+| Cell minimum height | **40 px** | **30 px** | Explicit: A/B Cell. Content may make the row taller. |
+| Header example frame height | 32 | 26 | Measured metadata: A `183101:72617` / `183101:72665`; B `183907:68229` / `183907:68234`. Not declared minimum heights. |
+| Standalone cell hover background | 236 x 36 | 236 x 26 | Measured PDF paint bounds: A/B Cell. Inset background, not the cell's layout slot. |
+| Standalone cell focus outer paint | 240 x 40 | 240 x 32 | Measured PDF outer bounds: A/B Cell. The compact focus paint does not redefine the 30-px minimum. |
+| Single-selection accent marker | 3 x 16 | Density-specific contract unspecified | Measured PDF: A first single-selection example, x459-462 / y5488-5504; B corresponding y5763-5779. |
+| Checked checkbox outline | 20 x 20 | Density-specific contract unspecified | Measured PDF: A checkbox example, x466-486 / y8298-8318; B corresponding y8573-8593. Not the interactive hit target. |
+| Equal-width example column pitch | 240 | Default width unspecified | Measured PDF examples; TV-08 also requires customizable unequal widths. |
+| Standalone cell text left inset | 12 from example cell origin; 10 from hover paint edge | Universal spacing token unspecified | Measured PDF: rest text x452 relative to cell x440; hover text x708 relative to paint x698. Different origins, not competing padding values. |
 
 Cell width minima/maxima and maximum heights are marked unavailable, not zero or
-unlimited. Header/section minimum heights, hit targets, spacing tokens, corner
-radii, and stroke mappings are not established as requirements by these sheets.
-Paint bounds must not replace layout constraints: for example, a drawn compact
-focus outline can be taller than the explicit 30-px cell minimum.
+unlimited. Section/header minimum heights, hit targets, universal padding,
+corner radii, and stroke thicknesses still need D5. In particular, A/B General
+examples differ in content alignment, so their offsets cannot establish a shared
+padding token without a design decision.
 
-A's MCP style inventory includes Segoe UI Variable Body (14/20, regular) and
-Body Strong (14/20, semibold), plus light/dark semantic styles. This establishes
-available styles, not an exact per-part WinUI resource mapping. Exported RGB
-values alone omit paint opacity and cannot define final rendered colors.
+## Colors and typography
+
+### Observed light/dark paints
+
+These are **source RGB plus paint opacity**, rounded from the exported vectors,
+not flattened screen colors or prescribed WinUI resource keys. Preserve opacity
+and the underlying surface when comparing the implementation. The table covers
+the identified examples, not every state of every part.
+
+| Part / example | Light RGB | Opacity | Dark RGB | Opacity | Source |
+| --- | --- | --- | --- | --- | --- |
+| Single-selection accent marker and checked checkbox accent | `#005FB8` | 100% | `#60CDFF` | 100% | A/B Row selection; approximate exported RGB, also present in A's MCP accent style inventory |
+| Alternating band fill | `#000000` | 2.41% | `#FFFFFF` | 4.19% | A/B row examples |
+| Hover fill | `#000000` | 3.73% | `#FFFFFF` | 6.05% | A/B table-cell hover examples; not a complete combined-state matrix |
+| Section separator rule | `#000000` | 16.22% | `#FFFFFF` | 9.30% | A/B dedicated Sections examples |
+| Section chevron | `#000000` | 89.56% | `#FFFFFF` | 100% | A/B dedicated Sections examples |
+
+Do not copy A's General dark section-rule/chevron colors blindly: those examples
+retain light-theme paints, unlike its dedicated Sections panel and B's corrected
+General illustrations (D1). Selection background, focus stroke, text opacity,
+disabled/error paints, and contrast-theme values are not fully mapped here.
+Their absence is an evidence gap, not a requirement to reuse the nearest color.
+
+### Available typography styles
+
+A's MCP variable/style inventory supplies the following values. These establish
+available styles, **not verified bindings for every table part**. Separately, both
+PDFs show 14-unit control-label text and 20-unit wrapped-line baseline spacing.
+
+| Figma style | Family | Face | Size / line height | Weight |
+| --- | --- | --- | --- | --- |
+| Body | Segoe UI Variable | Text Regular | 14 / 20 | 400 |
+| Body Strong | Segoe UI Variable | Text Semibold | 14 / 20 | 600 |
+| Caption | Segoe UI Variable | Small Regular | 12 / 16 | 400 |
+
+All three reported styles have zero letter spacing. Strong section titles are
+visibly heavier, but their exact style binding still needs inspection. Canonical
+icon assets, numeric glyph IDs, and per-part resource mappings remain unresolved.
 
 ## Decisions required before conformance sign-off
 
