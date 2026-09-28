@@ -62,7 +62,7 @@ Another difference is that they consume different IAnimatedVisualSource interfac
 Defining an animation for an AnimatedIcon begins the same as the process to define an animation for an
 [AnimatedVisualPlayer](http://msdn.microsoft.com/library/Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer).
 You will need to download the Lottie file for the icon you are looking to add and follow the steps in
-[this]((https://docs.microsoft.com/en-us/windows/communitytoolkit/animations/lottie-scenarios/getting_started_codegen))
+[this](https://docs.microsoft.com/en-us/windows/communitytoolkit/animations/lottie-scenarios/getting_started_codegen)
 tutorial to run that file through LottieGen.
 LottieGen generates code for a c++/winrt class that you can then instantiate and use with an AnimatedIcon.
 
