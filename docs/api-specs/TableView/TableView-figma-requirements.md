@@ -80,6 +80,20 @@ Two points worth carrying forward:
 `Multi` rows carry a leading checkbox. Selected rows show a row-wide fill plus a leading
 accent marker.
 
+The accent marker is a component named **`Selector`** (*inspect panel*):
+
+| Property | Value |
+| --- | --- |
+| Width | 3px |
+| Height | 16px |
+| Radius | 999px (fully rounded) |
+| Fill (light) | `Light/Fill Color/Accent/Default` = `#005FB8` |
+| Fill (dark) | `Dark/Fill Color/Accent/Default` = `#60CDFF` |
+
+`Fill Color/Accent/Default` is the Fluent token that WinUI exposes as
+`AccentFillColorDefaultBrush` — `SystemAccentColorDark1` in Light and
+`SystemAccentColorLight2` in Dark. It is **not** the raw `SystemAccentColor`.
+
 ## 03 Sections
 
 **State** variants: `Collapsed`, `Expanded`.
@@ -180,12 +194,18 @@ hover states, so hover must be painted on the `Content` child rather than the ce
 
 | Element | State | Token | Value |
 | --- | --- | --- | --- |
+| `cell` fill (light) | `Hover: false` | *no fill layer* | — |
+| `cell` fill (light) | `Hover: true` | `Light/Fill Color/Subtle/Transparent` | `#FFFFFF` 0% |
 | `cell` fill (dark) | `Hover: false` | `Dark/Fill Color/Subtle/Transparent` | `#FFFFFF` 0% |
 | `cell` fill (dark) | `Hover: true` | `Dark/Fill Color/Subtle/Transparent` | `#FFFFFF` 0% |
-| `cell` fill (light) | `Hover: true` | `Light/Fill Color/Subtle/Transparent` | `#FFFFFF` 0% |
-| `cell` border (dark) | both | `Dark/Fill Color/Subtle/Transparent` | `#FFFFFF` 0%, 1px all sides, outer alignment |
 | `cell` border (light) | both | `Light/Fill Color/Subtle/Transparent` | `#FFFFFF` 0%, 1px all sides, outer alignment |
+| `cell` border (dark) | both | `Dark/Fill Color/Subtle/Transparent` | `#FFFFFF` 0%, 1px all sides, outer alignment |
 | `Header cell` border (dark) | — | `Dark/Fill Color/Subtle/Transparent` | `#FFFFFF` 0%, 1px all sides, outer alignment |
+
+Setting `Hover: true` adds a fill layer to the cell, but that layer resolves to
+`Subtle/Transparent` at 0%. The visible hover wash measured in the export is 236 x 36 — the
+`Content` frame size, not the 240 x 40 cell box — so the hover paint is applied to `Content`
+and the cell's own fill stays transparent in every state sampled.
 
 Token names for the painted states — hover fill, band fill, selection accent, separator
 rule, chevron — have **not** been read from the panel yet; the values below come from the
@@ -305,7 +325,7 @@ rendered values; the **token names** behind them are still being collected (see
 
 | Part | Light | Dark |
 | --- | --- | --- |
-| Selection accent / checked checkbox | `#005FB8` @ 100% | `#60CDFF` @ 100% |
+| Selection accent / checked checkbox | `#005FB8` @ 100% (`Fill Color/Accent/Default`) | `#60CDFF` @ 100% (`Fill Color/Accent/Default`) |
 | Alternating band fill | `#000000` @ 2.41% | `#FFFFFF` @ 4.19% |
 | Hover fill | `#000000` @ 3.73% | `#FFFFFF` @ 6.05% |
 | Section separator rule | `#000000` @ 16.22% | `#FFFFFF` @ 9.30% |
@@ -365,6 +385,11 @@ Addressed in this PR:
 | --- | --- |
 | Banded is the default table type | Default style supplies `AlternatingRowBackground` and sets `GridLinesVisibility="None"`. Local values still override. |
 | Banding must stay distinguishable from hover | Band brushes moved to the weaker Fluent tertiary fill (Light `#06000000`, Dark `#0AFFFFFF`) instead of reusing the hover fill. Contrast-theme system colours unchanged. |
+| Selection accent uses `Fill Color/Accent/Default` | `TabularSurfaceSelectionIndicatorBrush` now resolves `SystemAccentColorDark1` in Light and `SystemAccentColorLight2` in Dark, matching `AccentFillColorDefaultBrush`. It previously used raw `SystemAccentColor`, which is the wrong shade and was identical in both themes. HighContrast keeps `SystemColorHighlightColor`. |
+
+The `Selector` geometry already matches: the template draws a 3 x 16 rectangle with
+`RadiusX`/`RadiusY` of 1.5, which on a 3px width is the fully rounded shape Figma expresses
+as radius 999px.
 
 Cell minimum heights already match: `TableViewRowMinHeight` is 40 Standard / 30 Compact.
 
