@@ -165,6 +165,7 @@ namespace
     {
         auto& cache = owner->GetResourceCacheInternal();
         cache.density.hasRowMinHeight = false;
+        cache.density.hasHeaderMinHeight = false;
         cache.density.hasCellPadding = false;
         cache.density.hasHeaderCellPadding = false;
         cache.font.hasCellFontSize = false;
@@ -192,6 +193,18 @@ namespace
         case winrt::TableViewDensity::Compact: return 30.0;
         case winrt::TableViewDensity::Comfortable: return 48.0;
         default: return 40.0; // Standard
+        }
+    }
+
+    // Column headers are deliberately shorter than body rows: the design specifies 32 at Standard
+    // and 26 at Compact. Comfortable is not covered by the design, so it keeps Standard's -8 delta.
+    double DensityHeaderMinHeightFallback(winrt::TableViewDensity density)
+    {
+        switch (density)
+        {
+        case winrt::TableViewDensity::Compact: return 26.0;
+        case winrt::TableViewDensity::Comfortable: return 40.0;
+        default: return 32.0; // Standard
         }
     }
 
@@ -1178,6 +1191,30 @@ double TableView::GetDensityRowMinHeight()
     return cache.density.rowMinHeight;
 }
 
+// Column headers resolve their own min-height: the design makes them shorter than body rows
+// (32 vs 40 at Standard), so reusing GetDensityRowMinHeight would render headers too tall.
+double TableView::GetDensityHeaderMinHeight()
+{
+    auto& cache = GetTableViewResourceCache(this);
+    if (cache.density.hasHeaderMinHeight)
+    {
+        return cache.density.headerMinHeight;
+    }
+
+    std::wstring key{ L"TableViewHeaderMinHeight" };
+    key += DensitySuffix(Density());
+    const auto fallback = DensityHeaderMinHeightFallback(Density());
+    if (auto raw = LookupElementResource(*this, key))
+    {
+        cache.density.headerMinHeight = winrt::unbox_value_or<double>(raw, fallback);
+        cache.density.hasHeaderMinHeight = true;
+        return cache.density.headerMinHeight;
+    }
+    cache.density.headerMinHeight = fallback;
+    cache.density.hasHeaderMinHeight = true;
+    return cache.density.headerMinHeight;
+}
+
 winrt::Thickness TableView::GetDensityCellPadding()
 {
     auto& cache = GetTableViewResourceCache(this);
@@ -1513,8 +1550,8 @@ void TableView::RebuildHeaders()
     // Always cache the header grid-line brush at rebuild time; visibility toggles do not reassign it later.
     const bool wantVerticalHeaderLines = WantsVerticalLines(GridLinesVisibility());
     const auto cachedHeaderGridLineBrush = GetGridLineBrush();
-    // Header cells share the density row min-height so the header band matches the body rows.
-    const double cachedRowMinHeight = GetDensityRowMinHeight();
+    // Header cells are shorter than body rows by design (32 vs 40 at Standard).
+    const double cachedHeaderMinHeight = GetDensityHeaderMinHeight();
     const double cachedHeaderFontSize = GetHeaderFontSize();
     const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
@@ -1561,8 +1598,8 @@ void TableView::RebuildHeaders()
                 winrt::AutomationProperties::SetName(headerCell, headerText);
             }
             winrt::AutomationProperties::SetAccessibilityView(headerCell, winrt::AccessibilityView::Content);
-            // Match the body row min-height so the header band and rows render at the same height.
-            headerCell.MinHeight(cachedRowMinHeight);
+            // Header height is its own value, not the body row height.
+            headerCell.MinHeight(cachedHeaderMinHeight);
             // Without a fill the padding takes no pointer input, killing the tooltip and
             // click-to-sort there.
             headerCell.Background(cachedHeaderCellFill);

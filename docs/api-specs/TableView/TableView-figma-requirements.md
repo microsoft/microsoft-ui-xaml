@@ -122,15 +122,10 @@ padding. The bands therefore fall on the **first and third** rows, i.e. **even 0
 indices**. The `Table / Table` component export shows the same pattern: first body row
 shaded, then alternating.
 
-> **Confirmed discrepancy.** `TableViewRow::RefreshRowBackground` applies
-> `AlternatingRowBackground` when `(rowIndex % 2) != 0`, shading the **second** and fourth
-> rows. That is deliberate WPF `DataGrid` parity, but it is the inverse of the Figma
-> design, and it now shows by default because this PR makes banding the default appearance.
->
-> Not changed here, because flipping the parity would also change behaviour for apps that
-> already set `RowBackground` and `AlternatingRowBackground` explicitly and expect the
-> documented WPF semantics. This needs a decision: match Figma, or keep WPF parity and
-> accept that the default banding starts on the second row.
+`TableViewRow::RefreshRowBackground` now applies `AlternatingRowBackground` when
+`(rowIndex % 2) == 0`, so the first row is shaded. This intentionally departs from WPF
+`DataGrid`, which shades odd rows; apps that set both `RowBackground` and
+`AlternatingRowBackground` will see the two brushes swap rows.
 
 **Row selection** variants: `Single`, `Multi`.
 
@@ -451,6 +446,8 @@ Addressed in this PR:
 | Banded is the default table type | Default style supplies `AlternatingRowBackground` and sets `GridLinesVisibility="None"`. Local values still override. |
 | Banding must stay distinguishable from hover | Band brushes moved to the weaker Fluent tertiary fill (Light `#06000000`, Dark `#0AFFFFFF`) instead of reusing the hover fill. Contrast-theme system colours unchanged. |
 | Selection accent uses `Fill Color/Accent/Default` | `TabularSurfaceSelectionIndicatorBrush` now resolves `SystemAccentColorDark1` in Light and `SystemAccentColorLight2` in Dark, matching `AccentFillColorDefaultBrush`. It previously used raw `SystemAccentColor`, which is the wrong shade and was identical in both themes. HighContrast keeps `SystemColorHighlightColor`. |
+| Header is shorter than a body row | New `TableViewHeaderMinHeight` resource (32 Standard / 26 Compact / 40 Comfortable), resolved by `GetDensityHeaderMinHeight()`. Headers previously reused the body row min-height. |
+| Banding shades the first row | `RefreshRowBackground` now bands even 0-based indices. Departs from WPF `DataGrid`, which bands odd rows. |
 
 The `Selector` geometry already matches: the template draws a 3 x 16 rectangle with
 `RadiusX`/`RadiusY` of 1.5, which on a 3px width is the fully rounded shape Figma expresses
@@ -458,13 +455,14 @@ as radius 999px.
 
 Cell minimum heights already match: `TableViewRowMinHeight` is 40 Standard / 30 Compact.
 
-### Confirmed gap: header height
+### Header height
 
 The header cell is **32px** at Regular and 26px at Compact, independent of the body cell's
-40px / 30px, and the header *row* hugs to 32px to match. The implementation sets header
-`MinHeight` from `GetDensityRowMinHeight()`, so headers currently render at the body row
-height. Closing this needs a separate header-height resource rather than reusing the row
-value. Not attempted here.
+40px / 30px, and the header *row* hugs to 32px to match. Headers now resolve their own
+`TableViewHeaderMinHeight` resource (32 Standard / 26 Compact / 40 Comfortable) through
+`GetDensityHeaderMinHeight()`, instead of reusing `GetDensityRowMinHeight()`.
+
+Comfortable is not covered by the design; it keeps Standard's -8 delta from the row height.
 
 ### Not attempted
 
@@ -491,8 +489,6 @@ Unresolved **in the source**:
    property exists on the component but appears nowhere in the sheet text.
 9. Whether the header affordance is a filter (component property `Filter options`) or a
    general overflow menu (annotation wording "More options").
-10. **Banding parity.** Figma shades the first body row; the implementation follows WPF
-    `DataGrid` and shades the second. Match the design, or keep WPF parity?
 
 Not covered by these sheets at all: contrast themes, keyboard navigation, announcements,
 sorting and filtering behaviour, column reorder, frozen columns, virtualization, editing

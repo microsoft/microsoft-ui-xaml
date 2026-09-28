@@ -935,10 +935,14 @@ void TableViewRow::RefreshRowBackground()
         if (rowIndex >= 0)
         {
             // RowBackground is the base for every row; AlternatingRowBackground overrides
-            // odd rows only when set (WPF DataGrid parity). Setting RowBackground alone
-            // must fill all rows uniformly, not stripe odd rows transparent.
+            // the banded rows only when set. Setting RowBackground alone
+            // must fill all rows uniformly, not stripe the other rows transparent.
+            //
+            // The band falls on EVEN indices, so the FIRST row is shaded, matching the design.
+            // WPF DataGrid shades odd rows instead; the difference is visible by default here
+            // because the default style supplies AlternatingRowBackground.
             auto background = owner.RowBackground();
-            if ((rowIndex % 2) != 0 && owner.AlternatingRowBackground() != nullptr)
+            if ((rowIndex % 2) == 0 && owner.AlternatingRowBackground() != nullptr)
             {
                 background = owner.AlternatingRowBackground();
             }

@@ -5,6 +5,7 @@
     xmlns:controls="using:Microsoft.UI.Xaml.Controls">
 
     <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
+    <x:Double x:Key="TableViewHeaderMinHeight">32</x:Double>
     <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
     <!-- Mirrored: TableView_themeresources.xaml is not emitted for the Tabular binary. -->
     <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>

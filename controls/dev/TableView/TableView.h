@@ -52,6 +52,8 @@ struct TableViewResourceCache
     {
         bool hasRowMinHeight{ false };
         double rowMinHeight{ 0.0 };
+        bool hasHeaderMinHeight{ false };
+        double headerMinHeight{ 0.0 };
         bool hasCellPadding{ false };
         winrt::Thickness cellPadding{};
         bool hasHeaderCellPadding{ false };
@@ -136,6 +138,9 @@ public:
 
     // Density resources fall back to Standard defaults; rows and columns call these via get_self.
     double GetDensityRowMinHeight();
+    // Column headers are shorter than body rows by design (32 vs 40 at Standard), so they resolve
+    // their own key rather than reusing the row min-height.
+    double GetDensityHeaderMinHeight();
     winrt::Thickness GetDensityCellPadding();
     winrt::Thickness GetDensityHeaderCellPadding();
     double GetCellFontSize();
