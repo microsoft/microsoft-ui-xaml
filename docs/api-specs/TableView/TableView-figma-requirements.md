@@ -139,16 +139,22 @@ icon assets, numeric glyph IDs, and per-part resource mappings remain unresolved
 
 ## Implementation alignment in this draft
 
-The current changes address three concrete differences in existing visuals:
+The current changes address two concrete differences in existing visuals:
 
 | Requirement | Change | Compatibility |
 | --- | --- | --- |
 | TV-04 | Default style supplies alternating bands and hides gridlines. | Local gridline and background values override the style; DP metadata is unchanged. |
 | TV-04 / TV-18 | Alternating-band brushes use the weaker Fluent tertiary fill: Light `#06000000`, Dark `#0AFFFFFF`, rather than the hover fill. | Contrast-theme system-color mappings and hover brushes are unchanged. These are Fluent token values, not exact copies of rounded PDF alpha measurements. |
-| TV-15 / TV-17 | Built-in text and editors align to the top of the row. | Custom cell templates continue to control their own alignment. |
 
 The existing Standard/Compact minimum-height values already match 40/30 and are
-unchanged. These fixes do not complete all Figma requirements. The broader gap
+unchanged. The tentative display/editor alignment changes have been removed:
+the top-left cell-content example does not settle the editor control's placement,
+and the current TextBox template does not bind VerticalContentAlignment into its
+content presenter. Mapping TV-15/TV-17 to built-in display/edit behavior remains an
+open gap; preserving existing alignment avoids an unverified edit-transition shift.
+Custom templates retain their own alignment.
+
+These fixes do not complete all Figma requirements. The broader gap
 audit and native/runtime validation are still in progress. Test additions are
 reserved for a separate PR.
 

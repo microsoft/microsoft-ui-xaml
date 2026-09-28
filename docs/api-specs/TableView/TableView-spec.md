@@ -149,9 +149,8 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
 `GridLinesVisibility` controls gridlines. The default style uses alternating bands without gridlines.
-`Density` controls row and cell spacing. Header height matches row height; header content is
-vertically centered, while built-in text-cell content and editors are top-aligned so a short cell
-stays aligned with the first line of a taller cell in the same row.
+`Density` controls row and cell spacing. Header height matches row height; built-in header and
+text-cell content remains vertically centered.
 
 Local property values override the style. To retain an unbanded grid, set
 `GridLinesVisibility="All"` and `AlternatingRowBackground="{x:Null}"`. Set a local
