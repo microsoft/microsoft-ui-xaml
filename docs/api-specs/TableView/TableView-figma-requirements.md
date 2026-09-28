@@ -63,6 +63,37 @@ accent marker.
 A section title spans the table width above its rows, with a separator rule. Collapsed uses
 a right chevron, expanded an up chevron.
 
+The `Section` component's actual properties and layout (*inspect panel*):
+
+| Component property | Value shown |
+| --- | --- |
+| Type | Default |
+| Expanded | True |
+| Expandable | true |
+
+| Layout property | Value |
+| --- | --- |
+| Flow | Vertical |
+| Width | Fixed (720px) |
+| Height | Hug (29px) |
+| Border | Top 1px |
+| Padding | Bottom 4px |
+| Gap | 4px |
+
+The 720px fixed width is three 240px columns, and excludes the row's 8px left padding. The
+separator is a **1px top border** on the section itself, which matches the 1-unit rules
+measured in the export.
+
+> **Two mismatches with the annotation chips.**
+>
+> 1. The annotations list `Type` as `Regular` / `Strong`, but the component reports
+>    `Type: Default`. The full value set was not enumerated, so `Default` may be an
+>    additional or renamed value.
+> 2. The component exposes a separate boolean **`Expandable`** that the annotations never
+>    mention, and models expansion as a boolean `Expanded` rather than a
+>    `Collapsed`/`Expanded` state. A non-expandable section header therefore appears to be
+>    supported, which is not stated anywhere in the sheet text.
+
 ## 04 Columns
 
 > All the column width of the table should remain customizable
@@ -101,24 +132,26 @@ Cell `Content` frame layout (*Dev Mode*):
 | Padding | Top 8px, Right 10px, Bottom 8px, Left 10px |
 | Gap | 8px |
 
-Row layout in the `00 General` example table (*inspect panel*, node `Row2`):
+Row layout in the `00 General` example table (*inspect panel*). Two different row instances
+were sampled and they are **not** configured identically:
 
-| Property | Value |
-| --- | --- |
-| Flow | Horizontal |
-| Width | Hug (728px) |
-| Height | Hug (32px) |
-| Radius | 4px |
-| Padding | Left 8px |
+| Property | Sample 1 | Sample 2 |
+| --- | --- | --- |
+| Flow | Horizontal | Horizontal |
+| Width | Hug (728px) | Fill (712px) |
+| Height | Hug (32px) | Hug (40px) |
+| Radius | 4px | 4px |
+| Padding | Left 8px | none shown |
 
-The row width is exactly consistent with the measured column pitch: 8px left padding plus
-three 240px cells = 728px.
+Sample 2's **40px** height matches the written Regular cell minimum, and its 712px fill
+width matches the 712-unit band fills measured in the export (720px section width minus the
+8px left inset). Sample 1's 728px is 8px + three 240px columns.
 
-> **Conflict to resolve.** This row hugs to **32px**, which matches neither the written
-> Regular minimum (40px) nor the Compact minimum (30px). Either the `00 General` example
-> tables are not drawn at the specced densities, or the cell minimums are not reflected in
-> them. The written `05 Cell` constraints are treated as the requirement until design
-> confirms; the 32px figure is recorded as an observation of that example only.
+> **Unresolved.** Sample 1 hugs to **32px**, which matches neither the written Regular
+> minimum (40px) nor Compact (30px), and it hugs rather than fills. Since sample 2 does
+> honour the 40px figure, the written `05 Cell` minimums stand as the requirement; sample 1
+> looks like an inconsistently configured instance in the mock rather than a third density.
+> Worth confirming with design before treating either width mode as normative.
 
 ### Cell design patterns
 
@@ -250,8 +283,12 @@ Unresolved **in the source**:
 4. How the row-and-column cross-highlight for a selected cell should look.
 5. Whether the 2-column / 2-row minimum is a composition rule or a runtime constraint, and
    whether a header row counts toward it.
-6. Why the `00 General` example rows hug to 32px when the written cell minimums are 40px
-   (Regular) and 30px (Compact).
+6. Why two `00 General` row instances differ: one hugs to 32px, the other fills at 712px
+   and hugs to 40px. Which configuration is intended?
+7. The `Section` component's full `Type` value set, and whether `Default` replaces or
+   supplements the annotated `Regular` / `Strong`.
+8. What a non-expandable section (`Expandable: false`) looks like and when it is used. The
+   property exists on the component but appears nowhere in the sheet text.
 
 Not covered by these sheets at all: contrast themes, keyboard navigation, announcements,
 sorting and filtering behaviour, column reorder, frozen columns, virtualization, editing
