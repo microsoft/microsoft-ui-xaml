@@ -1,99 +1,96 @@
 # TableView Figma requirements (draft)
 
-## Purpose and status
+## Status and scope
 
-Request a TableView-specific Figma component and design handoff, aligned with the
-Fluent Windows list and collection patterns. This document is a **proposal for
-design review**, not an approved visual specification or an implementation change.
-The [TableView API specification](./TableView-spec.md) remains the reference for
-the control's API and feature scope.
+This is a source-backed requirements draft for a later implementation-gap review,
+not a statement of shipped behavior or design sign-off. It replaces the initial
+generic handoff proposal: the supplied ZIP omitted TableView, but the live Figma
+file contains TableView-specific designs.
 
-The reference export does not contain a TableView component. TableView-specific
-measurements, resource mappings, and interaction decisions therefore need explicit
-design review; they must not be inferred as approved requirements from adjacent
-controls.
+**Whole-canvas review remains incomplete.** Both exported TableView sheets were
+reviewed in detail, including their annotations and visual differences. Another
+53 roots were inventoried, but still need detailed visual/component review.
+See the [coverage ledger](./TableView-figma-coverage.md) for every root and the
+access blockers. Do not interpret an item missing from this draft as absent from
+the complete Figma file.
 
-## Reference material
+The [API specification](./TableView-spec.md) remains the API/scope reference.
+This document does not change that scope, assess current implementation gaps,
+or turn exploratory designs into release commitments.
 
-The supplied `Fluent Windows Visual Library - IDC.zip` contains five single-page
-PDF exports:
+## Sources
 
-| Export | Component | Relevance to this proposal |
+Reviewed September 28, 2026, in *Fluent Windows Visual Library - IDC*,
+page `72491:280393` (Lists & collections):
+
+- **A:** TableView sheet `182972:12908`.
+- **B:** Adjacent TableView sheet `183907:68060`.
+- **N1:** Variant/error/first-column-freeze note `183014:135964`.
+- **N2:** Header/loading note `183027:14533`.
+
+A/B references below identify named sections in both sheets; their exact panel
+nodes are in the [source crosswalk](./TableView-figma-coverage.md#source-panel-crosswalk).
+N1/N2 are supplemental note evidence, not completed component specifications.
+Artwork and raw exports remain local.
+
+**Explicit** means written in the source, not approved by a design owner.
+**Example** means visibly illustrated; unspecified behavior must not be inferred.
+Items referring to **D** decisions below are not ready for unconditional acceptance.
+
+## Requirements
+
+| ID | Requirement / design intent | Evidence |
 | --- | --- | --- |
-| `Lists & Collections.pdf` | Grid View | Item interaction states and single/multiple selection references; not a tabular column-layout specification. |
-| `Lists & Collections-1.pdf` | Expander | Expanded/collapsed affordance reference, not a TableView group-header specification. |
-| `Lists & Collections-2.pdf` | Flip View | Collection-navigation reference; does not define TableView behavior. |
-| `Lists & Collections-3.pdf` | Tree View | Hierarchy indentation, disclosure, checkbox, and item-state references for separately scoped hierarchical rows. |
-| `Lists & Collections-4.pdf` | List View | Row interaction states, standard/multiple selection, dividers, headers, and custom multiline content references. |
+| TV-01 | Present data and embedded controls in rows and columns. Allow a header row and sections independently to be present or absent. | Explicit: A/B General, Header |
+| TV-02 | Provide Regular and Compact density. Cell **minimum** heights are **40 px** and **30 px**, respectively; these are not fixed row heights or header minima. | Explicit: A/B Cell |
+| TV-03 | Provide Regular/Compact column headers and allow the trailing options affordance to be omitted per column. A down-chevron is illustrated; menu contents and actions are unspecified (D6). | Explicit + example: A/B Header |
+| TV-04 | Provide banded, unadorned, horizontal-line, and grid row treatments. **Banded is the stated default.** The grid examples include internal horizontal and vertical separators; they do not mandate an enclosing border. | Explicit + example: A/B Rows |
+| TV-05 | Support single-row and multi-row selection. Do not conflate the unadorned row treatment with a no-selection mode. Selection gestures/modifiers remain unresolved (D2). | Explicit: A/B Rows |
+| TV-06 | Single-selection examples use neutral row-wide emphasis and a short leading accent marker. Multi-selection examples show leading row checkboxes, checked/unchecked rows, and row-wide emphasis, across all four row treatments. | Example: A/B Row selection |
+| TV-07 | Provide expanded/collapsed sections and Regular/Strong title treatments. Examples show a title spanning the table, a separator rule, a right chevron when collapsed, and an up chevron when expanded. | Explicit + example: A/B Sections |
+| TV-08 | Keep column widths customizable with viewport-ratio, fixed, and automatic sizing choices. Preserve column alignment across groups. Sizing algorithms, bounds, defaults, and mixed-mode precedence need D5. | Explicit + example: A/B Columns |
+| TV-09 | Provide cell Rest, Hover, and Focus presentations. Examples use quiet rest styling, neutral hover fill, and a visible rounded focus outline, at both densities. | Explicit + example: A/B Cell |
+| TV-10 | Allow multiple elements inside a cell. Embedded controls are illustrated, but no editing lifecycle follows from their presence (D6). | Explicit + example: A/B General, Cell |
+| TV-11 | Single-click selects a cell; cell-level multiselection is excluded. Double-clicking content is described as selecting that content, not necessarily entering edit mode. Interaction with controls and row selection needs D2. | Explicit: A/B Cell |
+| TV-12 | Selecting a cell is intended to highlight its corresponding row **and column**. Exact paint, extent, and precedence relative to focus and true row selection remain unresolved. | Explicit, incomplete: A/B Cell; D2 |
+| TV-13 | Do not expose independently controlled padding/margins at cell level. This is a configuration-ownership constraint, not a zero-padding requirement. Ownership and tokens need D5. | Explicit, incomplete: A/B Cell |
+| TV-14 | Provide truncation, wrapping, and custom overflow handling. Examples cover Rest/Hover/Focus; ordinary truncation is illustrated as clipping, while the custom example preserves a suffix using an interior ellipsis. Default behavior and customization contract need D3. | Explicit + example: A/B Cell overflow |
+| TV-15 | When wrapping makes a cell taller, increase the entire row's height; other cells remain top-aligned by default. No maximum wrapped-line count is settled (D3). | Explicit: A/B Cell overflow |
+| TV-16 | The truncation notes require users to be able to resize **both rows and columns**. Affordances, bounds, and interaction with automatic row sizing remain undesigned (D3). | Explicit, incomplete: A/B Cell overflow |
+| TV-17 | Support all nine horizontal/vertical alignment combinations: Left/Center/Right x Top/Middle/Bottom. **Top-left is the stated default.** | Explicit + example: A/B Cell alignment |
+| TV-18 | Preserve light/dark treatments across table density, headers, row styles, selection, sections, and unequal column widths. Dedicated cell-state/overflow/alignment panels are light-only; they do not establish the complete dark or contrast-theme state matrix. | Example, partial: A/B General through Cell; D7 |
+| TV-19 | A supplemental note says an optional header should remain visible when present. Treat this as sticky-header intent pending design confirmation, not a demonstrated scrolling implementation. | Note: N2; D6 |
 
-The List View, Tree View, and Grid View sheets enumerate rest, hover, pressed,
-disabled, and focus states. Some custom layouts are explicitly marked as design
-patterns rather than built-in control variants. Reusing those patterns does not
-automatically add the corresponding feature to TableView.
+### Dimensional and styling guardrails
 
-These exports are reference material, not an editable TableView Figma source or
-a versioned design handoff. The archive and artwork are not redistributed in this
-change. Any design links or assets added to this public repository must first be
-approved for public sharing.
+Cell width minima/maxima and maximum heights are marked unavailable, not zero or
+unlimited. Header/section minimum heights, hit targets, spacing tokens, corner
+radii, and stroke mappings are not established as requirements by these sheets.
+Paint bounds must not replace layout constraints: for example, a drawn compact
+focus outline can be taller than the explicit 30-px cell minimum.
 
-## Requested Figma deliverables
+A's MCP style inventory includes Segoe UI Variable Body (14/20, regular) and
+Body Strong (14/20, semibold), plus light/dark semantic styles. This establishes
+available styles, not an exact per-part WinUI resource mapping. Exported RGB
+values alone omit paint opacity and cannot define final rendered colors.
 
-The following are proposed deliverables to review with design and engineering.
-For every frame, identify whether it covers the current API or a separately
-planned feature.
+## Decisions required before conformance sign-off
 
-| ID | Deliverable | Required review coverage |
+| ID | Unresolved decision | Evidence / consequence |
 | --- | --- | --- |
-| FIG-01 | Table anatomy and reusable components | Table surface, column header, row, text cell, template-cell slot, gridline/divider, leading-frozen-column boundary, and empty-state slot. Define component/variant names and composition rules. |
-| FIG-02 | Row and cell state matrix | Rest, hover, pressed, disabled, selected/unselected, and keyboard focus; selected + hover/pressed/focus combinations; active versus inactive selection. Distinguish row selection from current-cell focus and show precedence when states overlap. |
-| FIG-03 | Layout and density | Header and row heights, cell padding, spacing, corner radii, divider thickness, text baselines, and icon placement for each supported density. Annotate minimum sizes and content overflow/trimming behavior rather than estimating measurements from PDF scale. |
-| FIG-04 | Typography, themes, and resources | Light, dark, and Windows contrast-theme treatments; typography styles; semantic foreground/background/border/focus resources; and a mapping from Figma variables to WinUI resources. Record any missing resource decisions explicitly. |
-| FIG-05 | Headers, scrolling, and frozen columns | Header/body alignment while scrolling, leading-frozen-column boundary treatment, narrow/overflowing content, and horizontal/vertical scroll affordances. Do not introduce trailing-frozen columns or column virtualization through a visual example. |
-| FIG-06 | Opt-in editing | Display versus edit mode, editor focus, commit/cancel transitions, validation-error presentation, and pending asynchronous validation. Distinguish built-in text editing from application-provided template editors. |
-| FIG-07 | Accessibility and localization annotations | Keyboard-visible focus, non-color-only selection/error cues, contrast-theme behavior, text scaling, long/localized strings, and right-to-left layout. Annotate intended accessible names and state announcements for engineering review; Figma alone does not validate UI Automation or Narrator behavior. |
-| FIG-08 | Separately planned interactions | Dedicated, clearly labeled frames for multiple/extended selection, checkbox selection if approved, sort indicators, filtering, grouping, hierarchical disclosure, and column resize/reorder. Resolve applicability and scope before treating these as implementation requirements. |
-| FIG-09 | Representative compositions | A read-only table, a selected/focused row, a table with template content, an empty table, a horizontally scrolled table with leading-frozen columns, and an editable cell with an error. Include the supported theme/density variations. |
+| D1 | Identify the authoritative sheet/version and reconcile differing illustrations. | A/B written notes agree, but General spacing differs; A's dark General section rules/chevrons conflict with its own dedicated dark Sections examples, while B changes those paints. B also adds an unnamed horizontal-line example. Do not infer a fifth row mode or authority from node numbering. |
+| D2 | Define cell/content/row selection, focus, and embedded-control interaction. | Empty-space double-click row selection is explicitly questioned. Specify row/column cross-highlighting, modifiers, checkbox visibility, select-all/indeterminate behavior, and state precedence without assuming isolated specimens answer them. |
+| D3 | Set overflow defaults, wrap limits, and row/column resize mechanics. | A three-line example is not an approved limit. Clarify how user resizing interacts with content-driven row growth and how custom truncation is configured. |
+| D4 | Define empty, one-item, and undersized-table behavior. | General notes describe at least two columns/two rows and one row per expanded section, but do not say whether headers count or whether these are composition rules. Do not invent runtime rejection or hide valid data. |
+| D5 | Specify layout/resource contracts. | Resolve ratio/auto/fixed sizing, minimum/maximum constraints, header/section dimensions, spacing ownership, typography/icon bindings, focus geometry, and theme resources. Example dimensions are not defaults. |
+| D6 | Resolve supplemental and behavioral scope. | N1 explores first-column freeze and asks how errors should be shown; N2 requests loading-state design. Neither specifies a completed solution. Menu actions, sorting/filtering, reordering, editing lifecycle, section nesting, scrolling details, and virtualization are not established by the reviewed sheets. |
+| D7 | Complete accessibility and state coverage. | Keyboard navigation, announcements, contrast themes, disabled/pressed/error states, complete dark cell states, text scaling, and RTL behavior are not established by the reviewed evidence. They may exist in unreviewed material and must not be fabricated. |
+| D8 | Finish the whole-canvas review. | Inspect and classify all 53 supplemental roots, component variants, archive content, and application examples. Proximity to TableView or appearance inside File Explorer does not make every surrounding app feature a TableView requirement. |
 
-Do not copy ListView or TreeView dimensions, checkbox semantics, or hierarchy
-depth into TableView without an explicit decision. Multiline examples in the
-reference are not a commitment to automatic row sizing. Likewise, this proposal
-does not expand the API specification's v1 scope to include marquee selection,
-multi-column sort, column virtualization, or row headers.
+## Later implementation-gap review
 
-## Handoff and acceptance checklist
-
-- [ ] Identify the design owner and engineering reviewer.
-- [ ] Provide the authoritative TableView Figma file and exact component/frame
-      node links through an approved sharing location.
-- [ ] Record the reviewed design version or dated snapshot so comparisons remain
-      reproducible when the library changes.
-- [ ] Resolve each FIG-01 through FIG-09 deliverable, or record an explicit
-      deferral with its rationale and follow-up owner.
-- [ ] Supply inspectable measurements, typography, semantic variables, icon
-      choices, and state precedence; identify unresolved mappings rather than
-      substituting guessed colors or pixel values.
-- [ ] Separate current-control acceptance criteria from future-feature mockups
-      and record any intentional deviations from the adjacent Fluent components.
-- [ ] Agree on sample scenarios and screenshot conditions, including theme,
-      density, scale, locale/direction, and focus/selection state.
-- [ ] Review the implemented scenarios against the approved frames and record
-      differences. Validate keyboard, Narrator/UI Automation, contrast themes,
-      and text scaling in the running control separately from visual comparison.
-- [ ] Obtain design and engineering sign-off before claiming Figma conformance.
-
-## Open decisions
-
-The reference export does not resolve the following TableView-specific questions:
-
-- Which Figma component/frame set is authoritative, and which links can be
-  published?
-- Which state, density, and editing variants belong to the initial design handoff?
-- What are the approved measurements and WinUI resource mappings?
-- How should current-cell focus, row selection, editor focus, and inactive-window
-  selection interact visually?
-- Which planned interactions should receive exploratory frames now, and which
-  should wait for their separate feature review?
-
-Until these decisions and the handoff checklist are resolved, this document
-records the Figma requirement without asserting that a final TableView design
-exists or that the current control matches it.
+For each TV ID, record the source node, resolved design decision (if any), relevant
+API/template/resource/code, and a reproducible sample or test. Classify the result
+as **matches**, **behavior gap**, **visual gap**, **intentional deviation**, or
+**design unresolved**. An unresolved D item is not automatically an implementation
+bug. This PR records the requirements baseline; that comparison has not run.
