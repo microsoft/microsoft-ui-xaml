@@ -158,11 +158,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     }
 
     // Category 5.2 of the TableView test plan: generated cell content.
-    //
-    // NOT IMPLEMENTED HERE: VerifyTextCellUsesDensityPadding. 13.3 already owns
-    // VerifyDensityAffectsCellPadding and the observable is identical. Asserting the Standard padding
-    // here would additionally hard-code 8,4,8,4, which comes from the TableViewCellPadding theme
-    // resource an app is allowed to override.
     [TestClass]
     public class TableViewCellContentTests : ApiTestBase
     {
@@ -258,11 +253,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     }
 
     // Category 5.3 of the TableView test plan: recycling.
-    //
-    // NOT IMPLEMENTED HERE: VerifyRecycledRowUpdatesDataContext. Category 3's
-    // VerifyProbeCellsMatchRowData already asserts that each realized row after scrolling carries its
-    // own item as DataContext, and 5.1's VerifyCellPathInheritsRowDataContext guards the inheritance
-    // that makes it work.
     [TestClass]
     public class TableViewRowRecyclingTests : ApiTestBase
     {
@@ -652,13 +642,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // State is read from VisualStateManager.GetVisualStateGroups(PART_RootBorder) rather than by
     // comparing brushes: the groups live on the template root, and several states share a brush, so the
     // state name is the only unambiguous observable.
-    //
-    // NOT IMPLEMENTED HERE: VerifyRowPointerOverVisualState and VerifyRowFocusVisualOnKeyboardFocus.
-    // PointerOver is set only from the row's own pointer handlers, so there is no programmatic route in,
-    // and calling GoToState from a test would assert the template rather than TableView's decision to
-    // enter the state. The row template has no FocusStates group at all - it sets
-    // UseSystemFocusVisuals - so the focus visual is drawn outside the control's tree and an API test
-    // could only assert that FocusState round-tripped. Both moved to category 11.
     [TestClass]
     public class TableViewRowVisualStateTests : ApiTestBase
     {

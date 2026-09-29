@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cmath>
+#include <limits>
 
 namespace
 {
@@ -498,9 +499,14 @@ void TableViewColumn::UpdateActualWidth()
             ? width.Value
             : c_widthDefault.Value;
 
-    // Keep std::clamp well-defined even when MinWidth exceeds MaxWidth.
-    const double lo = MinWidth();
-    const double hi = std::max(lo, MaxWidth());
+    // Reject non-finite / negative bounds the same way the resize path does (TableView.cpp), so a
+    // pathological MinWidth/MaxWidth (NaN, infinity, negative) can never leak into ActualWidth. A
+    // non-finite MinWidth means "no lower bound" (0) and a non-finite MaxWidth means "no upper
+    // bound" (infinity). std::max keeps the clamp well-defined when MinWidth exceeds MaxWidth.
+    const double lo = (std::isfinite(MinWidth()) && MinWidth() >= 0.0) ? MinWidth() : 0.0;
+    const double hi = (std::isfinite(MaxWidth()) && MaxWidth() >= 0.0)
+        ? std::max(lo, MaxWidth())
+        : std::numeric_limits<double>::infinity();
     const double clamped = std::clamp(widthPixels, lo, hi);
 
     // ActualWidth uses the SetValue-via-key read-only DP convention.
