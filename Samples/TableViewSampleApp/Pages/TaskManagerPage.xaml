@@ -4,14 +4,14 @@
     NavigationCacheMode="Enabled"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Page.Resources>
         <DataTemplate x:Key="NameCellTemplate">
             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
-                <Image Source="{Binding IconPath}" Width="16" Height="16" Visibility="{Binding HasIcon}"/>
-                <FontIcon Glyph="{Binding IconGlyph}" FontSize="14" Visibility="{Binding HasGlyph}"/>
+                <Image Source="{Binding IconPath}" Width="16" Height="16" Visibility="{Binding HasIcon}" AutomationProperties.AccessibilityView="Raw"/>
+                <FontIcon Glyph="{Binding IconGlyph}" FontSize="14" Visibility="{Binding HasGlyph}" AutomationProperties.AccessibilityView="Raw"/>
                 <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
             </StackPanel>
         </DataTemplate>
@@ -19,7 +19,7 @@
         <DataTemplate x:Key="StatusCellTemplate">
             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="8,0">
                 <TextBlock Text="{Binding StatusText}" TextTrimming="CharacterEllipsis" Visibility="{Binding HasStatusText}"/>
-                <FontIcon Glyph="&#xE945;" FontSize="12" Foreground="#2D7D2D" Visibility="{Binding IsEfficiencyMode}"/>
+                <FontIcon Glyph="&#xE945;" FontSize="12" Foreground="{ThemeResource SystemFillColorSuccessBrush}" Visibility="{Binding IsEfficiencyMode}" AutomationProperties.Name="Efficiency mode"/>
             </StackPanel>
         </DataTemplate>
 
@@ -80,6 +80,7 @@
                     <TextBlock Text="Processes" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     <ComboBox x:Name="ViewModeCombo" SelectedIndex="0" VerticalAlignment="Center"
                               MinWidth="170" SelectionChanged="OnViewModeChanged"
+                              AutomationProperties.Name="Process list view"
                               ToolTipService.ToolTip="Switch how the process list is shaped (TableViewSource GroupBy or flat list).">
                         <ComboBoxItem Content="Grouped by category"/>
                         <ComboBoxItem Content="Flat list"/>
@@ -112,49 +113,49 @@
         </Border>
 
         <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-            <adv:TableView
-                x:Name="ProcessTable"
+            <tabular:TableView
+                x:Name="ProcessTable" AutomationProperties.Name="Process table"
                 AutomationProperties.AutomationId="TaskManagerProcessTable"
                 Sorted="OnProcessTableSorted"
                 SelectionChanged="OnSelectionChanged"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="420">
-                <adv:TableViewTemplateColumn Header="Name" CellTemplate="{StaticResource NameCellTemplate}" MinWidth="320" Width="400" CanSort="True" SortMemberPath="Name"/>
-                <adv:TableViewTemplateColumn Header="Status" CellTemplate="{StaticResource StatusCellTemplate}" MinWidth="100" Width="130" CanSort="True" SortMemberPath="StatusText"/>
-                <adv:TableViewTemplateColumn CellTemplate="{StaticResource CpuCellTemplate}" MinWidth="70" Width="90" CanSort="True" SortMemberPath="CpuPercent">
-                    <adv:TableViewTemplateColumn.Header>
+                <tabular:TableViewTemplateColumn Header="Name" CellTemplate="{StaticResource NameCellTemplate}" MinWidth="320" Width="400" CanSort="True" SortMemberPath="Name"/>
+                <tabular:TableViewTemplateColumn Header="Status" CellTemplate="{StaticResource StatusCellTemplate}" MinWidth="100" Width="130" CanSort="True" SortMemberPath="StatusText"/>
+                <tabular:TableViewTemplateColumn CellTemplate="{StaticResource CpuCellTemplate}" MinWidth="70" Width="90" CanSort="True" SortMemberPath="CpuPercent">
+                    <tabular:TableViewTemplateColumn.Header>
                         <StackPanel Spacing="0">
                             <TextBlock Text="CPU"/>
                             <TextBlock x:Name="CpuSummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
-                    </adv:TableViewTemplateColumn.Header>
-                </adv:TableViewTemplateColumn>
-                <adv:TableViewTemplateColumn CellTemplate="{StaticResource MemoryCellTemplate}" MinWidth="90" Width="120" CanSort="True" SortMemberPath="MemoryMB">
-                    <adv:TableViewTemplateColumn.Header>
+                    </tabular:TableViewTemplateColumn.Header>
+                </tabular:TableViewTemplateColumn>
+                <tabular:TableViewTemplateColumn CellTemplate="{StaticResource MemoryCellTemplate}" MinWidth="90" Width="120" CanSort="True" SortMemberPath="MemoryMB">
+                    <tabular:TableViewTemplateColumn.Header>
                         <StackPanel Spacing="0">
                             <TextBlock Text="Memory"/>
                             <TextBlock x:Name="MemorySummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
-                    </adv:TableViewTemplateColumn.Header>
-                </adv:TableViewTemplateColumn>
-                <adv:TableViewTemplateColumn CellTemplate="{StaticResource DiskCellTemplate}" MinWidth="80" Width="100" CanSort="True" SortMemberPath="DiskMBps">
-                    <adv:TableViewTemplateColumn.Header>
+                    </tabular:TableViewTemplateColumn.Header>
+                </tabular:TableViewTemplateColumn>
+                <tabular:TableViewTemplateColumn CellTemplate="{StaticResource DiskCellTemplate}" MinWidth="80" Width="100" CanSort="True" SortMemberPath="DiskMBps">
+                    <tabular:TableViewTemplateColumn.Header>
                         <StackPanel Spacing="0">
                             <TextBlock Text="Disk"/>
                             <TextBlock x:Name="DiskSummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
-                    </adv:TableViewTemplateColumn.Header>
-                </adv:TableViewTemplateColumn>
-                <adv:TableViewTemplateColumn CellTemplate="{StaticResource NetworkCellTemplate}" MinWidth="80" Width="100" CanSort="True" SortMemberPath="NetworkMbps">
-                    <adv:TableViewTemplateColumn.Header>
+                    </tabular:TableViewTemplateColumn.Header>
+                </tabular:TableViewTemplateColumn>
+                <tabular:TableViewTemplateColumn CellTemplate="{StaticResource NetworkCellTemplate}" MinWidth="80" Width="100" CanSort="True" SortMemberPath="NetworkMbps">
+                    <tabular:TableViewTemplateColumn.Header>
                         <StackPanel Spacing="0">
                             <TextBlock Text="Network"/>
                             <TextBlock x:Name="NetworkSummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
-                    </adv:TableViewTemplateColumn.Header>
-                </adv:TableViewTemplateColumn>
-            </adv:TableView>
+                    </tabular:TableViewTemplateColumn.Header>
+                </tabular:TableViewTemplateColumn>
+            </tabular:TableView>
         </Border>
 
         <Border Grid.Row="2"

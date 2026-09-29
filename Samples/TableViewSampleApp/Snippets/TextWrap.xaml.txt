@@ -26,12 +26,12 @@
     </DataTemplate>
 </Page.Resources>
 
-<adv:TableView x:Name="DemoTable" SelectionMode="Single">
-    <adv:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
-    <adv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" SortMemberPath="Bio" CellTemplate="{StaticResource BioCell}" CanSort="False"/>
-    <adv:TableViewTextColumn Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
-    <adv:TableViewTemplateColumn Header="Image" Width="{StaticResource ColWidthAvatar}" SortMemberPath="Initial" CellTemplate="{StaticResource AvatarCell}" CanSort="False"/>
-</adv:TableView>
+<tabular:TableView x:Name="DemoTable" SelectionMode="Single">
+    <tabular:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
+    <tabular:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" SortMemberPath="Bio" CellTemplate="{StaticResource BioCell}" CanSort="False"/>
+    <tabular:TableViewTextColumn Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
+    <tabular:TableViewTemplateColumn Header="Image" Width="{StaticResource ColWidthAvatar}" SortMemberPath="Initial" CellTemplate="{StaticResource AvatarCell}" CanSort="False"/>
+</tabular:TableView>
 
 <ToggleSwitch Header="TextWrapping" IsOn="True" OnContent="Wrap" OffContent="NoWrap" Toggled="OnWrapToggled"/>
 <Slider Minimum="220" Maximum="520" StepFrequency="20" Value="360" ValueChanged="OnColumnWidthChanged"/>

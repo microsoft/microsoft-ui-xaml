@@ -6,7 +6,6 @@
 #include "TableView.h"
 #include "TableViewColumnHeaderAutomationPeer.g.h"
 
-#include <array>
 #include <cstdint>
 
 // UIA peer for a TableView column header; reports header name, type, identity, and bounds.
@@ -46,7 +45,5 @@ private:
 
     winrt::weak_ref<winrt::TableViewColumn> m_column{ nullptr };
     winrt::weak_ref<winrt::TableView> m_table{ nullptr };
-    // Captured at construction from the column's stable IUnknown so identity survives the
-    // column being released; the peer must not resurrect the column just to report an id.
-    std::array<int32_t, 2> m_columnRuntimeIdParts{ 0, 0 };
+    int32_t m_columnAutomationIdPart{ 0 };
 };

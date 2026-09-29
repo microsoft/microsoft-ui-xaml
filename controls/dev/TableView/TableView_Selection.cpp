@@ -31,6 +31,33 @@ namespace
         bool& m_flag;
         bool m_previous;
     };
+
+    bool IsResolvableSelectionAnnouncementRow(
+        winrt::TableView const& owner,
+        winrt::TableViewRow const& row,
+        winrt::AutomationPeer const& peer)
+    {
+        if (!owner || !row || !peer ||
+            winrt::get_self<TableViewRow>(row)->GetOwningTableView() != owner)
+        {
+            return false;
+        }
+
+        auto const repeater = winrt::get_self<TableView>(owner)->GetRowsRepeaterInternal();
+        if (!repeater)
+        {
+            return false;
+        }
+
+        const int32_t index = repeater.GetElementIndex(row);
+        auto const element = index >= 0 ? repeater.TryGetElement(index).try_as<winrt::TableViewRow>() : nullptr;
+        if (element != row)
+        {
+            return false;
+        }
+
+        return !peer.GetName().empty();
+    }
 }
 
 bool TableView::CanSelectRows()
@@ -372,6 +399,9 @@ void TableView::RaiseSelectionAutomationEvents(
     winrt::TableViewRow const& deselectedRow,
     winrt::TableViewRow const& selectedRow)
 {
+    const bool suppressSelectedAnnouncement =
+        m_isKeyboardFocusSelectionChange && SelectionMode() == winrt::TableViewSelectionMode::Single;
+
     // Container-level first: it is the only signal available when the selected row is unrealized
     // and there is no row peer to raise a per-element event on.
     if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::SelectionPatternOnInvalidated))
@@ -384,6 +414,7 @@ void TableView::RaiseSelectionAutomationEvents(
 
     // FromElement returns an existing peer or null - it never forces one into existence.
     if (selectedRow &&
+        !suppressSelectedAnnouncement &&
         winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::SelectionItemPatternOnElementSelected))
     {
         if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(selectedRow))
@@ -397,7 +428,10 @@ void TableView::RaiseSelectionAutomationEvents(
     {
         if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(deselectedRow))
         {
-            peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementRemovedFromSelection);
+            if (IsResolvableSelectionAnnouncementRow(*this, deselectedRow, peer))
+            {
+                peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementRemovedFromSelection);
+            }
         }
     }
 
@@ -725,6 +759,13 @@ void TableView::SelectRowIndexFromInteraction(int32_t index, bool toggle)
     }
 
     ApplySelection(index);
+}
+
+void TableView::SelectRowIndexFromKeyboardFocus(int32_t index)
+{
+    // FocusChanged already carries the row announcement for keyboard focus-following selection.
+    ScopedFlag keyboardFocusSelectionChange{ m_isKeyboardFocusSelectionChange, true };
+    SelectRowIndexFromInteraction(index, false /* toggle */);
 }
 
 // ----- Public API -----

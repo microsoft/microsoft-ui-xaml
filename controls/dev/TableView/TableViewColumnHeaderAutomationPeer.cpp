@@ -13,9 +13,30 @@
 #include "Utils.h"
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
+#include <algorithm>
+#include <vector>
 
 namespace
 {
+    struct ColumnAutomationIdEntry
+    {
+        winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
+        int32_t id{ 0 };
+    };
+
+    struct TableAutomationIdScope
+    {
+        winrt::weak_ref<winrt::TableView> table{ nullptr };
+        std::vector<ColumnAutomationIdEntry> columns;
+        int32_t nextId{ 1 };
+    };
+
+    std::vector<TableAutomationIdScope>& TableAutomationIdScopes()
+    {
+        static std::vector<TableAutomationIdScope> scopes;
+        return scopes;
+    }
+
     winrt::FrameworkElement ResolveHeader(winrt::TableView const& table, winrt::TableViewColumn const& column)
     {
         if (table && column)
@@ -31,23 +52,74 @@ namespace
         throw winrt::hresult_invalid_argument(L"The column must have a realized header.");
     }
 
-    // Two 32-bit halves of the column's stable IUnknown, which is the cheapest per-column
-    // identity available here. Widen to 64-bit before shifting so this stays correct on 32-bit,
-    // where uintptr_t is 32-bit and `>> 32` would be an out-of-range shift; the high part is
-    // simply 0 there.
-    std::array<int32_t, 2> RuntimeIdPartsForColumn(winrt::TableViewColumn const& column)
+    void DropExpiredColumnEntries(TableAutomationIdScope& scope)
     {
-        if (!column)
+        scope.columns.erase(
+            std::remove_if(scope.columns.begin(), scope.columns.end(), [](auto const& entry)
+            {
+                return !entry.column.get();
+            }),
+            scope.columns.end());
+    }
+
+    TableAutomationIdScope& AutomationIdScopeForTable(winrt::TableView const& table)
+    {
+        auto& scopes = TableAutomationIdScopes();
+        scopes.erase(
+            std::remove_if(scopes.begin(), scopes.end(), [](auto const& scope)
+            {
+                return !scope.table.get();
+            }),
+            scopes.end());
+
+        for (auto& scope : scopes)
         {
-            return { 0, 0 };
+            if (scope.table.get() == table)
+            {
+                DropExpiredColumnEntries(scope);
+                return scope;
+            }
         }
 
-        const uint64_t identity = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(winrt::get_unknown(column)));
-        return
+        scopes.push_back({ winrt::make_weak(table), {}, 1 });
+        return scopes.back();
+    }
+
+    int32_t RegisteredAutomationIdForColumn(TableAutomationIdScope& scope, winrt::TableViewColumn const& column)
+    {
+        for (auto const& entry : scope.columns)
         {
-            static_cast<int32_t>(identity & 0xffffffffull),
-            static_cast<int32_t>((identity >> 32) & 0xffffffffull)
-        };
+            if (entry.column.get() == column)
+            {
+                return entry.id;
+            }
+        }
+
+        const auto id = scope.nextId++;
+        scope.columns.push_back({ winrt::make_weak(column), id });
+        return id;
+    }
+
+    int32_t StableAutomationIdPartForColumn(winrt::TableView const& table, winrt::TableViewColumn const& column)
+    {
+        if (!table || !column)
+        {
+            return 0;
+        }
+
+        auto& scope = AutomationIdScopeForTable(table);
+        if (auto const columns = table.Columns())
+        {
+            for (auto const& currentColumn : columns)
+            {
+                if (currentColumn)
+                {
+                    RegisteredAutomationIdForColumn(scope, currentColumn);
+                }
+            }
+        }
+
+        return RegisteredAutomationIdForColumn(scope, column);
     }
 }
 
@@ -65,7 +137,7 @@ TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
     : ReferenceTracker(header)
     , m_column(winrt::make_weak(column))
     , m_table(winrt::make_weak(table))
-    , m_columnRuntimeIdParts(RuntimeIdPartsForColumn(column))
+    , m_columnAutomationIdPart(StableAutomationIdPartForColumn(table, column))
 {
 }
 
@@ -128,12 +200,14 @@ hstring TableViewColumnHeaderAutomationPeer::GetAutomationIdCore()
         }
     }
 
-    // Keep a column-derived fallback AutomationId; RuntimeId belongs to the visual.
-    std::wstring automationId{ L"TableViewColumnHeader_" };
-    automationId.append(std::to_wstring(m_columnRuntimeIdParts[0]));
-    automationId.push_back(L'_');
-    automationId.append(std::to_wstring(m_columnRuntimeIdParts[1]));
-    return hstring{ automationId };
+    if (m_columnAutomationIdPart > 0)
+    {
+        std::wstring automationId{ L"TableViewColumnHeader_" };
+        automationId.append(std::to_wstring(m_columnAutomationIdPart));
+        return hstring{ automationId };
+    }
+
+    return {};
 }
 
 hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()

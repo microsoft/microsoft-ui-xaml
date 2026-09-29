@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls"
     xmlns:local="using:TableViewSampleApp.Pages">
 
@@ -17,6 +17,7 @@
         <DataTemplate x:Key="FirstNameCell">
             <TextBox
                 Text="{Binding FirstName, Mode=TwoWay}"
+                AutomationProperties.Name="First name"
                 IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
                 BorderThickness="0"
                 Background="Transparent"
@@ -29,6 +30,7 @@
         <DataTemplate x:Key="LastNameCell">
             <TextBox
                 Text="{Binding LastName, Mode=TwoWay}"
+                AutomationProperties.Name="Last name"
                 IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
                 BorderThickness="0"
                 Background="Transparent"
@@ -41,6 +43,7 @@
         <DataTemplate x:Key="RoleCell">
             <TextBox
                 Text="{Binding Role, Mode=TwoWay}"
+                AutomationProperties.Name="Role"
                 IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
                 BorderThickness="0"
                 Background="Transparent"
@@ -53,6 +56,7 @@
         <DataTemplate x:Key="EmailCell">
             <TextBox
                 Text="{Binding Email, Mode=TwoWay}"
+                AutomationProperties.Name="Email"
                 IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
                 BorderThickness="0"
                 Background="Transparent"
@@ -91,17 +95,17 @@
                     Style="{StaticResource TableHostBorderStyle}"
                     Padding="0"
                     VerticalAlignment="Stretch">
-                    <adv:TableView
-                        x:Name="DemoTable"
+                    <tabular:TableView
+                        x:Name="DemoTable" AutomationProperties.Name="People table"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <adv:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
-                        <adv:TableViewTemplateColumn Header="First name" Width="{StaticResource ColWidthShortName}" SortMemberPath="FirstName" CellTemplate="{StaticResource FirstNameCell}" CanSort="False"/>
-                        <adv:TableViewTemplateColumn Header="Last name" Width="{StaticResource ColWidthShortName}" SortMemberPath="LastName" CellTemplate="{StaticResource LastNameCell}" CanSort="False"/>
-                        <adv:TableViewTemplateColumn Header="Role" Width="{StaticResource ColWidthLongName}" SortMemberPath="Role" CellTemplate="{StaticResource RoleCell}" CanSort="False"/>
-                        <adv:TableViewTemplateColumn Header="Email" Width="*" MinWidth="200" SortMemberPath="Email" CellTemplate="{StaticResource EmailCell}" CanSort="False"/>
-                    </adv:TableView>
+                        <tabular:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
+                        <tabular:TableViewTemplateColumn Header="First name" Width="{StaticResource ColWidthShortName}" SortMemberPath="FirstName" CellTemplate="{StaticResource FirstNameCell}" CanSort="False"/>
+                        <tabular:TableViewTemplateColumn Header="Last name" Width="{StaticResource ColWidthShortName}" SortMemberPath="LastName" CellTemplate="{StaticResource LastNameCell}" CanSort="False"/>
+                        <tabular:TableViewTemplateColumn Header="Role" Width="{StaticResource ColWidthLongName}" SortMemberPath="Role" CellTemplate="{StaticResource RoleCell}" CanSort="False"/>
+                        <tabular:TableViewTemplateColumn Header="Email" Width="*" MinWidth="200" SortMemberPath="Email" CellTemplate="{StaticResource EmailCell}" CanSort="False"/>
+                    </tabular:TableView>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>

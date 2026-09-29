@@ -108,6 +108,7 @@
         <Setter Property="MinHeight" Value="40" />
         <Setter Property="Padding" Value="0" />        
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceRowForegroundBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGridLineBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
@@ -162,6 +163,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceSelectedBorderBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -175,6 +179,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceSelectedBorderBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -187,6 +194,9 @@
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedPressedBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="BorderBrush">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceSelectedBorderBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedPressedBrush}" />
@@ -227,6 +237,7 @@
                                  SystemColorHighlightColor. -->
                             <ContentPresenter x:Name="PART_CellForegroundPresenter"
                                               Foreground="{TemplateBinding Foreground}"
+                                              HighContrastAdjustment="None"
                                               HorizontalContentAlignment="Stretch"
                                               VerticalContentAlignment="Stretch">
                                 <!-- Left, matching PART_HeaderHost. -->

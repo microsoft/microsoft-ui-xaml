@@ -5,7 +5,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid Padding="24" ColumnSpacing="12">
@@ -64,15 +64,15 @@
             </Border>
 
             <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                <adv:TableView
-                    x:Name="PropTable"
+                <tabular:TableView
+                    x:Name="PropTable" AutomationProperties.Name="File properties table"
                     AutomationProperties.AutomationId="FilePropertiesTable"
                     SelectionMode="Single"
                     MinHeight="420"
                     VerticalAlignment="Stretch">
-                    <adv:TableViewTextColumn Header="Property" Width="200" MinWidth="140" Binding="{Binding Property}"/>
-                    <adv:TableViewTextColumn Header="Value" Width="*" Binding="{Binding Value}"/>
-                </adv:TableView>
+                    <tabular:TableViewTextColumn Header="Property" Width="200" MinWidth="140" Binding="{Binding Property}"/>
+                    <tabular:TableViewTextColumn Header="Value" Width="*" Binding="{Binding Value}"/>
+                </tabular:TableView>
             </Border>
 
             <Border Grid.Row="2"

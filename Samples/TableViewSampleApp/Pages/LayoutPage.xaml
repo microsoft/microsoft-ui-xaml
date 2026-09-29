@@ -5,7 +5,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
@@ -48,8 +48,8 @@
                     Style="{StaticResource TableHostBorderStyle}"
                     Padding="0"
                     VerticalAlignment="Stretch">
-                    <adv:TableView
-                        x:Name="WidthsTable"
+                    <tabular:TableView
+                        x:Name="WidthsTable" AutomationProperties.Name="Column width table"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320"

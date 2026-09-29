@@ -5,7 +5,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
@@ -33,24 +33,24 @@
                     MinHeight="104"/>
 
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
-                    <adv:TableView
-                        x:Name="PlaygroundTable"
+                    <tabular:TableView
+                        x:Name="PlaygroundTable" AutomationProperties.Name="Right-to-left people table"
                         AutomationProperties.AutomationId="PlaygroundTable"
                         SelectionMode="Single"
                         FlowDirection="RightToLeft"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
                         <!-- RTL mirrors column flow, resize grippers, and reorder indicators. -->
-                        <adv:TableViewTextColumn Header="Index"        Width="{StaticResource ColWidthId}"  Binding="{Binding Index}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Name"         Width="{StaticResource ColWidthLongName}"  Binding="{Binding Name}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Department"   Width="{StaticResource ColWidthDepartment}" CanResize="True"  Binding="{Binding Department}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Role"         Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Region"       Width="{StaticResource ColWidthLocation}" Binding="{Binding Region}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="JoinDate"     Width="{StaticResource ColWidthDate}" Binding="{Binding JoinDate}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Notes"        Width="{StaticResource ColWidthNotes}" Binding="{Binding Notes}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Salary"       Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Status"       Width="{StaticResource ColWidthDepartment}" Binding="{Binding Status}" CanSort="False"/>
-                    </adv:TableView>
+                        <tabular:TableViewTextColumn Header="Index"        Width="{StaticResource ColWidthId}"  Binding="{Binding Index}" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Name"         Width="{StaticResource ColWidthLongName}"  Binding="{Binding Name}" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Department"   Width="{StaticResource ColWidthDepartment}" CanResize="True"  Binding="{Binding Department}" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Role"         Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Region"       Width="{StaticResource ColWidthLocation}" Binding="{Binding Region}" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="JoinDate"     Width="{StaticResource ColWidthDate}" Binding="{Binding JoinDate}" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Notes"        Width="{StaticResource ColWidthNotes}" Binding="{Binding Notes}" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Salary"       Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary}" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Status"       Width="{StaticResource ColWidthDepartment}" Binding="{Binding Status}" CanSort="False"/>
+                    </tabular:TableView>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>

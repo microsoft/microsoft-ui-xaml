@@ -5,12 +5,46 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <Page.Resources>
+
+        <!-- Template-column cells used by the "Template columns" and "Mixed columns"
+             scenarios. Template cells are the interesting accessibility case: their
+             UIA name is computed from the composed children rather than from a single
+             bound string, so a tester can compare them against the plain text columns. -->
+
+        <DataTemplate x:Key="PersonCellTemplate">
+            <StackPanel Orientation="Horizontal" Spacing="8" Margin="8,2" VerticalAlignment="Center">
+                <Border Width="20" Height="20" CornerRadius="10" Background="{ThemeResource AccentFillColorDefaultBrush}">
+                    <TextBlock Text="{Binding Initial}" FontSize="11" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="{Binding FullName}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DepartmentBadgeTemplate">
+            <Border Margin="8,4" Padding="8,2" CornerRadius="4" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{ThemeResource SubtleFillColorSecondaryBrush}">
+                <TextBlock Text="{Binding Department}" FontSize="12"/>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ActiveCellTemplate">
+            <!-- Display-only: hit testing and tab stops are off so the CheckBox does not
+                 add a second focus target inside a row that is itself the focus target. -->
+            <CheckBox IsChecked="{Binding IsActive, Mode=TwoWay}" IsHitTestVisible="False" IsTabStop="False" MinWidth="0" Margin="14,2" VerticalAlignment="Center" AutomationProperties.Name="Active"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="RoleCellTemplate">
+            <TextBlock Text="{Binding Role}" Margin="8,2" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+        </DataTemplate>
+
+    </Page.Resources>
 
     <controls:SamplePresenter
         Header="Keyboard navigation + accessibility"
-        Description="Arrow keys, Tab, Home / End, and Page Up / Page Down move the focus across cells. The grid also exposes its structure to UI Automation, so Narrator and other assistive tools can announce rows and report the table's dimensions."
+        Description="An accessibility regression fixture. Focus moves ROW by ROW — Up / Down / Home / End / Page Up / Page Down move the focused row, and clicking a cell focuses that cell's whole row. Individual cells are not keyboard focusable, and Left / Right do not move between cells. Column headers are focusable and Enter toggles sort. Use the Options rail to drive the table through the states a Narrator or UI Automation pass needs — column shapes, grouping, editing, enablement, selection mode, the edit lifecycle, and live data mutation — without rebuilding the app."
         SourceCaption="KeyboardNavPage.xaml (excerpt)"
         SourceSnippet="KeyboardNav.xaml.txt"
         AdditionalSnippetCaption="KeyboardNavPage.xaml.cs (excerpt)"
@@ -21,55 +55,224 @@
             <Grid RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Click any cell to focus it, then use arrow keys / Tab / Home / End / PgUp / PgDn to move around the read-only grid." MinHeight="104"/>
-                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch" Padding="0">
-                    <adv:TableView x:Name="PeopleTable" AutomationProperties.AutomationId="PeopleTable" AutomationProperties.Name="People grid" SelectionMode="Single" SelectionChanged="OnSelectionChanged" VerticalAlignment="Stretch" MinHeight="320">
-                        <adv:TableViewTextColumn Header="#"          Width="{StaticResource ColWidthId}"  Binding="{Binding Number}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Email"      Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
-                    </adv:TableView>
+
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Keyboard entry and exit"
+                    Message="Focus the Before table button, then press Tab to enter the table and Tab again to leave it for the After table button. Shift+Tab walks the same boundary backwards. Inside the table, move with Up / Down / Home / End / Page Up / Page Down — focus moves a whole row at a time. Do not expect Tab or Left / Right to step between cells: there is no spreadsheet-style cell navigation here."
+                    MinHeight="104"/>
+
+                <Button
+                    Grid.Row="1"
+                    x:Name="BeforeTableButton"
+                    Content="Before table"
+                    AutomationProperties.AutomationId="BeforeTableButton"
+                    AutomationProperties.Name="Before table"
+                    AutomationProperties.HelpText="Focus boundary above the table. Tab from here to enter the table."
+                    Click="OnBoundaryButtonClick"
+                    HorizontalAlignment="Left"/>
+
+                <Border Grid.Row="2" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch" Padding="0">
+                    <tabular:TableView
+                        x:Name="PeopleTable"
+                        AutomationProperties.AutomationId="PeopleTable"
+                        AutomationProperties.Name="People grid"
+                        SelectionMode="Single"
+                        IsReadOnly="True"
+                        SelectionChanged="OnSelectionChanged"
+                        Sorted="OnSorted"
+                        VerticalAlignment="Stretch"
+                        MinHeight="280"/>
                 </Border>
-                <muxc:InfoBar Grid.Row="2" IsOpen="True" IsClosable="False" Severity="Informational" Title="Accessibility" Message="TableView ships UI Automation support out of the box: assistive tools such as Narrator can announce each row's position in the grid, and the grid reports its dimensions and orientation to automation clients. The status readout on the right mirrors those same values."/>
+
+                <Button
+                    Grid.Row="3"
+                    x:Name="AfterTableButton"
+                    Content="After table"
+                    AutomationProperties.AutomationId="AfterTableButton"
+                    AutomationProperties.Name="After table"
+                    AutomationProperties.HelpText="Focus boundary below the table. Reaching this button by Tab proves the table does not trap focus."
+                    Click="OnBoundaryButtonClick"
+                    HorizontalAlignment="Left"/>
+
+                <Expander
+                    Grid.Row="4"
+                    x:Name="ExpectedObservationsExpander"
+                    AutomationProperties.AutomationId="ExpectedObservationsExpander"
+                    AutomationProperties.Name="Expected observations, verify at runtime"
+                    Header="Expected observations — verify at runtime"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Left">
+                    <StackPanel Spacing="6" Margin="0,4,0,4">
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Entry and exit — Tab from Before table lands inside the table (column header or row); one more Tab leaves for After table. Shift+Tab reverses it. If you cannot Tab out, that is a focus trap and a bug."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Focus granularity — the focused element is a ROW, never a cell. Cells report IsKeyboardFocusable = false, and calling SetFocus on a cell fails with 'Target element cannot receive focus.' That is today's behaviour, not a defect to file from this page."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Arrow keys — Up and Down move the focused row. Home and End jump to the first and last row. Page Up and Page Down move roughly one viewport. Left and Right do nothing at all."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Focus versus selection — in Single selection mode focus and selection move together, so one arrow press raises both a focus change and a selection change. Switch Selection mode to None to observe focus movement with no selection events."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Column headers — headers are focusable and Enter toggles sort. A correct sort raises a UI Automation notification such as 'Sorted by Department ascending.' The Status rail mirrors the last sort the control reported."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Table name — scenarios other than Unlabeled table expose AutomationProperties.Name = 'People grid'. Pick Unlabeled table to clear it and confirm what Narrator and Inspect fall back to when a table is unnamed."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Grouping — with Group by department on, group header rows appear and should expose the ExpandCollapse pattern; collapsing a group should remove its rows from the navigable set."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Editing — with Allow text editing off every text cell is display-only and exposes no ValuePattern. Turn it on, then double-tap a cell or press F2 on the focused row: the open editor is the thing that carries ValuePattern. Call CommitEdit and Call CancelEdit close that editor programmatically."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Disabled state — turning Enable table off should report IsEnabled = false to UI Automation and should drop the table out of the Tab order entirely, so Tab goes straight from Before table to After table."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Stale values — mutate rows, then scroll them out of view and back. Recycled rows must announce the current values, never the values they carried before the mutation."/>
+                    </StackPanel>
+                </Expander>
             </Grid>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock Text="Keyboard shortcuts" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock Text="Click any row to take focus, then use the keyboard. The readout below shows the selected row plus bound row and column counts." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                <Grid ColumnSpacing="12" RowSpacing="4">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Up" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="prev row" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Down" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="next row" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Home" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="first row" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="End" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="last row" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="PageUp / PageDown" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                    <TextBlock Grid.Row="4" Grid.Column="1" Text="-1 / +1 viewport" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                </Grid>
-                <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <Grid ColumnSpacing="12" RowSpacing="4">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Selected row index" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SelectedIndexText" Text="-1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedIndexText"/>
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="RowCountText"/>
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Columns" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ColumnCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ColumnCountText"/>
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="UIA RowOrColumnMajor" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="MajorText" Text="RowMajor" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="MajorText"/>
-                </Grid>
+
+                <StackPanel Spacing="4" AutomationProperties.Name="Fixture shape">
+                    <TextBlock Text="Fixture shape" Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Pick the column shape under test. Unlabeled table clears the table's AutomationProperties.Name on purpose so the unnamed-table behaviour can be inspected." Style="{StaticResource SectionDescriptionTextStyle}"/>
+                    <ComboBox
+                        x:Name="ScenarioSelector"
+                        Header="Assessment scenario"
+                        AutomationProperties.AutomationId="ScenarioSelector"
+                        SelectedIndex="0"
+                        SelectionChanged="OnScenarioChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Text columns" Tag="Text"/>
+                        <ComboBoxItem Content="Template columns" Tag="Template"/>
+                        <ComboBoxItem Content="Mixed columns" Tag="Mixed"/>
+                        <ComboBoxItem Content="Unlabeled table" Tag="Unlabeled"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ResetFixtureButton"
+                        Content="Reset fixture"
+                        AutomationProperties.AutomationId="ResetFixtureButton"
+                        AutomationProperties.Name="Reset fixture"
+                        AutomationProperties.HelpText="Restores the documented baseline: Text columns, grouping off, editing off, table enabled, Single selection, selection and sort cleared, and all mutated row values restored."
+                        Click="OnResetFixtureClick"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource SectionDescriptionTextStyle}" Text="Baseline: Text columns · AutomationProperties.Name = People grid · grouping off · IsReadOnly = true · IsEnabled = true · SelectionMode = Single · nothing selected · no sort · 1,000 unmutated rows."/>
+                </StackPanel>
+
+                <StackPanel Spacing="4" AutomationProperties.Name="Table state">
+                    <TextBlock Text="Table state" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <ToggleSwitch
+                        x:Name="GroupByDepartmentToggle"
+                        Header="Group by department"
+                        OnContent="On (grouped)"
+                        OffContent="Off (flat)"
+                        AutomationProperties.AutomationId="GroupByDepartmentToggle"
+                        Toggled="OnGroupByDepartmentToggled"/>
+                    <ToggleSwitch
+                        x:Name="AllowEditingToggle"
+                        Header="Allow text editing"
+                        OnContent="On (IsReadOnly = false)"
+                        OffContent="Off (IsReadOnly = true)"
+                        AutomationProperties.AutomationId="AllowEditingToggle"
+                        Toggled="OnAllowEditingToggled"/>
+                    <ToggleSwitch
+                        x:Name="EnableTableToggle"
+                        Header="Enable table"
+                        IsOn="True"
+                        OnContent="On (IsEnabled = true)"
+                        OffContent="Off (IsEnabled = false)"
+                        AutomationProperties.AutomationId="EnableTableToggle"
+                        Toggled="OnEnableTableToggled"/>
+                    <ComboBox
+                        x:Name="SelectionModeSelector"
+                        Header="Selection mode"
+                        AutomationProperties.AutomationId="SelectionModeSelector"
+                        SelectedIndex="1"
+                        SelectionChanged="OnSelectionModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="None" Tag="None"/>
+                        <ComboBoxItem Content="Single" Tag="Single"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Spacing="4" AutomationProperties.Name="Edit lifecycle">
+                    <TextBlock Text="Edit lifecycle" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Open an editor first (double-tap a text cell, or press F2 on the focused row with editing allowed), then close it from here. Both calls return false when no editor is open." Style="{StaticResource SectionDescriptionTextStyle}"/>
+                    <Button
+                        x:Name="CommitEditButton"
+                        Content="Call CommitEdit"
+                        AutomationProperties.AutomationId="CommitEditButton"
+                        AutomationProperties.Name="Call CommitEdit"
+                        Click="OnCommitEditClick"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CancelEditButton"
+                        Content="Call CancelEdit"
+                        AutomationProperties.AutomationId="CancelEditButton"
+                        AutomationProperties.Name="Call CancelEdit"
+                        Click="OnCancelEditClick"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Spacing="4" AutomationProperties.Name="Data mutation">
+                    <TextBlock Text="Data mutation" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Rewrites bound values in place on the existing row objects. Use it to check that a recycled or updated row never announces a stale value." Style="{StaticResource SectionDescriptionTextStyle}"/>
+                    <ComboBox
+                        x:Name="MutationTargetSelector"
+                        Header="Mutation target"
+                        AutomationProperties.AutomationId="MutationTargetSelector"
+                        SelectedIndex="0"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Selected row" Tag="Selected"/>
+                        <ComboBoxItem Content="Rows 1 to 25" Tag="First25"/>
+                        <ComboBoxItem Content="Rows 501 to 525 (off-screen)" Tag="Offscreen"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="MutateRowsButton"
+                        Content="Mutate now"
+                        AutomationProperties.AutomationId="MutateRowsButton"
+                        AutomationProperties.Name="Mutate now"
+                        AutomationProperties.HelpText="Rewrites the first name, department, role and active flag of the targeted rows in place."
+                        Click="OnMutateRowsClick"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Spacing="4" AutomationProperties.Name="Status">
+                    <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid ColumnSpacing="12" RowSpacing="4">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Scenario" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ScenarioText" Text="Text columns" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ScenarioText"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Table UIA Name" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TableNameText" Text="People grid" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TableNameText"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Grouping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="GroupingText" Text="Off" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="GroupingText"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="IsReadOnly" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ReadOnlyText" Text="True" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ReadOnlyText"/>
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="IsEnabled" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="EnabledText" Text="True" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="EnabledText"/>
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="SelectionMode" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="SelectionModeText" Text="Single" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectionModeText"/>
+                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Selected row index" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="6" Grid.Column="1" x:Name="SelectedIndexText" Text="-1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedIndexText"/>
+                        <TextBlock Grid.Row="7" Grid.Column="0" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="7" Grid.Column="1" x:Name="RowCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="RowCountText"/>
+                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Columns" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="8" Grid.Column="1" x:Name="ColumnCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ColumnCountText"/>
+                        <TextBlock Grid.Row="9" Grid.Column="0" Text="Last sort reported" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="9" Grid.Column="1" x:Name="LastSortText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="LastSortText"/>
+                        <TextBlock Grid.Row="10" Grid.Column="0" VerticalAlignment="Top" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="10" Grid.Column="1" x:Name="LastActionText" Text="Fixture loaded at baseline." Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="LastActionText" AutomationProperties.LiveSetting="Polite"/>
+                    </Grid>
+                </StackPanel>
+
             </StackPanel>
         </controls:SamplePresenter.Options>
 

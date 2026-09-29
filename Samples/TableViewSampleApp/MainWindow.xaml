@@ -31,6 +31,7 @@
                         VerticalAlignment="Center">
                     <muxc:FontIcon Glyph="&#xE80A;" FontSize="12"
                                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                   AutomationProperties.AccessibilityView="Raw"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
                 <TextBlock x:Name="AppTitleTextBlock"
@@ -56,6 +57,8 @@
         <muxc:NavigationView
             Grid.Row="1"
             x:Name="NavView"
+            PaneTitle="Sample navigation"
+            AutomationProperties.Name="Sample navigation"
             PaneDisplayMode="Auto"
             IsBackButtonVisible="Collapsed"
             IsBackEnabled="False"

@@ -1,5 +1,47 @@
-<adv:TableView x:Name="PeopleTable" SelectionMode="Single" SelectionChanged="OnSelectionChanged">
-    <adv:TableViewTextColumn Header="#"          Binding="{Binding Number}" CanUserSort="False"/>
-    <adv:TableViewTextColumn Header="First name" Binding="{Binding FirstName}" CanUserSort="False"/>
-    <adv:TableViewTextColumn Header="Last name"  Binding="{Binding LastName}" CanUserSort="False"/>
-</adv:TableView>
+<!-- Focus boundary above the table, the table itself, then the boundary below.
+     Tabbing Before table -> table -> After table proves there is no focus trap. -->
+<Button x:Name="BeforeTableButton" Content="Before table"
+        AutomationProperties.AutomationId="BeforeTableButton"
+        AutomationProperties.Name="Before table"
+        Click="OnBoundaryButtonClick"/>
+
+<tabular:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.AutomationId="PeopleTable"
+    AutomationProperties.Name="People grid"
+    SelectionMode="Single"
+    IsReadOnly="True"
+    SelectionChanged="OnSelectionChanged"
+    Sorted="OnSorted"/>
+<!-- Columns are built in code-behind so the Assessment scenario picker can
+     swap between text, template and mixed column shapes at runtime. -->
+
+<Button x:Name="AfterTableButton" Content="After table"
+        AutomationProperties.AutomationId="AfterTableButton"
+        AutomationProperties.Name="After table"
+        Click="OnBoundaryButtonClick"/>
+
+<!-- Options rail: every fixture control carries a Header or an
+     AutomationProperties.Name, so the page itself is keyboard- and
+     screen-reader-navigable. -->
+<ComboBox x:Name="ScenarioSelector" Header="Assessment scenario"
+          SelectionChanged="OnScenarioChanged">
+    <ComboBoxItem Content="Text columns" Tag="Text"/>
+    <ComboBoxItem Content="Template columns" Tag="Template"/>
+    <ComboBoxItem Content="Mixed columns" Tag="Mixed"/>
+    <ComboBoxItem Content="Unlabeled table" Tag="Unlabeled"/>
+</ComboBox>
+<ToggleSwitch x:Name="GroupByDepartmentToggle" Header="Group by department"
+              Toggled="OnGroupByDepartmentToggled"/>
+<ToggleSwitch x:Name="AllowEditingToggle" Header="Allow text editing"
+              Toggled="OnAllowEditingToggled"/>
+<ToggleSwitch x:Name="EnableTableToggle" Header="Enable table" IsOn="True"
+              Toggled="OnEnableTableToggled"/>
+<ComboBox x:Name="SelectionModeSelector" Header="Selection mode"
+          SelectionChanged="OnSelectionModeChanged">
+    <ComboBoxItem Content="None" Tag="None"/>
+    <ComboBoxItem Content="Single" Tag="Single"/>
+</ComboBox>
+<Button Content="Call CommitEdit" Click="OnCommitEditClick"/>
+<Button Content="Call CancelEdit" Click="OnCancelEditClick"/>
+<Button Content="Reset fixture" Click="OnResetFixtureClick"/>

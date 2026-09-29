@@ -34,7 +34,7 @@
                     Style="{ThemeResource SubtleButtonStyle}"
                     Padding="8,4">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon Glyph="&#xE8C8;" FontSize="14"/>
+                        <FontIcon Glyph="&#xE8C8;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
                         <TextBlock Text="Copy" FontSize="12"/>
                     </StackPanel>
                 </Button>

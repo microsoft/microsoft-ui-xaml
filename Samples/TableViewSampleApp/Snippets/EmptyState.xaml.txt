@@ -20,14 +20,14 @@
     </DataTemplate>
 </Page.Resources>
 
-<adv:TableView x:Name="DemoTable"
+<tabular:TableView x:Name="DemoTable"
                SelectionMode="Single"
                EmptyTemplate="{StaticResource EmptyStateTemplate}">
-    <adv:TableViewTextColumn Header="Name"       Binding="{Binding FullName}"/>
-    <adv:TableViewTextColumn Header="Department" Binding="{Binding Department}"/>
-    <adv:TableViewTextColumn Header="Role"       Binding="{Binding Role}"/>
-    <adv:TableViewTextColumn Header="Email"      Binding="{Binding Email}"/>
-</adv:TableView>
+    <tabular:TableViewTextColumn Header="Name"       Binding="{Binding FullName}"/>
+    <tabular:TableViewTextColumn Header="Department" Binding="{Binding Department}"/>
+    <tabular:TableViewTextColumn Header="Role"       Binding="{Binding Role}"/>
+    <tabular:TableViewTextColumn Header="Email"      Binding="{Binding Email}"/>
+</tabular:TableView>
 
 <!-- Toggle the data source to show / hide the empty state -->
 <RadioButton Content="Populated"    Tag="Populated" GroupName="EmptyStateSource" IsChecked="True" Checked="OnDataSourceChecked"/>

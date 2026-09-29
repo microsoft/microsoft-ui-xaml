@@ -504,7 +504,7 @@ void TableView::OnKeyDownForNavigation(
             // Single selection follows the keyboard cursor, matching ListView and WPF's DataGrid.
             if (!isControlDown)
             {
-                SelectRowIndexFromInteraction(initialRow);
+                SelectRowIndexFromKeyboardFocus(initialRow);
             }
             args.Handled(true);
         }
@@ -578,7 +578,7 @@ void TableView::OnKeyDownForNavigation(
             {
                 if (!isControlDown)
                 {
-                    SelectRowIndexFromInteraction(newRow);
+                    SelectRowIndexFromKeyboardFocus(newRow);
                 }
                 args.Handled(true);
             }

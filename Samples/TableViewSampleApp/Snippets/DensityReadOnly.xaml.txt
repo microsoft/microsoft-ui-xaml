@@ -7,17 +7,18 @@
 
     <DataTemplate x:Key="FirstNameCell">
         <TextBox Text="{Binding FirstName, Mode=TwoWay}"
+                 AutomationProperties.Name="First name"
                  IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
                  BorderThickness="0" Background="Transparent"/>
     </DataTemplate>
 </Page.Resources>
 
-<adv:TableView x:Name="DemoTable" SelectionMode="Single">
-    <adv:TableViewTextColumn     Header="Name"       Binding="{Binding FullName}"/>
-    <adv:TableViewTemplateColumn Header="First name" SortMemberPath="FirstName"
+<tabular:TableView x:Name="DemoTable" SelectionMode="Single">
+    <tabular:TableViewTextColumn     Header="Name"       Binding="{Binding FullName}"/>
+    <tabular:TableViewTemplateColumn Header="First name" SortMemberPath="FirstName"
                                  CellTemplate="{StaticResource FirstNameCell}"/>
     <!-- Last name / Role / Email columns follow the same editable pattern -->
-</adv:TableView>
+</tabular:TableView>
 
 <!-- Density picker -->
 <RadioButton Content="Compact"     Tag="Compact"     GroupName="Density" Checked="OnDensityChecked"/>

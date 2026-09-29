@@ -5,7 +5,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <ScrollViewer Padding="{StaticResource PageContentMargin}">
@@ -160,16 +160,16 @@
                     Text="The TableView below binds to the scenario's working dataset. After Load 100K + Filter, the row count drops to the filtered subset; after Sort, the order changes visibly. Scroll fast — virtualization keeps memory flat after the load."
                     Style="{StaticResource SectionDescriptionTextStyle}"/>
                 <Border Style="{StaticResource TableHostBorderStyle}">
-                    <adv:TableView
-                        x:Name="PerfTable"
+                    <tabular:TableView
+                        x:Name="PerfTable" AutomationProperties.Name="Performance data table"
                         AutomationProperties.AutomationId="PerfTable"
                         SelectionMode="Single"
                         Height="320">
-                        <adv:TableViewTextColumn Header="Id"         Width="{StaticResource ColWidthId}"  Binding="{Binding Id}"     SortMemberPath="Id" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Name"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Name}"   SortMemberPath="Name" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" SortMemberPath="Department" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Salary"     Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary}" SortMemberPath="Salary" CanSort="False"/>
-                    </adv:TableView>
+                        <tabular:TableViewTextColumn Header="Id"         Width="{StaticResource ColWidthId}"  Binding="{Binding Id}"     SortMemberPath="Id" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Name"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Name}"   SortMemberPath="Name" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" SortMemberPath="Department" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Salary"     Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary}" SortMemberPath="Salary" CanSort="False"/>
+                    </tabular:TableView>
                 </Border>
             </StackPanel>
 
