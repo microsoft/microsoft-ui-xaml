@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -26,10 +26,6 @@ static constexpr std::wstring_view s_HeaderRowPartName{ L"PART_HeaderRow"sv };
 static constexpr std::wstring_view s_HeaderHostPartName{ L"PART_HeaderHost"sv };
 static constexpr std::wstring_view s_EmptyStatePresenterPartName{ L"PART_EmptyStatePresenter"sv };
 static constexpr std::wstring_view s_HeaderGridLineName{ L"TableViewHeaderGridLine"sv };
-static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"sv };
-// Matches SortIndicatorSize in SortIndicator_themeresources.xaml; used only when that key is
-// missing or unusable.
-static constexpr double c_sortIndicatorSizeFallback{ 16.0 };
 static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGripperWidth"sv };
 // Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
 // unusable.
@@ -1474,6 +1470,15 @@ static winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
     return {};
 }
 
+// True only for a genuine string header. Anything else -- a UIElement, or a type with an implicit
+// DataTemplate -- must keep the ContentPresenter's own content model, even though GetColumnHeaderText
+// can render it via IStringable for automation purposes.
+static bool IsPlainStringHeader(const winrt::TableViewColumn& column)
+{
+    const auto propValue = column.Header().try_as<winrt::IPropertyValue>();
+    return propValue && propValue.Type() == winrt::PropertyType::String;
+}
+
 void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
 {
     if (!host)
@@ -1514,13 +1519,6 @@ void TableView::RebuildHeaders()
 
     // Cache theme-resource padding once per header rebuild; values are stable for the pass.
     winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
-    // Sortable headers overlay a chevron; cache its themed width once so each header can reserve it.
-    double cachedSortIndicatorWidth = winrt::unbox_value_or<double>(
-        LookupElementResource(*this, s_SortIndicatorSizeKey), c_sortIndicatorSizeFallback);
-    if (!std::isfinite(cachedSortIndicatorWidth) || cachedSortIndicatorWidth <= 0.0)
-    {
-        cachedSortIndicatorWidth = c_sortIndicatorSizeFallback;
-    }
     // Always cache the header grid-line brush at rebuild time; visibility toggles do not reassign it later.
     const bool wantVerticalHeaderLines = WantsVerticalLines(GridLinesVisibility());
     const auto cachedHeaderGridLineBrush = GetGridLineBrush();
@@ -1557,7 +1555,29 @@ void TableView::RebuildHeaders()
             }
 
             // Header cell root.
+            // Content and chevron get their own Grid columns so the chevron reserves its realized
+            // width instead of overlaying the text. The other children span both columns.
+            // Column order is set explicitly: like the grid line and gripper below, this subtree does
+            // not observe the ambient FlowDirection flip, so the Grid would not reorder for RTL.
             winrt::Grid headerCell;
+            const int contentColumnIndex = isRightToLeft ? 1 : 0;
+            const int indicatorColumnIndex = isRightToLeft ? 0 : 1;
+            {
+                winrt::ColumnDefinition starColumn;
+                starColumn.Width(winrt::GridLengthHelper::FromValueAndType(1, winrt::GridUnitType::Star));
+                winrt::ColumnDefinition autoColumn;
+                autoColumn.Width(winrt::GridLengthHelper::FromValueAndType(0, winrt::GridUnitType::Auto));
+                if (isRightToLeft)
+                {
+                    headerCell.ColumnDefinitions().Append(autoColumn);
+                    headerCell.ColumnDefinitions().Append(starColumn);
+                }
+                else
+                {
+                    headerCell.ColumnDefinitions().Append(starColumn);
+                    headerCell.ColumnDefinitions().Append(autoColumn);
+                }
+            }
             headerCell.Visibility(column.Visibility());
             // The header cell, not the gripper, is the keyboard target: column commands live here,
             // and a bare focusable Grid is unnamed and Raw to a screen reader. Only a tab stop when
@@ -1582,61 +1602,41 @@ void TableView::RebuildHeaders()
             // an explicit Width would defeat the panel's unconstrained Auto measured-width measurement.
 
             winrt::ContentPresenter content;
+            content.Content(column.Header());
+            winrt::TextBlock trimmableHeaderBlock{ nullptr };
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             if (auto headerTemplateSelector = column.HeaderTemplateSelector())
             {
-                content.Content(column.Header());
                 content.ContentTemplateSelector(headerTemplateSelector);
             }
             else if (auto headerTemplate = column.HeaderTemplate())
             {
-                content.Content(column.Header());
                 content.ContentTemplate(headerTemplate);
             }
-            else if (!headerText.empty())
+            else if (!headerText.empty() && IsPlainStringHeader(column))
             {
-                // A ContentPresenter renders a bare string through an implicit TextBlock that carries
-                // no TextTrimming, so a header wider than its column hard-clips mid-glyph
-                // ("Departmen") while the cells beneath it ellipsize -- TableViewTextColumn::
-                // GenerateElementCore sets CharacterEllipsis explicitly. Supplying the TextBlock makes
-                // the header degrade the same way as its column. Most visible at large text-scale
-                // settings, where a clipped header leaves the column unidentifiable.
-                //
-                // headerText comes from GetColumnHeaderText, which accepts IStringable as well as a
-                // String-typed IPropertyValue, matching every other header-text path in the control.
-                // FontSize/FontWeight set on the presenter below still apply: both are inherited.
+                // A ContentPresenter renders a bare string through an implicit TextBlock that carries no
+                // TextTrimming, so a too-wide header hard-clips mid-glyph while its cells ellipsize.
+                // Supplying the TextBlock makes the header degrade the same way as its column.
                 winrt::TextBlock headerBlock;
                 headerBlock.Text(headerText);
                 headerBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
                 headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
+                // The header cell's peer already announces this text; a Content-view child would
+                // make AT read it twice.
+                winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
                 content.Content(headerBlock);
+                trimmableHeaderBlock = headerBlock;
             }
-            else
-            {
-                content.Content(column.Header());
-            }
-            // Consume TableViewHeaderCellPadding from theme resources (cached once per rebuild).
-            // A sortable header overlays a trailing chevron drawn by a sibling in the same Grid cell,
-            // so reserve its themed width: without it the text (and now the ellipsis) runs underneath
-            // the glyph. Non-sortable headers keep the full content width.
-            auto contentPadding = cachedHeaderCellPadding;
-            if (headerIsSortable)
-            {
-                if (isRightToLeft)
-                {
-                    contentPadding.Left += cachedSortIndicatorWidth;
-                }
-                else
-                {
-                    contentPadding.Right += cachedSortIndicatorWidth;
-                }
-            }
-            content.Padding(contentPadding);
+            // A sortable header's chevron lives in the adjacent column, so the presenter keeps only
+            // the density padding.
+            content.Padding(cachedHeaderCellPadding);
             content.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
             content.VerticalAlignment(winrt::VerticalAlignment::Center);
             // Column-header text: theme font size, SemiBold to stand out from cells (templates override).
             content.FontSize(cachedHeaderFontSize);
             content.FontWeight(winrt::FontWeights::SemiBold());
+            winrt::Grid::SetColumn(content, contentColumnIndex);
             headerCell.Children().Append(content);
 
             // Resolve from TableView so header grid lines track theme.
@@ -1648,6 +1648,7 @@ void TableView::RebuildHeaders()
                 headerGridLine.IsHitTestVisible(false);
                 headerGridLine.Visibility(wantVerticalHeaderLines ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
                 headerGridLine.Background(cachedHeaderGridLineBrush);
+                winrt::Grid::SetColumnSpan(headerGridLine, 2);
                 headerCell.Children().Append(headerGridLine);
             }
 
@@ -1657,9 +1658,24 @@ void TableView::RebuildHeaders()
             // No HelpText: the header's peer is virtual and composes the text itself.
             TableViewDetails::ApplyHeaderToolTip(headerCell, column.HeaderToolTip());
 
+            // An ellipsized header is unreadable, so surface the full text on hover -- but only while
+            // it is actually trimmed, and never in place of an app-supplied HeaderToolTip.
+            if (trimmableHeaderBlock && !column.HeaderToolTip())
+            {
+                trimmableHeaderBlock.IsTextTrimmedChanged(
+                    [weakCell = winrt::make_weak(headerCell), headerText](winrt::TextBlock const& sender, auto const&)
+                {
+                    if (auto const cell = weakCell.get())
+                    {
+                        TableViewDetails::ApplyHeaderToolTip(
+                            cell, sender.IsTextTrimmed() ? winrt::box_value(headerText) : nullptr);
+                    }
+                });
+            }
+
             // Sort affordance. Gated on both the control-wide and the per-column opt-in, so an
             // opted-out column carries no chevron and no click handler at all.
-            if (canUserSortColumns && column.CanSort())
+            if (headerIsSortable)
             {
                 // The header cell is a Grid, and a Grid with a null Background is not hit-test
                 // visible in its empty regions. The header content presenter and the chevron host
@@ -1679,6 +1695,7 @@ void TableView::RebuildHeaders()
                 // would create a dead spot in the middle of the click target.
                 indicatorHost.IsHitTestVisible(false);
                 AppendSortIndicatorVisual(indicatorHost, column);
+                winrt::Grid::SetColumn(indicatorHost, indicatorColumnIndex);
                 headerCell.Children().Append(indicatorHost);
 
                 // Weak: the handler is owned by a visual the control also owns, so a strong
@@ -2162,6 +2179,7 @@ void TableView::AppendResizeGripperVisual(
             strongThis->AnnounceColumnWidth(weakHeaderCell.get(), col);
         }
     });
+    winrt::Grid::SetColumnSpan(gripperVisual, 2);
     headerCell.Children().Append(gripperVisual);
 }
 
