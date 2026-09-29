@@ -9,7 +9,7 @@
 #define LOC_PREFIX_WINUI L"Microsoft.UI.Xaml"
 
 #ifdef MUXCONTROLS_TABULAR
-PCWSTR ResourceAccessor::c_resourceLoc{ L"Microsoft.UI.Xaml.Controls.Tabular/Resources" };
+PCWSTR ResourceAccessor::c_resourceLoc{ MUXTABULARROOT_NAMESPACE_STR L"/Resources" };
 #else
 PCWSTR ResourceAccessor::c_resourceLoc{ LOC_PREFIX L"/Resources" };
 #endif
