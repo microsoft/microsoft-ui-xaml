@@ -554,7 +554,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateBasicTableView();
+                tableView = CreateTableView("Name", "Role");
                 tableView.Loaded += delegate { unorderedLoadEvent |= (++loadCount > unloadCount + 1); };
                 tableView.Unloaded += delegate { unorderedLoadEvent |= (++unloadCount > loadCount); };
 
@@ -764,7 +764,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateBasicTableView();
+                tableView = CreateTableView("Name", "Role");
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -838,7 +838,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateBasicTableView();
+                tableView = CreateTableView("Name", "Role");
                 tableView.EmptyTemplate = CreateTextTemplate("No rows");
 
                 Content = tableView;
@@ -849,7 +849,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                VerifyEmptyStateVisibility(tableView, expectEmptyStateVisible: false, "two items present");
+                VerifyEmptyStateVisibility(tableView, expectEmptyStateVisible: false, "items present");
             });
         }
 
