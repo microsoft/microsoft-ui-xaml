@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- This csproj is to facilitate restoring dependencies from Maestro. These versions are pulled from eng/version.details.xml -->
+  <!-- Restores upstream component packages (FrameworkUdk, WinUIDetails, Foundation/IXP transport) at the eng/Versions.props versions into the packages folder. -->
   <PropertyGroup>
     <TargetFramework>uap10.0</TargetFramework>
     <TargetPlatformMinVersion>$(WindowsTargetPlatformMinVersion)</TargetPlatformMinVersion>
 
     <Copyright>Copyright (c) Microsoft Corporation. All rights reserved.</Copyright>
-    <AssemblyTitle>Microsoft.Maestro</AssemblyTitle>
+    <AssemblyTitle>WinUI.RestoreComponentDependencies</AssemblyTitle>
   </PropertyGroup>
 
   <ItemGroup>

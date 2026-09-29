@@ -185,6 +185,20 @@
   <Import Project="..\RetargetCopyLocalFiles.targets" />
   <Import Project="..\TestApp.targets" />
 
+  <!-- When a Microsoft.WindowsAppSDK.WinUI framework/component package is consumed (mono-build / mock flavor)
+       it already ships Microsoft.UI.Xaml\Assets\map.html; MapControl is also compiled from source into this
+       test app, staging a second copy at the same payload path, so packaging fails APPX1101/APPX1111. Drop the
+       source-built copy so the packaged framework copy wins (no-op in from-source builds - condition is false). -->
+  <Target Name="RemoveDuplicateMapControlMapHtmlPayload"
+          AfterTargets="_WireUpCoreRuntime"
+          BeforeTargets="_GenerateAppxPackageRecipeFile"
+          Condition="'$(MicrosoftWindowsAppSDKPackageDir)' != '' or '@(WindowsAppSdkComponentPackages)' != ''">
+    <ItemGroup>
+      <AppxPackagePayload Remove="@(AppxPackagePayload)"
+                          Condition="'%(FileName)%(Extension)' == 'map.html' and $([System.String]::Copy('%(FullPath)').Contains('dev\MapControl'))" />
+    </ItemGroup>
+  </Target>
+
   <!-- Filter old style pages before duplicate check -->
   <Target Name="FilterLegacyStylePages" BeforeTargets="CheckForDuplicateItems">
     <ItemGroup>

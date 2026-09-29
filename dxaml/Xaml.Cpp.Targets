@@ -238,6 +238,8 @@
     </Link>
     <Link Condition="'$(ResourceOnlyDll)'=='true'">
       <AdditionalOptions> %(AdditionalOptions) $(XamlDynamicLibraryOptions) $(XamlDynamicLibraryOptionsNoEntry)</AdditionalOptions>
+      <!-- Emit the CFG load-config (no code to guard, but sets the PE bit) so BinSkim BA2008 passes on resource-only DLLs. -->
+      <AdditionalOptions>%(AdditionalOptions) /guard:cf</AdditionalOptions>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SetChecksum>false</SetChecksum>
       <NoEntryPoint>true</NoEntryPoint>

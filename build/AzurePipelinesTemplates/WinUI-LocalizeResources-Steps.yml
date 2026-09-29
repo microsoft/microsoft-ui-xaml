@@ -3,7 +3,6 @@
 parameters:
   nupkgDir: '$(Build.ArtifactStagingDirectory)\packages'
   packageVersion: '$(versionFinal)'
-  publishToMaestro: false
 
 steps:
   - template: WinUI-DownloadPipelineArtifacts-Steps.yml
