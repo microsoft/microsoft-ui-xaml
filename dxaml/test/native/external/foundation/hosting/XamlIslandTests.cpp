@@ -3811,6 +3811,200 @@ void XamlIslandTests::ValidateDispatcherShutdownModeInDesktopApp()
     WaitForSingleObjectWithTimeout(uiThread);
 }
 
+struct ApplicationBehaviorState
+{
+    Application^ application = nullptr;
+    ResourceDictionary^ resources = nullptr;
+    DebugSettings^ debugSettings = nullptr;
+    FocusVisualKind focusVisualKind{};
+    ApplicationHighContrastAdjustment highContrastAdjustment{};
+    ApplicationTheme requestedTheme{};
+    bool enableFrameRateCounter{};
+    bool failFastOnErrors{};
+};
+
+void VerifyApplicationBehaviorAtCoreShutdown(const ApplicationBehaviorState& state)
+{
+    VERIFY_IS_NULL(Application::Current);
+
+    // Calling Exit when WinUI is already shut down is a no-op
+    state.application->Exit();
+
+    auto appXamlUri = ref new Uri(L"ms-appx:///App.xaml");
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        Application::LoadComponent(state.application, appXamlUri),
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        static_cast<void>(state.application->Resources),
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        static_cast<void>(state.application->DispatcherShutdownMode),
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        static_cast<void>(state.application->RequestedTheme),
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        state.application->RequestedTheme = state.requestedTheme,
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+
+    VERIFY_ARE_EQUAL(state.highContrastAdjustment, state.application->HighContrastAdjustment);
+
+    const auto newHighContrastAdjustment =
+        state.highContrastAdjustment == ApplicationHighContrastAdjustment::Auto
+        ? ApplicationHighContrastAdjustment::None
+        : ApplicationHighContrastAdjustment::Auto;
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        state.application->HighContrastAdjustment = newHighContrastAdjustment,
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+
+    VERIFY_ARE_EQUAL(state.focusVisualKind, state.application->FocusVisualKind);
+    VERIFY_IS_TRUE(state.debugSettings == state.application->DebugSettings);
+
+    VERIFY_THROWS_SPECIFIC_WINRT(
+        static_cast<void>(state.debugSettings->EnableFrameRateCounter),
+        Platform::Exception^,
+        [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
+    VERIFY_ARE_EQUAL(state.failFastOnErrors, state.debugSettings->FailFastOnErrors);
+}
+
+void VerifyApplicationBehaviorAfterStartup(ApplicationBehaviorState& state)
+{
+    auto restartedApplication = Application::Current;
+    VERIFY_IS_NOT_NULL(restartedApplication);
+    if (restartedApplication == nullptr)
+    {
+        return;
+    }
+
+    VERIFY_IS_TRUE(state.application == restartedApplication);
+
+    auto restartedResources = restartedApplication->Resources;
+    VERIFY_IS_NOT_NULL(restartedResources);
+    VERIFY_IS_TRUE(state.resources != restartedResources);
+    state.resources = restartedResources;
+
+    VERIFY_IS_TRUE(state.debugSettings == restartedApplication->DebugSettings);
+
+    state.enableFrameRateCounter = !state.enableFrameRateCounter;
+    state.debugSettings->EnableFrameRateCounter = state.enableFrameRateCounter;
+    VERIFY_ARE_EQUAL(state.enableFrameRateCounter, state.debugSettings->EnableFrameRateCounter);
+}
+
+void XamlIslandTests::ApplicationBehaviorAtCoreShutdown()
+{
+    auto uiThread = RunOnNewThread([]()
+    {
+        VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_SINGLETHREADED));
+
+        ApplicationBehaviorState state;
+
+        VERIFY_IS_NULL(Application::Current);
+
+        Application::Start(ref new ApplicationInitializationCallback(
+            [&](ApplicationInitializationCallbackParams^)
+            {
+                state.application = ref new Application();
+
+                auto dispatcherQueue = DispatcherQueue::GetForCurrentThread();
+                VERIFY_IS_NOT_NULL(dispatcherQueue);
+                if (dispatcherQueue == nullptr)
+                {
+                    ::PostQuitMessage(0);
+                    return;
+                }
+
+                const bool queued = dispatcherQueue->TryEnqueue(ref new DispatcherQueueHandler([&]
+                {
+                    auto currentApplication = Application::Current;
+                    VERIFY_IS_NOT_NULL(currentApplication);
+                    if (currentApplication == nullptr)
+                    {
+                        ::PostQuitMessage(0);
+                        return;
+                    }
+
+                    // Queue teardown after asserts
+                    currentApplication->Exit();
+                    VERIFY_IS_TRUE(state.application == currentApplication);
+
+                    state.resources = state.application->Resources;
+                    VERIFY_IS_NOT_NULL(state.resources);
+                    state.debugSettings = state.application->DebugSettings;
+                    VERIFY_IS_NOT_NULL(state.debugSettings);
+
+                    static_cast<void>(state.application->DispatcherShutdownMode);
+                    state.focusVisualKind = state.application->FocusVisualKind;
+                    state.highContrastAdjustment = state.application->HighContrastAdjustment;
+                    state.requestedTheme = state.application->RequestedTheme;
+
+                    state.enableFrameRateCounter = state.debugSettings->EnableFrameRateCounter;
+                    state.failFastOnErrors = state.debugSettings->FailFastOnErrors;
+                }));
+                VERIFY_IS_TRUE(queued);
+                if (!queued)
+                {
+                    ::PostQuitMessage(0);
+                }
+            }));
+
+        VerifyApplicationBehaviorAtCoreShutdown(state);
+
+        Application::Start(ref new ApplicationInitializationCallback(
+            [&](ApplicationInitializationCallbackParams^)
+            {
+                auto dispatcherQueue = DispatcherQueue::GetForCurrentThread();
+                VERIFY_IS_NOT_NULL(dispatcherQueue);
+                if (dispatcherQueue == nullptr)
+                {
+                    ::PostQuitMessage(0);
+                    return;
+                }
+
+                const bool queued = dispatcherQueue->TryEnqueue(ref new DispatcherQueueHandler([&]
+                {
+                    auto restartedApplication = Application::Current;
+                    VERIFY_IS_NOT_NULL(restartedApplication);
+                    if (restartedApplication == nullptr)
+                    {
+                        ::PostQuitMessage(0);
+                        return;
+                    }
+
+                    // Queue teardown after asserts
+                    restartedApplication->Exit();
+
+                    VerifyApplicationBehaviorAfterStartup(state);
+                }));
+                VERIFY_IS_TRUE(queued);
+                if (!queued)
+                {
+                    ::PostQuitMessage(0);
+                }
+            }));
+
+        VerifyApplicationBehaviorAtCoreShutdown(state);
+
+        auto dispatcherQueueController = DispatcherQueueController::CreateOnCurrentThread();
+        auto windowsXamlManager = WindowsXamlManager::InitializeForCurrentThread();
+        VERIFY_IS_NOT_NULL(windowsXamlManager);
+
+        VerifyApplicationBehaviorAfterStartup(state);
+
+        dispatcherQueueController->ShutdownQueue();
+        VerifyApplicationBehaviorAtCoreShutdown(state);
+
+        CloseObject(windowsXamlManager);
+    });
+    WaitForSingleObjectWithTimeout(uiThread);
+}
+
 void XamlIslandTests::ValidateCallbackErrorPropagatesInDesktopApp()
 {
     // Regression test for Bug 39852717: When the app's ApplicationInitializationCallback

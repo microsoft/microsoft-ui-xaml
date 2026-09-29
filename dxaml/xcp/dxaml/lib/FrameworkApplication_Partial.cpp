@@ -973,6 +973,10 @@ _Check_return_ HRESULT FrameworkApplication::ExitImpl()
 _Check_return_ HRESULT FrameworkApplication::put_RequestedThemeImpl(
     _In_ xaml::ApplicationTheme value)
 {
+    IFC_RETURN(DXamlServices::IsDXamlCoreInitialized() ? S_OK : RPC_E_WRONG_THREAD);
+    DXamlCore* dxamlCore = DXamlCore::GetCurrent();
+    IFCEXPECT_RETURN(dxamlCore);
+
     // RequestedTheme cannot be set after app.xaml has been loaded.
     if (!m_isRequestedThemeSettable)
     {
@@ -1023,7 +1027,7 @@ _Check_return_ HRESULT FrameworkApplication::put_RequestedThemeImpl(
     // Note: This is special, we bypass the CApplication::SetValue so this property never actually
     // get's set on the core object. Just an annoying nuance because our parser set's this by going
     // through CApplication::SetValue. See comment above for more info.
-    IFC_RETURN(DXamlCore::GetCurrent()->GetHandle()->GetFrameworkTheming()->SetRequestedTheme(value));
+    IFC_RETURN(dxamlCore->GetHandle()->GetFrameworkTheming()->SetRequestedTheme(value));
 
     return S_OK;
 }
@@ -1040,7 +1044,11 @@ _Check_return_ HRESULT FrameworkApplication::put_RequestedThemeImpl(
 _Check_return_ HRESULT FrameworkApplication::get_RequestedThemeImpl(
     _Out_ xaml::ApplicationTheme* pValue)
 {
-    auto theme = DXamlCore::GetCurrent()->GetHandle()->GetFrameworkTheming()->GetBaseTheme();
+    IFC_RETURN(DXamlServices::IsDXamlCoreInitialized() ? S_OK : RPC_E_WRONG_THREAD);
+    DXamlCore* dxamlCore = DXamlCore::GetCurrent();
+    IFCEXPECT_RETURN(dxamlCore);
+
+    auto theme = dxamlCore->GetHandle()->GetFrameworkTheming()->GetBaseTheme();
     *pValue = (theme == Theming::Theme::Light ? xaml::ApplicationTheme_Light : xaml::ApplicationTheme_Dark);
 
     RRETURN(S_OK);
@@ -1188,10 +1196,14 @@ _Check_return_ HRESULT FrameworkApplication::get_HighContrastAdjustmentImpl(_Out
 // Sets the FrameworkApplication::HighContrastAdjustment property value.
 _Check_return_ HRESULT FrameworkApplication::put_HighContrastAdjustmentImpl(_In_ xaml::ApplicationHighContrastAdjustment value)
 {
+    IFC_RETURN(DXamlServices::IsDXamlCoreInitialized() ? S_OK : RPC_E_WRONG_THREAD);
+    DXamlCore* dxamlCore = DXamlCore::GetCurrent();
+    IFCEXPECT_RETURN(dxamlCore);
+
     if (m_highContrastAdjustment != value)
     {
         m_highContrastAdjustment = value;
-        IFC_RETURN(DXamlCore::GetCurrent()->OnApplicationHighContrastAdjustmentChanged());
+        IFC_RETURN(dxamlCore->OnApplicationHighContrastAdjustmentChanged());
     }
 
     return S_OK;
