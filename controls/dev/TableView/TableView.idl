@@ -458,10 +458,10 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("winrt::TableViewHeadersVisibility::Column")]
     TableViewHeadersVisibility HeadersVisibility { get; set; };
 
-    // Controls row dividers and column separators; row banding is separate. The default style
-    // sets None, so ClearValue resolves to None rather than the All in this metadata.
+    // Controls row dividers and column separators; row banding is separate. Defaults to None
+    // because the design's default table is banded and ungridded.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("winrt::TableViewGridLinesVisibility::All")]
+    [MUX_DEFAULT_VALUE("winrt::TableViewGridLinesVisibility::None")]
     TableViewGridLinesVisibility GridLinesVisibility { get; set; };
 
     // Master switch for the column-resize affordance; a column opts out individually via CanResize.

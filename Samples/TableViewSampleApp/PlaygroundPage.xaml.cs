@@ -32,12 +32,39 @@ public sealed partial class PlaygroundPage : Page
         AttachSourceWatch(Table.ItemsSource);
 
         // Editing is opt-in (TableView.IsReadOnly defaults to true). Start editable so double-click
-        // and F2 can be exercised without first toggling, and seed the ToggleButton from the live
-        // value so the two do not disagree.
+        // and F2 can be exercised without first toggling.
         Table.IsReadOnly = false;
-        ReadOnlyToggle.IsChecked = false;
 
+        SyncOptionsToTable();
         _ready = true;
+    }
+
+    // The panel must report what the control actually is, so every selector is seeded from the
+    // live value instead of a hard-coded XAML selection that silently drifts from the defaults.
+    private void SyncOptionsToTable()
+    {
+        ReadOnlyToggle.IsChecked = Table.IsReadOnly;
+
+        HeadersCombo.SelectedIndex = Table.HeadersVisibility switch
+        {
+            TableViewHeadersVisibility.None => 1,
+            _ => 0,
+        };
+
+        GridLinesCombo.SelectedIndex = Table.GridLinesVisibility switch
+        {
+            TableViewGridLinesVisibility.Horizontal => 1,
+            TableViewGridLinesVisibility.Vertical => 2,
+            TableViewGridLinesVisibility.None => 3,
+            _ => 0,
+        };
+
+        DensityCombo.SelectedIndex = Table.Density switch
+        {
+            TableViewDensity.Compact => 0,
+            TableViewDensity.Comfortable => 2,
+            _ => 1,
+        };
     }
 
     private void BuildColumns()

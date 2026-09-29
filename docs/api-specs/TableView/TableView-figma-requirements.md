@@ -132,10 +132,9 @@ exclusion rests on the `Grid` screenshot, where the row is explicitly labelled "
 The `Lined` example has horizontal rules throughout and no vertical rules anywhere, so the
 distinction is specific to `Grid`.
 
-> **Gap.** `TableView::RebuildHeaders` sets each header cell's separator to
-> `wantVerticalHeaderLines ? Visible : Collapsed`, where `wantVerticalHeaderLines` is
-> `WantsVerticalLines(GridLinesVisibility())`. Headers therefore draw vertical rules whenever
-> the mode includes them, which the design does not show.
+> **Resolved.** `TableView::RebuildHeaders` previously stamped a vertical separator per header
+> cell and toggled it from `GridLinesVisibility`. That separator is gone; vertical rules are
+> body-only.
 
 ### Row component properties
 
@@ -521,7 +520,7 @@ Addressed in this PR:
 
 | Requirement | Change |
 | --- | --- |
-| Banded is the default table type | Default style supplies `AlternatingRowBackground` and sets `GridLinesVisibility="None"`. Local values still override. |
+| Banded is the default table type | `GridLinesVisibility` defaults to `None` and the default style supplies `AlternatingRowBackground`. Local values still override. |
 | Banding must stay distinguishable from hover | Band brushes moved to the weaker Fluent tertiary fill (Light `#06000000`, Dark `#0AFFFFFF`) instead of reusing the hover fill. Contrast-theme system colours unchanged. |
 | Selection accent uses `Fill Color/Accent/Default` | `TabularSurfaceSelectionIndicatorBrush` now resolves `SystemAccentColorDark1` in Light and `SystemAccentColorLight2` in Dark, matching `AccentFillColorDefaultBrush`. It previously used raw `SystemAccentColor`, which is the wrong shade and was identical in both themes. HighContrast keeps `SystemColorHighlightColor`. |
 | Header is shorter than a body row | New `TableViewHeaderMinHeight` resource (32 Standard / 26 Compact / 40 Comfortable), resolved by `GetDensityHeaderMinHeight()`. Headers previously reused the body row min-height. |
