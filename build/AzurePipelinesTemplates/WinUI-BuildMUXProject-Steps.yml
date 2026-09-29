@@ -360,11 +360,16 @@ steps:
         }
         else
         {
+          # -UseDependencyOverrides makes build-nupkg.ps1 read the OSS-pinned nodes, so the nupkg
+          # declares public dependency versions instead of the internal ones, which are not on the
+          # public feed.
           & "$(Build.SourcesDirectory)\build\NuSpecs\build-nupkg.ps1" `
             -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec `
             -VersionOverride $(versionFinal) `
             -PackageRoot '$(Build.SourcesDirectory)\BuildOutput\packaging\$(buildConfiguration)' `
-            -OutputDir '$(Build.SourcesDirectory)\PackageStore'
+            -OutputDir '$(Build.SourcesDirectory)\PackageStore' `
+            -UseDependencyOverrides `
+            -InstallPackage
         }
       displayName: Build WinUI component package
 
