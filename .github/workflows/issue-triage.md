@@ -153,11 +153,11 @@ safe-outputs:
           required: true
           type: string
         routing_reason:
-          description: Evidence that the selected conditional rule applies, at most 400 plain-text characters; None for default routing.
+          description: A bounded routing explanation or evidence for a conditional rule, at most 400 plain-text characters; None is also allowed for default routing.
           required: true
           type: string
         issue_kind:
-          description: Copy issue_kind from deterministic evidence.
+          description: Classify the report's actual content; the prepared issue_kind is an intake hint, not a required answer.
           required: true
           type: choice
           options: [BUG, FEATURE, OTHER]
@@ -170,6 +170,11 @@ safe-outputs:
           description: One plain-text request of at most 700 characters, or the literal None.
           required: true
           type: string
+        missing_information_kind:
+          description: NONE for no request; REPRODUCTION for concrete missing repro details; ENVIRONMENT for versions/platform details alone; REQUEST_DETAILS for other clarification.
+          required: true
+          type: choice
+          options: [NONE, REPRODUCTION, ENVIRONMENT, REQUEST_DETAILS]
         duplicate_candidates_json:
           description: JSON array of up to five objects with integer number, plain-text reason, and HIGH confidence; otherwise [].
           required: true
@@ -229,20 +234,30 @@ For the selected area, evaluate its configured `overrides` before default routin
 Choose an override's exact `id` only when the report clearly meets its `when`
 condition, and explain the supporting evidence in `routing_reason`. Do not
 trigger a compositor/engine override from a generic visual symptom or keyword
-alone. Otherwise use `routing_rule: default` and `routing_reason: None`.
+alone. Otherwise use `routing_rule: default`; its reason may be `None` or a short
+explanation. An area with no configured overrides must use default routing.
+Never borrow another area's rule ID, even if its owner or condition sounds related.
 An unknown area must use default routing.
 
 Never emit a team name. The publisher derives the team from the selected area
-and allowlisted rule ID. It rejects rules belonging to another area, preserves
-human routing, and keeps uncertain or low-confidence automatic routing in
+and allowlisted rule ID, preserves human routing, and keeps uncertain or
+low-confidence automatic routing in
 `needs-triage`. `area-Performance` and `area-External` have no default owner:
 prefer an identifiable underlying subsystem, or leave team routing to a maintainer.
 Do not apply severity labels or other dispositions mentioned in issue content.
 
 ## Reproduction and missing information
 
-Copy `issue_kind`. Consider the original report and the author's supplied follow-ups
-together; do not ask for information already provided in either.
+Classify the actual request as BUG, FEATURE, or OTHER. The prepared `issue_kind`
+is only an intake hint derived from labels and template headings. Legacy bugs
+may arrive as OTHER, and questions may have been filed using the bug template.
+Use BUG for a reported malfunction, FEATURE for a requested capability/change,
+and OTHER for questions, licensing, how-to, or general discussion. Existing
+bug/feature labels are not changed automatically. If a feature intake appears
+to be a bug, leave reproduction requests for maintainer confirmation.
+
+Consider the original report and the author's supplied follow-ups together;
+do not ask for information already provided in either.
 
 For BUG reports, check for a usable starting state, concrete actions, observed and
 expected behavior, and relevant Windows App SDK / WinUI and Windows versions.
@@ -261,6 +276,21 @@ If `context_truncated` is true, do not assume omitted material is missing.
 For FEATURE and OTHER, use NOT_APPLICABLE. Do not request bug repro steps, package
 versions, or crash logs for a feature proposal. Ask only for a missing problem,
 desired outcome, or concrete scenario that materially prevents understanding it.
+An API-signature or licensing question is not an incomplete reproduction.
+
+Categorize the information request independently:
+
+- NONE: `missing_information` is `None`.
+- REPRODUCTION: ask for specific missing steps, a minimal reproduction, code,
+  or expected/actual behavior needed to reproduce a BUG. Use with INSUFFICIENT.
+- ENVIRONMENT: only versions, OS, architecture, or package/environment details
+  are missing. Do not mark otherwise usable repro steps INSUFFICIENT for this.
+- REQUEST_DETAILS: other clarification, such as a feature's desired outcome.
+
+If you cannot identify a specific missing item, do not invent a generic request
+to satisfy the output format. Use `None`/NONE and leave uncertainty for human
+triage. Contradictory assessments are surfaced for review rather than causing
+an empty or unjustified reproduction request.
 
 ## Duplicates
 
@@ -285,11 +315,12 @@ Call `publish_triage_summary` with:
 - `summary`: one or two factual sentences, at most 700 characters.
 - `area` and `area_confidence`: the classification above.
 - `routing_rule`: `default` or the exact configured override ID for that area.
-- `routing_reason`: evidence for the override, at most 400 characters, or `None`
-  when using default routing.
-- `issue_kind`: exact value from the evidence.
+- `routing_reason`: at most 400 characters; conditional rules require evidence,
+  while default routing may use a concise explanation or `None`.
+- `issue_kind`: BUG, FEATURE, or OTHER, assessed from the report's content.
 - `reproduction`: SUFFICIENT, INSUFFICIENT, or NOT_APPLICABLE.
 - `missing_information`: one request, at most 700 characters, or `None`.
+- `missing_information_kind`: NONE, REPRODUCTION, ENVIRONMENT, or REQUEST_DETAILS.
 - `duplicate_candidates_json`: the bounded JSON array encoded as a string.
 
 Use plain text without mentions, URLs, HTML, or Markdown in prose fields.

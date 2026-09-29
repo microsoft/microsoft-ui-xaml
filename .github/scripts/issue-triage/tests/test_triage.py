@@ -103,9 +103,14 @@ def agent_output(evidence, **changes):
         "area": "area-Expander", "area_confidence": "HIGH", "issue_kind": "BUG",
         "routing_rule": "default", "routing_reason": "None",
         "reproduction": "SUFFICIENT", "missing_information": "None",
+        "missing_information_kind": "NONE",
         "duplicate_candidates_json": "[]",
     }
     item.update(changes)
+    if "missing_information_kind" not in changes and item["missing_information"] != "None":
+        item["missing_information_kind"] = (
+            "REPRODUCTION" if item["reproduction"] == "INSUFFICIENT" else "REQUEST_DETAILS"
+        )
     return {"items": [item]}
 
 
@@ -245,9 +250,8 @@ class ValidationTests(TriageFixture):
             {"area": "area-Invented"}, {"area": "needs-author-feedback"},
             {"area_confidence": "CERTAIN"}, {"area": "None"},
             {"summary": ""}, {"summary": "x" * 701}, {"summary": ["not a string"]},
-            {"missing_information": None}, {"issue_kind": "FEATURE"},
-            {"reproduction": "NOT_APPLICABLE"},
-            {"reproduction": "INSUFFICIENT", "missing_information": "None"},
+            {"missing_information": None}, {"issue_kind": "INVALID"},
+            {"missing_information_kind": "INVALID"},
         ):
             with self.subTest(changes=changes), self.assertRaises(t.TriageError):
                 self.result(**changes)
@@ -280,8 +284,9 @@ class ValidationTests(TriageFixture):
 
     def test_feature_never_asks_for_bug_reproduction(self):
         self.evidence["issue_kind"] = "FEATURE"
-        with self.assertRaises(t.TriageError):
-            self.result(issue_kind="FEATURE")
+        recovered = self.result(issue_kind="FEATURE")
+        self.assertEqual(recovered["reproduction"], "NOT_APPLICABLE")
+        self.assertTrue(recovered["review_notes"])
         result = self.result(issue_kind="FEATURE", reproduction="NOT_APPLICABLE")
         self.assertNotIn("needs-repro", t.planned_labels(result, self.evidence, MAPPING))
 
@@ -383,9 +388,13 @@ class ConditionalRoutingTests(TriageFixture):
         with self.assertRaises(t.TriageError):
             self.result(routing_rule="rendering-artifact", routing_reason="x" * 401)
 
-    def test_default_rule_cannot_claim_a_conditional_decision(self):
-        with self.assertRaises(t.TriageError):
-            self.result(routing_reason="Use the rendering owner.")
+    def test_default_rule_accepts_explanations_without_changing_its_owner(self):
+        result = self.result(routing_reason="This is a control-specific issue.")
+        self.assertEqual(
+            t.planned_labels(result, self.evidence, self.mapping),
+            ["area-Expander", "team-Controls"],
+        )
+        self.assertIn("Routing rationale", t.render(result, self.evidence, self.mapping))
 
     def test_model_cannot_supply_a_team_directly(self):
         with self.assertRaises(t.TriageError):

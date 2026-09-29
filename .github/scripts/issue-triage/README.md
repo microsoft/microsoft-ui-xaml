@@ -16,12 +16,14 @@ issue changes. The Markdown workflow is the source of truth; its compiled
 | Low-confidence or unresolved automatic routing | Keep or add `needs-triage` for human confirmation. Already-established human routing is not reset. |
 | Existing area or team labels | Preserve them. Do not replace a human decision or add a contradictory mapped area. |
 | Multiple existing areas | Preserve all of them; do not infer one team. |
-| Bug with insufficient reproduction information | Ask for the specific missing information and add `needs-repro`. |
+| BUG assessment with an insufficient repro and an actionable REPRODUCTION request | Ask for the specified details and add `needs-repro`, unless the intake is a feature or context is truncated. |
 | Missing version but otherwise actionable reproduction | Ask for the version in the comment; do not add `needs-repro` for that alone. |
 | Feature proposal | Assess the problem and desired outcome, not bug repro requirements. |
+| Intake type and content assessment disagree | Preserve existing type labels and surface the discrepancy for human triage; do not fail otherwise valid routing. |
+| Non-bug reproduction rating or incomplete repro without an actionable request | Reconcile applicability or defer the affected request/label; keep useful summary/routing and explain the review requirement. |
 | Strong evidence of a duplicate | Suggest up to five older issues in the canonical comment, for human confirmation. |
 | Subsequent author follow-up or title/body edit | Re-analyze and update the same bot-owned comment. |
-| Invalid model output, API failure, or changed input | Fail closed without publishing that result. |
+| Malformed output, unsafe/unconfigured routing, API failure, or changed input | Fail closed without publishing that result. |
 
 The workflow **never** creates labels, removes labels, applies
 `needs-author-feedback` or `duplicate`, closes an issue, submits a duplicate-close
@@ -62,7 +64,12 @@ Each area entry contains:
 
 The model picks an area and either `default` or a rule ID configured for that
 area. Conditional choices require a short evidence-based explanation. The
-publisher rejects cross-area or unknown rule IDs and derives the label itself.
+default rule may also carry a useful explanation; it does not require an empty
+rationale. Unknown rule IDs remain errors. A cross-area rule can be normalized
+to `default` only if the selected area has no conditional rules and its fixed
+default owner exactly matches the unambiguous owner of that known rule. This
+cannot introduce a new owner or bypass a selected area's conditions, and the
+adjustment is recorded in the result, comment, and workflow log.
 For example, `area-Scrolling` normally maps to `team-Controls`, but its
 `compositor-input` rule maps compositor-thread interaction tracker/input-latency
 problems to `team-CompInput`.
@@ -74,6 +81,30 @@ publisher fails visibly if a configured team has been removed rather than
 creating or guessing a replacement.
 If a pre-existing area has conditional routes but the model assessed a different
 or uncertain area, no default team is guessed: it remains for human routing.
+
+## Assessment reconciliation
+
+The prepared issue kind is a label/template-based hint, not a verdict about the
+report's content. The model assesses BUG, FEATURE, or OTHER independently, while
+the publisher never changes the existing bug/feature labels. Disagreements with
+a known intake category stay in `needs-triage`.
+
+Non-bug reproduction ratings are treated as `NOT_APPLICABLE`; the original
+rating is retained for audit. Bug reports marked not applicable, or marked
+insufficient without an actionable request, go to human review instead of
+failing the entire issue or inventing a generic request.
+
+`missing_information_kind` separates reproduction gaps from environment/version
+requests and other clarification. `needs-repro` requires a BUG assessment, an
+INSUFFICIENT reproduction, an actual REPRODUCTION request, and untruncated
+context. A feature intake never receives that automatic label. Ambiguous or
+contradictory repro requests are deferred; unrelated valid triage remains usable.
+Older output artifacts without a request category are accepted conservatively,
+but their free-form prose alone cannot authorize a `needs-repro` label.
+
+These recoveries are explicit, not silent defaults: review/normalization notes
+appear in the comment and job log. Schema/type errors, unknown labels, genuinely
+unconfigured routes, and out-of-set duplicate suggestions still fail closed.
 
 ## Operation
 

@@ -176,6 +176,7 @@ def eligible(issue: dict) -> bool:
 
 
 def issue_kind(issue: dict) -> str:
+    """Return an intake hint; legacy reports may have no reliable type metadata."""
     labels = label_names(issue)
     if "feature proposal" in labels:
         return "FEATURE"
@@ -332,12 +333,15 @@ def validate(output: dict, evidence: dict) -> dict:
     if not isinstance(items, list) or len(items) != 1 or not isinstance(items[0], dict):
         raise TriageError("Expected exactly one structured triage output")
     item = items[0]
-    expected = {
+    required = {
         "type", "input_sha256", "summary", "area", "area_confidence", "issue_kind",
         "reproduction", "missing_information", "duplicate_candidates_json",
         "routing_rule", "routing_reason",
     }
-    if set(item) != expected or item["type"] != "publish_triage_summary":
+    if (
+        not required <= set(item) <= required | {"missing_information_kind"}
+        or item["type"] != "publish_triage_summary"
+    ):
         raise TriageError("Unexpected triage output schema or operation")
     if item["input_sha256"] != evidence["input_sha256"]:
         raise TriageError("Issue content, follow-ups, or labels changed; refusing stale output")
@@ -350,9 +354,21 @@ def validate(output: dict, evidence: dict) -> dict:
         "missing_information": required_string(item, "missing_information", 700),
         "routing_rule": required_string(item, "routing_rule", 64),
         "routing_reason": required_string(item, "routing_reason", 400),
+        "source_issue_kind": evidence["issue_kind"],
+        "review_notes": [],
+        "normalization_notes": [],
     }
-    if result["issue_kind"] != evidence["issue_kind"]:
-        raise TriageError("Issue kind does not match deterministic evidence")
+    if result["issue_kind"] not in ("BUG", "FEATURE", "OTHER"):
+        raise TriageError("Invalid content-based issue kind")
+    if "missing_information_kind" in item:
+        request_kind = required_string(item, "missing_information_kind", 32)
+        if request_kind not in ("NONE", "REPRODUCTION", "ENVIRONMENT", "REQUEST_DETAILS"):
+            raise TriageError("Invalid missing-information category")
+    else:
+        # Older workflow artifacts did not categorize requests. Do not infer
+        # permission to apply needs-repro from their free-form prose.
+        request_kind = "NONE" if result["missing_information"] == "None" else "UNSPECIFIED"
+    result["missing_information_kind"] = request_kind
     if result["area_confidence"] not in ("HIGH", "MEDIUM", "LOW", "NONE"):
         raise TriageError("Invalid area confidence")
     if result["area"] == "None":
@@ -360,22 +376,30 @@ def validate(output: dict, evidence: dict) -> dict:
             raise TriageError("An unknown area must have NONE confidence")
     elif result["area"] not in evidence["allowed_areas"] or result["area_confidence"] == "NONE":
         raise TriageError("Area is not an existing allowlisted label")
-    if result["routing_rule"] == "default":
-        if result["routing_reason"] != "None":
-            raise TriageError("Default routing must use None for its conditional rationale")
-    else:
+    if result["routing_rule"] != "default":
         entry = evidence["area_guidance"].get(result["area"], {})
         rules = {rule["id"] for rule in entry.get("overrides", [])}
         if result["routing_rule"] not in rules:
-            raise TriageError("Routing rule is not configured for the selected area")
-        if result["routing_reason"] == "None":
+            requested_rule = result["routing_rule"]
+            owners = {
+                rule["team"]
+                for route in evidence["area_guidance"].values()
+                for rule in route.get("overrides", [])
+                if rule["id"] == requested_rule
+            }
+            default_owner = entry.get("team")
+            if entry.get("overrides") or default_owner is None or owners != {default_owner}:
+                raise TriageError("Routing rule is not configured for the selected area")
+            result["original_routing_rule"] = requested_rule
+            result["routing_rule"] = "default"
+            result["normalization_notes"].append(
+                "The suggested rule belongs to another area. This area's unconditional "
+                "default has the same owner, so the configured default is used."
+            )
+        if result["routing_rule"] != "default" and result["routing_reason"] == "None":
             raise TriageError("Conditional routing requires evidence for the selected rule")
     if result["reproduction"] not in ("SUFFICIENT", "INSUFFICIENT", "NOT_APPLICABLE"):
         raise TriageError("Invalid reproduction classification")
-    if (result["reproduction"] == "NOT_APPLICABLE") != (result["issue_kind"] != "BUG"):
-        raise TriageError("Reproduction requests apply only to bug reports")
-    if result["reproduction"] == "INSUFFICIENT" and result["missing_information"] == "None":
-        raise TriageError("An insufficient reproduction requires an actionable request")
     raw_duplicates = required_string(item, "duplicate_candidates_json", 6000)
     duplicates = json.loads(raw_duplicates)
     if not isinstance(duplicates, list) or len(duplicates) > MAX_SUGGESTIONS:
@@ -393,7 +417,82 @@ def validate(output: dict, evidence: dict) -> dict:
         required_string(duplicate, "reason", 400)
         seen.add(number)
     result["duplicates"] = duplicates
+    reconcile_assessment(result, evidence)
     return result
+
+
+def reconcile_assessment(result: dict, evidence: dict) -> None:
+    """Defer inconsistent reproduction actions without discarding valid triage."""
+    notes = result["review_notes"]
+    source_kind = evidence["issue_kind"]
+    assessed_kind = result["issue_kind"]
+    if source_kind != "OTHER" and assessed_kind != source_kind:
+        notes.append(
+            f"The content assessment is {assessed_kind}, while intake metadata indicates "
+            f"{source_kind}. Existing issue-type labels are unchanged; a maintainer should "
+            "confirm the category."
+        )
+
+    request_kind = result["missing_information_kind"]
+    request = result["missing_information"]
+    if request == "None":
+        if request_kind not in ("NONE", "UNSPECIFIED"):
+            notes.append("An information category was supplied without a specific request; no request is invented.")
+        request_kind = "NONE"
+    elif request_kind == "NONE":
+        request_kind = "UNSPECIFIED"
+        notes.append("The information request has no consistent category; reproduction labeling is deferred.")
+    result["missing_information_kind"] = request_kind
+
+    # A model assessment never removes a feature label or turns a feature intake
+    # into an automatic bug-reproduction request.
+    reproduction_applies = assessed_kind == "BUG" and source_kind != "FEATURE"
+    reported_reproduction = result["reproduction"]
+    if not reproduction_applies:
+        if reported_reproduction != "NOT_APPLICABLE":
+            result["reported_reproduction"] = reported_reproduction
+            result["reproduction"] = "NOT_APPLICABLE"
+            notes.append(
+                "A bug-reproduction rating was returned for a non-bug or feature intake. "
+                "It is treated as not applicable; no automatic needs-repro label is proposed."
+            )
+        if request_kind == "REPRODUCTION" or (
+            reported_reproduction == "INSUFFICIENT" and request_kind == "UNSPECIFIED"
+        ):
+            result["deferred_information_request"] = request
+            result["missing_information"] = "None"
+            result["missing_information_kind"] = "NONE"
+            notes.append("The reproduction-specific request is deferred until a maintainer confirms the issue category.")
+    elif reported_reproduction == "NOT_APPLICABLE":
+        notes.append(
+            "The report was assessed as a bug but reproduction was marked not applicable. "
+            "A maintainer should confirm applicability; no repro request is invented."
+        )
+
+    if reproduction_applies and reported_reproduction == "INSUFFICIENT":
+        if request == "None":
+            notes.append(
+                "Reproduction was marked insufficient without an actionable information "
+                "request. No automatic needs-repro label is proposed; maintainer review is needed."
+            )
+        elif request_kind != "REPRODUCTION":
+            notes.append(
+                "The request is not identified as missing reproduction details. Environment "
+                "or general clarification alone does not justify a needs-repro label."
+            )
+    elif reproduction_applies and request_kind == "REPRODUCTION":
+        result["deferred_information_request"] = request
+        result["missing_information"] = "None"
+        result["missing_information_kind"] = "NONE"
+        notes.append("The reproduction request conflicts with the completeness assessment and is deferred for review.")
+
+    result["needs_repro"] = (
+        reproduction_applies
+        and result["reproduction"] == "INSUFFICIENT"
+        and result["missing_information"] != "None"
+        and result["missing_information_kind"] == "REPRODUCTION"
+        and not evidence["context_truncated"]
+    )
 
 
 def route_team(mapping: dict, area: str, rule_id: str) -> str | None:
@@ -448,13 +547,9 @@ def planned_labels(result: dict, evidence: dict, mapping: dict) -> list[str]:
     additions = {
         label for label in (decision["area_to_add"], decision["team_to_add"]) if label
     }
-    if decision["needs_triage"]:
+    if decision["needs_triage"] or result["review_notes"]:
         additions.add("needs-triage")
-    if (
-        result["issue_kind"] == "BUG"
-        and result["reproduction"] == "INSUFFICIENT"
-        and not evidence["context_truncated"]
-    ):
+    if result["needs_repro"]:
         additions.add("needs-repro")
     if not additions <= set(evidence["_catalog"]):
         raise TriageError("A proposed label no longer exists")
@@ -494,12 +589,19 @@ def render(result: dict, evidence: dict, mapping: dict) -> str:
         if result["routing_rule"] != "default":
             lines.append(f"**Conditional routing suggestion (`{result['routing_rule']}`):** "
                          + plain_text(result["routing_reason"]))
+        elif result["routing_reason"] != "None":
+            lines.append("**Routing rationale:** " + plain_text(result["routing_reason"]))
     else:
         lines.append("**Suggested area:** Unclear; existing routing is unchanged.")
     if not route_teams:
         lines.append("**Team:** No automatic team assignment; maintainer routing is needed.")
-    if decision["needs_triage"] or "needs-triage" in evidence["existing_labels"]:
+    if decision["needs_triage"] or result["review_notes"] or "needs-triage" in evidence["existing_labels"]:
         lines.append("**Triage:** Maintainer review remains required (`needs-triage`).")
+    for note in result["normalization_notes"]:
+        lines.extend(["", "**Routing adjustment:** " + plain_text(note)])
+    if result["review_notes"]:
+        lines.extend(["", "### Assessment needs review", ""])
+        lines.extend("- " + plain_text(note) for note in result["review_notes"])
     if result["missing_information"] != "None":
         lines.extend(["", "**Information needed:** " + plain_text(result["missing_information"])])
     if evidence["context_truncated"]:
@@ -545,6 +647,8 @@ def ensure_current(client: GitHub, evidence: dict) -> dict | None:
 
 
 def publish(client: GitHub, result: dict, evidence: dict, mapping: dict, write: bool) -> dict:
+    for note in result["normalization_notes"] + result["review_notes"]:
+        print("::warning::" + plain_text(note))
     body = render(result, evidence, mapping)
     labels = planned_labels(result, evidence, mapping)
     plan = {"comment": body, "add_labels": labels, "published": False}
