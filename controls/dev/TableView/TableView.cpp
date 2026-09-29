@@ -1470,9 +1470,9 @@ static winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
     return {};
 }
 
-// True only for a genuine string header. Anything else -- a UIElement, or a type with an implicit
-// DataTemplate -- must keep the ContentPresenter's own content model, even though GetColumnHeaderText
-// can render it via IStringable for automation purposes.
+// GetColumnHeaderText renders any IStringable for automation purposes, but only a genuine string
+// may be swapped for a TextBlock -- a UIElement or a type with an implicit DataTemplate must keep
+// the ContentPresenter's content model.
 static bool IsPlainStringHeader(const winrt::TableViewColumn& column)
 {
     const auto propValue = column.Header().try_as<winrt::IPropertyValue>();
@@ -1554,11 +1554,9 @@ void TableView::RebuildHeaders()
                 continue;
             }
 
-            // Header cell root.
-            // Content and chevron get their own Grid columns so the chevron reserves its realized
-            // width instead of overlaying the text. The other children span both columns.
-            // Column order is set explicitly: like the grid line and gripper below, this subtree does
-            // not observe the ambient FlowDirection flip, so the Grid would not reorder for RTL.
+            // Header cell root. Content and chevron get their own columns so the chevron reserves
+            // its realized width instead of overlaying the text. Column order is explicit because
+            // this subtree, like the grid line and gripper below, does not observe the RTL flip.
             winrt::Grid headerCell;
             const int contentColumnIndex = isRightToLeft ? 1 : 0;
             const int indicatorColumnIndex = isRightToLeft ? 0 : 1;
@@ -1615,21 +1613,17 @@ void TableView::RebuildHeaders()
             }
             else if (!headerText.empty() && IsPlainStringHeader(column))
             {
-                // A ContentPresenter renders a bare string through an implicit TextBlock that carries no
+                // A ContentPresenter renders a bare string through an implicit TextBlock carrying no
                 // TextTrimming, so a too-wide header hard-clips mid-glyph while its cells ellipsize.
-                // Supplying the TextBlock makes the header degrade the same way as its column.
                 winrt::TextBlock headerBlock;
                 headerBlock.Text(headerText);
                 headerBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
                 headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
-                // The header cell's peer already announces this text; a Content-view child would
-                // make AT read it twice.
+                // The header cell's peer already announces this text.
                 winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
                 content.Content(headerBlock);
                 trimmableHeaderBlock = headerBlock;
             }
-            // A sortable header's chevron lives in the adjacent column, so the presenter keeps only
-            // the density padding.
             content.Padding(cachedHeaderCellPadding);
             content.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
             content.VerticalAlignment(winrt::VerticalAlignment::Center);
@@ -1658,8 +1652,7 @@ void TableView::RebuildHeaders()
             // No HelpText: the header's peer is virtual and composes the text itself.
             TableViewDetails::ApplyHeaderToolTip(headerCell, column.HeaderToolTip());
 
-            // An ellipsized header is unreadable, so surface the full text on hover -- but only while
-            // it is actually trimmed, and never in place of an app-supplied HeaderToolTip.
+            // An ellipsized header is unreadable; never displaces an app-supplied HeaderToolTip.
             if (trimmableHeaderBlock && !column.HeaderToolTip())
             {
                 trimmableHeaderBlock.IsTextTrimmedChanged(
