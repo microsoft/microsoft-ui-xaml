@@ -221,9 +221,9 @@ _Check_return_ HRESULT BindableObservableVectorWrapper::CheckMoveReentrancy() co
 {
     if (m_moveView)
     {
-        IFC_RETURN(ErrorHelper::OriginateError(
+        IFC_RETURN_ORIGINATE_ERROR(
             E_ILLEGAL_METHOD_CALL,
-            wrl_wrappers::HStringReference(L"The collection cannot be modified during a Move notification.").Get()));
+            wrl_wrappers::HStringReference(L"The collection cannot be modified during a Move notification.").Get());
     }
     return S_OK;
 }
@@ -448,10 +448,10 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
 
     if (!Components::CollectionMoveView::IsValid(sourceSize, oldIndex, newIndex, oldCount, newCount))
     {
-        IFC(ErrorHelper::OriginateError(
+        IFC_ORIGINATE_ERROR(
             E_INVALIDARG,
             wrl_wrappers::HStringReference(
-                L"A Move notification must specify valid old and new indices and equally sized, nonempty item ranges.").Get()));
+                L"A Move notification must specify valid old and new indices and equally sized, nonempty item ranges.").Get());
     }
     if (oldIndex == newIndex)
     {
@@ -636,4 +636,3 @@ Cleanup:
 
     RRETURN( hr );
 }
-
