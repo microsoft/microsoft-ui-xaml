@@ -1622,6 +1622,7 @@ void TableView::RebuildHeaders()
                 winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
                 content.Content(headerBlock);
             }
+            // Consume TableViewHeaderCellPadding from theme resources (cached once per rebuild).
             content.Padding(cachedHeaderCellPadding);
             content.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
             content.VerticalAlignment(winrt::VerticalAlignment::Center);
@@ -1670,11 +1671,11 @@ void TableView::RebuildHeaders()
                 indicatorHost.VerticalAlignment(winrt::VerticalAlignment::Center);
                 // The chevron is decoration on top of a clickable header: letting it take the hit
                 // would create a dead spot in the middle of the click target.
+                indicatorHost.IsHitTestVisible(false);
                 // SortIndicator has a fixed themed Width and only fades via Opacity, so an always-
                 // visible host would cost that width on every sortable column.
                 indicatorHost.Visibility(column.SortDirection() == winrt::SortDirection::None
                     ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
-                indicatorHost.IsHitTestVisible(false);
                 AppendSortIndicatorVisual(indicatorHost, column);
                 winrt::Grid::SetColumn(indicatorHost, indicatorColumnIndex);
                 headerCell.Children().Append(indicatorHost);
