@@ -292,8 +292,7 @@ By default, a `NotifyCollectionChangedAction.Move` from an `IBindableVector`
 that also implements `INotifyCollectionChanged` (for example,
 `ObservableCollection<T>`) becomes a single `CollectionChange.Reset`. This
 compatibility behavior remains unchanged unless the application enables
-`CollectionMoveNotifications`. The performance opt-in does not enable this
-change implicitly.
+`CollectionMoveNotifications`.
 
 With the change enabled, WinUI adapts a move of one or more contiguous items
 to `ItemRemoved` notifications at the old starting index, followed by
