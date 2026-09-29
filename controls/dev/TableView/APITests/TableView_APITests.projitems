@@ -14,5 +14,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableViewTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Columns_APITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableView_Rows_APITests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableView_Sizing_APITests.cs" />
   </ItemGroup>
 </Project>

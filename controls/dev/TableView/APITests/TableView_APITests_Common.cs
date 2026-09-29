@@ -219,6 +219,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             }
         }
+
+        internal static Panel RequireCellsHost(TableViewRow row)
+        {
+            var host = row.FindVisualChildByName("PART_CellsHost") as Panel;
+            Verify.IsNotNull(host, "PART_CellsHost should exist on a realized row.");
+            return host;
+        }
+
+        internal static Border RequireCellWrapper(TableViewRow row, int index)
+        {
+            var host = RequireCellsHost(row);
+            Verify.IsGreaterThan(host.Children.Count, index, "The cells host should have a cell at the requested index.");
+
+            var wrapper = host.Children[index] as Border;
+            Verify.IsNotNull(wrapper, "Every cell is hosted in a Border wrapper.");
+            return wrapper;
+        }
+
+        internal static void ScrollBodyToVerticalOffset(TableView tableView, double offset)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = tableView.FindVisualChildByName("PART_BodyScroller") as ScrollViewer;
+                Verify.IsNotNull(scroller, "PART_BodyScroller should exist once the template has applied.");
+                Verify.IsGreaterThan(scroller.ScrollableHeight, offset,
+                    "Precondition: the source must be long enough to scroll by the offset under test.");
+
+                scroller.ChangeView(null, offset, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => tableView.UpdateLayout());
+            IdleSynchronizer.Wait();
+        }
     }
     // The default row item: two plain, non-notifying string properties. Tests that need change
     // notification, validation, or grouping keys use the richer items defined by their own area.
@@ -304,23 +339,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return rows[0];
         }
 
-        internal static Panel RequireCellsHost(TableViewRow row)
-        {
-            var host = row.FindVisualChildByName("PART_CellsHost") as Panel;
-            Verify.IsNotNull(host, "PART_CellsHost should exist on a realized row.");
-            return host;
-        }
-
-        internal static Border RequireCellWrapper(TableViewRow row, int index)
-        {
-            var host = RequireCellsHost(row);
-            Verify.IsGreaterThan(host.Children.Count, index, "The cells host should have a cell at the requested index.");
-
-            var wrapper = host.Children[index] as Border;
-            Verify.IsNotNull(wrapper, "Every cell is hosted in a Border wrapper.");
-            return wrapper;
-        }
-
         internal static void VerifyNoLocalDataContext(FrameworkElement element, string what)
         {
             Verify.AreEqual(DependencyProperty.UnsetValue, element.ReadLocalValue(FrameworkElement.DataContextProperty),
@@ -360,24 +378,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(expected, row.Background,
                     $"Row at index {index} should carry the brush for its parity ({context}).");
             }
-        }
-
-        internal static void ScrollBodyToVerticalOffset(TableView tableView, double offset)
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                var scroller = tableView.FindVisualChildByName("PART_BodyScroller") as ScrollViewer;
-                Verify.IsNotNull(scroller, "PART_BodyScroller should exist once the template has applied.");
-                Verify.IsGreaterThan(scroller.ScrollableHeight, offset,
-                    "Precondition: the source must be long enough to scroll by the offset under test.");
-
-                scroller.ChangeView(null, offset, null, true);
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() => tableView.UpdateLayout());
-            IdleSynchronizer.Wait();
         }
     }
 }
