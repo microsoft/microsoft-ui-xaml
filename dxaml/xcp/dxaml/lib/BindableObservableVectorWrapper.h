@@ -48,6 +48,9 @@ namespace DirectUI
         IFACEMETHOD(RemoveAtEnd)() override;
         IFACEMETHOD(Clear)() override;
 
+        // The SDK's default GetMany and ReplaceAll call get_Size/GetAt and Clear/Append,
+        // respectively, so they also respect the Move view and reentrancy guard.
+
         // IObservableVector<IInspectable *>
         IFACEMETHOD(add_VectorChanged)(
             _In_ wfc::VectorChangedEventHandler<IInspectable *> *pHandler,
