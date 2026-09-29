@@ -157,7 +157,13 @@ rem to the build scripts (e.g. PostInit.ps1). The .azuredevops folder exists onl
 rem internal repo (it is excluded from the public mirror), matching the IsInternalWinUIBuild
 rem MSBuild property in eng\Versions.props. Use explicit true/false (never empty) so
 rem init.ps1's Invoke-CmdScript propagates the value.
-if exist "%RepoRoot%\.azuredevops" (
+rem An already-set value wins over the folder probe: the WindowsAppSDK mono-build consumes this
+rem repo from the public mirror (so .azuredevops is absent) while still being an internal build,
+rem and it supplies IsInternalWinUIBuild itself. Without this guard the probe would publish
+rem false over the caller's true and silently select the OSS package pins.
+if defined IsInternalWinUIBuild (
+    call :SetEnviromentVariable IsInternalWinUIBuild "%IsInternalWinUIBuild%"
+) else if exist "%RepoRoot%\.azuredevops" (
     call :SetEnviromentVariable IsInternalWinUIBuild true
 ) else (
     call :SetEnviromentVariable IsInternalWinUIBuild false
