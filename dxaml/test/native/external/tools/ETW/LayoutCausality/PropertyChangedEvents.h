@@ -41,6 +41,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(CountingScopeExcludesForeignAndBufferedEvents)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verifies that scoped event counting excludes foreign processes and buffered setup events without changing legacy capture")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(DirtyElementFiresEvent)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that event if the element is already dirty that we still fire the event that affects layout")

@@ -26,15 +26,15 @@
 // Where an app supplies a computed key that no property path can express, PropertyName is empty
 // and the description is flagged not-diffable, which forces a full reshape. That is the honest,
 // contained version of the delegate-only behaviour rather than the default path.
-namespace TabularShapingHelpers
+namespace ShapingHelpers
 {
     // Extracts the value a shaping axis operates on. Returning nullptr is legal and sorts/groups
     // as the null class; throwing is the caller's concern, not this layer's.
-    using TabularKeySelector = std::function<winrt::IInspectable(winrt::IInspectable const& item)>;
+    using KeySelector = std::function<winrt::IInspectable(winrt::IInspectable const& item)>;
 
     // Retains an item when it returns true. A predicate that throws is treated as "exclude",
     // matching the fail-safe semantics of ApplyPredicateFilter.
-    using TabularPredicate = std::function<bool(winrt::IInspectable const& item)>;
+    using Predicate = std::function<bool(winrt::IInspectable const& item)>;
 
     struct SortDescription
     {
@@ -42,7 +42,7 @@ namespace TabularShapingHelpers
         // not diffable and forces a full reshape.
         winrt::hstring PropertyName;
         winrt::SortDirection Direction{ winrt::SortDirection::Ascending };
-        TabularKeySelector Evaluator{ nullptr };
+        KeySelector Evaluator{ nullptr };
 
         bool IsDiffable() const noexcept { return !PropertyName.empty(); }
     };
@@ -50,7 +50,7 @@ namespace TabularShapingHelpers
     struct GroupDescription
     {
         winrt::hstring PropertyName;
-        TabularKeySelector Evaluator{ nullptr };
+        KeySelector Evaluator{ nullptr };
 
         bool IsDiffable() const noexcept { return !PropertyName.empty(); }
     };
@@ -65,7 +65,7 @@ namespace TabularShapingHelpers
         // predicate must mint a new CriterionId; leaving it empty is legal and means "not
         // diffable", which forces a full reshape.
         winrt::hstring CriterionId;
-        TabularPredicate Predicate{ nullptr };
+        Predicate Predicate{ nullptr };
 
         bool IsDiffable() const noexcept { return !PropertyName.empty() && !CriterionId.empty(); }
     };
@@ -146,7 +146,7 @@ namespace TabularShapingHelpers
     // A state with no prior projection (HasProjection false) is promoted to FullReshape whatever
     // the delta says, since the incremental paths have nothing to build on.
     //
-    // Group identity is the layer-1 default: the length-framed composite of TabularValueKey::ToString
+    // Group identity is the layer-1 default: the length-framed composite of ValueKey::ToString
     // over every group axis, which is value-based for property values and IStringable references and
     // instance-based otherwise. It is total and never degrades to flat. Consumers needing their own
     // identity or collision policy bucketize with BucketizeToGroups directly instead.

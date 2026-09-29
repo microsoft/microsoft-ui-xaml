@@ -10,7 +10,6 @@ parameters:
   testSuite: 'DevTestSuite' # Can be: DevTestSuite, ScenarioTestSuite
   rerunPassesRequiredToAvoidFailure: 5
   testPayloadArtifactName: 'TestPayload'
-  failOnTestFailure: true
 # We run the bulk of our tests in Helix. But this Job runs tests directly on the Pipeline agents.
 # These Pipeline agents are running on a ni_release build of Windows which is not available in Helix.
 # This approach allows us to run tests on prerelease builds of Windows.
@@ -18,7 +17,9 @@ parameters:
 jobs:
 - job: ${{ parameters.runTestJobName }} #${{ parameters.testOS }}${{ parameters.buildPlatform }}${{ parameters.buildConfiguration }}
   dependsOn: ${{ parameters.dependsOn }}
-  condition: not(failed())
+  # succeeded() rather than not(failed()): if CreateTestPayload is canceled/skipped it publishes no payload,
+  # and not(failed()) would still run this job, failing later with a cryptic PathNotFound.
+  condition: succeeded()
   pool:
     type: windows
     isCustom: true
@@ -99,6 +100,18 @@ jobs:
       errorActionPreference: stop
       workingDirectory: $(Build.SourcesDirectory)\build\PipelineScripts
 
+  # Total this shard's native lifetime crash/warning signals. Non-gating; reports 0 when no lifetime work
+  # items ran. See Helix\common\pipeline\Report-LifetimeNativeCrashTotals.ps1.
+  - task: powershell@2
+    displayName: 'PostTestRun: Total lifetime native crashes/warnings'
+    condition: always()
+    inputs:
+      targetType: filePath
+      filePath: Helix\common\pipeline\Report-LifetimeNativeCrashTotals.ps1
+      arguments: -SearchRoot "$(uploadRootInner)"
+      errorActionPreference: continue
+      workingDirectory: $(Build.SourcesDirectory)
+
   - task: PublishTestResults@2
     condition: always()
     inputs:
@@ -106,7 +119,7 @@ jobs:
       testResultsFiles: testResults-*.xml
       searchFolder: $(Build.SourcesDirectory)\build\PipelineScripts
       mergeTestResults: true
-      failTaskOnFailedTests: ${{ parameters.failOnTestFailure }}
+      failTaskOnFailedTests: true
       testRunTitle: '$(testRunTitle)'
       buildPlatform: $(buildPlatform)
       buildConfiguration: $(buildConfiguration)

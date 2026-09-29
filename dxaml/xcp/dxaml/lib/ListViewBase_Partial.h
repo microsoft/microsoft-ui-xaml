@@ -149,7 +149,7 @@ namespace DirectUI
             TrackerPtr<xaml_primitives::ISelectorItem> m_tpHoldingItem;
 
             // Set before raising ItemClick event, cleared afterwards
-            ctl::ComPtr<xaml::IDependencyObject> m_spContainerBeingClicked;
+            TrackerPtr<xaml::IDependencyObject> m_spContainerBeingClicked;
 
             // The last location of the top-left corner of the drag visual. Only valid during a drag and drop
             // initiated via this ListViewBase. Relative to root visual.

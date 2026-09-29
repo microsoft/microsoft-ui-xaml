@@ -165,15 +165,10 @@ void XamlTypeBase::AddMember(
     bool isAttachable
 )
 {
-    auto memberType = 
-        (memberTypeName == m_typeName)
-            ? *this
-            : XamlMetadataProvider::LookupXamlType(memberTypeName);
-
     auto member = 
         winrt::make<XamlMember>(
             name,
-            memberType,
+            memberTypeName,
             getter,
             setter, 
             isDependencyProperty,

@@ -46,6 +46,9 @@ public:
     // the rows it cached are stale.
     void RaiseStructureChangedForSortChange();
     void RaiseStructureChangedForVirtualizationReset();
+    // Expanding or collapsing a group adds or removes whole runs of rows, so every cached child
+    // of the TableView peer may be stale.
+    void RaiseStructureChangedForGroupExpansion();
 
 private:
     // One peer per column, kept alive for as long as the column stays in Columns(). Each call

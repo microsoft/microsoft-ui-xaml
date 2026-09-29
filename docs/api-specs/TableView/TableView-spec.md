@@ -169,6 +169,19 @@ PeopleTable.GridLinesVisibility = TableViewGridLinesVisibility.All;
 PeopleTable.Density = TableViewDensity.Compact;
 ```
 
+### Theme customization
+
+In all themes, an application-set table or row `Foreground` supplies the normal-state value;
+pointer-over, pressed, selected, and disabled states use the corresponding `TabularSurface*`
+foreground brush. Cell content inherits that foreground unless its template supplies an explicit brush.
+
+Override the named `TabularSurface*` brush keys to customize colors. Low-level Fluent color-token
+overrides no longer flow through the removed default-style brush fallbacks.
+
+Override `TabularSurfaceSelectionIndicatorDisabledBrush` and `TabularSurfaceRowForegroundDisabledBrush`
+independently to customize the disabled-selected indicator and disabled row text.
+By default, the disabled-selected indicator uses disabled-text colors rather than the accent color.
+
 ### Frozen (pinned) leading columns
 
 Set `FrozenEdge="Leading"` on a contiguous prefix starting at column 0 to pin those columns to the leading edge. A later `Leading` column is ignored. `Trailing` is reserved.
@@ -468,7 +481,6 @@ These are understood and deliberately not addressed by single selection:
 - **Pointer selection is not blocked during an open edit.** Keyboard navigation is suppressed while editing, but clicking another row moves `SelectedItem` and the highlight immediately. If the resulting commit is then vetoed by validation, the editor stays open on the previous row while the selection has already moved. Whether selection should be blocked, deferred, or allowed to diverge from the edit target is an open decision.
 - **The selection indicator scrolls with the row.** `PART_SelectionIndicator` lives inside the horizontally scrolling row content, so the accent strip scrolls off the leading edge. `TreeViewItem` and `ItemContainer` pin theirs to the container; doing the same here likely means reusing the frozen-column offset mechanism.
 - **A `TableViewTemplateColumn` whose `CellTemplate` sets an explicit `Foreground` overrides the selected foreground.** `PART_CellForegroundPresenter` only reaches cells that *inherit* `Foreground`. `TableViewTextColumn` correctly sets none; template columns are free to, and in High Contrast that renders app-chosen text over `SystemColorHighlightColor`. Template columns should leave `Foreground` unset unless they take responsibility for the selected and High Contrast cases.
-- **The in-file brush fallbacks cannot vary the selection indicator by theme.** `CommonStyles/TabularSurfaces_themeresources.xaml` is the canonical source and maps the indicator to `SystemColorHighlightColor` in High Contrast. The last-resort fallbacks in `TableView.xaml` are a flat dictionary, so the indicator stays `SystemAccentColor` there — a host that does not merge the shared dictionary gets an accent-coloured indicator in High Contrast. The row fills and foregrounds are unaffected: they use `{ThemeResource}` colours that do resolve per theme.
 - **Reconciliation order is load-bearing.** Row chrome is restamped from `ItemsSourceView.CollectionChanged`, which is correct only because `SelectionModel` is handed the repeater's *shared* `ItemsSourceView` and is subscribed ahead of the control. Handing the model a raw source, or reordering those two calls in `ResolveSelectionAfterSourceChange`, silently reintroduces stale-index stamping — and an insert above the selection raises no event to correct it. This is deliberately different from `ItemsView`, which hands the model a raw source and repairs the resulting race afterwards with a dispatcher hop; the ordering here is structural instead.
 - **Adding `Multiple`/`Extended` is not purely additive.** The enum values are appended and the event args already carry both vectors, so the shapes that are expensive to reverse are settled. But `SelectedItems` is deliberately **not** exposed in this release — it would be redundant with `SelectedItem` while at most one row can be selected, and `SelectionModel`'s view leaves `IndexOf` and `GetMany` unimplemented, so `Contains`, `ToList` and `ToArray` throw. It should be added with `Multiple`, where it becomes the only way to read the whole selection and those sharp edges are worth the capability. The gesture layer also routes through `SelectRowIndexFromInteraction(index, toggle)`, which carries no anchor or range state, and `ApplySelection` encodes single-selection semantics; multi-selection needs modifier state threaded through those entry points and an anchor model, closer to `ItemsView`'s `SelectorBase` strategy split.
 
@@ -500,6 +512,50 @@ Methods:
 | `GenerateElementCore(Object dataItem)` | Overridable method used by derived column types to create cell content. |
 | `IsReadOnly` (`Boolean`, default `false`) | Per-column opt-out. A read-only column is still a valid current cell for keyboard navigation, but cannot be edited. |
 | `CellEditingTemplate` (`DataTemplate`, default `null`) | Editing visual for any column type. A column with neither a `CellEditingTemplate` nor a built-in editor is not editable. |
+| `CellToolTipBinding` (`Binding`, default `null`) | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `TableViewTextColumn.Binding`). |
+| `HeaderToolTip` (`Object`, default `null`) | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host, but *not* a `ToolTip` itself: the control owns the `ToolTip` and its placement, so a `ToolTip` value is rejected and the header gets none. `null` or an empty string means no header tooltip. A `UIElement` is parented by that header's `ToolTip`, so each column needs its own instance. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
+
+### Cell tooltips
+
+Text cells render with `CharacterEllipsis` and no wrapping, so a value wider than its column is
+unreadable. `CellToolTipBinding` surfaces the full value:
+
+```xml
+<tabular:TableViewTextColumn Header="Notes"
+                             Binding="{Binding Notes}"
+                             CellToolTipBinding="{Binding Notes}" />
+```
+
+Because the tooltip is an ordinary binding it tracks the row's `DataContext`: a recycled row
+re-resolves its tooltips through the same inheritance that refreshes its cell text, and a source
+`PropertyChanged` updates a live tooltip in place. There is no invalidation API, and none is needed.
+
+The control owns the `ToolTip` and its placement (`PlacementMode.Mouse`), so the bound value is the
+tooltip's *content*, not a `ToolTip`. A `UIElement` is parented by that cell's `ToolTip`, so a
+converter must return a fresh element per evaluation. A tooltip the app sets inside the column's own
+cell template is never touched; the control's tooltip covers the rest of the cell.
+
+### Column header tooltips
+
+`HeaderToolTip` is the header-side counterpart, and covers the whole header cell — content, padding
+and sort affordance:
+
+```xml
+<tabular:TableViewTextColumn Header="Notes"
+                             Binding="{Binding Notes}"
+                             HeaderToolTip="Free-form notes captured at intake" />
+```
+
+Header cells are rebuilt rather than recycled, so the value is read from the column when the header
+is built and re-applied in place when it changes; there is no binding and no invalidation API.
+Placement and ownership match the cell path, including leaving an app-set tooltip alone.
+
+String content is reported as the header's UIA help text by
+`TableViewColumnHeaderAutomationPeer`, joined with the column's sort state when it has one — the
+header peer is virtual, so it publishes the text itself rather than through
+`AutomationProperties.HelpText`, and it reads the value from the column so the answer does not
+depend on whether the header is currently realized. As with cells, non-string content is
+mouse-only: pair it with `Header` text that carries the same information when it matters.
 
 ## TableViewTextColumn class
 
@@ -569,7 +625,7 @@ Template parts:
 |---|---|---|
 | `PART_RootBorder` | `Border` | Row root border. Its `Background` is driven by `CommonStates`. |
 | `PART_CellsHost` | `Panel` | Host for generated cell elements. |
-| `PART_SelectionIndicator` | `UIElement` | **Required.** Leading-edge accent strip; `Opacity` is animated `0 → 1` by the `Selected*` states, which target it by name — a re-template that omits it fails when a row is first selected, not at parse time. |
+| `PART_SelectionIndicator` | `Shape` (default: `Rectangle`) | **Required by the default state definitions.** Leading-edge selection strip; the `Selected*` states animate `Opacity` to `1`, and `SelectedDisabled` also animates `Fill`. Custom templates using other indicator types must adapt the corresponding state targets. |
 
 Visual states:
 
@@ -647,6 +703,16 @@ How an edit is being closed.
 |---|---|
 | `TableViewBeginningEditEventArgs` | `Item`, `Column` (read-only); `Cancel` (settable) |
 | `TableViewCellEditEndingEventArgs` | `Item`, `Column`, `EditAction` (read-only); `Cancel` (settable) |
+
+### Cell tooltip accessibility
+
+The control owns the `ToolTip`; the bound value is its content, not a `ToolTip` to attach. A `UIElement` is parented by that cell's `ToolTip`, so a converter returns a fresh element per evaluation.
+
+- String tooltip text is published as the cell's `AutomationProperties.HelpText`, and retracted on recycle and when a cell edit begins.
+- `TableViewCellAutomationPeer` suppresses it at UIA query time when it equals the cell's own UIA text, so Narrator does not read it twice. Suppression is gated on the control's ownership record, so text the app set is never dropped, and it is resolved at query time because the cell's own binding may not have produced a value when the tooltip is applied.
+- The popup is **pointer-only**: cell focus in `TableView` is row-level, so there is no cell element for the framework's keyboard-tooltip path to fire on. The UIA pairing is what serves keyboard and screen-reader users, which is why it is not optional.
+- Placement is control-owned and fixed (`PlacementMode.Mouse`), matching `TabViewItem`. An app needing different placement uses a tooltip inside its own cell content template.
+- Non-string content is **mouse-only** and has no accessible representation: no `HelpText` is published (it cannot be stringified), and the cell wrapper is internal so an app cannot set `HelpText` on it either. Keyboard and screen-reader users get nothing. `TabViewItem` and `NavigationViewItem` refuse non-string tooltip content outright for this reason; `TableView` allows it, so **use a converter that returns text whenever the value must be accessible**. Reaching parity needs a public cell element, which is post-v1.
 
 ## Selection event args
 
@@ -747,6 +813,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Object Header;
         Microsoft.UI.Xaml.DataTemplate HeaderTemplate;
         Microsoft.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector;
+        Object HeaderToolTip;
         Microsoft.UI.Xaml.GridLength Width;
         Double MinWidth;
         Double MaxWidth;
@@ -759,10 +826,12 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
 
         Boolean IsReadOnly;
         Microsoft.UI.Xaml.DataTemplate CellEditingTemplate;
+        Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
 
         static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderToolTipProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };

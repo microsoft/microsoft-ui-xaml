@@ -134,10 +134,7 @@ void TableViewGroupHeaderAutomationPeer::SetExpansion(bool expand)
     // and silently no-ops.
     if (auto const owner = winrt::get_self<TableViewGroupHeader>(header)->GetOwningTableView())
     {
-        // CARVE-OUT: TableView::SetGroupExpansion lives in TableView_Grouping.cpp, which this
-        // review branch does not carry. Restore this line when the grouping stack lands.
-        // winrt::get_self<TableView>(owner)->SetGroupExpansion(header, expand);
-        owner;
+        winrt::get_self<TableView>(owner)->SetGroupExpansion(header, expand);
     }
 }
 
@@ -173,13 +170,10 @@ int32_t TableViewGroupHeaderAutomationPeer::Row()
     {
         if (auto const owner = GetOwningTableView())
         {
-            // CARVE-OUT: TableView::GetRowsRepeaterForPeer lives on the feature branch. Restore
-            // this block when the grouping stack lands; until then the row index is unknown.
-            // if (auto const repeater = winrt::get_self<TableView>(owner)->GetRowsRepeaterForPeer())
-            // {
-            //     return repeater.GetElementIndex(header);
-            // }
-            owner;
+            if (auto const repeater = winrt::get_self<TableView>(owner)->GetRowsRepeaterForPeer())
+            {
+                return repeater.GetElementIndex(header);
+            }
         }
     }
     return -1;

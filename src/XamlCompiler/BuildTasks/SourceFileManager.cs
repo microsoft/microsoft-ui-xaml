@@ -125,9 +125,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     // look to see if a new class was specified; if so, we guessed wrong before, undo that.
                     // Note that both the old and new classes are out of date.
                     string newClassFullName = null;
-                    using (var fileReader = TaskFileService.GetFileContents(tif.SourceXamlFullPath))
+                    if (!TryReadClassFullName(tif, context, out newClassFullName))
                     {
-                        newClassFullName = XamlNodeStreamHelper.ReadXClassFromXamlFileStream(fileReader, context);
+                        // Can't tell whether the class was renamed; leave the cached name, the file is already out of date.
+                        continue;
                     }
 
                     if (newClassFullName != tif.ClassFullName)
@@ -166,6 +167,24 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                         }
                     }
                 }
+            }
+        }
+
+        // Returns false when the x:Class can't be determined (malformed markup, unreadable file, schema failure).
+        private bool TryReadClassFullName(TaskItemFilename tif, DirectUI.DirectUISchemaContext context, out string classFullName)
+        {
+            try
+            {
+                using (var fileReader = TaskFileService.GetFileContents(tif.SourceXamlFullPath))
+                {
+                    classFullName = XamlNodeStreamHelper.ReadXClassFromXamlFileStream(fileReader, context);
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                classFullName = null;
+                return false;
             }
         }
 

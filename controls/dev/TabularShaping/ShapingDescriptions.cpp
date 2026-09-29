@@ -9,7 +9,7 @@
 #include <string_view>
 #include <unordered_map>
 
-namespace TabularShapingHelpers
+namespace ShapingHelpers
 {
     namespace
     {
@@ -113,7 +113,7 @@ namespace TabularShapingHelpers
                 winrt::hstring segment;
                 try
                 {
-                    segment = TabularValueKey::ToString(key);
+                    segment = ValueKey::ToString(key);
                 }
                 catch (...)
                 {

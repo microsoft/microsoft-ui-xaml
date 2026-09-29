@@ -28,6 +28,24 @@ public:
     BEGIN_TEST_METHOD(ValidateStaggeringWorks)
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(ValidateItemsControlTransitionTimingHelper)
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateItemsControlDeleteTransitionStoryboards)
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateItemsControlMixedTransitionStoryboards)
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateItemsControlLocalTransitionStoryboards)
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateItemsControlAddTransitionStoryboards)
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateItemsControlStandaloneRepositionStoryboards)
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(ValidateSlideThemeTransitionEffect)
     END_TEST_METHOD()
 
@@ -82,4 +100,3 @@ private:
 };
 
 } } } } } }
-

@@ -56,6 +56,10 @@ public:
     // Keep the owner weak to avoid TableView -> Columns -> Column -> TableView cycles.
     bool SetOwningTableViewInternal(winrt::TableView const& owner);
 
+    // Setter lets XAML pass the Binding object through without evaluating it.
+    winrt::Microsoft::UI::Xaml::Data::Binding CellToolTipBinding();
+    void CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value);
+
     // Internal — layout: the owning TableView (TableView_Layout.cpp) resolves the final width for
     // every sizing mode (Pixel/Auto/Star) and pushes it here; the caller has already clamped to
     // Min/MaxWidth.
@@ -82,6 +86,8 @@ private:
 
     // Monotonic max of pulled realized-cell measured widths for an Auto column (0 until first pull).
     double m_desiredWidth{ 0.0 };
+
+    tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_cellToolTipBinding{ this };
 
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
     winrt::ITableViewSortComparer m_customSortComparer{ nullptr };

@@ -39,6 +39,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 var inkCanvas = FindElement.ByName("TestInkCanvas");
                 Verify.IsNotNull(inkCanvas, "InkCanvas should be present in the visual tree.");
+
+                // The canvas renders through a composition visual; its automation peer must still
+                // report real, on-screen bounds so assistive technology does not skip it.
+                var bounds = inkCanvas.BoundingRectangle;
+                Log.Comment($"InkCanvas bounds: {bounds.Width}x{bounds.Height} at {bounds.X},{bounds.Y}");
+                Verify.IsGreaterThan(bounds.Width, 0, "InkCanvas should report a non-zero width.");
+                Verify.IsGreaterThan(bounds.Height, 0, "InkCanvas should report a non-zero height.");
             }
         }
     }

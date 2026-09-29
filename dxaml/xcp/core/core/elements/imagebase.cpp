@@ -110,7 +110,16 @@ CImageBase::EnsureBrush()
     // we're forced to make the UpdateMeasure call here.
     if ((m_pImageSource && m_pImageSource->m_fSourceNeedsMeasure) || m_containerRequiresMeasure)
     {
-        m_pImageSource->m_fSourceNeedsMeasure = FALSE;
+        // The block is also entered when only m_containerRequiresMeasure is set. That flag is set
+        // source-independently by CMediaBase::UpdateInternalSize on container size changes (including
+        // 0x0) per TFS 6673752, so m_pImageSource can legitimately be null here (Source=null,
+        // virtualized item recycle, or a torn-down async decode). Guard the deref to match every
+        // other m_pImageSource access in this function; the remeasure must still run for the
+        // container-size change, so only the flag clear is conditional.
+        if (m_pImageSource)
+        {
+            m_pImageSource->m_fSourceNeedsMeasure = FALSE;
+        }
         m_containerRequiresMeasure = false;
         IFC_RETURN(UpdateMeasure());
     }

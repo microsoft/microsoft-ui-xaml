@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 using MUXControlsTestApp.Utilities;
 using Microsoft.UI.Xaml.Controls;
@@ -23,6 +24,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class LeakTests : ApiTestBase
     {
+        private sealed class SelfHandlingWindow : Window
+        {
+            public SelfHandlingWindow()
+            {
+                Closed += OnClosed;
+            }
+
+            private void OnClosed(object sender, WindowEventArgs args)
+            {
+            }
+        }
+
         void CheckLeaks(Dictionary<string, WeakReference> objects)
         {
             foreach (var pair in objects)
@@ -118,6 +131,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             WaitAndGC();
             RunOnUIThread.Execute(() => CheckLeaks(objects));
+        }
+
+        [TestMethod]
+        public void VerifyClosedWindowWithSelfHandlerDoesNotLeak()
+        {
+            var objects = new Dictionary<string, WeakReference>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                objects["Window"] = CreateAndCloseSelfHandlingWindow();
+            });
+
+            WaitAndGC();
+            RunOnUIThread.Execute(() => CheckLeaks(objects));
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static WeakReference CreateAndCloseSelfHandlingWindow()
+        {
+            var window = new SelfHandlingWindow();
+            var windowReference = new WeakReference(window);
+            window.Content = new Grid();
+            window.Activate();
+            window.Close();
+            return windowReference;
         }
 
         [TestMethod]

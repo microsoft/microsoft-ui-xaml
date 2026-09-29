@@ -960,8 +960,8 @@ public class ProfilerTreeStore
 
     /// <summary>
     /// Pick-mode (IVisual subtree): given a composition visual id (an IVisual* — the clicked
-    /// element's GetElementVisual, by its xpid Comment or raw pointer), find the matching node
-    /// in the IVisual (WucVisual) tree, else the Composition tree, then glow that node AND its
+    /// element's GetElementVisual identity), find the matching node in the IVisual
+    /// (WucVisual) tree, else the Composition tree, then glow that node AND its
     /// entire subtree, expanding the path to it and the subtree so the glow is visible.
     /// Returns the matched node, or null if no node with that id exists in either tree.
     /// Additive: does NOT clear existing link highlights (the pick handler clears once up
@@ -975,8 +975,8 @@ public class ProfilerTreeStore
         if (node is null)
         {
             // Not in the ETW-built store yet. The tap's GetElementVisual frequently CREATES the
-            // element's hand-in visual on the spot, so the producer only emits (and xpid-stamps)
-            // it on the next render frame. Arm a pending highlight that fires the instant that
+            // element's hand-in visual on the spot, so the producer only emits it on the next
+            // render frame. Arm a pending highlight that fires the instant that
             // node arrives over ETW (see TryApplyPendingVisualHighlight).
             _pendingVisualHighlight = visualId;
             return null;

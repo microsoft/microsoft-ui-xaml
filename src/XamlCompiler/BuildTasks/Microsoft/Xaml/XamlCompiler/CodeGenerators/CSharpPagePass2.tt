@@ -371,7 +371,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+     {#>
 <#+         if (isDeprecated) #>
 <#+         { #>
-#pragma warning disable 0618  //   Warning on Deprecated usage
+#pragma warning disable 0612, 0618  //   Warning on Deprecated usage
 <#+         } #>
 <#+     }#>
 
@@ -379,7 +379,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+     {#>
 <#+         if (isDeprecated) #>
 <#+         { #>
-#pragma warning restore 0618
+#pragma warning restore 0612, 0618
 <#+         } #>
 <#+     }#>
 

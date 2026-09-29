@@ -3346,7 +3346,9 @@ _Check_return_ HRESULT UIElement::get_InteractionsImpl(_Out_ wfc::IVector<xaml::
     {
         ctl::ComPtr<InteractionCollection> interactionCollection;
         IFC_RETURN(ctl::make(this, &interactionCollection));
-        IFC_RETURN(interactionCollection.As(&m_interactions));
+        ctl::ComPtr<wfc::IVector<xaml::InteractionBase*>> spInteractions;
+        IFC_RETURN(interactionCollection.As(&spInteractions));
+        SetPtrValue(m_interactions, spInteractions);
     }
 
     IFC_RETURN(m_interactions.CopyTo(interactions));

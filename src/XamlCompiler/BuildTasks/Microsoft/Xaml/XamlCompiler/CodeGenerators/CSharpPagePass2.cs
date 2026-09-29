@@ -659,7 +659,7 @@ this.Write("            return returnValue;\r\n        }\r\n");
      {
          if (isDeprecated) 
          { 
-this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+this.Write("#pragma warning disable 0612, 0618  //   Warning on Deprecated usage\r\n");
 
          } 
      }
@@ -667,7 +667,7 @@ this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n")
      {
          if (isDeprecated) 
          { 
-this.Write("#pragma warning restore 0618\r\n");
+this.Write("#pragma warning restore 0612, 0618\r\n");
 
          } 
      }

@@ -82,6 +82,8 @@ Each `TableViewCellsPanel` measures its cells unconstrained and arranges them at
 
 `PART_HeaderRow` provides the header-surface background and a 1px bottom gridline. `PART_HeaderScroller` is horizontal-only (`HorizontalScrollMode="Auto"`, horizontal scrollbar hidden, vertical disabled). `PART_HeaderHost` is a `TableViewCellsPanel` (inherently horizontal); `RebuildHeaders` fills it with one `Grid` header cell per non-null column (each cell mirrors the column's `Visibility`), in `Columns` order, left-to-right. Header cells use the density row minimum height, so the header band matches body rows. Header content comes from `TableViewColumn.Header`, displayed via `HeaderTemplateSelector` when set, otherwise `HeaderTemplate`, otherwise the default text presenter.
 
+Custom templates using a `Border` for `PART_HeaderRow` must supply its gridline `BorderThickness` through a style setter rather than a local value, so `GridLinesVisibility` can restore it with `ClearValue` for `Horizontal` or `All`.
+
 ## Body band
 
 `ScrollViewer` `PART_BodyScroller` → `Grid` `PART_BodyContent` → `ItemsRepeater` `PART_RowsRepeater`.
@@ -173,7 +175,32 @@ Accessibility exposes a read-only UIA grid/table model:
 
 Lifetime rules: columns and rows use weak owner back-pointers (`GetOwningTableView()` resolves a strong owner for synchronous work); runtime classes use `ReferenceTracker` where required; cross-object events use `auto_revoke`; recycled rows reset transient visual state before reuse.
 
-Theme values resolve through `TabularSurfaces` resources and re-resolve across theme (and high-contrast) changes. Dark `TabularSurfaceGridLineBrush` is `#29FFFFFF`; the C++ fallback uses the same 16% white. Theme-XBF emission stays disabled in this PR to avoid resource-root / PRI collisions until isolated theme-resource emission is re-enabled.
+Theme values resolve through `TabularSurfaces` resources and re-resolve across theme (and high-contrast) changes. Dark `TabularSurfaceGridLineBrush` is `#29FFFFFF`; the C++ fallback uses the same 16% white.
+
+## Sort ownership and reconciliation
+
+Sort has two front-ends and exactly one axis is ever in force; they reconcile rather than stack.
+
+- `TableView.SortByColumn` (and header click) declares the control's own axis and publishes
+  `TableViewColumn.SortDirection`, which is what draws the header chevron.
+- `TableViewSource.Sort` declares an axis on the source. The path overload
+  (`Sort(sortMemberPath, direction)`) names a property, so the control can match it against a
+  column's `SortMemberPath` and light that column's chevron. The delegate overload
+  (`Sort(keySelector, direction)`) is opaque — the key may not correspond to a column at all
+  (computed key, multi-field, custom comparer) — so no chevron is shown.
+
+Reconciliation rules:
+
+- Sorting through the control clears any axis the app declared on the source.
+- Declaring a sort on the source clears the control's axis. A path-declared axis that matches a
+  column lights that column and raises `Sorted` with it; otherwise every `SortDirection` is
+  cleared and `Sorted` carries a null column.
+- `ClearSort()` clears every axis, including one the app declared.
+
+Without this, the earlier-declared axis would silently outrank the later one while the chevron
+advertised the loser. WPF splits the same way: `SortDescriptions` carry a property name, which is
+how `DataGrid` matches a column and lights its arrow, while a data-layer sort with no property
+name stays headerless.
 
 
 # Styling model

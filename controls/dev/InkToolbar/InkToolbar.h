@@ -23,6 +23,7 @@
 
 #include "ButtonManager.h"
 #include "InkToolbarMenuButton.h"   // InkToolbarMenuButtonCheckedState
+#include "InkTelemetry.h"
 
 class InkToolbar :
     public ReferenceTracker<InkToolbar, winrt::implementation::InkToolbarT>,
@@ -30,6 +31,7 @@ class InkToolbar :
 {
 public:
     InkToolbar();
+    ~InkToolbar();
 
     // IFrameworkElementOverrides / IUIElementOverrides
     // NOTE: like UWP, the container populates its buttons in MeasureOverride (runs even when Children
@@ -85,7 +87,7 @@ public:
     void OpenL3(winrt::InkToolbarMenuButton const& menuButton);
     void CloseL3(winrt::InkToolbarMenuButton const& menuButton);
 
-    static winrt::Windows::UI::Input::Inking::InkPresenter GetInkPresenter(winrt::InkToolbar const& inkToolbar);
+    static winrt::Microsoft::UI::Xaml::Controls::InkPresenter GetInkPresenter(winrt::InkToolbar const& inkToolbar);
 
     // Current InkPresenter.HighContrastAdjustment as an int (0/1/2), or the default when there is no target.
     int32_t GetHighContrastAdjustmentValue();
@@ -117,8 +119,8 @@ private:
     void OnOrientationChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void OnTargetInkPresenterChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void OnTargetInkPresenterChanged(
-        winrt::Windows::UI::Input::Inking::InkPresenter const& oldInkPresenter,
-        winrt::Windows::UI::Input::Inking::InkPresenter const& newInkPresenter);
+        winrt::Microsoft::UI::Xaml::Controls::InkPresenter const& oldInkPresenter,
+        winrt::Microsoft::UI::Xaml::Controls::InkPresenter const& newInkPresenter);
 
     void UpdateButtonDirection();
     void UpdateInkToolbarOrientation(winrt::Orientation orientation);
@@ -146,7 +148,7 @@ private:
     void ClearAllStrokes();
     void DeactivateMenuButton(winrt::InkToolbarMenuButton const& menuButton);
 
-    winrt::Windows::UI::Input::Inking::InkPresenter GetInkPresenter();
+    winrt::Microsoft::UI::Xaml::Controls::InkPresenter GetInkPresenter();
 
     // ---- State ----
     std::unique_ptr<ButtonManager> m_buttonManager;
@@ -157,6 +159,10 @@ private:
     std::vector<winrt::UIElement> m_autoPopulatedButtons;
     bool m_autoPopulated = false;
     bool m_childrenDirty = true;
+
+    void ReportUsageTelemetry() noexcept;
+    InkTelemetry::ToolbarState m_telemetryState;
+    winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
 
     // Tracks an open L3 for as long as it is open (registered for flyout Closed to prune).
     struct OpenFlyout

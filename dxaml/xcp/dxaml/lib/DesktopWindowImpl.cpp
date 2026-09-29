@@ -358,8 +358,31 @@ _Check_return_ HRESULT DesktopWindowImpl::put_TitleImpl(_In_opt_ HSTRING value)
     return S_OK;
 }
 
+_Check_return_ HRESULT DesktopWindowImpl::UpdateWindowWeakReference()
+{
+    ctl::WeakRefPtr weakWindow;
+    // Native composed owners without weak references retain their existing behavior without this lifetime guard.
+    IFC_RETURN(ctl::AsWeakOrNull(m_dxamlWindowInstance, &weakWindow));
+
+    auto lock = m_weakWindowLock.lock();
+    m_weakWindow.Swap(weakWindow);
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::ResolveWindowWeakReference(_Outptr_result_maybenull_ xaml::IWindow** window)
+{
+    ctl::WeakRefPtr weakWindow;
+    {
+        auto lock = m_weakWindowLock.lock();
+        weakWindow = m_weakWindow;
+    }
+
+    return weakWindow.CopyTo(window);
+}
+
 IFACEMETHODIMP DesktopWindowImpl::add_Activated(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pHandler, _Out_ EventRegistrationToken* pToken)
 {
+    IFC_RETURN(UpdateWindowWeakReference());
     IFC_RETURN(m_activatedEventSource.Add(pHandler, pToken));
 
     return S_OK;
@@ -374,6 +397,7 @@ IFACEMETHODIMP DesktopWindowImpl::remove_Activated(EventRegistrationToken token)
 
 IFACEMETHODIMP DesktopWindowImpl::add_Closed(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowEventArgs*>* pHandler, _Out_ EventRegistrationToken* pToken)
 {
+    IFC_RETURN(UpdateWindowWeakReference());
     IFC_RETURN(m_closedEventSource.Add(pHandler, pToken));
 
     return S_OK;
@@ -388,6 +412,7 @@ IFACEMETHODIMP DesktopWindowImpl::remove_Closed(EventRegistrationToken token)
 
 IFACEMETHODIMP DesktopWindowImpl::add_SizeChanged(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowSizeChangedEventArgs*> * pHandler, _Out_ EventRegistrationToken* pToken)
 {
+    IFC_RETURN(UpdateWindowWeakReference());
     IFC_RETURN(m_sizeChangedEventSource.Add(pHandler, pToken));
 
     return S_OK;
@@ -402,6 +427,7 @@ IFACEMETHODIMP DesktopWindowImpl::remove_SizeChanged(EventRegistrationToken toke
 
 IFACEMETHODIMP DesktopWindowImpl::add_VisibilityChanged(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowVisibilityChangedEventArgs*>* pHandler, _Out_ EventRegistrationToken* pToken)
 {
+    IFC_RETURN(UpdateWindowWeakReference());
     IFC_RETURN(m_visibilityChangedEventSource.Add(pHandler, pToken));
 
     return S_OK;
@@ -451,6 +477,9 @@ _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
 
 _Check_return_ HRESULT DesktopWindowImpl::CloseImpl()
 {
+    // Keep the owner alive through direct Close without reviving an owner queued for final release.
+    ctl::ComPtr<xaml::IWindow> spWindow;
+    IFC_RETURN(ResolveWindowWeakReference(&spWindow));
 
     if (!m_bIsClosed && !m_bIsClosing)
     {
@@ -497,6 +526,14 @@ _Check_return_ HRESULT DesktopWindowImpl::CloseImpl()
             // better to crash
             VERIFYHR(RaiseWindowVisibilityChangedEvent(FALSE));
         }
+
+        // A Window can handle its own events. Revoke those native GIT registrations before
+        // unpegging it so the handlers cannot keep the closed Window's managed peer alive.
+        m_sizeChangedEventSource.Clear();
+        m_activatedEventSource.Clear();
+        m_closedEventSource.Clear();
+        m_visibilityChangedEventSource.Clear();
+
         // Close win32 window, cleanup, and unregister from hwnd mapping from DXamlCore
         Shutdown();
     }
@@ -1208,6 +1245,10 @@ LRESULT DesktopWindowImpl::OnMessage(
     WPARAM wParam,
     LPARAM lParam) noexcept
 {
+    // Keep the Window alive through callbacks without reviving an owner queued for final release.
+    ctl::ComPtr<xaml::IWindow> spWindow;
+    IFCFAILFAST(ResolveWindowWeakReference(&spWindow));
+
     // When DispatcherShutdownMode is OnLastWindowClose, exit FrameworkApplication::ProcessMessage when the last WinUI
     // Desktop Window is destroyed.
     auto dxamlCore = DirectUI::DXamlCore::GetCurrent();

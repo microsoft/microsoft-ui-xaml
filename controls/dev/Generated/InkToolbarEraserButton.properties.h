@@ -9,28 +9,17 @@ class InkToolbarEraserButtonProperties
 public:
     InkToolbarEraserButtonProperties();
 
-    void ArePrecisionErasersVisible(bool value);
-    bool ArePrecisionErasersVisible();
-
     void IsClearAllVisible(bool value);
     bool IsClearAllVisible();
 
-    void IsStrokeEraserVisible(bool value);
-    bool IsStrokeEraserVisible();
-
-    void SelectedEraser(winrt::InkToolbarEraserKind const& value);
-    winrt::InkToolbarEraserKind SelectedEraser();
-
-    static winrt::DependencyProperty ArePrecisionErasersVisibleProperty() { return s_ArePrecisionErasersVisibleProperty; }
     static winrt::DependencyProperty IsClearAllVisibleProperty() { return s_IsClearAllVisibleProperty; }
-    static winrt::DependencyProperty IsStrokeEraserVisibleProperty() { return s_IsStrokeEraserVisibleProperty; }
-    static winrt::DependencyProperty SelectedEraserProperty() { return s_SelectedEraserProperty; }
 
-    static GlobalDependencyProperty s_ArePrecisionErasersVisibleProperty;
     static GlobalDependencyProperty s_IsClearAllVisibleProperty;
-    static GlobalDependencyProperty s_IsStrokeEraserVisibleProperty;
-    static GlobalDependencyProperty s_SelectedEraserProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnIsClearAllVisiblePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 };

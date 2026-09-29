@@ -101,12 +101,12 @@ namespace DirectUI
         //
         // We defer creation of these elements when the SplitView takes up the full window,
         // which is the common case.  Some apps, such as Spartan, have the SplitView nested.
-        ctl::ComPtr<xaml_primitives::IPopup>    m_outerDismissLayerPopup;
-        ctl::ComPtr<xaml_controls::IGrid>                 m_dismissHostElement;
-        ctl::ComPtr<xaml_shapes::IPath>                   m_topDismissElement;
-        ctl::ComPtr<xaml_shapes::IPath>                   m_bottomDismissElement;
-        ctl::ComPtr<xaml_shapes::IPath>                   m_leftDismissElement;
-        ctl::ComPtr<xaml_shapes::IPath>                   m_rightDismissElement;
+        TrackerPtr<xaml_primitives::IPopup>    m_outerDismissLayerPopup;
+        TrackerPtr<xaml_controls::IGrid>                 m_dismissHostElement;
+        TrackerPtr<xaml_shapes::IPath>                   m_topDismissElement;
+        TrackerPtr<xaml_shapes::IPath>                   m_bottomDismissElement;
+        TrackerPtr<xaml_shapes::IPath>                   m_leftDismissElement;
+        TrackerPtr<xaml_shapes::IPath>                   m_rightDismissElement;
 
         ctl::EventPtr<UIElementPointerPressedEventCallback>     m_dismissLayerPointerPressedEventHandler;
 

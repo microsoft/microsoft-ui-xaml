@@ -261,6 +261,14 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
             winrt::get_self<TableView>(owner)->OnColumnHeaderChanged(*this);
         }
     }
+    else if (property == s_HeaderToolTipProperty)
+    {
+        // Not the header branch above: that recomputes Auto width, which a tooltip cannot change.
+        if (auto owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->OnColumnHeaderToolTipChanged(*this);
+        }
+    }
     else if (property == s_FrozenEdgeProperty)
     {
         if (auto owner = GetOwningTableView())
@@ -347,6 +355,19 @@ void TableViewColumn::NotifyCellContentChanged()
     {
         winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(*this);
     }
+}
+
+winrt::Microsoft::UI::Xaml::Data::Binding TableViewColumn::CellToolTipBinding()
+{
+    return m_cellToolTipBinding.get();
+}
+
+void TableViewColumn::CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value)
+{
+    m_cellToolTipBinding.set(value);
+
+    // Realized cells carry the previous binding. The only invalidation this feature needs.
+    NotifyCellContentChanged();
 }
 
 bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)

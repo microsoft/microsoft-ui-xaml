@@ -57,6 +57,15 @@ if ERRORLEVEL 1 goto:eof
 REM The C# packaged Chart app is a single-project MSIX app, so it only emits its .msix when published.
 call :buildSamplesSolution %reporoot%\Samples\ChartApp\ChartAppCsPackaged\ChartAppCsPackaged.csproj /t:Publish /p:PublishProfile=win-%BUILDPLATFORM%.pubxml
 if ERRORLEVEL 1 goto:eof
+call :buildSamplesSolution %reporoot%\Samples\TableViewSampleApp\TableViewSampleApp.csproj
+if ERRORLEVEL 1 goto:eof
+call :buildSamplesSolution %reporoot%\Samples\TableViewApp\TableViewApp.sln
+if ERRORLEVEL 1 goto:eof
+call :buildSamplesSolution %reporoot%\Samples\TableViewApp\TableViewAppCsUnpackaged\TableViewAppCsUnpackaged.csproj /t:Publish /p:PublishProfile=win-%BUILDPLATFORM%.pubxml
+if ERRORLEVEL 1 goto:eof
+REM The C# packaged TableView app is a single-project MSIX app, so it only emits its .msix when published.
+call :buildSamplesSolution %reporoot%\Samples\TableViewApp\TableViewAppCsPackaged\TableViewAppCsPackaged.csproj /t:Publish /p:PublishProfile=win-%BUILDPLATFORM%.pubxml
+if ERRORLEVEL 1 goto:eof
 
 exit /b 0
 

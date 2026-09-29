@@ -6,6 +6,7 @@
 #include "MediaPlayerPresenter_partial.h"
 #include "MediaPlayerElement.h"
 #include "MediaPlayerPresenter.h"
+#include "MediaPlayerExtensions.h"
 #include "MediaTransportControls_partial.h"
 #include "Panel_partial.h"
 #include "ContentPresenter_partial.h"
@@ -721,7 +722,39 @@ MediaPlayerElement::LeaveImpl(
         IFC_RETURN(m_spTimedTextSource->SetMediaPlayer(nullptr));
     }
 
+    bool shouldPauseMediaPlayer = false;
+    if (bLive)
+    {
+        if (CContentRoot* contentRoot = VisualTree::GetContentRootForElement(GetHandle()))
+        {
+            shouldPauseMediaPlayer = contentRoot->IsShuttingDown();
+        }
+    }
+
     IFC_RETURN(__super::LeaveImpl(bLive, bSkipNameRegistration, bCoercedIsEnabled, bVisualTreeBeingReset));
+
+    if (shouldPauseMediaPlayer && m_spMediaPlayer)
+    {
+        ctl::ComPtr<wmp::IMediaPlaybackSession> spPlaybackSession;
+        wmp::MediaPlaybackState playbackState{};
+
+        HRESULT stateResult = MediaPlayer_GetCurrentPlaybackSession(m_spMediaPlayer.Get(), &spPlaybackSession);
+        if (SUCCEEDED(stateResult) && spPlaybackSession)
+        {
+            stateResult = spPlaybackSession->get_PlaybackState(&playbackState);
+        }
+        else if (SUCCEEDED(stateResult))
+        {
+            stateResult = E_UNEXPECTED;
+        }
+
+        if (SUCCEEDED(stateResult) &&
+            (playbackState == wmp::MediaPlaybackState_Playing ||
+             playbackState == wmp::MediaPlaybackState_Buffering))
+        {
+            IGNOREHR(m_spMediaPlayer->Pause());
+        }
+    }
 
     return S_OK;
 }

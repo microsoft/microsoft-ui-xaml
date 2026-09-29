@@ -95,6 +95,9 @@ namespace
         icon.HorizontalAlignment(winrt::HorizontalAlignment::Center);
         icon.VerticalAlignment(winrt::VerticalAlignment::Center);
         icon.Margin(winrt::ThicknessHelper::FromLengths(12, 0, 12, 0));
+        // Without this, high contrast paints a black plate behind the glyph instead of letting the
+        // item's selection background show through.
+        icon.HighContrastAdjustment(winrt::ElementHighContrastAdjustment::None);
         winrt::Grid::SetColumn(icon, 0);
         grid.Children().Append(icon);
 
@@ -112,6 +115,7 @@ namespace
         }
         text.VerticalAlignment(winrt::VerticalAlignment::Center);
         text.Margin(winrt::ThicknessHelper::FromLengths(0, 0, 12, 0));
+        text.HighContrastAdjustment(winrt::ElementHighContrastAdjustment::None);
         winrt::Grid::SetColumn(text, 1);
         grid.Children().Append(text);
 
@@ -124,15 +128,7 @@ void InkToolbarEraserButton::OnPropertyChanged(winrt::DependencyPropertyChangedE
 {
     auto property = args.Property();
 
-    if (property == winrt::InkToolbarEraserButton::SelectedEraserProperty())
-    {
-        auto oldValue = winrt::unbox_value_or<winrt::InkToolbarEraserKind>(args.OldValue(), winrt::InkToolbarEraserKind::Stroke);
-        auto newValue = winrt::unbox_value_or<winrt::InkToolbarEraserKind>(args.NewValue(), winrt::InkToolbarEraserKind::Stroke);
-        OnSelectedEraserChanged(oldValue, newValue);
-    }
-    else if (property == winrt::InkToolbarEraserButton::IsClearAllVisibleProperty()
-        || property == winrt::InkToolbarEraserButton::IsStrokeEraserVisibleProperty()
-        || property == winrt::InkToolbarEraserButton::ArePrecisionErasersVisibleProperty())
+    if (property == winrt::InkToolbarEraserButton::IsClearAllVisibleProperty())
     {
         OnL3ItemsVisibilitiesChanged();
     }
@@ -202,8 +198,8 @@ void InkToolbarEraserButton::SetupL3(wchar_t const* itemName)
     }
 }
 
-// Called when the SelectedEraser property changes.
-void InkToolbarEraserButton::OnSelectedEraserChanged(winrt::InkToolbarEraserKind oldValue, winrt::InkToolbarEraserKind newValue)
+// Called when the selected eraser changes.
+void InkToolbarEraserButton::OnSelectedEraserChanged(EraserKind oldValue, EraserKind newValue)
 {
     if (newValue == oldValue)
     {
@@ -213,7 +209,7 @@ void InkToolbarEraserButton::OnSelectedEraserChanged(winrt::InkToolbarEraserKind
     // Make sure the item(s) are visible for the new EraserKind.
     switch (newValue)
     {
-    case winrt::InkToolbarEraserKind::Stroke:
+    case EraserKind::Stroke:
         // Only show the stroke eraser if there are other items in the flyout.
         if (ArePrecisionErasersVisible() || IsClearAllVisible())
         {
@@ -225,8 +221,8 @@ void InkToolbarEraserButton::OnSelectedEraserChanged(winrt::InkToolbarEraserKind
         }
         break;
 
-    case winrt::InkToolbarEraserKind::PrecisionSmall:
-    case winrt::InkToolbarEraserKind::PrecisionLarge:
+    case EraserKind::PrecisionSmall:
+    case EraserKind::PrecisionLarge:
         // The two precision erasers are always shown/hidden together.
         ArePrecisionErasersVisible(true);
         break;
@@ -261,39 +257,39 @@ void InkToolbarEraserButton::OnEraserItemChecked(winrt::InkToolbarFlyoutItem con
     auto name = sender.as<winrt::FrameworkElement>().Name();
     if (name == STROKEERASER_ITEM_NAME)
     {
-        SelectedEraser(winrt::InkToolbarEraserKind::Stroke);
+        SelectedEraser(EraserKind::Stroke);
     }
     else if (name == SMALLERASER_ITEM_NAME)
     {
-        SelectedEraser(winrt::InkToolbarEraserKind::PrecisionSmall);
+        SelectedEraser(EraserKind::PrecisionSmall);
     }
     else if (name == LARGEERASER_ITEM_NAME)
     {
-        SelectedEraser(winrt::InkToolbarEraserKind::PrecisionLarge);
+        SelectedEraser(EraserKind::PrecisionLarge);
     }
 }
 
-wchar_t const* InkToolbarEraserButton::EraserKindToEraserItemName(winrt::InkToolbarEraserKind kind)
+wchar_t const* InkToolbarEraserButton::EraserKindToEraserItemName(EraserKind kind)
 {
     switch (kind)
     {
-    case winrt::InkToolbarEraserKind::Stroke: return STROKEERASER_ITEM_NAME;
-    case winrt::InkToolbarEraserKind::PrecisionSmall: return SMALLERASER_ITEM_NAME;
-    case winrt::InkToolbarEraserKind::PrecisionLarge: return LARGEERASER_ITEM_NAME;
+    case EraserKind::Stroke: return STROKEERASER_ITEM_NAME;
+    case EraserKind::PrecisionSmall: return SMALLERASER_ITEM_NAME;
+    case EraserKind::PrecisionLarge: return LARGEERASER_ITEM_NAME;
     default:
         throw winrt::hresult_invalid_argument(L"Unexpected eraser kind");
     }
 }
 
-winrt::InkToolbarEraserKind InkToolbarEraserButton::EraserItemNameToEraserKind(std::wstring_view name)
+InkToolbarEraserButton::EraserKind InkToolbarEraserButton::EraserItemNameToEraserKind(std::wstring_view name)
 {
-    if (name == STROKEERASER_ITEM_NAME) { return winrt::InkToolbarEraserKind::Stroke; }
-    if (name == SMALLERASER_ITEM_NAME) { return winrt::InkToolbarEraserKind::PrecisionSmall; }
-    if (name == LARGEERASER_ITEM_NAME) { return winrt::InkToolbarEraserKind::PrecisionLarge; }
+    if (name == STROKEERASER_ITEM_NAME) { return EraserKind::Stroke; }
+    if (name == SMALLERASER_ITEM_NAME) { return EraserKind::PrecisionSmall; }
+    if (name == LARGEERASER_ITEM_NAME) { return EraserKind::PrecisionLarge; }
     throw winrt::hresult_error(E_UNEXPECTED, L"Item name doesn't match an eraser kind");
 }
 
-void InkToolbarEraserButton::SetL3EraserItemCheck(winrt::InkToolbarEraserKind kind, bool check)
+void InkToolbarEraserButton::SetL3EraserItemCheck(EraserKind kind, bool check)
 {
     auto thisAsButtonBase = try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::ButtonBase>();
 

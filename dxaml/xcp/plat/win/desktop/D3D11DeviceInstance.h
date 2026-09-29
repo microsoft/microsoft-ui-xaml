@@ -107,6 +107,7 @@ public:
     _Check_return_ HRESULT EnsureResources();
     _Check_return_ HRESULT EnsureD2DResources();
     _Check_return_ HRESULT EnsureDeviceSpecificD2DResources(_In_ const CD3D11Device* deviceWrapper);
+    void ReleaseDeviceSpecificD2DResources(_In_ const CD3D11Device* deviceWrapper);
     _Check_return_ HRESULT EnsureD2DFactory();
 
     // Transfers ownership of the device-removed event and its registration cookie to the caller.
