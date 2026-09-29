@@ -58,26 +58,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="InkToolbarBallpointPenButtonLabel" xml:space="preserve">
-    <value>Pene</value>
-    <comment>Label shown on the InkToolbar ballpoint-pen tool button.</comment>
-  </data>
-  <data name="InkToolbarPencilButtonLabel" xml:space="preserve">
-    <value>Penerākau</value>
-    <comment>Label shown on the InkToolbar pencil tool button.</comment>
-  </data>
-  <data name="InkToolbarHighlighterButtonLabel" xml:space="preserve">
-    <value>Pene Miramira</value>
-    <comment>Label shown on the InkToolbar highlighter tool button.</comment>
-  </data>
-  <data name="InkToolbarEraserButtonLabel" xml:space="preserve">
-    <value>Kōmuru</value>
-    <comment>Label shown on the InkToolbar eraser tool button.</comment>
-  </data>
-  <data name="InkToolbarToolButtonLabel" xml:space="preserve">
-    <value>Utauta</value>
-    <comment>Default label shown on an InkToolbar tool button whose tool kind is unrecognized.</comment>
-  </data>
   <data name="InkToolbarBallpointPenButtonName" xml:space="preserve">
     <value>Pene</value>
     <comment>Tooltip and accessible name for the InkToolbar ballpoint-pen tool button.</comment>
@@ -105,6 +85,10 @@
   <data name="InkToolbarToolButtonControlTypeName" xml:space="preserve">
     <value>pātene</value>
     <comment>Localized UIA control-type name for InkToolbar tool buttons; Narrator reads this instead of "custom". UWP IDS_INKTOOLBAR_TOOL_BUTTON_CONTROLTYPE_NAME.</comment>
+  </data>
+  <data name="InkToolbarColorPaletteHelpText" xml:space="preserve">
+    <value>Whakatuwheratia hei kōwhiri i tētahi tae mai i te papatae</value>
+    <comment>Accessible help for the ballpoint-pen, pencil and highlighter dropdowns.</comment>
   </data>
   <data name="InkToolbarStrokeEraserLabel" xml:space="preserve">
     <value>Muku Hau</value>
