@@ -4,7 +4,7 @@
      CanUserResizeColumns default to true, so they are shown explicitly only
      because this page toggles them from the Options rail. -->
 
-<adv:TableView x:Name="PeopleTable"
+<tabular:TableView x:Name="PeopleTable"
                SelectionMode="Single"
                HeadersVisibility="Column"
                CanUserSortColumns="True"
@@ -14,27 +14,27 @@
 
     <!-- A text column sorts on the property its Binding already names, so it
          needs nothing beyond the Binding itself. -->
-    <adv:TableViewTextColumn Header="Last name"
+    <tabular:TableViewTextColumn Header="Last name"
                              Binding="{Binding LastName}"
                              Width="160" />
 
     <!-- Star width with a floor: Email takes the leftover viewport but never
          collapses below 200px, and a drag is clamped by the same MinWidth. -->
-    <adv:TableViewTextColumn Header="Email"
+    <tabular:TableViewTextColumn Header="Email"
                              Binding="{Binding Email}"
                              Width="*" MinWidth="200" />
 
     <!-- Bind the DISPLAY text to a preformatted string so the column reads well;
          the underlying DateTimeOffset is still what the row carries. -->
-    <adv:TableViewTextColumn Header="Join date"
+    <tabular:TableViewTextColumn Header="Join date"
                              Binding="{Binding JoinDateText}"
                              Width="110" />
 
     <!-- A template column owns its cell. The Border background comes from a value
          converter, so a live update recolours the cell in place - the row is not
          rebuilt, because the cell binds reactively to the row's DataContext. -->
-    <adv:TableViewTemplateColumn Header="Status" Width="120" CanSort="False">
-        <adv:TableViewTemplateColumn.CellTemplate>
+    <tabular:TableViewTemplateColumn Header="Status" Width="120" CanSort="False">
+        <tabular:TableViewTemplateColumn.CellTemplate>
             <DataTemplate>
                 <Border Background="{Binding IsActive, Converter={StaticResource ShowcaseActiveChipConverter}}"
                         CornerRadius="10" Padding="10,3" Margin="2"
@@ -44,13 +44,13 @@
                                VerticalAlignment="Center" />
                 </Border>
             </DataTemplate>
-        </adv:TableViewTemplateColumn.CellTemplate>
-    </adv:TableViewTemplateColumn>
+        </tabular:TableViewTemplateColumn.CellTemplate>
+    </tabular:TableViewTemplateColumn>
 
     <!-- Per-column opt-outs, independent of the control-wide gates above. -->
-    <adv:TableViewTextColumn Header="Role"
+    <tabular:TableViewTextColumn Header="Role"
                              Binding="{Binding Role}"
                              Width="200"
                              CanSort="False"
                              CanResize="False" />
-</adv:TableView>
+</tabular:TableView>

@@ -38,7 +38,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <FontIcon Grid.Column="0" Glyph="&#xE790;" VerticalAlignment="Center"/>
+                        <FontIcon Grid.Column="0" Glyph="&#xE790;" AutomationProperties.AccessibilityView="Raw" VerticalAlignment="Center"/>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock Text="App theme" Style="{StaticResource BodyStrongTextBlockStyle}"/>
                             <TextBlock Text="Select which app theme to display." Style="{StaticResource SectionDescriptionTextStyle}"/>
@@ -76,7 +76,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <FontIcon Grid.Column="0" Glyph="&#xE8B7;" VerticalAlignment="Top"/>
+                        <FontIcon Grid.Column="0" Glyph="&#xE8B7;" AutomationProperties.AccessibilityView="Raw" VerticalAlignment="Top"/>
                         <StackPanel Grid.Column="1" Spacing="4">
                             <TextBlock Text="Theme setting" Style="{StaticResource BodyStrongTextBlockStyle}"/>
                             <TextBlock Text="Persisted as plain text. Delete the file to reset to system default." Style="{StaticResource SectionDescriptionTextStyle}"/>

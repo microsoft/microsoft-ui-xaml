@@ -5,7 +5,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <Page.Resources>
@@ -42,18 +42,18 @@
                     Padding="0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Stretch">
-                    <adv:TableView
-                        x:Name="DemoTable"
+                    <tabular:TableView
+                        x:Name="DemoTable" AutomationProperties.Name="People table"
                         AutomationProperties.AutomationId="GridLinesDemoTable"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <adv:TableViewTextColumn Header="First"      Width="{StaticResource ColWidthShortName}"  Binding="{Binding FirstName}"     CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Last"       Width="{StaticResource ColWidthShortName}"  Binding="{Binding LastName}"      CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"    CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding Role}"          CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Email"      Width="*" MinWidth="200"      Binding="{Binding Email}"         CanSort="False"/>
-                    </adv:TableView>
+                        <tabular:TableViewTextColumn Header="First"      Width="{StaticResource ColWidthShortName}"  Binding="{Binding FirstName}"     CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Last"       Width="{StaticResource ColWidthShortName}"  Binding="{Binding LastName}"      CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"    CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding Role}"          CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Email"      Width="*" MinWidth="200"      Binding="{Binding Email}"         CanSort="False"/>
+                    </tabular:TableView>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>

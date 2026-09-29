@@ -19,7 +19,7 @@
                AutomationProperties.AutomationId="HorizontalSyncText"/>
 </muxc:InfoBar>
 
-<adv:TableView x:Name="WidthsTable"
+<tabular:TableView x:Name="WidthsTable"
                SelectionMode="Single"
                AutomationProperties.AutomationId="WidthsTable"/>
 

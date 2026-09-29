@@ -12,12 +12,12 @@
                  Checked="OnGridLinesVisibilityChecked"/>
 </StackPanel>
 
-<adv:TableView x:Name="DemoTable"
+<tabular:TableView x:Name="DemoTable"
                SelectionMode="Single"
 >
-    <adv:TableViewTextColumn Header="First"      Binding="{Binding FirstName}"/>
-    <adv:TableViewTextColumn Header="Last"       Binding="{Binding LastName}"/>
-    <adv:TableViewTextColumn Header="Department" Binding="{Binding Department}"/>
-    <adv:TableViewTextColumn Header="Role"       Binding="{Binding Role}"/>
-    <adv:TableViewTextColumn Header="Email"      Binding="{Binding Email}"/>
-</adv:TableView>
+    <tabular:TableViewTextColumn Header="First"      Binding="{Binding FirstName}"/>
+    <tabular:TableViewTextColumn Header="Last"       Binding="{Binding LastName}"/>
+    <tabular:TableViewTextColumn Header="Department" Binding="{Binding Department}"/>
+    <tabular:TableViewTextColumn Header="Role"       Binding="{Binding Role}"/>
+    <tabular:TableViewTextColumn Header="Email"      Binding="{Binding Email}"/>
+</tabular:TableView>

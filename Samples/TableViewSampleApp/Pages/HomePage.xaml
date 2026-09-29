@@ -153,7 +153,7 @@
             <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
                 <TextBlock Text="Accessibility &amp; input" Style="{StaticResource SectionHeaderTextStyle}"/>
                 <TextBlock
-                    Text="Explore keyboard navigation (arrows, Tab, Enter, Esc, Home / End, Page Up / Down), TableView automation peers, and None / Single row selection."
+                    Text="Explore row keyboard navigation (Up / Down, Home / End, Page Up / Down), TableView automation peers, and None / Single row selection."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
             </StackPanel>

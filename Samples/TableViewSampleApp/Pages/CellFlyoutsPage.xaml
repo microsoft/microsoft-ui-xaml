@@ -5,7 +5,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls"
     xmlns:local="using:TableViewSampleApp.Pages"
     xmlns:models="using:TableViewSampleApp.Models">
@@ -123,19 +123,19 @@
                     Style="{StaticResource TableHostBorderStyle}"
                     Padding="0"
                     VerticalAlignment="Stretch">
-                    <adv:TableView
-                        x:Name="PeopleTable"
+                    <tabular:TableView
+                        x:Name="PeopleTable" AutomationProperties.Name="People table with interactive cells"
                         SelectionMode="Single"
                         IsReadOnly="False"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <adv:TableViewTextColumn Header="Name" Width="180" Binding="{Binding FullName}" CanSort="False"/>
-                        <adv:TableViewTemplateColumn Header="Join date" Width="220" SortMemberPath="JoinDate" CellTemplate="{StaticResource DatePickerCell}" CanSort="False"/>
-                        <adv:TableViewTemplateColumn Header="Department" Width="130" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentComboCell}" CanSort="False"/>
-                        <adv:TableViewTemplateColumn Header="Details flyout" Width="130" SortMemberPath="FullName" CellTemplate="{StaticResource DetailsButtonCell}" CanSort="False"/>
-                        <adv:TableViewTemplateColumn Header="Shift menu" Width="130" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftMenuCell}" CanSort="False"/>
-                        <adv:TableViewTemplateColumn Header="Image" Width="{StaticResource ColWidthAvatar}" SortMemberPath="Initial" CellTemplate="{StaticResource AvatarCell}" CanSort="False"/>
-                    </adv:TableView>
+                        <tabular:TableViewTextColumn Header="Name" Width="180" Binding="{Binding FullName}" CanSort="False"/>
+                        <tabular:TableViewTemplateColumn Header="Join date" Width="220" SortMemberPath="JoinDate" CellTemplate="{StaticResource DatePickerCell}" CanSort="False"/>
+                        <tabular:TableViewTemplateColumn Header="Department" Width="130" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentComboCell}" CanSort="False"/>
+                        <tabular:TableViewTemplateColumn Header="Details flyout" Width="130" SortMemberPath="FullName" CellTemplate="{StaticResource DetailsButtonCell}" CanSort="False"/>
+                        <tabular:TableViewTemplateColumn Header="Shift menu" Width="130" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftMenuCell}" CanSort="False"/>
+                        <tabular:TableViewTemplateColumn Header="Image" Width="{StaticResource ColWidthAvatar}" SortMemberPath="Initial" CellTemplate="{StaticResource AvatarCell}" CanSort="False"/>
+                    </tabular:TableView>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>

@@ -1,33 +1,51 @@
 <Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular">
+      xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular">
 
-  <adv:TableView
+  <tabular:TableView
       x:Name="TeamsTable"
       SelectionMode="Single"
       Sorted="OnTableSorted">
 
     <!-- SortMemberPath identifies the property to sort by. When omitted,
          TableViewTextColumn falls back to its Binding.Path. -->
-    <adv:TableViewTextColumn Header="Group"
+    <tabular:TableViewTextColumn Header="Group"
                               SortMemberPath="Group"
                               Binding="{Binding Group}"/>
-    <adv:TableViewTextColumn Header="Team"
+    <tabular:TableViewTextColumn Header="Team"
                               SortMemberPath="Team"
                               Binding="{Binding Team}"/>
 
-    <!-- CanUserSort=False hides the SortIndicator and makes the header
+    <!-- CanSort=False hides the SortIndicator and makes the header
          non-interactive. Programmatic SortByColumn can still target it. -->
-    <adv:TableViewTextColumn Header="P"
-                              CanUserSort="False"
-                              Binding="{Binding Played}"/>
+    <tabular:TableViewTextColumn Header="Played"
+                              CanSort="False"
+                              Binding="{Binding Played}">
+      <tabular:TableViewTextColumn.HeaderTemplate>
+        <DataTemplate>
+          <TextBlock Text="P"/>
+        </DataTemplate>
+      </tabular:TableViewTextColumn.HeaderTemplate>
+    </tabular:TableViewTextColumn>
 
-    <adv:TableViewTextColumn Header="GD"
+    <tabular:TableViewTextColumn Header="Goal difference"
                               SortMemberPath="GoalDifference"
-                              Binding="{Binding GoalDifference}"/>
-    <adv:TableViewTextColumn Header="Pts"
+                              Binding="{Binding GoalDifference}">
+      <tabular:TableViewTextColumn.HeaderTemplate>
+        <DataTemplate>
+          <TextBlock Text="GD"/>
+        </DataTemplate>
+      </tabular:TableViewTextColumn.HeaderTemplate>
+    </tabular:TableViewTextColumn>
+    <tabular:TableViewTextColumn Header="Points"
                               SortMemberPath="Points"
-                              Binding="{Binding Points}"/>
-  </adv:TableView>
+                              Binding="{Binding Points}">
+      <tabular:TableViewTextColumn.HeaderTemplate>
+        <DataTemplate>
+          <TextBlock Text="Pts"/>
+        </DataTemplate>
+      </tabular:TableViewTextColumn.HeaderTemplate>
+    </tabular:TableViewTextColumn>
+  </tabular:TableView>
 
 </Page>
 

@@ -27,6 +27,7 @@
     <DataTemplate x:Key="DepartmentCell" x:DataType="models:Person">
         <ComboBox
             SelectedItem="{Binding Department, Mode=TwoWay}"
+            AutomationProperties.AccessibilityView="Raw"
             Loaded="OnDepartmentComboBoxLoaded"
             IsHitTestVisible="False"
             IsTabStop="False"
@@ -38,6 +39,7 @@
     <DataTemplate x:Key="IsActiveCell" x:DataType="models:Person">
         <CheckBox
             IsChecked="{Binding IsActive, Mode=TwoWay}"
+            AutomationProperties.AccessibilityView="Raw"
             IsHitTestVisible="False"
             IsTabStop="False"
             MinWidth="0"
@@ -47,13 +49,13 @@
     </DataTemplate>
 </Page.Resources>
 
-<adv:TableView x:Name="PeopleTable" SelectionMode="Single">
-    <adv:TableViewTextColumn Header="Name" Binding="{Binding FullName}" CanUserSort="False"/>
-    <adv:TableViewTemplateColumn Header="Join date" SortMemberPath="JoinDate" CellTemplate="{StaticResource JoinDateCell}" CanUserSort="False"/>
-    <adv:TableViewTemplateColumn Header="Shift start" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftStartCell}" CanUserSort="False"/>
-    <adv:TableViewTemplateColumn Header="Department" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentCell}" CanUserSort="False"/>
-    <adv:TableViewTemplateColumn Header="Active" SortMemberPath="IsActive" CellTemplate="{StaticResource IsActiveCell}" CanUserSort="False"/>
-</adv:TableView>
+<tabular:TableView x:Name="PeopleTable" SelectionMode="Single">
+    <tabular:TableViewTextColumn Header="Name" Binding="{Binding FullName}" CanSort="False"/>
+    <tabular:TableViewTemplateColumn Header="Join date" SortMemberPath="JoinDate" CellTemplate="{StaticResource JoinDateCell}" CanSort="False"/>
+    <tabular:TableViewTemplateColumn Header="Shift start" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftStartCell}" CanSort="False"/>
+    <tabular:TableViewTemplateColumn Header="Department" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentCell}" CanSort="False"/>
+    <tabular:TableViewTemplateColumn Header="Active" SortMemberPath="IsActive" CellTemplate="{StaticResource IsActiveCell}" CanSort="False"/>
+</tabular:TableView>
 
 // Code-behind wires the source and ComboBox choices in this split-binary host.
 People = new ObservableCollection<Person>(PersonData.Take(18));

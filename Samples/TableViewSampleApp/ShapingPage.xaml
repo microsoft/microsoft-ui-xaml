@@ -3,7 +3,7 @@
     x:Class="TableViewSampleApp.ShapingPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular">
 
     <Page.KeyboardAccelerators>
         <KeyboardAccelerator Key="C" Modifiers="Control,Shift" Invoked="CollapseAccel_Invoked"/>
@@ -119,7 +119,7 @@
         </StackPanel>
 
         <Border x:Name="TableHost" Grid.Row="5" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
-            <tv:TableView x:Name="Table" SelectionMode="Single"/>
+            <tabular:TableView x:Name="Table" AutomationProperties.Name="Sorting and filtering playground table" SelectionMode="Single"/>
         </Border>
 
         <TextBlock x:Name="StatusText" Grid.Row="6" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>

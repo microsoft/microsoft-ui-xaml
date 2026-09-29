@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
@@ -36,17 +36,17 @@
                     Padding="0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Stretch">
-                    <adv:TableView
-                        x:Name="DemoTable"
+                    <tabular:TableView
+                        x:Name="DemoTable" AutomationProperties.Name="Sample data table"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <adv:TableViewTextColumn Header="Column 1" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value1}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Column 2" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value2}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Column 3" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value3}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Column 4" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value4}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Column 5" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value5}" CanSort="False"/>
-                    </adv:TableView>
+                        <tabular:TableViewTextColumn Header="Column 1" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value1}" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Column 2" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value2}" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Column 3" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value3}" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Column 4" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value4}" CanSort="False"/>
+                        <tabular:TableViewTextColumn Header="Column 5" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value5}" CanSort="False"/>
+                    </tabular:TableView>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>

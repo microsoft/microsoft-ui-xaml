@@ -323,6 +323,7 @@ public:
     // Select() means "make this the selection", never "clear it".
     void SelectRowIndexFromInteraction(int32_t index);
     void SelectRowIndexFromInteraction(int32_t index, bool toggle);
+    void SelectRowIndexFromKeyboardFocus(int32_t index);
 
     // The row sees the press first (it owns its cells); selection state lives on the control.
     void OnRowPointerSelect(winrt::TableViewRow const& row);
@@ -473,6 +474,9 @@ private:
     // Set while a stashed selection is being restored after a reload, so the clear-then-reselect
     // that SelectionModel::Source forces is published once at the end rather than as two events.
     bool m_isRestoringSelection{ false };
+
+    // Set only while keyboard navigation is moving focus and Single selection follows that focus.
+    bool m_isKeyboardFocusSelectionChange{ false };
 
     winrt::ItemsSourceView::CollectionChanged_revoker m_selectionCollectionChangedRevoker{};
 

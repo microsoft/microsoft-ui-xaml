@@ -1600,14 +1600,38 @@ void TableView::RebuildHeaders()
             // an explicit Width would defeat the panel's unconstrained Auto measured-width measurement.
 
             winrt::ContentPresenter content;
-            content.Content(column.Header());
             if (auto headerTemplateSelector = column.HeaderTemplateSelector())
             {
+                content.Content(column.Header());
                 content.ContentTemplateSelector(headerTemplateSelector);
             }
             else if (auto headerTemplate = column.HeaderTemplate())
             {
+                content.Content(column.Header());
                 content.ContentTemplate(headerTemplate);
+            }
+            else if (!headerText.empty())
+            {
+                // A ContentPresenter renders a bare string through an implicit TextBlock that carries
+                // no TextTrimming, so a header wider than its column hard-clips mid-glyph
+                // ("Departmen") while cell text ellipsizes -- TableViewTextColumn::GenerateElementCore
+                // sets CharacterEllipsis. Supplying the TextBlock makes the header degrade the same
+                // way as the cells beneath it. This is most visible at large text-scale settings,
+                // where a clipped header leaves the column unidentifiable. FontSize/FontWeight set on
+                // the presenter below still apply: both are inherited properties.
+                //
+                // headerText comes from GetColumnHeaderText, which accepts IStringable as well as a
+                // String-typed IPropertyValue -- matching every other header-text path in the control,
+                // so an IStringable header ellipsizes too rather than silently keeping the hard clip.
+                winrt::TextBlock headerBlock;
+                headerBlock.Text(headerText);
+                headerBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
+                headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
+                content.Content(headerBlock);
+            }
+            else
+            {
+                content.Content(column.Header());
             }
             // Consume TableViewHeaderCellPadding from theme resources (cached once per rebuild).
             content.Padding(cachedHeaderCellPadding);
