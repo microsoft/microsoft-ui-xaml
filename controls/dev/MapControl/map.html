@@ -636,7 +636,16 @@
                             position: position,
                             id: id
                         });
-                        pin.getElement().setAttribute('tabindex', 0);
+                        const pinElement = pin.getElement();
+                        pinElement.setAttribute('tabindex', 0);
+                        // Expose each pin as a named button so screen readers announce
+                        // "<name>, button" instead of the raw "graphic, group" that the
+                        // underlying SVG marker element reports by default.
+                        pinElement.setAttribute('role', 'button');
+                        const pinName = (properties && typeof properties.name === 'string' && properties.name !== 'MapElement')
+                            ? properties.name
+                            : 'Pinned location';
+                        pinElement.setAttribute('aria-label', pinName);
                         return pin;
                     }
                 });
