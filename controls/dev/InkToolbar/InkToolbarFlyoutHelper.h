@@ -5,6 +5,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include <winrt/Windows.UI.Xaml.Interop.h> // Declares winrt::xaml_typename (no longer in the PCH after #12054).
 
 // Tightens a tool/menu button's L3 flyout to match WinUI 2 (zero presenter padding). The background,
 // border and corner are inherited from the framework's default FlyoutPresenter style so they stay
