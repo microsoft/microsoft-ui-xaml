@@ -477,6 +477,11 @@ void TableView::OnApplyTemplate()
 
     m_rowsRepeater.set(GetTemplateChild(hstring{ s_RowsRepeaterPartName }).try_as<winrt::ItemsRepeater>());
     m_headerRow.set(GetTemplateChild(hstring{ s_HeaderRowPartName }).try_as<winrt::FrameworkElement>());
+    m_headerRowBorderThickness = {};
+    if (auto headerBorder = m_headerRow.get().try_as<winrt::Border>())
+    {
+        m_headerRowBorderThickness = headerBorder.BorderThickness();
+    }
     m_headerHost.set(GetTemplateChild(hstring{ s_HeaderHostPartName }).try_as<winrt::Panel>());
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
     auto weakThis = get_weak();
@@ -801,7 +806,7 @@ void TableView::ApplyGridLinesToHeader()
         {
             if (WantsHorizontalLines(visibility))
             {
-                headerBorder.ClearValue(winrt::Border::BorderThicknessProperty());
+                headerBorder.BorderThickness(m_headerRowBorderThickness);
             }
             else
             {
