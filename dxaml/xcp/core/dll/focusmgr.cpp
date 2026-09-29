@@ -2624,15 +2624,6 @@ CDependencyObject* CFocusManager::FindNextFocus(
           break;
     }
     TraceXYFocusEnteredBegin(xyFocusDirectionName);
-#ifdef XAMLPROFILER_ENABLED
-    // Balance the profiler activity across the early ProcessTabStopInternal failure returns below,
-    // which the retail End (emitted only on the normal exit) intentionally does not cover.
-    XamlProfilerTracing::XYFocusEnteredStart(reinterpret_cast<uint64_t>(m_pFocusedElement), xyFocusDirectionName);
-    auto xyFocusProfilerGuard = wil::scope_exit([]()
-    {
-        XamlProfilerTracing::XYFocusEnteredStop();
-    });
-#endif
 
     xref_ptr<CDependencyObject> nextFocusedElement;
     CControl* const engagedControl = xyFocusOptions.considerEngagement ? m_spEngagedControl : nullptr;
@@ -2640,6 +2631,19 @@ CDependencyObject* CFocusManager::FindNextFocus(
     //If we're hosting a component (for e.g. WebView) and focus is moving from within one of our hosted component's children,
     //we interpret the component (WebView) as previously focused element
     auto currentFocusedElementOrComponent = (component == nullptr) ? m_pFocusedElement : component;
+
+#ifdef XAMLPROFILER_ENABLED
+    // Emit the profiler Start after currentFocusedElementOrComponent is resolved so the payload
+    // identifies the element actually used for navigation: when focus enters from a hosted component
+    // (e.g. WebView) this is the component, not m_pFocusedElement. The scope_exit also balances the
+    // activity across the early ProcessTabStopInternal failure returns below, which the retail End
+    // (emitted only on the normal exit) intentionally does not cover.
+    XamlProfilerTracing::XYFocusEnteredStart(reinterpret_cast<uint64_t>(currentFocusedElementOrComponent), xyFocusDirectionName);
+    auto xyFocusProfilerGuard = wil::scope_exit([]()
+    {
+        XamlProfilerTracing::XYFocusEnteredStop();
+    });
+#endif
 
     if (direction == DirectUI::FocusNavigationDirection::Previous ||
         direction == DirectUI::FocusNavigationDirection::Next ||
