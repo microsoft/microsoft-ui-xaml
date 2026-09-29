@@ -15,7 +15,9 @@
 #include "TableViewCellAutomationPeer.properties.cpp"
 #include "TVDiag.h"
 
+#include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 TableViewCellAutomationPeer::TableViewCellAutomationPeer(
@@ -35,7 +37,10 @@ TableViewCellAutomationPeer::TableViewCellAutomationPeer(
     {
         m_column = winrt::make_weak(column);
     }
-    GetRowIndex();
+    // Primes m_lastOwningTable / m_lastKnownRowIndex for IsVirtualized(). It has to happen while
+    // the row is still in the tree: once the row is recycled the index is unresolvable, and a
+    // client may not query VirtualizedItem until after that point.
+    std::ignore = GetRowIndex();
 }
 
 winrt::IInspectable TableViewCellAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
@@ -65,7 +70,6 @@ winrt::IInspectable TableViewCellAutomationPeer::GetPatternCore(winrt::PatternIn
 
 hstring TableViewCellAutomationPeer::GetClassNameCore()
 {
-    // Keep the logical cell class independent of its implementation-only visual.
     return L"TableViewCell";
 }
 
@@ -160,6 +164,11 @@ void TableViewCellAutomationPeer::EndEditName()
         m_nameLayoutUpdatedRevoker.revoke();
         m_editName.reset();
     });
+
+    // Released by whichever of the three paths below resolves first. Owned by the backstop's
+    // lambda, so the subscription cannot outlive one frame.
+    auto const unloadRevoker = std::make_shared<winrt::FrameworkElement::Unloaded_revoker>();
+
     // LayoutUpdated precedes the framework's automatic-property pass. Queue
     // release from that event, leaving the held old Name intact for the pass.
     m_nameLayoutUpdatedRevoker = cell.LayoutUpdated(winrt::auto_revoke,
@@ -179,7 +188,57 @@ void TableViewCellAutomationPeer::EndEditName()
                 }
             }
         });
+
+    // An unloaded, collapsed, or hidden-column cell never sees another LayoutUpdated, so the pinned
+    // pre-edit name would otherwise be returned by GetNameCore forever.
+    *unloadRevoker = cell.Unloaded(winrt::auto_revoke,
+        [weakThis, generation](auto const&, auto const&)
+        {
+            if (auto const peer = weakThis.get(); peer && peer->m_nameGeneration == generation)
+            {
+                peer->m_nameLayoutUpdatedRevoker.revoke();
+                peer->m_editName.reset();
+                try
+                {
+                    peer->InvalidatePeer();
+                }
+                catch (...)
+                {
+                    TVDiag::LogRetailF(L"[TableView] Optional cell-name invalidation on unload failed.");
+                }
+            }
+        });
+
     cell.InvalidateMeasure();
+
+    // Backstop: LayoutUpdated is not guaranteed to run for this cell at all. An armed layout
+    // revoker at end of frame means it did not, so release rather than stay pinned.
+    auto const queue = DispatcherQueue();
+    if (!queue || !queue.TryEnqueue(winrt::DispatcherQueuePriority::Low,
+        [weakThis, generation, unloadRevoker]()
+        {
+            unloadRevoker->revoke();
+            if (auto const peer = weakThis.get();
+                peer && peer->m_nameGeneration == generation && peer->m_nameLayoutUpdatedRevoker)
+            {
+                peer->m_nameLayoutUpdatedRevoker.revoke();
+                peer->m_editName.reset();
+                try
+                {
+                    peer->InvalidatePeer();
+                }
+                catch (...)
+                {
+                    TVDiag::LogRetailF(L"[TableView] Optional cell-name backstop invalidation failed.");
+                }
+            }
+        }))
+    {
+        // Without the backstop the one-frame bound cannot be honoured, so do not pin at all.
+        TVDiag::LogRetailF(L"[TableView] Optional cell-name release backstop could not be queued.");
+        return;
+    }
+
     cleanupOnFailure.release();
 }
 
@@ -221,7 +280,6 @@ void TableViewCellAutomationPeer::QueueFinalName(uint64_t generation)
 
 winrt::hstring TableViewCellAutomationPeer::ReadDisplayName(winrt::FrameworkElement const& display)
 {
-    // Compose "{column header}, {cell value}", falling back to either part alone.
     const auto headerText = GetColumnHeaderText();
     uint32_t remaining = 32;
     const auto valueText = display
@@ -293,12 +351,24 @@ int32_t TableViewCellAutomationPeer::GetRowIndex()
 {
     if (auto const row = m_row.get())
     {
-        // TableView exposes no public row-index API, so resolve it from ItemsRepeater.
         if (auto const tableView = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
         {
             m_lastOwningTable = winrt::make_weak(tableView);
+
+            // Same resolution TableViewRowAutomationPeer::GetRowIndex uses, so the two peers agree
+            // on the coordinate; it also avoids a visual-tree walk per cell of every realized row.
+            if (auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal())
+            {
+                if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
+                {
+                    m_lastKnownRowIndex = rowIndex;
+                    return rowIndex;
+                }
+            }
         }
 
+        // TableView exposes no public row-index API, so fall back to the hosting ItemsRepeater for
+        // a row whose owner is not resolvable yet.
         winrt::DependencyObject parent = winrt::VisualTreeHelper::GetParent(row);
         while (parent)
         {
@@ -347,23 +417,10 @@ void TableViewCellAutomationPeer::Realize()
         return;
     }
 
-    const int32_t rowIndex = m_lastKnownRowIndex;
-    if (auto const queue = DispatcherQueue())
-    {
-        auto const weakThis = get_weak();
-        if (queue.TryEnqueue(winrt::DispatcherQueuePriority::Normal, [weakThis, rowIndex]()
-        {
-            if (auto const peer = weakThis.get())
-            {
-                peer->RealizeCore(rowIndex);
-            }
-        }))
-        {
-            return;
-        }
-    }
-
-    RealizeCore(rowIndex);
+    // IVirtualizedItemProvider::Realize is synchronous: on return the client immediately re-queries
+    // this provider and expects the element realized, with VirtualizedItem no longer supported.
+    // Deferring to the dispatcher hands the client a still-virtualized provider.
+    RealizeCore(m_lastKnownRowIndex);
 }
 
 void TableViewCellAutomationPeer::RealizeCore(int32_t rowIndex)
@@ -449,7 +506,6 @@ winrt::UIElement TableViewCellAutomationPeer::GetRealizedCellFromRow(winrt::Tabl
 
 int32_t TableViewCellAutomationPeer::Row()
 {
-    // Returns -1 only while the row has no resolvable repeater index.
     return GetRowIndex();
 }
 

@@ -6,9 +6,14 @@
 
     <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
     <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
+    <!-- Metric defaults remain available alongside the default styles. -->
     <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
 
+    <!-- TabularControlsResources is required to supply TabularSurface* brushes for all themes. -->
 
+    <!-- TableView default style. Header cells stack horizontally (one per
+         column); the body is an ItemsRepeater of TableViewRow, each building its cells from
+         the owning TableView's Columns. -->
     <Style TargetType="controls:TableView">
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
@@ -46,6 +51,9 @@
                                                   VerticalScrollMode="Disabled"
                                                   HorizontalScrollBarVisibility="Hidden"
                                                   VerticalScrollBarVisibility="Disabled">
+                                        <!-- Left, not the default Stretch: the panel reports the summed column
+                                             width, and a wider presenter would centre it. PART_CellsHost
+                                             must match. -->
                                         <!-- Left, not Stretch: a wider presenter would center the summed column width. -->
                                         <controls:TableViewCellsPanel x:Name="PART_HeaderHost"
                                                                       HorizontalAlignment="Left" />
@@ -137,6 +145,11 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
+                                <!-- Selected states live in this SAME group rather than a second one:
+                                     they animate the same PART_RootBorder.Background, and two groups
+                                     would make the result depend on GoToState call order. One group
+                                     whose names encode both dimensions is the pattern TreeViewItem
+                                     and ItemContainer use. -->
                                 <!-- Selected states share CommonStates because a second group would race the same background setter. -->
                                 <VisualState x:Name="Selected">
                                     <Storyboard>
@@ -146,7 +159,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <!-- Suppress the High Contrast text backplate only while selected, where it fights the selection fill. -->
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -163,7 +175,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <!-- Suppress the High Contrast text backplate only while selected, where it fights the selection fill. -->
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -180,7 +191,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedPressedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <!-- Suppress the High Contrast text backplate only while selected, where it fights the selection fill. -->
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -213,14 +223,27 @@
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid>
+                            <!-- Cell host. TableViewRow populates PART_CellsHost with one cell wrapper
+                                 per TableViewColumn, in Columns order, laid out left-to-right.
+                                 The presenter exists so the Selected* states have something with a
+                                 Foreground to animate: PART_RootBorder is a Border and has none, and
+                                 cell text inherits Foreground down from here. Without it the selected
+                                 foreground brushes are unreachable, which is only cosmetic in
+                                 light/dark (the selected fill is ~4% alpha) but makes a selected row
+                                 illegible in High Contrast, where the fill is the opaque
+                                 SystemColorHighlightColor. -->
                             <ContentPresenter x:Name="PART_CellForegroundPresenter"
                                               Foreground="{TemplateBinding Foreground}"
                                               HorizontalContentAlignment="Stretch"
                                               VerticalContentAlignment="Stretch">
+                                <!-- Left, matching PART_HeaderHost. -->
                                 <controls:TableViewCellsPanel x:Name="PART_CellsHost"
                                                               HorizontalAlignment="Left" />
                             </ContentPresenter>
 
+                            <!-- Fluent selection indicator: overlays the leading edge, Opacity 0 by
+                                 default; the Selected* states animate it to 1. Not hit-testable, so it
+                                 cannot steal a press from the cell underneath it. -->
                             <Rectangle x:Name="PART_SelectionIndicator"
                                        Width="3"
                                        Height="16"
@@ -238,6 +261,17 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <!--
+        TableViewGroupHeader. The ControlTemplate owns the band chrome and the chevron
+        (PART_ExpanderGutter / PART_ExpanderIcon); PART_ContentPresenter is the only
+        app-customizable region, showing ContentTemplate over the TableViewGroupInfo Content.
+
+        ContentTemplate always resolves: the default Style seeds it, and
+        TableView.GroupHeaderTemplate overrides it as a local value that ClearValue reverts. So
+        there is no default-vs-custom branch, and an app template cannot drop the expander or
+        the band. Expansion, enabled and pointer state are VisualStates, so the chevron glyph
+        is declared here rather than assigned from C++.
+    -->
     <x:Double x:Key="TableViewGroupExpanderSize">24</x:Double>
     <Thickness x:Key="TableViewGroupHeaderPadding">8,6,16,6</Thickness>
 
@@ -247,6 +281,8 @@
                        FontWeight="SemiBold"
                        VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis" />
+            <!-- Inherits Foreground so it follows the PointerOver / Pressed / Disabled states
+                 exactly like the key text; a local brush would win over the state setters. -->
             <TextBlock Text="{Binding ItemCountText, Mode=OneWay}"
                        Opacity="{ThemeResource TabularSurfaceGroupHeaderCountOpacity}"
                        VerticalAlignment="Center" />
@@ -261,6 +297,8 @@
         <Setter Property="Padding" Value="{ThemeResource TableViewGroupHeaderPadding}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
+        <!-- Focusable so keyboard users can expand/collapse: TableViewGroupHeader::OnKeyDown
+             handles Enter/Space (toggle) and Right/Left (expand/collapse), matching TreeViewItem. -->
         <Setter Property="IsTabStop" Value="True" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="ContentTemplate" Value="{StaticResource TableViewDefaultGroupHeaderContentTemplate}" />
@@ -315,6 +353,8 @@
                             <VisualStateGroup x:Name="ExpandabilityStates">
                                 <VisualState x:Name="Expandable" />
                                 <VisualState x:Name="NotExpandable">
+                                    <!-- Only the chevron hides; PART_ExpanderGutter keeps its width so
+                                         content stays aligned across expandable and non-expandable groups. -->
                                     <!-- Keep the gutter width so expandable and leaf groups align. -->
                                     <VisualState.Setters>
                                         <Setter Target="PART_ExpanderIcon.Visibility" Value="Collapsed" />
@@ -329,6 +369,9 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
+                            <!-- The chevron is a pure visual. The whole band is the toggle target
+                                 (TableViewGroupHeader::OnPointerReleased), matching ListView /
+                                 TreeView, so there is no nested Button to inflate, focus or name. -->
                             <Border x:Name="PART_ExpanderGutter"
                                     Grid.Column="0"
                                     Width="{ThemeResource TableViewGroupExpanderSize}">

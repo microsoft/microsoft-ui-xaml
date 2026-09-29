@@ -164,13 +164,13 @@ Cell generation is column-specific:
 
 `RowBackground` and `AlternatingRowBackground` provide opt-in row banding; when both are null, rows stay unbanded. `GridLinesVisibility` controls row/cell gridline borders. `Density` selects row minimum height and built-in cell/header padding for `Compact`, `Standard`, or `Comfortable`.
 
-Keyboard handling is row-oriented. `TableView` listens to bubbling `KeyDown` so template-column descendants handle input first; unhandled `Up`, `Down`, `Home`, `End`, `PageUp`, and `PageDown` move focus between rows. The internal `GridCoordinateHelper` performs the row/column ↔ flat-index math, wrap behavior, and overflow guards.
+Keyboard handling is cell-aware. `TableView` listens to bubbling `KeyDown` so template-column descendants handle input first; unhandled `Up`, `Down`, `PageUp`, and `PageDown` move to the same visible column in another row, while `Left`/`Right` move the cell cursor within the focused row. `Home`/`End` move to the first/last cell of the current row once a cell has focus; `Ctrl+Home`/`Ctrl+End` move to the first/last cell of the table. `Enter` and `Space` on the focused column header sort that column. The internal `GridCoordinateHelper` performs the row/column ↔ flat-index math, wrap behavior, and overflow guards.
 
 Accessibility exposes a UIA grid/table model:
 
 - `TableViewAutomationPeer`: `IGridProvider`, `ITableProvider`, `ISelectionProvider`, `IItemContainerProvider`
 - `TableViewRowAutomationPeer`: `DataItem` control type, `ISelectionItemProvider`, composed name and group-relative `PositionInSet`/`SizeOfSet`; no grid/table provider (exposes its cell peers as children)
-- `TableViewCellAutomationPeer`: `IGridItemProvider`, `ITableItemProvider`, `IValueProvider`, localized `cell` control type
+- `TableViewCellAutomationPeer`: `IGridItemProvider`, `ITableItemProvider`, `IValueProvider`, `Custom` control type with localized `cell`
 - `TableViewColumnHeaderAutomationPeer`: column-header name/bounds, `IInvokeProvider` (sort), `PositionInSet`/`SizeOfSet`
 - `TableViewGroupHeaderAutomationPeer`: `IExpandCollapseProvider`, `IGridItemProvider`, `Level`
 
@@ -179,9 +179,6 @@ Accessibility exposes a UIA grid/table model:
 Peers that compute `PositionInSet`, `SizeOfSet` or `Level` report `0` — UIA's "not specified" — when the value cannot be resolved, never `-1`, and an app-set `AutomationProperties` value always wins over the computed one.
 
 Tabular's compiled `ResourceAccessor` reads `Microsoft.UI.Xaml.Controls.Tabular/Resources`, matching its PRI subtree. The in-box MUXC build retains `Microsoft.UI.Xaml/Resources`. A missing resource still falls back safely, but a correctly merged Tabular PRI now supplies the localized cell, sort, group and resize strings.
-
-One known hierarchy gap remains:
-- **`ITableProvider::GetColumnHeaders` returns an empty array.** The synthesized header peers are never parented into the UIA tree, so `ProviderFromPeer` yields null for each and every entry is filtered out. A cell's `GetColumnHeaderItems` is unaffected and does return the header provider.
 
 Lifetime rules: columns and rows use weak owner back-pointers (`GetOwningTableView()` resolves a strong owner for synchronous work); runtime classes use `ReferenceTracker` where required; cross-object events use `auto_revoke`; recycled rows reset transient visual state before reuse.
 
@@ -276,6 +273,7 @@ they can be obsoleted while the API is still `[MUX_PREVIEW]`.
 
 **`TableViewRow`** — `Control` representing one realized item row. `GetOwningTableView()`.
 
+**Automation peers** — `TableViewAutomationPeer`, `TableViewRowAutomationPeer`, `TableViewCellAutomationPeer`, `TableViewColumnHeaderAutomationPeer` (providers: `IGridProvider`, `ITableProvider`, `IGridItemProvider`, `ITableItemProvider`, `IItemContainerProvider`).
 **Automation peers** — `TableViewAutomationPeer`, `TableViewRowAutomationPeer`, `TableViewCellAutomationPeer`, `TableViewColumnHeaderAutomationPeer`, `TableViewGroupHeaderAutomationPeer` (providers: `IGridProvider`, `ITableProvider`, `ISelectionProvider`, `IItemContainerProvider`, `IGridItemProvider`, `ITableItemProvider`, `ISelectionItemProvider`, `IValueProvider`, `IInvokeProvider`, `IExpandCollapseProvider`).
 
 **Enums** — `TableViewFrozenEdge` (`None`/`Leading`/`Trailing`), `TableViewHeadersVisibility` (`None`/`Column`), `TableViewGridLinesVisibility` (`All`/`Horizontal`/`None`/`Vertical`), `TableViewDensity` (`Compact`/`Standard`/`Comfortable`), `TableViewEditingUnit` (`Cell`/`Row`), `TableViewEditAction` (`Commit`/`Cancel`/`Discard`).

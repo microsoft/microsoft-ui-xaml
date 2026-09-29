@@ -46,7 +46,6 @@ public:
     // both route through here. UIA compares providers by identity, so a fresh peer per query makes
     // grid addressing and tree navigation disagree and drops Narrator focus on every re-query.
     winrt::AutomationPeer GetOrCreateCellPeer(winrt::FrameworkElement const& cell);
-    winrt::AutomationPeer TryGetCellPeer(winrt::FrameworkElement const& cell);
 
 private:
     // The owning TableView, or null once the row has been recycled out of the tree.
@@ -55,13 +54,16 @@ private:
     int32_t GetRowIndex();
     bool IsVirtualized();
     void RealizeCore(int32_t rowIndex);
+    // The cell keyboard focus is on (or inside), or null when focus is outside this row's cells.
+    winrt::UIElement GetFocusedOwnCell(TableViewRow* rowImpl);
     // 1-based position within the owning group and that group's item count; false when ungrouped.
     bool TryGetGroupPosition(int32_t rowIndex, int32_t& positionInGroup, int32_t& sizeOfGroup);
-    // Joins the visible cells' display text in visual order.
+    // Joins the visible cells' display text in visual order, skipping excludedCell when set.
     static std::wstring ComposeCellTexts(
         TableViewRow* rowImpl,
         winrt::Panel const& cellsHost,
-        bool allowPeerCreation);
+        bool allowPeerCreation,
+        winrt::UIElement const& excludedCell);
 
     // One peer per realized cell, keyed weakly so a recycled or rebuilt cell releases immediately.
     // tracker_ref is the convention for a strong WinRT ref owned by a ReferenceTracker type.

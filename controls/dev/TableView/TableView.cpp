@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -161,6 +161,7 @@ namespace
 
     TableViewResourceCache& GetTableViewResourceCache(TableView* owner)
     {
+        // Per-instance member (not a process-global map) so multi-UI-thread instances never share state.
         return owner->GetResourceCacheInternal();
     }
 
@@ -269,11 +270,13 @@ TableView::TableView()
 
     SetDefaultStyleKey(this);
 
+    // Columns must be observable; OnColumnsPropertyChanged owns the VectorChanged subscription to avoid duplicate callbacks.
     auto columns = winrt::single_threaded_observable_vector<winrt::TableViewColumn>();
     Columns(columns);
 
     auto weakThis = get_weak();
 
+    // Use bubbling KeyDown so focused editors can consume typing keys before row navigation.
     m_keyDownHandler = winrt::KeyEventHandler(
         [weakThis](winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
         {
@@ -286,8 +289,6 @@ TableView::TableView()
     // AddHandler takes the handler as IInspectable, so the delegate must be boxed (see RoutedEventHelpers.h).
     AddHandler(winrt::UIElement::KeyDownEvent(), winrt::box_value(m_keyDownHandler), true /* handledEventsToo */);
 
-    // Space on a focused header arms on key down and sorts here, on key up. handledEventsToo:
-    // the ancestor ScrollViewer marks Space handled for page-scrolling.
     m_keyUpHandler = winrt::KeyEventHandler(
         [weakThis](winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
         {
@@ -370,6 +371,7 @@ TableView::TableView()
             }
         });
 
+    // Null ItemsSource on unload so queued repeater work cannot run on a detached subtree.
     m_unloadedRevoker = Unloaded(winrt::auto_revoke,
         [weakThis](winrt::IInspectable const&, winrt::RoutedEventArgs const&)
         {
@@ -396,16 +398,19 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
 
     try
     {
+        // ContentIslandEnvironment can be null during teardown / unusual hosts.
         if (auto env = xamlRoot.ContentIslandEnvironment())
         {
             m_themeSettings = winrt::Microsoft::UI::System::ThemeSettings::CreateForWindowId(env.AppWindowId());
             m_isHighContrast = m_themeSettings.HighContrast();
+            // Changed is raised on this UI thread, so the handler can touch XAML directly.
             m_themeSettingsChangedRevoker = m_themeSettings.Changed(
                 winrt::auto_revoke, { get_weak(), &TableView::OnThemeSettingsChanged });
         }
     }
     catch (...)
     {
+        // Best-effort; IsHighContrast falls back to a one-shot AccessibilitySettings read.
         // Best-effort; IsHighContrast falls back while ThemeSettings is unavailable.
     }
 }
@@ -450,6 +455,7 @@ void TableView::OnApplyTemplate()
     }
     if (auto oldRepeater = m_rowsRepeater.get())
     {
+        // Drop per-template Loaded handlers so old elements cannot keep this alive.
         if (m_rowsRepeaterLoadedToken.value)
         {
             if (auto oldRepeaterFE = oldRepeater.try_as<winrt::FrameworkElement>())
@@ -459,6 +465,7 @@ void TableView::OnApplyTemplate()
             m_rowsRepeaterLoadedToken = {};
         }
 
+        // Release realized rows before detaching ElementClearing so rows can clear their owner.
         try { oldRepeater.ItemsSource(nullptr); } catch (...) {}
 
         oldRepeater.ElementPrepared(m_rowElementPreparedToken);
@@ -470,8 +477,10 @@ void TableView::OnApplyTemplate()
     }
     if (auto oldHeaderHost = m_headerHost.get())
     {
+        // A live popup would still host content parented into the abandoned band.
         ReleaseHeaderToolTips(oldHeaderHost);
 
+        // Mirror the rowsRepeater Loaded cleanup for the header host.
         if (m_headerHostLoadedToken.value)
         {
             if (auto oldHeaderHostFE = oldHeaderHost.try_as<winrt::FrameworkElement>())
@@ -488,6 +497,7 @@ void TableView::OnApplyTemplate()
         m_bodyScrollerSizeChangedRevoker.revoke();
     }
 
+    // Reset resolved-on-Loaded refs so re-templating re-resolves them against the new tree.
     m_headerRow.set(nullptr);
     m_headerScroller.set(nullptr);
     m_bodyScroller.set(nullptr);
@@ -498,10 +508,15 @@ void TableView::OnApplyTemplate()
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
     auto weakThis = get_weak();
 
+    // Drive the repeater from the active source once the template is alive. The source itself is
+    // unchanged, so this only pushes its view into the freshly built repeater.
     RefreshRowsPipeline();
 
+    // Defer ScrollViewer ancestor lookup until Loaded because template parts are not fully connected here.
     if (auto headerHost = m_headerHost.get())
     {
+        // Focus on an off-screen header must not scroll PART_HeaderScroller: header/body sync is
+        // one-way, so the band would end up offset from the columns it labels.
         m_headerBringIntoViewRevoker = headerHost.BringIntoViewRequested(winrt::auto_revoke,
             [weakThis](winrt::IInspectable const& /*sender*/, winrt::BringIntoViewRequestedEventArgs const& args)
             {
@@ -528,6 +543,8 @@ void TableView::OnApplyTemplate()
 
     if (auto repeater = m_rowsRepeater.get())
     {
+        // Assigned here rather than in the template: the selector needs an owning TableView to map
+        // an item to its row kind, and XAML has no way to hand it one.
         auto selector = winrt::make<::TableViewRowTemplateSelector>();
         winrt::get_self<::TableViewRowTemplateSelector>(selector)->SetOwningTableViewInternal(*this);
         m_rowTemplateSelector.set(selector);
@@ -571,6 +588,7 @@ void TableView::OnApplyTemplate()
         }
     }
 
+    // Body horizontal scrolling drives the header ScrollViewer; vertical stickiness is structural.
 
     RebuildHeaders();
     UpdateHeaderVisibility();
@@ -599,6 +617,7 @@ void TableView::OnApplyTemplate()
                 try
                 {
                     InvalidateTableViewResourceCache(strongThis.get());
+                    // Rebuild headers and realized rows so grid-line brushes re-resolve.
                     strongThis->RebuildHeaders();
                     strongThis->RefreshGridLinesOnRealizedRows();
                 }
@@ -621,6 +640,7 @@ void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const 
         winrt::ScrollViewer scroller{ nullptr };
         try { scroller = FindScrollViewerAncestor(headerHost); } catch (...) {}
         m_headerScroller.set(scroller);
+        // Header pans can transiently desync; reverse-sync can clamp when header/body extents differ.
         UpdateHeaderVisibility();
     }
 }
@@ -629,6 +649,7 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
 {
     if (m_rowsSourceDrained)
     {
+        // Only re-source cached pages after Unloaded actually drained the repeater.
         m_rowsSourceDrained = false;
         RefreshRowsPipeline();
     }
@@ -654,6 +675,8 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
                     }
                 });
 
+            // Viewport resize (ViewChanged only covers scroll/zoom) must rerun table-level measure
+            // so Star widths resolve after the subtree has refreshed its measured-width caches.
             m_bodyScrollerSizeChangedRevoker = bodyScroller.SizeChanged(winrt::auto_revoke,
                 [weakThis](winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& /*args*/)
                 {
@@ -664,6 +687,7 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
                     }
                 });
 
+            // Resolve during the next table measure now that the viewport is known (initial layout).
             InvalidateMeasure();
             RefreshFrozenColumns();
         }
@@ -682,6 +706,7 @@ void TableView::OnBodyScrollerViewChanged(
 
     const double bodyHOffset = bodyScroller.HorizontalOffset();
 
+    // Re-pin leading-frozen columns only when horizontal scroll moves.
     if (ShouldRefreshFrozenColumnsForScroll(this, bodyHOffset))
     {
         RefreshFrozenColumns();
@@ -695,9 +720,11 @@ void TableView::OnBodyScrollerViewChanged(
 
     if (std::abs(headerScroller.HorizontalOffset() - bodyHOffset) < 0.5)
     {
+        // Skip near-equal offsets to avoid ViewChanged ping-pong.
         return;
     }
 
+    // Instant tracking keeps header and body visually glued.
     headerScroller.ChangeView(bodyHOffset, nullptr, nullptr, true);
 }
 
@@ -708,6 +735,7 @@ winrt::AutomationPeer TableView::OnCreateAutomationPeer()
 
 void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    // Ignore same-reference ItemsSource updates to avoid a no-op row rebuild.
     if (args.OldValue() == args.NewValue())
     {
         return;
@@ -734,7 +762,15 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     // stale content no longer pins the columns.
     ResetColumnDesiredWidths();
 
+    // A different collection invalidates any projection we synthesized over the old one, so the
+    // shaping state that lived in it goes with it. AdoptItemsSource mints a fresh projection here
+    // (the active source is still available to it as the previous source to detach), and
+    // RefreshRowsPipeline then pushes the new view into the repeater. This is the only path that
+    // reassigns the active source - every other re-entry keeps it and only refreshes the pipeline.
 
+    // PART_RowsRepeater is driven from the flat ItemsSource DP. The sort belonged to the discarded
+    // projection, so the reported sort state and the chevron go with it - otherwise they describe
+    // an order the new rows are not in.
     ResetSortStateForNewItemsSource();
     AdoptItemsSource();
     RefreshRowsPipeline();
@@ -768,6 +804,7 @@ void TableView::OnRowBackgroundPropertyChanged(const winrt::DependencyPropertyCh
         return;
     }
 
+    // Re-tint realized rows so opt-in banding refreshes.
     RefreshRowBackgroundsOnRealizedRows();
 }
 
@@ -866,6 +903,15 @@ void TableView::AdoptItemsSource()
     auto const itemsSource = ItemsSource();
     auto tableViewSource = itemsSource.try_as<winrt::TableViewSource>();
 
+    // Normalize the source. When the app hands us a plain collection, project it through a
+    // TableViewSource of our own so the control has exactly one row pipeline rather than a shaped
+    // path and a raw one. This mirrors ItemsControl, which always routes ItemsSource through a
+    // collection view, so the grid above it never has to ask what kind of source it was given.
+    //
+    // This runs only when ItemsSource actually changes, so there is never a prior projection to
+    // reuse here - a different collection invalidated it, and the re-entries that must keep the
+    // active projection (OnApplyTemplate, repeater Loaded, a shaping verb) go through
+    // RefreshRowsPipeline and never reach this method.
     if (!tableViewSource && itemsSource)
     {
         // Deliberately unguarded. The shaping engine accepts exactly the collection interfaces
@@ -874,6 +920,10 @@ void TableView::AdoptItemsSource()
         tableViewSource = winrt::TableViewSource::From(itemsSource);
     }
 
+    // Detach the previous source before adopting the new one. Swapping ItemsSource between two
+    // TableViewSources leaves the old one alive and still subscribed to the app's collection, so
+    // without this it keeps a back-pointer to this control and a later rebuild of that discarded
+    // source would drive a TableView it no longer belongs to.
     if (auto const previouslyOwned = m_activeSource.get(); previouslyOwned && previouslyOwned != tableViewSource)
     {
         winrt::get_self<::TableViewSource>(previouslyOwned)->SetOwningTableView(nullptr);
@@ -909,23 +959,37 @@ void TableView::AdoptItemsSource()
 
 void TableView::RefreshRowsPipeline()
 {
+    // Recompute the cached row view from whatever the active source currently projects. A shaping
+    // verb can swap the projection underneath us, so this is refreshed on every re-entry, not just
+    // on a source change.
     winrt::IInspectable rowsSource{ nullptr };
 
+    // Held so the generation bump below can tell a genuine provider swap from a re-entry that
+    // merely re-reads the same one.
     auto const previousRowMetadata = m_tableViewSourceRowMetadata;
     m_tableViewSourceRowMetadata = nullptr;
 
     if (auto const activeSource = m_activeSource.get())
     {
         auto* const sourceImpl = winrt::get_self<::TableViewSource>(activeSource);
+        // Straight through: for a TableViewSource the row view IS the projection's view.
         m_rowsItemsSourceView = sourceImpl->GetItemsSourceView();
         m_tableViewSourceRowMetadata = sourceImpl->GetRowMetadata();
         rowsSource = m_rowsItemsSourceView ? m_rowsItemsSourceView.as<winrt::IInspectable>() : nullptr;
     }
     else
     {
+        // Null ItemsSource: nothing to project, so the repeater empties out below.
         m_rowsItemsSourceView = nullptr;
     }
 
+    // Bump only when the provider that produced previously handed-out row identities has actually
+    // been replaced, so a request captured against the old one can tell it is stale. Identities are
+    // value-based strings, so without the bump the same string could name an unrelated group in a
+    // new projection. Bumping unconditionally is equally wrong in the other direction: this method
+    // also runs on re-entries that keep the very same projection (OnApplyTemplate, a Loaded repump
+    // after an unload drain, an applied sort), and a bump there silently discards a queued group
+    // toggle that is still perfectly valid.
     if (m_tableViewSourceRowMetadata != previousRowMetadata)
     {
         ++m_rowMetadataGeneration;
@@ -948,10 +1012,13 @@ void TableView::RefreshRowsPipeline()
         // swap always drops the selection; then drain anything requested before a source existed.
         ResolveSelectionAfterSourceChange();
     }
+    // else: OnApplyTemplate hasn't run yet; the repeater will be sourced from there.
 }
 
 void TableView::OnTableViewSourceProjectionChanged()
 {
+    // A shaping verb swapped the projected shape after we bound, so the cached view and row
+    // metadata describe the previous projection. Re-read them and re-drive the rows.
     if (IsEditing())
     {
         // The edited item may not exist in the new projection. Forced, for the same reason as an
@@ -964,6 +1031,9 @@ void TableView::OnTableViewSourceProjectionChanged()
 
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
 {
+    // The app may have declared or cleared a sort straight on the source, which the control has no
+    // other way to learn about. Reconcile before anything else so the chevrons never outlive the
+    // axis they describe.
     if (!m_isApplyingControlInitiatedSort)
     {
         QueueReconcileSortStateWithSource();
@@ -999,6 +1069,7 @@ void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
 
 void TableView::OnEmptyTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    // Skip same-value sets (no re-subscription / re-evaluation), matching the other DP callbacks.
     if (args.OldValue() == args.NewValue())
     {
         return;
@@ -1010,9 +1081,11 @@ void TableView::OnEmptyTemplatePropertyChanged(const winrt::DependencyPropertyCh
 
 void TableView::UpdateEmptyStateCollectionChangedSubscription()
 {
+    // Rewire count-change tracking; auto_revoke drops the prior source subscription.
     m_emptyStateCollectionChangedRevoker = {};
     if (EmptyTemplate() != nullptr)
     {
+        // Count changes matter only when an empty template can be displayed.
         if (auto repeater = m_rowsRepeater.get())
         {
             if (auto view = repeater.ItemsSourceView())
@@ -1034,6 +1107,7 @@ void TableView::UpdateEmptyState()
     auto presenter = m_emptyStatePresenter.get();
     if (!presenter)
     {
+        // Template hasn't applied, or this template carries no empty-state part.
         return;
     }
 
@@ -1042,6 +1116,7 @@ void TableView::UpdateEmptyState()
 
     if (!emptyTemplate)
     {
+        // Default opt-out keeps rows visible and never shows the empty surface.
         presenter.Visibility(winrt::Visibility::Collapsed);
         presenter.ContentTemplate(nullptr);
         if (repeater) { repeater.Visibility(winrt::Visibility::Visible); }
@@ -1063,6 +1138,7 @@ void TableView::UpdateEmptyState()
         {
             presenter.ContentTemplate(emptyTemplate);
         }
+        // Ensure the ContentControl inflates the template without a data item.
         if (!presenter.Content())
         {
             presenter.Content(box_value(winrt::hstring{}));
@@ -1223,12 +1299,17 @@ void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedE
 
     InvalidateTableViewResourceCache(this);
 
+    // Density changes require rebuilding headers and refreshing realized rows.
     RebuildHeaders();
     ForEachRealizedRow([](winrt::TableViewRow const& row)
     {
         winrt::get_self<TableViewRow>(row)->RefreshDensity();
     });
 
+    // Density changes only vertical padding and row height (horizontal cell padding is identical
+    // across all presets), so it does not alter Auto content *width*. Re-measure for the new row
+    // metrics and re-pin frozen columns (clips depend on row height); the grow-only Auto accumulator
+    // is deliberately left intact since density is not a data-set change.
     InvalidateMeasure();
     RefreshFrozenColumns();
 }
@@ -1374,6 +1455,8 @@ void TableView::OnRowElementIndexChanged(
     auto const row = args.Element().try_as<winrt::TableViewRow>();
     if (!row)
     {
+        // A realized header keeps its element but moves to a new index, and its expansion state is
+        // read from that index's metadata, so it has to be re-prepared.
         if (auto const header = args.Element().try_as<winrt::TableViewGroupHeader>())
         {
             PrepareGroupHeaderElement(header, args.NewIndex());
@@ -1381,11 +1464,15 @@ void TableView::OnRowElementIndexChanged(
         return;
     }
 
+    // Realized rows keep their element but get a new index, so banding parity must refresh.
     if (RowBackground() != nullptr || AlternatingRowBackground() != nullptr)
     {
         winrt::get_self<TableViewRow>(row)->RefreshRowBackground();
     }
 
+    // ...and so must selected chrome. The element keeps its item here (only its index moved), so
+    // this normally re-derives the same answer - it is the cheap guarantee that a row whose index
+    // shifted under an insert cannot end up disagreeing with the model.
     RefreshRowSelectionState(row);
 }
 
@@ -1450,8 +1537,10 @@ void TableView::RebuildHeaders()
 
     // Cache theme-resource padding once per header rebuild; values are stable for the pass.
     winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
+    // Always cache the header grid-line brush at rebuild time; visibility toggles do not reassign it later.
     const bool wantVerticalHeaderLines = WantsVerticalLines(GridLinesVisibility());
     const auto cachedHeaderGridLineBrush = GetGridLineBrush();
+    // Header cells share the density row min-height so the header band matches the body rows.
     const double cachedRowMinHeight = GetDensityRowMinHeight();
     const double cachedHeaderFontSize = GetHeaderFontSize();
     const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
@@ -1606,6 +1695,8 @@ void TableView::RebuildHeaders()
                 indicatorHost.Orientation(winrt::Orientation::Horizontal);
                 indicatorHost.HorizontalAlignment(logicalEndAlignment);
                 indicatorHost.VerticalAlignment(winrt::VerticalAlignment::Center);
+                // The chevron is decoration on top of a clickable header: letting it take the hit
+                // would create a dead spot in the middle of the click target.
                 indicatorHost.IsHitTestVisible(false);
                 AppendSortIndicatorVisual(indicatorHost, column);
                 headerCell.Children().Append(indicatorHost);
@@ -1625,6 +1716,9 @@ void TableView::RebuildHeaders()
                 });
             }
 
+            // Last, so it wins the hit test on the edge it shares with the grid line and the sort
+            // affordance. The gripper marks the press handled, which also keeps a resize drag from
+            // reaching the header's Tapped handler and sorting the column.
             if (headerIsResizable)
             {
                 AppendResizeGripperVisual(headerCell, column, cachedResizeGripperWidth, headerText, logicalEndAlignment);
@@ -1634,10 +1728,13 @@ void TableView::RebuildHeaders()
         }
     }
 
+    // Pin (or refresh) leading-frozen header cells at the current scroll offset.
     RefreshFrozenColumns();
     ApplyGridLinesToHeader();
 }
 
+// Builds the chevron for one header. The indicator is a display-only primitive: it owns no sort
+// policy, so the control sets Direction and nothing else.
 void TableView::AppendSortIndicatorVisual(const winrt::Panel& host, const winrt::TableViewColumn& column)
 {
     if (!host || !column)
@@ -1657,6 +1754,8 @@ void TableView::AppendSortIndicatorVisual(const winrt::Panel& host, const winrt:
 
 winrt::SortIndicatorDirection TableView::ToSortIndicatorDirection(winrt::SortDirection direction)
 {
+    // Two distinct WinRT enums with matching numeric values; map explicitly rather than casting so
+    // a future divergence is a compile error rather than a wrong glyph.
     switch (direction)
     {
     case winrt::SortDirection::Ascending:
@@ -1718,6 +1817,9 @@ void TableView::RefreshSortIndicators()
             continue;
         }
 
+        // A child walk by type rather than FindName: the indicator is code-created into a nested
+        // host panel, so its Name was never registered in a namescope and FindName returns null --
+        // which left a programmatic sort (no header rebuild) with a stale chevron.
         if (auto const indicator = FindSortIndicator(headerCell))
         {
             indicator.Direction(ToSortIndicatorDirection(column.SortDirection()));
@@ -1727,24 +1829,31 @@ void TableView::RefreshSortIndicators()
 
 void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
+    // The gate turning off must also drop any sort it was responsible for; leaving the rows in a
+    // sorted order with no affordance to change it would strand the user.
     if (!CanUserSortColumns())
     {
         ClearSort();
     }
 
+    // The chevron and the click handler are stamped at header-build time.
     QueueRebuildHeaders();
 }
 
 void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column){
+    // A column that just opted out must not keep an active sort applied to it.
     if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None)
     {
         SortByColumn(column, winrt::SortDirection::None);
     }
 
+    // The chevron and the click handler are stamped at header-build time.
     QueueRebuildHeaders();
 }
 
 double TableView::GetHeaderMeasuredWidthForColumn(const winrt::TableViewColumn& column) const{
+    // Own the header host's concrete panel type here so the layout engine (TableView_Layout.cpp)
+    // pulls the header's measured width through this seam and never casts to TableViewCellsPanel.
     if (auto headerHost = m_headerHost.get())
     {
         if (auto cellsPanel = headerHost.try_as<winrt::TableViewCellsPanel>())
@@ -1758,11 +1867,14 @@ double TableView::GetHeaderMeasuredWidthForColumn(const winrt::TableViewColumn& 
 
 void TableView::QueueRebuildHeaders()
 {
+    // Before the template applies there is no header host; OnApplyTemplate builds headers once, so a
+    // rebuild queued now would be a wasted no-op (RebuildHeaders early-returns on a null host anyway).
     if (!m_headerHost.get())
     {
         return;
     }
 
+    // A rebuild is already scheduled for this tick -- collapse the burst into one.
     if (m_rebuildHeadersQueued)
     {
         return;
@@ -1771,6 +1883,7 @@ void TableView::QueueRebuildHeaders()
     auto dispatcher = DispatcherQueue();
     if (!dispatcher)
     {
+        // No dispatcher (teardown) -- rebuild synchronously so headers are not left stale.
         RebuildHeaders();
         return;
     }
@@ -1785,15 +1898,18 @@ void TableView::QueueRebuildHeaders()
                 try
                 {
                     strongThis->RebuildHeaders();
+                    // Header sizes may have changed; re-resolve column widths against the new headers.
                     strongThis->InvalidateMeasure();
                 }
                 catch (...)
                 {
+                    // Coalesced header rebuild is best-effort; never fail-fast the dispatcher.
                     // Coalesced header rebuild is best-effort.
                 }
             }
         }))
     {
+        // Enqueue failed -- fall back to a synchronous rebuild so headers are not left stale.
         m_rebuildHeadersQueued = false;
         RebuildHeaders();
     }
@@ -1816,8 +1932,12 @@ void TableView::OnTableViewUnloaded()
     m_pendingGroupFocusIdentity.clear();
     m_pendingGroupFocusState = winrt::FocusState::Unfocused;
 
+    // Null ItemsSource on unload to release repeater cache work before it ticks on a detached subtree.
+    // OnRowsRepeaterLoaded re-sources cached pages when they return.
     if (auto repeater = m_rowsRepeater.get())
     {
+        // Re-sourcing on load hands SelectionModel a new view, and setting Source always clears.
+        // Hold the selected item so the reload re-selects it instead of dropping it.
         StashSelectionForReload();
 
         try { repeater.ItemsSource(nullptr); }
@@ -1825,6 +1945,7 @@ void TableView::OnTableViewUnloaded()
         m_rowsSourceDrained = true; // Remember that Loaded must restore the source.
     }
 
+    // Detach ViewChanged so deferred scroll callbacks do not run after unload.
     if (auto bodyScroller = m_bodyScroller.get())
     {
         if (m_bodyScrollerViewChangedToken.value)
@@ -1842,6 +1963,15 @@ void TableView::OnTableViewUnloaded()
     // the (possibly different) window's WindowId. IsHighContrast falls back to AccessibilitySettings
     // while detached.
     //
+    // Order matters. The auto_revoke revoker holds only a weak_ref to ThemeSettings and its revoke()
+    // is noexcept: if remove_Changed throws (which it does at app shutdown, where this Unloaded runs
+    // from DispatcherQueueController::ShutdownQueue and ThemeSettings' underlying window feature is
+    // already detaching, surfacing RPC_E_WRONG_THREAD), the exception escapes the noexcept boundary
+    // and terminates the process -- a try/catch here can never intercept it. So we release our strong
+    // reference FIRST. If it was the last one the object dies, the revoker's weak_ref goes stale and
+    // revoke() becomes a no-op (no ABI call, no throw); if the framework still holds the object it is
+    // alive and remove_Changed succeeds normally. Either way remove_Changed is never called against a
+    // half-torn-down feature.
     // Release ThemeSettings before revoking: at app shutdown remove_Changed can throw through auto_revoke's noexcept path.
     m_themeSettings = nullptr;
     m_themeSettingsChangedRevoker.revoke();
@@ -1866,6 +1996,8 @@ void TableView::OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequest
     auto targetRect = args.TargetRect();
     if (targetRect.Width <= 0.0 && targetRect.Height <= 0.0)
     {
+        // Focus-driven BringIntoView passes an empty rect; using it as-is makes the right-edge
+        // branch below under-scroll by the element's width.
         if (auto const targetFe = target.try_as<winrt::FrameworkElement>())
         {
             targetRect = winrt::Rect{ 0.0f, 0.0f,
@@ -1894,10 +2026,15 @@ void TableView::OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequest
         offset = bounds.X + bounds.Width - viewport;
     }
 
+    // Clamped before the comparison: a negative offset would otherwise mark the event handled
+    // while the clamped scroll went nowhere.
     offset = std::max(0.0, offset);
 
     if (std::abs(offset - current) >= 0.5)
     {
+        // Handled only when we actually redirect. Marking it unconditionally also silenced
+        // ancestor scrollers, so a TableView below the fold never scrolled into view on header
+        // focus. The header scroller cannot scroll itself anyway (HorizontalScrollMode=Disabled).
         args.Handled(true);
         bodyScroller.ChangeView(offset, nullptr, nullptr, true /* disableAnimation */);
     }
@@ -1935,11 +2072,14 @@ void TableView::AppendResizeGripperVisual(
     auto state = std::make_shared<ColumnResizeDragState>();
     auto weakColumn = winrt::make_weak(column);
 
+    // The column owns the width: capture it when the drag starts, then apply the reported offset
+    // against that anchor and clamp. Nothing is written until the user actually drags.
     gripperVisual.DragStarted(
         [weakColumn, weakThis, state](winrt::IInspectable const& sender, winrt::IInspectable const&)
     {
         auto const strongThis = weakThis.get();
 
+        // Before the guard below: a stale didWrite would revert to the previous drag's start width.
         state->didWrite = false;
         state->didDelta = false;
 
@@ -1986,6 +2126,8 @@ void TableView::AppendResizeGripperVisual(
 
         state->didDelta = true;
 
+        // std::max mirrors TableViewColumn::UpdateActualWidth, so a column whose MaxWidth is below
+        // its MinWidth cannot make Width and ActualWidth disagree.
         const double lo = (std::isfinite(col.MinWidth()) && col.MinWidth() >= 0.0) ? col.MinWidth() : 0.0;
         const double hi = (std::isfinite(col.MaxWidth()) && col.MaxWidth() >= 0.0)
             ? std::max(lo, col.MaxWidth())
@@ -1993,6 +2135,8 @@ void TableView::AppendResizeGripperVisual(
 
         const double next = std::clamp(state->startValue + vargs.TotalDelta(), lo, hi);
 
+        // Pinned at a bound the pointer keeps moving but the width does not: writing anyway would
+        // re-run measure and every cell panel on each move.
         if (auto const current = col.Width();
             current.GridUnitType == winrt::GridUnitType::Pixel && std::abs(current.Value - next) < 0.0001)
         {
@@ -2023,6 +2167,8 @@ void TableView::AppendResizeGripperVisual(
 
         if (cargs.Canceled())
         {
+            // Only when a write actually happened, so a press that never moved cannot pin an
+            // Auto/Star column.
             if (state->didWrite && col)
             {
                 col.Width(state->startWidth);
@@ -2052,6 +2198,7 @@ void TableView::CancelColumnResizeDrag()
 
     if (auto const gripper = state->gripper.get(); gripper && gripper.IsDragging())
     {
+        // The DragCompleted handler clears m_activeColumnResizeDrag.
         try { gripper.EndDrag(true /* canceled */); }
         catch (...) { /* best-effort: EndDrag consumer handlers must not strand state. */ }
     }
@@ -2061,6 +2208,8 @@ void TableView::CancelColumnResizeDrag()
     }
 }
 
+// The header cell is tagged with its column; the gripper is one of its children.
+// The gripper is one of the header cell's children; the caller already has the cell.
 winrt::ResizeGripper TableView::FindResizeGripperInCell(const winrt::FrameworkElement& headerCell) const
 {
     auto const cell = headerCell.try_as<winrt::Panel>();

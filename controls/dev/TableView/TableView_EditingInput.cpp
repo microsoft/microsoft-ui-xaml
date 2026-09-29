@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -11,9 +11,16 @@
 #include <algorithm>
 #include <cmath>
 
+// Input gestures that drive editing.
+//
+// Kept separate from TableView_Editing.cpp: that file owns the edit state machine, reachable
+// entirely through BeginEdit/CommitEdit/CancelEdit; this one owns the policy of which gestures map
+// onto that API. The split lets a future keyboard or selection layer re-route gestures without
+// reopening the state machine, and keeps the state machine testable without synthesizing input.
 
 namespace
 {
+    // True when `candidate` is `ancestor` or sits underneath it.
     bool IsWithinElement(winrt::IInspectable const& candidate, winrt::FrameworkElement const& ancestor)
     {
         if (!ancestor)
@@ -82,6 +89,12 @@ void TableView::OnKeyDownForEditing(
     }
 }
 
+// Click-away / tab-away commit. Without it the editor stays open when focus leaves, and a second
+// edit elsewhere leaves two editors on screen. Committing matches the platform grid convention.
+//
+// The decision is deliberately NOT made here. Opening an editor produces a burst of focus traffic,
+// so a synchronous commit on the first LosingFocus closes the edit in the gesture that opened it.
+// The check is posted and re-evaluated once focus has settled.
 void TableView::OnLosingFocusForEditing(
     const winrt::IInspectable& /*sender*/,
     const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args)
@@ -133,6 +146,8 @@ void TableView::OnLosingFocusForEditing(
 
     if (!queued)
     {
+        // Nothing will clear the flag for us. Leaving it set would silently disable focus-loss
+        // commit for the rest of the control's life.
         m_focusLossCommitQueued = false;
     }
 }
@@ -158,6 +173,8 @@ void TableView::CompleteFocusLossCommit()
         return;
     }
 
+    // Focus may have come back to the editor while this was queued - which is exactly what the
+    // open-an-editor gesture itself does. Only a genuine move away closes the edit.
     if (auto const root = XamlRoot())
     {
         auto const focused = winrt::FocusManager::GetFocusedElement(root);

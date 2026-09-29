@@ -12,21 +12,6 @@ struct __declspec(uuid("843c3f59-aab0-4bcb-a8a4-12327286a29f")) __declspec(novta
     virtual HRESULT __stdcall GetExistingPeer(_Outptr_result_maybenull_ ::IInspectable** peer) noexcept = 0;
 };
 
-struct __declspec(uuid("6b0d94f1-3c27-4e58-8a6d-71f2c9b40e35")) __declspec(novtable)
-    ITableViewCellNavigationAccess : ::IUnknown
-{
-    virtual HRESULT __stdcall MoveCellCursor(
-        int32_t virtualKey, boolean control, _Out_ boolean* handled) noexcept = 0;
-
-    // Delivers the key with an explicit pre-key cursor anchor, exactly as the control's
-    // PreviewKeyDown -> KeyDown pair does. This is what lets a test reproduce "the framework's
-    // built-in directional navigation already advanced focus one cell", which is the condition that
-    // made a single arrow press step two columns.
-    virtual HRESULT __stdcall MoveCellCursorFromAnchor(
-        int32_t virtualKey, boolean control, int32_t anchorRow, int32_t anchorColumn,
-        _Out_ boolean* handled) noexcept = 0;
-};
-
 // Border is sealed. A single-child Grid preserves cell chrome while allowing
 // normal framework peer discovery to return the same peer as Grid.GetItem.
 //
@@ -36,7 +21,7 @@ struct __declspec(uuid("6b0d94f1-3c27-4e58-8a6d-71f2c9b40e35")) __declspec(novta
 // "{column}, {value}" instead of re-reading every column of the row on each arrow press.
 class TableViewCell :
     public ReferenceTracker<TableViewCell, winrt::Microsoft::UI::Xaml::Controls::GridT,
-        winrt::composable, ITableViewCellAutomationPeerAccess, ITableViewCellNavigationAccess>
+        winrt::composable, ITableViewCellAutomationPeerAccess>
 {
 public:
     TableViewCell(winrt::TableViewRow const& row, winrt::TableViewColumn const& column, int32_t columnIndex)
@@ -57,13 +42,7 @@ public:
         // TabFocusNavigation="Once", so the whole body stays a single tab stop and Tab leaves.
         wrapper.IsTabStop(true);
 
-        // The framework's own focus rectangle, not a hand-rolled one. UseSystemFocusVisuals is a
-        // UIElement property (KnownPropertyIndex::UIElement_UseSystemFocusVisuals), and the focus
-        // rect manager honours it for any focusable UIElement - the Control-only branch it takes is
-        // just the FocusTargetDescendant redirection, which a plain cell does not need. This is the
-        // same call ItemsControl makes on the containers it generates, and it gets the
-        // FocusVisualPrimaryBrush / FocusVisualSecondaryBrush pair, High Contrast adaptation and
-        // "keyboard focus only, never pointer" behaviour for free.
+        // The focus rect manager honours this on any focusable UIElement, not just on a Control.
         wrapper.UseSystemFocusVisuals(true);
 
         return wrapper;
@@ -98,43 +77,6 @@ public:
             CheckThread();
             auto peer = m_automationPeer.get();
             *result = reinterpret_cast<::IInspectable*>(winrt::detach_abi(peer));
-            return S_OK;
-        }
-        catch (...)
-        {
-            return winrt::to_hresult();
-        }
-    }
-
-    HRESULT __stdcall MoveCellCursor(int32_t virtualKey, boolean control, boolean* handled) noexcept
-    {
-        return MoveCellCursorFromAnchor(virtualKey, control, -1, -1, handled);
-    }
-
-    HRESULT __stdcall MoveCellCursorFromAnchor(
-        int32_t virtualKey, boolean control, int32_t anchorRow, int32_t anchorColumn,
-        boolean* handled) noexcept
-    {
-        if (!handled)
-        {
-            return E_POINTER;
-        }
-        *handled = false;
-        try
-        {
-            CheckThread();
-            if (auto const row = m_row.get())
-            {
-                if (auto const owner = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
-                {
-                    auto const ownerImpl = winrt::get_self<TableView>(owner);
-                    auto const key = static_cast<winrt::Windows::System::VirtualKey>(virtualKey);
-                    *handled = static_cast<boolean>(anchorRow < 0 || anchorColumn < 0
-                        ? ownerImpl->TryMoveCellCursor(key, control != false)
-                        : ownerImpl->TryMoveCellCursorFromAnchor(
-                            key, control != false, anchorRow, anchorColumn));
-                }
-            }
             return S_OK;
         }
         catch (...)

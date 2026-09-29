@@ -16,14 +16,6 @@ public sealed partial class AboutPage : Page
     public AboutPage()
     {
         InitializeComponent();
-        // Populate Build row from MSBuild-generated BuildInfo (see csproj
-        // _GenerateBuildInfo target). Re-emits on every build so the
-        // commit SHA + subject in the installed app always matches source.
-        var buildDate = BuildInfo.BuildTimestamp.Length >= 10 ? BuildInfo.BuildTimestamp[..10] : BuildInfo.BuildTimestamp;
-        BuildLineText.Text          = $"{buildDate} · {BuildInfo.BuildFlavor}";
-        BuildCommitText.Text        = $"Commit {BuildInfo.CommitShaShort} on {BuildInfo.Branch}  ({BuildInfo.CommitTimestamp})";
-        BuildCommitSubjectText.Text = $"\u201C{BuildInfo.CommitSubject}\u201D";
-
         ReportEmailButton.Click   += async (_, __) => await LaunchAsync(BuildMailtoUri());
         CopyAutoFillButton.Click  += (_, __) => CopyAutoFillToClipboard();
         ReportLoopButton.Click    += async (_, __) => await LaunchAsync(new Uri(LoopReportUri));
@@ -48,9 +40,6 @@ public sealed partial class AboutPage : Page
         sb.AppendLine();
         sb.AppendLine($"- Reporter: `{GetReporter()}@microsoft.com`");
         sb.AppendLine($"- Reported: `{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ssZ}` UTC");
-        sb.AppendLine($"- Sample commit: `{BuildInfo.CommitShaShort}` on `{BuildInfo.Branch}`");
-        sb.AppendLine($"- Commit subject: \u201C{BuildInfo.CommitSubject}\u201D");
-        sb.AppendLine($"- Build: `{buildFlavorTimestamp()}`");
         sb.AppendLine($"- Theme: `{GetTheme()}`");
         sb.AppendLine($"- OS: `{Environment.OSVersion.VersionString}`  ·  .NET: `{Environment.Version}`");
         sb.AppendLine();
@@ -66,13 +55,11 @@ public sealed partial class AboutPage : Page
         sb.AppendLine();
         sb.AppendLine("**Crash exception** (if applicable): paste the exception type + message here.");
         return sb.ToString();
-
-        string buildFlavorTimestamp() => $"{BuildInfo.BuildTimestamp} · {BuildInfo.BuildFlavor}";
     }
 
     private Uri BuildMailtoUri()
     {
-        var subject = WebUtility.UrlEncode($"TableViewSampleApp bug — {BuildInfo.CommitShaShort} — <one-line summary>");
+        var subject = WebUtility.UrlEncode("TableViewSampleApp bug — <one-line summary>");
         var body    = WebUtility.UrlEncode(BuildAutoFillMarkdown());
         return new Uri($"mailto:hik@microsoft.com?subject={subject}&body={body}");
     }

@@ -38,7 +38,9 @@ namespace
             return header;
         }
 
-        return table.try_as<winrt::FrameworkElement>();
+        // UIA identity, focus and bounds all derive from the peer's owner, so a header peer must
+        // own its own header cell; the TableView would make every column's header the same element.
+        throw winrt::hresult_invalid_argument();
     }
 }
 
@@ -105,7 +107,6 @@ hstring TableViewColumnHeaderAutomationPeer::GetNameCore()
 
 winrt::AutomationControlType TableViewColumnHeaderAutomationPeer::GetAutomationControlTypeCore()
 {
-    // HeaderItem is the UIA control type for table column headers.
     return winrt::AutomationControlType::HeaderItem;
 }
 
@@ -153,6 +154,7 @@ hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
         }
     }
 
+    // From the column, not the realized header: the peer can be queried before the band exists.
     // String only; rich content is mouse-only, as with cells.
     winrt::hstring toolTipText{};
     if (auto const text = TableViewDetails::TryGetString(column.HeaderToolTip()))
@@ -347,6 +349,5 @@ winrt::FrameworkElement TableViewColumnHeaderAutomationPeer::GetHeaderElement()
     }
 
     auto const header = TableViewCellsPanel::CellForColumn(host, col);
-    auto const ownerElement = owner.try_as<winrt::FrameworkElement>();
-    return header == Owner() || Owner() == ownerElement ? header : nullptr;
+    return header == Owner() ? header : nullptr;
 }
