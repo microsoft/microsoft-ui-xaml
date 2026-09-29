@@ -10,6 +10,7 @@ namespace Microsoft.UI.Xaml.Settings
     // fix, or behavioral change documented in the WinUI release notes.
     [Contract(typeof(Microsoft.UI.Xaml.WinUIContract), 11)]
     [Contract(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.WinAppSDK_3_0)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [DXamlIdlGroup("coretypes2")]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
     public enum XamlChangeId
@@ -21,6 +22,8 @@ namespace Microsoft.UI.Xaml.Settings
         OptimizeApplyStyles = 61697456,
         DefaultStyleOptimizations = 60995620,
         DeferContextFlyoutInit = 61098986,
+        [VelocityFeature("Feature_ExperimentalApi")]
+        GamepadKeyRouting = 63117108,
         [Version(2)]
         CollectionMoveNotifications = 1503,
     }
