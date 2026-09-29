@@ -643,6 +643,12 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </CompileFiles>
+    <CompileFiles Include="Templates\Metadata\TrackerTargetTraits.cs">
+      <DependentUpon>TrackerTargetTraits.tt</DependentUpon>
+      <SubType>Code</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </CompileFiles>
     <CompileFiles Include="TypeTableOptimizer.cs" />
     <CompileFiles Include="DependencyGenerator.cs" />
     <CompileFiles Include="IndexGenerator.cs" />
