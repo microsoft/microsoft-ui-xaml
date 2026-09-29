@@ -103,7 +103,6 @@
         <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGridLineBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
-        <Setter Property="TabFocusNavigation" Value="Once" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:TableViewRow">
