@@ -13,10 +13,11 @@ using System.Linq;
 
 using WEX.TestExecution;
 
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewColumnTestHelpers;
+
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    // Shared fixtures for the TableView API test suite. Types here are used by more than one test
-    // file, so they live outside any single area's file to keep those files independently reviewable.
+    // Shared fixtures for the TableView API test suite. 
     // A custom column written the way TableView.idl:198-201 requires: it binds reactively against
     // the inherited DataContext and never assigns a local DataContext or bakes dataItem in as
     // static content. Mirrors Samples\TableViewSampleApp\ScoreBarColumn.cs.
@@ -47,24 +48,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     internal static class TableViewColumnTestHelpers
     {
-        // Builds an unloaded TableView with the given text column headers.
-        internal static TableView CreateTableView(params string[] headers)
+        // Resource init + the column-less TableView shell shared by every Create* variation. Each
+        // builder decides how to attach its columns (bound/unbound, widths, template) afterward.
+        internal static TableView CreateTableViewShell(
+            object itemsSource,
+            double width,
+            double height,
+            DataTemplate emptyTemplate = null)
         {
             EnsureTabularControlsResources();
 
-            var tableView = new TableView
+            return new TableView
             {
-                ItemsSource = MakeItems(),
-                Width = 500,
-                Height = 300,
+                ItemsSource = itemsSource,
+                Width = width,
+                Height = height,
+                EmptyTemplate = emptyTemplate,
             };
+        }
+
+        // Builds an unloaded TableView whose text columns each bind to the property named by their
+        // header (e.g. "Name", "Role"). A header with no matching property renders empty cells.
+        internal static TableView CreateTableView(params string[] headers)
+        {
+            var tableView = CreateTableViewShell(MakeItems(), 500, 300);
 
             foreach (var header in headers)
             {
                 tableView.Columns.Add(new TableViewTextColumn
                 {
                     Header = header,
-                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                    Binding = new Binding { Path = new PropertyPath(header), Mode = BindingMode.OneWay },
                 });
             }
 
@@ -78,18 +92,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             new Person { Name = "Mei", Role = "Architect" },
         };
 
-        // A minimal two-column, two-row TableView with unbound columns. Distinct from
-        // CreateTableView: tests that assert on row counts or selection indices rely on the
-        // smaller item set, and the columns are deliberately left unbound.
-        internal static TableView CreateBasicTableView() =>
-            CreateTableViewWithItems(
-                new List<Person>
-                {
-                    new Person { Name = "Asha", Role = "Designer" },
-                    new Person { Name = "Diego", Role = "Engineer" },
-                },
-                headers: new[] { "Name", "Role" });
-
         // Builds a sized, hosted-ready TableView over a caller-supplied items source.
         // Headers default to a single unbound "Name" column. Deliberately not an overload of
         // CreateTableView(params string[]): a first parameter of type object would win overload
@@ -101,15 +103,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             double height = 300,
             string[] headers = null)
         {
-            EnsureTabularControlsResources();
-
-            var tableView = new TableView
-            {
-                ItemsSource = itemsSource,
-                Width = width,
-                Height = height,
-                EmptyTemplate = emptyTemplate,
-            };
+            var tableView = CreateTableViewShell(itemsSource, width, height, emptyTemplate);
 
             foreach (var header in headers ?? new[] { "Name" })
             {
@@ -233,5 +227,157 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public string Name { get; set; }
 
         public string Role { get; set; }
+    }
+
+    internal static class TableViewRowTestHelpers
+    {
+        internal const string VeryLongText = "A considerably longer piece of cell text than the column can possibly show";
+
+        internal static TableView CreateRowTable() => CreateRowTable(MakeItems());
+
+        internal static TableView CreateRowTable(List<Person> items, params (string Header, GridLength Width)[] columns)
+        {
+            var tableView = CreateTableViewShell(items, 500, 260);
+
+            if (columns.Length == 0)
+            {
+                columns = new[] { ("Name", new GridLength(200.0, GridUnitType.Pixel)) };
+            }
+
+            foreach (var (header, width) in columns)
+            {
+                tableView.Columns.Add(new TableViewTextColumn
+                {
+                    Header = header,
+                    Width = width,
+                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
+                });
+            }
+
+            return tableView;
+        }
+
+        internal static TableView CreateTemplateColumnTable(List<Person> items)
+        {
+            var tableView = CreateTableViewShell(items, 500, 260);
+
+            tableView.Columns.Add(new TableViewTemplateColumn
+            {
+                Header = "Name",
+                Width = new GridLength(200.0, GridUnitType.Pixel),
+                CellTemplate = CreateBoundTextTemplate(),
+            });
+
+            return tableView;
+        }
+
+        // One text column and one template column over the same property, so a recycle test can check
+        // both content routes on the same row.
+        internal static TableView CreateMixedColumnTable(List<Person> items)
+        {
+            var tableView = CreateRowTable(items, ("Text", new GridLength(180.0, GridUnitType.Pixel)));
+
+            tableView.Columns.Add(new TableViewTemplateColumn
+            {
+                Header = "Template",
+                Width = new GridLength(180.0, GridUnitType.Pixel),
+                CellTemplate = CreateBoundTextTemplate(),
+            });
+
+            return tableView;
+        }
+
+        internal static DataTemplate CreateBoundTextTemplate() => (DataTemplate)XamlReader.Load(
+            @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                  <TextBlock Text=""{Binding Name}"" />
+              </DataTemplate>");
+
+        internal static List<Person> MakeManyItems(int count) => Enumerable
+            .Range(0, count)
+            .Select(i => new Person { Name = $"Person {i}", Role = $"Role {i}" })
+            .ToList();
+
+        internal static TableViewRow RequireFirstRow(TableView tableView)
+        {
+            var rows = GetRealizedRows(tableView);
+            Verify.IsGreaterThan(rows.Count, 0, "At least one row should be realized.");
+            return rows[0];
+        }
+
+        internal static Panel RequireCellsHost(TableViewRow row)
+        {
+            var host = row.FindVisualChildByName("PART_CellsHost") as Panel;
+            Verify.IsNotNull(host, "PART_CellsHost should exist on a realized row.");
+            return host;
+        }
+
+        internal static Border RequireCellWrapper(TableViewRow row, int index)
+        {
+            var host = RequireCellsHost(row);
+            Verify.IsGreaterThan(host.Children.Count, index, "The cells host should have a cell at the requested index.");
+
+            var wrapper = host.Children[index] as Border;
+            Verify.IsNotNull(wrapper, "Every cell is hosted in a Border wrapper.");
+            return wrapper;
+        }
+
+        internal static void VerifyNoLocalDataContext(FrameworkElement element, string what)
+        {
+            Verify.AreEqual(DependencyProperty.UnsetValue, element.ReadLocalValue(FrameworkElement.DataContextProperty),
+                $"{what} must not set a local DataContext, or it shadows inheritance and cells go stale after recycle.");
+        }
+
+        // The CommonStates state a row is currently in. Read by name rather than by brush because
+        // several states share a brush, which would make a wrong state look correct.
+        internal static string GetCommonState(TableViewRow row)
+        {
+            var rootBorder = row.FindVisualChildByName("PART_RootBorder") as FrameworkElement;
+            Verify.IsNotNull(rootBorder, "PART_RootBorder should exist once the row template has applied.");
+
+            var groups = VisualStateManager.GetVisualStateGroups(rootBorder);
+            var common = groups.FirstOrDefault(group => group.Name == "CommonStates");
+            Verify.IsNotNull(common, "The row template should declare a CommonStates group on its root.");
+
+            return common.CurrentState?.Name;
+        }
+
+        internal static void VerifyBanding(
+            TableView tableView,
+            List<Person> items,
+            Brush baseBrush,
+            Brush alternateBrush,
+            string context)
+        {
+            var rows = GetRealizedRows(tableView);
+            Verify.IsGreaterThan(rows.Count, 0, $"Rows should be realized ({context}).");
+
+            foreach (var row in rows)
+            {
+                var index = items.IndexOf(row.DataContext as Person);
+                Verify.IsGreaterThanOrEqual(index, 0, $"Every realized row should map to a source item ({context}).");
+
+                var expected = (index % 2) == 0 ? baseBrush : alternateBrush;
+                Verify.AreEqual(expected, row.Background,
+                    $"Row at index {index} should carry the brush for its parity ({context}).");
+            }
+        }
+
+        internal static void ScrollBodyToVerticalOffset(TableView tableView, double offset)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var scroller = tableView.FindVisualChildByName("PART_BodyScroller") as ScrollViewer;
+                Verify.IsNotNull(scroller, "PART_BodyScroller should exist once the template has applied.");
+                Verify.IsGreaterThan(scroller.ScrollableHeight, offset,
+                    "Precondition: the source must be long enough to scroll by the offset under test.");
+
+                scroller.ChangeView(null, offset, null, true);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => tableView.UpdateLayout());
+            IdleSynchronizer.Wait();
+        }
     }
 }
