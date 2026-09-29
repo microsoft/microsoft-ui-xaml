@@ -1601,7 +1601,6 @@ void TableView::RebuildHeaders()
 
             winrt::ContentPresenter content;
             content.Content(column.Header());
-            winrt::TextBlock trimmableHeaderBlock{ nullptr };
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             if (auto headerTemplateSelector = column.HeaderTemplateSelector())
             {
@@ -1622,7 +1621,6 @@ void TableView::RebuildHeaders()
                 // The header cell's peer already announces this text.
                 winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
                 content.Content(headerBlock);
-                trimmableHeaderBlock = headerBlock;
             }
             content.Padding(cachedHeaderCellPadding);
             content.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
@@ -1652,20 +1650,6 @@ void TableView::RebuildHeaders()
             // No HelpText: the header's peer is virtual and composes the text itself.
             TableViewDetails::ApplyHeaderToolTip(headerCell, column.HeaderToolTip());
 
-            // An ellipsized header is unreadable; never displaces an app-supplied HeaderToolTip.
-            if (trimmableHeaderBlock && !column.HeaderToolTip())
-            {
-                trimmableHeaderBlock.IsTextTrimmedChanged(
-                    [weakCell = winrt::make_weak(headerCell), headerText](winrt::TextBlock const& sender, auto const&)
-                {
-                    if (auto const cell = weakCell.get())
-                    {
-                        TableViewDetails::ApplyHeaderToolTip(
-                            cell, sender.IsTextTrimmed() ? winrt::box_value(headerText) : nullptr);
-                    }
-                });
-            }
-
             // Sort affordance. Gated on both the control-wide and the per-column opt-in, so an
             // opted-out column carries no chevron and no click handler at all.
             if (headerIsSortable)
@@ -1686,6 +1670,10 @@ void TableView::RebuildHeaders()
                 indicatorHost.VerticalAlignment(winrt::VerticalAlignment::Center);
                 // The chevron is decoration on top of a clickable header: letting it take the hit
                 // would create a dead spot in the middle of the click target.
+                // SortIndicator has a fixed themed Width and only fades via Opacity, so an always-
+                // visible host would cost that width on every sortable column.
+                indicatorHost.Visibility(column.SortDirection() == winrt::SortDirection::None
+                    ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
                 indicatorHost.IsHitTestVisible(false);
                 AppendSortIndicatorVisual(indicatorHost, column);
                 winrt::Grid::SetColumn(indicatorHost, indicatorColumnIndex);
@@ -1812,7 +1800,14 @@ void TableView::RefreshSortIndicators()
         // which left a programmatic sort (no header rebuild) with a stale chevron.
         if (auto const indicator = FindSortIndicator(headerCell))
         {
-            indicator.Direction(ToSortIndicatorDirection(column.SortDirection()));
+            const auto direction = column.SortDirection();
+            indicator.Direction(ToSortIndicatorDirection(direction));
+            // Keep the reserved column in step with the chevron.
+            if (auto const indicatorHost = indicator.Parent().try_as<winrt::UIElement>())
+            {
+                indicatorHost.Visibility(direction == winrt::SortDirection::None
+                    ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
+            }
         }
     }
 }
