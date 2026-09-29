@@ -73,7 +73,9 @@ struct TableViewResourceCache
     };
     FontInfo font{};
 
-    // Resolved gridline brush; re-resolved when the theme or high-contrast state changes.
+    // Resolved gridline brushes; re-resolved when the theme or high-contrast state changes.
+    // Horizontal and vertical rules are separate tokens because the design weights them
+    // differently (the vertical rule is the lighter of the two).
     struct GridLineInfo
     {
         bool hasBrush{ false };
@@ -82,6 +84,7 @@ struct TableViewResourceCache
         winrt::Brush brush{ nullptr };
     };
     GridLineInfo gridLine{};
+    GridLineInfo verticalGridLine{};
 
     // Cached horizontal scroll offset used to reposition frozen columns (not a theme resource,
     // so it is intentionally left out of the density/gridline groups above).
@@ -149,6 +152,8 @@ public:
     // Resolved grid-line brush (theme/HC-aware, cached); rows call this via get_self, like the
     // density/font accessors above.
     winrt::Brush GetGridLineBrush();
+    // Vertical column separators resolve their own, lighter token.
+    winrt::Brush GetVerticalGridLineBrush();
 
     // Per-instance resource cache (density metrics + gridline brush); accessed by the
     // file-scope resource helpers in TableView.cpp through this owner pointer.

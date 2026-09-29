@@ -163,6 +163,7 @@ namespace
         cache.font.hasCellFontSize = false;
         cache.font.hasHeaderFontSize = false;
         cache.gridLine.hasBrush = false;
+        cache.verticalGridLine.hasBrush = false;
     }
 
     bool ShouldRefreshFrozenColumnsForScroll(TableView* owner, double horizontalOffset)
@@ -203,13 +204,13 @@ namespace
         }
     }
 
-    winrt::Brush CreateGridLineFallbackBrush(winrt::FrameworkElement const& start, bool highContrast)
+    winrt::Brush CreateGridLineFallbackBrush(winrt::FrameworkElement const& start, bool highContrast, uint8_t alpha)
     {
         auto color = highContrast
             ? winrt::Colors::White()
             : (start.ActualTheme() == winrt::ElementTheme::Light
-                ? winrt::ColorHelper::FromArgb(0x29, 0x00, 0x00, 0x00)
-                : winrt::ColorHelper::FromArgb(0x29, 0xff, 0xff, 0xff));
+                ? winrt::ColorHelper::FromArgb(alpha, 0x00, 0x00, 0x00)
+                : winrt::ColorHelper::FromArgb(alpha, 0xff, 0xff, 0xff));
 
         if (highContrast)
         {
@@ -223,29 +224,44 @@ namespace
 
 }
 
+namespace
+{
+    // Shared resolve-and-cache for the two gridline tokens.
+    winrt::Brush ResolveGridLineBrush(
+        TableView* owner,
+        TableViewResourceCache::GridLineInfo& cache,
+        std::wstring_view key,
+        uint8_t fallbackAlpha)
+    {
+        const bool highContrast = owner->IsHighContrast();
+        const auto theme = owner->ActualTheme();
+        if (cache.hasBrush && cache.theme == theme && cache.highContrast == highContrast)
+        {
+            return cache.brush;
+        }
+
+        auto brush = LookupElementResource(*owner, key, highContrast).try_as<winrt::Brush>();
+        if (!brush)
+        {
+            brush = CreateGridLineFallbackBrush(*owner, highContrast, fallbackAlpha);
+        }
+
+        cache.hasBrush = true;
+        cache.theme = theme;
+        cache.highContrast = highContrast;
+        cache.brush = brush;
+        return brush;
+    }
+}
+
 winrt::Brush TableView::GetGridLineBrush()
 {
-    auto& cache = GetTableViewResourceCache(this);
-    const bool highContrast = IsHighContrast();
-    const auto theme = ActualTheme();
-    if (cache.gridLine.hasBrush &&
-        cache.gridLine.theme == theme &&
-        cache.gridLine.highContrast == highContrast)
-    {
-        return cache.gridLine.brush;
-    }
+    return ResolveGridLineBrush(this, GetResourceCacheInternal().gridLine, L"TabularSurfaceGridLineBrush", 0x1a);
+}
 
-    auto brush = LookupElementResource(*this, L"TabularSurfaceGridLineBrush", highContrast).try_as<winrt::Brush>();
-    if (!brush)
-    {
-        brush = CreateGridLineFallbackBrush(*this, highContrast);
-    }
-
-    cache.gridLine.hasBrush = true;
-    cache.gridLine.theme = theme;
-    cache.gridLine.highContrast = highContrast;
-    cache.gridLine.brush = brush;
-    return brush;
+winrt::Brush TableView::GetVerticalGridLineBrush()
+{
+    return ResolveGridLineBrush(this, GetResourceCacheInternal().verticalGridLine, L"TabularSurfaceVerticalGridLineBrush", 0x0d);
 }
 
 TableView::~TableView()
@@ -1525,7 +1541,7 @@ void TableView::RebuildHeaders()
     // Header cells are shorter than body rows by design (32 vs 40 at Standard).
     const double cachedHeaderMinHeight = GetDensityHeaderMinHeight();
     const bool wantVerticalHeaderLines = WantsVerticalLines(GridLinesVisibility());
-    const auto cachedHeaderGridLineBrush = GetGridLineBrush();
+    const auto cachedHeaderGridLineBrush = GetVerticalGridLineBrush();
     const double cachedHeaderFontSize = GetHeaderFontSize();
     const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out

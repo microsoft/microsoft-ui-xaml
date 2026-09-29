@@ -535,6 +535,25 @@ Addressed in this PR:
 | Column headers carry vertical rules with the body | The per-header-cell separator tracks `GridLinesVisibility`, so `All` / `Vertical` render a complete grid. The design draws the header's rule lighter and vertically inset; the implementation reuses the body's brush at full height. |
 | Header row carries no fill | `TabularSurfaceHeaderBackgroundBrush` is now `Transparent` in Light and Dark. It previously painted ~15% black/white, which the design does not show. HighContrast keeps `SystemColorWindowColor` so the band stays legible there. |
 | Header separator is always drawn | `ApplyGridLinesToHeader` no longer toggles the header's bottom rule from `GridLinesVisibility`. The design draws that rule on the ungridded default table, so it is structural: the template owns the thickness and nothing switches it off. This also removes a latent bug, since the previous `ClearValue` discarded the template's local `0,0,0,1` and resolved to `0`. |
+| Rules match the design's weights | The single 16.1% `TabularSurfaceGridLineBrush` was roughly twice the design's weight and was used for every rule. It is now the horizontal token at `#1A000000` / `#18FFFFFF`, and a new `TabularSurfaceVerticalGridLineBrush` at `#0D000000` / `#0BFFFFFF` drives column separators and the table's outer border. HighContrast keeps `SystemColorWindowTextColor` for both. |
+
+### Rule weights measured from `Frame.png`
+
+Sampling the Light and Dark `Grid` tables gives three distinct weights, where the implementation
+previously had one:
+
+| Rule | Light | Dark | Implied alpha |
+| --- | --- | --- | --- |
+| Horizontal (row dividers, header bottom) | `229` | `49` | ~`0x1A` / `0x18` |
+| Vertical (column separators, outer border) | `242` | `38` | ~`0x0D` / `0x0B` |
+| Header vertical | `245` | `44` | ~`0x0A` / `0x12` |
+
+The header's vertical rule is lighter again than the body's and is inset a few pixels from the
+header band. The implementation folds it into the vertical token rather than adding a third, so
+header separators render at the body's weight and full height.
+
+Verified in the sample after the change: outer border `242`, header rule `229`, row divider
+`229`, header column separators `242` — each matching the export.
 
 ### Measured from `Table.png`, the default table export
 

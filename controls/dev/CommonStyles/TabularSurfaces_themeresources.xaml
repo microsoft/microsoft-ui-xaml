@@ -81,7 +81,8 @@
             <!-- Grid lines. DividerStrokeColorDefault (~16% white on Dark) — visible above row
                  banding without dominating the surface. Earlier ControlStrokeColorDefault (~7%
                  white) was too faint at 1-px width on alternating rows. -->
-            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#29FFFFFF" />                               <!-- DividerStrokeColorDefault (Dark) — bumped 8.2%→16.1% for readability over banding -->
+            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#18FFFFFF" />                               <!-- Horizontal rules: measured 49 on the Dark design export -->
+            <SolidColorBrush x:Key="TabularSurfaceVerticalGridLineBrush" Color="#0BFFFFFF" />                       <!-- Column separators and the outer border: measured 38 -->
             <Thickness x:Key="TabularSurfaceGridLineThickness">0,0,0,1</Thickness>
             <Thickness x:Key="TabularSurfaceVerticalGridLineThickness">0,0,1,0</Thickness>
 
@@ -172,7 +173,8 @@
             <!-- Grid lines. DividerStrokeColorDefault (~16% black on Light) — visible above row
                  banding without dominating the surface. Earlier ControlStrokeColorDefault (~6%
                  black) was too faint at 1-px width on alternating rows. -->
-            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#29000000" />                               <!-- DividerStrokeColorDefault (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#1A000000" />                               <!-- Horizontal rules: measured 229 on the Light design export -->
+            <SolidColorBrush x:Key="TabularSurfaceVerticalGridLineBrush" Color="#0D000000" />                       <!-- Column separators and the outer border: measured 242 -->
             <Thickness x:Key="TabularSurfaceGridLineThickness">0,0,0,1</Thickness>
             <Thickness x:Key="TabularSurfaceVerticalGridLineThickness">0,0,1,0</Thickness>
 
@@ -270,6 +272,7 @@
 
             <!-- Grid lines -->
             <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceVerticalGridLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <Thickness x:Key="TabularSurfaceGridLineThickness">0,0,0,1</Thickness>
             <Thickness x:Key="TabularSurfaceVerticalGridLineThickness">0,0,1,0</Thickness>
 

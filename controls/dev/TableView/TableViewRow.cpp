@@ -890,7 +890,7 @@ void TableViewRow::RefreshGridLines()
     winrt::Brush gridLineBrush{ nullptr };
     if (wantVertical)
     {
-        gridLineBrush = winrt::get_self<TableView>(owner)->GetGridLineBrush();
+        gridLineBrush = winrt::get_self<TableView>(owner)->GetVerticalGridLineBrush();
     }
 
     const auto children = host.Children();
