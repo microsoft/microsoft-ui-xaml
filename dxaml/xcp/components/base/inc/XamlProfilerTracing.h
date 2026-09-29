@@ -347,21 +347,27 @@ public:
     // profiler events (reinterpret_cast<uint64_t> of the live core object); it is
     // 0 only when the producing site legitimately has no element in scope.
     //
-    // Routing model (see XAMLPROFILER_ENABLED): the retail Microsoft-Windows-XAML
-    // operation is ALWAYS emitted (unchanged), so existing xperf/WPA consumers keep
-    // working in every build. When the profiler is additionally enabled the profiler
-    // copy is emitted ALONGSIDE the retail event on Microsoft-Windows-XAML-Profiler —
-    // never in place of it. The two providers are independent: a session may enable
-    // either or both, and each call site emits the retail marker unconditionally and
-    // wraps only the profiler marker in #ifdef XAMLPROFILER_ENABLED. The consumer keys
-    // a scope by (provider + task) and pairs Start/Stop by opcode, so each activity below
-    // reuses the retail operation's name as its ETW task and preserves the Begin/End
-    // timing while adding ElementId.
+    // Routing model (see XAMLPROFILER_ENABLED): the two providers are mutually exclusive at
+    // each call site. A retail (shipping) build never defines XAMLPROFILER_ENABLED and emits
+    // only the retail Microsoft-Windows-XAML operation, exactly as before — existing xperf/WPA
+    // consumers are byte-for-byte unaffected. A profiler-enabled (chk/debug) build emits only
+    // the profiler copy on Microsoft-Windows-XAML-Profiler IN PLACE OF the retail marker, so a
+    // profiler build never double-logs the same operation on both providers. Each call site
+    // selects one branch with #ifdef XAMLPROFILER_ENABLED (profiler) / #else (retail). The
+    // consumer keys a scope by (provider + task) and pairs Start/Stop by opcode, so each activity
+    // below reuses the retail operation's name as its ETW task and preserves the Begin/End timing
+    // while adding ElementId.
+    //
+    // Exceptions (stay additive): a few sites keep the pre-existing retail Begin/End AND also emit
+    // the profiler marker, because the retail marker is not a same-location duplicate — its
+    // Begin/End brackets a whole pass/loop while the profiler marker is a per-iteration point event
+    // at a different line (RealizeTransition, GenerateMCContainer). Gating the pre-existing retail
+    // bracket there would change retail behavior, so it is left intact.
     //
     // Payload parity: where the retail marker carried extra payload (style name, focus
     // direction, gripper coordinates, virtualization state, container index), the profiler
-    // copy carries the same payload PLUS ElementId, so a profiler-only session loses no
-    // information the retail provider would have supplied.
+    // copy carries the same payload PLUS ElementId, so a profiler build — which emits in place
+    // of the retail marker — loses no information the retail provider would have supplied.
     //
     // Two shapes are used:
     //   * Activity events  (DEFINE_ELEMENT_ACTIVITY): a Start/Stop pair mirroring the

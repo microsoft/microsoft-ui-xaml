@@ -797,7 +797,10 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
             ctl::ComPtr<xaml::IDependencyObject> spParent;
             IFC(static_cast<ListViewBase*>(this)->get_Parent(&spParent));
 
-            // Independently guard each provider's emission so the computation above can be shared.
+            // Either/or: compile the retail (Microsoft-Windows-XAML) emission only into retail
+            // builds and the profiler (Microsoft-Windows-XAML-Profiler) emission only into profiler
+            // builds, so a given build flavor raises a single event. The computation above is shared.
+#ifndef XAMLPROFILER_ENABLED
             if (EventEnabledVirtualizationIsEnabledByLayoutInfo())
             {
                 TraceVirtualizationIsEnabledByLayoutInfo1(
@@ -808,6 +811,7 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
                     (spParent) ? static_cast<DependencyObject*>(spParent.Get())->GetHandle()->GetClassName().GetBuffer() : L"NULL"
                 );
             }
+#endif
 #ifdef XAMLPROFILER_ENABLED
             if (XamlProfilerTracing::IsEnabled())
             {
