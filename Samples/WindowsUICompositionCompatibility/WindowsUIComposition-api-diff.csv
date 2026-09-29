@@ -1,0 +1,14 @@
+API,Kind,UniversalApiContract,Windows 11 build 22000,Windows 11 build 26100,Difference,Scenario
+Windows.UI.Composition.ICompositor8,Interface,15,Unavailable,Available,"New additive interface on Compositor.",ANIM-005
+Windows.UI.Composition.Compositor.CreateAnimationController,Method,15,Unavailable,Available,"Creates an independent AnimationController; the controller runtime class itself already existed in v6.",ANIM-005
+Windows.UI.Composition.ICompositionObject5,Interface,15,Unavailable,Available,"New additive interface on CompositionObject.",ANIM-006
+"Windows.UI.Composition.CompositionObject.StartAnimation(String, CompositionAnimation, AnimationController)",Method overload,15,Unavailable,Available,"Starts the normal property animation and associates its animator with an application-supplied controller.",ANIM-006
+Windows.UI.Composition.CompositionTexture,Runtime class,15,Unavailable,Available,"New agile both-threaded CompositionObject implementing ICompositionSurface; creation is through native ICompositorInterop2.",TEX-001
+Windows.UI.Composition.ICompositionTexture,Interface,15,Unavailable,Available,"Default projected interface for CompositionTexture.",TEX-001
+Windows.UI.Composition.ICompositionTextureFactory,Interface,15,Unavailable,Available,"Public composable factory interface with no declared members.",TEX-001
+Windows.UI.Composition.CompositionTexture.SourceRect,Property,15,Unavailable,Available,"Selects a RectInt32 subregion of the D3D11 texture. Current local source and runtime show a coordinate round-trip defect.",TEX-002
+Windows.UI.Composition.CompositionTexture.AlphaMode,Property,15,Unavailable,Available,"Controls whether DWM honors texture alpha; implementation defaults to DXGI_ALPHA_MODE_IGNORE.",TEX-002
+Windows.UI.Composition.CompositionTexture.ColorSpace,Property,15,Unavailable,Available,"Sets the texture color space; implementation defaults to RGB_FULL_G22_NONE_P709.",TEX-002
+Windows.UI.Composition.ICompositorInterop2,Native interop interface,15 / NTDDI_WIN10_NI,Unavailable,Available,"Adds CheckCompositionTextureSupport and CreateCompositionTexture for D3D resources.",TEX-001
+Windows.UI.Composition.ICompositionTextureInterop,Native interop interface,15 / NTDDI_WIN10_NI,Unavailable,Available,"Returns the availability fence used to synchronize application writes with composition reads.",TEX-001
+Windows.Graphics.DirectX.DirectXColorSpace,Referenced enum,15 usage,Not referenced by WUC,Referenced by WUC,"New metadata dependency used by CompositionTexture.ColorSpace.",TEX-002

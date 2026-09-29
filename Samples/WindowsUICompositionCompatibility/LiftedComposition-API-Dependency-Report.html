@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WinUI 3 and Windows App SDK lifted Composition API dependencies</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f5f7fb;
+      --panel: #fff;
+      --text: #172033;
+      --muted: #586174;
+      --line: #d9dfeb;
+      --accent: #2457c5;
+      --accent-soft: #e9f0ff;
+      --warning: #8a4b08;
+      --warning-soft: #fff3df;
+      --experimental: #6c3bb8;
+      --experimental-soft: #f1eaff;
+      --excluded: #46606f;
+      --excluded-soft: #edf3f6;
+      --code: #eef1f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 "Segoe UI", system-ui, sans-serif;
+    }
+    header {
+      padding: 34px max(24px, calc((100vw - 1500px) / 2));
+      color: #fff;
+      background: linear-gradient(120deg, #173b88, #275ecb 58%, #6543a6);
+    }
+    header h1 { margin: 0 0 10px; font-size: clamp(25px, 3vw, 40px); line-height: 1.12; }
+    header p { max-width: 1050px; margin: 0; color: #e8efff; font-size: 17px; }
+    main { max-width: 1500px; margin: 0 auto; padding: 24px; }
+    section, .card {
+      margin: 0 0 22px;
+      padding: 22px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgb(20 38 75 / 7%);
+    }
+    h2 { margin: 0 0 14px; font-size: 24px; }
+    h3 { margin: 18px 0 8px; font-size: 18px; }
+    p { margin: 8px 0; }
+    a { color: var(--accent); }
+    code {
+      padding: 1px 5px;
+      background: var(--code);
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+      font-size: .92em;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+    }
+    .metric { padding: 17px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+    .metric strong { display: block; font-size: 29px; color: var(--accent); }
+    .metric span { color: var(--muted); }
+    .note {
+      padding: 13px 15px;
+      border-left: 4px solid var(--warning);
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+    .methodology { columns: 2 340px; column-gap: 34px; }
+    .methodology li { break-inside: avoid; margin-bottom: 8px; }
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(260px, 2fr) repeat(2, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      font: inherit;
+    }
+    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 9px; }
+    table { width: 100%; border-collapse: collapse; min-width: 1120px; }
+    th, td { padding: 10px 11px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      color: #fff;
+      background: #26354f;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    tr:last-child td { border-bottom: 0; }
+    tr:hover td { background: color-mix(in srgb, var(--accent-soft) 55%, var(--panel)); }
+    td.api { min-width: 310px; font-family: Consolas, monospace; font-size: 13px; }
+    td.type { min-width: 190px; font-family: Consolas, monospace; font-size: 13px; }
+    .pill {
+      display: inline-block;
+      margin: 1px 4px 1px 0;
+      padding: 2px 7px;
+      border-radius: 999px;
+      color: #173b88;
+      background: var(--accent-soft);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .pill.experimental { color: var(--experimental); background: var(--experimental-soft); }
+    .pill.excluded { color: var(--excluded); background: var(--excluded-soft); }
+    .group-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(370px, 1fr));
+      gap: 15px;
+    }
+    .group { border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+    .group h3 { margin: 0; padding: 12px 14px; color: #fff; background: #344666; }
+    .group ul { margin: 0; padding: 8px 15px 12px 34px; }
+    .group li { margin: 8px 0; }
+    .group .count { float: right; font-weight: normal; color: #dbe5ff; }
+    .small { color: var(--muted); font-size: 13px; }
+    footer { padding: 0 24px 30px; text-align: center; color: var(--muted); }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #10151e; --panel: #171e29; --text: #e9edf5; --muted: #a9b2c2;
+        --line: #334055; --accent: #8bb0ff; --accent-soft: #21365e;
+        --warning: #ffd08a; --warning-soft: #4b3518; --experimental: #d0afff;
+        --experimental-soft: #39245a; --excluded: #bad0dc; --excluded-soft: #263943;
+        --code: #252e3b;
+      }
+      th { background: #29374d; }
+    }
+    @media (max-width: 800px) {
+      .controls { grid-template-columns: 1fr; }
+      main { padding: 14px; }
+      section, .card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>WinUI 3 and Windows App SDK APIs coupled to lifted Composition</h1>
+  <p>
+    Public APIs outside the <code>Microsoft.UI.Composition</code> namespaces whose declared surface
+    consumes, returns, exposes, or implements a lifted Composition type. The inventory is based only
+    on Microsoft Learn documentation and separates stable, experimental, system-composition, and
+    indirect dependencies.
+  </p>
+</header>
+
+<main>
+  <section>
+    <h2>Scope and headline result</h2>
+    <div class="summary">
+      <div class="metric"><strong id="stableCount">0</strong><span>stable direct API entries</span></div>
+      <div class="metric"><strong id="experimentalCount">0</strong><span>current experimental direct entries</span></div>
+      <div class="metric"><strong id="groupCount">0</strong><span>functional groups</span></div>
+      <div class="metric"><strong id="typeCount">0</strong><span>distinct lifted types referenced</span></div>
+    </div>
+    <p>
+      The coupling is concentrated in XAML visual interop, composition animation, animated visuals,
+      scrolling customization, brushes/lights/backdrops, and Content hosting. The stable documentation
+      scan found no direct lifted-Composition signature in <code>Microsoft.UI.Windowing</code>,
+      <code>Microsoft.UI.Dispatching</code>, <code>Microsoft.UI.System</code>, or stable
+      <code>Microsoft.UI.Input</code>.
+    </p>
+    <div class="note">
+      <strong>Scope rule:</strong> APIs declared inside <code>Microsoft.UI.Composition*</code> are
+      intentionally excluded. Otherwise every Composition API would trivially qualify. An entry is
+      counted only when a public declaration outside those namespaces directly names a lifted type,
+      or when a class directly implements a lifted Composition interface.
+    </div>
+  </section>
+
+  <section>
+    <h2>Methodology and evidence boundary</h2>
+    <ul class="methodology">
+      <li>Stable baseline: the current Microsoft Learn <code>windows-app-sdk-2.0</code> moniker, corresponding to the current stable release channel.</li>
+      <li>Experimental entries use the Microsoft Learn <code>windows-app-sdk-2.0-experimental</code> moniker and are not mixed with stable totals.</li>
+      <li>Parameters, return values, properties, implemented interfaces, and protected override surfaces are included.</li>
+      <li>Documentation text that merely discusses Composition, without a Composition type in the declaration, is classified as indirect and is not counted.</li>
+      <li><code>Windows.UI.Composition</code> signatures are listed separately as system counterparts and are not counted as lifted dependencies.</li>
+      <li>The “Function” column paraphrases the behavior documented on the linked Microsoft Learn page; it does not infer private implementation behavior.</li>
+    </ul>
+    <p class="small">
+      Release-channel source:
+      <a href="https://learn.microsoft.com/windows/apps/windows-app-sdk/release-channels">Windows App SDK release channels</a>.
+      Every API row links to its Microsoft Learn reference page.
+    </p>
+  </section>
+
+  <section>
+    <h2>Flat list: stable direct dependencies</h2>
+    <div class="controls">
+      <input id="search" type="search" placeholder="Filter API, type, namespace, or function">
+      <select id="groupFilter"><option value="">All functional groups</option></select>
+      <select id="directionFilter"><option value="">All dependency directions</option></select>
+    </div>
+    <div class="table-wrap">
+      <table id="stableTable">
+        <thead>
+          <tr>
+            <th data-key="api">API</th>
+            <th data-key="namespace">Namespace</th>
+            <th data-key="direction">Direction</th>
+            <th data-key="types">Lifted type(s)</th>
+            <th data-key="function">Documented function</th>
+            <th data-key="group">Group</th>
+            <th>Microsoft Learn</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p id="visibleCount" class="small"></p>
+  </section>
+
+  <section>
+    <h2>Logically grouped stable view</h2>
+    <div id="grouped" class="group-grid"></div>
+  </section>
+
+  <section>
+    <h2>Type-centric cross-reference</h2>
+    <div class="table-wrap">
+      <table id="typeTable">
+        <thead><tr><th>Lifted type</th><th>Stable referencing APIs</th><th>Primary dependency role</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Current experimental direct dependencies</h2>
+    <p>
+      These APIs are documented only for the experimental moniker. They are relevant to a de-lifting
+      experiment, but they are not part of the stable supported surface.
+    </p>
+    <div class="table-wrap">
+      <table id="experimentalTable">
+        <thead><tr><th>API</th><th>Direction</th><th>Lifted type(s)</th><th>Function</th><th>Microsoft Learn</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Explicitly excluded system Composition counterparts</h2>
+    <p>
+      These Windows App SDK APIs name <code>Windows.UI.Composition</code>, not lifted
+      <code>Microsoft.UI.Composition</code>. They are important migration counterparts but must not
+      inflate the lifted-dependency count.
+    </p>
+    <div class="table-wrap">
+      <table id="excludedTable">
+        <thead><tr><th>API</th><th>System type</th><th>Function</th><th>Microsoft Learn</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Composition-adjacent APIs not counted</h2>
+    <div class="table-wrap">
+      <table id="indirectTable">
+        <thead><tr><th>API</th><th>Why it is related</th><th>Why it is not a direct dependency</th><th>Microsoft Learn</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Refactoring implications</h2>
+    <p>
+      A switch from lifted to system Composition cannot be limited to replacing compositor creation.
+      It breaks public contracts in six distinct ways: returned visuals/compositors, accepted animation
+      objects, implemented interfaces, protected brush/light extension points, scrolling animation
+      customization, and Content hosting factories. The broadest source impact is inherited:
+      <code>UIElement</code> and <code>Brush</code> expose lifted animation interfaces to every derived
+      XAML type.
+    </p>
+    <p>
+      The Content namespace already documents parallel system-visual entry points for several island
+      operations. Those APIs demonstrate that lifted and system visuals are treated as different
+      object families; they are explicit alternatives, not namespace aliases. The experiment therefore
+      needs coordinated public metadata changes and cannot rely on source-level type aliases alone.
+    </p>
+  </section>
+</main>
+
+<footer>
+  Generated for the WinUI 3 system-component refactoring experiment. Evidence links are Microsoft Learn only.
+</footer>
+
+<script>
+const learn = "https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/";
+
+const stable = [
+  { api:"Microsoft.UI.Xaml.UIElement", namespace:"Microsoft.UI.Xaml", direction:"implements", types:["IAnimationObject","IVisualElement","IVisualElement2"], function:"Makes every UIElement a Composition animation target and exposes its backing visual identity through lifted Composition interfaces.", group:"XAML visual identity and animation", slug:"microsoft.ui.xaml.uielement" },
+  { api:"UIElement.GetVisualInternal()", namespace:"Microsoft.UI.Xaml", direction:"returns", types:["Visual"], function:"Returns the lifted Composition visual associated with the UIElement.", group:"XAML visual identity and animation", slug:"microsoft.ui.xaml.uielement.getvisualinternal" },
+  { api:"UIElement.StartAnimation(ICompositionAnimationBase)", namespace:"Microsoft.UI.Xaml", direction:"consumes", types:["ICompositionAnimationBase"], function:"Starts the supplied Composition animation on the UIElement.", group:"XAML visual identity and animation", slug:"microsoft.ui.xaml.uielement.startanimation" },
+  { api:"UIElement.StopAnimation(ICompositionAnimationBase)", namespace:"Microsoft.UI.Xaml", direction:"consumes", types:["ICompositionAnimationBase"], function:"Stops the supplied Composition animation on the UIElement.", group:"XAML visual identity and animation", slug:"microsoft.ui.xaml.uielement.stopanimation" },
+  { api:"UIElement.PopulatePropertyInfo(string, AnimationPropertyInfo)", namespace:"Microsoft.UI.Xaml", direction:"consumes", types:["AnimationPropertyInfo"], function:"Populates metadata used by Composition to animate a UIElement property.", group:"XAML visual identity and animation", slug:"microsoft.ui.xaml.uielement.populatepropertyinfo" },
+  { api:"UIElement.PopulatePropertyInfoOverride(string, AnimationPropertyInfo)", namespace:"Microsoft.UI.Xaml", direction:"consumes (protected override)", types:["AnimationPropertyInfo"], function:"Lets a derived UIElement supply Composition animation metadata for a property.", group:"XAML visual identity and animation", slug:"microsoft.ui.xaml.uielement.populatepropertyinfooverride" },
+  { api:"Microsoft.UI.Xaml.Media.Brush", namespace:"Microsoft.UI.Xaml.Media", direction:"implements", types:["IAnimationObject"], function:"Makes XAML brushes direct targets of the lifted Composition animation contract.", group:"XAML visual identity and animation", slug:"microsoft.ui.xaml.media.brush" },
+  { api:"Brush.PopulatePropertyInfo(string, AnimationPropertyInfo)", namespace:"Microsoft.UI.Xaml.Media", direction:"consumes", types:["AnimationPropertyInfo"], function:"Populates Composition animation metadata for a brush property.", group:"XAML visual identity and animation", slug:"microsoft.ui.xaml.media.brush.populatepropertyinfo" },
+  { api:"Brush.PopulatePropertyInfoOverride(string, AnimationPropertyInfo)", namespace:"Microsoft.UI.Xaml.Media", direction:"consumes (protected override)", types:["AnimationPropertyInfo"], function:"Lets a derived brush provide Composition animation metadata.", group:"XAML visual identity and animation", slug:"microsoft.ui.xaml.media.brush.populatepropertyinfooverride" },
+  { api:"Window.Compositor", namespace:"Microsoft.UI.Xaml", direction:"returns", types:["Compositor"], function:"Gets the lifted Compositor used by the XAML window.", group:"Compositor access", slug:"microsoft.ui.xaml.window.compositor" },
+  { api:"CompositionTarget.GetCompositorForCurrentThread()", namespace:"Microsoft.UI.Xaml.Media", direction:"returns", types:["Compositor"], function:"Gets the lifted Compositor associated with the current XAML thread.", group:"Compositor access", slug:"microsoft.ui.xaml.media.compositiontarget.getcompositorforcurrentthread" },
+
+  { api:"ElementCompositionPreview.GetElementVisual(UIElement)", namespace:"Microsoft.UI.Xaml.Hosting", direction:"returns", types:["Visual"], function:"Retrieves the lifted Composition visual that backs a XAML element.", group:"ElementCompositionPreview interop", slug:"microsoft.ui.xaml.hosting.elementcompositionpreview.getelementvisual" },
+  { api:"ElementCompositionPreview.GetElementChildVisual(UIElement)", namespace:"Microsoft.UI.Xaml.Hosting", direction:"returns", types:["Visual"], function:"Retrieves a custom child visual previously attached to a XAML element.", group:"ElementCompositionPreview interop", slug:"microsoft.ui.xaml.hosting.elementcompositionpreview.getelementchildvisual" },
+  { api:"ElementCompositionPreview.SetElementChildVisual(UIElement, Visual)", namespace:"Microsoft.UI.Xaml.Hosting", direction:"consumes", types:["Visual"], function:"Attaches a lifted Composition visual as the topmost child of a XAML element visual tree.", group:"ElementCompositionPreview interop", slug:"microsoft.ui.xaml.hosting.elementcompositionpreview.setelementchildvisual" },
+  { api:"ElementCompositionPreview.GetPointerPositionPropertySet(UIElement)", namespace:"Microsoft.UI.Xaml.Hosting", direction:"returns", types:["CompositionPropertySet"], function:"Returns a property set containing pointer-position data for driving Composition expressions.", group:"ElementCompositionPreview interop", slug:"microsoft.ui.xaml.hosting.elementcompositionpreview.getpointerpositionpropertyset" },
+  { api:"ElementCompositionPreview.GetScrollViewerManipulationPropertySet(ScrollViewer)", namespace:"Microsoft.UI.Xaml.Hosting", direction:"returns", types:["CompositionPropertySet"], function:"Returns scrolling/manipulation properties for use by Composition animations.", group:"ElementCompositionPreview interop", slug:"microsoft.ui.xaml.hosting.elementcompositionpreview.getscrollviewermanipulationpropertyset" },
+  { api:"ElementCompositionPreview.SetImplicitShowAnimation(UIElement, ICompositionAnimationBase)", namespace:"Microsoft.UI.Xaml.Hosting", direction:"consumes", types:["ICompositionAnimationBase"], function:"Associates an implicit lifted Composition animation with showing an element.", group:"ElementCompositionPreview interop", slug:"microsoft.ui.xaml.hosting.elementcompositionpreview.setimplicitshowanimation" },
+  { api:"ElementCompositionPreview.SetImplicitHideAnimation(UIElement, ICompositionAnimationBase)", namespace:"Microsoft.UI.Xaml.Hosting", direction:"consumes", types:["ICompositionAnimationBase"], function:"Associates an implicit lifted Composition animation with hiding an element.", group:"ElementCompositionPreview interop", slug:"microsoft.ui.xaml.hosting.elementcompositionpreview.setimplicithideanimation" },
+
+  { api:"XamlCompositionBrushBase.CompositionBrush", namespace:"Microsoft.UI.Xaml.Media", direction:"gets/sets (protected)", types:["CompositionBrush"], function:"Provides the lifted Composition brush used by a custom XAML brush.", group:"Brushes, lights, surfaces, and backdrops", slug:"microsoft.ui.xaml.media.xamlcompositionbrushbase.compositionbrush" },
+  { api:"XamlLight.CompositionLight", namespace:"Microsoft.UI.Xaml.Media", direction:"gets/sets (protected)", types:["CompositionLight"], function:"Provides the lifted Composition light used by a XAML light implementation.", group:"Brushes, lights, surfaces, and backdrops", slug:"microsoft.ui.xaml.media.xamllight.compositionlight" },
+  { api:"Microsoft.UI.Xaml.Media.LoadedImageSurface", namespace:"Microsoft.UI.Xaml.Media", direction:"implements", types:["ICompositionSurface"], function:"Exposes a decoded image as a lifted Composition surface.", group:"Brushes, lights, surfaces, and backdrops", slug:"microsoft.ui.xaml.media.loadedimagesurface" },
+  { api:"MicaBackdrop.Kind", namespace:"Microsoft.UI.Xaml.Media", direction:"gets/sets", types:["SystemBackdrops.MicaKind"], function:"Selects the lifted Composition Mica backdrop variant.", group:"Brushes, lights, surfaces, and backdrops", slug:"microsoft.ui.xaml.media.micabackdrop.kind" },
+  { api:"RadialGradientBrush.InterpolationSpace", namespace:"Microsoft.UI.Xaml.Media", direction:"gets/sets", types:["CompositionColorSpace"], function:"Selects the lifted Composition color space used to interpolate radial-gradient colors.", group:"Brushes, lights, surfaces, and backdrops", slug:"microsoft.ui.xaml.media.radialgradientbrush.interpolationspace" },
+  { api:"SystemBackdrop.GetDefaultSystemBackdropConfiguration(ICompositionSupportsSystemBackdrop, XamlRoot)", namespace:"Microsoft.UI.Xaml.Media", direction:"consumes and returns", types:["ICompositionSupportsSystemBackdrop","SystemBackdrops.SystemBackdropConfiguration"], function:"Creates the default backdrop configuration for a lifted Composition backdrop target.", group:"Brushes, lights, surfaces, and backdrops", slug:"microsoft.ui.xaml.media.systembackdrop.getdefaultsystembackdropconfiguration" },
+  { api:"SystemBackdrop.OnTargetConnected(ICompositionSupportsSystemBackdrop, XamlRoot)", namespace:"Microsoft.UI.Xaml.Media", direction:"consumes (protected virtual)", types:["ICompositionSupportsSystemBackdrop"], function:"Notifies a custom SystemBackdrop that a lifted Composition target connected.", group:"Brushes, lights, surfaces, and backdrops", slug:"microsoft.ui.xaml.media.systembackdrop.ontargetconnected" },
+  { api:"SystemBackdrop.OnTargetDisconnected(ICompositionSupportsSystemBackdrop)", namespace:"Microsoft.UI.Xaml.Media", direction:"consumes (protected virtual)", types:["ICompositionSupportsSystemBackdrop"], function:"Notifies a custom SystemBackdrop that a lifted Composition target disconnected.", group:"Brushes, lights, surfaces, and backdrops", slug:"microsoft.ui.xaml.media.systembackdrop.ontargetdisconnected" },
+  { api:"SystemBackdrop.OnDefaultSystemBackdropConfigurationChanged(ICompositionSupportsSystemBackdrop, XamlRoot)", namespace:"Microsoft.UI.Xaml.Media", direction:"consumes (protected virtual)", types:["ICompositionSupportsSystemBackdrop"], function:"Notifies a custom backdrop that the default configuration for its lifted target changed.", group:"Brushes, lights, surfaces, and backdrops", slug:"microsoft.ui.xaml.media.systembackdrop.ondefaultsystembackdropconfigurationchanged" },
+
+  { api:"ConnectedAnimation.SetAnimationComponent(ConnectedAnimationComponent, ICompositionAnimationBase)", namespace:"Microsoft.UI.Xaml.Media.Animation", direction:"consumes", types:["ICompositionAnimationBase"], function:"Replaces a connected-animation component with a supplied lifted Composition animation.", group:"Connected and implicit animation", slug:"microsoft.ui.xaml.media.animation.connectedanimation.setanimationcomponent" },
+  { api:"ConnectedAnimationService.DefaultEasingFunction", namespace:"Microsoft.UI.Xaml.Media.Animation", direction:"gets/sets", types:["CompositionEasingFunction"], function:"Gets or sets the lifted Composition easing function used by connected animations.", group:"Connected and implicit animation", slug:"microsoft.ui.xaml.media.animation.connectedanimationservice.defaulteasingfunction" },
+  { api:"Image.GetAlphaMask()", namespace:"Microsoft.UI.Xaml.Controls", direction:"returns", types:["CompositionBrush"], function:"Returns the rendered image alpha channel as a lifted Composition brush for effects and shadows.", group:"Alpha-mask interop", slug:"microsoft.ui.xaml.controls.image.getalphamask" },
+  { api:"TextBlock.GetAlphaMask()", namespace:"Microsoft.UI.Xaml.Controls", direction:"returns", types:["CompositionBrush"], function:"Returns the rendered text alpha channel as a lifted Composition brush.", group:"Alpha-mask interop", slug:"microsoft.ui.xaml.controls.textblock.getalphamask" },
+  { api:"Shape.GetAlphaMask()", namespace:"Microsoft.UI.Xaml.Shapes", direction:"returns", types:["CompositionBrush"], function:"Returns the rendered shape alpha channel as a lifted Composition brush.", group:"Alpha-mask interop", slug:"microsoft.ui.xaml.shapes.shape.getalphamask" },
+
+  { api:"IAnimatedVisual.RootVisual", namespace:"Microsoft.UI.Xaml.Controls", direction:"returns", types:["Visual"], function:"Exposes the root lifted Composition visual produced by an animated visual source.", group:"Animated visual infrastructure", slug:"microsoft.ui.xaml.controls.ianimatedvisual.rootvisual" },
+  { api:"AnimatedVisualPlayer.ProgressObject", namespace:"Microsoft.UI.Xaml.Controls", direction:"returns", types:["CompositionObject"], function:"Returns a Composition object whose Progress property tracks player progress for expression binding.", group:"Animated visual infrastructure", slug:"microsoft.ui.xaml.controls.animatedvisualplayer.progressobject" },
+  { api:"IAnimatedVisualSource.TryCreateAnimatedVisual(Compositor, out object)", namespace:"Microsoft.UI.Xaml.Controls", direction:"consumes", types:["Compositor"], function:"Creates an animated visual tree using the supplied lifted Compositor.", group:"Animated visual infrastructure", slug:"microsoft.ui.xaml.controls.ianimatedvisualsource.trycreateanimatedvisual" },
+  { api:"IAnimatedVisualSource3.TryCreateAnimatedVisual(Compositor, out object, bool)", namespace:"Microsoft.UI.Xaml.Controls", direction:"consumes", types:["Compositor"], function:"Creates an animated visual with optional immediate animation creation using the supplied lifted Compositor.", group:"Animated visual infrastructure", slug:"microsoft.ui.xaml.controls.ianimatedvisualsource3.trycreateanimatedvisual" },
+  { api:"AnimatedAcceptVisualSource.TryCreateAnimatedVisual(Compositor, out object)", namespace:"Microsoft.UI.Xaml.Controls.AnimatedVisuals", direction:"consumes", types:["Compositor"], function:"Creates the built-in animated Accept visual using the supplied lifted Compositor.", group:"Built-in animated visual sources", slug:"microsoft.ui.xaml.controls.animatedvisuals.animatedacceptvisualsource.trycreateanimatedvisual" },
+  { api:"AnimatedBackVisualSource.TryCreateAnimatedVisual(Compositor, out object)", namespace:"Microsoft.UI.Xaml.Controls.AnimatedVisuals", direction:"consumes", types:["Compositor"], function:"Creates the built-in animated Back visual using the supplied lifted Compositor.", group:"Built-in animated visual sources", slug:"microsoft.ui.xaml.controls.animatedvisuals.animatedbackvisualsource.trycreateanimatedvisual" },
+  { api:"AnimatedChevronDownSmallVisualSource.TryCreateAnimatedVisual(Compositor, out object)", namespace:"Microsoft.UI.Xaml.Controls.AnimatedVisuals", direction:"consumes", types:["Compositor"], function:"Creates the built-in animated small down-chevron visual.", group:"Built-in animated visual sources", slug:"microsoft.ui.xaml.controls.animatedvisuals.animatedchevrondownsmallvisualsource.trycreateanimatedvisual" },
+  { api:"AnimatedChevronRightDownSmallVisualSource.TryCreateAnimatedVisual(Compositor, out object)", namespace:"Microsoft.UI.Xaml.Controls.AnimatedVisuals", direction:"consumes", types:["Compositor"], function:"Creates the built-in animated right-to-down chevron visual.", group:"Built-in animated visual sources", slug:"microsoft.ui.xaml.controls.animatedvisuals.animatedchevronrightdownsmallvisualsource.trycreateanimatedvisual" },
+  { api:"AnimatedChevronUpDownSmallVisualSource.TryCreateAnimatedVisual(Compositor, out object)", namespace:"Microsoft.UI.Xaml.Controls.AnimatedVisuals", direction:"consumes", types:["Compositor"], function:"Creates the built-in animated up/down chevron visual.", group:"Built-in animated visual sources", slug:"microsoft.ui.xaml.controls.animatedvisuals.animatedchevronupdownsmallvisualsource.trycreateanimatedvisual" },
+  { api:"AnimatedFindVisualSource.TryCreateAnimatedVisual(Compositor, out object)", namespace:"Microsoft.UI.Xaml.Controls.AnimatedVisuals", direction:"consumes", types:["Compositor"], function:"Creates the built-in animated Find visual.", group:"Built-in animated visual sources", slug:"microsoft.ui.xaml.controls.animatedvisuals.animatedfindvisualsource.trycreateanimatedvisual" },
+  { api:"AnimatedGlobalNavigationButtonVisualSource.TryCreateAnimatedVisual(Compositor, out object)", namespace:"Microsoft.UI.Xaml.Controls.AnimatedVisuals", direction:"consumes", types:["Compositor"], function:"Creates the animated global-navigation button visual.", group:"Built-in animated visual sources", slug:"microsoft.ui.xaml.controls.animatedvisuals.animatedglobalnavigationbuttonvisualsource.trycreateanimatedvisual" },
+  { api:"AnimatedSettingsVisualSource.TryCreateAnimatedVisual(Compositor, out object)", namespace:"Microsoft.UI.Xaml.Controls.AnimatedVisuals", direction:"consumes", types:["Compositor"], function:"Creates the built-in animated Settings visual.", group:"Built-in animated visual sources", slug:"microsoft.ui.xaml.controls.animatedvisuals.animatedsettingsvisualsource.trycreateanimatedvisual" },
+
+  { api:"ScrollView.ExpressionAnimationSources", namespace:"Microsoft.UI.Xaml.Controls", direction:"returns", types:["CompositionPropertySet"], function:"Returns scrolling state values that can drive lifted Composition expressions.", group:"Scrolling composition hooks", slug:"microsoft.ui.xaml.controls.scrollview.expressionanimationsources" },
+  { api:"ScrollPresenter.ExpressionAnimationSources", namespace:"Microsoft.UI.Xaml.Controls.Primitives", direction:"returns", types:["CompositionPropertySet"], function:"Returns ScrollPresenter state values for lifted Composition expression animations.", group:"Scrolling composition hooks", slug:"microsoft.ui.xaml.controls.primitives.scrollpresenter.expressionanimationsources" },
+  { api:"ScrollingScrollAnimationStartingEventArgs.Animation", namespace:"Microsoft.UI.Xaml.Controls", direction:"gets/sets", types:["CompositionAnimation"], function:"Gets or replaces the lifted Composition animation used for a requested scroll.", group:"Scrolling composition hooks", slug:"microsoft.ui.xaml.controls.scrollingscrollanimationstartingeventargs.animation" },
+  { api:"ScrollingZoomAnimationStartingEventArgs.Animation", namespace:"Microsoft.UI.Xaml.Controls", direction:"gets/sets", types:["CompositionAnimation"], function:"Gets or replaces the lifted Composition animation used for a requested zoom.", group:"Scrolling composition hooks", slug:"microsoft.ui.xaml.controls.scrollingzoomanimationstartingeventargs.animation" },
+  { api:"IScrollController.GetScrollAnimation(..., CompositionAnimation)", namespace:"Microsoft.UI.Xaml.Controls.Primitives", direction:"consumes and returns", types:["CompositionAnimation"], function:"Lets a custom scroll controller replace the default lifted Composition scroll animation.", group:"Scrolling composition hooks", slug:"microsoft.ui.xaml.controls.primitives.iscrollcontroller.getscrollanimation" },
+  { api:"IScrollControllerPanningInfo.SetPanningElementExpressionAnimationSources(CompositionPropertySet, ...)", namespace:"Microsoft.UI.Xaml.Controls.Primitives", direction:"consumes", types:["CompositionPropertySet"], function:"Supplies the property set and property names used to drive a controller's panning element.", group:"Scrolling composition hooks", slug:"microsoft.ui.xaml.controls.primitives.iscrollcontrollerpanninginfo.setpanningelementexpressionanimationsources" },
+
+  { api:"Microsoft.UI.Content.ContentIsland", namespace:"Microsoft.UI.Content", direction:"implements", types:["ICompositionSupportsSystemBackdrop"], function:"Makes a ContentIsland a lifted Composition system-backdrop target.", group:"Content and island hosting", slug:"microsoft.ui.content.contentisland" },
+  { api:"ContentIsland.Create(Visual)", namespace:"Microsoft.UI.Content", direction:"consumes", types:["Visual"], function:"Creates a ContentIsland rooted at the supplied lifted Composition visual.", group:"Content and island hosting", slug:"microsoft.ui.content.contentisland.create" },
+  { api:"ContentIsland.FindAllForCompositor(Compositor)", namespace:"Microsoft.UI.Content", direction:"consumes", types:["Compositor"], function:"Retrieves all ContentIsland objects associated with a lifted Compositor.", group:"Content and island hosting", slug:"microsoft.ui.content.contentisland.findallforcompositor" },
+  { api:"ContentIsland.GetByVisual(Visual)", namespace:"Microsoft.UI.Content", direction:"consumes", types:["Visual"], function:"Finds the ContentIsland containing the supplied lifted Composition visual.", group:"Content and island hosting", slug:"microsoft.ui.content.contentisland.getbyvisual" },
+  { api:"ChildSiteLink.Create(ContentIsland, ContainerVisual)", namespace:"Microsoft.UI.Content", direction:"consumes", types:["ContainerVisual"], function:"Creates a child-site link positioned by a lifted Composition container visual.", group:"Content and island hosting", slug:"microsoft.ui.content.childsitelink.create" },
+  { api:"DesktopChildSiteBridge.Create(Compositor, WindowId)", namespace:"Microsoft.UI.Content", direction:"consumes", types:["Compositor"], function:"Creates a desktop child-site bridge using the supplied lifted Compositor and parent window.", group:"Content and island hosting", slug:"microsoft.ui.content.desktopchildsitebridge.create" }
+];
+
+const experimental = [
+  { api:"Microsoft.UI.Content.ContentExternalBackdropLink", direction:"implements", types:["ICompositionSupportsSystemBackdrop"], function:"Represents an experimental external-backdrop link that can receive lifted system-backdrop content.", slug:"microsoft.ui.content.contentexternalbackdroplink" },
+  { api:"ContentExternalBackdropLink.Create(Compositor)", direction:"consumes", types:["Compositor"], function:"Creates an external-backdrop link for the supplied lifted Compositor.", slug:"microsoft.ui.content.contentexternalbackdroplink.create" },
+  { api:"ContentExternalBackdropLink.ExternalBackdropBorderMode", direction:"gets/sets", types:["CompositionBorderMode"], function:"Controls border sampling for the external backdrop.", slug:"microsoft.ui.content.contentexternalbackdroplink.externalbackdropbordermode" },
+  { api:"ContentExternalBackdropLink.PlacementVisual", direction:"returns", types:["Visual"], function:"Returns the lifted placement visual used to position the external backdrop.", slug:"microsoft.ui.content.contentexternalbackdroplink.placementvisual" },
+  { api:"ContentExternalOutputLink.Create(Compositor)", direction:"consumes", types:["Compositor"], function:"Creates an external-output link for the supplied lifted Compositor.", slug:"microsoft.ui.content.contentexternaloutputlink.create" },
+  { api:"ContentExternalOutputLink.ExternalOutputBorderMode", direction:"gets/sets", types:["CompositionBorderMode"], function:"Controls border sampling for external output.", slug:"microsoft.ui.content.contentexternaloutputlink.externaloutputbordermode" },
+  { api:"ContentExternalOutputLink.PlacementVisual", direction:"returns", types:["Visual"], function:"Returns the lifted placement visual used to position external output.", slug:"microsoft.ui.content.contentexternaloutputlink.placementvisual" },
+  { api:"ContentIsland.Root", direction:"gets/sets", types:["Visual"], function:"Gets or replaces the experimental lifted Composition root of a ContentIsland.", slug:"microsoft.ui.content.contentisland.root" },
+  { api:"CoreWindowSiteBridge.Create(Compositor, CoreWindow)", direction:"consumes", types:["Compositor"], function:"Creates an experimental CoreWindow site bridge with a lifted Compositor.", slug:"microsoft.ui.content.corewindowsitebridge.create" },
+  { api:"InputPointerSource.GetForVisual(Visual)", direction:"consumes", types:["Visual"], function:"Gets the experimental pointer-input source associated with a lifted Composition visual.", slug:"microsoft.ui.input.inputpointersource.getforvisual" },
+  { api:"InputPointerSource.RemoveForVisual(Visual)", direction:"consumes", types:["Visual"], function:"Removes the experimental pointer-input source associated with a lifted Composition visual.", slug:"microsoft.ui.input.inputpointersource.removeforvisual" }
+];
+
+const excluded = [
+  { api:"ChildSiteLink.CreateForSystemVisual(ContentIsland, ContainerVisual)", type:"Windows.UI.Composition.ContainerVisual", function:"Creates the child-site link from a system container visual.", slug:"microsoft.ui.content.childsitelink.createforsystemvisual" },
+  { api:"ContentIsland.CreateForSystemVisual(DispatcherQueue, Visual)", type:"Windows.UI.Composition.Visual", function:"Creates a ContentIsland rooted in a system visual; the documented overload also takes a lifted DispatcherQueue.", slug:"microsoft.ui.content.contentisland.createforsystemvisual" },
+  { api:"ContentIsland.FindAllForSystemCompositor(Compositor)", type:"Windows.UI.Composition.Compositor", function:"Finds islands associated with a system compositor.", slug:"microsoft.ui.content.contentisland.findallforsystemcompositor" },
+  { api:"ContentIsland.GetBySystemVisual(Visual)", type:"Windows.UI.Composition.Visual", function:"Finds the island containing a system visual.", slug:"microsoft.ui.content.contentisland.getbysystemvisual" },
+  { api:"ContentIsland.SystemBackdrop", type:"Windows.UI.Composition.CompositionBrush", function:"Gets or sets the system Composition brush used as the island backdrop.", slug:"microsoft.ui.content.contentisland.systembackdrop" }
+];
+
+const indirect = [
+  { api:"Window.SystemBackdrop", related:"Associates a XAML SystemBackdrop with a window.", reason:"The property type is Microsoft.UI.Xaml.Media.SystemBackdrop, not a Microsoft.UI.Composition type.", slug:"microsoft.ui.xaml.window.systembackdrop" },
+  { api:"DesktopWindowXamlSource.SystemBackdrop", related:"Associates a XAML SystemBackdrop with a XAML Island host.", reason:"The declared property type is XAML SystemBackdrop; Composition types appear behind that abstraction.", slug:"microsoft.ui.xaml.hosting.desktopwindowxamlsource.systembackdrop" },
+  { api:"ElementCompositionPreview.SetIsTranslationEnabled(UIElement, bool)", related:"Enables the Translation property used by Composition-backed transforms.", reason:"Its signature contains only UIElement and Boolean.", slug:"microsoft.ui.xaml.hosting.elementcompositionpreview.setistranslationenabled" },
+  { api:"ContentIsland.RasterizationScale", related:"Controls the scale used for island rendering and composition surfaces.", reason:"The declared type is Single/float.", slug:"microsoft.ui.content.contentisland.rasterizationscale" },
+  { api:"AnimatedIcon.Source / AnimatedIconSource.Source", related:"Accepts IAnimatedVisualSource implementations that later create Composition visuals.", reason:"The properties name a XAML interface, not a Microsoft.UI.Composition type.", slug:"microsoft.ui.xaml.controls.animatedicon.source" },
+  { api:"XamlCompositionBrushBase.OnConnected / OnDisconnected", related:"Lifecycle callbacks normally create and release CompositionBrush objects.", reason:"The callback signatures contain no Composition type.", slug:"microsoft.ui.xaml.media.xamlcompositionbrushbase.onconnected" },
+  { api:"XamlLight.OnConnected / OnDisconnected", related:"Lifecycle callbacks normally create and release CompositionLight objects.", reason:"The callback signatures contain no Composition type.", slug:"microsoft.ui.xaml.media.xamllight.onconnected" },
+  { api:"DesktopAcrylicBackdrop", related:"Built-in XAML SystemBackdrop implementation backed by composition effects.", reason:"The class declaration does not directly name a lifted Composition type.", slug:"microsoft.ui.xaml.media.desktopacrylicbackdrop" },
+  { api:"MicaBackdrop", related:"Built-in XAML SystemBackdrop implementation.", reason:"The class declaration itself is indirect; only MicaBackdrop.Kind is counted directly because it exposes MicaKind.", slug:"microsoft.ui.xaml.media.micabackdrop" }
+];
+
+const role = {
+  "AnimationPropertyInfo":"Animation property metadata",
+  "CompositionAnimation":"Scrolling animation customization",
+  "CompositionBorderMode":"External-link edge sampling",
+  "CompositionBrush":"Brush/effect and alpha-mask interop",
+  "CompositionColorSpace":"Gradient interpolation",
+  "CompositionEasingFunction":"Connected-animation timing",
+  "CompositionLight":"XAML lighting extension",
+  "CompositionObject":"Animated-player progress binding",
+  "CompositionPropertySet":"Expression-animation data exchange",
+  "Compositor":"Object creation and compositor ownership",
+  "ContainerVisual":"Content-site placement",
+  "IAnimationObject":"Composition animation target contract",
+  "ICompositionAnimationBase":"Animation handoff",
+  "ICompositionSurface":"Surface handoff",
+  "ICompositionSupportsSystemBackdrop":"Backdrop target contract",
+  "IVisualElement":"Visual identity contract",
+  "IVisualElement2":"Extended visual identity contract",
+  "SystemBackdrops.MicaKind":"Mica variant selection",
+  "SystemBackdrops.SystemBackdropConfiguration":"Backdrop policy/configuration",
+  "Visual":"Visual-tree and hosting handoff"
+};
+
+function link(slug, experimentalView = false) {
+  const view = experimentalView ? "windows-app-sdk-2.0-experimental" : "windows-app-sdk-2.0";
+  return `${learn}${slug}?view=${view}`;
+}
+
+function pills(values, css = "") {
+  return values.map(v => `<span class="pill ${css}">${v}</span>`).join("");
+}
+
+let sortKey = "api";
+let sortAsc = true;
+
+function renderStable() {
+  const q = document.querySelector("#search").value.trim().toLowerCase();
+  const group = document.querySelector("#groupFilter").value;
+  const direction = document.querySelector("#directionFilter").value;
+  const filtered = stable.filter(x => {
+    const haystack = [x.api, x.namespace, x.direction, x.types.join(" "), x.function, x.group].join(" ").toLowerCase();
+    return (!q || haystack.includes(q)) && (!group || x.group === group) && (!direction || x.direction === direction);
+  }).sort((a,b) => {
+    const av = Array.isArray(a[sortKey]) ? a[sortKey].join(",") : a[sortKey];
+    const bv = Array.isArray(b[sortKey]) ? b[sortKey].join(",") : b[sortKey];
+    return String(av).localeCompare(String(bv)) * (sortAsc ? 1 : -1);
+  });
+  document.querySelector("#stableTable tbody").innerHTML = filtered.map(x => `
+    <tr>
+      <td class="api">${x.api}</td>
+      <td>${x.namespace}</td>
+      <td>${x.direction}</td>
+      <td class="type">${pills(x.types)}</td>
+      <td>${x.function}</td>
+      <td>${x.group}</td>
+      <td><a href="${link(x.slug)}">Reference</a></td>
+    </tr>`).join("");
+  document.querySelector("#visibleCount").textContent = `Showing ${filtered.length} of ${stable.length} stable entries.`;
+}
+
+function renderGrouped() {
+  const groups = [...new Set(stable.map(x => x.group))].sort();
+  document.querySelector("#grouped").innerHTML = groups.map(g => {
+    const items = stable.filter(x => x.group === g);
+    return `<div class="group"><h3>${g}<span class="count">${items.length}</span></h3><ul>${
+      items.map(x => `<li><a href="${link(x.slug)}"><code>${x.api}</code></a><br><span class="small">${x.function}</span></li>`).join("")
+    }</ul></div>`;
+  }).join("");
+}
+
+function renderTypeTable() {
+  const types = [...new Set(stable.flatMap(x => x.types))].sort();
+  document.querySelector("#typeTable tbody").innerHTML = types.map(t => {
+    const refs = stable.filter(x => x.types.includes(t));
+    return `<tr><td class="type">${t}</td><td>${refs.length}</td><td>${role[t] || ""}</td></tr>`;
+  }).join("");
+}
+
+function renderExperimental() {
+  document.querySelector("#experimentalTable tbody").innerHTML = experimental.map(x => `
+    <tr>
+      <td class="api">${x.api}</td><td>${x.direction}</td>
+      <td class="type">${pills(x.types, "experimental")}</td>
+      <td>${x.function}</td><td><a href="${link(x.slug, true)}">Experimental reference</a></td>
+    </tr>`).join("");
+}
+
+function renderExcluded() {
+  document.querySelector("#excludedTable tbody").innerHTML = excluded.map(x => `
+    <tr><td class="api">${x.api}</td><td class="type">${pills([x.type], "excluded")}</td>
+    <td>${x.function}</td><td><a href="${link(x.slug)}">Reference</a></td></tr>`).join("");
+}
+
+function renderIndirect() {
+  document.querySelector("#indirectTable tbody").innerHTML = indirect.map(x => `
+    <tr><td class="api">${x.api}</td><td>${x.related}</td><td>${x.reason}</td>
+    <td><a href="${link(x.slug)}">Reference</a></td></tr>`).join("");
+}
+
+function initialize() {
+  const groups = [...new Set(stable.map(x => x.group))].sort();
+  const directions = [...new Set(stable.map(x => x.direction))].sort();
+  document.querySelector("#groupFilter").innerHTML += groups.map(x => `<option>${x}</option>`).join("");
+  document.querySelector("#directionFilter").innerHTML += directions.map(x => `<option>${x}</option>`).join("");
+  document.querySelector("#stableCount").textContent = stable.length;
+  document.querySelector("#experimentalCount").textContent = experimental.length;
+  document.querySelector("#groupCount").textContent = groups.length;
+  document.querySelector("#typeCount").textContent = new Set(stable.flatMap(x => x.types)).size;
+  ["search","groupFilter","directionFilter"].forEach(id => document.querySelector(`#${id}`).addEventListener("input", renderStable));
+  document.querySelectorAll("#stableTable th[data-key]").forEach(th => th.addEventListener("click", () => {
+    if (sortKey === th.dataset.key) sortAsc = !sortAsc; else { sortKey = th.dataset.key; sortAsc = true; }
+    renderStable();
+  }));
+  renderStable();
+  renderGrouped();
+  renderTypeTable();
+  renderExperimental();
+  renderExcluded();
+  renderIndirect();
+}
+initialize();
+</script>
+</body>
+</html>

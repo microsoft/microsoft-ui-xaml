@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Composition Switcher OS Dependency</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #526078;
+      --page: #eef3f9;
+      --panel: #ffffff;
+      --line: #526078;
+      --lifted-bg: #e8f2ff;
+      --lifted-border: #2474c6;
+      --system-bg: #fff2df;
+      --system-border: #b96700;
+      --os-bg: #f0eaff;
+      --os-border: #7048b7;
+      --bridge-bg: #dbf6ea;
+      --bridge-border: #13845b;
+      --removed-bg: #fff0ef;
+      --removed-border: #b42318;
+      --shadow: 0 10px 28px rgb(27 45 74 / 9%);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.45;
+    }
+
+    main {
+      width: min(1600px, calc(100% - 32px));
+      margin: 32px auto 56px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(30px, 4vw, 44px);
+      letter-spacing: -0.03em;
+    }
+
+    h2 {
+      margin: 34px 0 8px;
+      font-size: clamp(23px, 3vw, 31px);
+      letter-spacing: -0.02em;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 21px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    code {
+      color: #273a61;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.92em;
+    }
+
+    .summary {
+      max-width: 1120px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      margin-top: 20px;
+      align-items: start;
+    }
+
+    .architecture-card {
+      min-width: 0;
+      padding: 22px;
+      border: 1px solid #d4dce8;
+      border-radius: 18px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .card-intro {
+      min-height: 72px;
+      margin-top: 7px;
+      color: var(--muted);
+    }
+
+    .flow {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: min(100%, 610px);
+      margin: 22px auto 0;
+    }
+
+    .boundary {
+      padding: 18px;
+      border: 2px dashed;
+      border-radius: 15px;
+    }
+
+    .boundary + .connector,
+    .connector + .boundary,
+    .node + .connector,
+    .connector + .node {
+      margin-top: 0;
+    }
+
+    .boundary.lifted-boundary {
+      border-color: var(--lifted-border);
+      background: rgb(232 242 255 / 22%);
+    }
+
+    .boundary.system-boundary {
+      border-color: var(--system-border);
+      background: rgb(255 242 223 / 26%);
+    }
+
+    .boundary.os-boundary {
+      border-color: var(--os-border);
+      background: rgb(240 234 255 / 24%);
+    }
+
+    .boundary-label {
+      margin: -31px 0 13px;
+      text-align: center;
+    }
+
+    .boundary-label span {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--panel);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .lifted-boundary .boundary-label span {
+      color: var(--lifted-border);
+    }
+
+    .system-boundary .boundary-label span {
+      color: var(--system-border);
+    }
+
+    .os-boundary .boundary-label span {
+      color: var(--os-border);
+    }
+
+    .node {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 5px 14px rgb(27 45 74 / 8%);
+    }
+
+    .node strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 16px;
+    }
+
+    .node span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .node.lifted {
+      border-color: var(--lifted-border);
+      background: var(--lifted-bg);
+    }
+
+    .node.system {
+      border-color: var(--system-border);
+      background: var(--system-bg);
+    }
+
+    .node.os {
+      border-color: var(--os-border);
+      background: var(--os-bg);
+    }
+
+    .node.bridge {
+      border-color: var(--bridge-border);
+      background: var(--bridge-bg);
+    }
+
+    .node.removed {
+      border-color: var(--removed-border);
+      border-style: dashed;
+      background: var(--removed-bg);
+      box-shadow: none;
+    }
+
+    .node.removed strong {
+      color: #8f1d14;
+      text-decoration: line-through;
+    }
+
+    .connector {
+      display: grid;
+      justify-items: center;
+      min-height: 58px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .connector::before {
+      width: 3px;
+      min-height: 25px;
+      background: var(--line);
+      content: "";
+    }
+
+    .connector::after {
+      width: 0;
+      height: 0;
+      border-top: 10px solid var(--line);
+      border-right: 7px solid transparent;
+      border-left: 7px solid transparent;
+      content: "";
+    }
+
+    .connector span {
+      order: -1;
+      max-width: 90%;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--panel);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .connector.bridge-line {
+      color: var(--bridge-border);
+    }
+
+    .connector.bridge-line::before {
+      background: var(--bridge-border);
+    }
+
+    .connector.bridge-line::after {
+      border-top-color: var(--bridge-border);
+    }
+
+    .inside {
+      min-height: 42px;
+    }
+
+    .inside span {
+      background: transparent;
+    }
+
+    .return-connector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      margin-top: 12px;
+      padding: 8px 12px;
+      border: 2px solid var(--bridge-border);
+      border-radius: 999px;
+      background: var(--bridge-bg);
+      color: #0b6c49;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .note {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-left: 5px solid var(--bridge-border);
+      border-radius: 10px;
+      background: var(--bridge-bg);
+      color: #234c3e;
+    }
+
+    .warning-note {
+      border-left-color: var(--os-border);
+      background: var(--os-bg);
+      color: #563593;
+    }
+
+    .delta-table-wrapper {
+      margin-top: 22px;
+      overflow-x: auto;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .delta-table {
+      width: 100%;
+      min-width: 900px;
+      border-collapse: collapse;
+      background: var(--panel);
+    }
+
+    .delta-table th,
+    .delta-table td {
+      padding: 13px 15px;
+      border: 1px solid #d4dce8;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .delta-table th {
+      background: #f5f8fc;
+    }
+
+    .delta-table th:first-child,
+    .delta-table td:first-child {
+      width: 20%;
+      font-weight: 700;
+    }
+
+    .references {
+      margin-top: 28px;
+      padding: 18px 22px;
+      border: 1px solid #d4dce8;
+      border-radius: 14px;
+      background: var(--panel);
+    }
+
+    .references h2 {
+      margin: 0 0 10px;
+      font-size: 19px;
+    }
+
+    .references ul {
+      margin: 0;
+      padding-left: 21px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1050px) {
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-intro {
+        min-height: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Composition Switcher: Dispatcher and Threading Designs</h1>
+    <p class="summary">
+      The diagrams use normal document flow rather than positioned SVG elements.
+      Every connector is physically between the two nodes it joins, and each card
+      expands to its content instead of clipping at a fixed canvas boundary.
+    </p>
+
+    <h2>Dispatcher and CoreMessaging dependency</h2>
+    <p class="summary">
+      A WinRT compositor needs scheduling for commits and deferred callbacks, plus a
+      session that receives DwmCore callbacks. The current switcher path bridges a
+      lifted scheduling session to a system callback session. A system DispatcherQueue
+      can use one system session for both roles.
+    </p>
+
+    <div class="comparison-grid">
+      <article class="architecture-card">
+        <h3>Current switcher: lifted scheduling session</h3>
+        <p class="card-intro">
+          The compositor schedules through CoreMessagingXP, but DwmCore must communicate
+          through system CoreMessaging. dcomp therefore creates and manually drains a
+          second session.
+        </p>
+
+        <div class="flow">
+          <div class="boundary lifted-boundary">
+            <div class="boundary-label"><span>Lifted application infrastructure</span></div>
+            <div class="node lifted">
+              <strong>Lifted DispatcherQueue</strong>
+              <span><code>Microsoft.UI.Dispatching</code></span>
+            </div>
+            <div class="connector inside"><span>owns</span></div>
+            <div class="node lifted">
+              <strong>Lifted scheduling session</strong>
+              <span><code>IMessageSessionStable</code> backed by CoreMessagingXP</span>
+            </div>
+          </div>
+
+          <div class="connector"><span>supplied to system compositor factory</span></div>
+
+          <div class="boundary os-boundary">
+            <div class="boundary-label"><span>System dcomp switcher support</span></div>
+            <div class="node os">
+              <strong>System compositor</strong>
+              <span>Uses the lifted session for commit and deferred scheduling</span>
+            </div>
+            <div class="connector inside"><span>creates</span></div>
+            <div class="node system">
+              <strong>Separate manually dispatched system session</strong>
+              <span><code>CoreUICreateEx(ManuallyDispatched)</code> for DwmCore communication</span>
+            </div>
+            <div class="connector bridge-line inside"><span>message-available event</span></div>
+            <div class="node bridge">
+              <strong>Cross-session callback drain</strong>
+              <span><code>DwmMessageAvailableCallback</code> calls <code>Run(RunAllIfPresent)</code></span>
+            </div>
+            <div class="connector inside"><span>receives callbacks from</span></div>
+            <div class="node os">
+              <strong>DwmCore / DirectComposition</strong>
+            </div>
+          </div>
+
+          <div class="return-connector">
+            Callback drain is registered as a wait on the lifted scheduling session
+          </div>
+        </div>
+      </article>
+
+      <article class="architecture-card">
+        <h3>System DispatcherQueue: one system session</h3>
+        <p class="card-intro">
+          The DispatcherQueue session supports both compositor scheduling and DwmCore
+          communication, so the second session and its event bridge are unnecessary.
+        </p>
+
+        <div class="flow">
+          <div class="boundary system-boundary">
+            <div class="boundary-label"><span>System application infrastructure</span></div>
+            <div class="node system">
+              <strong>System DispatcherQueue</strong>
+              <span><code>Windows.System.DispatcherQueue</code></span>
+            </div>
+            <div class="connector inside"><span>owns</span></div>
+            <div class="node system">
+              <strong>One system CoreMessaging session</strong>
+              <span><code>MsgFeatures_SystemCoreMessaging</code></span>
+            </div>
+          </div>
+
+          <div class="connector"><span>same session supplied to compositor</span></div>
+
+          <div class="boundary os-boundary">
+            <div class="boundary-label"><span>System composition path</span></div>
+            <div class="node os">
+              <strong>System compositor</strong>
+              <span>Schedules commits and deferred callbacks on the system session</span>
+            </div>
+            <div class="connector inside"><span>same session carries callbacks</span></div>
+            <div class="node os">
+              <strong>DwmCore / DirectComposition</strong>
+            </div>
+            <div class="connector inside"><span>not required</span></div>
+            <div class="node removed">
+              <strong>Second session and manual drain</strong>
+              <span>No message-available event or cross-session bridge</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="note">
+          One system session performs both roles; this is the simplest dcomp arrangement.
+        </div>
+      </article>
+    </div>
+
+    <h2>Separate-thread comparison</h2>
+    <p class="summary">
+      WinUI already has a separate composition/render thread. The proposed design does
+      not merely replace the implementation on that thread: it changes what the thread
+      owns, how it pumps work, and the contract between XAML and composition.
+    </p>
+
+    <div class="comparison-grid">
+      <article class="architecture-card">
+        <h3>Current: lifted XAML composition/render thread</h3>
+        <p class="card-intro">
+          XAML owns a custom high-priority MTA scheduler thread. It advances the frame
+          clock, wakes the UI thread for ticks, and consumes render commands. It is not
+          a public DispatcherQueue-owned compositor apartment.
+        </p>
+
+        <div class="flow">
+          <div class="boundary lifted-boundary">
+            <div class="boundary-label"><span>Application UI thread</span></div>
+            <div class="node lifted">
+              <strong>Lifted XAML core and controls</strong>
+              <span>Layout, render walk, input and application callbacks</span>
+            </div>
+            <div class="connector inside"><span>scheduled by</span></div>
+            <div class="node lifted">
+              <strong>Lifted DispatcherQueue</strong>
+              <span>CoreMessagingXP remains the UI-thread dispatcher</span>
+            </div>
+          </div>
+
+          <div class="connector bridge-line">
+            <span>frame requests and draw-list handoff go down</span>
+          </div>
+
+          <div class="boundary lifted-boundary">
+            <div class="boundary-label"><span>Existing XAML composition/render thread</span></div>
+            <div class="node lifted">
+              <strong>CompositorScheduler thread owner</strong>
+              <span>Raw high-priority MTA thread with a custom event/wait loop</span>
+            </div>
+            <div class="connector inside"><span>drives</span></div>
+            <div class="node lifted">
+              <strong>Frame clock and render-command processing</strong>
+              <span>Consumes XAML draw work and determines the next frame time</span>
+            </div>
+            <div class="connector inside"><span>feeds</span></div>
+            <div class="node lifted">
+              <strong>Lifted composition/render work</strong>
+              <span>Existing render-command processing and DirectComposition submission</span>
+            </div>
+          </div>
+
+          <div class="connector"><span>commits</span></div>
+
+          <div class="boundary os-boundary">
+            <div class="boundary-label"><span>System composition engine</span></div>
+            <div class="node os">
+              <strong>DwmCore / DirectComposition</strong>
+            </div>
+          </div>
+
+          <div class="return-connector">
+            The scheduler asynchronously queues the next tick back to the XAML UI thread
+          </div>
+        </div>
+      </article>
+
+      <article class="architecture-card">
+        <h3>Proposed: system compositor on a separate owner thread</h3>
+        <p class="card-intro">
+          The separate thread owns a system DispatcherQueue, its CoreMessaging session,
+          the public system Compositor, and the visual tree. XAML keeps its lifted
+          DispatcherQueue on the UI thread.
+        </p>
+
+        <div class="flow">
+          <div class="boundary lifted-boundary">
+            <div class="boundary-label"><span>Application UI thread</span></div>
+            <div class="node lifted">
+              <strong>Lifted XAML core and controls</strong>
+              <span>Layout, render walk, input and application callbacks remain here</span>
+            </div>
+            <div class="connector inside"><span>scheduled by</span></div>
+            <div class="node lifted">
+              <strong>Lifted DispatcherQueue</strong>
+              <span>CoreMessagingXP behavior remains unchanged on the UI thread</span>
+            </div>
+          </div>
+
+          <div class="connector bridge-line">
+            <span>ordered composition mutations are marshalled down</span>
+          </div>
+
+          <div class="node bridge">
+            <strong>New WinUI composition adapter</strong>
+            <span>Serializes commands, preserves ordering and forwards callbacks to XAML</span>
+          </div>
+
+          <div class="connector bridge-line"><span><code>TryEnqueue</code> on system queue</span></div>
+
+          <div class="boundary system-boundary">
+            <div class="boundary-label"><span>System compositor owner thread</span></div>
+            <div class="node system">
+              <strong>System DispatcherQueueController</strong>
+              <span>Owns thread creation and shutdown</span>
+            </div>
+            <div class="connector inside"><span>owns</span></div>
+            <div class="node system">
+              <strong>System DispatcherQueue and CoreMessaging session</strong>
+              <span>Schedules compositor work and receives DwmCore callbacks</span>
+            </div>
+            <div class="connector inside"><span>owns and dispatches</span></div>
+            <div class="node system">
+              <strong>System Compositor and visual tree</strong>
+              <span>Thread-sensitive creation, mutation, batching and commit work</span>
+            </div>
+          </div>
+
+          <div class="connector"><span>commits and receives callbacks</span></div>
+
+          <div class="boundary os-boundary">
+            <div class="boundary-label"><span>System composition engine</span></div>
+            <div class="node os">
+              <strong>DwmCore / DirectComposition</strong>
+            </div>
+          </div>
+
+          <div class="return-connector">
+            Batch completions, property notifications and failures are posted back through
+            the adapter to the lifted UI DispatcherQueue
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="delta-table-wrapper">
+      <table class="delta-table">
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>Current lifted composition thread</th>
+            <th>Proposed system compositor thread</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Thread loop</td>
+            <td>Custom <code>CompositorScheduler</code> event/wait loop.</td>
+            <td>System DispatcherQueue and system CoreMessaging message loop.</td>
+          </tr>
+          <tr>
+            <td>What the thread owns</td>
+            <td>Frame clock, render scheduling and XAML render-command processing.</td>
+            <td>The system <code>Compositor</code>, visual tree, commits and DwmCore callbacks.</td>
+          </tr>
+          <tr>
+            <td>UI-thread DispatcherQueue</td>
+            <td>Lifted DispatcherQueue/CoreMessagingXP.</td>
+            <td>Unchanged: lifted DispatcherQueue/CoreMessagingXP.</td>
+          </tr>
+          <tr>
+            <td>Cross-thread contract</td>
+            <td>Existing wake event, draw-list locks and asynchronous UI tick scheduling.</td>
+            <td>New ordered composition-command protocol plus callback/event marshalling.</td>
+          </tr>
+          <tr>
+            <td>Switcher dual-session bridge</td>
+            <td>Required only when a system compositor is driven by a lifted scheduling session.</td>
+            <td>Not used because the system compositor is created directly on a system session thread.</td>
+          </tr>
+          <tr>
+            <td>Main migration cost</td>
+            <td>Baseline behavior.</td>
+            <td>Audit and adapt every direct or synchronous XAML-to-composition operation.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note warning-note">
+      <strong>Key conclusion:</strong>
+      both designs use a separate thread, but the current thread is a XAML render scheduler
+      while the proposed thread is the owner of the system WinRT compositor object graph.
+      Reusing the physical thread still requires replacing or extending its custom loop with
+      a system DispatcherQueue and defining an explicit marshalling contract.
+    </div>
+
+    <section class="references">
+      <h2>Source anchors</h2>
+      <ul>
+        <li><code>WrtCompositorg.cpp:2901-2920</code> — accepts a lifted scheduling session for the switcher path.</li>
+        <li><code>WrtCompositor.cpp:501-528</code> — reuses a system session or creates a manually dispatched callback session.</li>
+        <li><code>WrtCompositor.cpp:619-625</code> — assigns scheduling and DwmCore communication roles.</li>
+        <li><code>WrtCompositor.cpp:702-764</code> — drains and registers the separate callback session.</li>
+        <li><code>WrtCompositor.cpp:923-955</code> — marshals work to the owning session or DispatcherQueue.</li>
+        <li><code>WrtCompositor.cpp:2962-2967</code> — enforces owning-session-thread access for commit batches.</li>
+        <li><code>compositorscheduler.cpp:115-141</code> — creates XAML's current separate render thread.</li>
+        <li><code>compositorscheduler.cpp:260-288</code> — runs it as a high-priority MTA with a custom loop.</li>
+        <li><code>compositorscheduler.cpp:303-349</code> — advances the frame clock and queues UI-thread ticks.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

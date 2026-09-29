@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
+    <MinimalCoreWin>true</MinimalCoreWin>
+    <ProjectGuid>{38FDF9EC-07E8-4F27-9F7A-674F90F84A4B}</ProjectGuid>
+    <ProjectName>CompositionSwitcherSample</ProjectName>
+    <RootNamespace>CompositionSwitcherSample</RootNamespace>
+    <TargetName>$(RootNamespace)</TargetName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>false</AppContainerApplication>
+    <AppxPackage>false</AppxPackage>
+    <WindowsPackageType>None</WindowsPackageType>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <UseWinUI>true</UseWinUI>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <ResolveNuGetPackages>false</ResolveNuGetPackages>
+    <NuGetPackageImportStamp></NuGetPackageImportStamp>
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64"><Configuration>Debug</Configuration><Platform>x64</Platform></ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64"><Configuration>Release</Configuration><Platform>x64</Platform></ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <DesktopCompatible>true</DesktopCompatible>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level4</WarningLevel>
+      <AdditionalIncludeDirectories>..\Shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_SYSTEM_COMPOSITOR=1;_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>%(AdditionalOptions) /bigobj /FS</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+    <PackageReference Include="Microsoft.Windows.CppWinRT" Version="2.0.230706.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="..\Shared\App.xaml"><Link>App.xaml</Link></ApplicationDefinition>
+    <Page Include="..\Shared\MainWindow.xaml"><Link>MainWindow.xaml</Link></Page>
+    <Manifest Include="..\Shared\app.manifest"><Link>app.manifest</Link></Manifest>
+    <Midl Include="..\Shared\MainWindow.idl">
+      <Link>MainWindow.idl</Link>
+      <SubType>Code</SubType>
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Midl>
+    <ClInclude Include="..\Shared\pch.h"><Link>pch.h</Link></ClInclude>
+    <ClInclude Include="..\Shared\App.xaml.h"><Link>App.xaml.h</Link><DependentUpon>App.xaml</DependentUpon></ClInclude>
+    <ClInclude Include="..\Shared\MainWindow.xaml.h"><Link>MainWindow.xaml.h</Link><DependentUpon>MainWindow.xaml</DependentUpon></ClInclude>
+    <ClCompile Include="..\Shared\pch.cpp"><Link>pch.cpp</Link><PrecompiledHeader>Create</PrecompiledHeader></ClCompile>
+    <ClCompile Include="..\Shared\App.xaml.cpp"><Link>App.xaml.cpp</Link><DependentUpon>App.xaml</DependentUpon></ClCompile>
+    <ClCompile Include="..\Shared\MainWindow.xaml.cpp"><Link>MainWindow.xaml.cpp</Link><DependentUpon>MainWindow.xaml</DependentUpon></ClCompile>
+    <ClCompile Include="..\Shared\program.cpp"><Link>program.cpp</Link></ClCompile>
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

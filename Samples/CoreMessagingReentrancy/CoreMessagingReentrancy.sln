@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "CoreMessagingReentrancy.System", "System\CoreMessagingReentrancy.System.vcxproj", "{1A97F067-6F04-4954-9426-162136D5F364}"
+EndProject
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "CoreMessagingReentrancy.Lifted", "Lifted\CoreMessagingReentrancy.Lifted.vcxproj", "{9C451E3E-0483-4481-B0BE-6A74553FBFC3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1A97F067-6F04-4954-9426-162136D5F364}.Debug|x64.ActiveCfg = Debug|x64
+		{1A97F067-6F04-4954-9426-162136D5F364}.Debug|x64.Build.0 = Debug|x64
+		{1A97F067-6F04-4954-9426-162136D5F364}.Release|x64.ActiveCfg = Release|x64
+		{1A97F067-6F04-4954-9426-162136D5F364}.Release|x64.Build.0 = Release|x64
+		{9C451E3E-0483-4481-B0BE-6A74553FBFC3}.Debug|x64.ActiveCfg = Debug|x64
+		{9C451E3E-0483-4481-B0BE-6A74553FBFC3}.Debug|x64.Build.0 = Debug|x64
+		{9C451E3E-0483-4481-B0BE-6A74553FBFC3}.Release|x64.ActiveCfg = Release|x64
+		{9C451E3E-0483-4481-B0BE-6A74553FBFC3}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+EndGlobal

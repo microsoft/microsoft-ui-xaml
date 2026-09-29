@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Microsoft.UI.Dispatching.DispatcherQueue API Inventory</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #56647a;
+      --page: #eef3f9;
+      --panel: #ffffff;
+      --line: #d5deea;
+      --blue: #1267b2;
+      --blue-soft: #e8f3ff;
+      --green: #087554;
+      --green-soft: #e3f6ee;
+      --orange: #9a5500;
+      --orange-soft: #fff1dc;
+      --purple: #6540a4;
+      --purple-soft: #f0eaff;
+      --red: #a12820;
+      --red-soft: #fff0ef;
+      --shadow: 0 12px 28px rgb(26 47 79 / 9%);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.48;
+    }
+
+    main {
+      width: min(1580px, calc(100% - 32px));
+      margin: 28px auto 48px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 44px);
+      letter-spacing: -0.035em;
+    }
+
+    h2 {
+      margin: 34px 0 12px;
+      font-size: 25px;
+      letter-spacing: -0.02em;
+    }
+
+    h3 {
+      margin: 0 0 9px;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 8px 0;
+    }
+
+    a {
+      color: var(--blue);
+    }
+
+    code {
+      color: #273a61;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.92em;
+    }
+
+    .subtitle {
+      max-width: 1120px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .scope {
+      margin: 20px 0;
+      padding: 16px 18px;
+      border-left: 5px solid var(--purple);
+      border-radius: 10px;
+      background: var(--purple-soft);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .metric {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .metric strong {
+      display: block;
+      color: var(--blue);
+      font-size: 29px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .groups {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 14px;
+    }
+
+    .group {
+      padding: 17px 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .group ul {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+
+    .group li {
+      margin: 7px 0;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin: 12px 0;
+    }
+
+    input,
+    select {
+      min-height: 38px;
+      padding: 7px 10px;
+      border: 1px solid #aebbd0;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    input {
+      flex: 1 1 420px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      min-width: 1280px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #e7edf6;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    tbody tr:hover {
+      background: #f7faff;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .signature {
+      min-width: 330px;
+    }
+
+    .function {
+      min-width: 330px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .output {
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .input {
+      color: var(--orange);
+      background: var(--orange-soft);
+    }
+
+    .callback {
+      color: var(--purple);
+      background: var(--purple-soft);
+    }
+
+    .excluded {
+      padding: 16px 20px;
+      border-left: 5px solid var(--red);
+      border-radius: 10px;
+      background: var(--red-soft);
+    }
+
+    .excluded ul {
+      margin-bottom: 0;
+    }
+
+    .helper {
+      padding: 16px 20px;
+      border-left: 5px solid var(--green);
+      border-radius: 10px;
+      background: var(--green-soft);
+    }
+
+    footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 800px) {
+      .metrics {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Lifted DispatcherQueue API inventory</h1>
+    <p class="subtitle">
+      Public WinUI 3 and Windows App SDK APIs whose projected signature directly
+      consumes, returns, or supplies as an event sender
+      <code>Microsoft.UI.Dispatching.DispatcherQueue</code>.
+    </p>
+
+    <section class="scope">
+      <strong>Scope and evidence.</strong>
+      This report is exhaustive for the public <strong>Windows App SDK 1.8</strong>
+      Microsoft Learn moniker. It uses only Microsoft Learn API reference and other
+      public Microsoft documentation. One row is recorded for each declaring member;
+      inherited copies are described but not multiplied across every derived type.
+      APIs that merely require a queue to be running, or that create one indirectly
+      without accepting or returning the type, are listed separately as exclusions.
+    </section>
+
+    <div class="metrics">
+      <div class="metric"><strong>27</strong><span>WinRT declarations</span></div>
+      <div class="metric"><strong>17</strong><span>Output properties</span></div>
+      <div class="metric"><strong>6</strong><span>Direct methods</span></div>
+      <div class="metric"><strong>4</strong><span>Typed events</span></div>
+    </div>
+
+    <h2>Logical grouping</h2>
+    <div class="groups">
+      <section class="group">
+        <h3>Queue acquisition and lifetime</h3>
+        <ul>
+          <li><code>DispatcherQueue.GetForCurrentThread</code> returns the queue currently bound to the calling thread.</li>
+          <li><code>DispatcherQueueController.DispatcherQueue</code> returns the queue whose lifetime the controller manages.</li>
+          <li>Four shutdown events provide the queue as the typed event sender during queue and framework shutdown phases.</li>
+        </ul>
+      </section>
+
+      <section class="group">
+        <h3>WinUI/XAML thread-affinity roots</h3>
+        <ul>
+          <li><code>DependencyObject.DispatcherQueue</code> is inherited throughout the XAML object hierarchy.</li>
+          <li><code>Window.DispatcherQueue</code> exposes the queue associated with a WinUI window and can be read from any thread.</li>
+        </ul>
+      </section>
+
+      <section class="group">
+        <h3>Composition</h3>
+        <ul>
+          <li><code>CompositionObject.DispatcherQueue</code> is inherited throughout the composition-object hierarchy.</li>
+          <li><code>Compositor.DispatcherQueue</code> exposes the queue used by the compositor itself.</li>
+        </ul>
+      </section>
+
+      <section class="group">
+        <h3>Input</h3>
+        <ul>
+          <li><code>InputObject.DispatcherQueue</code> is the queue-affinity root for Windows App SDK input objects.</li>
+          <li><code>InputNonClientPointerSource.DispatcherQueue</code> exposes the queue used for non-client pointer processing.</li>
+        </ul>
+      </section>
+
+      <section class="group">
+        <h3>Windowing and display</h3>
+        <ul>
+          <li><code>AppWindow</code> can return, accept, or be created with a supplied queue.</li>
+          <li><code>DisplayInformation.DispatcherQueue</code> returns the queue associated with display-change notifications.</li>
+        </ul>
+      </section>
+
+      <section class="group">
+        <h3>Content islands and sites</h3>
+        <ul>
+          <li>Content sites, site views, islands, and child links expose their associated queue.</li>
+          <li><code>ContentIsland.CreateForSystemVisual</code> accepts the current thread's queue for a system visual root.</li>
+        </ul>
+      </section>
+
+      <section class="group">
+        <h3>Desktop content bridges</h3>
+        <ul>
+          <li>The bridge interface and concrete desktop bridge types expose their queue.</li>
+          <li>Attached and child bridge factories accept a queue to establish thread affinity.</li>
+        </ul>
+      </section>
+    </div>
+
+    <h2>Flat inventory</h2>
+    <p class="note">
+      “Callback sender” means the event delegate receives the
+      <code>DispatcherQueue</code> as its first argument.
+    </p>
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Filter by API, namespace, signature, or functionality">
+      <select id="direction">
+        <option value="">All directions</option>
+        <option value="output">Output</option>
+        <option value="input">Input</option>
+        <option value="callback">Callback sender</option>
+      </select>
+      <select id="group">
+        <option value="">All groups</option>
+        <option>Dispatching</option>
+        <option>XAML</option>
+        <option>Composition</option>
+        <option>Input</option>
+        <option>Windowing</option>
+        <option>Display</option>
+        <option>Content</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table id="inventory">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>API</th>
+            <th>Group</th>
+            <th>Direction</th>
+            <th>Since</th>
+            <th>Signature</th>
+            <th>Functionality and reach</th>
+            <th>Microsoft documentation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-direction="output" data-group="Dispatching">
+            <td>1</td>
+            <td><code>DispatcherQueue.GetForCurrentThread()</code></td>
+            <td>Dispatching</td>
+            <td><span class="badge output">Output</span></td>
+            <td>0.8</td>
+            <td class="signature"><code>static DispatcherQueue GetForCurrentThread()</code></td>
+            <td class="function">Returns the queue associated with the current thread, or <code>null</code> when the thread has none.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueue.getforcurrentthread?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Dispatching">
+            <td>2</td>
+            <td><code>DispatcherQueueController.DispatcherQueue</code></td>
+            <td>Dispatching</td>
+            <td><span class="badge output">Output</span></td>
+            <td>0.8</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue managed by the controller, including queues created on the current or a dedicated thread.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueuecontroller.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="callback" data-group="Dispatching">
+            <td>3</td>
+            <td><code>DispatcherQueue.ShutdownStarting</code></td>
+            <td>Dispatching</td>
+            <td><span class="badge callback">Callback sender</span></td>
+            <td>0.8</td>
+            <td class="signature"><code>TypedEventHandler&lt;DispatcherQueue, DispatcherQueueShutdownStartingEventArgs&gt;</code></td>
+            <td class="function">Signals that queue shutdown is starting. The handler receives the queue and can obtain a shutdown deferral from the event arguments.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueue.shutdownstarting?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="callback" data-group="Dispatching">
+            <td>4</td>
+            <td><code>DispatcherQueue.ShutdownCompleted</code></td>
+            <td>Dispatching</td>
+            <td><span class="badge callback">Callback sender</span></td>
+            <td>0.8</td>
+            <td class="signature"><code>TypedEventHandler&lt;DispatcherQueue, object&gt;</code></td>
+            <td class="function">Signals completion of queue shutdown after the event loop has exited.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueue.shutdowncompleted?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="callback" data-group="Dispatching">
+            <td>5</td>
+            <td><code>DispatcherQueue.FrameworkShutdownStarting</code></td>
+            <td>Dispatching</td>
+            <td><span class="badge callback">Callback sender</span></td>
+            <td>1.4</td>
+            <td class="signature"><code>TypedEventHandler&lt;DispatcherQueue, DispatcherQueueShutdownStartingEventArgs&gt;</code></td>
+            <td class="function">Signals the framework-shutdown phase before final queue shutdown; handlers can defer the phase.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueue.frameworkshutdownstarting?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="callback" data-group="Dispatching">
+            <td>6</td>
+            <td><code>DispatcherQueue.FrameworkShutdownCompleted</code></td>
+            <td>Dispatching</td>
+            <td><span class="badge callback">Callback sender</span></td>
+            <td>1.4</td>
+            <td class="signature"><code>TypedEventHandler&lt;DispatcherQueue, object&gt;</code></td>
+            <td class="function">Signals completion of the framework-shutdown phase.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.dispatching.dispatcherqueue.frameworkshutdowncompleted?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="XAML">
+            <td>7</td>
+            <td><code>DependencyObject.DispatcherQueue</code></td>
+            <td>XAML</td>
+            <td><span class="badge output">Output</span></td>
+            <td>0.8</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue that can access the dependency object on its UI thread. Inherited across the WinUI <code>DependencyObject</code> hierarchy; derived controls are not duplicated here.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.dependencyobject.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="XAML">
+            <td>8</td>
+            <td><code>Window.DispatcherQueue</code></td>
+            <td>XAML</td>
+            <td><span class="badge output">Output</span></td>
+            <td>0.8</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue for the WinUI window. Microsoft documents this property as callable from any thread, unlike most <code>Window</code> members.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Composition">
+            <td>9</td>
+            <td><code>CompositionObject.DispatcherQueue</code></td>
+            <td>Composition</td>
+            <td><span class="badge output">Output</span></td>
+            <td>0.8</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue associated with a composition object. Inherited throughout the <code>CompositionObject</code> hierarchy, including visuals, brushes, clips, animations, and geometries.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.compositionobject.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Composition">
+            <td>10</td>
+            <td><code>Compositor.DispatcherQueue</code></td>
+            <td>Composition</td>
+            <td><span class="badge output">Output</span></td>
+            <td>0.8</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue used by the compositor itself.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.compositor.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Input">
+            <td>11</td>
+            <td><code>InputObject.DispatcherQueue</code></td>
+            <td>Input</td>
+            <td><span class="badge output">Output</span></td>
+            <td>1.0</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the thread-affined queue for an input object. This base declaration reaches Windows App SDK input types derived from <code>InputObject</code>.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.input.inputobject.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Input">
+            <td>12</td>
+            <td><code>InputNonClientPointerSource.DispatcherQueue</code></td>
+            <td>Input</td>
+            <td><span class="badge output">Output</span></td>
+            <td>1.4</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue associated with non-client pointer input for an app window.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.input.inputnonclientpointersource.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Windowing">
+            <td>13</td>
+            <td><code>AppWindow.DispatcherQueue</code></td>
+            <td>Windowing</td>
+            <td><span class="badge output">Output</span></td>
+            <td>1.4</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue associated with the top-level app window.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.windowing.appwindow.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="input" data-group="Windowing">
+            <td>14</td>
+            <td><code>AppWindow.AssociateWithDispatcherQueue</code></td>
+            <td>Windowing</td>
+            <td><span class="badge input">Input</span></td>
+            <td>1.4</td>
+            <td class="signature"><code>void AssociateWithDispatcherQueue(DispatcherQueue dispatcherQueue)</code></td>
+            <td class="function">Associates an existing app window with the supplied queue, establishing where its queued windowing work and notifications are processed.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.windowing.appwindow.associatewithdispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="input" data-group="Windowing">
+            <td>15</td>
+            <td><code>AppWindow.Create(AppWindowPresenter, WindowId, DispatcherQueue)</code></td>
+            <td>Windowing</td>
+            <td><span class="badge input">Input</span></td>
+            <td>1.4</td>
+            <td class="signature"><code>static AppWindow Create(AppWindowPresenter presenter, WindowId owner, DispatcherQueue queue)</code></td>
+            <td class="function">Creates a parented app window with presenter-defined styles and associates the new window with the supplied queue.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.windowing.appwindow.create?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Display">
+            <td>16</td>
+            <td><code>DisplayInformation.DispatcherQueue</code></td>
+            <td>Display</td>
+            <td><span class="badge output">Output</span></td>
+            <td>1.2</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue associated with the display-information object and its display-change notifications.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.graphics.display.displayinformation.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Content">
+            <td>17</td>
+            <td><code>ContentSite.DispatcherQueue</code></td>
+            <td>Content</td>
+            <td><span class="badge output">Output</span></td>
+            <td>1.4</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue associated with the content site.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.contentsite.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Content">
+            <td>18</td>
+            <td><code>ContentSiteView.DispatcherQueue</code></td>
+            <td>Content</td>
+            <td><span class="badge output">Output</span></td>
+            <td>1.4</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue associated with the immutable view of a content site.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.contentsiteview.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Content">
+            <td>19</td>
+            <td><code>ContentIsland.DispatcherQueue</code></td>
+            <td>Content</td>
+            <td><span class="badge output">Output</span></td>
+            <td>1.4</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue associated with the content island.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.contentisland.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="input" data-group="Content">
+            <td>20</td>
+            <td><code>ContentIsland.CreateForSystemVisual</code></td>
+            <td>Content</td>
+            <td><span class="badge input">Input</span></td>
+            <td>1.7</td>
+            <td class="signature"><code>static ContentIsland CreateForSystemVisual(DispatcherQueue queue, Windows.UI.Composition.Visual root)</code></td>
+            <td class="function">Creates a disconnected, empty content island rooted in a system composition visual; the supplied queue must be associated with the current thread.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.contentisland.createforsystemvisual?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Content">
+            <td>21</td>
+            <td><code>ChildSiteLink.DispatcherQueue</code></td>
+            <td>Content</td>
+            <td><span class="badge output">Output</span></td>
+            <td>1.7</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue associated with the link between a parent content site and child content.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.childsitelink.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Content">
+            <td>22</td>
+            <td><code>IContentSiteBridge.DispatcherQueue</code></td>
+            <td>Content</td>
+            <td><span class="badge output">Output</span></td>
+            <td>1.4</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Defines the bridge contract for returning the queue used by the associated content site.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.icontentsitebridge.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Content">
+            <td>23</td>
+            <td><code>DesktopSiteBridge.DispatcherQueue</code></td>
+            <td>Content</td>
+            <td><span class="badge output">Output</span></td>
+            <td>1.4</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue for the associated Win32 HWND and implements the bridge interface contract. Inherited bridge subclasses are not duplicated.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.desktopsitebridge.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Content">
+            <td>24</td>
+            <td><code>DesktopAttachedSiteBridge.DispatcherQueue</code></td>
+            <td>Content</td>
+            <td><span class="badge output">Output</span></td>
+            <td>1.7</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue used by the attached desktop site bridge. Microsoft’s API page currently provides the signature but no additional narrative description.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.desktopattachedsitebridge.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="output" data-group="Content">
+            <td>25</td>
+            <td><code>DesktopPopupSiteBridge.DispatcherQueue</code></td>
+            <td>Content</td>
+            <td><span class="badge output">Output</span></td>
+            <td>1.7</td>
+            <td class="signature"><code>DispatcherQueue DispatcherQueue { get; }</code></td>
+            <td class="function">Returns the queue used by the popup desktop site bridge. Microsoft’s API page currently provides the signature but no additional narrative description.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.desktoppopupsitebridge.dispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="input" data-group="Content">
+            <td>26</td>
+            <td><code>DesktopAttachedSiteBridge.CreateFromWindowId</code></td>
+            <td>Content</td>
+            <td><span class="badge input">Input</span></td>
+            <td>1.7</td>
+            <td class="signature"><code>static DesktopAttachedSiteBridge CreateFromWindowId(DispatcherQueue queue, WindowId windowId)</code></td>
+            <td class="function">Creates an attached desktop site bridge for the specified window and binds it to the supplied queue. Microsoft’s member page currently has no narrative description.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.desktopattachedsitebridge.createfromwindowid?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+          <tr data-direction="input" data-group="Content">
+            <td>27</td>
+            <td><code>DesktopChildSiteBridge.CreateWithDispatcherQueue</code></td>
+            <td>Content</td>
+            <td><span class="badge input">Input</span></td>
+            <td>1.7</td>
+            <td class="signature"><code>static DesktopChildSiteBridge CreateWithDispatcherQueue(DispatcherQueue queue, WindowId parentWindowId)</code></td>
+            <td class="function">Creates a child-HWND site bridge associated with the supplied queue and parent window. Microsoft’s member page currently has no narrative description.</td>
+            <td><a href="https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.desktopchildsitebridge.createwithdispatcherqueue?view=windows-app-sdk-1.8">Learn</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Documented .NET projection helper</h2>
+    <section class="helper">
+      <h3><code>DispatcherQueueSynchronizationContext(DispatcherQueue)</code></h3>
+      <p>
+        Microsoft’s Windows App SDK single-instancing guidance constructs
+        <code>Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext</code>
+        from <code>DispatcherQueue.GetForCurrentThread()</code>. It adapts a queue to
+        .NET’s <code>SynchronizationContext</code>. This is listed separately because
+        Microsoft documents its use but does not publish a dedicated Windows App SDK
+        WinRT API-reference page for the constructor.
+      </p>
+      <p>
+        <a href="https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/applifecycle/applifecycle-single-instance">
+          Microsoft Learn: App instancing with the app lifecycle API
+        </a>
+      </p>
+    </section>
+
+    <h2>Important exclusions and boundary cases</h2>
+    <section class="excluded">
+      <ul>
+        <li>
+          <code>DisplayInformation.CreateForWindowId(WindowId)</code> and
+          <code>CreateForDisplayId(DisplayId)</code> require the calling thread to
+          already have a running lifted queue, but neither signature consumes nor
+          returns <code>DispatcherQueue</code>.
+        </li>
+        <li>
+          <code>DispatcherQueueController.CreateOnCurrentThread</code> and
+          <code>CreateOnDedicatedThread</code> create queues indirectly but return a
+          controller, not a queue.
+        </li>
+        <li>
+          <code>DispatcherQueue.EnsureSystemDispatcherQueue()</code> manages
+          <code>Windows.System.DispatcherQueue</code>; its signature does not consume or
+          return the lifted type.
+        </li>
+        <li>
+          <code>TryEnqueue</code>, queue timers, run-loop methods, and shutdown methods
+          operate on a queue instance but do not accept or return a
+          <code>DispatcherQueue</code>.
+        </li>
+        <li>
+          <code>Microsoft.UI.Input.Experimental.ExpInputObject.DispatcherQueue</code>
+          is documented only for the old Windows App SDK 0.8 moniker and is not part of
+          the current 1.8 inventory.
+        </li>
+        <li>
+          Derived XAML, composition, input, and bridge classes inherit queue properties
+          from their base declarations. Repeating every inherited appearance would
+          inflate the list without adding API declarations.
+        </li>
+      </ul>
+    </section>
+
+    <h2>Version progression</h2>
+    <div class="groups">
+      <section class="group"><h3>0.8</h3><p>Core dispatching, XAML, composition, controller access, and queue-shutdown events.</p></section>
+      <section class="group"><h3>1.0</h3><p><code>InputObject.DispatcherQueue</code>.</p></section>
+      <section class="group"><h3>1.2</h3><p><code>DisplayInformation.DispatcherQueue</code>.</p></section>
+      <section class="group"><h3>1.4</h3><p>AppWindow queue APIs, content-site roots and bridge contracts, non-client input, and framework-shutdown events.</p></section>
+      <section class="group"><h3>1.7</h3><p>Child-site links, attached and popup bridges, bridge factories, and system-visual content-island creation.</p></section>
+    </div>
+
+    <footer>
+      Generated from Microsoft public documentation. API links are pinned to the
+      Windows App SDK 1.8 moniker to keep the inventory specific to
+      <code>Microsoft.UI.Dispatching.DispatcherQueue</code>.
+    </footer>
+  </main>
+
+  <script>
+    const search = document.getElementById("search");
+    const direction = document.getElementById("direction");
+    const group = document.getElementById("group");
+    const rows = [...document.querySelectorAll("#inventory tbody tr")];
+
+    function applyFilters() {
+      const text = search.value.trim().toLowerCase();
+      const wantedDirection = direction.value;
+      const wantedGroup = group.value;
+
+      for (const row of rows) {
+        const textMatches = !text || row.textContent.toLowerCase().includes(text);
+        const directionMatches = !wantedDirection || row.dataset.direction === wantedDirection;
+        const groupMatches = !wantedGroup || row.dataset.group === wantedGroup;
+        row.hidden = !(textMatches && directionMatches && groupMatches);
+      }
+    }
+
+    search.addEventListener("input", applyFilters);
+    direction.addEventListener("change", applyFilters);
+    group.addEventListener("change", applyFilters);
+  </script>
+</body>
+</html>

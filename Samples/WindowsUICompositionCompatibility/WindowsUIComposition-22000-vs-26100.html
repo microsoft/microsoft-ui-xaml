@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Windows.UI.Composition: Windows 11 22000 vs 26100</title>
+  <style>
+    body { font: 15px/1.45 Segoe UI, sans-serif; margin: 32px; color: #202124; }
+    h1, h2 { color: #153e75; }
+    table { border-collapse: collapse; width: 100%; margin: 16px 0 28px; }
+    th, td { border: 1px solid #bbb; padding: 8px; vertical-align: top; text-align: left; }
+    th { background: #eaf2fb; }
+    code { background: #f2f2f2; padding: 1px 4px; }
+    .yes { color: #176b2c; font-weight: 600; }
+    .no { color: #9a1b1b; font-weight: 600; }
+    .warning { background: #fff4ce; border-left: 5px solid #d29200; padding: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Windows.UI.Composition API and behavior comparison</h1>
+  <p><strong>Baselines:</strong> Windows 11 21H2 build 22000
+    (<code>UniversalApiContract v13</code>) and Windows 11 build 26100
+    (<code>UniversalApiContract v19</code>). The latest local validation OS may
+    be newer than 26100; metadata claims in this report stop at SDK 26100.</p>
+
+  <h2>Executive result</h2>
+  <p>The generated public metadata for
+    <code>Windows.UI.Composition.Core</code>, <code>.Desktop</code>,
+    <code>.Diagnostics</code>, <code>.Effects</code>,
+    <code>.Interactions</code>, and <code>.Scenes</code> is identical between
+    the two baselines. Only the root <code>Windows.UI.Composition</code>
+    namespace changed. All observed changes are additive UniversalApiContract
+    v15 APIs; no removals or signature mutations were found.</p>
+
+  <table>
+    <thead>
+      <tr><th>Generated namespace IDL</th><th>22000 lines</th><th>26100 lines</th><th>Result</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Windows.UI.Composition</td><td>3,835</td><td>3,895</td><td>60 additive lines</td></tr>
+      <tr><td>Windows.UI.Composition.Core</td><td>81</td><td>81</td><td>Byte-identical</td></tr>
+      <tr><td>Windows.UI.Composition.Desktop</td><td>65</td><td>65</td><td>Byte-identical</td></tr>
+      <tr><td>Windows.UI.Composition.Diagnostics</td><td>127</td><td>127</td><td>Byte-identical</td></tr>
+      <tr><td>Windows.UI.Composition.Effects</td><td>110</td><td>110</td><td>Byte-identical</td></tr>
+      <tr><td>Windows.UI.Composition.Interactions</td><td>864</td><td>864</td><td>Byte-identical</td></tr>
+      <tr><td>Windows.UI.Composition.Scenes</td><td>661</td><td>661</td><td>Byte-identical</td></tr>
+    </tbody>
+  </table>
+
+  <table>
+    <thead>
+      <tr>
+        <th>API</th>
+        <th>Win11 22000</th>
+        <th>Win11 26100</th>
+        <th>Signature and behavior difference</th>
+        <th>Harness</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>Compositor.CreateAnimationController()</code></td>
+        <td class="no">No</td>
+        <td class="yes">Yes</td>
+        <td>New v15 factory returning an existing
+          <code>AnimationController</code>. The controller type itself existed
+          since v6; the difference is direct construction without first
+          starting an animation. Source initializes playback rate to 1,
+          progress to 0, and default progress behavior.</td>
+        <td>ANIM-005</td>
+      </tr>
+      <tr>
+        <td><code>CompositionObject.StartAnimation(String, CompositionAnimation, AnimationController)</code></td>
+        <td class="no">No</td>
+        <td class="yes">Yes</td>
+        <td>New v15 overload. It starts the normal property animator and adds
+          that animator to the supplied controller when supported. Multiple
+          animations can therefore share one progress/playback control object.
+          The original two-parameter overload is unchanged.</td>
+        <td>ANIM-006</td>
+      </tr>
+      <tr>
+        <td><code>CompositionTexture</code></td>
+        <td class="no">No</td>
+        <td class="yes">Yes</td>
+        <td>New v15 agile, both-threaded class deriving from
+          <code>CompositionObject</code> and implementing
+          <code>ICompositionSurface</code>. Created through
+          <code>ICompositorInterop2.CreateCompositionTexture</code>, not a
+          public projected Compositor factory. Microsoft documentation limits
+          this API to Direct3D 11. The interop API exposes an availability
+          fence for producer/compositor synchronization.</td>
+        <td>TEX-001</td>
+      </tr>
+      <tr>
+        <td><code>CompositionTexture.SourceRect</code></td>
+        <td class="no">No</td>
+        <td class="yes">Yes</td>
+        <td>New read/write <code>Windows.Graphics.RectInt32</code>. It selects
+          the sampled sub-rectangle of the backing texture. The current local
+          implementation contains suspicious coordinate conversion:
+          <code>get</code> assigns Y from left and <code>put</code> computes
+          bottom from X. A non-zero, non-square round trip is therefore tested
+          explicitly rather than assuming documented behavior.</td>
+        <td>TEX-002</td>
+      </tr>
+      <tr>
+        <td><code>CompositionTexture.AlphaMode</code></td>
+        <td class="no">No</td>
+        <td class="yes">Yes</td>
+        <td>New read/write <code>DirectXAlphaMode</code>. It tells DWM whether
+          texture alpha is honored. Source defaults the underlying texture to
+          <code>DXGI_ALPHA_MODE_IGNORE</code>; the harness changes it to
+          premultiplied.</td>
+        <td>TEX-002</td>
+      </tr>
+      <tr>
+        <td><code>CompositionTexture.ColorSpace</code></td>
+        <td class="no">No</td>
+        <td class="yes">Yes</td>
+        <td>New read/write <code>DirectXColorSpace</code>. Source defaults to
+          full-range G22 P709 and forwards changes to the presentation surface.</td>
+        <td>TEX-002</td>
+      </tr>
+      <tr>
+        <td><code>ICompositionTextureInterop.GetAvailableFence</code></td>
+        <td class="no">No</td>
+        <td class="yes">Yes</td>
+        <td>New native interop synchronization surface. The source reports a
+          fence only while the texture is available to the application; visual
+          bindings make it unavailable until composition releases them.</td>
+        <td>TEX-001</td>
+      </tr>
+      <tr>
+        <td><code>DirectXColorSpace</code> dependency</td>
+        <td class="no">Not used by WUC</td>
+        <td class="yes">Used</td>
+        <td>The root Composition metadata now references
+          <code>Windows.Graphics.DirectX.DirectXColorSpace</code> for
+          <code>CompositionTexture.ColorSpace</code>.</td>
+        <td>TEX-002</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Unchanged API-family coverage</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Family</th>
+        <th>Metadata result</th>
+        <th>Representative runtime coverage</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Compositor, CompositionObject, visual tree</td><td>Unchanged except v15 members above</td><td>CORE-001, CORE-002, VIS-001, VIS-002</td></tr>
+      <tr><td>Brushes and gradients</td><td>Unchanged</td><td>BRUSH-001, BRUSH-002</td></tr>
+      <tr><td>Clips</td><td>Unchanged</td><td>CLIP-001</td></tr>
+      <tr><td>Shadows and basic effects</td><td>Unchanged</td><td>SHADOW-001</td></tr>
+      <tr><td>Shapes and geometries</td><td>Unchanged</td><td>SHAPE-001</td></tr>
+      <tr><td>Key-frame, expression, implicit, grouped animations</td><td>Unchanged except v15 supplied-controller overload</td><td>ANIM-001 through ANIM-006</td></tr>
+      <tr><td>Surfaces and visual surfaces</td><td>Unchanged except CompositionTexture</td><td>SURFACE-001, TEX-001, TEX-002</td></tr>
+      <tr><td>Windows.UI.Composition.Interactions</td><td>Generated IDL identical</td><td>INTERACT-001</td></tr>
+      <tr><td>Windows.UI.Composition.Desktop</td><td>Generated IDL identical</td><td>CORE-002</td></tr>
+      <tr><td>Windows.UI.Composition.Diagnostics</td><td>Generated IDL identical</td><td>DIAG-001</td></tr>
+      <tr><td>Windows.UI.Composition.Core, Effects, Scenes</td><td>Generated IDL identical</td><td>Metadata parity; specialized rendering assets and effect graphs remain application-specific</td></tr>
+      <tr><td>Threading, agility, failure behavior</td><td>No attribute/signature change found</td><td>THREAD-001, ERROR-001</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Expected cross-build result</h2>
+  <p>On build 22000, all v13-or-earlier scenarios should run and the v15
+    scenarios should report <strong>NOT AVAILABLE</strong>. On build 26100,
+    v15 scenarios should run. Any other result is a behavioral regression,
+    environment limitation, or implementation defect and is retained in the
+    generated JSON rather than normalized away.</p>
+
+  <h2>Current runtime result</h2>
+  <p>On the available Windows build <code>10.0.26200</code>, 23 of 24 scenarios
+    passed. The single failure was <code>TEX-002</code>: setting SourceRect to
+    <code>(7, 11, 31, 29)</code> read back as
+    <code>(7, 7, 31, 25)</code>. This exactly matches the suspicious local
+    implementation mapping and is retained as a product behavior finding.
+    Build-22000 execution remains required on a separate machine; v15 tests are
+    expected to report <strong>NOT AVAILABLE</strong> there.</p>
+
+  <p class="warning"><strong>Important:</strong> Microsoft Learn lists the v15
+    additions as introduced in Windows 11 Insider Preview build 23504. They
+    must not be inferred to exist on all Windows 11 releases merely because
+    the namespace itself exists.</p>
+
+  <h2>Evidence</h2>
+  <ul>
+    <li>Build 22000 metadata: <code>Microsoft.Windows.SDK.Contracts 10.0.22000.197</code>,
+      <code>Windows.Foundation.UniversalApiContract.winmd</code>, SHA-256
+      <code>074184DE8067C275A37A683F9209A8A8098CA57A7ED1F4296807AB24272BBE0C</code>.</li>
+    <li>Latest comparison metadata: Windows SDK
+      <code>10.0.26100.0</code>, UniversalApiContract v19, SHA-256
+      <code>0B8314A10C4B818C0CF8C70E1E21F9E72AC6717A932846823E78681214C71942</code>.</li>
+    <li>Local implementation:
+      <code>C:\os\src\onecoreuap\windows\dwm\dcomp\WinRTNested\WrtCompositor.cpp</code>,
+      <code>WrtProxyObject.cpp</code>,
+      <code>WrtAnimationController.cpp</code>,
+      <code>global\WrtCompositionTexture.cpp</code>, and
+      <code>dcomp\CompositionTexture.cpp</code>.</li>
+    <li><a href="https://learn.microsoft.com/uwp/api/windows.ui.composition.compositor.createanimationcontroller">Compositor.CreateAnimationController</a></li>
+    <li><a href="https://learn.microsoft.com/uwp/api/windows.ui.composition.compositionobject.startanimation">CompositionObject.StartAnimation</a></li>
+    <li><a href="https://learn.microsoft.com/uwp/api/windows.ui.composition.compositiontexture">CompositionTexture</a></li>
+  </ul>
+</body>
+</html>

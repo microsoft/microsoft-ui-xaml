@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "osVersion": "10.0.26200",
+  "architecture": "x64",
+  "sdkMetadata": "10.0.26100.0 / UniversalApiContract v19",
+  "minimumRuntime": "10.0.22000.0 / UniversalApiContract v13",
+  "results": [
+    {"id":"ENV-001","category":"Environment","title":"UniversalApiContract v13 baseline","minimumContract":13,"outcome":"PASS","detail":"UniversalApiContract v13 is present."},
+    {"id":"ENV-002","category":"Environment","title":"UniversalApiContract v15 additions","minimumContract":15,"outcome":"PASS","detail":"UniversalApiContract v15 is present."},
+    {"id":"CORE-001","category":"Core","title":"Compositor creation and queue ownership","minimumContract":1,"outcome":"PASS","detail":"Compositor created with a non-null Windows.System.DispatcherQueue."},
+    {"id":"CORE-002","category":"Core","title":"DesktopWindowTarget visual root","minimumContract":2,"outcome":"PASS","detail":"Desktop target displays a root-owned SpriteVisual."},
+    {"id":"VIS-001","category":"Visuals","title":"Container visual collection","minimumContract":1,"outcome":"PASS","detail":"InsertAtTop and Remove completed without error."},
+    {"id":"VIS-002","category":"Visuals","title":"Visual transform and rendering properties","minimumContract":1,"outcome":"PASS","detail":"Visual properties round-tripped."},
+    {"id":"BRUSH-001","category":"Brushes","title":"Color brush","minimumContract":1,"outcome":"PASS","detail":"Color brush created and assigned."},
+    {"id":"BRUSH-002","category":"Brushes","title":"Linear gradient brush and stops","minimumContract":7,"outcome":"PASS","detail":"Gradient brush with two stops created and assigned."},
+    {"id":"CLIP-001","category":"Clips","title":"Inset and rectangle clips","minimumContract":8,"outcome":"PASS","detail":"InsetClip and RectangleClip were accepted."},
+    {"id":"SHADOW-001","category":"Effects","title":"Drop shadow","minimumContract":2,"outcome":"PASS","detail":"DropShadow properties and SpriteVisual assignment succeeded."},
+    {"id":"SHAPE-001","category":"Shapes","title":"Shape visual and rectangle geometry","minimumContract":7,"outcome":"PASS","detail":"ShapeVisual, SpriteShape, and RectangleGeometry were created."},
+    {"id":"ANIM-001","category":"Animation","title":"Key-frame animation","minimumContract":1,"outcome":"PASS","detail":"Animation started and TryGetAnimationController returned a controller."},
+    {"id":"ANIM-002","category":"Animation","title":"Expression animation and property set","minimumContract":2,"outcome":"PASS","detail":"ExpressionAnimation was bound to a CompositionPropertySet value."},
+    {"id":"ANIM-003","category":"Animation","title":"Implicit animation collection","minimumContract":3,"outcome":"PASS","detail":"Implicit animation collection accepted and triggered."},
+    {"id":"ANIM-004","category":"Animation","title":"Animation group and scoped batch","minimumContract":6,"outcome":"PASS","detail":"Animation group started and scoped batch ended."},
+    {"id":"ANIM-005","category":"Animation","title":"Explicit AnimationController creation","minimumContract":15,"outcome":"PASS","detail":"Explicit controller created; progress, playback rate, and pause accepted."},
+    {"id":"ANIM-006","category":"Animation","title":"StartAnimation with supplied controller","minimumContract":15,"outcome":"PASS","detail":"Opacity and rotation animations started with one application-created controller."},
+    {"id":"SURFACE-001","category":"Surfaces","title":"CompositionVisualSurface and surface brush","minimumContract":8,"outcome":"PASS","detail":"VisualSurface was consumed by CompositionSurfaceBrush."},
+    {"id":"TEX-001","category":"CompositionTexture","title":"D3D11 composition texture creation","minimumContract":15,"outcome":"PASS","detail":"Created and bound a D3D11-backed CompositionTexture; availability fence was returned at value 0."},
+    {"id":"TEX-002","category":"CompositionTexture","title":"SourceRect/alpha/color-space round trip","minimumContract":15,"outcome":"FAIL","detail":"SourceRect round trip mismatch. Set (7,11,31,29), read (7,7,31,25)."},
+    {"id":"INTERACT-001","category":"Interactions","title":"InteractionTracker core state","minimumContract":4,"outcome":"PASS","detail":"InteractionTracker creation and boundary properties succeeded."},
+    {"id":"DIAG-001","category":"Diagnostics","title":"CompositionDebugSettings availability","minimumContract":8,"outcome":"PASS","detail":"CompositionDebugSettings returned a settings object."},
+    {"id":"THREAD-001","category":"Threading","title":"Agility and dispatcher identity","minimumContract":6,"outcome":"PASS","detail":"Compositor and visual are agile and report the same DispatcherQueue."},
+    {"id":"ERROR-001","category":"Error behavior","title":"Invalid animation target","minimumContract":1,"outcome":"PASS","detail":"Invalid target failed with HRESULT 0x80070057"}
+  ]
+}
