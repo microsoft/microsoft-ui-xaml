@@ -69,7 +69,15 @@
                                 
                                 <Grid x:Name="PART_BodyContent" Background="Transparent">
                                     <!-- Vertical StackLayout ignores horizontal cache length; keep only the effective cache axis. -->
+                                    <!-- TabFocusNavigation="Once": every cell is a tab stop so that a
+                                         cell can hold keyboard focus, but the table as a whole must
+                                         remain a SINGLE tab stop - Tab enters the body once and the
+                                         next Tab leaves it. Without this, Tab would walk every
+                                         realized cell of every realized row. "Once" is also what
+                                         keeps the table free of a focus trap: it only suppresses the
+                                         interior stops, it never blocks tabbing out. -->
                                     <ItemsRepeater x:Name="PART_RowsRepeater"
+                                                   TabFocusNavigation="Once"
                                                    VerticalCacheLength="2.0">
                                         <ItemsRepeater.Layout>
                                             <StackLayout Orientation="Vertical" />
@@ -108,10 +116,16 @@
         <Setter Property="MinHeight" Value="40" />
         <Setter Property="Padding" Value="0" />        
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
-        <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceRowForegroundBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGridLineBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <!-- The row is not the focus visual any more: focus lives on a CELL, which opts into the
+             framework focus rectangle itself (UseSystemFocusVisuals, set in TableViewCell::Create).
+             This setter stays True for the fallback case where a row has no realized cell to
+             redirect focus to. -->
         <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <!-- One stop per row, on top of the repeater-level "Once". Belt and braces: a row whose
+             cells are reached through a different path must still not become a run of tab stops. -->
+        <Setter Property="TabFocusNavigation" Value="Once" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:TableViewRow">
@@ -163,9 +177,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceSelectedBorderBrush}" />
-                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -179,9 +190,6 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceSelectedBorderBrush}" />
-                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -194,9 +202,6 @@
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundSelectedPressedBrush}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="BorderBrush">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceSelectedBorderBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedPressedBrush}" />
