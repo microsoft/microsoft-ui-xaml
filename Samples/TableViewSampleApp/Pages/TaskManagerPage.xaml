@@ -81,7 +81,6 @@
                     <ComboBox x:Name="ViewModeCombo" SelectedIndex="0" VerticalAlignment="Center"
                               AutomationProperties.Name="Process view"
                               MinWidth="170" SelectionChanged="OnViewModeChanged"
-                              AutomationProperties.Name="Process list view"
                               ToolTipService.ToolTip="Switch how the process list is shaped (TableViewSource GroupBy or flat list).">
                         <ComboBoxItem Content="Grouped by category"/>
                         <ComboBoxItem Content="Flat list"/>
