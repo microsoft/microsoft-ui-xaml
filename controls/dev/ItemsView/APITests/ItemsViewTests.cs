@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.UI.Private.Controls;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -2376,6 +2377,189 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Repeatedly invokes ItemsView.StartBringItemIntoView for the last item right after a collection reset and verifies the UI thread keeps making progress.")]
+        public void RepeatedBringLastItemIntoViewAfterCollectionResetDoesNotHang()
+        {
+            // The app clears the collection, refills it, and requests StartBringItemIntoView for the last
+            // item on the next dispatcher turn - i.e. before the layout has processed the new items. The
+            // previous target element gets recycled along the way, which is what used to wedge the UI thread.
+            int[] itemCounts = new int[] { 240, 180, 220 };
+
+            ItemsView itemsView = null;
+            ScrollView scrollView = null;
+            ObservableCollection<string> itemsSource = null;
+            AutoResetEvent itemsViewLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollViewScrollCompletedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                itemsView = new ItemsView()
+                {
+                    Layout = new StackLayout() { Spacing = 4.0 },
+                    ItemTemplate = XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <ItemContainer Height='167'>
+                              <TextBlock Text='{Binding}'/>
+                            </ItemContainer>
+                          </DataTemplate>") as DataTemplate
+                };
+
+                itemsSource = new ObservableCollection<string>();
+                itemsView.ItemsSource = itemsSource;
+
+                SetupDefaultUI(itemsView, itemsViewLoadedEvent);
+            });
+
+            WaitForEvent("Waiting for Loaded event", itemsViewLoadedEvent);
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                scrollView = itemsView.GetValue(ItemsView.ScrollViewProperty) as ScrollView;
+
+                Verify.IsNotNull(scrollView);
+
+                scrollView.ScrollCompleted += (sender, args) =>
+                {
+                    Log.Comment("ScrollView.ScrollCompleted raised - CorrelationId=" + args.CorrelationId + ", VerticalOffset=" + scrollView.VerticalOffset);
+
+                    scrollViewScrollCompletedEvent.Set();
+                };
+            });
+
+            for (int iteration = 1; iteration <= itemCounts.Length; iteration++)
+            {
+                int itemCount = itemCounts[iteration - 1];
+                int targetIndex = itemCount - 1;
+
+                Log.Comment("Iteration " + iteration + ": populating the collection with a single placeholder item.");
+
+                RunOnUIThread.Execute(() =>
+                {
+                    itemsSource.Clear();
+                    itemsSource.Add("Loading");
+                });
+
+                WaitForIdle("Iteration " + iteration + ": waiting for the UI thread to settle after the placeholder item.");
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Iteration " + iteration + ": resetting the collection and adding " + itemCount + " items without waiting for a layout pass.");
+
+                    itemsSource.Clear();
+
+                    for (int index = 0; index < itemCount; index++)
+                    {
+                        itemsSource.Add("Row " + index);
+                    }
+
+                    Log.Comment("Iteration " + iteration + ": queuing ItemsView.StartBringItemIntoView(" + targetIndex + ") for the next dispatcher turn.");
+
+                    Verify.IsTrue(itemsView.DispatcherQueue.TryEnqueue(
+                        Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal,
+                        () =>
+                        {
+                            Log.Comment("Invoking ItemsView.StartBringItemIntoView(" + targetIndex + ").");
+
+                            itemsView.StartBringItemIntoView(targetIndex, new BringIntoViewOptions()
+                            {
+                                AnimationDesired = false,
+                                VerticalAlignmentRatio = 1.0
+                            });
+                        }));
+                });
+
+                WaitForEvent("Waiting for ScrollView.ScrollCompleted event", scrollViewScrollCompletedEvent);
+
+                WaitForIdle("Iteration " + iteration + ": waiting for the UI thread to settle after the scroll.");
+
+                RunOnUIThread.Execute(() =>
+                {
+                    // Reaching this point at all proves the UI thread never got stuck while the previous
+                    // target element was recycled.
+                    ItemsRepeater itemsRepeater = ItemsViewTestHooks.GetItemsRepeaterPart(itemsView);
+
+                    Verify.IsNotNull(itemsRepeater);
+                });
+            }
+
+            Log.Comment("Done");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Invokes ItemsView.StartBringItemIntoView after the ItemsView was removed from the visual tree and verifies the call returns instead of wedging the UI thread.")]
+        public void BringItemIntoViewOnUnparentedItemsViewDoesNotHang()
+        {
+            ItemsView itemsView = null;
+            Grid rootGrid = null;
+            AutoResetEvent itemsViewLoadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                itemsView = new ItemsView()
+                {
+                    Layout = new StackLayout() { Spacing = 4.0 },
+                    ItemTemplate = XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <ItemContainer Height='167'>
+                              <TextBlock Text='{Binding}'/>
+                            </ItemContainer>
+                          </DataTemplate>") as DataTemplate
+                };
+
+                ObservableCollection<string> itemsSource = new ObservableCollection<string>();
+
+                for (int index = 0; index < 100; index++)
+                {
+                    itemsSource.Add("Row " + index);
+                }
+
+                itemsView.ItemsSource = itemsSource;
+
+                SetupDefaultUI(itemsView, itemsViewLoadedEvent, useParentGrid: true);
+            });
+
+            WaitForEvent("Waiting for Loaded event", itemsViewLoadedEvent);
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // The ItemsRepeater part exists from here on, but the ItemsView no longer takes part in layout.
+                rootGrid = itemsView.Parent as Grid;
+
+                Verify.IsNotNull(rootGrid, "The ItemsView is expected to be hosted in a Grid.");
+
+                rootGrid.Children.Remove(itemsView);
+            });
+
+            WaitForIdle("Waiting for the UI thread to settle after unparenting the ItemsView.");
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Invoking ItemsView.StartBringItemIntoView(99) on the unparented ItemsView.");
+
+                // The requested item cannot be realized, so ItemsView is expected to give up - either by
+                // returning or by reporting the failure - rather than looping forever in GetElementIndex.
+                try
+                {
+                    itemsView.StartBringItemIntoView(99, new BringIntoViewOptions() { AnimationDesired = false });
+
+                    Log.Comment("StartBringItemIntoView returned without throwing.");
+                }
+                catch (Exception exception)
+                {
+                    Log.Comment("StartBringItemIntoView threw as expected: " + exception.Message);
+                }
+            });
+
+            WaitForIdle("Waiting for the UI thread to settle after the StartBringItemIntoView call.");
+
+            Log.Comment("Done");
+        }
+
         private void SetupDefaultUI(
             ItemsView itemsView,
             AutoResetEvent itemsViewLoadedEvent = null,
@@ -2457,6 +2641,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             if (!eventWaitHandle.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration)))
             {
                 throw new Exception("Timeout expiration in WaitForEvent.");
+            }
+        }
+
+        // Bounded equivalent of IdleSynchronizer.Wait(). A wedged UI thread would otherwise hang the test
+        // until the TAEF host is force terminated, which hides the failure. This surfaces it as a regular
+        // assertion failure instead.
+        private void WaitForIdle(string logComment)
+        {
+            Log.Comment(logComment);
+
+            Task idleTask = Task.Run(() => IdleSynchronizer.Wait());
+
+            if (!idleTask.Wait(TimeSpan.FromMilliseconds(c_MaxWaitDuration)))
+            {
+                Verify.Fail("Timeout expiration in WaitForIdle - the UI thread never became idle. " + logComment);
             }
         }
     }

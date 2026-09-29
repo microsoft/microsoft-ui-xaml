@@ -1678,7 +1678,12 @@ int ItemsView::GetElementIndex(
 
                 if (index == -1)
                 {
-                    itemContainer = SharedHelpers::GetAncestorOfType<winrt::ItemContainer>(itemContainer);
+                    // Resume the search from the parent: GetAncestorOfType also matches the element it is
+                    // given, so passing itemContainer would return it again and spin forever when the
+                    // container is no longer realized by the ItemsRepeater.
+                    const winrt::DependencyObject parent = winrt::VisualTreeHelper::GetParent(itemContainer);
+
+                    itemContainer = parent == nullptr ? nullptr : SharedHelpers::GetAncestorOfType<winrt::ItemContainer>(parent);
                 }
             }
             while (index == -1 && itemContainer != nullptr);
