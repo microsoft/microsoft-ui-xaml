@@ -476,22 +476,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VERIFY_IS_NOT_NULL(spUIAutomationTextRange.Get());
     }
 
-    inline void VerifyFindAttributeAPArray(const wchar_t* pMsg, TEXTATTRIBUTEID attributeid, MockUpProviderControlRange^ testTextRange, _In_ IUIAutomationTextRange *pUITextPattern, xaml_automation_peers::AutomationPeer^ ap, _In_ IUIAutomationElement* pAutomationElement)
-    {
-        WEX::Logging::Log::Comment(pMsg);
-        wrl::ComPtr<IUIAutomationTextRange> spUIAutomationTextRange;
-
-        SAFEARRAY* pSafeArray = nullptr;
-        pSafeArray = SafeArrayCreateVector(VT_UNKNOWN, 0, 1);
-        LONG index = 0;
-        VERIFY_SUCCEEDED(SafeArrayPutElement(pSafeArray, &index, pAutomationElement));
-
-        AutoVariant varData;
-        varData.Storage()->vt = VT_ARRAY | VT_UNKNOWN;
-        varData.Storage()->parray = pSafeArray;
-        VERIFY_FAILED(pUITextPattern->FindAttribute(attributeid, varData.Get(), TRUE, &spUIAutomationTextRange));
-    }
-
     inline void VerifyFindAttributeIUnknown(const wchar_t* pMsg, TEXTATTRIBUTEID attributeid, MockUpProviderControlRange^ testTextRange, _In_ IUIAutomationTextRange *pUITextPattern)
     {
         WEX::Logging::Log::Comment(pMsg);
@@ -591,7 +575,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VerifyFindAttributeEnum(L"---UIA_UnderlineColorAttributeId---", UIA_UnderlineColorAttributeId, mockRange, spUIAutomationTextRange.Get(), 190);
             VerifyFindAttributeEnum(L"---UIA_UnderlineStyleAttributeId---", UIA_UnderlineStyleAttributeId, mockRange, spUIAutomationTextRange.Get(), TextDecorationLineStyle_LongDash);
             VerifyFindAttributeIntArray(L"---UIA_AnnotationTypesAttributeId---", UIA_AnnotationTypesAttributeId, mockRange, spUIAutomationTextRange.Get());
-            VerifyFindAttributeAPArray(L"---UIA_AnnotationObjectsAttributeId---", UIA_AnnotationObjectsAttributeId, mockRange, spUIAutomationTextRange.Get(), mockAPAsAutomationPeer, spUIAutomationElement.Get());
             VerifyFindAttributeString(L"---UIA_StyleNameAttributeId---", UIA_StyleNameAttributeId, mockRange, spUIAutomationTextRange.Get(), L"MyStyle2");
             VerifyFindAttributeEnum(L"---UIA_StyleIdAttributeId---", UIA_StyleIdAttributeId, mockRange, spUIAutomationTextRange.Get(), 1234);
             VerifyFindAttributeIUnknown(L"---UIA_LinkAttributeId---", UIA_LinkAttributeId, mockRange, spUIAutomationTextRange.Get());

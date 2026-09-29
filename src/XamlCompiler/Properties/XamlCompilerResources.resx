@@ -498,10 +498,6 @@
     <value>Invalid value specified for attribute '{0}'.</value>
     <comment>The value provided for x:DeferLoadStrategy attribute is not valid</comment>
   </data>
-  <data name="XamlValidationError_DataTypeOnlyAllowedOnDataTemplate" xml:space="preserve">
-    <value>DataType is only allowed for DataTemplate.</value>
-    <comment>DataType attribute is on a wrong element</comment>
-  </data>
   <data name="XamlCompiler_BaseFilenamesMustBeTheSame" xml:space="preserve">
     <value>The class named '{0}' is represented by files with more than one base filename: '{1}' and '{2}'. The base filenames for a single class must be unique.</value>
   </data>
@@ -603,18 +599,6 @@
   </data>
   <data name="CreateFromString_TypeNotFound" xml:space="preserve">
     <value>Could not find type for CreateFromString method '{0}' declared on type '{1}'</value>
-  </data>
-  <data name="XamlCompiler_WrongTypeContract" xml:space="preserve">
-    <value>Type '{0}' is defined under contract '{1}' version '{2}', but the contract version for the targeted min version is '{3}'!</value>
-  </data>
-  <data name="XamlCompiler_TypeContractDoesNotExist" xml:space="preserve">
-    <value>Type '{0}' is defined under contract '{1}' version '{2}', but the contract doesn't exist in the targeted min version!</value>
-  </data>
-  <data name="XamlCompiler_MemberContractDoesNotExist" xml:space="preserve">
-    <value>Member '{3}' on type '{0}' is defined under contract '{1}' version '{2}', but the contract doesn't exist in the targeted min version!</value>
-  </data>
-  <data name="XamlCompiler_WrongMemberContract" xml:space="preserve">
-    <value>Member '{4}' on type '{0}' is defined under contract '{1}' version '{2}', but the contract version for the targeted min version is '{3}'!</value>
   </data>
   <data name="ConditionalNamespace_FailedToParse" xml:space="preserve">
     <value>{1} while parsing conditional namespace expression '{0}'</value>

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection.Adds;
 using System.Diagnostics;
-using Debug = Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal.Debug;
+using Debug = System.Diagnostics.Debug;
 
 
 using MethodAttributes = System.Reflection.MethodAttributes;

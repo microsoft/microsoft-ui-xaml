@@ -36,7 +36,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(SuspendResume_DisconnectRoot)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Rendering in sprite visuals mode instead of primitives
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -52,7 +52,7 @@ public:
 
     BEGIN_TEST_METHOD(MakeLISOnSuspend)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 

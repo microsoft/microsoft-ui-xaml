@@ -111,7 +111,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 () => new CSharpPagePass2(),
                 null,
                 null,
-                null,
+                () => new CSharpTypeInfoPass2(),
                 null,
                 () => new CSharpTypeInfoPass2(),
                 null,

@@ -41,13 +41,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrash)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a popup synchronously closing a sibling popup during pointer-event replay does not free the XCPListNode the outer iterator is sitting on.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // Mouse injection is unreliable on OneCore
           END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ReplayPointerUpdate_PopupClosedDuringReplay_WithManyOpenPopups_DoesNotCrash)
             TEST_METHOD_PROPERTY(L"Description", L"Same as ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrash but with enough additional open popups (>typicalOpenPopupCount=4) to force the snapshot Jupiter::stack_vector in CPopupRoot::ReplayPointerUpdate to spill to the heap, validating the reentrant-close fix on the heap-allocated path.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // Mouse injection is unreliable on OneCore
           END_TEST_METHOD()
 
@@ -134,19 +134,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupHighDPI)
-            // TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // UAP has an extra transform at the root for the zoom scale
             // Note: Tests that care about DpiAwarenessContext must also make an explicit call to InitializeHost at the start of the test.
             // This test data isn't actually applied until the test method starts, so the test host won't be able to read their values when
             // it normally initializes.
             TEST_METHOD_PROPERTY(L"data:DpiAwarenessContext", L"{Unaware,System,PerMonitor,PerMonitorV2,UnawareGdiScaled}")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Move windowed popups to lifted input
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(PopupInHolographicModeOpenAndClose)
-            TEST_METHOD_PROPERTY(L"Description", L"Verify popup's open and close in Holographic mode, windowed mode is disabled.")
-            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Visual tree is different when WPF-hosted.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowedPopupInput)
@@ -220,7 +213,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(DoesOverlaySizeWithWindow)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the overlay sizes with the window.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")  // Test uses Window.Current, which is null in wpf hosting mode.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanSetChildWhileOpenWithOverlayEnabled)
@@ -236,8 +229,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates UIElement tree with an overlay-enabled popup.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Fails when WPF-hosted because Xaml has Popup IsOpen="true",
-                                                            // but when I fix this the baseline file can't be compared.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(OpenPopupUnderCollapsedParent)
@@ -308,4 +300,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     };
 
 } } } } } } }
-

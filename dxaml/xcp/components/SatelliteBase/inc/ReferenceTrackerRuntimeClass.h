@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <Microsoft.UI.Xaml.hosting.referencetracker.h>
-#include <windows.ui.core.corewindow-defs.h>
 
 namespace Private
 {
@@ -286,12 +285,12 @@ namespace Private
             {
                 m_pTrackerOwnerInnerNoRef = spTrackerOwnerInner.Get();
 
-                // Capture the thread dispatcher so that we can use it for cleanup
+                // Capture the thread dispatcher queue so that we can use it for cleanup
                 wrl::ComPtr<xaml::IDependencyObject> trackerOwnerDO;
 
                 IFC_RETURN(this->GetComposableBase().As(&trackerOwnerDO));
 
-                IFC_RETURN(trackerOwnerDO->get_Dispatcher(&m_coreDispatcher));
+                IFC_RETURN(trackerOwnerDO->get_DispatcherQueue(&m_dispatcherQueue));
             }
             else
             {
@@ -358,61 +357,44 @@ namespace Private
         _Check_return_ HRESULT TryQueueForFinalRelease( _Out_ bool* queued )
         {
             *queued = false;
-            wrl::ComPtr<wuc::ICoreDispatcher2> coreDispatcher2;
+            wrl::ComPtr<msy::IDispatcherQueue2> dispatcherQueue2;
 
-            // (We won't have a m_coreDispatcher when running in the designer)
-            if(m_coreDispatcher)
+            // (We won't have a m_dispatcherQueue when running in the designer)
+            if (m_dispatcherQueue)
             {
                 boolean hasThreadAccess;
 
                 // See if we're on the UI thread
-                IFC_RETURN(m_coreDispatcher->get_HasThreadAccess(&hasThreadAccess));
+                IFC_RETURN(m_dispatcherQueue.As(&dispatcherQueue2));
+                IFC_RETURN(dispatcherQueue2->get_HasThreadAccess(&hasThreadAccess));
 
                 if(!hasThreadAccess)
                 {
                     // We're not on the UI thread
 
-                    wrl::ComPtr<wf::IAsyncOperation<bool>> asyncOperation;
-                    auto handler = MakeAgileDispatcherCallback([this]() -> HRESULT
-                    {
-                        // This is the code that will run on the UI thread
-                        DeleteThis();
-                        return S_OK;
-                    });
+                    auto handler =
+                        wrl::Callback<
+                            wrl::Implements<
+                                wrl::RuntimeClassFlags<wrl::ClassicCom>,
+                                msy::IDispatcherQueueHandler,
+                                wrl::FtmBase>>(
+                            [this]() -> HRESULT
+                            {
+                                // This is the code that will run on the UI thread
+                                DeleteThis();
+                                return S_OK;
+                            });
 
                     // Post to the UI thread's dispatcher (if it's still pumping)
-                    IFC_RETURN(m_coreDispatcher.As(&coreDispatcher2));
-                    coreDispatcher2->TryRunAsync(
-                        wuc::CoreDispatcherPriority_Normal,
-                        handler.Get(), &asyncOperation);
-
+                    boolean enqueueResult = false;
+                    IFC_RETURN(m_dispatcherQueue->TryEnqueue(handler.Get(), &enqueueResult));
                     *queued = true;
 
-                    // If the post asynchronously fails (because the UI thread is gone), resort to an off-thread cleanup.
-                    asyncOperation->put_Completed(
-                        wrl::Callback<wf::IAsyncOperationCompletedHandler<bool>>(
-                            [this](wf::IAsyncOperation<bool>* asyncInfo, wf::AsyncStatus asyncStatus) -> HRESULT
-                            {
-                                auto deleteThis = false;
-
-                                if( asyncStatus == wf::AsyncStatus::Completed )
-                                {
-                                    boolean succeeded = false;
-                                    VERIFYHR(asyncInfo->GetResults(&succeeded));
-                                    if(!succeeded)
-                                    {
-                                        deleteThis = true;
-                                    }
-                                }
-
-                                if(deleteThis)
-                                {
-                                    DeleteThis();
-                                }
-
-                                return S_OK;
-                            }).Get());
-
+                    // If the UI thread is no longer pumping, resort to an off-thread cleanup.
+                    if (!enqueueResult)
+                    {
+                        DeleteThis();
+                    }
                 }
             }
 
@@ -422,7 +404,7 @@ namespace Private
 
     private:
         ::ITrackerOwner* m_pTrackerOwnerInnerNoRef = nullptr;
-        wrl::ComPtr<wuc::ICoreDispatcher> m_coreDispatcher; // The Dispatcher of the thread we were created on
+        wrl::ComPtr<msy::IDispatcherQueue> m_dispatcherQueue; // The DispatcherQueue of the thread we were created on
 
 #if DBG
         bool m_wasEnsureCalled = false;

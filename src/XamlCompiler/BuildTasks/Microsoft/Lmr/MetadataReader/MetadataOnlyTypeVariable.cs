@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 // Type impl based on System.Reflection.Metadata reader.
 
-using Debug=Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal.Debug;
+using Debug = System.Diagnostics.Debug;
 using System.Collections.Generic;
 using System;
 using System.Text;

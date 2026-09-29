@@ -101,7 +101,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         WMC0905 = 0905,
         WMC0906 = 0906,
         WMC0907 = 0907,
-        WMC0908 = 0908,
         WMC0909 = 0909,
         WMC0910 = 0910,
         WMC0911 = 0911,
@@ -147,8 +146,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         WMC1125 = 1125,
 
         // Warnings placed incorrectly among errors
-        WMC0151 = 0151,
-        WMC0152 = 0152,
         WMC1001 = 1001,
         WMC1004 = 1004,
         WMC1014 = 1014,
@@ -703,36 +700,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         }
     }
 
-    internal class XamlValidationErrorWrongContract : XamlCompileWarning
-    {
-        public XamlValidationErrorWrongContract(XamlDomObject domObject, string typeName, string contractName, string runtimeVer, string parseVer)
-            : base(ErrorCode.WMC0151, domObject)
-        {
-            Message = ResourceUtilities.FormatString(XamlCompilerResources.XamlCompiler_WrongTypeContract, typeName, contractName, runtimeVer, parseVer);
-        }
-
-        public XamlValidationErrorWrongContract(XamlDomMember domMember, string typeName, string contractName, string runtimeVer, string parseVer)
-            : base(ErrorCode.WMC0151, domMember)
-        {
-            Message = ResourceUtilities.FormatString(XamlCompilerResources.XamlCompiler_WrongMemberContract, typeName, contractName, runtimeVer, parseVer, domMember.Member.Name);
-        }
-    }
-
-    internal class XamlValidationErrorContractDoesNotExist : XamlCompileWarning
-    {
-        public XamlValidationErrorContractDoesNotExist(XamlDomObject domObject, string typeName, string contractName, string runtimeVer)
-            : base(ErrorCode.WMC0152, domObject)
-        {
-            Message = ResourceUtilities.FormatString(XamlCompilerResources.XamlCompiler_TypeContractDoesNotExist, typeName, contractName, runtimeVer);
-        }
-
-        public XamlValidationErrorContractDoesNotExist(XamlDomMember domMember, string typeName, string contractName, string runtimeVer)
-            : base(ErrorCode.WMC0152, domMember)
-        {
-            Message = ResourceUtilities.FormatString(XamlCompilerResources.XamlCompiler_MemberContractDoesNotExist, typeName, contractName, runtimeVer, domMember.Member.Name);
-        }
-    }
-
     internal class XamlValidationErrorAmbiguousEvent : XamlCompileError
     {
         public XamlValidationErrorAmbiguousEvent(XamlDomMember domMember)
@@ -1001,15 +968,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             : base(ErrorCode.WMC0907, domObject)
         {
             Message = ResourceUtilities.FormatString(XamlCompilerResources.XamlCompiler_LoadMissingName);
-        }
-    }
-
-    internal class XamlValidationError_DataTypeOnlyAllowedOnDataTemplate : XamlCompileError
-    {
-        public XamlValidationError_DataTypeOnlyAllowedOnDataTemplate(XamlDomObject domObject)
-            : base(ErrorCode.WMC0908, domObject)
-        {
-            Message = ResourceUtilities.FormatString(XamlCompilerResources.XamlValidationError_DataTypeOnlyAllowedOnDataTemplate);
         }
     }
 

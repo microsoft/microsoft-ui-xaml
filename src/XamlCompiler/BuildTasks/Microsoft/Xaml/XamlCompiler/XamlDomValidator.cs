@@ -28,15 +28,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         private NamedElementsStore _namedElementsHash = new NamedElementsStore();
         private DirectUISchemaContext _schemaContext;
         private bool _domRootHasCodeBehind = false;
-        private bool _skipMinSdkValidation = true;
-
-        //Cache of already checked types - if the typename is here, we've already thrown an error
-        //or verified the type is OK so there's no need to re-evaluate it
-        private HashSet<string> _minVersionTypeCache = new HashSet<string>();
-        //Cache of already checked members
-        private HashSet<Tuple<string, string>> _minVersionMemberCache = new HashSet<Tuple<string, string>>();
-        //Cache of contracts from Platform.xml
-        private Dictionary<string, Version> _contractCache = new Dictionary<string, Version>();
 
         // Dictionary containing unsupported property values for specific controls
         private static readonly Dictionary<(string, string), List<string>> UnsupportedEnumValues = new Dictionary<(string, string), List<string>>
@@ -321,12 +312,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 }
             }
 
-            //Validate that the object's type exists in the min version.
-            if (!IsPass1)
-            {
-                ValidateTypePresentInMinVersion(domObject.Type.UnderlyingType, domObject, null);
-            }
-
             // Validate namespaces declared on the objects are valid
             ValidateNamespaces(domObject.Namespaces);
 
@@ -406,134 +391,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
         }
 
-        //Validates the given type is present in the targeted min version.  Also takes a domObject or domMember which is needed
-        //when throwing an error, although only one of these should be valid (the other should be null).
-        private void ValidateTypePresentInMinVersion(Type type, XamlDomObject domObject, XamlDomMember domMember)
-        {
-            // Skip validation if we're not prepared to do it (i.e. running in razzle)
-            // or if this object or member is using conditional markup - assume the developer knows what they're doing.
-            if (_skipMinSdkValidation || domObject?.ApiInformation != null || domMember?.ApiInformation != null)
-            {
-                return;
-            }
-
-            //If we've already evaluated this type, skip it - we would've already passed or thrown an error
-            //for it
-            if (_minVersionTypeCache.Contains(type.FullName))
-            {
-                return;
-            }
-
-            _minVersionTypeCache.Add(type.FullName);
-
-            //Search through the type's attributes for contracts.
-            foreach (CustomAttributeData attr in type.CustomAttributes.Where((a, ind) => a.AttributeType.IsContractVersionAttribute()))
-            {
-                //The arguments can be one of 3 constructurs:
-                //1. Just the version with no contract name (we can't validate anything, so we just skip this case)
-                //2. The contract (as a System.Type) and version
-                //3. The contract (as a String) and version
-                IList<CustomAttributeTypedArgument> typedArgs = attr.ConstructorArguments;
-
-                //The contract name we'll pull out of the first constructor argument, e.g. Windows.Foundation.UniversalApiContract
-                string contractName = null;
-
-                //Case 1, we only have the version and can't validate anything, so keep going
-                if (typedArgs.Count < 2)
-                {
-                    continue;
-                }
-                else
-                {
-                    //Check for case 2 (this is what most Windows types use) - if we have a type instead of the string, get the full name of the type which is the contract's name
-                    Type type2 = typedArgs[0].Value as Type;
-                    if (type2 != null)
-                    {
-                        contractName = type2.FullName;
-                    }
-                    else
-                    {
-                        //Case 3: just use the provided string as the contract name
-                        contractName = typedArgs[0].Value as String;
-                    }
-                }
-                Debug.Assert(contractName != null, "Could not extract contract name for type " + type.FullName + "!");
-
-                //Get the version from the contract.
-                Version typeVersion = ContractVersion.ToVersion((uint)(typedArgs[1].Value));
-
-                Version supportedVersion = null;
-                if (_contractCache.TryGetValue(contractName, out supportedVersion))
-                {
-                    //The contract version we got at runtime was greater than the
-                    //min version's contract, so the type we loaded on the build machine
-                    //won't necessarily exist on another machine the app runs on.
-                    if (supportedVersion < typeVersion)
-                    {
-                        if (domObject != null)
-                        {
-                            Warnings.Add(new XamlValidationErrorWrongContract(domObject, type.FullName, contractName, typeVersion.ToString(), supportedVersion.ToString()));
-                        }
-                        else if (domMember != null)
-                        {
-                            Warnings.Add(new XamlValidationErrorWrongContract(domMember, type.FullName, contractName, typeVersion.ToString(), supportedVersion.ToString()));
-                        }
-                        else
-                        {
-                            Debug.Assert(false, "Invalid dom object and member when validating type exists in min version!");
-                        }
-                    }
-                }
-            }
-        }
-
-        private void ValidateMemberPresentInMinVersion(DirectUIXamlMember duiMember, XamlDomMember domMember)
-        {
-            // Skip validation if we're not prepared to do it (i.e. running in razzle)
-            // or if this member is using conditional markup - assume the developer knows what they're doing.
-            if (_skipMinSdkValidation || domMember.ApiInformation != null)
-            {
-                return;
-            }
-
-            //Check that the member will also exist in the targeted min version.  The UnderlyingMember can be null
-            //if it's in an x:Bind etc.
-            //Also cache the result so we don't do repeat this work
-            if (duiMember?.UnderlyingMember?.DeclaringType != null && !_minVersionMemberCache.Contains(Tuple.Create<string, string>(duiMember.UnderlyingMember.DeclaringType.FullName, duiMember.UnderlyingMember.Name)))
-            {
-                _minVersionMemberCache.Add(Tuple.Create<string, string>(duiMember.UnderlyingMember.DeclaringType.FullName, duiMember.UnderlyingMember.Name));
-
-                //Get the type that declared the member, then check its interfaces to figure out which one really declared it.
-                //Note there are potentially two distinct members, one on the DeclaringType, and another on an interface which corresponds
-                //to the member on the DeclaringType.  We can't just use the contract info for DeclaringType since we may have
-                //an old type with new members from a newer contract.
-                MemberInfo underlyingMemberInfo = duiMember.UnderlyingMember;
-                Type declType = duiMember.UnderlyingMember.DeclaringType;
-
-                //Where the member was really declared - probably an interface, but potentially the DeclaringType
-                //if it was introduced in the same contract as the DeclaringType
-                Type trulyDeclaredType = null;
-
-                //Loop through the interfaces on the underlying DeclaringType and see if any declare a matching member
-                foreach (Type curInter in declType.GetInterfaces())
-                {
-                    //Search for a Member with the matching name
-                    if (curInter.GetMember(underlyingMemberInfo.Name).Length > 0)
-                    {
-                        trulyDeclaredType = curInter;
-                        break;
-                    }
-                }
-
-                //If we couldn't locate the member in an interface, default to the declaring type
-                if (trulyDeclaredType == null)
-                {
-                    trulyDeclaredType = declType;
-                }
-
-                ValidateTypePresentInMinVersion(trulyDeclaredType, null, domMember);
-            }
-        }
 
         private void EnsureUniqueElementName(XamlDomObject domObject, string name)
         {
@@ -671,9 +528,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 {
                     Warnings.Add(new XamlValidationWarningExperimental(ErrorCode.WMC1501, domMember, duiMember.Name));
                 }
-
-                //Check that the member will also exist in the targeted min version.
-                ValidateMemberPresentInMinVersion(duiMember, domMember);
             }
 
             var duiType = (DirectUIXamlType)domMember.Member.DeclaringType;

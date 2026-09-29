@@ -37,12 +37,12 @@ public:
     BEGIN_TEST_METHOD(CanOpenAndCloseProjectedShadow)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully open and close a ContentDialog, projected shadow mode.")
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // We're on drop shadows now
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(CanOpenAndCloseDropShadow)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully open and close a ContentDialog, drop shadow mode.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateUnconstrainedPopupPlacementBehavior)
@@ -69,13 +69,13 @@ public:
 
     BEGIN_TEST_METHOD(ValidateFocusTrapping)
         TEST_METHOD_PROPERTY(L"Description", L"Focus should not escape from an open ContentDialog when moving focus with GamePad and Keyboard")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO 36060166: Re-enable after fixing unreliability.
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateFocusShiftWhenPreviouslyFocusedElementIsRemoved)
         TEST_METHOD_PROPERTY(L"Description", L"Validates the focus shift away from the ContentDialog Content (different types) when last focused element has been removed.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
@@ -93,7 +93,7 @@ public:
 
     BEGIN_TEST_METHOD(DoesFullSizeWorkCorrectlyInV2Template)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that toggling the FullSizeDesired property of the ContentDialog results a correct layout with apps that use the ContentDialog V2 template.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateUIETDefault)
@@ -112,7 +112,7 @@ public:
 
     BEGIN_TEST_METHOD(ValidateTextPanelFitsWithinWindow)
         TEST_METHOD_PROPERTY(L"Description", L"Validates the text panel fits within the window.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateAddingContentDialogToWindowContentDoesNotChangePositioning)
@@ -143,7 +143,7 @@ public:
 
     BEGIN_TEST_METHOD(DoesTabBehaviorWork)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully tab between the ContentDialog contents and the buttons.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
@@ -232,7 +232,7 @@ public:
     BEGIN_TEST_METHOD(DoesSupportCloseButton)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that a 3rd button can be added and interacted with.")
         TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateButtonsLayout)
@@ -341,7 +341,7 @@ public:
 
     BEGIN_TEST_METHOD(DoesRestyledXboxInsiderHubDialogStretchHorizontally)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that a dialog using a template similar to the Xbox Insider app's dialog stretches to the full window width.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(CanShowPopupAndInPlaceDialogsAtSameTime)
@@ -410,12 +410,12 @@ public:
 
     BEGIN_TEST_METHOD(CanUseContentDialogWithSmokeBackgroundPart)
         TEST_METHOD_PROPERTY(L"Description", L"Uses a ContentDialog style that includes a smoke background Rectangle which reflects theme brushes.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(InPlaceContentDialogWithoutSmokeBackgroundPart)
         TEST_METHOD_PROPERTY(L"Description", L"Uses a ContentDialog style that includes a removed smoke background Rectangle in in-place placement.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(LoadedAndUnloadedArriveAtTheRightTimes)

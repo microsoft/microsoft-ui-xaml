@@ -15,6 +15,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         XamlProjectInfo _projectInfo;
         XamlSchemaCodeInfo _schemaInfo;
 
+        internal bool? GenerateTypeInfoOverride { get; set; }
+
         public XamlCodeGenerator(Language language, bool isPass1, XamlProjectInfo projectInfo, XamlSchemaCodeInfo schemaInfo)
         {
             _language = language;
@@ -68,7 +70,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             }
 
             var retList = new List<FileNameAndContentPair>();
-            string fileName = "XamlTypeInfo" + (_isPass1 ? _language.Pass1Extension : _language.Pass2Extension);
+            string extension = _isPass1 && _language.Name != ProgrammingLanguage.CSharp
+                ? _language.Pass1Extension
+                : _language.Pass2Extension;
+            string fileName = "XamlTypeInfo" + extension;
 
             // C++ language extension is .g.hpp rather than CPP for all except XamlTypeInfo
             if (!_isPass1 && fileName.EndsWith(".g.hpp"))
@@ -152,7 +157,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             codeGenerator = codeGenDelegate();
             codeGenerator.SetModel(_projectInfo, _schemaInfo,
                 new TypeInfoDefinition(_projectInfo, _schemaInfo) {
-                    AppXamlInfo = appXamlInfo
+                    AppXamlInfo = appXamlInfo,
+                    IsPass1 = _isPass1,
+                    GenerateTypeInfoOverride = GenerateTypeInfoOverride
                 });
             return codeGenerator.TransformText();
         }

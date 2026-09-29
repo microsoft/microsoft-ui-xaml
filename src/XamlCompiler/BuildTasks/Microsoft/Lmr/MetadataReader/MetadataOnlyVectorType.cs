@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection.Adds;
 using System.Runtime.InteropServices;
-using Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal;
+using Debug = System.Diagnostics.Debug;
 
 using System.Reflection;  
 
