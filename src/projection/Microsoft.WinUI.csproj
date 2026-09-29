@@ -32,7 +32,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Condition="'$(IsInternalWinUIBuild)' == 'true'" Include="Microsoft.SourceLink.AzureRepos.Git" PrivateAssets="All" />
+    <!-- The SourceLink provider has to match where the clone came from, not the build flavour.
+         The WindowsAppSDK mono-build is an internal build but consumes this repo from the public
+         GitHub mirror, and this provider fails the build on a github.com remote ("The value of
+         SourceRoot.RepositoryUrl ... is invalid"). .azuredevops exists only in the Azure Repos
+         clone, so it is the right signal here. -->
+    <PackageReference Condition="'$(IsInternalWinUIBuild)' == 'true' and Exists('$(MSBuildThisFileDirectory)..\..\.azuredevops')" Include="Microsoft.SourceLink.AzureRepos.Git" PrivateAssets="All" />
     <ProjectReference Include="..\..\MergedWinMD\MergedWinMD.vcxproj" />
   </ItemGroup>
 
