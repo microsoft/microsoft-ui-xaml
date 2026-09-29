@@ -251,9 +251,10 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
 
     m_isInUpdateLayout = TRUE;
 
-    TraceLayoutBegin();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::LayoutStart(reinterpret_cast<uint64_t>(pRoot));
+#else
+    TraceLayoutBegin();
 #endif
 
     XUINT32 count = MaxLayoutIterations;
@@ -295,15 +296,17 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
                 m_arrangeRect.Height = (XFLOAT) controlHeight;
             }
 
-            TraceMeasureBegin();
 #ifdef XAMLPROFILER_ENABLED
             XamlProfilerTracing::MeasureStart(reinterpret_cast<uint64_t>(pRoot));
+#else
+            TraceMeasureBegin();
 #endif
             auto scopeGuard = wil::scope_exit([&]
             {
-                TraceMeasureEnd();
 #ifdef XAMLPROFILER_ENABLED
                 XamlProfilerTracing::MeasureStop();
+#else
+                TraceMeasureEnd();
 #endif
             });
 
@@ -333,15 +336,17 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
         }
         else if (pRoot->GetRequiresArrange())
         {
-            TraceArrangeBegin();
 #ifdef XAMLPROFILER_ENABLED
             XamlProfilerTracing::ArrangeStart(reinterpret_cast<uint64_t>(pRoot));
+#else
+            TraceArrangeBegin();
 #endif
             auto scopeGuard = wil::scope_exit([&]
             {
-                TraceArrangeEnd();
 #ifdef XAMLPROFILER_ENABLED
                 XamlProfilerTracing::ArrangeStop();
+#else
+                TraceArrangeEnd();
 #endif
             });
 
@@ -409,15 +414,17 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             // Fire any size changed events
             if (!m_sizeChangedQueue.empty())
             {
-                TraceFireSizeChangedBegin();
 #ifdef XAMLPROFILER_ENABLED
                 XamlProfilerTracing::FireSizeChangedStart(reinterpret_cast<uint64_t>(pRoot));
+#else
+                TraceFireSizeChangedBegin();
 #endif
                 auto scopeGuard = wil::scope_exit([&]
                 {
-                    TraceFireSizeChangedEnd();
 #ifdef XAMLPROFILER_ENABLED
                     XamlProfilerTracing::FireSizeChangedStop();
+#else
+                    TraceFireSizeChangedEnd();
 #endif
                 });
 
@@ -444,15 +451,17 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             // Fire layout updated events
             if (m_nLayoutUpdatedSubscriberCounter != 0)
             {
-                TraceFireLayoutUpdatedBegin();
 #ifdef XAMLPROFILER_ENABLED
                 XamlProfilerTracing::FireLayoutUpdatedStart(reinterpret_cast<uint64_t>(pRoot));
+#else
+                TraceFireLayoutUpdatedBegin();
 #endif
                 auto scopeGuard = wil::scope_exit([&]
                 {
-                    TraceFireLayoutUpdatedEnd();
 #ifdef XAMLPROFILER_ENABLED
                     XamlProfilerTracing::FireLayoutUpdatedStop();
+#else
+                    TraceFireLayoutUpdatedEnd();
 #endif
                 });
 
@@ -515,9 +524,10 @@ Cleanup:
 
     m_isInUpdateLayout = FALSE;
 
-    TraceLayoutEnd();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::LayoutStop();
+#else
+    TraceLayoutEnd();
 #endif
 
     // Firing a UIAutomation automation properties change check
@@ -649,9 +659,10 @@ void CLayoutManager::RaiseSizeChangedEvents()
 
         for (auto& item : tmp.m_vector)
         {
-            TraceIndividualSizeChangedBegin();
 #ifdef XAMLPROFILER_ENABLED
             XamlProfilerTracing::IndividualSizeChangedStart(reinterpret_cast<uint64_t>(item.m_pElement));
+#else
+            TraceIndividualSizeChangedBegin();
 #endif
 
             if (auto layoutStorage = item.m_pElement->GetLayoutStorage())
@@ -665,9 +676,10 @@ void CLayoutManager::RaiseSizeChangedEvents()
                     args));
             }
 
-            TraceIndividualSizeChangedEnd(UINT64(item.m_pElement));
 #ifdef XAMLPROFILER_ENABLED
             XamlProfilerTracing::IndividualSizeChangedStop();
+#else
+            TraceIndividualSizeChangedEnd(UINT64(item.m_pElement));
 #endif
         }
 

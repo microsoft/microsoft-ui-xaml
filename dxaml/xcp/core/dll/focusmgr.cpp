@@ -1849,9 +1849,10 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
     bool shouldBringIntoView = false;
     GUID correlationId = m_asyncOperation != nullptr ? m_asyncOperation->GetCorrelationId() : movement.GetCorrelationId();
 
-    TraceUpdateFocusBegin();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::UpdateFocusStart(reinterpret_cast<uint64_t>(movement.GetTarget()));
+#else
+    TraceUpdateFocusBegin();
 #endif
 
     DirectUI::InputDeviceType lastInputDeviceType = DirectUI::InputDeviceType::None;
@@ -2149,12 +2150,13 @@ CFocusManager::UpdateFocus(_In_ const FocusMovement& movement)
     }
 
 Cleanup:
-    TraceUpdateFocusEnd((UINT64)pNewFocus);
 #ifdef XAMLPROFILER_ENABLED
     // Carry the element identity on both edges: Start records the requested target
     // (movement.GetTarget()) and Stop records pNewFocus, matching the attribution the retail
     // UpdateFocusEnd event records after synchronous GettingFocus/LosingFocus handlers run.
     XamlProfilerTracing::UpdateFocusStop(reinterpret_cast<uint64_t>(pNewFocus));
+#else
+    TraceUpdateFocusEnd((UINT64)pNewFocus);
 #endif
     ReleaseInterface(pOldFocusedElement);
 
@@ -2623,7 +2625,9 @@ CDependencyObject* CFocusManager::FindNextFocus(
           xyFocusDirectionName = L"Invalid";
           break;
     }
+#ifndef XAMLPROFILER_ENABLED
     TraceXYFocusEnteredBegin(xyFocusDirectionName);
+#endif
 
     xref_ptr<CDependencyObject> nextFocusedElement;
     CControl* const engagedControl = xyFocusOptions.considerEngagement ? m_spEngagedControl : nullptr;
@@ -2704,7 +2708,9 @@ CDependencyObject* CFocusManager::FindNextFocus(
         nextFocusedElement = m_xyFocus.GetNextFocusableElement(direction, currentFocusedElementOrComponent, engagedControl, m_contentRoot.GetVisualTreeNoRef(), updateManifolds, xyFocusOptions);
     }
 
+#ifndef XAMLPROFILER_ENABLED
     TraceXYFocusEnteredEnd();
+#endif
 
     return nextFocusedElement;
 }

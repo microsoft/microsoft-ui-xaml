@@ -955,22 +955,23 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
     auto onExit = wil::scope_exit([this]()
     {
         m_fRequestTemplateBindingRefresh = FALSE;
-        TraceRefreshTemplateBindingsEnd();
 #ifdef XAMLPROFILER_ENABLED
         XamlProfilerTracing::RefreshTemplateBindingsStop();
-#endif
+#else
+        TraceRefreshTemplateBindingsEnd();
 
         TraceLoggingProviderWrite(
             XamlTelemetry, "Control_RefreshTemplateBindings",
             TraceLoggingBoolean(false, "IsStart"),
             TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
     });
 
-    TraceRefreshTemplateBindingsBegin();
 #ifdef XAMLPROFILER_ENABLED
     XamlProfilerTracing::RefreshTemplateBindingsStart(reinterpret_cast<uint64_t>(this));
-#endif
+#else
+    TraceRefreshTemplateBindingsBegin();
 
     TraceLoggingProviderWrite(
         XamlTelemetry, "Control_RefreshTemplateBindings",
@@ -980,6 +981,7 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
         TraceLoggingWideString(GetStrClassName().GetBuffer(), "ClassName"),
         TraceLoggingWideString(m_strName.GetBuffer(), "Name"),
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
 
     if (m_propertySubscriptions)
     {
@@ -1119,7 +1121,9 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
 
     IFCPTR(ppStyle);
 
+#ifndef XAMLPROFILER_ENABLED
     TraceGetBuiltInStyleBegin();
+#endif
     {
 #ifdef XAMLPROFILER_ENABLED
         // Balance the profiler activity on every exit, including the IFC error paths below that the
@@ -1151,6 +1155,7 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
         }
 #endif
 
+#ifndef XAMLPROFILER_ENABLED
         if (EventEnabledGetBuiltInStyleEnd())
         {
             if (pStyle)
@@ -1164,6 +1169,7 @@ _Check_return_ HRESULT CControl::GetBuiltInStyle(_Outptr_ CStyle** ppStyle)
                 TraceGetBuiltInStyleEnd(L"None");
             }
         }
+#endif
 
         *ppStyle = pStyle;
         pStyle = NULL;
