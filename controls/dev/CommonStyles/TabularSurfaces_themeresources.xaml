@@ -282,7 +282,7 @@
 
             <!-- Focus / selection visuals -->
             <SolidColorBrush x:Key="TabularSurfaceFocusBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceSelectedBorderBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceSelectedBorderBrush" Color="{ThemeResource SystemColorHighlightColor}" />
             <Thickness x:Key="TabularSurfaceSelectedBorderThickness">2</Thickness>
 
             <!-- Back-compat aliases (see Default theme dict for rationale). -->

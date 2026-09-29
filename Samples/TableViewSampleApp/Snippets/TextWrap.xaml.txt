@@ -11,7 +11,7 @@
                 IsHitTestVisible="False"
                 AutomationProperties.Name="{Binding FullName}"
                 AutomationProperties.HelpText="{Binding Department, Converter={StaticResource PersonAvatarColorNameConverter}}">
-            <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="SemiBold"
+            <TextBlock Text="{Binding Initial}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" FontWeight="SemiBold"
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
     </DataTemplate>
@@ -26,7 +26,7 @@
     </DataTemplate>
 </Page.Resources>
 
-<tabular:TableView x:Name="DemoTable" SelectionMode="Single">
+<tabular:TableView x:Name="DemoTable" AutomationProperties.Name="People table with wrapped text" SelectionMode="Single">
     <tabular:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
     <tabular:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" SortMemberPath="Bio" CellTemplate="{StaticResource BioCell}" CanSort="False"/>
     <tabular:TableViewTextColumn Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
@@ -34,4 +34,5 @@
 </tabular:TableView>
 
 <ToggleSwitch Header="TextWrapping" IsOn="True" OnContent="Wrap" OffContent="NoWrap" Toggled="OnWrapToggled"/>
-<Slider Minimum="220" Maximum="520" StepFrequency="20" Value="360" ValueChanged="OnColumnWidthChanged"/>
+<TextBlock x:Name="ColumnWidthLabel" Text="Bio column width"/>
+<Slider AutomationProperties.LabeledBy="{Binding ElementName=ColumnWidthLabel}" Minimum="220" Maximum="520" StepFrequency="20" Value="360" ValueChanged="OnColumnWidthChanged"/>

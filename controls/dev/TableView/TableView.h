@@ -26,23 +26,11 @@ struct ColumnResizeDragState
     // reference here is a cycle the XAML reference tracker cannot see.
     winrt::weak_ref<winrt::ResizeGripper> gripper{ nullptr };
     double startValue{ 0.0 };
-    // The column's Width as authored: reverting a canceled drag to startValue would rewrite an
-    // Auto or Star column as fixed pixels.
     winrt::GridLength startWidth{};
-    // Set once a DragDelta has actually written Width, so a canceled press that never moved
-    // leaves the column completely untouched.
     bool didWrite{ false };
-    // Set once any DragDelta arrived, even one the bounds swallowed. Drives the announcement, so a
-    // press that never moved stays silent while a step held at a bound still reports the width.
     bool didDelta{ false };
 };
 
-// Per-instance cache of density metrics and the resolved gridline brush. Held as a
-// TableView member (not a process-global map keyed by `this`) so instances on
-// different UI threads never share or concurrently mutate one container. Grouped into
-// small nested structs (DensityInfo/GridLineInfo) so each cached concern reads as one
-// cohesive unit; nested-struct naming follows the controls/dev `*Info` convention
-// (e.g. LinedFlowLayout::ItemsInfo, WebView2::XamlFocusChangeInfo).
 struct TableViewResourceCache
 {
     // Density-dependent metrics: resolved from Density-suffixed ThemeResource keys (see
@@ -90,16 +78,11 @@ struct TableViewResourceCache
 namespace ShapingHelpers { class CustomSortRankAdapter; }
 class GroupedEntry;
 
-// The control's half of the TableViewSource sort axis. The projection is addressed by an opaque
-// axis token, so re-sorting the same column replaces its axis rather than stacking a second one.
 struct TableViewSourceSortBinding
 {
     winrt::hstring MemberPath;
     winrt::hstring AxisToken;
     winrt::TableViewKeySelector KeySelector{ nullptr };
-    // The rank adapter for a CustomSortComparer column. Owned by the control but implemented in the
-    // shaping engine: the control feeds it the column's comparer, the engine turns that into the
-    // integer sort keys the projection consumes.
     std::shared_ptr<ShapingHelpers::CustomSortRankAdapter> CustomSortState;
 
     // Drops any comparer and its ranks without discarding the selector: the selector closes over
@@ -120,11 +103,9 @@ public:
     // one edge we own is cut. See TableViewRowTemplateSelector::Detach.
     ~TableView();
 
-    // IFrameworkElement overrides
     void OnApplyTemplate();
     winrt::AutomationPeer OnCreateAutomationPeer();
 
-    // Property-changed callbacks (from TableViewProperties)
     void OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsReadOnlyPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -153,12 +134,9 @@ public:
     // ActualTheme cannot report HC; cached AccessibilitySettings selects HC grid-line resources.
     bool IsHighContrast();
 
-    // TableViewColumn calls this when header templates change so realized headers refresh.
     void RebuildHeaders();
-    // Toggling it adds or removes every gripper, so the header band is rebuilt.
     void OnCanUserResizeColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    // The gripper owns the resize mechanics; this only positions it and forwards the pointer drag.
     void AppendResizeGripperVisual(
         const winrt::Grid& headerCell,
         const winrt::TableViewColumn& column,
@@ -172,15 +150,8 @@ public:
     void CancelColumnResizeDrag();
     void AnnounceColumnWidth(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column);
 
-    // Coalesces bursts of column-driven header rebuilds (bulk Columns edits, per-column Header /
-    // FrozenEdge changes) into a single RebuildHeaders on the next dispatcher tick, so N column
-    // mutations cost O(N) header builds instead of O(N^2). Skips entirely before the template is
-    // applied (OnApplyTemplate performs the initial build). Falls back to a synchronous rebuild when
-    // no dispatcher is available or the enqueue fails.
     void QueueRebuildHeaders();
 
-    // Internal — invoked by TableViewColumn when its Visibility changes so
-    // realized header and row cells stay in sync without rebuilding Columns.
     void OnColumnVisibilityChanged(const winrt::TableViewColumn& column);
 
     // Internal — invoked by TableViewColumn when Width / MinWidth / MaxWidth changes so the next
@@ -188,27 +159,16 @@ public:
     // refreshes gridline visuals from the resolved widths).
     void OnColumnWidthChanged(const winrt::TableViewColumn& column);
 
-    // TableViewTemplateColumn calls this when CellTemplate changes so realized rows regenerate cells.
     void OnColumnCellTemplateChanged(const winrt::TableViewColumn& column);
 
-    // TableViewColumn calls this when Header / HeaderTemplate / HeaderTemplateSelector changes so
-    // headers re-render and Auto columns recompute their content width.
     void OnColumnHeaderChanged(const winrt::TableViewColumn& column);
 
-    // Re-applied in place: a rebuild would drop header focus and re-stamp the sort affordance.
     void OnColumnHeaderToolTipChanged(const winrt::TableViewColumn& column);
 
-    // TableViewColumn calls this when FrozenEdge changes so headers re-render and the leading-frozen
-    // band re-pins.
     void OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column);
 
-    // Pin rebuilt rows immediately when leading-frozen columns are active.
     void PinFrozenColumnsForRow(const winrt::TableViewRow& row);
 
-    // Requested by a cell panel (header/row) during measure when a realized cell's own measured width
-    // changed (grow or shrink). Invalidates our measure synchronously so ResolveColumnWidths re-runs in
-    // the same layout tick (no deferral -> no one-frame lag). Bridges the body ScrollViewer, which
-    // absorbs the cell's own measure invalidation. Converges without a debounce (see the definition).
     void RequestColumnWidthResolve();
 
     // Automation peer accessors; weak refs may be null before OnApplyTemplate.
@@ -221,7 +181,6 @@ public:
     // Focus lands on the row's CURRENT CELL, which is what the control navigates in.
     bool FocusRow(int32_t index);
 
-    // ----- Cell-level keyboard focus (TableView_Keyboard.cpp) -----
 
     // Moves keyboard focus to a cell by row index and VISIBLE column index, realizing and scrolling
     // the row into view first. A negative column means "keep the current one". Group-header rows
@@ -235,31 +194,19 @@ public:
     winrt::UIElement ResolveFocusEntryCell(
         winrt::TableViewRow const& row, winrt::DependencyObject const& oldFocusedElement);
 
-    // A cell in `row` gained or lost focus. Records the current cell so Up/Down preserve the column
-    // and F2 edits the cell the user is on.
     void OnRowCellFocusChanged(winrt::TableViewRow const& row);
 
-    // The row index and visible column index focus resolves to. `requireExactCell` restricts the
-    // match to the cell wrapper itself, which is how key handling avoids stealing keys from an
-    // interactive control hosted inside a cell.
     bool TryGetFocusedCell(int32_t& rowIndex, int32_t& columnIndex, bool requireExactCell) const;
 
     // Focuses the cell at a visible-column index inside an ALREADY realized container. Group
     // headers share the repeater and have no cells, so they keep taking container focus.
     bool FocusRealizedRowCell(winrt::UIElement const& element, int32_t visibleColumnIndex);
 
-    // True when `element` is this TableView or sits underneath it.
     bool IsWithinThisTableView(winrt::DependencyObject const& element);
 
-    // IFrameworkElement override. Must be PUBLIC: C++/WinRT dispatches overrides through a base
-    // subobject that can only reach public members; a protected override is silently never called.
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 
-    // ----- Editing (TableView_Editing.cpp) -----
 
-    // Scope of an edit close. Internal only: the public surface is cell-scoped in this release, but
-    // the row scope is real - moving to a different item must end that item's transaction - and the
-    // plumbing is kept so row editing can be added without re-threading every signature.
     enum class EditingUnit
     {
         Cell,
@@ -306,24 +253,15 @@ public:
     // pass - the DP-change callers are re-entrant for FOCUS reasons, not layout ones.
     bool TerminateEditWithoutVisualRestore(bool insideLayoutPass = false);
 
-    // Runs an app-visible notification now, or on the dispatcher when we are inside a layout pass.
     void PostEditNotification(std::function<void()> notify);
 
-    // Closes an open edit when the column it is on becomes read-only. Called by
-    // TableViewColumn::OnPropertyChanged, which cannot reach the edit state itself.
     void OnColumnIsReadOnlyChanged(winrt::TableViewColumn const& column);
-    // Control-initiated reshape (sort / group / expand). Stays cancelable.
     bool TryTerminateEditForControlInitiatedReshape();
 
-    // Defer a source-reshaping operation until the open edit closes. Opaque action, so editing
-    // needs no compile-time knowledge of sorting, grouping or expansion.
     void QueueCoalescedEditReshape(std::function<void()> operation);
     void ClearCoalescedEditReshape();
     void DrainCoalescedEditReshape();
 
-    // ----- Editing input gestures (TableView_EditingInput.cpp) -----
-    // The pointer gesture lives on TableViewRow: the row owns its cells, so it is the level that
-    // can resolve which cell a press landed on.
 
     void OnKeyDownForEditing(
         const winrt::IInspectable& sender,
@@ -333,10 +271,6 @@ public:
         const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
     void CompleteFocusLossCommit();
 
-    // ----- Selection (TableView_Selection.cpp) -----
-    // SelectionModel owns the selected index and reconciles it across collection changes; this
-    // control keeps the DP projections, the row chrome and the gestures. The DPs are pushed and
-    // never read back, because a DP write notifies synchronously.
 
     void OnSelectionModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
@@ -345,8 +279,6 @@ public:
     bool IsSelected(int32_t index);
     void DeselectAll();
 
-    // Centralises the mode gate only. Modifier-aware routing (interacted vs focused, per
-    // SelectorBase) is what Multiple/Extended will add on top.
     bool CanSelectRows();
 
     // Shared by the pointer gesture, keyboard navigation and the row peer. No-op when off.
@@ -356,20 +288,14 @@ public:
     void SelectRowIndexFromInteraction(int32_t index, bool toggle);
     void SelectRowIndexFromKeyboardFocus(int32_t index);
 
-    // The row sees the press first (it owns its cells); selection state lives on the control.
     void OnRowPointerSelect(winrt::TableViewRow const& row);
 
-    // Re-derives IsSelected for a realized or re-indexed row; it never survives recycling.
     void RefreshRowSelectionState(winrt::TableViewRow const& row);
     void RefreshRowSelectionState(winrt::TableViewRow const& row, int32_t selectedIndex);
 
     // For the automation peers, which cannot reach the private members. Both read the model.
     int32_t SelectedIndexInternal() const;
     winrt::IInspectable SelectedItemInternal() const;
-    // --- Grouped projections (TableView_Grouping.cpp) ---
-    //
-    // Which container type a row-source item realizes as. Item-based rather than index-based
-    // because the element factory is only ever handed the item.
     TableViewRowKind GetRowKindForItem(winrt::IInspectable const& item) const;
     winrt::hstring GetGroupHeaderNameCandidate(GroupedEntry const& entry);
     bool TryGetTableViewSourceRowInfo(int32_t rowIndex, TableViewRowInfo& rowInfo) const;
@@ -384,32 +310,18 @@ public:
     void ToggleGroupExpansion(winrt::UIElement const& container);
     void SetGroupExpansion(winrt::UIElement const& container, bool expand);
 
-    // Public grouping commands (from TableView IDL).
     void ExpandAllGroups();
     void CollapseAllGroups();
 
-    // The peer resolves the row index of its header through the repeater rather than a tree walk.
     winrt::ItemsRepeater GetRowsRepeaterForPeer() const { return m_rowsRepeater.get(); }
 
-    // --- Sorting (TableView_Sort.cpp) ---
-    // Sorting is single-column, and the active state lives on the column: read
-    // TableViewColumn.SortDirection, which is the column a Sorted handler is handed. There is
-    // deliberately no control-level SortColumn/SortDirection pair mirroring it, matching WPF's
-    // DataGrid, which also keeps sort state on DataGridColumn and exposes no control-level
-    // equivalent.
     bool SortByColumn(const winrt::TableViewColumn& column, winrt::SortDirection direction);
     bool ToggleSortDirection(const winrt::TableViewColumn& column);
     bool ClearSort();
 
-    // Republishes every realized header chevron from its column's SortDirection DP. A push rather
-    // than a binding: SortIndicatorDirection and SortDirection are distinct WinRT enums, so a
-    // {Binding} between them silently does nothing. Called by TableViewColumn.
     void RefreshSortIndicators();
-    // CanSort gates whether the chevron is built at all, so a runtime flip needs a header rebuild.
     void OnColumnCanSortChanged(const winrt::TableViewColumn& column);
     void OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    // Drops a column that has left Columns from the active sort state. Returns true when the sort
-    // state changed.
     bool PurgeColumnFromSortState(const winrt::TableViewColumn& removedColumn);
 
 private:
@@ -418,7 +330,6 @@ private:
 
     void ReleaseHeaderToolTips(const winrt::Panel& host);
 
-    // Created lazily so a TableView that never selects pays nothing.
     void EnsureSelectionModel();
     // SelectionModel::Source has no identity short-circuit - re-setting the same source would drop
     // the selection - so this only writes when it actually differs.
@@ -431,23 +342,16 @@ private:
     // Still needed because SelectionModel indexes but does not look items up.
     int32_t IndexOfItem(winrt::IInspectable const& item) const;
 
-    // The selected item for an already-read index, so a caller that has one does not rebuild the
-    // model's IndexPath just to resolve it again.
     winrt::IInspectable SelectedItemForIndex(int32_t index) const;
 
-    // The realized container for a data index, or null.
     winrt::TableViewRow FindRealizedRowForIndex(int32_t index);
 
     void PushSelectionProperties();
     void RaiseSelectionChanged(winrt::IInspectable const& addedItem);
     void RaiseSelectionAutomationEvents(winrt::TableViewRow const& deselectedRow, winrt::TableViewRow const& selectedRow);
-    // Re-derives IsSelected on every realized row. Needed after a collection change, where the
-    // repeater has already re-indexed its containers.
     void RestampAllRealizedRowSelection();
     void RestampAllRealizedRowSelection(int32_t selectedIndex);
 
-    // Subscribed only to restamp rows: SelectionModel handles the index reconciliation itself, and
-    // does not raise when an insert merely shifts the selected index.
     void UpdateSelectionCollectionChangedSubscription();
     void OnSelectionItemsSourceCollectionChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
 
@@ -459,14 +363,12 @@ private:
     void UpdateSelectionResetDetectorSubscription();
     void OnSelectionSourceReset(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
 
-    // Re-points the model at a new ItemsSource and re-selects anything held across a reload.
     void ResolveSelectionAfterSourceChange();
     // Unload drains the repeater's source; re-sourcing on load clears the model. Hold the selected
     // item across that round trip so an unload/reload cycle does not drop the selection.
     void StashSelectionForReload();
     bool HasRowsSource() const;
 
-    // True when selection cannot be resolved yet - selection off, or no source.
     bool ShouldDeferSelectionRequest();
     void ClearPendingSelection();
     bool DrainPendingSelection();
@@ -481,8 +383,6 @@ private:
     // Last item REPORTED through SelectionChanged; the delta derives from this.
     tracker_ref<winrt::IInspectable> m_lastRaisedSelectedItem{ this };
 
-    // The selected item, held across an unload/reload round trip so re-sourcing the repeater does
-    // not drop it. Nothing else defers.
     tracker_ref<winrt::IInspectable> m_pendingSelectedItem{ this };
 
     // The last INTENTIONALLY selected item (user gesture, programmatic set, or a restore), captured
@@ -498,8 +398,6 @@ private:
     // model has reconciled.
     bool m_resetSelectionRestorePending{ false };
 
-    // Bumped on every publish so a re-entrant one can tell that a newer selection overtook it and
-    // it must not finish its own (now stale) notification.
     uint32_t m_selectionVersion{ 0 };
 
     // Set while a stashed selection is being restored after a reload, so the clear-then-reselect
@@ -511,7 +409,6 @@ private:
 
     winrt::ItemsSourceView::CollectionChanged_revoker m_selectionCollectionChangedRevoker{};
 
-    // Fires ahead of the SelectionModel on a projection Reset; see OnSelectionSourceReset.
     winrt::ItemsSourceView::CollectionChanged_revoker m_selectionResetDetectorRevoker{};
 
     // The views the two subscriptions above are attached to. Both re-register only when the view
@@ -543,9 +440,6 @@ private:
 
     EditState m_editState{ EditState::None };
 
-    // True once this edit has written to the data item. A validation failure keeps the edit open
-    // AFTER the write, so a later cancel has to push the pre-edit value back to the source rather
-    // than only restoring the editor.
     bool m_editSourceWritten{ false };
 
     // True while a forced teardown arrived during the Beginning window, where EndCurrentEdit cannot
@@ -560,12 +454,8 @@ private:
     // recognise itself as stale.
     uint32_t m_editGeneration{ 0 };
 
-    // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
-    // replay order matches arrival order.
     std::deque<std::function<void()>> m_pendingEditReshapes;
 
-    // Keyboard/focus position. Deliberately NOT redefined while an edit is open, so a value read
-    // inside an EditEnding handler stays valid once the edit closes.
     tracker_ref<winrt::IInspectable> m_currentItem{ this };
     tracker_ref<winrt::TableViewColumn> m_currentColumn{ this };
 
@@ -579,14 +469,11 @@ private:
     void SetCurrentItem(winrt::IInspectable const& item);
     void UpdateCurrentColumn(winrt::TableViewColumn const& column);
 
-    // Shared tail of the synchronous and deferred edit-close paths.
     bool CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, bool vetoed);
-    // The cell being edited. Distinct from m_currentItem/m_currentColumn, which track focus.
     tracker_ref<winrt::IInspectable> m_currentEditItem{ this };
     tracker_ref<winrt::TableViewColumn> m_currentEditColumn{ this };
     tracker_ref<winrt::TableViewRow> m_currentEditRow{ this };
 
-    // Whatever the column's PrepareCellForEdit handed back, returned to it on cancel.
     tracker_ref<winrt::IInspectable> m_editUneditedValue{ this };
 
     bool RaiseBeginningEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
@@ -607,13 +494,9 @@ private:
 
     void EndEditVisual(winrt::TableViewEditAction action);
 
-    // Applies the outcome of an edit close: writes or reverts, tears down the visual, clears state.
-    // Shared by the synchronous and deferred paths so they cannot drift.
     bool FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel);
     bool EndCurrentEdit(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel);
 
-    // Scoped to the property the edited column writes; falls back to the object-level check only
-    // when the column reports no single editing property path.
     bool HasBlockingValidationErrors(
         winrt::IInspectable const& item,
         winrt::TableViewColumn const& column) const;
@@ -635,12 +518,10 @@ private:
         const winrt::ItemsRepeater& sender,
         const winrt::ItemsRepeaterElementIndexChangedEventArgs& args);
 
-    // Body horizontal scrolling drives the header ScrollViewer so headers track row cells.
     void OnBodyScrollerViewChanged(
         const winrt::IInspectable& sender,
         const winrt::ScrollViewerViewChangedEventArgs& args);
 
-    // Defer ScrollViewer ancestor lookup until Loaded because ScrollViewer template names are shadowed.
     void OnHeaderHostLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnRowsRepeaterLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
@@ -654,13 +535,8 @@ private:
     void RefreshGridLinesOnRealizedRows();
     void RefreshRowBackgroundsOnRealizedRows();
 
-    // Invoke fn for each realized row in PART_RowsRepeater. Centralizes the "enumerate realized
-    // rows" walk shared by the density / gridline / frozen-column / column-change update paths
-    // (and the future grouping seam), so those callers don't each re-implement the repeater walk.
     void ForEachRealizedRow(std::function<void(winrt::TableViewRow const&)> const& fn);
 
-    // Reset/refill the tracked-column owner back-pointers (shared by the Columns-replaced and
-    // vector-Reset paths). Detach clears m_trackedColumns; Track refills it (no-op if null).
     void DetachAllColumnOwners();
     void TrackColumnsFromVector(winrt::IObservableVector<winrt::TableViewColumn> const& columns);
     bool ShouldShowColumnHeaders();
@@ -680,40 +556,25 @@ private:
     //                        reloaded, shaping verb) with no lifetime work.
     void AdoptItemsSource();
     void RefreshRowsPipeline();
-    // Raised by the bound TableViewSource when a shaping verb swapped its projection
-    // (grouped <-> flat), so the cached view / row metadata are re-read.
     void OnTableViewSourceProjectionChanged();
     // Raised by the bound TableViewSource after a shaping verb rewrote the projection. A
     // programmatic reshape has no input event behind it, so this is the only thing that tells a
     // UIA client its cached rows are stale. reorderOnly separates a pure re-sort (same children,
     // new order) from a membership change.
     void OnTableViewSourceShapingChanged(bool reorderOnly);
-    // Last writer wins between the two sort front-ends. The control owns ONE axis and publishes
-    // the chevron from it; TableViewSource.Sort declares an untokenized axis the control cannot
-    // address. When the app declares or clears a sort directly on the source, the control stands
-    // down: it drops its own axis and every column's SortDirection, so the rows are ordered by
-    // exactly one sort and no chevron claims an axis that is not primary (or no longer exists).
     void ReconcileSortStateWithSource();
     void QueueReconcileSortStateWithSource();
-    // Suppresses ReconcileSortStateWithSource for the duration of a control-initiated verb, whose
-    // own source mutations would otherwise read as the app taking over.
     [[nodiscard]] auto BeginControlInitiatedSortScope()
     {
         m_isApplyingControlInitiatedSort = true;
         return gsl::finally([this]() { m_isApplyingControlInitiatedSort = false; });
     }
-    // EmptyTemplate shows only for null or empty row sources.
     void UpdateEmptyState();
     void UpdateEmptyStateCollectionChangedSubscription();
     void OnEmptyStateItemsSourceCollectionChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
 
     winrt::event_token m_columnsVectorChangedToken{};
 
-    // --- TableViewSource binding ---
-    //
-    // The projection the rows are driven from. For a bound TableViewSource this IS the source's
-    // ItemsSourceView; otherwise it is the raw ItemsSource wrapped. Cached because the shape can
-    // be swapped underneath us by a shaping verb.
     winrt::ItemsSourceView m_rowsItemsSourceView{ nullptr };
 
     // The single active source, whether the app assigned it or the control synthesized it over a
@@ -755,8 +616,6 @@ private:
     winrt::hstring TryGetContainerIdentity(winrt::UIElement const& container);
 
     winrt::hstring StringifyGroupKey(winrt::IInspectable const& key);
-    // Cached because resolving the culture formatter is measurably expensive and group-key text is
-    // produced during measure, once per realized header.
     winrt::DecimalFormatter GetGroupKeyDecimalFormatter();
     winrt::DecimalFormatter m_groupKeyDecimalFormatter{ nullptr };
     int32_t m_groupKeyDefaultFractionDigits{ 0 };
@@ -765,20 +624,10 @@ private:
     // the recycle pools it caches; see TableViewRowTemplateSelector::Detach.
     tracker_ref<winrt::TableViewRowTemplateSelector> m_rowTemplateSelector{ this };
 
-    // --- Sorting ---
-    //
-    // Re-validated after every point where app code could have run (a Sorting handler, or an
-    // edit-ending handler): the columns collection may have changed underneath the request that is
-    // still in flight.
     bool IsSortRequestStillValid(const winrt::TableViewColumn& column) const;
     bool IsSortClearStillValid() const;
-    // The source the rows are projected through, app-assigned or synthesized. Non-null means the
-    // control can reshape the rows itself.
     winrt::TableViewSource ShapingSourceInternal() const;
-    // Writes the single-column sort state into the columns; does not reshape.
     void ApplySingleColumnSortState(const winrt::TableViewColumn& column, winrt::SortDirection direction);
-    // Applies the current sort state to the bound TableViewSource. Returns false when there is no
-    // TableViewSource, or the trigger column resolves no sort key.
     bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
     winrt::TableViewKeySelector GetTableViewSourceSortKeySelector(const winrt::hstring& sortMemberPath);
     bool RaiseSortingAndCheckCanceled(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
@@ -786,10 +635,7 @@ private:
     // selection, raises Sorted, and announces.
     void RecomputeSortDPsAndRaiseInternal(const winrt::TableViewColumn& trigger);
 
-    // Silently drops the active sort when the data set is replaced. See the definition for why this
-    // is not ClearSort.
     void ResetSortStateForNewItemsSource();
-    // Projection index of a data item, or -1. Used to carry the selection across a re-sort.
     int32_t FindEntryIndexForDataItem(const winrt::IInspectable& item) const;
     void AnnounceSortChange(const winrt::hstring& announcement);
     // The active sort column left Columns. Reshaping inside the VectorChanged callback would
@@ -797,8 +643,6 @@ private:
     void QueueClearSortAfterColumnRemoval();
     bool m_clearSortAfterColumnRemovalQueued{ false };
     void AppendSortIndicatorVisual(const winrt::Panel& host, const winrt::TableViewColumn& column);
-    // The chevron is code-created into a nested host panel, so its programmatic Name is not in any
-    // XAML namescope and FindName cannot resolve it. Locate it by type via a child walk instead.
     static winrt::SortIndicator FindSortIndicator(const winrt::Panel& root);
     static winrt::SortIndicatorDirection ToSortIndicatorDirection(winrt::SortDirection direction);
 
@@ -813,7 +657,6 @@ private:
     tracker_ref<winrt::FrameworkElement> m_headerRow{ this };
     tracker_ref<winrt::Panel> m_headerHost{ this };
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
-    // Keeps the header band locked to the body when focus moves to an off-screen header.
     winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
     tracker_ref<winrt::ScrollViewer> m_bodyScroller{ this };
 
@@ -821,13 +664,10 @@ private:
     winrt::event_token m_rowElementClearingToken{};
     winrt::event_token m_rowElementIndexChangedToken{};
     winrt::event_token m_bodyScrollerViewChangedToken{};
-    // Body-viewport resize invalidates measure so Star columns resolve during the table layout pass.
     winrt::FrameworkElement::SizeChanged_revoker m_bodyScrollerSizeChangedRevoker{};
     winrt::event_token m_headerHostLoadedToken{};
     // Set while a drag is in flight, so Escape can reach the gripper that owns it.
     std::shared_ptr<ColumnResizeDragState> m_activeColumnResizeDrag{};
-    // True while a control-initiated sort verb is mutating the source. Its own mutations must not
-    // be mistaken for the app declaring a sort behind the control's back.
     bool m_isApplyingControlInitiatedSort{ false };
     bool m_sortReconcileQueued{ false };
     winrt::event_token m_rowsRepeaterLoadedToken{};
@@ -853,90 +693,55 @@ private:
     bool m_isHighContrast{ false };
     winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
 
-    // Unloaded drains repeater and body-scroller state before deferred callbacks hit a detached subtree.
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     void OnTableViewUnloaded();
     bool m_rowsSourceDrained{ false };
 
-    // Leading-frozen columns are offset against horizontal scroll and clipped out of non-frozen cells.
     double ComputeLeadingFrozenWidth();
     void RefreshFrozenColumns();
 
-    // Column-width layout engine internals (TableView_Layout.cpp).
-    // GetHeaderMeasuredWidthForColumn encapsulates the header host's concrete panel type so the
-    // layout engine pulls the header's measured width through a TableView seam (symmetric with
-    // TableViewRow::MeasuredWidthForColumn) instead of casting to TableViewCellsPanel itself.
     double GetHeaderMeasuredWidthForColumn(const winrt::TableViewColumn& column) const;
-    // ResolveColumnWidths runs the Pixel/Auto/Star pass (invoked from MeasureOverride once the
-    // template subtree has measured), pulling cached measured widths from the header host and realized
-    // rows before writing ActualWidth to each column.
     void ResolveColumnWidths();
-    // ResetColumnDesiredWidths clears the grow-only Auto desired-width accumulators on data-set
-    // boundaries (ItemsSource / Columns replaced / CellTemplate / Header) and invalidates measure so
-    // the next table-level pass re-pulls fresh measured widths.
     void ResetColumnDesiredWidths();
-    // Re-invalidate the header + realized row cells panels so they re-measure/arrange after a resolve.
     void InvalidateCellPanels();
 
-    // Latches frozen-column state so transforms and clips clear exactly once when disabled.
     bool m_frozenColumnsActive{ false };
 
-    // Set while a coalesced RebuildHeaders is pending on the dispatcher; collapses a burst of column
-    // changes into one rebuild. UI-thread only (all column callbacks arrive on the UI thread).
     bool m_rebuildHeadersQueued{ false };
 
     // Per-instance resource cache; replaces the former process-global map keyed by `this`.
     TableViewResourceCache m_resourceCache{};
 
-    // Mirrors Columns so removals can clear a column's OwningTableView back-pointer.
     std::vector<tracker_ref<winrt::TableViewColumn>> m_trackedColumns;
 
-    // Bubbling KeyDown lets focused descendants handle input before row navigation.
     winrt::KeyEventHandler m_keyDownHandler{ nullptr };  // Root KeyDown (handledEventsToo); registration is released with the element, no explicit RemoveHandler needed.
     void OnKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
 
-    // Left/Right resize for the column whose header has focus; the gripper is a pointer
-    // affordance here, not a tab stop.
     bool TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args);
     // Enter / Space on a focused, sortable column header: the keyboard path to sorting.
     bool TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args);
-    // Space completes on key up, per XAML activation semantics.
     bool TryHandleHeaderSortKeyUp(const winrt::KeyRoutedEventArgs& args);
     winrt::TableViewColumn ResolveHeaderSortKeyTarget(const winrt::KeyRoutedEventArgs& args);
-    // Set while Space is held on a sortable header, cleared when it is released or the key up
-    // lands somewhere else.
     winrt::weak_ref<winrt::TableViewColumn> m_headerSortSpaceArmedColumn{ nullptr };
     winrt::UIElement::LostFocus_revoker m_headerSortLostFocusRevoker{};
     winrt::KeyEventHandler m_keyUpHandler{ nullptr };
     void OnKeyUpForHeaderSort(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
-    // Redirects a header's bring-into-view onto the body scroller, so the header cannot scroll
-    // independently of the columns it labels.
     void OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args);
 
-    // Tunneling PreviewKeyDown captures the focused row BEFORE the framework's built-in focus
-    // navigation moves it (and marks the key Handled), so OnKeyDownForNavigation can anchor on the
-    // pre-move row and advance exactly one row instead of doubling up with the built-in move.
+    // PreviewKeyDown snapshots the pre-key focus before XAML's built-in navigation can move it.
     winrt::KeyEventHandler m_previewKeyDownHandler{ nullptr };
 
-    // Editing gesture handlers; the registration is released with the element, so no RemoveHandler.
     winrt::KeyEventHandler m_editingKeyDownHandler{ nullptr };
     winrt::UIElement::LosingFocus_revoker m_editingLosingFocusRevoker{};
 
-    // Set while a focus-loss commit check is queued, so a burst of focus changes produces one
-    // re-evaluation rather than one commit attempt each.
     bool m_focusLossCommitQueued{ false };
 
     int32_t m_navAnchorRow{ -1 };
-    // The cell cursor as it was BEFORE the current key was delivered, snapshotted on the tunneling
-    // PreviewKeyDown pass. Every cell is a tab stop, so XAML's built-in directional focus
-    // navigation claims Left/Right first and has usually already advanced focus one cell by the
-    // time the bubbling KeyDown handler runs; moving relative to the live focused cell therefore
-    // stepped twice per press. This is the column-axis twin of m_navAnchorRow, which exists for
-    // exactly the same reason on the row axis. -1 when the key did not start on one of our cells.
+    // Cell cursor snapshot for keys whose bubbling handler must ignore post-key live focus.
     int32_t m_navAnchorCellRow{ -1 };
     int32_t m_navAnchorCellColumn{ -1 };
     // The cell the keyboard cursor is on, in visible-column coordinates. Up/Down/PageUp/PageDown
@@ -944,15 +749,11 @@ private:
     // index rather than an element so it survives row recycling, which destroys cell elements on
     // every scroll.
     int32_t m_currentCellColumn{ 0 };
-    // The row the cursor was last on, so Tab back into the table returns to the cell the user left
-    // rather than to the first realized row. -1 until a cell has been focused.
     int32_t m_currentCellRow{ -1 };
     void OnPreviewKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
 
-    // Left / Right / Home / End / Ctrl+Home / Ctrl+End: the keys that move the cursor WITHIN the
-    // grid of cells. Returns true when the key was consumed.
     bool TryHandleCellNavigationKey(const winrt::KeyRoutedEventArgs& args);
 
 public:
@@ -967,17 +768,13 @@ public:
         winrt::Windows::System::VirtualKey key, bool isControlDown,
         int32_t anchorRow, int32_t anchorColumn);
 
-    // Convenience overload that anchors on live focus. Only correct when no key is in flight.
     bool TryMoveCellCursor(winrt::Windows::System::VirtualKey key, bool isControlDown);
 
 private:
-    // Larger than any realizable column count; FocusCell clamps it to the row's last visible cell.
     static constexpr int32_t c_lastColumnSentinel{ 0x7ffffffe };
 
-    // The realized row container at a flat row index, or null when it is not realized.
     winrt::TableViewRow GetRealizedRowAt(int32_t rowIndex) const;
 
-    // Keyboard navigation helpers.
     int32_t GetFocusedRowIndex() const;
     int32_t GetEstimatedRowsPerPage(); // Non-const — GetDensityRowMinHeight() mutates the resource cache.
 };

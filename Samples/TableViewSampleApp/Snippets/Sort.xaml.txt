@@ -3,6 +3,7 @@
 
   <tabular:TableView
       x:Name="TeamsTable"
+      AutomationProperties.Name="League standings table"
       SelectionMode="Single"
       Sorted="OnTableSorted">
 
@@ -17,31 +18,34 @@
 
     <!-- CanSort=False hides the SortIndicator and makes the header
          non-interactive. Programmatic SortByColumn can still target it. -->
-    <tabular:TableViewTextColumn Header="Played"
+    <tabular:TableViewTextColumn Header="P"
+                              HeaderToolTip="Played"
                               CanSort="False"
                               Binding="{Binding Played}">
       <tabular:TableViewTextColumn.HeaderTemplate>
         <DataTemplate>
-          <TextBlock Text="P"/>
+          <TextBlock Text="P" AutomationProperties.AccessibilityView="Raw"/>
         </DataTemplate>
       </tabular:TableViewTextColumn.HeaderTemplate>
     </tabular:TableViewTextColumn>
 
-    <tabular:TableViewTextColumn Header="Goal difference"
+    <tabular:TableViewTextColumn Header="GD"
+                              HeaderToolTip="Goal difference"
                               SortMemberPath="GoalDifference"
                               Binding="{Binding GoalDifference}">
       <tabular:TableViewTextColumn.HeaderTemplate>
         <DataTemplate>
-          <TextBlock Text="GD"/>
+          <TextBlock Text="GD" AutomationProperties.AccessibilityView="Raw"/>
         </DataTemplate>
       </tabular:TableViewTextColumn.HeaderTemplate>
     </tabular:TableViewTextColumn>
-    <tabular:TableViewTextColumn Header="Points"
+    <tabular:TableViewTextColumn Header="Pts"
+                              HeaderToolTip="Points"
                               SortMemberPath="Points"
                               Binding="{Binding Points}">
       <tabular:TableViewTextColumn.HeaderTemplate>
         <DataTemplate>
-          <TextBlock Text="Pts"/>
+          <TextBlock Text="Pts" AutomationProperties.AccessibilityView="Raw"/>
         </DataTemplate>
       </tabular:TableViewTextColumn.HeaderTemplate>
     </tabular:TableViewTextColumn>

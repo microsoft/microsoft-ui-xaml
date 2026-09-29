@@ -9,19 +9,12 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
+using Windows.UI.ViewManagement;
 
 namespace TableViewSampleApp.Models;
 public sealed class ProcessItem : INotifyPropertyChanged
 {
-    // ── Static brushes (shared across all items) ──
-    // Match Windows 11 Task Manager: ONE blue hue whose opacity deepens with load
-    // (the hue never changes — only intensity). Every data cell carries the base tint.
     private static readonly SolidColorBrush TransparentBrush = new(Colors.Transparent);
-    private static readonly SolidColorBrush BaseBrush = new(Color.FromArgb(22, 96, 160, 240));      // base column tint
-    private static readonly SolidColorBrush LowBrush = new(Color.FromArgb(38, 96, 160, 240));       // faint
-    private static readonly SolidColorBrush MedBrush = new(Color.FromArgb(58, 96, 160, 240));       // light
-    private static readonly SolidColorBrush HighBrush = new(Color.FromArgb(82, 96, 160, 240));      // medium
-    private static readonly SolidColorBrush VeryHighBrush = new(Color.FromArgb(110, 96, 160, 240)); // strong
 
     // ── Identity ──
     // Globally-unique, stable per-instance key for diagnostics and generated rows.
@@ -153,4 +146,13 @@ public sealed class ProcessItem : INotifyPropertyChanged
         OnPropertyChanged(name!);
         return true;
     }
+
+    private static SolidColorBrush BaseBrush => CreateHeatBrush(22);
+    private static SolidColorBrush LowBrush => CreateHeatBrush(38);
+    private static SolidColorBrush MedBrush => CreateHeatBrush(58);
+    private static SolidColorBrush HighBrush => CreateHeatBrush(82);
+    private static SolidColorBrush VeryHighBrush => CreateHeatBrush(110);
+
+    private static SolidColorBrush CreateHeatBrush(byte alpha) =>
+        new(new AccessibilitySettings().HighContrast ? Colors.Transparent : Color.FromArgb(alpha, 96, 160, 240));
 }

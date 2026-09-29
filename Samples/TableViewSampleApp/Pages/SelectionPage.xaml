@@ -90,19 +90,19 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Selected count" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SelectedCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedCountText"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SelectedCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedCountText" AutomationProperties.LiveSetting="Polite"/>
 
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="SelectedIndex" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="SelectedIndexText" Text="-1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedIndexText"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="SelectedIndexText" Text="-1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedIndexText" AutomationProperties.LiveSetting="Polite"/>
 
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="SelectionChanged fires" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ChangeCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ChangeCountText"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ChangeCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ChangeCountText" AutomationProperties.LiveSetting="Polite"/>
 
                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Selected indices" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="SelectedIndicesText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedIndicesText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="SelectedIndicesText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedIndicesText" AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap"/>
 
                     <TextBlock Grid.Row="4" Grid.Column="0" Text="Selected items" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock Grid.Row="4" Grid.Column="1" x:Name="SelectedItemsText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedItemsText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" x:Name="SelectedItemsText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedItemsText" AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap"/>
                 </Grid>
             </StackPanel>
         </controls:SamplePresenter.Options>

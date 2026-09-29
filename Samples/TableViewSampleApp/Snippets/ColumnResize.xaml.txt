@@ -1,4 +1,4 @@
-<tabular:TableView x:Name="PeopleTable" SelectionMode="Single">
+<tabular:TableView x:Name="PeopleTable" AutomationProperties.Name="People table" SelectionMode="Single">
 
     <!-- Width preserves user intent verbatim. -->
     <tabular:TableViewTextColumn
@@ -17,13 +17,13 @@
         MaxWidth="400"
         Binding="{Binding Email}"/>
 
-    <!-- CanUserResize=False hides the per-header resize gripper. Programmatic
+    <!-- CanResize=False hides the per-header resize gripper. Programmatic
          Width changes still work — only the drag interaction is disabled. -->
     <tabular:TableViewTextColumn
         x:Name="RoleColumn"
         Header="Role (locked)"
         Width="180"
-        CanUserResize="False"
+        CanResize="False"
         Binding="{Binding Role}"/>
 
 </tabular:TableView>

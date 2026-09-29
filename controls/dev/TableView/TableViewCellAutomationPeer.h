@@ -10,7 +10,7 @@
 // UIA peer for a realized TableView cell; supplies the cell name and grid/table item coordinates.
 // Weak row/column refs avoid extending recycled rows or removed columns.
 class TableViewCellAutomationPeer :
-    public ReferenceTracker<TableViewCellAutomationPeer, winrt::implementation::TableViewCellAutomationPeerT>
+    public ReferenceTracker<TableViewCellAutomationPeer, winrt::implementation::TableViewCellAutomationPeerT, winrt::IVirtualizedItemProvider>
 {
 public:
     TableViewCellAutomationPeer(
@@ -25,7 +25,7 @@ public:
     hstring GetNameCore();
     hstring GetHelpTextCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
-    // Without this every cell announces as the generic "data item".
+    // Custom peers may supply "cell" as their localized control type.
     hstring GetLocalizedControlTypeCore();
 
     // IGridItemProvider — per-cell coordinates in the owning TableView.
@@ -46,6 +46,9 @@ public:
     bool IsReadOnly();
     void SetValue(winrt::hstring const& value);
 
+    // IVirtualizedItemProvider — available only after the owning row has been recycled out.
+    void Realize();
+
     winrt::hstring ReadNameForEdit();
     void BeginEditName();
     void EndEditName();
@@ -59,6 +62,9 @@ private:
 
     // Resolves the row index from the owning ItemsRepeater.
     int32_t GetRowIndex();
+    bool IsVirtualized();
+    void RealizeCore(int32_t rowIndex);
+    winrt::UIElement GetRealizedCellFromRow(winrt::TableViewRow const& row);
 
     // Resolves the column's stringified Header.
     winrt::hstring GetColumnHeaderText();
@@ -70,10 +76,13 @@ private:
 
     winrt::weak_ref<winrt::TableViewRow> m_row{ nullptr };
     winrt::weak_ref<winrt::TableViewColumn> m_column{ nullptr };
+    winrt::weak_ref<winrt::TableView> m_lastOwningTable{ nullptr };
     // Construction-time fallback only; Column() recomputes from the live cell host.
     int32_t m_columnIndex{ -1 };
+    int32_t m_lastKnownRowIndex{ -1 };
     tracker_ref<winrt::IInspectable> m_nameItem{ this };
     std::optional<winrt::hstring> m_lastName;
+    // Holds the pre-edit Name only; read paths must not write it or live cell names freeze.
     std::optional<winrt::hstring> m_editName;
     uint64_t m_nameGeneration{ 0 };
     winrt::FrameworkElement::LayoutUpdated_revoker m_nameLayoutUpdatedRevoker{};

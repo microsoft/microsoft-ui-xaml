@@ -99,7 +99,6 @@ TableViewRow::TableViewRow()
         });
     AddHandler(winrt::UIElement::PointerPressedEvent(), winrt::box_value(m_editingPointerPressedHandler), true /* handledEventsToo */);
 
-    // auto_revoke owns this self-event subscription until row destruction.
     m_dataContextChangedRevoker = DataContextChanged(
         winrt::auto_revoke,
         [weakRow](winrt::FrameworkElement const& sender, winrt::DataContextChangedEventArgs const& args)
@@ -110,9 +109,6 @@ TableViewRow::TableViewRow()
             }
         });
 
-    // Keep CommonStates VSM in sync with IsEnabled so the Disabled
-    // state activates when consumers toggle row IsEnabled at runtime.
-    // auto_revoke owns this self-event subscription until row destruction.
     m_isEnabledChangedRevoker = IsEnabledChanged(
         winrt::auto_revoke,
         [weakRow](winrt::IInspectable const& sender, winrt::DependencyPropertyChangedEventArgs const& args)
@@ -123,8 +119,6 @@ TableViewRow::TableViewRow()
             }
         });
 
-    // Cell-level focus. GettingFocus runs before focus commits, which is the only point at which
-    // focus aimed at the row container can still be redirected onto a cell.
     m_gettingFocusRevoker = GettingFocus(
         winrt::auto_revoke,
         [weakRow](winrt::UIElement const& sender, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
@@ -135,7 +129,6 @@ TableViewRow::TableViewRow()
             }
         });
 
-    // Both bubble from the cells, so the row is the one place that sees every cell focus change.
     m_gotFocusRevoker = GotFocus(
         winrt::auto_revoke,
         [weakRow](winrt::IInspectable const&, winrt::RoutedEventArgs const&)
@@ -161,7 +154,6 @@ void TableViewRow::OnApplyTemplate()
     ResetCellAutomationNames();
     m_cellsHost.set(GetTemplateChild(hstring{ s_CellsHostPartName }).try_as<winrt::Panel>());
 
-    // Let the panel recognise this row's editing cell so it can keep it out of the Auto-width pass.
     if (auto const cellsPanel = m_cellsHost.get().try_as<winrt::TableViewCellsPanel>())
     {
         winrt::get_self<TableViewCellsPanel>(cellsPanel)->SetOwningRowInternal(*this);
@@ -177,7 +169,6 @@ winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
     return winrt::make<TableViewRowAutomationPeer>(*this);
 }
 
-// Typed accessor for the owning TableView.
 winrt::TableView TableViewRow::GetOwningTableView()
 {
     // Keep the owner weak; callers acquire a strong ref only for synchronous work.
@@ -290,8 +281,6 @@ winrt::UIElement TableViewRow::FindOwnCellInternal(
     winrt::DependencyObject current = element;
     while (current)
     {
-        // Stop at the cells host: anything above it is the row's own chrome, and in a nested
-        // TableView it would be the OUTER table's cell - never ours to claim.
         if (current == host.try_as<winrt::DependencyObject>())
         {
             return nullptr;
@@ -302,8 +291,6 @@ winrt::UIElement TableViewRow::FindOwnCellInternal(
             if (winrt::VisualTreeHelper::GetParent(candidate) == host.try_as<winrt::DependencyObject>() &&
                 IsVisibleColumn(GetCellOwningColumn(candidate)))
             {
-                // An exact match is what distinguishes "the cell has focus" (arrow keys navigate)
-                // from "a control inside the cell has focus" (the control owns its keys).
                 return (!requireExact || candidate == element.try_as<winrt::UIElement>())
                     ? candidate : nullptr;
             }
@@ -311,7 +298,6 @@ winrt::UIElement TableViewRow::FindOwnCellInternal(
 
         if (requireExact)
         {
-            // One hop only; the caller asked for the cell itself.
             return nullptr;
         }
 
@@ -325,8 +311,6 @@ bool TableViewRow::FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::F
 {
     if (auto const cell = GetVisibleCellInternal(visibleColumnIndex))
     {
-        // Horizontal realization: a cell for a column scrolled out of the viewport must come into
-        // view before it takes focus, or focus lands somewhere the user cannot see.
         if (auto const cellFE = cell.try_as<winrt::FrameworkElement>())
         {
             cellFE.StartBringIntoView();
@@ -338,8 +322,6 @@ bool TableViewRow::FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::F
         }
     }
 
-    // A row with no realized visible cell (no columns, or cells not built yet) still has to be
-    // reachable, so fall back to the container the way this control always did.
     return Focus(state);
 }
 
@@ -347,8 +329,6 @@ void TableViewRow::OnRowGettingFocus(
     const winrt::UIElement& /*sender*/,
     const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args)
 {
-    // Only focus aimed at the row CONTAINER is redirected. Focus aimed at a cell, or at a control
-    // inside one, is already where it should be.
     winrt::TableViewRow const self = *this;
     if (args.NewFocusedElement() != self.try_as<winrt::DependencyObject>())
     {
@@ -392,7 +372,6 @@ void TableViewRow::OnRowGotFocus()
 
 void TableViewRow::DetachColumnsSubscription()
 {
-    // Clearing the revoker detaches from the previously observed Columns vector.
     if (m_observedColumns.get())
     {
         m_columnsVectorChangedRevoker = {};
@@ -407,7 +386,6 @@ void TableViewRow::AttachColumnsSubscription(winrt::TableView const& owner)
         return;
     }
 
-    // Cast the ABI vector to its observable backing type for VectorChanged.
     if (auto observable = owner.Columns().try_as<winrt::IObservableVector<winrt::TableViewColumn>>())
     {
         auto weakRow = get_weak();
@@ -459,8 +437,6 @@ void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
         m_isPressed = false;
         m_selectOnPointerRelease = false;
 
-        // Selection belongs to the item, not the container: a pooled row must not carry selected
-        // chrome onto its next item. RefreshRowSelectionState restamps it on the way back in.
         IsSelected(false);
 
         // Begin-edit gesture state must go too. A row recycled away and back to the SAME item
@@ -496,7 +472,6 @@ void TableViewRow::RefreshColumnsSubscriptionInternal()
         host.Children().Clear();
     }
 
-    // Rebuild cells against the new Columns vector.
     RebuildCells();
 }
 
@@ -519,22 +494,16 @@ void TableViewRow::OnColumnsVectorChanged(
     const winrt::IObservableVector<winrt::TableViewColumn>& /*sender*/,
     const winrt::IVectorChangedEventArgs& /*args*/)
 {
-    // Mutating Columns triggers a cell rebuild against the new column set. Coalesce a burst of column
-    // changes into a single rebuild on the next tick. No explicit Children().Clear() is needed:
-    // RebuildCells' restamp fast-path forces a full rebuild (which clears) whenever the column set
-    // actually changed, and keeping the old cells until the tick avoids an empty-cell flash.
     QueueRebuildCells();
 }
 
 void TableViewRow::QueueRebuildCells()
 {
-    // No cell host yet (template not applied); the owner-set / ApplyTemplate path builds cells.
     if (!m_cellsHost.get())
     {
         return;
     }
 
-    // A rebuild is already scheduled for this tick -- collapse the burst into one.
     if (m_rebuildCellsQueued)
     {
         return;
@@ -543,7 +512,6 @@ void TableViewRow::QueueRebuildCells()
     auto dispatcher = DispatcherQueue();
     if (!dispatcher)
     {
-        // No dispatcher (teardown) -- rebuild synchronously so cells are not left stale.
         RebuildCells();
         return;
     }
@@ -561,12 +529,11 @@ void TableViewRow::QueueRebuildCells()
                 }
                 catch (...)
                 {
-                    // Coalesced cell rebuild is best-effort; never fail-fast the dispatcher.
+                    // Coalesced cell rebuild is best-effort.
                 }
             }
         }))
     {
-        // Enqueue failed -- fall back to a synchronous rebuild so cells are not left stale.
         m_rebuildCellsQueued = false;
         RebuildCells();
     }
@@ -582,9 +549,6 @@ void TableViewRow::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
     auto pointerPoint = args.GetCurrentPoint(*this);
     auto props = pointerPoint.Properties();
 
-    // Mouse/pen: primary button only - a right-click opens a context menu and must not select.
-    // Touch reports no pressed button, so it is admitted on device type instead, matching the
-    // begin-edit gesture. Without this a touch press never arms the release-time selection.
     const auto deviceType = args.Pointer().PointerDeviceType();
     if (deviceType != winrt::Microsoft::UI::Input::PointerDeviceType::Touch &&
         !props.IsLeftButtonPressed())
@@ -612,18 +576,10 @@ void TableViewRow::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
     }
     else
     {
-        // A press on row chrome outside any cell (padding, the selection indicator strip): the row
-        // redirects to the current cell in GettingFocus.
         Focus(winrt::FocusState::Pointer);
     }
 
-    // Selection state lives on the control; the row is just where the press lands. Left unhandled
-    // so the begin-edit handler for this same press still runs. Commits on RELEASE for every
-    // pointer type (ListViewBaseItem parity) - committing on press would select the row a pan
-    // started on, or one the user drags away from and cancels.
     m_selectOnPointerRelease = true;
-    // Remember WHICH pointer armed it: with two contacts on the same row, the second one's release
-    // or cancel must not commit (or discard) the first one's pending selection.
     m_selectPointerId = args.Pointer().PointerId();
 }
 
@@ -638,9 +594,6 @@ void TableViewRow::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
     m_isPointerOver = false;
     m_isPressed = false;
 
-    // The contact left the row, so a deferred selection is no longer a tap on it. Only the pointer
-    // that armed it may disarm it: with two contacts on the same row, the other one leaving must
-    // not cancel this one's pending selection. Matches the check in OnPointerReleased.
     if (args.Pointer().PointerId() == m_selectPointerId)
     {
         m_selectOnPointerRelease = false;
@@ -653,8 +606,6 @@ void TableViewRow::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 {
     m_isPressed = false;
 
-    // Deferred selection: the pointer came up on this row without a pan or a capture loss taking
-    // it away, so it was a tap. Only the pointer that armed it can commit or disarm it.
     const bool isArmingPointer = args.Pointer().PointerId() == m_selectPointerId;
     const bool selectNow = m_selectOnPointerRelease && isArmingPointer;
     if (isArmingPointer)
@@ -677,8 +628,6 @@ void TableViewRow::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& arg
 {
     m_isPressed = false;
 
-    // A ScrollViewer took the pointer for a pan; the gesture was a scroll, not a tap. Only the
-    // arming pointer disarms, so a second contact panning does not cancel the first one's tap.
     if (args.Pointer().PointerId() == m_selectPointerId)
     {
         m_selectOnPointerRelease = false;
@@ -689,8 +638,6 @@ void TableViewRow::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& arg
 
 void TableViewRow::OnPointerCanceled(winrt::PointerRoutedEventArgs const& args)
 {
-    // Palm rejection or a system gesture. Can arrive without a preceding PointerCaptureLost, which
-    // would otherwise leave the latch set and let the next unrelated release select this row.
     m_isPressed = false;
 
     if (args.Pointer().PointerId() == m_selectPointerId)
@@ -703,8 +650,6 @@ void TableViewRow::OnPointerCanceled(winrt::PointerRoutedEventArgs const& args)
 
 void TableViewRow::UpdateVisualState(bool useTransitions)
 {
-    // One GoToState into one group: the selected states share CommonStates so nothing depends on
-    // call order (TreeViewItem / ItemContainer pattern). Disabled wins, for ListViewItem parity.
     std::wstring_view state;
     if (IsSelected())
     {
@@ -749,7 +694,6 @@ void TableViewRow::RefreshCells()
         host.Children().Clear();
     }
 
-    // Regenerate realized cells after runtime cell-content changes.
     RebuildCells();
 }
 
@@ -823,7 +767,6 @@ void TableViewRow::RebuildCells()
         return;
     }
     m_isRebuildingCells = true;
-    // Synchronous RAII guard: captures this only until RebuildCells returns.
     auto rebuildGuard = wil::scope_exit([this]() { m_isRebuildingCells = false; });
 
     auto owner = GetOwningTableView();
@@ -963,15 +906,8 @@ void TableViewRow::RebuildCells()
             }
 
             auto cellWrapper = children.GetAt(childIndex).as<winrt::Grid>();
-            // Do NOT re-push data here. Cells inherit the row's DataContext (ItemsRepeater updates it
-            // on recycle) and bind to it reactively (TextColumn Text, TemplateColumn Content), so a
-            // recycled row's *data* updates without setting DataContext/Content on a live, in-tree cell
-            // during the ItemsRepeater measure pass -- that data mutation (the value always changes on
-            // recycle and is layout-affecting) is what re-entered framework layout and tripped a
-            // re-entrancy assertion (0xc0000420) on scroll. Only per-column / per-density visuals are
-            // refreshed below; on a pure scroll-recycle these are equal-valued no-ops (columns and
-            // density unchanged), so they do not re-invalidate layout. Keep it that way -- if any of
-            // these is ever made to vary per data item, restore an off-tree update to avoid re-entry.
+            // Do NOT re-push data during ItemsRepeater measure: live DataContext/Content mutation re-entered layout and hit 0xc0000420 on scroll.
+            // Cells must update reactively from inherited DataContext; only equal-valued visual restamps are safe here.
             cellWrapper.Visibility(column.Visibility());
             cellWrapper.MinHeight(rowMinHeight);
 
@@ -1033,13 +969,11 @@ void TableViewRow::RebuildCells()
     int32_t visibleColumnIndex = 0;
     for (auto const& column : columns)
     {
-        // Skip entries this TableView rejected so a half-owned column cannot realize cells here.
         if (!isOwnedColumn(column))
         {
             continue;
         }
 
-        // Cell wrapper root.
         auto const cellWrapper = TableViewCell::Create(*this, column, visibleColumnIndex);
         if (column.Visibility() == winrt::Visibility::Visible)
         {
@@ -1055,8 +989,6 @@ void TableViewRow::RebuildCells()
         // double-click-to-edit silently did nothing on most of the cell's area. Transparent keeps
         // the cell invisible while making the whole cell rectangle pressable.
         cellWrapper.Background(TransparentBrush());
-        // No Width binding: TableViewCellsPanel arranges cells at the column's ActualWidth; an explicit
-        // Width would defeat the panel's unconstrained Auto measured-width measurement.
 
         // No local DataContext: the cell inherits the row's DataContext once appended, so recycled
         // rows update reactively via inheritance instead of a live per-recycle push. This is a
@@ -1079,7 +1011,6 @@ void TableViewRow::RebuildCells()
         host.Children().Append(cellWrapper);
     }
 
-    // Pin immediately so rebuilt frozen cells do not wait for the next scroll.
     if (auto owningView = GetOwningTableView())
     {
         winrt::get_self<TableView>(owningView)->PinFrozenColumnsForRow(*this);
@@ -1146,8 +1077,6 @@ void TableViewRow::AttachCellContent(const winrt::Grid& cellWrapper, const winrt
     }
 }
 
-// Grid lines only: the row's horizontal bottom line and the vertical per-cell separators (driven by
-// GridLinesVisibility). Row background / alternating banding lives in RefreshRowBackground.
 void TableViewRow::RefreshGridLines()
 {
     auto owner = GetOwningTableView();
@@ -1248,11 +1177,6 @@ void TableViewRow::RefreshFrozenColumnLayout(double horizontalOffset, double lea
     }
 }
 
-// ----- Editing -----
-//
-// The row owns its cells, so the control delegates the display/editor swap here. The swap replaces
-// Child on the existing cell wrapper Border: keeping the wrapper means column width, visibility,
-// frozen pinning and grid lines keep applying while the cell is edited, with no layout re-plumbing.
 
 bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const winrt::IInspectable& dataItem)
 {
@@ -1261,9 +1185,6 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         return false;
     }
 
-    // An edit already open on this row is closed first. Committing it is the control's job, not
-    // the row's; by this point the control has already ended it, so anything still open here is
-    // stale visual state.
     EndCellEdit(winrt::TableViewEditAction::Cancel);
 
     auto const host = m_cellsHost.get();
@@ -1293,7 +1214,6 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
     auto const editingElement = winrt::get_self<TableViewColumn>(column)->GenerateEditingElement(dataItem);
     if (!editingElement)
     {
-        // The column declined the edit (no Binding, no editing template, or a base column).
         return false;
     }
 
@@ -1303,8 +1223,10 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
     // ordinary edit into a UIA-tree allocation and could give the event a different identity.
     try
     {
-        auto const peer = TableViewCell::TryGetExistingPeer(cellWrapper)
-            .try_as<winrt::TableViewCellAutomationPeer>();
+        // Gate the snapshot work, not the edit: this function's return value starts the edit.
+        auto const peer = winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged)
+            ? TableViewCell::TryGetExistingPeer(cellWrapper).try_as<winrt::TableViewCellAutomationPeer>()
+            : nullptr;
         if (peer && peer.GetPattern(winrt::PatternInterface::Value))
         {
             auto const value = winrt::get_self<TableViewCellAutomationPeer>(peer)->Value();
@@ -1343,13 +1265,9 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
 
     m_editingColumn.set(column);
     m_editingCellWrapper.set(cellWrapper);
-    // An editor owns its cell; a tooltip over a live text box is noise.
     TableViewDetails::ClearOwnedToolTip(cellWrapper);
     m_editingElement.set(editingElement);
 
-    // The column decides how its editor is primed - focus, caret, selection are editor-specific,
-    // and the row has no business knowing that a TextBox wants SelectAll. The control calls it
-    // (TableView::BeginEdit) so it can keep the returned pre-edit value for cancel.
 
     return true;
 }
@@ -1384,9 +1302,6 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
         return;
     }
 
-    // Move focus off the editor before it leaves the tree. Dropping a focused element causes XAML
-    // to fall back to whatever it can find, which can scroll the list; the row is the correct
-    // landing spot and is where keyboard navigation expects focus to be.
     if (auto const editingElement = m_editingElement.get())
     {
         bool editorHasFocus = false;
@@ -1455,8 +1370,6 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
             }
             catch (...)
             {
-                // A column that throws while regenerating must not strand the row in edit mode;
-                // fall back to the parked element, which is stale but present.
                 displayElement = m_editingDisplayElement.get();
             }
         }
@@ -1593,16 +1506,6 @@ void TableViewRow::AbandonCellEdit()
     TableViewDetails::RefreshOwnedToolTip(cellWrapper);
 }
 
-// Pointer entry point for editing, and the only place a pointer establishes the current cell.
-//
-// Lives on the row because the row owns its cells: resolving which cell a press landed on is a
-// question only the row can answer cheaply. The control keeps the edit state machine, so this
-// handler translates a gesture into SetCurrentCell / BeginEdit and nothing more. Mirrors WPF,
-// where DataGridCell handles the gesture and calls DataGrid.BeginEdit.
-//
-// PointerPressed with click counting, not DoubleTapped: marking a press handled suppresses XAML's
-// gesture recognizer entirely, and a row that participates in selection must mark it handled. A
-// DoubleTapped handler would work today and silently break when selection lands.
 void TableViewRow::ResetPressState()
 {
     m_lastPressTimestamp = 0;
@@ -1623,7 +1526,6 @@ void TableViewRow::OnPointerPressedForEditing(
 
     auto ownerImpl = winrt::get_self<TableView>(owner);
 
-    // Editing is opt-in and read-only by default, so a read-only table pays nothing beyond this.
     if (ownerImpl->IsReadOnly())
     {
         return;
@@ -1635,8 +1537,6 @@ void TableViewRow::OnPointerPressedForEditing(
         return;
     }
 
-    // Mouse/pen: primary button only - a right-click opens a context menu and must not begin an
-    // edit. Touch reports no pressed button, so it is admitted on device type instead.
     const auto deviceType = args.Pointer().PointerDeviceType();
     if (deviceType != winrt::Microsoft::UI::Input::PointerDeviceType::Touch &&
         !pointerPoint.Properties().IsLeftButtonPressed())
@@ -1674,8 +1574,6 @@ void TableViewRow::OnPointerPressedForEditing(
         std::abs(position.X - m_lastPressPosition.X) <= slop &&
         std::abs(position.Y - m_lastPressPosition.Y) <= slop;
 
-    // A press inside the cell already being edited belongs to the editor: it is the user placing
-    // the caret, and must not be read as a navigation move or a fresh edit.
     const bool pressInsideOpenEdit =
         ownerImpl->IsEditing() &&
         m_editingColumn.get() == column &&
@@ -1683,11 +1581,6 @@ void TableViewRow::OnPointerPressedForEditing(
 
     if (!pressInsideOpenEdit)
     {
-        // Move the current cell even when the edit is refused (read-only, or BeginningEdit cancels):
-        // the user pointed here, so a later F2 must not edit a different cell.
-        //
-        // This is also what makes keyboard editing reachable at all - pointer focus lands on the
-        // row, not a tagged cell, so without this the current column stays null.
         ownerImpl->SetCurrentCell(item, column);
 
         if (isRepeatPress)
@@ -1718,9 +1611,6 @@ winrt::TableViewColumn TableViewRow::ResolvePressedColumn(
     const winrt::IInspectable& originalSource,
     const winrt::Point& hostPoint)
 {
-    // A nested TableView's press bubbles through this row, and the walk would reach the INNER
-    // table's tagged cell before it ever reached this row - so filter on ownership rather than
-    // trying to stop the walk. A column this table does not own is not ours to act on.
     auto const owner = GetOwningTableView();
     auto const ownedByThisTable = [&owner](winrt::TableViewColumn const& candidate)
     {

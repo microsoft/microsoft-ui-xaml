@@ -31,9 +31,7 @@
         </DataTemplate>
 
         <DataTemplate x:Key="ActiveCellTemplate">
-            <!-- Display-only: hit testing and tab stops are off so the CheckBox does not
-                 add a second focus target inside a row that is itself the focus target. -->
-            <CheckBox IsChecked="{Binding IsActive, Mode=TwoWay}" IsHitTestVisible="False" IsTabStop="False" MinWidth="0" Margin="14,2" VerticalAlignment="Center" AutomationProperties.Name="Active"/>
+            <CheckBox IsChecked="{Binding IsActive, Mode=OneWay}" IsEnabled="False" IsHitTestVisible="False" IsTabStop="False" MinWidth="0" Margin="14,2" VerticalAlignment="Center" AutomationProperties.Name="Active"/>
         </DataTemplate>
 
         <DataTemplate x:Key="RoleCellTemplate">

@@ -73,7 +73,6 @@ bool TableView::HasRowsSource() const
     return false;
 }
 
-// ----- SelectionModel plumbing -----
 
 void TableView::EnsureSelectionModel()
 {
@@ -107,9 +106,6 @@ void TableView::UpdateSelectionModelSource()
     winrt::IInspectable rowsSource{ nullptr };
     if (auto const repeater = m_rowsRepeater.get())
     {
-        // The repeater's view, not the raw source: SelectionNode reuses an ItemsSourceView it is
-        // handed, so the model and the repeater observe one shared view in one subscription order
-        // instead of racing two independent views over the same collection.
         rowsSource = repeater.ItemsSourceView();
     }
 
@@ -124,7 +120,6 @@ int32_t TableView::SelectedIndexInternal() const
 {
     if (m_selectionModel)
     {
-        // Flat source, so the path is one deep when there is a selection.
         if (auto const path = m_selectionModel.SelectedIndex(); path && path.GetSize() > 0)
         {
             return path.GetAt(0);
@@ -141,8 +136,6 @@ winrt::IInspectable TableView::SelectedItemInternal() const
 
 winrt::IInspectable TableView::SelectedItemForIndex(int32_t index) const
 {
-    // SelectionModel::SelectedItem indexes its source without a bounds check, and the model can be
-    // momentarily ahead of or behind the collection while a change is being dispatched.
     if (!m_selectionModel || index < 0 || index >= GetItemsSourceCount())
     {
         return nullptr;
@@ -151,11 +144,6 @@ winrt::IInspectable TableView::SelectedItemForIndex(int32_t index) const
     return m_selectionModel.SelectedItem();
 }
 
-// ----- Deferred reload request -----
-//
-// Only one thing defers now: unload drains the repeater's source, and re-sourcing on load hands
-// SelectionModel a new view, which clears it. The selected item is held across that round trip.
-// ItemsView needs no equivalent because it never drains its repeater on unload.
 
 bool TableView::ShouldDeferSelectionRequest()
 {
@@ -203,8 +191,6 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
         return -1;
     }
 
-    // SelectionModel indexes but does not look items up, so resolving a held item on reload still
-    // needs this. Linear scan: it runs at most once per reload.
     auto const target = UnwrapEditingDataItem(item);
     const int32_t count = view.Count();
     for (int32_t index = 0; index < count; ++index)
@@ -221,7 +207,6 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
     return -1;
 }
 
-// ----- The single writer -----
 
 void TableView::ApplySelection(int32_t index)
 {
@@ -237,8 +222,6 @@ void TableView::ApplySelection(int32_t index)
 
     if (index < 0 && !m_selectionModel)
     {
-        // Nothing selected and no model yet - nothing to clear, but publish so the projections
-        // start out agreeing with the model.
         m_stickySelectedItem.set(nullptr);
         PushSelectionProperties();
         return;
@@ -277,13 +260,8 @@ void TableView::OnSelectionModelSelectionChanged(
     auto const selectedRow = FindRealizedRowForIndex(newIndex);
     m_lastPublishedIndex = newIndex;
 
-    // Arm the guard BEFORE any DP write. Both the row IsSelected pushes below and
-    // PushSelectionProperties notify synchronously, so an observer can select something else from
-    // inside either one. When that happens the nested pass has already published and raised for the
-    // newer selection; finishing this one would overwrite it and raise a bogus delta.
     const uint32_t version = ++m_selectionVersion;
 
-    // Restamp before notifying, so a handler that walks the rows sees settled chrome.
     if (deselectedRow)
     {
         winrt::get_self<TableViewRow>(deselectedRow)->SetIsSelectedInternal(false);
@@ -320,10 +298,6 @@ void TableView::OnSelectionModelSelectionChanged(
 
 void TableView::PushSelectionProperties()
 {
-    // The properties are read-only to apps, so this is the only writer and there is no echo to
-    // suppress and nothing to re-assert against an observer writing back.
-    // Read the index once and derive the item from it: each SelectedIndexInternal() call builds an
-    // IndexPath, and SelectedItemInternal() would read it again.
     const int32_t index = SelectedIndexInternal();
     auto const item = SelectedItemForIndex(index);
 
@@ -347,8 +321,6 @@ winrt::TableViewRow TableView::FindRealizedRowForIndex(int32_t index)
 
     if (auto const repeater = m_rowsRepeater.get())
     {
-        // TryGetElement only returns containers the repeater currently considers realized, so this
-        // cannot hand back a pooled ghost.
         return repeater.TryGetElement(index).try_as<winrt::TableViewRow>();
     }
 
@@ -384,8 +356,6 @@ void TableView::RaiseSelectionChanged(winrt::IInspectable const& addedItem)
         removed.push_back(removedItem);
     }
 
-    // The platform args type, not a bespoke one, so a handler can be shared with ListView.
-    // Constructor order is (removedItems, addedItems).
     auto const args = winrt::Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs{
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(removed)),
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(added)) };
@@ -410,7 +380,6 @@ void TableView::RaiseSelectionAutomationEvents(
         }
     }
 
-    // FromElement returns an existing peer or null - it never forces one into existence.
     if (selectedRow &&
         !suppressSelectedAnnouncement &&
         winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::SelectionItemPatternOnElementSelected))
@@ -421,7 +390,9 @@ void TableView::RaiseSelectionAutomationEvents(
         }
     }
 
+    // Suppress both per-element selection events together for keyboard-focus moves to keep the protocol symmetric.
     if (deselectedRow &&
+        !suppressSelectedAnnouncement &&
         winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::SelectionItemPatternOnElementRemovedFromSelection))
     {
         if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(deselectedRow))
@@ -461,21 +432,17 @@ void TableView::RaiseSelectionAutomationEvents(
     }
 }
 
-// ----- Property-changed callbacks -----
 
 void TableView::OnSelectionModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
     if (!CanSelectRows())
     {
-        // Turning selection off is an explicit app action: clear, and drop anything held for a
-        // reload so it cannot resurrect after the app asked for nothing to be selected.
         ClearPendingSelection();
         ApplySelection(-1);
     }
 }
 
 
-// ----- Source changes -----
 
 void TableView::UpdateSelectionCollectionChangedSubscription()
 {
@@ -490,7 +457,6 @@ void TableView::UpdateSelectionCollectionChangedSubscription()
         return;
     }
 
-    // auto_revoke drops the prior source's subscription.
     m_selectionCollectionChangedRevoker = {};
     m_selectionCollectionChangedView = nullptr;
 
@@ -515,7 +481,6 @@ void TableView::UpdateSelectionResetDetectorSubscription()
         return;
     }
 
-    // auto_revoke drops the prior source's subscription.
     m_selectionResetDetectorRevoker = {};
     m_selectionResetDetectorView = nullptr;
 
@@ -598,8 +563,6 @@ void TableView::RestampAllRealizedRowSelection()
 
 void TableView::RestampAllRealizedRowSelection(int32_t selectedIndex)
 {
-    // The index is passed in because SelectedIndexInternal() builds an IndexPath per call, and this
-    // runs once per realized row on every collection notification.
     ForEachRealizedRow([this, selectedIndex](winrt::TableViewRow const& row)
         {
             RefreshRowSelectionState(row, selectedIndex);
@@ -621,10 +584,6 @@ void TableView::StashSelectionForReload()
 
 void TableView::ResolveSelectionAfterSourceChange()
 {
-    // Create the model before anything else subscribes. UpdateSelectionModelSource is a no-op while
-    // the model is null, so leaving it lazy here would let this control register on the shared view
-    // first and restamp rows from a not-yet-reconciled index. ItemsView constructs its model inline
-    // for the same reason.
     EnsureSelectionModel();
 
     // A source/shape swap (grouped<->flat, an ItemsSource replacement) reassigns the model's Source,
@@ -652,13 +611,9 @@ void TableView::ResolveSelectionAfterSourceChange()
         // it, and the restamp handler must observe after the model so it restores against a
         // reconciled view.
         UpdateSelectionResetDetectorSubscription();
-        // Model second: it must be subscribed to the shared view ahead of the restamp handler, so
-        // that by the time OnSelectionItemsSourceCollectionChanged runs the index is reconciled.
         UpdateSelectionModelSource();
         UpdateSelectionCollectionChangedSubscription();
 
-        // A selection held across a reload outranks the live one: the live value was resolved
-        // against the source being replaced, whereas the held item is what was selected before.
         DrainPendingSelection();
     }
 
@@ -671,7 +626,6 @@ void TableView::ResolveSelectionAfterSourceChange()
     RaiseSelectionChanged(SelectedItemInternal());
 }
 
-// ----- Row plumbing -----
 
 void TableView::RefreshRowSelectionState(winrt::TableViewRow const& row)
 {
@@ -711,7 +665,6 @@ void TableView::OnRowPointerSelect(winrt::TableViewRow const& row)
         const auto index = repeater.GetElementIndex(row);
         if (index >= 0)
         {
-            // SelectRowIndexFromInteraction gates on SelectionMode.
             SelectRowIndexFromInteraction(index);
         }
     }
@@ -719,10 +672,6 @@ void TableView::OnRowPointerSelect(winrt::TableViewRow const& row)
 
 void TableView::SelectRowIndexFromInteraction(int32_t index)
 {
-    // Ctrl toggles, matching SingleSelector::OnInteractedAction and ListViewBase. Without it there
-    // is no pointer or keyboard gesture that can clear a selection once one is made - the app would
-    // have to call DeselectAll. Read live rather than off the args, as ItemsView's interaction
-    // layer does, so the row's pointer handlers do not have to carry modifier state.
     const bool isControlDown =
         (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(winrt::VirtualKey::Control) &
             winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
@@ -734,7 +683,6 @@ void TableView::SelectRowIndexFromInteraction(int32_t index, bool toggle)
 {
     if (!CanSelectRows())
     {
-        // A user gesture while selection is off is a no-op.
         return;
     }
 
@@ -747,7 +695,6 @@ void TableView::SelectRowIndexFromInteraction(int32_t index, bool toggle)
         return;
     }
 
-    // An explicit gesture settles the question - drop anything held for a reload.
     ClearPendingSelection();
 
     if (toggle && IsSelected(index))
@@ -766,20 +713,15 @@ void TableView::SelectRowIndexFromKeyboardFocus(int32_t index)
     SelectRowIndexFromInteraction(index, false /* toggle */);
 }
 
-// ----- Public API -----
 
 void TableView::Select(int32_t index)
 {
     if (index < 0)
     {
-        // Explicit "select nothing".
         DeselectAll();
         return;
     }
 
-    // Reject rather than coerce. ApplySelection turns an unresolvable index into "clear", which is
-    // right for a coercion path but wrong here: Select(999) must not wipe an existing selection.
-    // ItemsView::Select is a straight pass-through to SelectionModel and never clears either.
     if (!CanSelectRows() || index >= GetItemsSourceCount())
     {
         return;
@@ -797,7 +739,6 @@ void TableView::Select(int32_t index)
 
 void TableView::Deselect(int32_t index)
 {
-    // Only clears when `index` IS the selection, so a stale call cannot clobber a newer one.
     if (IsSelected(index))
     {
         ApplySelection(-1);
@@ -806,8 +747,6 @@ void TableView::Deselect(int32_t index)
 
 bool TableView::IsSelected(int32_t index)
 {
-    // Ask the model rather than comparing against the single selected index, so this stays correct
-    // when Multiple lands. The guard is required: SelectionModel::IsSelected asserts on index < 0.
     if (index < 0 || !m_selectionModel || index >= GetItemsSourceCount())
     {
         return false;
