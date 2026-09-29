@@ -358,7 +358,7 @@ private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs
 
 `CellEditEnding` is raised synchronously. Set `Cancel` before the handler returns; the control reads it immediately after the handler completes.
 
-A cancelled edit never reaches the data item. Editors use `UpdateSourceTrigger=Explicit`, so cancelling discards the editor and the display element re-reads the unchanged source.
+Built-in text editors use `UpdateSourceTrigger=Explicit`, so an uncommitted cancelled edit never reaches the data item. Application-supplied editing templates must likewise buffer writes until commit (for classic bindings, use `UpdateSourceTrigger=Explicit`) or provide their own rollback behavior. The control cannot undo arbitrary application side effects or automatic source writes performed by a template.
 
 # API Pages
 
@@ -593,7 +593,7 @@ A column that uses a consumer-provided `DataTemplate` for cell content.
 
 `CellEditingTemplate` is inherited from `TableViewColumn` — it is not specific to template columns. A template column with no `CellEditingTemplate` is not editable: there is no single value to infer an editor from, and falling back to `CellTemplate` would open an "editor" that silently discards every change.
 
-The editable value inside a `CellEditingTemplate` should use classic `{Binding}`, not `{x:Bind}`. The base commit discovers editor bindings with `GetBindingExpression`, and compiled `{x:Bind}` bindings are not discoverable that way.
+The editable value inside a `CellEditingTemplate` should use classic `{Binding}`, not `{x:Bind}`. The base commit discovers editor bindings with `GetBindingExpression`, and compiled `{x:Bind}` bindings are not discoverable that way. Use `Mode=TwoWay, UpdateSourceTrigger=Explicit` for commit/cancel editing: a default TextBox binding writes on LostFocus, including when Escape restores focus to the row. Other interactive templates may intentionally write immediately; those writes are outside the control's buffered-cancel guarantee. Template editors are realized before the initial keyboard focus retry so F2 can target their focusable content.
 
 Example:
 
@@ -607,7 +607,7 @@ Example:
     <tabular:TableViewTemplateColumn.CellEditingTemplate>
         <DataTemplate x:DataType="local:Order">
             <ComboBox ItemsSource="{x:Bind StatusChoices}"
-                      SelectedItem="{Binding Status, Mode=TwoWay}" />
+                      SelectedItem="{Binding Status, Mode=TwoWay, UpdateSourceTrigger=Explicit}" />
         </DataTemplate>
     </tabular:TableViewTemplateColumn.CellEditingTemplate>
 </tabular:TableViewTemplateColumn>
@@ -741,7 +741,7 @@ Row and group names honor explicit `AutomationProperties.Name` and `LabeledBy`. 
 
 `FindItemByProperty(Name)` returns only an exact public peer name. Data text can identify an unrealized candidate, but its name is checked again after preparation. Arbitrary template or application names cannot be inferred for never-realized items; clients can enumerate with a null property and read each returned peer's name.
 
-Successful text-cell edits notify an already-cached cell provider of changed `Value` and computed `Name`. Cancelled, vetoed, unchanged, or abandoned/recycled edits do not synthesize successful-commit notifications. Delivery is queued after edit teardown and rechecks the cell/item identity and current value; editing does not create automation peers solely to send events.
+Successful text-cell edits explicitly notify an already-created canonical cell provider of changed `Value`, including peers obtained directly from the cell visual without prior row-cache enumeration. The cell holds its semantic display `Name` while editing and lets the framework's automatic Name notification path publish the completed display state, rather than raising a second explicit Name event. Cancelled, vetoed, unchanged, or abandoned/recycled edits do not synthesize successful-commit notifications. Deferred work rechecks the cell/item identity and current value; editing does not create automation peers solely to send events. Name invalidation may coalesce rapid unobserved edits; waited transactions and failed-advisory recovery are validated separately.
 
 Accessible labels name a cell but do not replace its intrinsic text `Value`. For example, a text display labeled "Employee name" still exposes `Al` or `Alice` through ValuePattern, while its accessible name can remain unchanged. Snapshot reads, notification preparation and dispatcher submission are advisory: exceptions from a custom name/label peer are logged and must not prevent beginning or completing an edit. A failed snapshot is discarded rather than partially reused by a later edit.
 
@@ -1016,8 +1016,8 @@ WPF keeps pending values in the row's `BindingGroup`, and the values reach the i
 `BindingGroup.CommitEdit()` runs at row scope. Cancelling the row therefore reverts every cell
 edited in it, with no cooperation from the data item.
 
-WinUI has no `BindingGroup`. TableView instead binds the editor with
-`UpdateSourceTrigger=Explicit` and writes on commit, which keeps `Esc` restorable for the cell being
+WinUI has no `BindingGroup`. TableView's built-in text editor uses
+`UpdateSourceTrigger=Explicit`; application editing templates must opt into the same buffering contract. Writing on commit keeps `Esc` restorable for the cell being
 edited. The consequences:
 
 - Cancelling a cell reverts that cell because the pending value never reached the item.

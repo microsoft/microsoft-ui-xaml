@@ -5,9 +5,34 @@
 #include "common.h"
 #include "TableViewColumn.h"
 #include "TableView.h"
+#include "TableViewRow.h"
+#include "TVDiag.h"
 
 #include <algorithm>
 #include <cmath>
+
+namespace
+{
+    bool TryFocusEditor(winrt::FrameworkElement const& editor)
+    {
+        if (editor.Focus(winrt::FocusState::Programmatic))
+        {
+            return true;
+        }
+        if (auto const target = winrt::FocusManager::FindFirstFocusableElement(editor))
+        {
+            if (auto const control = target.try_as<winrt::Control>())
+            {
+                return control.Focus(winrt::FocusState::Programmatic);
+            }
+            if (auto const element = target.try_as<winrt::UIElement>())
+            {
+                return element.Focus(winrt::FocusState::Programmatic);
+            }
+        }
+        return false;
+    }
+}
 
 TableViewColumn::TableViewColumn()
 {
@@ -75,18 +100,49 @@ winrt::IInspectable TableViewColumn::PrepareCellForEditCore(const winrt::Framewo
     // Focus so typing goes straight into the editor; otherwise the row keeps focus and the user has
     // to click the editor they just opened. The editing root is not necessarily focusable - a
     // template column produces a ContentPresenter - so fall back to its first focusable descendant.
-    if (!editingElement.Focus(winrt::FocusState::Programmatic))
+    auto const root = editingElement.XamlRoot();
+    auto const initialFocus = root ? winrt::FocusManager::GetFocusedElement(root) : nullptr;
+    if (!TryFocusEditor(editingElement))
     {
-        if (auto const focusable = winrt::FocusManager::FindFirstFocusableElement(editingElement))
+        if (root && winrt::FocusManager::GetFocusedElement(root) != initialFocus)
         {
-            if (auto const focusableElement = focusable.try_as<winrt::Control>())
+            return nullptr;
+        }
+        auto const owner = GetOwningTableView();
+        auto const editingParent = winrt::VisualTreeHelper::GetParent(editingElement);
+        winrt::TableViewRow row{ nullptr };
+        for (auto parent = editingParent; parent;
+            parent = winrt::VisualTreeHelper::GetParent(parent))
+        {
+            if (auto const candidate = parent.try_as<winrt::TableViewRow>())
             {
-                focusableElement.Focus(winrt::FocusState::Programmatic);
+                row = candidate;
+                break;
             }
-            else if (auto const focusableUi = focusable.try_as<winrt::UIElement>())
-            {
-                focusableUi.Focus(winrt::FocusState::Programmatic);
-            }
+        }
+        auto const item = row ? row.DataContext() : nullptr;
+
+        // The editing ContentPresenter may not have instantiated its DataTemplate.
+        // Realize it before returning from F2 so the first keystroke has a target.
+        editingElement.UpdateLayout();
+
+        // Layout can run application code and recycle the row or end the edit.
+        if (owner && (GetOwningTableView() != owner ||
+            winrt::get_self<TableView>(owner)->CurrentEditingElement() != editingElement ||
+            !editingParent || winrt::VisualTreeHelper::GetParent(editingElement) != editingParent ||
+            !row || winrt::get_self<TableViewRow>(row)->GetOwningTableView() != owner ||
+            !TableView::SameInspectableIdentity(row.DataContext(), item)))
+        {
+            return nullptr;
+        }
+        if (root && winrt::FocusManager::GetFocusedElement(root) != initialFocus)
+        {
+            // A Loaded/focus handler chose another target; preserve that choice.
+            return nullptr;
+        }
+        if (!TryFocusEditor(editingElement))
+        {
+            TVDiag::LogRetailF(L"[TableView] The realized cell editor has no available keyboard focus target.");
         }
     }
 
@@ -100,12 +156,11 @@ bool TableViewColumn::CommitCellEdit(const winrt::FrameworkElement& editingEleme
     return CommitCellEditCore(editingElement);
 }
 
-// The editing bindings use UpdateSourceTrigger::Explicit, so this is what actually moves the typed
-// value onto the data item.
+// Transactional editors use UpdateSourceTrigger::Explicit, so this moves the typed value onto the
+// item. Application templates choose their own trigger; the base does not rewrite those bindings.
 //
-// Resolved HERE rather than when the edit opened: a CellEditingTemplate's ContentPresenter has not
-// stamped its template at begin time, so a walk then finds nothing. By commit time the editor is
-// realized. WPF sidesteps the same ordering problem with an UpdateLayout() call in BeginEdit.
+// Resolve at commit rather than caching during preparation: a custom editing template can realize
+// or replace descendants after the initial focus attempt.
 //
 // Returns false when nothing could be written, so the control keeps the edit open instead of
 // reporting a commit that never reached the item.
@@ -141,12 +196,13 @@ void TableViewColumn::CancelCellEdit(const winrt::FrameworkElement& editingEleme
 
 // Cancel needs to do nothing in the general case, and deliberately so.
 //
-// The editing binding is UpdateSourceTrigger::Explicit, so a cancelled edit never reached the data
-// item: the source still holds the pre-edit value. The editor is then discarded and the display
+// With UpdateSourceTrigger::Explicit, an uncommitted edit never reached the data item: the source
+// still holds the pre-edit value. The editor is then discarded and the display
 // element - bound to that same untouched source - is put back. WinUI's BindingExpression has no
 // UpdateTarget(), but none is needed, because the target being refreshed is thrown away.
 //
-// A column whose editor writes outside its binding must override this.
+// A template that writes automatically or performs other side effects needs application-owned
+// rollback; the base cannot infer arbitrary source mutations.
 void TableViewColumn::CancelCellEditCore(const winrt::FrameworkElement& /*editingElement*/, const winrt::IInspectable& /*uneditedValue*/)
 {
 }
@@ -435,4 +491,3 @@ void TableViewColumn::UpdateActualWidth()
         SetValue(s_ActualWidthProperty, winrt::box_value(clamped));
     }
 }
-

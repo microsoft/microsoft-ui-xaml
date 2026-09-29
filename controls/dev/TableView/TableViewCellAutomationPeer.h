@@ -5,6 +5,7 @@
 
 #include "TableView.h"
 #include "TableViewCellAutomationPeer.g.h"
+#include <optional>
 
 // UIA peer for a realized TableView cell; supplies the cell name and grid/table item coordinates.
 // Weak row/column refs avoid extending recycled rows or removed columns.
@@ -45,6 +46,12 @@ public:
     bool IsReadOnly();
     void SetValue(winrt::hstring const& value);
 
+    winrt::hstring ReadNameForEdit();
+    void BeginEditName();
+    void EndEditName();
+    void ResetEditName();
+    void UpdateNameItem(winrt::IInspectable const& item);
+
 private:
     // True when this cell is editable AND its column produces a TextBox editor, which is the only
     // editor SetValue can drive today.
@@ -58,9 +65,16 @@ private:
 
     // Resolves displayed text from the TextBlock or content peer name.
     winrt::hstring GetCellValueText();
+    winrt::hstring ReadDisplayName(winrt::FrameworkElement const& display = nullptr);
+    void QueueFinalName(uint64_t generation);
 
     winrt::weak_ref<winrt::TableViewRow> m_row{ nullptr };
     winrt::weak_ref<winrt::TableViewColumn> m_column{ nullptr };
     // Construction-time fallback only; Column() recomputes from the live cell host.
     int32_t m_columnIndex{ -1 };
+    tracker_ref<winrt::IInspectable> m_nameItem{ this };
+    std::optional<winrt::hstring> m_lastName;
+    std::optional<winrt::hstring> m_editName;
+    uint64_t m_nameGeneration{ 0 };
+    winrt::FrameworkElement::LayoutUpdated_revoker m_nameLayoutUpdatedRevoker{};
 };

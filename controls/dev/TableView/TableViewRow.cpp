@@ -134,6 +134,7 @@ void TableViewRow::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
 
+    ResetCellAutomationNames();
     m_cellsHost.set(GetTemplateChild(hstring{ s_CellsHostPartName }).try_as<winrt::Panel>());
 
     // Let the panel recognise this row's editing cell so it can keep it out of the Auto-width pass.
@@ -233,6 +234,7 @@ void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
     }
     else
     {
+        ResetCellAutomationNames();
         m_owningTableView = nullptr;
         // Reset transient interaction state so a row recycled while hovered/pressed
         // re-enters the pool in Normal state (ListViewItem parity), not a stale tint.
@@ -273,6 +275,7 @@ void TableViewRow::RefreshColumnsSubscriptionInternal()
 
     if (auto host = m_cellsHost.get())
     {
+        ResetCellAutomationNames();
         host.Children().Clear();
     }
 
@@ -506,6 +509,7 @@ void TableViewRow::RefreshCells()
 {
     if (auto host = m_cellsHost.get())
     {
+        ResetCellAutomationNames();
         host.Children().Clear();
     }
 
@@ -544,6 +548,28 @@ void TableViewRow::InvalidateCells()
     if (auto host = m_cellsHost.get())
     {
         host.InvalidateMeasure();
+    }
+}
+
+void TableViewRow::ResetCellAutomationNames()
+{
+    if (auto const host = m_cellsHost.get())
+    {
+        for (auto const& cell : host.Children())
+        {
+            try
+            {
+                if (auto const peer = TableViewCell::TryGetExistingPeer(cell)
+                    .try_as<winrt::TableViewCellAutomationPeer>())
+                {
+                    winrt::get_self<TableViewCellAutomationPeer>(peer)->ResetEditName();
+                }
+            }
+            catch (...)
+            {
+                TVDiag::LogRetailF(L"[TableView] Optional released-cell name state could not be reset.");
+            }
+        }
     }
 }
 
@@ -609,6 +635,7 @@ void TableViewRow::RebuildCells()
             }
         }
 
+        ResetCellAutomationNames();
         host.Children().Clear();
         return;
     }
@@ -616,6 +643,21 @@ void TableViewRow::RebuildCells()
     auto dataContext = DataContext();
     winrt::IInspectable dataItem = dataContext;
     const auto children = host.Children();
+    try
+    {
+        for (auto const& cell : children)
+        {
+            if (auto const peer = TableViewCell::TryGetExistingPeer(cell)
+                .try_as<winrt::TableViewCellAutomationPeer>())
+            {
+                winrt::get_self<TableViewCellAutomationPeer>(peer)->UpdateNameItem(dataItem);
+            }
+        }
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Optional recycled-cell name state could not be refreshed.");
+    }
 
     uint32_t nonNullColumnCount = 0;
     for (auto const& column : columns)
@@ -749,6 +791,7 @@ void TableViewRow::RebuildCells()
         }
     }
 
+    ResetCellAutomationNames();
     host.Children().Clear();
 
     int32_t visibleColumnIndex = 0;
@@ -1020,23 +1063,17 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
     // ordinary edit into a UIA-tree allocation and could give the event a different identity.
     try
     {
-        if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
-            .try_as<winrt::TableViewRowAutomationPeer>())
+        auto const peer = TableViewCell::TryGetExistingPeer(cellWrapper)
+            .try_as<winrt::TableViewCellAutomationPeer>();
+        if (peer && peer.GetPattern(winrt::PatternInterface::Value))
         {
-            if (auto const peer = winrt::get_self<TableViewRowAutomationPeer>(rowPeer)
-                ->TryGetCellPeer(cellWrapper).try_as<winrt::TableViewCellAutomationPeer>())
-            {
-                if (peer.GetPattern(winrt::PatternInterface::Value))
-                {
-                    auto const value = winrt::get_self<TableViewCellAutomationPeer>(peer)->Value();
-                    auto const name = peer.GetName();
-                    auto const weakPeer = winrt::make_weak(peer);
-                    m_editingAutomationItem.set(dataItem);
-                    m_editingAutomationValue = value;
-                    m_editingAutomationName = name;
-                    m_editingAutomationPeer = weakPeer;
-                }
-            }
+            auto const value = winrt::get_self<TableViewCellAutomationPeer>(peer)->Value();
+            auto const name = winrt::get_self<TableViewCellAutomationPeer>(peer)->ReadNameForEdit();
+            auto const weakPeer = winrt::make_weak(peer);
+            m_editingAutomationItem.set(dataItem);
+            m_editingAutomationValue = value;
+            m_editingAutomationName = name;
+            m_editingAutomationPeer = weakPeer;
         }
     }
     catch (...)
@@ -1047,7 +1084,21 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         m_editingAutomationName = {};
         TVDiag::LogRetailF(L"[TableView] Optional pre-edit UIA snapshot could not be captured.");
     }
+    try
+    {
+        if (auto const peer = TableViewCell::TryGetExistingPeer(cellWrapper)
+            .try_as<winrt::TableViewCellAutomationPeer>())
+        {
+            winrt::get_self<TableViewCellAutomationPeer>(peer)->BeginEditName();
+        }
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Optional stable cell-name capture failed.");
+    }
     m_editingDisplayElement.set(TableViewCell::Child(cellWrapper));
+    m_pendingEditingCell = winrt::make_weak(cellWrapper.as<winrt::UIElement>());
+    auto pendingCellGuard = wil::scope_exit([this]() noexcept { m_pendingEditingCell = nullptr; });
     TableViewCell::Child(cellWrapper, editingElement);
 
     m_editingColumn.set(column);
@@ -1171,13 +1222,26 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
 
     try
     {
+        if (auto const peer = TableViewCell::TryGetExistingPeer(cellWrapper)
+            .try_as<winrt::TableViewCellAutomationPeer>())
+        {
+            winrt::get_self<TableViewCellAutomationPeer>(peer)->EndEditName();
+        }
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Optional final cell-name invalidation could not be prepared.");
+    }
+
+    try
+    {
         if (action == winrt::TableViewEditAction::Commit && originalItem &&
             TableView::SameInspectableIdentity(DataContext(), originalItem))
         {
             if (auto const peer = weakPeer.get())
             {
                 auto const newValue = winrt::get_self<TableViewCellAutomationPeer>(peer)->Value();
-                auto const newName = peer.GetName();
+                auto const newName = winrt::get_self<TableViewCellAutomationPeer>(peer)->ReadNameForEdit();
                 if (oldValue != newValue || oldName != newName)
                 {
                     // Publish after the table has left its Ending state. Reject recycled cells
@@ -1186,7 +1250,7 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
                     {
                         auto const weakThis = get_weak();
                         auto const weakCell = winrt::make_weak(cellWrapper);
-                        if (!queue.TryEnqueue([weakThis, weakPeer, weakCell, originalItem, oldValue, newValue, oldName, newName]()
+                        if (!queue.TryEnqueue([weakThis, weakPeer, weakCell, originalItem, oldValue, newValue, newName]()
                         {
                             try
                             {
@@ -1201,7 +1265,7 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
                                     return;
                                 }
                                 auto const peerImpl = winrt::get_self<TableViewCellAutomationPeer>(currentPeer);
-                                if (peerImpl->Row() < 0 || peerImpl->Value() != newValue || currentPeer.GetName() != newName)
+                                if (peerImpl->Row() < 0 || peerImpl->Value() != newValue || peerImpl->ReadNameForEdit() != newName)
                                 {
                                     return;
                                 }
@@ -1209,11 +1273,6 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
                                 {
                                     currentPeer.RaisePropertyChangedEvent(winrt::ValuePatternIdentifiers::ValueProperty(),
                                         winrt::box_value(oldValue), winrt::box_value(newValue));
-                                }
-                                if (oldName != newName)
-                                {
-                                    currentPeer.RaisePropertyChangedEvent(winrt::AutomationElementIdentifiers::NameProperty(),
-                                        winrt::box_value(oldName), winrt::box_value(newName));
                                 }
                             }
                             catch (...)
@@ -1241,6 +1300,21 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
 
 void TableViewRow::AbandonCellEdit()
 {
+    try
+    {
+        if (auto const cell = m_editingCellWrapper.get())
+        {
+            if (auto const peer = TableViewCell::TryGetExistingPeer(cell)
+                .try_as<winrt::TableViewCellAutomationPeer>())
+            {
+                winrt::get_self<TableViewCellAutomationPeer>(peer)->ResetEditName();
+            }
+        }
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Optional abandoned-cell name state could not be reset.");
+    }
     m_editingAutomationPeer = nullptr;
     m_editingAutomationItem.set(nullptr);
     m_editingAutomationValue = {};

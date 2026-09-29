@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Common;
@@ -85,6 +86,192 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Alice", ((IValueProvider)gridCell.GetPattern(PatternInterface.Value)).Value);
                 Verify.IsFalse(table.IsEditing);
                 Verify.IsTrue(PeerAccess.FromProvider(((IGridProvider)tablePeer.GetPattern(PatternInterface.Grid)).GetItem(0, 0)) == gridCell);
+            });
+        }
+
+        [TestMethod]
+        public void ExplicitTemplateBindingKeepsSourceUnchangedUntilCommit()
+        {
+            Item item = null;
+            Microsoft.UI.Xaml.Controls.TextBox editor = null;
+            Microsoft.UI.Xaml.Controls.Button other = null;
+            RunOnUIThread.Execute(() =>
+            {
+                item = new Item { Name = "Before" };
+                var template = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                    "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                    "<TextBox Text='{Binding Name, Mode=TwoWay, UpdateSourceTrigger=Explicit}'/>" +
+                    "</DataTemplate>");
+                editor = (Microsoft.UI.Xaml.Controls.TextBox)template.LoadContent();
+                editor.DataContext = item;
+                other = new Microsoft.UI.Xaml.Controls.Button { Content = "Other" };
+                var host = new Microsoft.UI.Xaml.Controls.StackPanel();
+                host.Children.Add(editor);
+                host.Children.Add(other);
+                Content = host;
+                host.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(editor.Focus(FocusState.Programmatic));
+                editor.Text = "Pending";
+                Verify.AreEqual("Before", item.Name);
+                Verify.IsTrue(other.Focus(FocusState.Programmatic));
+                Verify.AreEqual("Before", item.Name, "Focus restoration must not write an uncommitted template value.");
+                editor.GetBindingExpression(Microsoft.UI.Xaml.Controls.TextBox.TextProperty).UpdateSource();
+                Verify.AreEqual("Pending", item.Name);
+            });
+        }
+
+        [TestMethod]
+        public void RemovedItemIsCollectibleWithPooledRowAndRetainedCellPeer()
+        {
+            TableView table = null;
+            TableViewRow retainedRow = null;
+            FrameworkElementAutomationPeer retainedPeer = null;
+            ObservableCollection<Item> items = null;
+            WeakReference removedItem = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateTable();
+                items = new ObservableCollection<Item> { new Item { Name = "Remove me" } };
+                removedItem = new WeakReference(items[0]);
+                table.ItemsSource = items;
+                Content = table;
+                table.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                retainedRow = Descendants(table).OfType<TableViewRow>().First();
+                var host = Descendants(retainedRow).OfType<TableViewCellsPanel>().Single();
+                retainedPeer = (FrameworkElementAutomationPeer)
+                    FrameworkElementAutomationPeer.CreatePeerForElement(host.Children[0]);
+                Verify.AreEqual("Name, Remove me", retainedPeer.GetName());
+                Verify.IsFalse(table.IsEditing);
+                items.Clear();
+                table.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(table.IsEditing);
+                Verify.IsNull(retainedRow.DataContext, "The recycled container must release its inherited item.");
+            });
+            for (int i = 0; i < 5 && removedItem.IsAlive; ++i)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                IdleSynchronizer.Wait();
+            }
+            Verify.IsFalse(removedItem.IsAlive,
+                "A retained cell peer must not pin a removed item through semantic-name state.");
+            GC.KeepAlive(retainedPeer);
+            GC.KeepAlive(retainedRow);
+            GC.KeepAlive(table);
+            GC.KeepAlive(items);
+        }
+
+        [TestMethod]
+        public void ExistingPeerLookupDoesNotCreateBoundCellPeer()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var table = CreateTable();
+                Content = table;
+                table.UpdateLayout();
+                var row = Descendants(table).OfType<TableViewRow>().First();
+                var cell = Descendants(row).OfType<TableViewCellsPanel>().Single().Children[0];
+                for (int i = 0; i < 3; ++i)
+                {
+                    Verify.IsFalse(TableViewPeerTestAccess.HasExistingPeer(cell));
+                }
+            });
+        }
+
+        [TestMethod]
+        public void DirectVisualCellPeerSupportsEditWithoutRowCacheAcquisition()
+        {
+            TableView table = null;
+            SnapshotTrackingColumn column = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateTable();
+                column = new SnapshotTrackingColumn
+                {
+                    Header = "Name", Width = new GridLength(200),
+                    Binding = new Binding { Path = new PropertyPath("Name") }
+                };
+                table.Columns[0] = column;
+                Content = table;
+                table.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            FrameworkElementAutomationPeer peer = null;
+            UIElement cell = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var row = Descendants(table).OfType<TableViewRow>().First();
+                var cellsHost = Descendants(row).OfType<TableViewCellsPanel>().Single();
+                cell = cellsHost.Children[0];
+                Verify.IsFalse(TableViewPeerTestAccess.HasExistingPeer(cell),
+                    "No row or grid route may acquire the cell before direct visual discovery.");
+                peer = (FrameworkElementAutomationPeer)FrameworkElementAutomationPeer.CreatePeerForElement(cell);
+                Verify.IsTrue(peer is TableViewCellAutomationPeer);
+                var value = (IValueProvider)peer.GetPattern(PatternInterface.Value);
+                Verify.AreEqual("Al", value.Value);
+                var originalLabel = (SnapshotLabel)AutomationProperties.GetLabeledBy(VisualTreeHelper.GetChild(cell, 0));
+                var readsBefore = originalLabel.Reads;
+                value.SetValue("Alice");
+                Verify.IsTrue(originalLabel.Reads > readsBefore,
+                    "The direct visual peer must capture the old display name before replacing it.");
+                Verify.AreEqual("Alice", value.Value);
+                Verify.IsFalse(table.IsEditing);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(FrameworkElementAutomationPeer.FromElement(cell) == peer);
+                var value = (IValueProvider)peer.GetPattern(PatternInterface.Value);
+                value.SetValue("Alice");
+                value.SetValue("Bob");
+                Verify.AreEqual("Bob", value.Value);
+                Verify.AreEqual("Name, Stable label", peer.GetName());
+                Verify.IsFalse(table.IsEditing);
+            });
+        }
+
+        [TestMethod]
+        public void VetoedEditKeepsSemanticNameUntilCancellation()
+        {
+            var table = CreateLoadedTable();
+            AutomationPeer cell = null;
+            string name = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table.CellEditEnding += (_, args) =>
+                {
+                    if (args.EditAction == TableViewEditAction.Commit) args.Cancel = true;
+                };
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(table);
+                cell = PeerAccess.FromProvider(((IGridProvider)peer.GetPattern(PatternInterface.Grid)).GetItem(0, 0));
+                name = cell.GetName();
+                bool rejected = false;
+                try { ((IValueProvider)cell.GetPattern(PatternInterface.Value)).SetValue("Rejected"); }
+                catch (COMException error) { rejected = error.HResult == unchecked((int)0x80004005); }
+                Verify.IsTrue(rejected);
+                Verify.IsTrue(table.IsEditing);
+                Verify.AreEqual(name, cell.GetName());
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(name, cell.GetName());
+                table.CancelEdit();
+                Verify.IsFalse(table.IsEditing);
+                Verify.AreEqual("Al", ((IValueProvider)cell.GetPattern(PatternInterface.Value)).Value);
+                Verify.AreEqual(name, cell.GetName());
             });
         }
 
@@ -420,6 +607,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private sealed partial class CustomPeerTable : TableView
         {
             protected override AutomationPeer OnCreateAutomationPeer() => new CustomOwnerPeer(this);
+        }
+
+        private sealed partial class SnapshotTrackingColumn : TableViewTextColumn
+        {
+            protected override FrameworkElement GenerateElementCore(object item)
+            {
+                var text = new Microsoft.UI.Xaml.Controls.TextBlock();
+                text.SetBinding(Microsoft.UI.Xaml.Controls.TextBlock.TextProperty,
+                    new Binding { Path = new PropertyPath("Name") });
+                var label = new SnapshotLabel();
+                AutomationProperties.SetLabeledBy(text, label);
+                return text;
+            }
+        }
+
+        private sealed partial class SnapshotLabel : Microsoft.UI.Xaml.Controls.Control
+        {
+            public int Reads { get; private set; }
+            protected override AutomationPeer OnCreateAutomationPeer() => new SnapshotLabelPeer(this);
+            private sealed partial class SnapshotLabelPeer : FrameworkElementAutomationPeer
+            {
+                private readonly SnapshotLabel _label;
+                public SnapshotLabelPeer(SnapshotLabel label) : base(label) => _label = label;
+                protected override string GetNameCore()
+                {
+                    ++_label.Reads;
+                    return "Stable label";
+                }
+            }
         }
 
         private sealed partial class CustomOwnerPeer : FrameworkElementAutomationPeer

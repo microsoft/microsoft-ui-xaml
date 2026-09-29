@@ -13,6 +13,7 @@
 #include "TableViewToolTipHelpers.h"
 #include "ResourceAccessor.h"
 #include "TableViewCellAutomationPeer.properties.cpp"
+#include "TVDiag.h"
 
 #include <string>
 #include <vector>
@@ -82,9 +83,141 @@ hstring TableViewCellAutomationPeer::GetLocalizedControlTypeCore()
 
 hstring TableViewCellAutomationPeer::GetNameCore()
 {
+    auto const row = m_row.get();
+    UpdateNameItem(row && winrt::get_self<TableViewRow>(row)->GetOwningTableView()
+        ? row.DataContext() : nullptr);
+    if (m_editName)
+    {
+        return *m_editName;
+    }
+    if (row)
+    {
+        if (auto const display = winrt::get_self<TableViewRow>(row)->GetDisplayElementForAutomation(Owner()))
+        {
+            auto const name = ReadDisplayName(display.try_as<winrt::FrameworkElement>());
+            m_lastName = name;
+            m_editName = name;
+            return name;
+        }
+    }
+    auto const name = ReadDisplayName();
+    m_lastName = name;
+    return name;
+}
+
+winrt::hstring TableViewCellAutomationPeer::ReadNameForEdit()
+{
+    auto const row = m_row.get();
+    UpdateNameItem(row && winrt::get_self<TableViewRow>(row)->GetOwningTableView()
+        ? row.DataContext() : nullptr);
+    auto const name = ReadDisplayName();
+    m_lastName = name;
+    return name;
+}
+
+void TableViewCellAutomationPeer::UpdateNameItem(winrt::IInspectable const& item)
+{
+    if (!TableView::SameInspectableIdentity(m_nameItem.get(), item))
+    {
+        ResetEditName();
+        m_nameItem.set(item);
+    }
+}
+
+void TableViewCellAutomationPeer::BeginEditName()
+{
+    ++m_nameGeneration;
+    m_nameLayoutUpdatedRevoker.revoke();
+    m_editName = m_lastName;
+}
+
+void TableViewCellAutomationPeer::ResetEditName()
+{
+    ++m_nameGeneration;
+    m_nameLayoutUpdatedRevoker.revoke();
+    m_editName.reset();
+    m_lastName.reset();
+    m_nameItem.set(nullptr);
+}
+
+void TableViewCellAutomationPeer::EndEditName()
+{
+    m_nameLayoutUpdatedRevoker.revoke();
+    auto const generation = m_nameGeneration;
+    auto const weakThis = get_weak();
+    auto const cell = Owner().as<winrt::FrameworkElement>();
+    auto cleanupOnFailure = wil::scope_exit([this]() noexcept
+    {
+        m_nameLayoutUpdatedRevoker.revoke();
+        m_editName.reset();
+    });
+    // LayoutUpdated precedes the framework's automatic-property pass. Queue
+    // release from that event, leaving the held old Name intact for the pass.
+    m_nameLayoutUpdatedRevoker = cell.LayoutUpdated(winrt::auto_revoke,
+        [weakThis, generation](auto const&, auto const&)
+        {
+            if (auto const peer = weakThis.get(); peer && peer->m_nameGeneration == generation)
+            {
+                peer->m_nameLayoutUpdatedRevoker.revoke();
+                try
+                {
+                    peer->QueueFinalName(generation);
+                }
+                catch (...)
+                {
+                    peer->m_editName.reset();
+                    TVDiag::LogRetailF(L"[TableView] Optional post-layout name publication could not be queued.");
+                }
+            }
+        });
+    cell.InvalidateMeasure();
+    cleanupOnFailure.release();
+}
+
+void TableViewCellAutomationPeer::QueueFinalName(uint64_t generation)
+{
+    auto const weakThis = get_weak();
+    auto const queue = DispatcherQueue();
+    if (queue && queue.TryEnqueue(winrt::DispatcherQueuePriority::Low, [weakThis, generation]()
+    {
+        if (auto const peer = weakThis.get(); peer && peer->m_nameGeneration == generation)
+        {
+            try
+            {
+                auto const row = peer->m_row.get();
+                auto const cell = peer->Owner();
+                if (!row || !winrt::get_self<TableViewRow>(row)->GetOwningTableView() ||
+                    !TableView::SameInspectableIdentity(row.DataContext(), peer->m_nameItem.get()) ||
+                    winrt::VisualTreeHelper::GetParent(cell).try_as<winrt::Panel>() !=
+                        winrt::get_self<TableViewRow>(row)->GetCellsHostPanelInternal())
+                {
+                    peer->ResetEditName();
+                    return;
+                }
+                peer->m_editName.reset();
+                peer->InvalidatePeer();
+            }
+            catch (...)
+            {
+                TVDiag::LogRetailF(L"[TableView] Optional final cell-name invalidation failed.");
+            }
+        }
+    }))
+    {
+        return;
+    }
+    m_editName.reset();
+    TVDiag::LogRetailF(L"[TableView] Optional final cell-name invalidation could not be queued.");
+}
+
+winrt::hstring TableViewCellAutomationPeer::ReadDisplayName(winrt::FrameworkElement const& display)
+{
     // Compose "{column header}, {cell value}", falling back to either part alone.
     const auto headerText = GetColumnHeaderText();
-    const auto valueText = GetCellDisplayText(Owner().try_as<winrt::FrameworkElement>());
+    uint32_t remaining = 32;
+    const auto valueText = display
+        ? GetCellContentName(display, true, 8, remaining)
+        : GetCellDisplayText(Owner().try_as<winrt::FrameworkElement>());
 
     if (headerText.empty())
     {
