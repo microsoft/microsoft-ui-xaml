@@ -146,6 +146,10 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <!-- Suppress the High Contrast text backplate only while selected, where it fights the selection fill. -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Opacity">
                                             <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -158,6 +162,10 @@
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedPointerOverBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <!-- Suppress the High Contrast text backplate only while selected, where it fights the selection fill. -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Opacity">
                                             <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />
@@ -172,6 +180,10 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundSelectedPressedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <!-- Suppress the High Contrast text backplate only while selected, where it fights the selection fill. -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Opacity">
                                             <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
@@ -184,6 +196,10 @@
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <!-- Suppress the High Contrast text backplate only while selected, where it fights the selection fill. -->
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="HighContrastAdjustment">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="None" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Fill">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceSelectionIndicatorDisabledBrush}" />
@@ -199,7 +215,6 @@
                         <Grid>
                             <ContentPresenter x:Name="PART_CellForegroundPresenter"
                                               Foreground="{TemplateBinding Foreground}"
-                                              HighContrastAdjustment="None"
                                               HorizontalContentAlignment="Stretch"
                                               VerticalContentAlignment="Stretch">
                                 <controls:TableViewCellsPanel x:Name="PART_CellsHost"
