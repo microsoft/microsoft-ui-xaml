@@ -33,7 +33,7 @@
     <!-- Theme-invariant fallback, so it cannot vary per theme the way the canonical dictionary
          does. -->
     <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColor}" />
-    <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
+    <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="Transparent" />
     <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="{ThemeResource DividerStrokeColorDefault}" />
 
     <!-- TableView default style. Header cells stack horizontally (one per

@@ -63,9 +63,9 @@
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="#FFFFFF" />                     <!-- TextFillColorPrimary -->
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="#5DFFFFFF" />                  <!-- TextFillColorDisabled -->
 
-            <!-- Header surfaces. Header background bumped from #19 (~10%) to #26 (~15%) during visual tuning for
-                 visible step above row banding and proportional parity with the Light theme. -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="#26FFFFFF" />                       <!-- ~15% white (#26 alpha) -->
+            <!-- Header surfaces. The design's header row is transparent: it is separated from the body by
+                 type weight and by the first row's band, not by a fill. -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="Transparent" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundBrush" Color="#C5FFFFFF" />                       <!-- TextFillColorSecondary -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#12FFFFFF" />                        <!-- ControlStrokeColorDefault -->
 
@@ -161,9 +161,9 @@
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="#E4000000" />                 <!-- TextFillColorPrimary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="#5C000000" />                  <!-- TextFillColorDisabled (Light) -->
 
-            <!-- Header surfaces. Header background bumped from #19 (~10%) to #26 (~15%) during visual tuning for
-                 clearer contrast above row banding (matches WPF DataGrid header strip). -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="#26000000" />                       <!-- ~15% black (#26 alpha) -->
+            <!-- Header surfaces. The design's header row is transparent: it is separated from the body by
+                 type weight and by the first row's band, not by a fill. -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="Transparent" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundBrush" Color="#9E000000" />                       <!-- TextFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#0F000000" />                        <!-- ControlStrokeColorDefault (Light) -->
 

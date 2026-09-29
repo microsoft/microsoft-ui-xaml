@@ -526,6 +526,26 @@ Addressed in this PR:
 | Header is shorter than a body row | New `TableViewHeaderMinHeight` resource (32 Standard / 26 Compact / 40 Comfortable), resolved by `GetDensityHeaderMinHeight()`. Headers previously reused the body row min-height. |
 | Banding shades the first row | `RefreshRowBackground` now bands even 0-based indices. Departs from WPF `DataGrid`, which bands odd rows. |
 | Column headers carry no vertical rules | The header separator is now stamped collapsed unconditionally instead of tracking `GridLinesVisibility`. Body rows still draw vertical rules in `All` / `Vertical`. |
+| Header row carries no fill | `TabularSurfaceHeaderBackgroundBrush` is now `Transparent` in Light and Dark. It previously painted ~15% black/white, which the design does not show. HighContrast keeps `SystemColorWindowColor` so the band stays legible there. |
+| Header separator survives a gridline toggle | `ApplyGridLinesToHeader` used `ClearValue` to restore the "on" thickness, but a `ControlTemplate` sets `BorderThickness` as a local value, so `ClearValue` discarded the template's `0,0,0,1` and resolved to `0`. The header lost its rule permanently. The template's value is now captured at `OnApplyTemplate` and toggled against zero. |
+
+### Measured from `Table.png`, the default table export
+
+The default (banded, ungridded) 768 x 160 frame is four 40px rows: one header and three body
+rows. Sampling the PNG's alpha channel gives exact values rather than inferred ones:
+
+| Observation | Measurement |
+| --- | --- |
+| Header row fill | alpha `0` across the full row — the header is **transparent**, with no rule beneath it |
+| Banded rows | body rows 1 and 3 (0-based 0 and 2), confirming the first body row is banded |
+| Band colour | `#000000` at alpha `6/255` (~2.35%), matching the `#06000000` now used in Light |
+| Band vertical extent | y 42-77 and 122-157 — 36px tall inside a 40px row, so **2px inset** top and bottom |
+| Band horizontal extent | x 4-763 inside a 768px frame, so **4px inset** left and right |
+| Band corner radius | alpha ramps over x 4-6 at the top edge, giving a **4px radius** |
+
+The band inset and radius are the `Content` capsule described below: the design paints the band
+on the 236 x 36 content area, not the full row rectangle. The implementation fills the whole row,
+which is why that gap is listed as unaddressed rather than cosmetic.
 
 ### Known divergences, not changed here
 
