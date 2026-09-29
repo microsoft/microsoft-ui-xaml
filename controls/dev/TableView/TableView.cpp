@@ -25,7 +25,6 @@ static constexpr std::wstring_view s_RowsRepeaterPartName{ L"PART_RowsRepeater"s
 static constexpr std::wstring_view s_HeaderRowPartName{ L"PART_HeaderRow"sv };
 static constexpr std::wstring_view s_HeaderHostPartName{ L"PART_HeaderHost"sv };
 static constexpr std::wstring_view s_EmptyStatePresenterPartName{ L"PART_EmptyStatePresenter"sv };
-static constexpr std::wstring_view s_HeaderGridLineName{ L"TableViewHeaderGridLine"sv };
 static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGripperWidth"sv };
 // Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
 // unusable.
@@ -222,11 +221,6 @@ namespace
         return winrt::SolidColorBrush(color);
     }
 
-}
-
-namespace
-{
-    // Shared resolve-and-cache for the two gridline tokens.
     winrt::Brush ResolveGridLineBrush(
         TableView* owner,
         TableViewResourceCache::GridLineInfo& cache,
@@ -252,6 +246,12 @@ namespace
         cache.brush = brush;
         return brush;
     }
+
+}
+
+winrt::TableViewGridLinesVisibility TableView::EffectiveGridLinesVisibility()
+{
+    return IsHighContrast() ? winrt::TableViewGridLinesVisibility::All : GridLinesVisibility();
 }
 
 winrt::Brush TableView::GetGridLineBrush()
@@ -808,39 +808,14 @@ void TableView::OnAlternatingRowBackgroundPropertyChanged(const winrt::Dependenc
 
 void TableView::ApplyGridLinesToHeader()
 {
-    const auto visibility = GridLinesVisibility();
-
-    // The header's bottom rule is structural, not a grid line: the design draws it even on the
-    // ungridded default table. The template owns its thickness, so nothing toggles it here.
-
-    auto host = m_headerHost.get();
-    if (!host)
+    // The header's bottom rule is owned by the template: the design draws it even on the
+    // ungridded default table, so it is structural rather than a grid line.
+    const bool wantVertical = WantsVerticalLines(EffectiveGridLinesVisibility());
+    for (auto const& weakSeparator : m_headerGridLines)
     {
-        return;
-    }
-
-    // Vertical rules span header and body so `All` means a complete grid (WPF DataGrid parity).
-    // The design's default table is ungridded, which the `None` default already delivers.
-    const bool wantVertical = WantsVerticalLines(visibility);
-    const auto headerGridLineName = winrt::hstring{ s_HeaderGridLineName };
-    const auto headerCells = host.Children();
-    const uint32_t headerCellCount = headerCells.Size();
-    for (uint32_t i = 0; i < headerCellCount; ++i)
-    {
-        if (auto headerCell = headerCells.GetAt(i).try_as<winrt::Panel>())
+        if (auto separator = weakSeparator.get())
         {
-            const auto children = headerCell.Children();
-            const uint32_t childCount = children.Size();
-            for (uint32_t childIndex = 0; childIndex < childCount; ++childIndex)
-            {
-                if (auto border = children.GetAt(childIndex).try_as<winrt::Border>())
-                {
-                    if (border.Name() == headerGridLineName)
-                    {
-                        border.Visibility(wantVertical ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
-                    }
-                }
-            }
+            separator.Visibility(wantVertical ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
         }
     }
 }
@@ -1183,7 +1158,7 @@ double TableView::GetDensityRowMinHeight()
 }
 
 // Column headers resolve their own min-height: the design makes them shorter than body rows
-// (32 vs 40 at Standard), so reusing GetDensityRowMinHeight would render headers too tall.
+// (32 vs 40 at Standard).
 double TableView::GetDensityHeaderMinHeight()
 {
     auto& cache = GetTableViewResourceCache(this);
@@ -1535,12 +1510,12 @@ void TableView::RebuildHeaders()
     ReleaseHeaderToolTips(host);
 
     host.Children().Clear();
+    m_headerGridLines.clear();
 
     // Cache theme-resource padding once per header rebuild; values are stable for the pass.
     winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
-    // Header cells are shorter than body rows by design (32 vs 40 at Standard).
     const double cachedHeaderMinHeight = GetDensityHeaderMinHeight();
-    const bool wantVerticalHeaderLines = WantsVerticalLines(GridLinesVisibility());
+    const bool wantVerticalHeaderLines = WantsVerticalLines(EffectiveGridLinesVisibility());
     const auto cachedHeaderGridLineBrush = GetVerticalGridLineBrush();
     const double cachedHeaderFontSize = GetHeaderFontSize();
     const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
@@ -1588,7 +1563,6 @@ void TableView::RebuildHeaders()
                 winrt::AutomationProperties::SetName(headerCell, headerText);
             }
             winrt::AutomationProperties::SetAccessibilityView(headerCell, winrt::AccessibilityView::Content);
-            // Header height is its own value, not the body row height.
             headerCell.MinHeight(cachedHeaderMinHeight);
             // Without a fill the padding takes no pointer input, killing the tooltip and
             // click-to-sort there.
@@ -1618,13 +1592,14 @@ void TableView::RebuildHeaders()
 
             {
                 winrt::Border headerGridLine;
-                headerGridLine.Name(winrt::hstring{ s_HeaderGridLineName });
                 headerGridLine.Width(1);
                 headerGridLine.HorizontalAlignment(logicalEndAlignment);
                 headerGridLine.IsHitTestVisible(false);
                 headerGridLine.Visibility(wantVerticalHeaderLines ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
                 headerGridLine.Background(cachedHeaderGridLineBrush);
+                winrt::AutomationProperties::SetAccessibilityView(headerGridLine, winrt::AccessibilityView::Raw);
                 headerCell.Children().Append(headerGridLine);
+                m_headerGridLines.push_back(winrt::make_weak(headerGridLine));
             }
 
             // Tag header cells so frozen-column refresh can map them back to columns.

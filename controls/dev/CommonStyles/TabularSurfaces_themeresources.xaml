@@ -68,7 +68,7 @@
                  type weight and by the first row's band, not by a fill. -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="Transparent" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundBrush" Color="#C5FFFFFF" />                       <!-- TextFillColorSecondary -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#12FFFFFF" />                        <!-- ControlStrokeColorDefault -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#18FFFFFF" />                        <!-- Header bottom rule: measured 49 on the Dark design export -->
 
             <!-- Group-header row surfaces (P2.8 grouped rows) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#4C3A3A3A" />                  <!-- LayerFillColorDefault -->
@@ -168,7 +168,7 @@
                  type weight and by the first row's band, not by a fill. -->
             <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="Transparent" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundBrush" Color="#9E000000" />                       <!-- TextFillColorSecondary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#0F000000" />                        <!-- ControlStrokeColorDefault (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#1A000000" />                        <!-- Header bottom rule: measured 229 on the Light design export -->
 
             <!-- Grid lines. DividerStrokeColorDefault (~16% black on Light) — visible above row
                  banding without dominating the surface. Earlier ControlStrokeColorDefault (~6%

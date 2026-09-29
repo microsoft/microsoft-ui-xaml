@@ -870,7 +870,7 @@ void TableViewRow::RefreshGridLines()
         return;
     }
 
-    const auto visibility = owner.GridLinesVisibility();
+    const auto visibility = winrt::get_self<TableView>(owner)->EffectiveGridLinesVisibility();
     if (WantsHorizontalLines(visibility))
     {
         ClearValue(winrt::Control::BorderThicknessProperty());
@@ -934,19 +934,20 @@ void TableViewRow::RefreshRowBackground()
         }
         if (rowIndex >= 0)
         {
-            // RowBackground is the base for every row; AlternatingRowBackground overrides the
-            // banded ones. Setting RowBackground alone must fill all rows uniformly.
-            //
-            // KNOWN LIMITATION: parity is over the repeater's flattened index, which counts group
-            // headers as rows. With grouping the first data row may be unbanded and the phase
-            // flips between groups. Excluding headers needs a data-row ordinal the metadata
-            // provider does not expose yet; whether banding should also restart per group is an
-            // open design question. Do not "fix" this by flipping to odd indices, which would
-            // invert every app that already sets AlternatingRowBackground.
+            // A style-supplied band must not repaint over an app-supplied RowBackground: banding is
+            // the default, but an app that sets only RowBackground is asking for a uniform fill.
+            const auto alternating = owner.AlternatingRowBackground();
+            const bool bandingIsAppOwned =
+                owner.ReadLocalValue(winrt::TableView::AlternatingRowBackgroundProperty()) != winrt::DependencyProperty::UnsetValue();
+            const bool baseIsAppOwned =
+                owner.ReadLocalValue(winrt::TableView::RowBackgroundProperty()) != winrt::DependencyProperty::UnsetValue();
+
+            // Group headers count toward the repeater index, so banding parity does not restart
+            // per group. Tracked as an open design question, not a code defect.
             auto background = owner.RowBackground();
-            if ((rowIndex % 2) == 0 && owner.AlternatingRowBackground() != nullptr)
+            if ((rowIndex % 2) == 0 && alternating != nullptr && (bandingIsAppOwned || !baseIsAppOwned))
             {
-                background = owner.AlternatingRowBackground();
+                background = alternating;
             }
             if (background)
             {

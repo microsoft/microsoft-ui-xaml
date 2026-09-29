@@ -1,4 +1,4 @@
-﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -25,8 +25,6 @@
             <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
             <x:Double x:Key="TableViewRowMinHeightCompact">30</x:Double>
             <x:Double x:Key="TableViewRowMinHeightComfortable">48</x:Double>
-            <!-- Column headers are shorter than body rows by design: 32 Standard, 26 Compact.
-                 Comfortable is not covered by the design and keeps Standard's -8 delta. -->
             <x:Double x:Key="TableViewHeaderMinHeight">32</x:Double>
             <x:Double x:Key="TableViewHeaderMinHeightCompact">26</x:Double>
             <x:Double x:Key="TableViewHeaderMinHeightComfortable">40</x:Double>
@@ -46,8 +44,6 @@
             <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
             <x:Double x:Key="TableViewRowMinHeightCompact">30</x:Double>
             <x:Double x:Key="TableViewRowMinHeightComfortable">48</x:Double>
-            <!-- Column headers are shorter than body rows by design: 32 Standard, 26 Compact.
-                 Comfortable is not covered by the design and keeps Standard's -8 delta. -->
             <x:Double x:Key="TableViewHeaderMinHeight">32</x:Double>
             <x:Double x:Key="TableViewHeaderMinHeightCompact">26</x:Double>
             <x:Double x:Key="TableViewHeaderMinHeightComfortable">40</x:Double>
@@ -68,8 +64,6 @@
             <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
             <x:Double x:Key="TableViewRowMinHeightCompact">30</x:Double>
             <x:Double x:Key="TableViewRowMinHeightComfortable">48</x:Double>
-            <!-- Column headers are shorter than body rows by design: 32 Standard, 26 Compact.
-                 Comfortable is not covered by the design and keeps Standard's -8 delta. -->
             <x:Double x:Key="TableViewHeaderMinHeight">32</x:Double>
             <x:Double x:Key="TableViewHeaderMinHeightCompact">26</x:Double>
             <x:Double x:Key="TableViewHeaderMinHeightComfortable">40</x:Double>

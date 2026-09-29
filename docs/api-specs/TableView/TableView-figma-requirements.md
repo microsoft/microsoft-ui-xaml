@@ -553,7 +553,8 @@ header band. The implementation folds it into the vertical token rather than add
 header separators render at the body's weight and full height.
 
 Verified in the sample after the change: outer border `242`, header rule `229`, row divider
-`229`, header column separators `242` — each matching the export.
+`229`. Header column separators render at the body's `242` rather than the export's `245`; that
+1-step delta is accepted rather than carrying a third brush key.
 
 ### Measured from `Table.png`, the default table export
 

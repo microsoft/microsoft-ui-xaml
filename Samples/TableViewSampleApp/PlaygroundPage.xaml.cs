@@ -39,8 +39,6 @@ public sealed partial class PlaygroundPage : Page
         _ready = true;
     }
 
-    // The panel must report what the control actually is, so every selector is seeded from the
-    // live value instead of a hard-coded XAML selection that silently drifts from the defaults.
     private void SyncOptionsToTable()
     {
         ReadOnlyToggle.IsChecked = Table.IsReadOnly;
