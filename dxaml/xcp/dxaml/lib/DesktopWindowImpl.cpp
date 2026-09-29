@@ -1328,12 +1328,21 @@ bool DesktopWindowImpl::TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF b
         return false;
     }
 
+    HIGHCONTRASTW highContrast = { sizeof(HIGHCONTRASTW) };
+    const bool isHighContrast =
+        ::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRASTW), &highContrast, 0) &&
+        (highContrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
+
     // BLACK_BRUSH exposes the extended DWM frame through the redirected GDI
-    // surface, without allocating a client-sized paint buffer to set alpha.
+    // surface for standard themes. On Windows 10, High Contrast treats that
+    // row as opaque black, so paint its configured window-frame color instead.
     // See https://learn.microsoft.com/windows/win32/dwm/customframe.
+    const HBRUSH borderBrush = isHighContrast
+        ? ::GetSysColorBrush(COLOR_WINDOWFRAME)
+        : static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
     RECT borderRect = rc;
     borderRect.bottom = rc.top + topBorderHeight;
-    if (!::FillRect(hdc, &borderRect, static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH))))
+    if (!::FillRect(hdc, &borderRect, borderBrush))
     {
         TRACE_HR_NORETURN(E_FAIL);
         return false;
@@ -1350,6 +1359,8 @@ LRESULT DesktopWindowImpl::OnMessage(
     // Keep the Window alive through callbacks without reviving an owner queued for final release.
     ctl::ComPtr<xaml::IWindow> spWindow;
     IFCFAILFAST(ResolveWindowWeakReference(&spWindow));
+
+    const auto highContrastTopBorderTimerId = reinterpret_cast<UINT_PTR>(this);
 
     // When DispatcherShutdownMode is OnLastWindowClose, exit FrameworkApplication::ProcessMessage when the last WinUI
     // Desktop Window is destroyed.
@@ -1391,6 +1402,28 @@ LRESULT DesktopWindowImpl::OnMessage(
             return LResultFromHResult(OnSizeChanged(wParam, lParam));
         case WM_ACTIVATE:
             return LResultFromHResult(OnActivate(wParam, lParam));
+        case WM_NCACTIVATE:
+        {
+            const auto result = BaseWindow::OnMessage(uMsg, wParam, lParam);
+            // DWM and the redirected client surface can keep updating after
+            // DefWindowProc returns. Repaint once that activation redraw settles.
+            if (!::SetTimer(m_hwnd.get(), highContrastTopBorderTimerId, 100, nullptr))
+            {
+                TRACE_HR_NORETURN(E_FAIL);
+            }
+            return result;
+        }
+        case WM_TIMER:
+            if (wParam == highContrastTopBorderTimerId)
+            {
+                ::KillTimer(m_hwnd.get(), highContrastTopBorderTimerId);
+                if (m_windowChrome)
+                {
+                    m_windowChrome->PaintHighContrastTopBorder();
+                }
+                return 0;
+            }
+            break;
         case WM_NCRBUTTONUP:
             return LResultFromHResult(OnNonClientRegionButtonUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
         case WM_ERASEBKGND:

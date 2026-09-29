@@ -24,6 +24,7 @@ namespace DirectUI
         bool HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, _Out_ LRESULT* pResult);
         void ResizeContainer(WPARAM wParam, LPARAM lParam);
         void MoveContainer(WPARAM wParam, LPARAM lParam);
+        void PaintHighContrastTopBorder();
         DesktopWindowImpl* GetDesktopWindowNoRef() const { return m_desktopWindow; }
         HWND GetPositioningBridgeWindowHandle() const;
         ctl::ComPtr<ixp::IAppWindow> GetAppWindow() const;

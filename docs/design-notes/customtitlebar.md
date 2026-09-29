@@ -119,7 +119,15 @@ DPI-aware resize-frame metrics to provide a larger top resize target.
 #### Windows 10 frame workaround
 
 The optional change `AlignExtendsContentIntoTitleBarBehavior` makes both ECITB
-entry points reserve the same row. On systems where
+entry points reserve the same row.
+
+**Compatibility note:** On Windows 10, enabling this change can change the
+app's window border colors, including the side and bottom borders, not just
+the reserved top row. In the observed light-frame configuration, active
+borders become white. Apps that depend on the previous border appearance
+should account for this visual change before opting in.
+
+On systems where
 `DWMWA_VISIBLE_FRAME_BORDER_THICKNESS` is unsupported, WinUI also extends the DWM
 frame into the client area. The top margin comes from `AdjustWindowRectExForDpi`
 using the window's styles and DPI. It is the standard caption/resize-frame
@@ -130,18 +138,23 @@ This follows Windows Terminal's
 On Windows 10 1809, extending only one pixel exposes the untinted backdrop in
 the inactive top row; extending the standard top-frame height makes that row
 match the side borders. This is precedent for the selected margin, not a claim
-that it is the minimum working value. Frame extension can also change the
-colors of other borders: in the observed light-frame configuration, active
-borders become white even though only the top margin is nonzero.
+that it is the minimum working value. The border-color change noted above
+occurs even though only the top margin is nonzero.
 
 For a top-level HWND with a GDI redirection surface, `WM_ERASEBKGND` retains the
 normal background fill and paints the reserved row with the stock `BLACK_BRUSH`.
 This exposes the DWM frame as described in
 [Custom Window Frame Using DWM](https://learn.microsoft.com/windows/win32/dwm/customframe).
-It does not require a buffered-paint bitmap or explicit alpha writes. HWNDs
-with `WS_EX_NOREDIRECTIONBITMAP` skip this GDI workaround. The margins remain
-top-only rather than requesting whole-client frame rendering with negative
-values.
+Windows 10 High Contrast treats that row as opaque black, so WinUI uses the
+configured `COLOR_WINDOWFRAME` brush for the reserved row instead. Moving the
+composition island does not always trigger another background erase, so WinUI
+also paints that High Contrast row when it updates the island position. DWM can
+overwrite the row when it redraws the non-client frame, so WinUI paints it again
+on a short one-shot timer after processing `WM_NCACTIVATE`. None of these paths
+requires a buffered-paint bitmap or explicit alpha writes. HWNDs with
+`WS_EX_NOREDIRECTIONBITMAP` skip the background-erase workaround. The margins
+remain top-only rather than requesting whole-client frame rendering with
+negative values.
 
 ### Min/Max/Close buttons and dragging
 

@@ -89,6 +89,16 @@ void WindowChrome::MoveContainer(WPARAM wParam, LPARAM lParam)
     }
 
 }
+
+void WindowChrome::PaintHighContrastTopBorder()
+{
+    auto coreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
+    if (coreWindowChrome)
+    {
+        coreWindowChrome->PaintHighContrastTopBorder();
+    }
+}
+
 _Check_return_ HRESULT WindowChrome::SetTitleBar(_In_opt_ xaml::IUIElement* titleBar)
 {
     auto pCoreWindowChrome = static_cast<CWindowChrome*>(GetHandle());

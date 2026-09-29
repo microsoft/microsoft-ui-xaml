@@ -219,6 +219,52 @@ bool CWindowChrome::IsAppWindowTitleBarExtended()
     return extendsContentIntoTitleBar;
 }
 
+void CWindowChrome::PaintHighContrastTopBorder()
+{
+    if (!WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_topLevelWindow))
+    {
+        return;
+    }
+
+    const auto topBorderHeight = WindowHelpers::ClampToShortMax(GetTopBorderHeight(), 0);
+    if (topBorderHeight <= 0)
+    {
+        return;
+    }
+
+    HIGHCONTRASTW highContrast = { sizeof(HIGHCONTRASTW) };
+    if (!::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRASTW), &highContrast, 0) ||
+        (highContrast.dwFlags & HCF_HIGHCONTRASTON) == 0)
+    {
+        return;
+    }
+
+    RECT clientRect = {};
+    if (!::GetClientRect(m_topLevelWindow, &clientRect))
+    {
+        TRACE_HR_NORETURN(HRESULT_FROM_WIN32(::GetLastError()));
+        return;
+    }
+
+    const HDC hdc = ::GetDC(m_topLevelWindow);
+    if (!hdc)
+    {
+        TRACE_HR_NORETURN(E_FAIL);
+        return;
+    }
+
+    auto releaseDC = wil::scope_exit([this, hdc]()
+    {
+        ::ReleaseDC(m_topLevelWindow, hdc);
+    });
+
+    clientRect.bottom = clientRect.top + topBorderHeight;
+    if (!::FillRect(hdc, &clientRect, ::GetSysColorBrush(COLOR_WINDOWFRAME)))
+    {
+        TRACE_HR_NORETURN(E_FAIL);
+    }
+}
+
 _Check_return_ HRESULT CWindowChrome::UpdateDwmFrameMargins(int topBorderHeight)
 {
     ASSERT(WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_topLevelWindow));
@@ -314,26 +360,30 @@ void CWindowChrome::UpdateBridgeWindowSizePosition()
 
     const RECT newBridgeWindowRect = {newIslandPos.X, newIslandPos.Y, newIslandPos.X + windowWidth, newIslandPos.Y + windowHeight - topBorderHeight };
     // if top-level window is getting minimized then no need to resize composition window
-    // if there is no change between old and new values, don't update comp window
     if( ::IsIconic(m_topLevelWindow) ||
-        (windowHeight - topBorderHeight) == 0 ||
-        ::EqualRect(&bridgeWindowRect, &newBridgeWindowRect))
+        (windowHeight - topBorderHeight) == 0)
     {
         return;
     }
 
-    if (::SetWindowPos(bridgeWindow,
-            HWND_BOTTOM,
-            newIslandPos.X,
-            newIslandPos.Y,
-            windowWidth,
-            windowHeight - topBorderHeight,
-            SWP_SHOWWINDOW) == 0)
+    // If there is no change between old and new values, don't update comp window.
+    if (!::EqualRect(&bridgeWindowRect, &newBridgeWindowRect) &&
+        ::SetWindowPos(bridgeWindow,
+                HWND_BOTTOM,
+                newIslandPos.X,
+                newIslandPos.Y,
+                windowWidth,
+                windowHeight - topBorderHeight,
+                SWP_SHOWWINDOW) == 0)
     {
         IFCFAILFAST(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(
                                                                         HRESULT_FROM_WIN32(::GetLastError()),
                                                                         ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
     }
+
+    // Moving the composition island does not guarantee another
+    // WM_ERASEBKGND. Paint the newly exposed High Contrast frame row.
+    PaintHighContrastTopBorder();
 }
 
 

@@ -65,6 +65,7 @@ public:
     bool IsChromeActive() const  { return m_bIsActive; }
     bool IsTitlebarVisible() const;
     int GetTopBorderHeight();
+    void PaintHighContrastTopBorder();
     _Check_return_ HRESULT ConfigureWindowChrome();
     _Check_return_ HRESULT ApplyStyling();
     _Check_return_ HRESULT SetFocusIfNeeded();

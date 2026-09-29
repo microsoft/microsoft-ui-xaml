@@ -23,6 +23,7 @@ namespace Microsoft.UI.Xaml.Settings
         DeferContextFlyoutInit = 61098986,
         [VelocityFeature("Feature_ExperimentalApi")]
         GamepadKeyRouting = 63117108,
+        [VelocityFeature("Feature_ExperimentalApi")]
         AlignExtendsContentIntoTitleBarBehavior = 8948,
     }
 
