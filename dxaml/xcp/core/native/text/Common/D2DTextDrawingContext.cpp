@@ -2227,6 +2227,20 @@ D2DTextDrawingContext::GetGlyphRunTransformAndBounds(
                 DWRITE_MEASURING_MODE_NATURAL,
                 &d2dBrushBounds
                 ));
+
+            // Bug 25278712: D2D can underreport monochrome glyph bounds by one pixel,
+            // clipping edge coverage. Pad the mask before integer alignment.
+            if (d2dBrushBounds.top != d2dBrushBounds.bottom)
+            {
+                d2dBrushBounds.top--;
+                d2dBrushBounds.bottom++;
+            }
+
+            if (d2dBrushBounds.left != d2dBrushBounds.right)
+            {
+                d2dBrushBounds.left--;
+                d2dBrushBounds.right++;
+            }
         }
 
         glyphRunBounds = GetRectF_RB(d2dBrushBounds);
@@ -2752,4 +2766,3 @@ CSolidColorBrush* D2DTextDrawingContext::GetAlternativeForegroundBrush(
 
     return pBrush;
 }
-

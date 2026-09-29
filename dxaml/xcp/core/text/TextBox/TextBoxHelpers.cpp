@@ -334,28 +334,48 @@ _Check_return_ HRESULT CTextBoxHelpers::SnapRectToPixel(
     switch (rectKind)
     {
     case SelectionRectangle:
-        // Snap outwards, allowing for axis inversion.
-
-        if (screenOrigin.x < screenFarCorner.x)
+        if (fabsf(screenOrigin.x - screenFarCorner.x) < 0.05f)
         {
-            screenOrigin.x    = floor(screenOrigin.x);
-            screenFarCorner.x = ceil(screenFarCorner.x);
+            // Keep near-zero selections empty rather than expanding them to one pixel.
+            pRect->Width = 0;
+            screenOrigin.x = floor(screenOrigin.x);
+            screenFarCorner.x = screenOrigin.x;
         }
         else
         {
-            screenOrigin.x    = ceil(screenOrigin.x);
-            screenFarCorner.x = floor(screenFarCorner.x);
+            // Snap outwards, allowing for axis inversion.
+            if (screenOrigin.x < screenFarCorner.x)
+            {
+                screenOrigin.x    = floor(screenOrigin.x);
+                screenFarCorner.x = ceil(screenFarCorner.x);
+            }
+            else
+            {
+                screenOrigin.x    = ceil(screenOrigin.x);
+                screenFarCorner.x = floor(screenFarCorner.x);
+            }
         }
 
-        if (screenOrigin.y < screenFarCorner.y)
+        if (fabsf(screenOrigin.y - screenFarCorner.y) < 0.05f)
         {
-            screenOrigin.y    = floor(screenOrigin.y);
-            screenFarCorner.y = ceil(screenFarCorner.y);
+            // Keep near-zero selections empty rather than expanding them to one pixel.
+            pRect->Height = 0;
+            screenOrigin.y = floor(screenOrigin.y);
+            screenFarCorner.y = screenOrigin.y;
         }
         else
         {
-            screenOrigin.y    = ceil(screenOrigin.y);
-            screenFarCorner.y = floor(screenFarCorner.y);
+            // Snap outwards, allowing for axis inversion.
+            if (screenOrigin.y < screenFarCorner.y)
+            {
+                screenOrigin.y    = floor(screenOrigin.y);
+                screenFarCorner.y = ceil(screenFarCorner.y);
+            }
+            else
+            {
+                screenOrigin.y    = ceil(screenOrigin.y);
+                screenFarCorner.y = floor(screenFarCorner.y);
+            }
         }
         break;
 
@@ -1170,4 +1190,3 @@ _Check_return_ HRESULT CTextBoxHelpers::GetAdjacentWordSelectionBoundaryPosition
         pAdjacentPosition,
         peAdjacentGravity);
 }
-
