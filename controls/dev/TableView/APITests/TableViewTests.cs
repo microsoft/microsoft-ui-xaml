@@ -12,11 +12,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 using WEX.Logging.Interop;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
+
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewColumnTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -312,10 +313,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     new SolidColorBrush(Microsoft.UI.Colors.Green), new SolidColorBrush(Microsoft.UI.Colors.Yellow),
                     () => tableView.AlternatingRowBackground, value => tableView.AlternatingRowBackground = (Brush)value);
                 VerifySettableDependencyProperty(tableView, TableView.EmptyTemplateProperty, "TableView.EmptyTemplate",
-                    CreateDataTemplate("Empty A"), CreateDataTemplate("Empty B"),
+                    CreateTextTemplate("Empty A"), CreateTextTemplate("Empty B"),
                     () => tableView.EmptyTemplate, value => tableView.EmptyTemplate = (DataTemplate)value);
                 VerifySettableDependencyProperty(tableView, TableView.GroupHeaderTemplateProperty, "TableView.GroupHeaderTemplate",
-                    CreateDataTemplate("Group A"), CreateDataTemplate("Group B"),
+                    CreateTextTemplate("Group A"), CreateTextTemplate("Group B"),
                     () => tableView.GroupHeaderTemplate, value => tableView.GroupHeaderTemplate = (DataTemplate)value);
                 VerifySettableDependencyProperty(tableView, TableView.DensityProperty, "TableView.Density",
                     TableViewDensity.Compact, TableViewDensity.Comfortable,
@@ -359,7 +360,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Header A", "Header B",
                     () => column.Header, value => column.Header = value);
                 VerifySettableDependencyProperty(column, TableViewColumn.HeaderTemplateProperty, "TableViewColumn.HeaderTemplate",
-                    CreateDataTemplate("Header A"), CreateDataTemplate("Header B"),
+                    CreateTextTemplate("Header A"), CreateTextTemplate("Header B"),
                     () => column.HeaderTemplate, value => column.HeaderTemplate = (DataTemplate)value);
                 VerifySettableDependencyProperty(column, TableViewColumn.HeaderTemplateSelectorProperty, "TableViewColumn.HeaderTemplateSelector",
                     new TestTemplateSelector(), new TestTemplateSelector(),
@@ -389,7 +390,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     true, false,
                     () => column.IsReadOnly, value => column.IsReadOnly = (bool)value);
                 VerifySettableDependencyProperty(column, TableViewColumn.CellEditingTemplateProperty, "TableViewColumn.CellEditingTemplate",
-                    CreateDataTemplate("Editor A"), CreateDataTemplate("Editor B"),
+                    CreateTextTemplate("Editor A"), CreateTextTemplate("Editor B"),
                     () => column.CellEditingTemplate, value => column.CellEditingTemplate = (DataTemplate)value);
                 VerifySettableDependencyProperty(column, TableViewColumn.CanSortProperty, "TableViewColumn.CanSort",
                     false, true,
@@ -411,7 +412,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Verifying remaining Tabular dependency properties.");
                 var templateColumn = new TableViewTemplateColumn();
                 VerifySettableDependencyProperty(templateColumn, TableViewTemplateColumn.CellTemplateProperty, "TableViewTemplateColumn.CellTemplate",
-                    CreateDataTemplate("Cell A"), CreateDataTemplate("Cell B"),
+                    CreateTextTemplate("Cell A"), CreateTextTemplate("Cell B"),
                     () => templateColumn.CellTemplate, value => templateColumn.CellTemplate = (DataTemplate)value);
 
                 var groupHeader = new TableViewGroupHeader();
@@ -553,8 +554,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
-
                 tableView = CreateBasicTableView();
                 tableView.Loaded += delegate { unorderedLoadEvent |= (++loadCount > unloadCount + 1); };
                 tableView.Unloaded += delegate { unorderedLoadEvent |= (++unloadCount > loadCount); };
@@ -653,16 +652,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
-
                 itemsSource = new CountingItemsSource(new List<Person>
                 {
                     new Person { Name = "Asha", Role = "Designer" },
                     new Person { Name = "Diego", Role = "Engineer" },
                 });
 
-                tableView = new TableView { ItemsSource = itemsSource, Width = 400, Height = 300 };
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                tableView = CreateTableViewWithItems(itemsSource);
 
                 host = new Grid();
                 host.Children.Add(tableView);
@@ -730,20 +726,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    EnsureTabularControlsResources();
-
-                    var tableView = new TableView
+                    var tableView = CreateTableViewWithItems(new List<Person>
                     {
-                        ItemsSource = new List<Person>
-                        {
-                            new Person { Name = "Asha", Role = "Designer" },
-                            new Person { Name = "Diego", Role = "Engineer" },
-                        },
-                        Width = 400,
-                        Height = 300,
-                    };
-
-                    tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                        new Person { Name = "Asha", Role = "Designer" },
+                        new Person { Name = "Diego", Role = "Engineer" },
+                    });
 
                     Content = tableView;
                     Content.UpdateLayout();
@@ -777,8 +764,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
-
                 tableView = CreateBasicTableView();
                 Content = tableView;
                 Content.UpdateLayout();
@@ -805,17 +790,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
-
-                tableView = new TableView
-                {
-                    ItemsSource = new List<Person>(),
-                    Width = 400,
-                    Height = 300,
-                    EmptyTemplate = CreateDataTemplate("No rows")
-                };
-
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                tableView = CreateTableViewWithItems(new List<Person>(), CreateTextTemplate("No rows"));
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -838,19 +813,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
-
                 // UpdateEmptyState defaults isEmpty to true when there is no ItemsSourceView at all,
                 // so a null source must reach the same state as an empty collection.
-                tableView = new TableView
-                {
-                    ItemsSource = null,
-                    Width = 400,
-                    Height = 300,
-                    EmptyTemplate = CreateDataTemplate("No rows")
-                };
-
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                tableView = CreateTableViewWithItems(null, CreateTextTemplate("No rows"));
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -873,10 +838,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
-
                 tableView = CreateBasicTableView();
-                tableView.EmptyTemplate = CreateDataTemplate("No rows");
+                tableView.EmptyTemplate = CreateTextTemplate("No rows");
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -899,19 +862,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
-
                 items = new ObservableCollection<Person> { new Person { Name = "Asha", Role = "Designer" } };
 
-                tableView = new TableView
-                {
-                    ItemsSource = items,
-                    Width = 400,
-                    Height = 300,
-                    EmptyTemplate = CreateDataTemplate("No rows")
-                };
-
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                tableView = CreateTableViewWithItems(items, CreateTextTemplate("No rows"));
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -947,19 +900,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
-
                 items = new ObservableCollection<Person>();
 
-                tableView = new TableView
-                {
-                    ItemsSource = items,
-                    Width = 400,
-                    Height = 300,
-                    EmptyTemplate = CreateDataTemplate("No rows")
-                };
-
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                tableView = CreateTableViewWithItems(items, CreateTextTemplate("No rows"));
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -991,17 +934,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
-
                 // No EmptyTemplate yet: the control loads empty but shows nothing.
-                tableView = new TableView
-                {
-                    ItemsSource = new List<Person>(),
-                    Width = 400,
-                    Height = 300,
-                };
-
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                tableView = CreateTableViewWithItems(new List<Person>());
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -1015,7 +949,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Exercises OnEmptyTemplatePropertyChanged, which both rewires the collection-changed
                 // subscription and re-evaluates the empty state.
-                tableView.EmptyTemplate = CreateDataTemplate("No rows");
+                tableView.EmptyTemplate = CreateTextTemplate("No rows");
                 Content.UpdateLayout();
             });
 
@@ -1036,17 +970,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
-
-                tableView = new TableView
-                {
-                    ItemsSource = new List<Person>(),
-                    Width = 400,
-                    Height = 300,
-                    EmptyTemplate = CreateDataTemplate("No rows")
-                };
-
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                tableView = CreateTableViewWithItems(new List<Person>(), CreateTextTemplate("No rows"));
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -1083,10 +1007,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
-
-                tableView = new TableView { ItemsSource = null, Width = 400, Height = 300 };
-                tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                tableView = CreateTableViewWithItems(null);
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -1164,41 +1085,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(expectedValue, clrGetter(), $"{name}: unexpected CLR property value.");
             Verify.AreEqual(expectedValue, target.GetValue(property),
                 $"{name}: the CLR property should read through the dependency property.");
-        }
-
-        private static DataTemplate CreateDataTemplate(string text)
-        {
-            return (DataTemplate)XamlReader.Load(
-                $@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                    <TextBlock Text='{text}' />
-                </DataTemplate>");
-        }
-
-        private static TableView CreateBasicTableView()
-        {
-            var tableView = new TableView
-            {
-                ItemsSource = new List<Person>
-                {
-                    new Person { Name = "Asha", Role = "Designer" },
-                    new Person { Name = "Diego", Role = "Engineer" },
-                },
-                Width = 400,
-                Height = 300,
-            };
-
-            tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
-            tableView.Columns.Add(new TableViewTextColumn { Header = "Role" });
-
-            return tableView;
-        }
-
-        private static void EnsureTabularControlsResources()
-        {
-            if (!Application.Current.Resources.MergedDictionaries.OfType<TabularControlsResources>().Any())
-            {
-                Application.Current.Resources.MergedDictionaries.Add(new TabularControlsResources());
-            }
         }
 
         private sealed class TestTemplateSelector : DataTemplateSelector
@@ -1303,13 +1189,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 _collectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(
                     NotifyCollectionChangedAction.Remove, oldItem, index));
             }
-        }
-
-        private sealed class Person
-        {
-            public string Name { get; set; }
-
-            public string Role { get; set; }
         }
     }
 }
