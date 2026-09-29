@@ -38,7 +38,7 @@
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="$(CommonFilesPath)AppPreamble.vcxproj" />
+  <Import Project="$(CommonFilesPath)AppPreamble.cpp.props" />
 
   <PropertyGroup Label="Packaging">
     <!-- Produce an unsigned package as part of the normal build -->
@@ -278,5 +278,5 @@
     </ProjectReference>
   </ItemGroup>
 
-  <Import Project="$(CommonFilesPath)RuntimeComponentPostamble.vcxproj" />
+  <Import Project="$(CommonFilesPath)RuntimeComponentPostamble.cpp.props" />
 </Project>

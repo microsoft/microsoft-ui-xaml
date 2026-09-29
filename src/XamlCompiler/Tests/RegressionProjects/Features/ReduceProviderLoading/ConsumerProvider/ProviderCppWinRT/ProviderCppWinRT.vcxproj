@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="$(CommonFilesPath)RuntimeComponentPreamble.vcxproj" />
+  <Import Project="$(CommonFilesPath)RuntimeComponentPreamble.cpp.props" />
 
   <ItemGroup>
     <ClInclude Include="MainPage.h">
@@ -48,5 +48,5 @@
     <None Include="packages.config" />
   </ItemGroup>
 
-  <Import Project="$(CommonFilesPath)RuntimeComponentPostamble.vcxproj" />
+  <Import Project="$(CommonFilesPath)RuntimeComponentPostamble.cpp.props" />
 </Project>

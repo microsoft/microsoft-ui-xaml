@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="$(CommonFilesPath)AppPreamble.vcxproj" />
+  <Import Project="$(CommonFilesPath)AppPreamble.cpp.props" />
 
   <ItemGroup>
     <ClInclude Include="App.xaml.h">
@@ -71,5 +71,5 @@
     <None Include="Directory.Build.props" />
   </ItemGroup>
 
-  <Import Project="$(CommonFilesPath)RuntimeComponentPostamble.vcxproj" />
+  <Import Project="$(CommonFilesPath)RuntimeComponentPostamble.cpp.props" />
 </Project>

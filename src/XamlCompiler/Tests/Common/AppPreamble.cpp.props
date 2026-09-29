@@ -4,13 +4,13 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--
     Shared preamble for C++/WinRT *application* test projects, the native counterpart of
-    AppPreamble.csproj. RuntimeComponentPreamble.vcxproj cannot be used by an application:
+    AppPreamble.cs.props. RuntimeComponentPreamble.cpp.props cannot be used by an application:
     it builds a DynamicLibrary, defines _WINRT_DLL, emits a .winmd and requires a module
     definition file.
 
     A consuming project supplies its identity (ProjectGuid / ProjectName / RootNamespace)
     and its desktop app-model properties, imports Microsoft.Cpp.Default.props, then imports
-    this file and, at the end, RuntimeComponentPostamble.vcxproj. The app-model properties
+    this file and, at the end, RuntimeComponentPostamble.cpp.props. The app-model properties
     have to live in the consuming project because they must be set before
     Microsoft.Cpp.Default.props, which is also what first makes $(CommonFilesPath) - and
     therefore this file - reachable.
@@ -25,7 +25,7 @@
     <!--
       $(WindowsAppSdkSelfContained) is deliberately left unset: for an application the
       Windows App SDK defaults it to true, which is what the C# test apps built from
-      AppPreamble.csproj already do. Setting it to false would require a package reference
+      AppPreamble.cs.props already do. Setting it to false would require a package reference
       to Microsoft.WindowsAppSDK.Runtime.
     -->
     <!--

@@ -3,7 +3,7 @@
  Licensed under the MIT License. -->
 <Project Sdk="Microsoft.NET.Sdk">
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
-  <Import Project="$(CommonFilesPath)ClassLibraryPreamble.csproj" />
+  <Import Project="$(CommonFilesPath)ClassLibraryPreamble.cs.props" />
 
   <PropertyGroup>
     <!-- Generate the C#/WinRT projection for this component's namespace only.
