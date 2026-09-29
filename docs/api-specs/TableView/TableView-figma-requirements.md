@@ -117,24 +117,31 @@ border and fill rather than by size. This matches the implementation's model, wh
 `GridLinesVisibility` drives row `BorderThickness` and `AlternatingRowBackground` drives the
 band fill, with the row style already carrying `ControlCornerRadius` (4px).
 
-### Vertical rules: header and section rows are excluded
+### Vertical rules: the header is included; section rows are not
 
-In the "Row dividers" panel's **`Grid`** example, vertical column separators appear on
-**body rows only**. The column-header row shows no vertical rules — just the horizontal rule
-beneath it — and section-title rows have none either, spanning the full width.
+Measuring the `Grid` variant in `Frame.png` settles this. Sampling a column boundary
+(x = 307) down the light `Grid` table:
 
-This is corroborated by measurement in the exported `Content*.pdf` examples: the vertical
-rules are 1px at 16.2% black, and their y-extents (1128-1168, 1169-1209, 1239-1279,
-1280-1320) begin **below** the section-title bands (1098-1127, 1209-1238). Section-title rows
-therefore carry no vertical rules. Those PDFs contain no column-header row, so the header
-exclusion rests on the `Grid` screenshot, where the row is explicitly labelled "Cell header".
+| Band | y range | Value |
+| --- | --- | --- |
+| Header | 422-445 | `245`, inset ~3px from each edge of the header band |
+| Body row | full row height | `242`, edge to edge |
 
-The `Lined` example has horizontal rules throughout and no vertical rules anywhere, so the
-distinction is specific to `Grid`.
+So the header **does** carry vertical separators, drawn slightly lighter and vertically inset
+relative to the body's. Section-title rows carry none and span the full width.
 
-> **Resolved.** `TableView::RebuildHeaders` previously stamped a vertical separator per header
-> cell and toggled it from `GridLinesVisibility`. That separator is gone; vertical rules are
-> body-only.
+> An earlier revision of this document claimed the header had no vertical rules. That was a
+> measurement error: the filter used required the line to persist 8px above and below the sample
+> point, which the inset header rule does not. The implementation was corrected to match.
+
+### The header's bottom rule is structural, not a grid line
+
+In the **banded** (default, ungridded) variant, sampling y = 96 across the full width returns
+`229` at every x, with `255` immediately above and below. The default table therefore has a
+full-width rule under its header even though it has no grid lines anywhere else.
+
+The header separator is consequently not driven by `GridLinesVisibility`; the control template
+owns its thickness and nothing toggles it.
 
 ### Row component properties
 
@@ -525,9 +532,9 @@ Addressed in this PR:
 | Selection accent uses `Fill Color/Accent/Default` | `TabularSurfaceSelectionIndicatorBrush` now resolves `SystemAccentColorDark1` in Light and `SystemAccentColorLight2` in Dark, matching `AccentFillColorDefaultBrush`. It previously used raw `SystemAccentColor`, which is the wrong shade and was identical in both themes. HighContrast keeps `SystemColorHighlightColor`. |
 | Header is shorter than a body row | New `TableViewHeaderMinHeight` resource (32 Standard / 26 Compact / 40 Comfortable), resolved by `GetDensityHeaderMinHeight()`. Headers previously reused the body row min-height. |
 | Banding shades the first row | `RefreshRowBackground` now bands even 0-based indices. Departs from WPF `DataGrid`, which bands odd rows. |
-| Column headers carry no vertical rules | The header separator is now stamped collapsed unconditionally instead of tracking `GridLinesVisibility`. Body rows still draw vertical rules in `All` / `Vertical`. |
+| Column headers carry vertical rules with the body | The per-header-cell separator tracks `GridLinesVisibility`, so `All` / `Vertical` render a complete grid. The design draws the header's rule lighter and vertically inset; the implementation reuses the body's brush at full height. |
 | Header row carries no fill | `TabularSurfaceHeaderBackgroundBrush` is now `Transparent` in Light and Dark. It previously painted ~15% black/white, which the design does not show. HighContrast keeps `SystemColorWindowColor` so the band stays legible there. |
-| Header separator survives a gridline toggle | `ApplyGridLinesToHeader` used `ClearValue` to restore the "on" thickness, but a `ControlTemplate` sets `BorderThickness` as a local value, so `ClearValue` discarded the template's `0,0,0,1` and resolved to `0`. The header lost its rule permanently. The template's value is now captured at `OnApplyTemplate` and toggled against zero. |
+| Header separator is always drawn | `ApplyGridLinesToHeader` no longer toggles the header's bottom rule from `GridLinesVisibility`. The design draws that rule on the ungridded default table, so it is structural: the template owns the thickness and nothing switches it off. This also removes a latent bug, since the previous `ClearValue` discarded the template's local `0,0,0,1` and resolved to `0`. |
 
 ### Measured from `Table.png`, the default table export
 

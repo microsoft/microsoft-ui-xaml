@@ -25,6 +25,7 @@ static constexpr std::wstring_view s_RowsRepeaterPartName{ L"PART_RowsRepeater"s
 static constexpr std::wstring_view s_HeaderRowPartName{ L"PART_HeaderRow"sv };
 static constexpr std::wstring_view s_HeaderHostPartName{ L"PART_HeaderHost"sv };
 static constexpr std::wstring_view s_EmptyStatePresenterPartName{ L"PART_EmptyStatePresenter"sv };
+static constexpr std::wstring_view s_HeaderGridLineName{ L"TableViewHeaderGridLine"sv };
 static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGripperWidth"sv };
 // Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
 // unusable.
@@ -140,11 +141,9 @@ namespace
         return nullptr;
     }
 
-    constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
-
-    bool WantsHorizontalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
+    bool WantsVerticalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
     {
-        return visibility == winrt::TableViewGridLinesVisibility::Horizontal ||
+        return visibility == winrt::TableViewGridLinesVisibility::Vertical ||
             visibility == winrt::TableViewGridLinesVisibility::All;
     }
 
@@ -477,11 +476,6 @@ void TableView::OnApplyTemplate()
 
     m_rowsRepeater.set(GetTemplateChild(hstring{ s_RowsRepeaterPartName }).try_as<winrt::ItemsRepeater>());
     m_headerRow.set(GetTemplateChild(hstring{ s_HeaderRowPartName }).try_as<winrt::FrameworkElement>());
-    m_headerRowBorderThickness = {};
-    if (auto headerBorder = m_headerRow.get().try_as<winrt::Border>())
-    {
-        m_headerRowBorderThickness = headerBorder.BorderThickness();
-    }
     m_headerHost.set(GetTemplateChild(hstring{ s_HeaderHostPartName }).try_as<winrt::Panel>());
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
     auto weakThis = get_weak();
@@ -800,20 +794,8 @@ void TableView::ApplyGridLinesToHeader()
 {
     const auto visibility = GridLinesVisibility();
 
-    if (auto headerFE = m_headerRow.get())
-    {
-        if (auto headerBorder = headerFE.try_as<winrt::Border>())
-        {
-            if (WantsHorizontalLines(visibility))
-            {
-                headerBorder.BorderThickness(m_headerRowBorderThickness);
-            }
-            else
-            {
-                headerBorder.BorderThickness(s_zeroThickness);
-            }
-        }
-    }
+    // The header's bottom rule is structural, not a grid line: the design draws it even on the
+    // ungridded default table. The template owns its thickness, so nothing toggles it here.
 
     auto host = m_headerHost.get();
     if (!host)
@@ -821,8 +803,30 @@ void TableView::ApplyGridLinesToHeader()
         return;
     }
 
-    // Vertical rules are body-only: the header band is separated by its horizontal rule alone,
-    // and group headers span the full width. Nothing else to apply here.
+    // Vertical rules span header and body so `All` means a complete grid (WPF DataGrid parity).
+    // The design's default table is ungridded, which the `None` default already delivers.
+    const bool wantVertical = WantsVerticalLines(visibility);
+    const auto headerGridLineName = winrt::hstring{ s_HeaderGridLineName };
+    const auto headerCells = host.Children();
+    const uint32_t headerCellCount = headerCells.Size();
+    for (uint32_t i = 0; i < headerCellCount; ++i)
+    {
+        if (auto headerCell = headerCells.GetAt(i).try_as<winrt::Panel>())
+        {
+            const auto children = headerCell.Children();
+            const uint32_t childCount = children.Size();
+            for (uint32_t childIndex = 0; childIndex < childCount; ++childIndex)
+            {
+                if (auto border = children.GetAt(childIndex).try_as<winrt::Border>())
+                {
+                    if (border.Name() == headerGridLineName)
+                    {
+                        border.Visibility(wantVertical ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void TableView::ForEachRealizedRow(std::function<void(winrt::TableViewRow const&)> const& fn)
@@ -1520,6 +1524,8 @@ void TableView::RebuildHeaders()
     winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
     // Header cells are shorter than body rows by design (32 vs 40 at Standard).
     const double cachedHeaderMinHeight = GetDensityHeaderMinHeight();
+    const bool wantVerticalHeaderLines = WantsVerticalLines(GridLinesVisibility());
+    const auto cachedHeaderGridLineBrush = GetGridLineBrush();
     const double cachedHeaderFontSize = GetHeaderFontSize();
     const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
@@ -1593,6 +1599,17 @@ void TableView::RebuildHeaders()
             content.FontSize(cachedHeaderFontSize);
             content.FontWeight(winrt::FontWeights::SemiBold());
             headerCell.Children().Append(content);
+
+            {
+                winrt::Border headerGridLine;
+                headerGridLine.Name(winrt::hstring{ s_HeaderGridLineName });
+                headerGridLine.Width(1);
+                headerGridLine.HorizontalAlignment(logicalEndAlignment);
+                headerGridLine.IsHitTestVisible(false);
+                headerGridLine.Visibility(wantVerticalHeaderLines ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+                headerGridLine.Background(cachedHeaderGridLineBrush);
+                headerCell.Children().Append(headerGridLine);
+            }
 
             // Tag header cells so frozen-column refresh can map them back to columns.
             headerCell.Tag(column);

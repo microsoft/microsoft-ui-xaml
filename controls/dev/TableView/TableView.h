@@ -779,10 +779,6 @@ private:
     tracker_ref<winrt::ItemsRepeater> m_rowsRepeater{ this };
     tracker_ref<winrt::ContentControl> m_emptyStatePresenter{ this };
     tracker_ref<winrt::FrameworkElement> m_headerRow{ this };
-    // The template, not this class, decides how thick the header's separator is. Captured when the
-    // template is applied because toggling it off and back on must restore that value, and
-    // ClearValue would discard it: a ControlTemplate sets it as a local value.
-    winrt::Thickness m_headerRowBorderThickness{};
     tracker_ref<winrt::Panel> m_headerHost{ this };
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
     // Keeps the header band locked to the body when focus moves to an off-screen header.
