@@ -58,6 +58,8 @@ namespace DirectUI
 
         bool CoreContinueAsyncAction() override { return this->CoreContinueAsyncActionImpl(); }
 
+        void CoreCancelAsyncAction() override { this->CoreCancelAsyncActionImpl(); }
+
         void CoreFireCompletion() override { this->CoreFireCompletionImpl(); }
 
         void CoreReleaseRef(void) override { this->CoreReleaseRefImpl(); }

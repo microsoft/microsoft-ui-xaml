@@ -48,6 +48,11 @@ namespace DirectUI
             return CoreContinueAsyncActionImpl();
         }
 
+        void CoreCancelAsyncAction() override
+        {
+            CoreCancelAsyncActionImpl();
+        }
+
         void CoreFireCompletion() override
         {
             CoreFireCompletionImpl();
