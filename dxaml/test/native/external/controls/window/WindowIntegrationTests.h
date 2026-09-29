@@ -103,6 +103,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(WindowWidthHeightSizeChangedReentrancy)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates restored sizes when SizeChanged switches presenters or toggles the title bar during a Width setter.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(WindowWidthHeightAfterCloseChecksThread)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that Width/Height getters and setters enforce thread affinity both before and after close.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")

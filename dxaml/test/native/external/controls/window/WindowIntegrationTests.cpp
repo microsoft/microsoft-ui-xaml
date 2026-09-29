@@ -1156,6 +1156,96 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
     }
 
+    void WindowIntegrationTests::WindowWidthHeightSizeChangedReentrancy()
+    {
+        using Microsoft::UI::Windowing::AppWindowPresenterKind;
+
+        TestCleanupWrapper cleanup;
+
+        for (const bool toggleTitleBar : { false, true })
+        {
+            for (const bool switchPresenter : { false, true })
+            {
+                if (!toggleTitleBar && !switchPresenter)
+                {
+                    continue;
+                }
+
+                for (const bool setHeight : { false, true })
+                {
+                    WindowAutoCloser window1;
+                    auto sizeChangedRegistration = CreateSafeEventRegistration(xaml::Window, SizeChanged);
+                    bool handledResize = false;
+                    wf::Size expectedRestoredSize{};
+                    HWND windowHandle = nullptr;
+
+                    RunOnUIThread([&]()
+                    {
+                        window1.Attach(ref new xaml::Window());
+                        window1->Content = ref new xaml_controls::Grid();
+                        window1->Width = 500.0;
+                        if (setHeight)
+                        {
+                            window1->Height = 320.0;
+                        }
+                        Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+                        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(IID_PPV_ARGS(&windowNative)));
+                        VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+                        window1->Activate();
+                    });
+                    TestServices::WindowHelper->WaitForIdle();
+
+                    RunOnUIThread([&]()
+                    {
+                        sizeChangedRegistration.Attach(window1.get(),
+                            ref new wf::TypedEventHandler<Platform::Object^, xaml::WindowSizeChangedEventArgs^>(
+                                [&](Platform::Object^, xaml::WindowSizeChangedEventArgs^)
+                                {
+                                    if (handledResize)
+                                    {
+                                        return;
+                                    }
+                                    handledResize = true;
+                                    if (toggleTitleBar)
+                                    {
+                                        window1->ExtendsContentIntoTitleBar = true;
+                                    }
+                                    const auto bounds = window1->Bounds;
+                                    expectedRestoredSize = wf::Size{ bounds.Width, bounds.Height };
+                                    if (switchPresenter)
+                                    {
+                                        window1->AppWindow->SetPresenter(AppWindowPresenterKind::FullScreen);
+                                    }
+                                }));
+
+                        window1->Width = 620.0;
+                        VERIFY_IS_TRUE(handledResize);
+                        if (switchPresenter)
+                        {
+                            VERIFY_ARE_EQUAL(AppWindowPresenterKind::FullScreen, window1->AppWindow->Presenter->Kind);
+                        }
+                        VERIFY_IS_TRUE(std::abs(window1->Width - expectedRestoredSize.Width) <= 2.0);
+                        VERIFY_IS_TRUE(std::abs(window1->Height - expectedRestoredSize.Height) <= 2.0);
+
+                        if (switchPresenter)
+                        {
+                            window1->AppWindow->SetPresenter(AppWindowPresenterKind::Default);
+                        }
+                        else
+                        {
+                            // The restore-size getter uses the tracked chrome while maximized.
+                            ::ShowWindow(windowHandle, SW_MAXIMIZE);
+                            VERIFY_IS_TRUE(std::abs(window1->Width - expectedRestoredSize.Width) <= 2.0);
+                            VERIFY_IS_TRUE(std::abs(window1->Height - expectedRestoredSize.Height) <= 2.0);
+                            ::ShowWindow(windowHandle, SW_RESTORE);
+                        }
+                    });
+                    TestServices::WindowHelper->WaitForIdle();
+                }
+            }
+        }
+    }
+
     void WindowIntegrationTests::WindowWidthHeightAfterCloseChecksThread()
     {
         TestCleanupWrapper cleanup;

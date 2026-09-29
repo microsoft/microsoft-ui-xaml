@@ -157,7 +157,7 @@ namespace DirectUI
         // "RestoredClientSize" is WinUI's name for what the window's client size is when in the normal state and its
         // AppWindow is using the default Overlapped presenter.
         _Check_return_ HRESULT GetRestoredClientSizeInDips(_Out_ wf::Size* pValue);
-        _Check_return_ HRESULT SetRestoredClientSizeInDips(std::optional<double> width, std::optional<double> height);
+        _Check_return_ HRESULT ApplyRestoredClientSizeInDips(std::optional<double> width, std::optional<double> height);
         _Check_return_ HRESULT GetSavedRestoreChromeSizeInPixels(_Out_ SIZE* pChromeSize);
         
         // Applies the requested client size now, or defers it (pending) until we can honor it.
@@ -170,7 +170,7 @@ namespace DirectUI
         // Live chrome (outer minus client) in pixels
         _Check_return_ HRESULT MeasureLiveChromeInPixels(_Out_ SIZE* pChromeSize);
         float GetWindowScale();
-        // Records the tracked restored size (client + chrome, both DIPs) as a unit.
+        // Tracks the restored size (client + chrome, both DIPs) as a unit.
         void SetTrackedRestoredSize(wf::Size clientDips, wf::Size chromeDips);
         _Check_return_ HRESULT ValidateWidthHeightValue(DOUBLE value);
 
@@ -181,10 +181,10 @@ namespace DirectUI
         // True once the app has opted into preserving client height across title-bar toggles.
         bool HasExplicitClientHeight() const { return m_hasExplicitClientHeight; }
 
-        // Records the live client size as the restored size, but only while in the restored state.
-        void UpdateLastRestoredClientSize();
-        // Defers UpdateLastRestoredClientSize onto the dispatcher queue, coalescing WM_SIZE bursts.
-        void ScheduleUpdateLastRestoredClientSize();
+        // Tracks the live client size as the restored size, but only while in the restored state.
+        void TrackLastRestoredClientSize();
+        // Defers TrackLastRestoredClientSize onto the dispatcher queue, coalescing WM_SIZE bursts.
+        void ScheduleTrackLastRestoredClientSize();
         // Applies a Width/Height remembered before first show or while in a non-sizing presenter.
         _Check_return_ HRESULT ApplyPendingClientSizeIfNeeded();
         // On AppWindow.Changed (presenter swap): applies a Width/Height remembered while in a non-sizing
@@ -244,6 +244,10 @@ namespace DirectUI
         };
         std::optional<TrackedRestoredSize> m_trackedRestoredSize;
 
+        // When true, we're applying a restored-size request through SetWindowPos and expect a synchronous WM_SIZE.
+        // On the next WM_SIZE, clear this flag and track the size before raising Window.SizeChanged.
+        bool m_trackRestoredSizeOnNextSize = false;
+
         // We've scheduled an update of the restored client size onto the dispatcher queue
         bool m_restoredSizeUpdateScheduled = false;
 
@@ -251,7 +255,7 @@ namespace DirectUI
         bool m_inSizeMove = false;
 
         // Lifetime sentinel for deferred (DispatcherQueue) restored-size callbacks. Lazily allocated
-        // the first time we enqueue such a callback (ScheduleUpdateLastRestoredClientSize); stays null
+        // the first time we enqueue such a callback (ScheduleTrackLastRestoredClientSize); stays null
         // for windows that never schedule one. Shutdown() clears it so a callback outliving the window
         // no-ops instead of touching freed memory.
         std::shared_ptr<bool> m_isWindowAlive;
