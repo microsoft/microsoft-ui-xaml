@@ -16,6 +16,11 @@ public:
     {
     }
 
+    winrt::hstring GetRuntimeClassName() const
+    {
+        return winrt::hstring_name_of<winrt::Grid>();
+    }
+
     winrt::AutomationPeer OnCreateAutomationPeer()
     {
         return winrt::make<TableViewColumnHeaderAutomationPeer>(

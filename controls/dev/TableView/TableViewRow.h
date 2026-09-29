@@ -85,6 +85,11 @@ public:
     // The cell wrapper hosting the editor, or null when no cell edit is open. Used by the cells panel
     // to keep an editing cell out of the Auto-width calculation.
     winrt::UIElement GetEditingCellWrapper() const { return m_editingCellWrapper.get(); }
+    winrt::UIElement GetDisplayElementForAutomation(winrt::UIElement const& cell) const
+    {
+        return m_editingCellWrapper.get() == cell || m_pendingEditingCell.get() == cell
+            ? m_editingDisplayElement.get() : nullptr;
+    }
 
     // Drops the edit bookkeeping and puts the display visual back, WITHOUT moving focus. Used on the
     // recycle / rebuild paths, which run inside the measure pass where changing focus would trip
@@ -99,6 +104,8 @@ public:
         const winrt::PointerRoutedEventArgs& args);
 
 private:
+    void ResetCellAutomationNames();
+
     // Installs a generated display element as a cell's content, wiring the ContentPresenter Content
     // binding a template column needs. GenerateElement alone is not a complete cell.
     void AttachCellContent(const winrt::Grid& cellWrapper, const winrt::FrameworkElement& cellElement);
@@ -167,6 +174,7 @@ private:
     // so the cell returns to the exact element (and bindings) it had before the edit.
     tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
     tracker_ref<winrt::Grid> m_editingCellWrapper{ this };
+    winrt::weak_ref<winrt::UIElement> m_pendingEditingCell{ nullptr };
     tracker_ref<winrt::FrameworkElement> m_editingElement{ this };
     tracker_ref<winrt::UIElement> m_editingDisplayElement{ this };
     winrt::weak_ref<winrt::TableViewCellAutomationPeer> m_editingAutomationPeer{ nullptr };
