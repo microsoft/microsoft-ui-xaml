@@ -6284,6 +6284,7 @@ void ScrollPresenter::ProcessOffsetsChange(
     double zoomedHorizontalOffset = offsetsChange->ZoomedHorizontalOffset();
     double zoomedVerticalOffset = offsetsChange->ZoomedVerticalOffset();
     winrt::ScrollingScrollOptions options = offsetsChange->Options().try_as<winrt::ScrollingScrollOptions>();
+    const bool isBringIntoViewRequest = (static_cast<char>(operationTrigger) & static_cast<char>(InteractionTrackerAsyncOperationTrigger::BringIntoViewRequest)) != 0;
 
     SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
         L"zoomedHorizontalOffset",
@@ -6300,7 +6301,7 @@ void ScrollPresenter::ProcessOffsetsChange(
 
     animationMode = GetComputedAnimationMode(animationMode);
 
-    if (static_cast<char>(operationTrigger) & static_cast<char>(InteractionTrackerAsyncOperationTrigger::BringIntoViewRequest))
+    if (isBringIntoViewRequest)
     {
         if (winrt::UIElement content = Content())
         {
@@ -6412,6 +6413,17 @@ void ScrollPresenter::ProcessOffsetsChange(
         }
         else
         {
+            if (isBringIntoViewRequest)
+            {
+                // The InteractionTracker clamps TryUpdatePosition against its MinPosition/MaxPosition expression
+                // animations, which are evaluated on the compositor thread and may still reflect the previous layout
+                // after a content resize. Clamp to the UI thread's up-to-date extent instead, and disable the tracker's
+                // clamping below so it cannot re-apply the stale bounds.
+                // These bounds must stay in sync with ComputeMinMaxPositions / ComputePositionFromOffsets.
+                zoomedHorizontalOffset = std::clamp(zoomedHorizontalOffset, 0.0, AnticipatedScrollableWidth());
+                zoomedVerticalOffset = std::clamp(zoomedVerticalOffset, 0.0, AnticipatedScrollableHeight());
+            }
+
             const winrt::float2 targetPosition = ComputePositionFromOffsets(zoomedHorizontalOffset, zoomedVerticalOffset);
 
             SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_METH_STR, METH_NAME, this,
@@ -6424,7 +6436,8 @@ void ScrollPresenter::ProcessOffsetsChange(
                 TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
             m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdatePosition(
-                winrt::float3(targetPosition, 0.0f));
+                winrt::float3(targetPosition, 0.0f),
+                isBringIntoViewRequest ? winrt::InteractionTrackerClampingOption::Disabled : winrt::InteractionTrackerClampingOption::Auto);
             m_lastInteractionTrackerAsyncOperationType = InteractionTrackerAsyncOperationType::TryUpdatePosition;
 
             double newAnticipatedZoomedHorizontalOffset = std::max(0.0, zoomedHorizontalOffset);
