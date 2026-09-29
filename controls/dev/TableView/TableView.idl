@@ -407,7 +407,9 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
 //   PART_CellsHost               — Panel. One cell wrapper per column, in Columns order.
 //   PART_CellForegroundPresenter — ContentPresenter hosting PART_CellsHost. Exists because a
 //                                  Border has no Foreground for the Selected* states to animate.
-//   PART_SelectionIndicator      — UIElement. Opacity animated 0 -> 1 by the Selected* states.
+//   PART_SelectionIndicator      — Shape (default: Rectangle). Selected* states animate Opacity
+//                                  0 -> 1; SelectedDisabled also animates Fill. Custom templates
+//                                  using other indicator types must adapt the state targets.
 //
 //   CommonStates: Normal, PointerOver, Pressed, Disabled,
 //                 Selected, SelectedPointerOver, SelectedPressed, SelectedDisabled

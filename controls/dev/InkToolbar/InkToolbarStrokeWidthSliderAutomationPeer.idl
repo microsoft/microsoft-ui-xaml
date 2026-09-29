@@ -1,0 +1,16 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+// Peer for the primitives InkToolbarStrokeWidthSlider; created in code (OnCreateAutomationPeer), so it
+// does not need markup registration, but it lives in the peers namespace to mirror ColorPickerSlider.
+namespace MU_XAP_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass InkToolbarStrokeWidthSliderAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.SliderAutomationPeer
+{
+    [method_name("CreateInstanceWithOwner")] InkToolbarStrokeWidthSliderAutomationPeer(MU_XCP_NAMESPACE.InkToolbarStrokeWidthSlider owner);
+}
+
+}

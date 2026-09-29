@@ -11,9 +11,8 @@
             <!-- This page defines ONLY the TableView* metric tokens (row height, font size, cell/
                  header padding, density variants). The shared TabularSurface* brush palette lives in
                  the single canonical source
-                 controls/dev/CommonStyles/TabularSurfaces_themeresources.xaml (with last-resort
-                 re-resolving {ThemeResource} fallbacks at the root of TableView.xaml for hosts that do
-                 not merge it). Keep brushes out of this page: mirroring them here duplicates every
+                 controls/dev/CommonStyles/TabularSurfaces_themeresources.xaml, supplied by
+                 TabularControlsResources. Keep brushes out of this page: mirroring them here duplicates every
                  TabularSurface* x:Key across the same Default/Light/HighContrast dictionaries, and
                  with theme-XBF emission enabled for this binary the two ThemeResources pages merge
                  and the overlapping keys raise a duplicate-key build failure. -->
