@@ -158,6 +158,14 @@ void TableViewRow::OnApplyTemplate()
     ResetCellAutomationNames();
     m_cellsHost.set(GetTemplateChild(hstring{ s_CellsHostPartName }).try_as<winrt::Panel>());
 
+    if (auto const host = m_cellsHost.get())
+    {
+        // Scope must sit on the cells host, not on TableViewRow: the row is a Control and therefore
+        // focusable, so a "Once" scope there makes the focus manager hand focus to the row, which
+        // OnRowGettingFocus redirects back into a cell - a trap. A Panel is never focusable.
+        host.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
+    }
+
     if (auto const cellsPanel = m_cellsHost.get().try_as<winrt::TableViewCellsPanel>())
     {
         winrt::get_self<TableViewCellsPanel>(cellsPanel)->SetOwningRowInternal(*this);
@@ -355,6 +363,16 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
+    // Focus leaving this row must not be pulled back into a cell, or Tab can never exit the table.
+    // Only focus arriving from outside the row is an entry that wants a cell.
+    auto const direction = args.Direction();
+    if ((direction == winrt::FocusNavigationDirection::Next ||
+         direction == winrt::FocusNavigationDirection::Previous) &&
+        IsSelfOrDescendantInternal(args.OldFocusedElement()))
+    {
+        return;
+    }
+
     // A pointer press names the row under the pointer. PART_CellsHost is left-aligned, so a press
     // to the right of the last column resolves no cell and TableViewRow::OnPointerPressed falls
     // back to focusing the row container, which arrives here. The remembered-cursor restore below
@@ -375,6 +393,22 @@ void TableViewRow::OnRowGettingFocus(
     // in flight, for one). Failing is fine - focus simply stays on the row, which is what this
     // control did before cell focus existed.
     args.TrySetNewFocusedElement(target);
+}
+
+bool TableViewRow::IsSelfOrDescendantInternal(const winrt::DependencyObject& element)
+{
+    winrt::TableViewRow const self = *this;
+    auto const selfObject = self.try_as<winrt::DependencyObject>();
+    auto current = element;
+    while (current)
+    {
+        if (current == selfObject)
+        {
+            return true;
+        }
+        current = winrt::VisualTreeHelper::GetParent(current);
+    }
+    return false;
 }
 
 void TableViewRow::OnRowGotFocus()
