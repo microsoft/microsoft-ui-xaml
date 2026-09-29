@@ -581,28 +581,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.IsTrue(cells[0].Focus(FocusState.Keyboard), "A cell must be able to take focus.");
                 Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[0]);
-
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.Right));
-                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[1],
-                    "Right moves one cell within the row.");
-
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Right));
-                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[2]);
-
-                // Clamped at the last visible column, and the key is still consumed so it cannot
-                // fall through and scroll the body sideways.
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Right));
-                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[2],
-                    "Right does not wrap past the last visible column.");
-
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Left));
-                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[1]);
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Left));
-                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[0]);
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.Left));
-                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[0],
-                    "Left does not wrap past the first visible column.");
             });
+
+            PressKey(VirtualKey.Right);
+            RunOnUIThread.Execute(() => Verify.IsTrue(
+                FocusManager.GetFocusedElement(table.XamlRoot) == VisibleCells(table, 0)[1],
+                "Right moves one cell within the row."));
+
+            PressKey(VirtualKey.Right);
+            RunOnUIThread.Execute(() => Verify.IsTrue(
+                FocusManager.GetFocusedElement(table.XamlRoot) == VisibleCells(table, 0)[2]));
+
+            // Clamped at the last visible column, and the key is still consumed so it cannot
+            // fall through and scroll the body sideways.
+            VerifyKeyIsConsumed(table, VirtualKey.Right,
+                "A clamped Right must still be consumed.");
+            RunOnUIThread.Execute(() => Verify.IsTrue(
+                FocusManager.GetFocusedElement(table.XamlRoot) == VisibleCells(table, 0)[2],
+                "Right does not wrap past the last visible column."));
+
+            PressKey(VirtualKey.Left);
+            RunOnUIThread.Execute(() => Verify.IsTrue(
+                FocusManager.GetFocusedElement(table.XamlRoot) == VisibleCells(table, 0)[1]));
+
+            PressKey(VirtualKey.Left);
+            RunOnUIThread.Execute(() => Verify.IsTrue(
+                FocusManager.GetFocusedElement(table.XamlRoot) == VisibleCells(table, 0)[0]));
+
+            VerifyKeyIsConsumed(table, VirtualKey.Left,
+                "A clamped Left must still be consumed.");
+            RunOnUIThread.Execute(() => Verify.IsTrue(
+                FocusManager.GetFocusedElement(table.XamlRoot) == VisibleCells(table, 0)[0],
+                "Left does not wrap past the first visible column."));
         }
 
         [TestMethod]
@@ -610,32 +620,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var table = CreateLoadedNavTable();
             RunOnUIThread.Execute(() =>
-            {
-                var cells = VisibleCells(table, 0);
-                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));
+                Verify.IsTrue(VisibleCells(table, 0)[1].Focus(FocusState.Keyboard)));
 
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.End));
-                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[2],
+            PressKey(VirtualKey.End);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == VisibleCells(table, 0)[2],
                     "End moves to the last cell of the CURRENT row.");
                 Verify.AreEqual(0, FocusedRowIndex(table), "End must not change rows.");
+            });
 
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Home));
-                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[0]);
+            PressKey(VirtualKey.Home);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == VisibleCells(table, 0)[0]);
                 Verify.AreEqual(0, FocusedRowIndex(table));
             });
 
-            RunOnUIThread.Execute(() =>
-            {
-                var cells = VisibleCells(table, 0);
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.End, control: true));
-            });
+            PressKey(VirtualKey.End, control: true);
+            RunOnUIThread.Execute(() => table.UpdateLayout());
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(NavRowCount - 1, FocusedRowIndex(table), "Ctrl+End goes to the last row.");
                 Verify.AreEqual(2, FocusedColumnIndex(table), "Ctrl+End goes to the last cell of that row.");
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(FocusedCell(table), VirtualKey.Home, control: true));
             });
+
+            PressKey(VirtualKey.Home, control: true);
+            RunOnUIThread.Execute(() => table.UpdateLayout());
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
             {
@@ -713,6 +725,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void RowNameOmitsTheFocusedCellFromTheCellJoin()
+        {
+            var table = CreateLoadedTwoValueTable();
+            RunOnUIThread.Execute(() =>
+            {
+                var row = RealizedRow(table, 0);
+                var rowPeer = FrameworkElementAutomationPeer.CreatePeerForElement(row);
+                Verify.IsTrue(rowPeer is TableViewRowAutomationPeer);
+
+                // The regression this test exists to catch: a model that does not override
+                // ToString() stringifies to its type name, so any row name built from the data
+                // item is unreadable. The fixture deliberately keeps the default.
+                var typeName = row.DataContext.ToString();
+                Verify.IsTrue(typeName.Contains("Item"),
+                    "The fixture must keep the default ToString() for this test to mean anything.");
+
+                // Focus is outside this row's cells: every visible cell contributes.
+                Verify.AreEqual("Al, Redmond", rowPeer.GetName());
+
+                var cells = VisibleCells(table, 0);
+                Verify.AreEqual(2, cells.Length);
+                Verify.IsTrue(cells[0].Focus(FocusState.Keyboard));
+                var cellPeer = FrameworkElementAutomationPeer.CreatePeerForElement(cells[0]);
+                Verify.AreEqual("Name, Al", cellPeer.GetName(),
+                    "The focused cell peer is what already carries the cell text.");
+
+                // The row is the focus CONTAINER now, not the focus destination: Narrator reads
+                // the cell's focus change AND the row's selection event, so the focused cell's
+                // text is dropped from the join - and only that cell's.
+                var containerName = rowPeer.GetName();
+                Verify.AreEqual("Redmond", containerName,
+                    "The join must keep the unfocused columns and drop only the focused cell.");
+                Verify.AreNotEqual(typeName, containerName,
+                    "The row must never name itself by stringifying its data item.");
+
+                // Focus the other cell: the omission follows focus, so neither assertion above
+                // can hold by coincidence.
+                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));
+                Verify.AreEqual("Al", rowPeer.GetName());
+
+                // Focus leaves the row's cells: the full join returns.
+                var tablePeer = FrameworkElementAutomationPeer.CreatePeerForElement(table);
+                var header = PeerAccess.FromProvider(
+                    ((ITableProvider)tablePeer.GetPattern(PatternInterface.Table)).GetColumnHeaders()[0]);
+                header.SetFocus();
+                Verify.IsTrue(header.HasKeyboardFocus());
+                Verify.AreEqual("Al, Redmond", rowPeer.GetName());
+            });
+        }
+
+        [TestMethod]
         public void MovingWithinARowRaisesNoSelectionChange()
         {
             var table = CreateLoadedNavTable();
@@ -720,15 +783,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 table.SelectionMode = TableViewSelectionMode.Single;
-                var cells = VisibleCells(table, 0);
-                Verify.IsTrue(cells[0].Focus(FocusState.Keyboard));
+                Verify.IsTrue(VisibleCells(table, 0)[0].Focus(FocusState.Keyboard));
                 table.SelectionChanged += (s, e) => ++selectionChanges;
+            });
 
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.Right));
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Right));
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Home));
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.End));
+            PressKey(VirtualKey.Right);
+            PressKey(VirtualKey.Right);
+            PressKey(VirtualKey.Home);
+            PressKey(VirtualKey.End);
 
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, FocusedRowIndex(table), "The cursor must have stayed in row 0.");
+                Verify.AreEqual(2, FocusedColumnIndex(table), "The cursor must actually have moved.");
                 Verify.AreEqual(0, selectionChanges,
                     "Selection is row-level: moving the cursor inside one row must not re-raise it.");
             });
@@ -742,10 +809,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsTrue(VisibleCells(table, 0)[1].Focus(FocusState.Keyboard));
                 Verify.AreEqual(1, FocusedColumnIndex(table));
-                // Far enough to recycle every realized row out from under the cursor.
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(FocusedCell(table), VirtualKey.End, control: true));
             });
-            IdleSynchronizer.Wait();
+            // Far enough to recycle every realized row out from under the cursor.
+            PressKey(VirtualKey.End, control: true);
             RunOnUIThread.Execute(() => table.UpdateLayout());
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
@@ -865,11 +931,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(focused == cells[2],
                     "Focus must come back to the CELL after a commit - not to the row, and not be lost.");
                 Verify.AreEqual(2, FocusedColumnIndex(table));
-
-                // And the cursor still navigates from there.
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Home));
-                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[0]);
             });
+
+            // And the cursor still navigates from there.
+            PressKey(VirtualKey.Home);
+            RunOnUIThread.Execute(() => Verify.IsTrue(
+                FocusManager.GetFocusedElement(table.XamlRoot) == VisibleCells(table, 0)[0]));
         }
 
         [TestMethod]
@@ -887,12 +954,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var cells = VisibleCells(table, 0);
                 Verify.AreEqual(2, cells.Length, "A collapsed column contributes no navigable cell.");
                 Verify.IsTrue(cells[0].Focus(FocusState.Keyboard));
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.Right));
-                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[1],
-                    "Right must land on the next VISIBLE column, skipping the collapsed one.");
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Right));
-                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[1]);
             });
+
+            PressKey(VirtualKey.Right);
+            RunOnUIThread.Execute(() => Verify.IsTrue(
+                FocusManager.GetFocusedElement(table.XamlRoot) == VisibleCells(table, 0)[1],
+                "Right must land on the next VISIBLE column, skipping the collapsed one."));
+
+            PressKey(VirtualKey.Right);
+            RunOnUIThread.Execute(() => Verify.IsTrue(
+                FocusManager.GetFocusedElement(table.XamlRoot) == VisibleCells(table, 0)[1]));
         }
 
         [TestMethod]
@@ -901,25 +972,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var table = CreateLoadedNavTable();
             RunOnUIThread.Execute(() =>
             {
-                var cells = VisibleCells(table, 0);
-                Verify.IsTrue(cells[0].Focus(FocusState.Keyboard));
+                Verify.IsTrue(VisibleCells(table, 0)[0].Focus(FocusState.Keyboard));
                 Verify.AreEqual(0, FocusedGridItemColumn(table));
+            });
 
-                // The regression: each of these used to advance the cursor by TWO columns, because
-                // the move was computed against live focus after built-in navigation had already
-                // stepped it once.
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.Right));
-                Verify.AreEqual(1, FocusedGridItemColumn(table), "One Right must land on column 1, not 2.");
+            // The regression: each of these used to advance the cursor by TWO columns, because the
+            // move was computed against live focus after built-in navigation had already stepped it.
+            PressKey(VirtualKey.Right);
+            RunOnUIThread.Execute(() => Verify.AreEqual(1, FocusedGridItemColumn(table),
+                "One Right must land on column 1, not 2."));
 
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Right));
-                Verify.AreEqual(2, FocusedGridItemColumn(table), "One Right must land on column 2, not 4.");
+            PressKey(VirtualKey.Right);
+            RunOnUIThread.Execute(() => Verify.AreEqual(2, FocusedGridItemColumn(table),
+                "One Right must land on column 2, not 4."));
 
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Left));
-                Verify.AreEqual(1, FocusedGridItemColumn(table), "One Left must land on column 1.");
+            PressKey(VirtualKey.Left);
+            RunOnUIThread.Execute(() => Verify.AreEqual(1, FocusedGridItemColumn(table),
+                "One Left must land on column 1."));
 
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Left));
+            PressKey(VirtualKey.Left);
+            RunOnUIThread.Execute(() =>
+            {
                 Verify.AreEqual(0, FocusedGridItemColumn(table));
-
                 // The row never changes on a horizontal move.
                 Verify.AreEqual(0, FocusedGridItemRow(table));
             });
@@ -944,9 +1018,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "A realized cell must not expose VirtualizedItem.");
 
                 Verify.IsTrue(VisibleCells(table, 0)[0].Focus(FocusState.Keyboard));
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(FocusedCell(table), VirtualKey.End, control: true));
             });
-            IdleSynchronizer.Wait();
+            PressKey(VirtualKey.End, control: true);
             RunOnUIThread.Execute(() => table.UpdateLayout());
             IdleSynchronizer.Wait();
 
@@ -978,34 +1051,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var table = CreateLoadedNavTable();
             RunOnUIThread.Execute(() =>
             {
-                var cells = VisibleCells(table, 0);
-
-                // Reproduce the live sequence exactly: the cursor is anchored on column 0 by the
-                // tunneling PreviewKeyDown pass, then XAML's built-in directional navigation
-                // advances focus to column 1 before the bubbling KeyDown handler runs.
-                Verify.IsTrue(cells[0].Focus(FocusState.Keyboard));
-                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));   // stand-in for built-in nav
-                Verify.AreEqual(1, FocusedGridItemColumn(table));
-
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursorFromAnchor(
-                    cells[1], VirtualKey.Right, anchorRow: 0, anchorColumn: 0));
-                Verify.AreEqual(1, FocusedGridItemColumn(table),
-                    "The handler must honour the pre-key anchor and leave the cursor on column 1.");
-
-                // Same in the other direction.
-                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));
-                Verify.IsTrue(cells[0].Focus(FocusState.Keyboard));   // stand-in for built-in nav
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursorFromAnchor(
-                    cells[0], VirtualKey.Left, anchorRow: 0, anchorColumn: 1));
+                Verify.IsTrue(VisibleCells(table, 0)[0].Focus(FocusState.Keyboard));
                 Verify.AreEqual(0, FocusedGridItemColumn(table));
+            });
 
-                // And at a boundary the cursor is re-pinned, so built-in navigation cannot walk
-                // focus out of the row past the first column.
-                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));   // stand-in for a stray move
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursorFromAnchor(
-                    cells[1], VirtualKey.Left, anchorRow: 0, anchorColumn: 0));
+            // Real input runs the live sequence: the tunneling PreviewKeyDown pass anchors the
+            // cursor on column 0, XAML's built-in directional navigation advances focus, and only
+            // then does the bubbling KeyDown handler run.
+            PressKey(VirtualKey.Right);
+            RunOnUIThread.Execute(() => Verify.AreEqual(1, FocusedGridItemColumn(table),
+                "The handler must honour the pre-key anchor and leave the cursor on column 1."));
+
+            // Same in the other direction.
+            PressKey(VirtualKey.Left);
+            RunOnUIThread.Execute(() => Verify.AreEqual(0, FocusedGridItemColumn(table)));
+
+            // And at a boundary the cursor is re-pinned, so built-in navigation cannot walk focus
+            // out of the row past the first column.
+            VerifyKeyIsConsumed(table, VirtualKey.Left,
+                "A clamped arrow must still be consumed.");
+            RunOnUIThread.Execute(() =>
+            {
                 Verify.AreEqual(0, FocusedGridItemColumn(table),
                     "A clamped arrow must restore the cursor to the cell it started on.");
+                Verify.AreEqual(0, FocusedGridItemRow(table),
+                    "A clamped arrow must not let focus escape the row.");
             });
         }
 
@@ -1021,24 +1091,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
             {
-                var cells = VisibleCells(table, 0);
-                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));
+                Verify.IsTrue(VisibleCells(table, 0)[1].Focus(FocusState.Keyboard));
                 Verify.AreEqual(1, FocusedGridItemColumn(table));
+            });
 
-                // Column 0 renders at the RIGHT edge in RTL, so Right moves towards column 0 -
-                // by exactly one column, like every other XAML list.
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Right));
-                Verify.AreEqual(0, FocusedGridItemColumn(table), "RTL Right moves one column towards 0.");
+            // Column 0 renders at the RIGHT edge in RTL, so Right moves towards column 0 -
+            // by exactly one column, like every other XAML list.
+            PressKey(VirtualKey.Right);
+            RunOnUIThread.Execute(() => Verify.AreEqual(0, FocusedGridItemColumn(table),
+                "RTL Right moves one column towards 0."));
 
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.Left));
-                Verify.AreEqual(1, FocusedGridItemColumn(table), "RTL Left moves one column away from 0.");
+            PressKey(VirtualKey.Left);
+            RunOnUIThread.Execute(() => Verify.AreEqual(1, FocusedGridItemColumn(table),
+                "RTL Left moves one column away from 0."));
 
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Left));
-                Verify.AreEqual(2, FocusedGridItemColumn(table));
+            PressKey(VirtualKey.Left);
+            RunOnUIThread.Execute(() => Verify.AreEqual(2, FocusedGridItemColumn(table)));
 
-                // Clamping still applies to the logical ends.
-                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Left));
+            // Clamping still applies to the logical ends.
+            VerifyKeyIsConsumed(table, VirtualKey.Left,
+                "A clamped RTL Left must still be consumed.");
+            RunOnUIThread.Execute(() =>
+            {
                 Verify.AreEqual(2, FocusedGridItemColumn(table), "RTL Left clamps at the last column.");
+                Verify.AreEqual(0, FocusedGridItemRow(table), "RTL clamping must not leave the row.");
             });
         }
 
@@ -1115,9 +1191,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static UIElement[] VisibleCells(TableView table, int rowIndex) =>
             VisibleCellsOf(RealizedRow(table, rowIndex));
 
-        private static UIElement FocusedCell(TableView table) =>
-            FocusManager.GetFocusedElement(table.XamlRoot) as UIElement;
-
         private static int FocusedRowIndex(TableView table)
         {
             var repeater = Descendants(table).OfType<Microsoft.UI.Xaml.Controls.ItemsRepeater>().First();
@@ -1159,11 +1232,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [DllImport("user32.dll")]
         private static extern void keybd_event(byte virtualKey, byte scanCode, uint flags, UIntPtr extraInfo);
 
-        private static void PressKey(VirtualKey key)
+        private static void PressKey(VirtualKey key, bool control = false)
         {
+            if (control) keybd_event((byte)VirtualKey.Control, 0, 0, UIntPtr.Zero);
             keybd_event((byte)key, 0, 0, UIntPtr.Zero);
             keybd_event((byte)key, 0, KeyEventFKeyUp, UIntPtr.Zero);
+            if (control) keybd_event((byte)VirtualKey.Control, 0, KeyEventFKeyUp, UIntPtr.Zero);
             IdleSynchronizer.Wait();
+        }
+
+        // A key the control marks Handled stops bubbling, so a listener above the table that did
+        // not opt into handled events never sees it. Returns how many escaped.
+        private static int PressKeyCountingUnhandled(TableView table, VirtualKey key, bool control = false)
+        {
+            int unhandled = 0;
+            KeyEventHandler handler = (s, e) => ++unhandled;
+            UIElement listener = null;
+            RunOnUIThread.Execute(() =>
+            {
+                DependencyObject node = VisualTreeHelper.GetParent(table);
+                while (node != null && !(node is UIElement)) node = VisualTreeHelper.GetParent(node);
+                listener = node as UIElement;
+                Verify.IsNotNull(listener, "The table must be parented for this assertion.");
+                listener.AddHandler(UIElement.KeyDownEvent, handler, false);
+            });
+            PressKey(key, control);
+            RunOnUIThread.Execute(() => listener.RemoveHandler(UIElement.KeyDownEvent, handler));
+            return unhandled;
+        }
+
+        // Injected input is out-of-process: if it never reaches the app nothing escapes, and a
+        // bare "zero escaped" assertion passes while measuring nothing. Prove delivery with a key
+        // the table does not handle, then measure the key under test.
+        private static void VerifyKeyIsConsumed(TableView table, VirtualKey key, string message)
+        {
+            Verify.IsTrue(PressKeyCountingUnhandled(table, VirtualKey.F7) > 0,
+                "Injected input must reach the app, or the assertion below measures nothing.");
+            Verify.AreEqual(0, PressKeyCountingUnhandled(table, key), message);
         }
 
         private static bool IsInside(DependencyObject node, DependencyObject ancestor)
@@ -1181,6 +1286,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 table = CreateTable(table);
+                Content = table;
+                table.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.IsTrue(table.IsLoaded));
+            return table;
+        }
+
+        // Two columns with DISTINCT values, so a row-name assertion cannot pass by reading the
+        // wrong column: the join, the focused cell and the unfocused cell are all different text.
+        private TableView CreateLoadedTwoValueTable()
+        {
+            TableView table = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = new TableView { Width = 500, Height = 240, IsReadOnly = false };
+                table.Resources.MergedDictionaries.Add(new TabularControlsResources());
+                table.Columns.Add(new TableViewTextColumn
+                {
+                    Header = "Name", Width = new GridLength(200),
+                    Binding = new Binding { Path = new PropertyPath("Name") }
+                });
+                table.Columns.Add(new TableViewTextColumn
+                {
+                    Header = "City", Width = new GridLength(200),
+                    Binding = new Binding { Path = new PropertyPath("City") }
+                });
+                table.ItemsSource = new[] { new Item { Name = "Al", City = "Redmond" } };
                 Content = table;
                 table.UpdateLayout();
             });
@@ -1241,7 +1374,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [Microsoft.UI.Xaml.Data.Bindable]
-        public partial class Item { public string Name { get; set; } }
+        public partial class Item { public string Name { get; set; } public string City { get; set; } }
 
         private sealed partial class CustomPeerTable : TableView
         {

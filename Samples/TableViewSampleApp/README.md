@@ -127,16 +127,9 @@ Density & read-only uses ordinary two-way TextBox templates, not transactional
 text-column editor. Sample labeling does not fix or replace the control's focus,
 commit/cancel, or UI Automation event implementation.
 
-Run the scoped source regression checks from this folder:
-
-```powershell
-.\Tests\Test-Accessibility.ps1
-```
-
-These check the affected labels, template intent, live-region declarations, shared
-headings, and all 29 navigation destinations. A real sample build and runtime checks
-are still required: keyboard traversal in both directions, folder activation, screen-reader
-names and results, high text scaling, and the control-owned editing/provider scenarios.
+A real sample build and runtime checks are still required: keyboard traversal in both
+directions, folder activation, screen-reader names and results, high text scaling,
+and the control-owned editing/provider scenarios.
 
 For live-data and recycled-row checks, the Virtualization page supports 100, 1,000,
 10,000, or 50,000 rows. Select a row and use **Update role**, **Insert row**, or
@@ -144,12 +137,8 @@ For live-data and recycled-row checks, the Virtualization page supports 100, 1,0
 insert/remove mutate the bound `ObservableCollection` without replacing surviving
 row objects or IDs. **Reset rows** restores the chosen dataset. Verify actual cell
 values, selection, and focus rather than treating the status text as a provider test.
-`Tests\Test-VirtualizationModel.ps1` checks the actual model's notification and identity
-contract using PowerShell 7; it does not replace UI testing.
 An emptied dataset stays empty when revisiting the page; inserting then continues
-the existing ID sequence. `Tests\Test-VirtualizationLifecycle.ps1` executes the
-page's C# handlers against lightweight test controls to cover initialization,
-remove-all/revisit, insertion, and explicit reset. It is not a UI/runtime pass.
+the existing ID sequence.
 
 Empty state, Text wrap, Interactive cell flyouts, and Cell editing provide the
 other data/template/editing fixtures. Real Windows contrast themes and text scaling
@@ -165,6 +154,5 @@ not prove keyboard navigation to a specific cell or successful editor focus.
 The display-only date/time pickers use live, value-bound accessible names with column
 context. The date follows the current culture; the time retains the sample's explicit
 24-hour clock with the culture's time separator. Native roles and value providers are
-not replaced. `Tests\Test-DisplayValueNames.ps1` checks formatting and change notifications
-in PowerShell 7. Actual Narrator row/cell announcements and native Value-pattern behavior
+not replaced. Actual Narrator row/cell announcements and native Value-pattern behavior
 must be tested independently; a correct bound Name is not a speech-test pass.

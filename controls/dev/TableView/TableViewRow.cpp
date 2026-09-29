@@ -99,6 +99,7 @@ TableViewRow::TableViewRow()
         });
     AddHandler(winrt::UIElement::PointerPressedEvent(), winrt::box_value(m_editingPointerPressedHandler), true /* handledEventsToo */);
 
+    // auto_revoke owns this self-event subscription until row destruction.
     m_dataContextChangedRevoker = DataContextChanged(
         winrt::auto_revoke,
         [weakRow](winrt::FrameworkElement const& sender, winrt::DataContextChangedEventArgs const& args)
@@ -109,6 +110,9 @@ TableViewRow::TableViewRow()
             }
         });
 
+    // Keep CommonStates VSM in sync with IsEnabled so the Disabled
+    // state activates when consumers toggle row IsEnabled at runtime.
+    // auto_revoke owns this self-event subscription until row destruction.
     m_isEnabledChangedRevoker = IsEnabledChanged(
         winrt::auto_revoke,
         [weakRow](winrt::IInspectable const& sender, winrt::DependencyPropertyChangedEventArgs const& args)
@@ -169,6 +173,7 @@ winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
     return winrt::make<TableViewRowAutomationPeer>(*this);
 }
 
+// Typed accessor for the owning TableView.
 winrt::TableView TableViewRow::GetOwningTableView()
 {
     // Keep the owner weak; callers acquire a strong ref only for synchronous work.
@@ -350,7 +355,17 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
-    auto const target = ownerImpl->ResolveFocusEntryCell(*this, args.OldFocusedElement());
+    // A pointer press names the row under the pointer. PART_CellsHost is left-aligned, so a press
+    // to the right of the last column resolves no cell and TableViewRow::OnPointerPressed falls
+    // back to focusing the row container, which arrives here. The remembered-cursor restore below
+    // is for focus ENTERING the table by keyboard or programmatically; applying it to a press would
+    // pull focus to the remembered row instead of the row that was clicked. Reporting this row as
+    // the entry origin keeps the column restore while pinning the row to the pressed one.
+    auto const entryOrigin = args.FocusState() == winrt::FocusState::Pointer
+        ? self.try_as<winrt::DependencyObject>()
+        : args.OldFocusedElement();
+
+    auto const target = ownerImpl->ResolveFocusEntryCell(*this, entryOrigin);
     if (!target)
     {
         return;
@@ -386,6 +401,7 @@ void TableViewRow::AttachColumnsSubscription(winrt::TableView const& owner)
         return;
     }
 
+    // Cast the ABI vector to its observable backing type for VectorChanged.
     if (auto observable = owner.Columns().try_as<winrt::IObservableVector<winrt::TableViewColumn>>())
     {
         auto weakRow = get_weak();
@@ -437,6 +453,8 @@ void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
         m_isPressed = false;
         m_selectOnPointerRelease = false;
 
+        // Selection belongs to the item, not the container: a pooled row must not carry selected
+        // chrome onto its next item. RefreshRowSelectionState restamps it on the way back in.
         IsSelected(false);
 
         // Begin-edit gesture state must go too. A row recycled away and back to the SAME item
@@ -494,16 +512,22 @@ void TableViewRow::OnColumnsVectorChanged(
     const winrt::IObservableVector<winrt::TableViewColumn>& /*sender*/,
     const winrt::IVectorChangedEventArgs& /*args*/)
 {
+    // Mutating Columns triggers a cell rebuild against the new column set. Coalesce a burst of column
+    // changes into a single rebuild on the next tick. No explicit Children().Clear() is needed:
+    // RebuildCells' restamp fast-path forces a full rebuild (which clears) whenever the column set
+    // actually changed, and keeping the old cells until the tick avoids an empty-cell flash.
     QueueRebuildCells();
 }
 
 void TableViewRow::QueueRebuildCells()
 {
+    // No cell host yet (template not applied); the owner-set / ApplyTemplate path builds cells.
     if (!m_cellsHost.get())
     {
         return;
     }
 
+    // A rebuild is already scheduled for this tick -- collapse the burst into one.
     if (m_rebuildCellsQueued)
     {
         return;
@@ -512,6 +536,7 @@ void TableViewRow::QueueRebuildCells()
     auto dispatcher = DispatcherQueue();
     if (!dispatcher)
     {
+        // No dispatcher (teardown) -- rebuild synchronously so cells are not left stale.
         RebuildCells();
         return;
     }
@@ -529,11 +554,13 @@ void TableViewRow::QueueRebuildCells()
                 }
                 catch (...)
                 {
+                    // Coalesced cell rebuild is best-effort; never fail-fast the dispatcher.
                     // Coalesced cell rebuild is best-effort.
                 }
             }
         }))
     {
+        // Enqueue failed -- fall back to a synchronous rebuild so cells are not left stale.
         m_rebuildCellsQueued = false;
         RebuildCells();
     }
@@ -549,6 +576,9 @@ void TableViewRow::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
     auto pointerPoint = args.GetCurrentPoint(*this);
     auto props = pointerPoint.Properties();
 
+    // Mouse/pen: primary button only - a right-click opens a context menu and must not select.
+    // Touch reports no pressed button, so it is admitted on device type instead, matching the
+    // begin-edit gesture. Without this a touch press never arms the release-time selection.
     const auto deviceType = args.Pointer().PointerDeviceType();
     if (deviceType != winrt::Microsoft::UI::Input::PointerDeviceType::Touch &&
         !props.IsLeftButtonPressed())
@@ -594,6 +624,9 @@ void TableViewRow::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
     m_isPointerOver = false;
     m_isPressed = false;
 
+    // The contact left the row, so a deferred selection is no longer a tap on it. Only the pointer
+    // that armed it may disarm it: with two contacts on the same row, the other one leaving must
+    // not cancel this one's pending selection. Matches the check in OnPointerReleased.
     if (args.Pointer().PointerId() == m_selectPointerId)
     {
         m_selectOnPointerRelease = false;
@@ -606,6 +639,8 @@ void TableViewRow::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 {
     m_isPressed = false;
 
+    // Deferred selection: the pointer came up on this row without a pan or a capture loss taking
+    // it away, so it was a tap. Only the pointer that armed it can commit or disarm it.
     const bool isArmingPointer = args.Pointer().PointerId() == m_selectPointerId;
     const bool selectNow = m_selectOnPointerRelease && isArmingPointer;
     if (isArmingPointer)
@@ -628,6 +663,8 @@ void TableViewRow::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& arg
 {
     m_isPressed = false;
 
+    // A ScrollViewer took the pointer for a pan; the gesture was a scroll, not a tap. Only the
+    // arming pointer disarms, so a second contact panning does not cancel the first one's tap.
     if (args.Pointer().PointerId() == m_selectPointerId)
     {
         m_selectOnPointerRelease = false;
@@ -638,6 +675,8 @@ void TableViewRow::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& arg
 
 void TableViewRow::OnPointerCanceled(winrt::PointerRoutedEventArgs const& args)
 {
+    // Palm rejection or a system gesture. Can arrive without a preceding PointerCaptureLost, which
+    // would otherwise leave the latch set and let the next unrelated release select this row.
     m_isPressed = false;
 
     if (args.Pointer().PointerId() == m_selectPointerId)
@@ -650,6 +689,8 @@ void TableViewRow::OnPointerCanceled(winrt::PointerRoutedEventArgs const& args)
 
 void TableViewRow::UpdateVisualState(bool useTransitions)
 {
+    // One GoToState into one group: the selected states share CommonStates so nothing depends on
+    // call order (TreeViewItem / ItemContainer pattern). Disabled wins, for ListViewItem parity.
     std::wstring_view state;
     if (IsSelected())
     {
@@ -767,6 +808,7 @@ void TableViewRow::RebuildCells()
         return;
     }
     m_isRebuildingCells = true;
+    // Synchronous RAII guard: captures this only until RebuildCells returns.
     auto rebuildGuard = wil::scope_exit([this]() { m_isRebuildingCells = false; });
 
     auto owner = GetOwningTableView();
@@ -1011,6 +1053,7 @@ void TableViewRow::RebuildCells()
         host.Children().Append(cellWrapper);
     }
 
+    // Pin immediately so rebuilt frozen cells do not wait for the next scroll.
     if (auto owningView = GetOwningTableView())
     {
         winrt::get_self<TableView>(owningView)->PinFrozenColumnsForRow(*this);
@@ -1077,6 +1120,8 @@ void TableViewRow::AttachCellContent(const winrt::Grid& cellWrapper, const winrt
     }
 }
 
+// Grid lines only: the row's horizontal bottom line and the vertical per-cell separators (driven by
+// GridLinesVisibility). Row background / alternating banding lives in RefreshRowBackground.
 void TableViewRow::RefreshGridLines()
 {
     auto owner = GetOwningTableView();
@@ -1177,6 +1222,11 @@ void TableViewRow::RefreshFrozenColumnLayout(double horizontalOffset, double lea
     }
 }
 
+// ----- Editing -----
+//
+// The row owns its cells, so the control delegates the display/editor swap here. The swap replaces
+// Child on the existing cell wrapper Border: keeping the wrapper means column width, visibility,
+// frozen pinning and grid lines keep applying while the cell is edited, with no layout re-plumbing.
 
 bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const winrt::IInspectable& dataItem)
 {
@@ -1185,6 +1235,9 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         return false;
     }
 
+    // An edit already open on this row is closed first. Committing it is the control's job, not
+    // the row's; by this point the control has already ended it, so anything still open here is
+    // stale visual state.
     EndCellEdit(winrt::TableViewEditAction::Cancel);
 
     auto const host = m_cellsHost.get();
@@ -1302,6 +1355,9 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
         return;
     }
 
+    // Move focus off the editor before it leaves the tree. Dropping a focused element causes XAML
+    // to fall back to whatever it can find, which can scroll the list; the row is the correct
+    // landing spot and is where keyboard navigation expects focus to be.
     if (auto const editingElement = m_editingElement.get())
     {
         bool editorHasFocus = false;
@@ -1370,6 +1426,8 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
             }
             catch (...)
             {
+                // A column that throws while regenerating must not strand the row in edit mode;
+                // fall back to the parked element, which is stale but present.
                 displayElement = m_editingDisplayElement.get();
             }
         }
@@ -1514,6 +1572,16 @@ void TableViewRow::ResetPressState()
     m_lastPressItem.set(nullptr);
 }
 
+// Pointer entry point for editing, and the only place a pointer establishes the current cell.
+//
+// Lives on the row because the row owns its cells: resolving which cell a press landed on is a
+// question only the row can answer cheaply. The control keeps the edit state machine, so this
+// handler translates a gesture into SetCurrentCell / BeginEdit and nothing more. Mirrors WPF,
+// where DataGridCell handles the gesture and calls DataGrid.BeginEdit.
+//
+// PointerPressed with click counting, not DoubleTapped: marking a press handled suppresses XAML's
+// gesture recognizer entirely, and a row that participates in selection must mark it handled. A
+// DoubleTapped handler would work today and silently break when selection lands.
 void TableViewRow::OnPointerPressedForEditing(
     const winrt::IInspectable& /*sender*/,
     const winrt::PointerRoutedEventArgs& args)
@@ -1526,6 +1594,7 @@ void TableViewRow::OnPointerPressedForEditing(
 
     auto ownerImpl = winrt::get_self<TableView>(owner);
 
+    // Editing is opt-in and read-only by default, so a read-only table pays nothing beyond this.
     if (ownerImpl->IsReadOnly())
     {
         return;
@@ -1537,6 +1606,8 @@ void TableViewRow::OnPointerPressedForEditing(
         return;
     }
 
+    // Mouse/pen: primary button only - a right-click opens a context menu and must not begin an
+    // edit. Touch reports no pressed button, so it is admitted on device type instead.
     const auto deviceType = args.Pointer().PointerDeviceType();
     if (deviceType != winrt::Microsoft::UI::Input::PointerDeviceType::Touch &&
         !pointerPoint.Properties().IsLeftButtonPressed())
@@ -1574,6 +1645,8 @@ void TableViewRow::OnPointerPressedForEditing(
         std::abs(position.X - m_lastPressPosition.X) <= slop &&
         std::abs(position.Y - m_lastPressPosition.Y) <= slop;
 
+    // A press inside the cell already being edited belongs to the editor: it is the user placing
+    // the caret, and must not be read as a navigation move or a fresh edit.
     const bool pressInsideOpenEdit =
         ownerImpl->IsEditing() &&
         m_editingColumn.get() == column &&
@@ -1581,6 +1654,11 @@ void TableViewRow::OnPointerPressedForEditing(
 
     if (!pressInsideOpenEdit)
     {
+        // Move the current cell even when the edit is refused (read-only, or BeginningEdit cancels):
+        // the user pointed here, so a later F2 must not edit a different cell.
+        //
+        // This is also what makes keyboard editing reachable at all - pointer focus lands on the
+        // row, not a tagged cell, so without this the current column stays null.
         ownerImpl->SetCurrentCell(item, column);
 
         if (isRepeatPress)
@@ -1611,6 +1689,9 @@ winrt::TableViewColumn TableViewRow::ResolvePressedColumn(
     const winrt::IInspectable& originalSource,
     const winrt::Point& hostPoint)
 {
+    // A nested TableView's press bubbles through this row, and the walk would reach the INNER
+    // table's tagged Border before it ever reached this row - so filter on ownership rather than
+    // trying to stop the walk. A column this table does not own is not ours to act on.
     auto const owner = GetOwningTableView();
     auto const ownedByThisTable = [&owner](winrt::TableViewColumn const& candidate)
     {

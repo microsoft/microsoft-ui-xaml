@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -87,12 +88,8 @@ public sealed partial class MainWindow : Window
         Closed += (_, _) => Services.AppSettings.ThemeChanged -= OnPersistedThemeChanged;
 
         var initialTag = ResolveInitialTag(launchArguments);
-        App.AppendVerificationLog($"MainWindowCtor InitialTag={initialTag}");
-        App.AppendSelectionVerificationLog($"MainWindowCtor InitialTag={initialTag}");
         DispatcherQueue.TryEnqueue(() =>
         {
-            App.AppendVerificationLog($"DispatcherNavigate InitialTag={initialTag}");
-            App.AppendSelectionVerificationLog($"DispatcherNavigate InitialTag={initialTag}");
             SelectNavItem(initialTag);
             Navigate(initialTag, new EntranceNavigationTransitionInfo());
         });
@@ -111,7 +108,7 @@ public sealed partial class MainWindow : Window
 
     private void ContentFrame_NavigationFailed(object sender, NavigationFailedEventArgs e)
     {
-        App.AppendNavigationErrorLog($"NavigationFailed Source={e.SourcePageType?.FullName ?? "(null)"}\n{e.Exception}");
+        Debug.WriteLine($"NavigationFailed Source={e.SourcePageType?.FullName ?? "(null)"}\n{e.Exception}");
     }
 
     private static void RegisterScenarioPages()
@@ -184,14 +181,10 @@ public sealed partial class MainWindow : Window
                 {
                     AppWindow.SetIcon(iconPath);
                 }
-                else
-                {
-                    App.AppendVerificationLog($"AppWindow.SetIcon skipped (icon not found): {iconPath}");
-                }
             }
             catch (Exception iconEx)
             {
-                App.AppendVerificationLog($"AppWindow.SetIcon failed: {iconEx.Message}");
+                Debug.WriteLine($"AppWindow.SetIcon failed: {iconEx.Message}");
             }
 
             // Read system caption-button widths from AppWindow.TitleBar instead of
@@ -219,7 +212,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            App.AppendVerificationLog($"ConfigureTitleBar failed: {ex.Message}");
+            Debug.WriteLine($"ConfigureTitleBar failed: {ex.Message}");
         }
     }
 
@@ -254,7 +247,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            App.AppendVerificationLog($"ApplyTitleBarSystemInsets failed: {ex.Message}");
+            Debug.WriteLine($"ApplyTitleBarSystemInsets failed: {ex.Message}");
         }
     }
 
@@ -294,7 +287,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            App.AppendVerificationLog($"UpdateCaptionButtonColors failed: {ex.Message}");
+            Debug.WriteLine($"UpdateCaptionButtonColors failed: {ex.Message}");
         }
     }
 
@@ -398,8 +391,6 @@ public sealed partial class MainWindow : Window
     {
         NavView.IsBackEnabled = ContentFrame.CanGoBack;
         SyncNavViewSelectionToCurrentPage(e.SourcePageType);
-        App.AppendVerificationLog($"ContentFrameNavigated Page={e.SourcePageType?.FullName ?? "(null)"}");
-        App.AppendSelectionVerificationLog($"ContentFrameNavigated Page={e.SourcePageType?.FullName ?? "(null)"}");
     }
 
     private void SyncNavViewSelectionToCurrentPage(Type? pageType)
@@ -423,36 +414,16 @@ public sealed partial class MainWindow : Window
     {
         if (!s_pageMap.TryGetValue(tag, out var pageType))
         {
-            App.AppendVerificationLog($"NavigateMissingTag {tag}");
-            App.AppendSelectionVerificationLog($"NavigateMissingTag {tag}");
             return;
         }
 
         var currentType = ContentFrame.CurrentSourcePageType;
         if (currentType == pageType)
         {
-            App.AppendVerificationLog($"NavigateSkippedCurrent Tag={tag} CurrentType={currentType?.FullName ?? "(null)"}");
-            App.AppendSelectionVerificationLog($"NavigateSkippedCurrent Tag={tag} CurrentType={currentType?.FullName ?? "(null)"}");
             return;
         }
 
-        App.AppendVerificationLog($"NavigateBegin Tag={tag} PageType={pageType.FullName} CurrentType={currentType?.FullName ?? "(null)"}");
-        App.AppendSelectionVerificationLog($"NavigateBegin Tag={tag} PageType={pageType.FullName} CurrentType={currentType?.FullName ?? "(null)"}");
-
-        try
-        {
-            var navigated = ContentFrame.Navigate(pageType, this, transitionInfo);
-            App.AppendVerificationLog($"NavigateReturned {navigated} CurrentTypeAfter={ContentFrame.CurrentSourcePageType?.FullName ?? "(null)"}");
-            App.AppendSelectionVerificationLog($"NavigateReturned {navigated} CurrentTypeAfter={ContentFrame.CurrentSourcePageType?.FullName ?? "(null)"}");
-        }
-        catch (Exception ex)
-        {
-            App.AppendVerificationLog($"NavigateException {ex.GetType().FullName}: {ex.Message}");
-            App.AppendVerificationLog(ex.ToString());
-            App.AppendSelectionVerificationLog($"NavigateException {ex.GetType().FullName}: {ex.Message}");
-            App.AppendSelectionVerificationLog(ex.ToString());
-            throw;
-        }
+        ContentFrame.Navigate(pageType, this, transitionInfo);
     }
 
     private void SelectNavItem(string tag)

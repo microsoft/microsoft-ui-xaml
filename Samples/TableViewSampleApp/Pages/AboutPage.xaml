@@ -32,7 +32,6 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Audience" VerticalAlignment="Top"
@@ -91,19 +90,9 @@
                                TextWrapping="Wrap"/>
                 </StackPanel>
 
-                <TextBlock Grid.Row="5" Grid.Column="0" Text="Build" VerticalAlignment="Top"
+                <TextBlock Grid.Row="5" Grid.Column="0" Text="Reporting bugs" VerticalAlignment="Top"
                            Style="{ThemeResource BodyStrongTextBlockStyle}"/>
-                <StackPanel Grid.Row="5" Grid.Column="1" Spacing="2">
-                    <TextBlock x:Name="BuildLineText" Style="{ThemeResource BodyTextBlockStyle}" TextWrapping="Wrap"/>
-                    <TextBlock x:Name="BuildCommitText" Style="{ThemeResource BodyTextBlockStyle}"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
-                    <TextBlock x:Name="BuildCommitSubjectText" Style="{ThemeResource CaptionTextBlockStyle}"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
-                </StackPanel>
-
-                <TextBlock Grid.Row="6" Grid.Column="0" Text="Reporting bugs" VerticalAlignment="Top"
-                           Style="{ThemeResource BodyStrongTextBlockStyle}"/>
-                <StackPanel Grid.Row="6" Grid.Column="1" Spacing="6">
+                <StackPanel Grid.Row="5" Grid.Column="1" Spacing="6">
                     <TextBlock TextWrapping="Wrap" Style="{ThemeResource BodyTextBlockStyle}">
                         <Run Text="Report a bug — pick whichever fits your workflow:"/>
                     </TextBlock>
@@ -111,11 +100,11 @@
                         <Button x:Name="ReportLoopButton" Content="🔗 Report an issue (Loop)"
                                 ToolTipService.ToolTip="Opens the shared Loop page to log a TableView samples issue — the preferred channel for triage."/>
                         <Button x:Name="ReportEmailButton" Content="✉ Report via email"
-                                ToolTipService.ToolTip="Opens your mail client pre-filled with the current commit SHA, theme, and reporter info."/>
+                                ToolTipService.ToolTip="Opens your mail client pre-filled with theme and reporter info."/>
                         <Button x:Name="CopyAutoFillButton" Content="📋 Copy auto-fill"
                                 ToolTipService.ToolTip="Copies a Markdown block ready to paste into Teams, email, or the Loop page."/>
                     </StackPanel>
-                    <TextBlock Text="Auto-fill includes: commit SHA, branch, build timestamp, reporter (you), current theme, and OS / .NET version — everything a triager needs to reproduce."
+                    <TextBlock Text="Auto-fill includes: reporter (you), current theme, and OS / .NET version."
                                Style="{ThemeResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                TextWrapping="Wrap"/>
@@ -129,9 +118,9 @@
                     </TextBlock>
                 </StackPanel>
 
-                <TextBlock Grid.Row="7" Grid.Column="0" Text="Theme" VerticalAlignment="Top"
+                <TextBlock Grid.Row="6" Grid.Column="0" Text="Theme" VerticalAlignment="Top"
                            Style="{ThemeResource BodyStrongTextBlockStyle}"/>
-                <TextBlock Grid.Row="7" Grid.Column="1"
+                <TextBlock Grid.Row="6" Grid.Column="1"
                            Text="Switch Default / Light / Dark from the theme button in the title bar (top-right), or choose a theme on the 'Theme &amp; settings' page. Changes apply live across every page."
                            Style="{ThemeResource BodyTextBlockStyle}"
                            TextWrapping="Wrap"/>

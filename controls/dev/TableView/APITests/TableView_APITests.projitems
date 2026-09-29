@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)TableViewAutomationTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewColumnHeaderPeerIdentityTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableViewPeerTestAccess.cs" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -16,9 +16,11 @@ class TableViewRow :
 public:
     TableViewRow();
 
+    // IFrameworkElement overrides
     void OnApplyTemplate();
     winrt::AutomationPeer OnCreateAutomationPeer();
 
+    // Use the Control virtual signatures; event-handler overloads break the ABI shim.
     void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
     void OnPointerExited(winrt::PointerRoutedEventArgs const& args);
     void OnPointerPressed(winrt::PointerRoutedEventArgs const& args);
@@ -32,6 +34,7 @@ public:
     // Rewire realized rows when the owner keeps the same identity but Columns changes.
     void RefreshColumnsSubscriptionInternal();
 
+    // Typed accessor for the owning TableView.
     winrt::TableView GetOwningTableView();
 
     void RefreshGridLines();
@@ -133,9 +136,14 @@ private:
         const winrt::IObservableVector<winrt::TableViewColumn>& sender,
         const winrt::IVectorChangedEventArgs& args);
 
+    // Detach from / attach to the owning TableView's Columns vector. Shared by
+    // SetOwningTableViewInternal (owner add/clear) and RefreshColumnsSubscriptionInternal
+    // (same owner, Columns replaced). AttachColumnsSubscription is a no-op when owner is null.
     void DetachColumnsSubscription();
     void AttachColumnsSubscription(winrt::TableView const& owner);
 
+    // Routes IsEnabled changes into UpdateVisualState so the row's
+    // Disabled VSM activates when consumers toggle row IsEnabled at runtime.
     void OnIsEnabledChanged(
         const winrt::Windows::Foundation::IInspectable& sender,
         const winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs& args);

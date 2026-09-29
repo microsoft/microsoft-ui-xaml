@@ -51,20 +51,6 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="BuildInfo.cs" />
-  </ItemGroup>
-
-  <!-- Keep build identity out of the checked-in placeholder. -->
-  <Target Name="_GenerateBuildInfo" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\Generate-BuildInfo.ps1&quot; -OutFile &quot;$(IntermediateOutputPath)BuildInfo.g.cs&quot; -ProjectDir &quot;$(MSBuildProjectDirectory)&quot;"
-          EnvironmentVariables="Configuration=$(Configuration);Platform=$(Platform);RuntimeIdentifier=$(RuntimeIdentifier)" />
-    <ItemGroup>
-      <Compile Include="$(IntermediateOutputPath)BuildInfo.g.cs" />
-      <FileWrites Include="$(IntermediateOutputPath)BuildInfo.g.cs" />
-    </ItemGroup>
-  </Target>
-
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
