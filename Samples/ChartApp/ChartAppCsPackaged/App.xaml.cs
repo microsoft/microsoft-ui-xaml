@@ -1,9 +1,11 @@
+using System;
 using Microsoft.UI.Xaml;
 
 namespace ChartAppCsPackaged
 {
     public partial class App : Application
     {
+        private readonly int _primaryThreadId = Environment.CurrentManagedThreadId;
         public App()
         {
             this.InitializeComponent();
@@ -11,7 +13,12 @@ namespace ChartAppCsPackaged
 
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            m_window = new MainWindow();
+            if (Environment.CurrentManagedThreadId != _primaryThreadId)
+            {
+                return;
+            }
+
+            m_window ??= new ChartsSample.MainWindow();
             m_window.Activate();
         }
 
