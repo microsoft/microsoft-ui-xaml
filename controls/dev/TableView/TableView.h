@@ -8,6 +8,7 @@
 
 #include <deque>
 #include <functional>
+#include <limits>
 #include <optional>
 
 #include "TableView.g.h"
@@ -17,6 +18,12 @@
 // ThemeSettings (Microsoft.UI.System) is used below for UI-thread High Contrast change notifications.
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
 #include <winrt/Microsoft.UI.System.h>
+
+struct ColumnResizeBounds
+{
+    double Min{ 0.0 };
+    double Max{ std::numeric_limits<double>::infinity() };
+};
 
 // One in-flight resize drag. The gripper owns the gesture; this is only the host's anchor for it,
 // kept reachable so Escape can cancel the drag in flight.
@@ -29,12 +36,11 @@ struct ColumnResizeDragState
     // The column's Width as authored: reverting a canceled drag to startValue would rewrite an
     // Auto or Star column as fixed pixels.
     winrt::GridLength startWidth{};
+    // Captured once per gesture: the drag does not change the other columns' widths.
+    ColumnResizeBounds bounds{};
     // Set once a DragDelta has actually written Width, so a canceled press that never moved
     // leaves the column completely untouched.
     bool didWrite{ false };
-    // Set once any DragDelta arrived, even one the bounds swallowed. Drives the announcement, so a
-    // press that never moved stays silent while a step held at a bound still reports the width.
-    bool didDelta{ false };
 };
 
 // Per-instance cache of density metrics and the resolved gridline brush. Held as a
@@ -838,6 +844,9 @@ private:
     // boundaries (ItemsSource / Columns replaced / CellTemplate / Header) and invalidates measure so
     // the next table-level pass re-pulls fresh measured widths.
     void ResetColumnDesiredWidths();
+    // Limits a resize gesture to the width the other columns can absorb. Unbounded when nothing
+    // constrains it.
+    ColumnResizeBounds ResizeBoundsForColumn(const winrt::TableViewColumn& column);
     // Re-invalidate the header + realized row cells panels so they re-measure/arrange after a resolve.
     void InvalidateCellPanels();
 
