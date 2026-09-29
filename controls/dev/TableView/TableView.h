@@ -218,7 +218,38 @@ public:
     winrt::ScrollViewer GetBodyScrollerInternal() const { return m_bodyScroller.get(); }
 
     // Test hook for moving keyboard focus to a row; false for invalid indexes or before rows exist.
+    // Focus lands on the row's CURRENT CELL, which is what the control navigates in.
     bool FocusRow(int32_t index);
+
+    // ----- Cell-level keyboard focus (TableView_Keyboard.cpp) -----
+
+    // Moves keyboard focus to a cell by row index and VISIBLE column index, realizing and scrolling
+    // the row into view first. A negative column means "keep the current one". Group-header rows
+    // have no cells and fall back to focusing the header container.
+    bool FocusCell(int32_t rowIndex, int32_t visibleColumnIndex);
+
+    // The cell a row should hand focus to when focus is aimed at the row CONTAINER. Used by
+    // TableViewRow's GettingFocus redirect: entering the table from outside returns to the cell the
+    // user left, while a move inside the table keeps the current column on the requested row.
+    // Null when the row has no realized visible cell, in which case the row keeps container focus.
+    winrt::UIElement ResolveFocusEntryCell(
+        winrt::TableViewRow const& row, winrt::DependencyObject const& oldFocusedElement);
+
+    // A cell in `row` gained or lost focus. Records the current cell so Up/Down preserve the column
+    // and F2 edits the cell the user is on.
+    void OnRowCellFocusChanged(winrt::TableViewRow const& row);
+
+    // The row index and visible column index focus resolves to. `requireExactCell` restricts the
+    // match to the cell wrapper itself, which is how key handling avoids stealing keys from an
+    // interactive control hosted inside a cell.
+    bool TryGetFocusedCell(int32_t& rowIndex, int32_t& columnIndex, bool requireExactCell) const;
+
+    // Focuses the cell at a visible-column index inside an ALREADY realized container. Group
+    // headers share the repeater and have no cells, so they keep taking container focus.
+    bool FocusRealizedRowCell(winrt::UIElement const& element, int32_t visibleColumnIndex);
+
+    // True when `element` is this TableView or sits underneath it.
+    bool IsWithinThisTableView(winrt::DependencyObject const& element);
 
     // IFrameworkElement override. Must be PUBLIC: C++/WinRT dispatches overrides through a base
     // subobject that can only reach public members; a protected override is silently never called.
@@ -900,9 +931,51 @@ private:
     bool m_focusLossCommitQueued{ false };
 
     int32_t m_navAnchorRow{ -1 };
+    // The cell cursor as it was BEFORE the current key was delivered, snapshotted on the tunneling
+    // PreviewKeyDown pass. Every cell is a tab stop, so XAML's built-in directional focus
+    // navigation claims Left/Right first and has usually already advanced focus one cell by the
+    // time the bubbling KeyDown handler runs; moving relative to the live focused cell therefore
+    // stepped twice per press. This is the column-axis twin of m_navAnchorRow, which exists for
+    // exactly the same reason on the row axis. -1 when the key did not start on one of our cells.
+    int32_t m_navAnchorCellRow{ -1 };
+    int32_t m_navAnchorCellColumn{ -1 };
+    // The cell the keyboard cursor is on, in visible-column coordinates. Up/Down/PageUp/PageDown
+    // preserve it, Left/Right move it, and entering the table from outside restores it. Kept as an
+    // index rather than an element so it survives row recycling, which destroys cell elements on
+    // every scroll.
+    int32_t m_currentCellColumn{ 0 };
+    // The row the cursor was last on, so Tab back into the table returns to the cell the user left
+    // rather than to the first realized row. -1 until a cell has been focused.
+    int32_t m_currentCellRow{ -1 };
     void OnPreviewKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
+
+    // Left / Right / Home / End / Ctrl+Home / Ctrl+End: the keys that move the cursor WITHIN the
+    // grid of cells. Returns true when the key was consumed.
+    bool TryHandleCellNavigationKey(const winrt::KeyRoutedEventArgs& args);
+
+public:
+    // The cell-cursor move itself, free of routed-event args so the key handler and the
+    // implementation-only test hook on TableViewCell drive exactly the same code. Returns true when
+    // the key belongs to cell navigation (including at a boundary, where the cursor does not move).
+    //
+    // anchorRow / anchorColumn are the cursor position BEFORE the key was delivered. They must be
+    // passed by the key path, because built-in directional navigation may already have moved focus.
+    // Pass -1, -1 to anchor on live focus instead (no routed event in flight).
+    bool TryMoveCellCursorFromAnchor(
+        winrt::Windows::System::VirtualKey key, bool isControlDown,
+        int32_t anchorRow, int32_t anchorColumn);
+
+    // Convenience overload that anchors on live focus. Only correct when no key is in flight.
+    bool TryMoveCellCursor(winrt::Windows::System::VirtualKey key, bool isControlDown);
+
+private:
+    // Larger than any realizable column count; FocusCell clamps it to the row's last visible cell.
+    static constexpr int32_t c_lastColumnSentinel{ 0x7ffffffe };
+
+    // The realized row container at a flat row index, or null when it is not realized.
+    winrt::TableViewRow GetRealizedRowAt(int32_t rowIndex) const;
 
     // Keyboard navigation helpers.
     int32_t GetFocusedRowIndex() const;

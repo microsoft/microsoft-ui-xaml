@@ -51,12 +51,10 @@ namespace
 
         const int32_t index = repeater.GetElementIndex(row);
         auto const element = index >= 0 ? repeater.TryGetElement(index).try_as<winrt::TableViewRow>() : nullptr;
-        if (element != row)
-        {
-            return false;
-        }
-
-        return !peer.GetName().empty();
+        // Identity, not just index: a recycled container can still report an index while it has
+        // already been re-bound to a different item, and announcing removal against that row would
+        // name the wrong record.
+        return element == row;
     }
 }
 

@@ -32,6 +32,10 @@ static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGri
 // unusable.
 static constexpr double c_resizeGripperWidthFallback{ 8.0 };
 static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator"sv };
+static constexpr std::wstring_view s_SortIndicatorSizeKey{ L"SortIndicatorSize"sv };
+// Matches SortIndicatorSize in SortIndicator_themeresources.xaml; used only when that key is
+// missing or unusable.
+static constexpr double c_sortIndicatorSizeFallback{ 16.0 };
 // ScrollViewer template names are documented; ancestors are resolved by walking from child parts.
 
 namespace
@@ -1548,6 +1552,12 @@ void TableView::RebuildHeaders()
     {
         cachedResizeGripperWidth = c_resizeGripperWidthFallback;
     }
+    double cachedSortIndicatorWidth = winrt::unbox_value_or<double>(
+        LookupElementResource(*this, s_SortIndicatorSizeKey), c_sortIndicatorSizeFallback);
+    if (!std::isfinite(cachedSortIndicatorWidth) || cachedSortIndicatorWidth <= 0.0)
+    {
+        cachedSortIndicatorWidth = c_sortIndicatorSizeFallback;
+    }
     const bool canUserSortColumns = CanUserSortColumns();
 
     // Logical-end (trailing) edge alignment must mirror under RTL. The header cell's subtree does
@@ -1634,7 +1644,21 @@ void TableView::RebuildHeaders()
                 content.Content(column.Header());
             }
             // Consume TableViewHeaderCellPadding from theme resources (cached once per rebuild).
-            content.Padding(cachedHeaderCellPadding);
+            // Sortable headers overlay a trailing chevron; reserve its real themed width so content
+            // trims before reaching it while non-sortable headers keep the full padding.
+            auto contentPadding = cachedHeaderCellPadding;
+            if (headerIsSortable)
+            {
+                if (isRightToLeft)
+                {
+                    contentPadding.Left += cachedSortIndicatorWidth;
+                }
+                else
+                {
+                    contentPadding.Right += cachedSortIndicatorWidth;
+                }
+            }
+            content.Padding(contentPadding);
             content.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
             content.VerticalAlignment(winrt::VerticalAlignment::Center);
             // Column-header text: theme font size, SemiBold to stand out from cells (templates override).

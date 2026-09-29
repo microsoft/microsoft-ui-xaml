@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
+using Windows.System;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -535,6 +536,516 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 catch (ArgumentException error) { rejected = error.HResult == unchecked((int)0x80070057); }
                 Verify.IsTrue(rejected, "A realized table does not make an unrelated column header available.");
             });
+        }
+
+        // ----- Cell-level keyboard focus -----
+
+        [TestMethod]
+        public void ArrowKeysMoveFocusBetweenCellsOfTheSameRow()
+        {
+            var table = CreateLoadedNavTable();
+            RunOnUIThread.Execute(() =>
+            {
+                var cells = VisibleCells(table, 0);
+                Verify.AreEqual(3, cells.Length);
+
+                Verify.IsTrue(cells[0].Focus(FocusState.Keyboard), "A cell must be able to take focus.");
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[0]);
+
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.Right));
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[1],
+                    "Right moves one cell within the row.");
+
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Right));
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[2]);
+
+                // Clamped at the last visible column, and the key is still consumed so it cannot
+                // fall through and scroll the body sideways.
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Right));
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[2],
+                    "Right does not wrap past the last visible column.");
+
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Left));
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[1]);
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Left));
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[0]);
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.Left));
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[0],
+                    "Left does not wrap past the first visible column.");
+            });
+        }
+
+        [TestMethod]
+        public void HomeAndEndMoveWithinTheRowAndCtrlMovesToTheTableEnds()
+        {
+            var table = CreateLoadedNavTable();
+            RunOnUIThread.Execute(() =>
+            {
+                var cells = VisibleCells(table, 0);
+                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));
+
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.End));
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[2],
+                    "End moves to the last cell of the CURRENT row.");
+                Verify.AreEqual(0, FocusedRowIndex(table), "End must not change rows.");
+
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Home));
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[0]);
+                Verify.AreEqual(0, FocusedRowIndex(table));
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cells = VisibleCells(table, 0);
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.End, control: true));
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(NavRowCount - 1, FocusedRowIndex(table), "Ctrl+End goes to the last row.");
+                Verify.AreEqual(2, FocusedColumnIndex(table), "Ctrl+End goes to the last cell of that row.");
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(FocusedCell(table), VirtualKey.Home, control: true));
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, FocusedRowIndex(table), "Ctrl+Home goes to the first row.");
+                Verify.AreEqual(0, FocusedColumnIndex(table), "Ctrl+Home goes to the first cell of that row.");
+            });
+        }
+
+        [TestMethod]
+        public void VerticalNavigationPreservesTheFocusedColumn()
+        {
+            var table = CreateLoadedNavTable();
+            RunOnUIThread.Execute(() =>
+            {
+                var cells = VisibleCells(table, 0);
+                Verify.IsTrue(cells[2].Focus(FocusState.Keyboard));
+                Verify.AreEqual(2, FocusedColumnIndex(table));
+
+                // Moving to another row focuses the ROW container, which is exactly what the row
+                // navigation path does; the row redirects onto the remembered column.
+                var nextRow = RealizedRow(table, 1);
+                Verify.IsTrue(nextRow.Focus(FocusState.Keyboard));
+                Verify.AreEqual(1, FocusedRowIndex(table));
+                Verify.AreEqual(2, FocusedColumnIndex(table),
+                    "Moving between rows must keep the column the cursor was on.");
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == VisibleCells(table, 1)[2],
+                    "Focus must land on a CELL of the new row, never on the row container.");
+            });
+        }
+
+        [TestMethod]
+        public void FocusResolvesToTheCellForAutomation()
+        {
+            var table = CreateLoadedNavTable();
+            RunOnUIThread.Execute(() =>
+            {
+                var cell = VisibleCells(table, 0)[1];
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(cell);
+                Verify.IsTrue(peer is TableViewCellAutomationPeer);
+                Verify.IsTrue(peer.IsKeyboardFocusable(),
+                    "A cell must report itself as keyboard focusable, or SetFocus throws.");
+
+                // SetFocus used to throw "Target element cannot receive focus" for every cell.
+                peer.SetFocus();
+                Verify.IsTrue(peer.HasKeyboardFocus());
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cell);
+
+                var rowPeer = FrameworkElementAutomationPeer.CreatePeerForElement(RealizedRow(table, 0));
+                Verify.IsFalse(rowPeer.HasKeyboardFocus(),
+                    "The row must not also claim keyboard focus; that is the row-level-focus defect.");
+                Verify.AreEqual("Second, B0", peer.GetName());
+            });
+        }
+
+        [TestMethod]
+        public void MovingWithinARowRaisesNoSelectionChange()
+        {
+            var table = CreateLoadedNavTable();
+            int selectionChanges = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                table.SelectionMode = TableViewSelectionMode.Single;
+                var cells = VisibleCells(table, 0);
+                Verify.IsTrue(cells[0].Focus(FocusState.Keyboard));
+                table.SelectionChanged += (s, e) => ++selectionChanges;
+
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.Right));
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Right));
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Home));
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.End));
+
+                Verify.AreEqual(0, selectionChanges,
+                    "Selection is row-level: moving the cursor inside one row must not re-raise it.");
+            });
+        }
+
+        [TestMethod]
+        public void CellFocusSurvivesScrollRecycling()
+        {
+            var table = CreateLoadedNavTable();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(VisibleCells(table, 0)[1].Focus(FocusState.Keyboard));
+                Verify.AreEqual(1, FocusedColumnIndex(table));
+                // Far enough to recycle every realized row out from under the cursor.
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(FocusedCell(table), VirtualKey.End, control: true));
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => table.UpdateLayout());
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var lastRow = NavRowCount - 1;
+                Verify.AreEqual(lastRow, FocusedRowIndex(table),
+                    "Focus must follow the cursor through the rows that were recycled to reach it.");
+                var focused = FocusManager.GetFocusedElement(table.XamlRoot) as UIElement;
+                Verify.IsNotNull(focused);
+                Verify.IsTrue(focused == VisibleCells(table, lastRow)[2],
+                    "The focused element must be a live cell of the realized target row, not a recycled one.");
+
+                // And no recycled row left a stale focus state behind in the pool. The focus
+                // rectangle itself is the framework's, drawn by the focus rect manager from
+                // UseSystemFocusVisuals + FocusState, so those are what there is to assert.
+                foreach (var row in Descendants(table).OfType<TableViewRow>())
+                {
+                    foreach (var cell in VisibleCellsOf(row))
+                    {
+                        Verify.IsTrue(cell.UseSystemFocusVisuals,
+                            "Every cell opts into the framework focus rectangle.");
+                        var expected = cell == focused ? FocusState.Keyboard : FocusState.Unfocused;
+                        Verify.AreEqual(expected, cell.FocusState,
+                            "Exactly the focused cell may be in keyboard focus.");
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        public void CellUsesTheFrameworkFocusRectangleNotABespokeOne()
+        {
+            var table = CreateLoadedNavTable();
+            RunOnUIThread.Execute(() =>
+            {
+                var cells = VisibleCells(table, 0);
+                foreach (var cell in cells)
+                {
+                    Verify.IsTrue(cell.IsTabStop, "CUIElement::IsFocusable gates on IsTabStop.");
+                    Verify.IsTrue(cell.UseSystemFocusVisuals,
+                        "The cell must use the framework focus visual, matching every other control.");
+
+                    // No hand-rolled focus chrome: the cell holds the column's content and nothing
+                    // else. A bespoke ring here would diverge from the ListViewItem convention and
+                    // would not adapt to High Contrast on its own.
+                    Verify.AreEqual(1, VisualTreeHelper.GetChildrenCount(cell),
+                        "A cell hosts exactly the column-generated element.");
+                }
+
+                // Keyboard focus draws the ring; pointer focus deliberately does not.
+                Verify.IsTrue(cells[0].Focus(FocusState.Keyboard));
+                Verify.AreEqual(FocusState.Keyboard, cells[0].FocusState);
+                Verify.IsTrue(cells[1].Focus(FocusState.Pointer));
+                Verify.AreEqual(FocusState.Pointer, cells[1].FocusState);
+                Verify.AreEqual(FocusState.Unfocused, cells[0].FocusState);
+
+                // Selection chrome stays entirely separate from focus chrome: focusing a cell must
+                // not select its row, so "focused but not selected" is distinguishable.
+                Verify.AreEqual(-1, table.SelectedIndex);
+            });
+        }
+
+        [TestMethod]
+        public void TableIsOneTabStopAndDoesNotTrapFocus()
+        {
+            TableView table = null;
+            Microsoft.UI.Xaml.Controls.Button before = null;
+            Microsoft.UI.Xaml.Controls.Button after = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateNavTable();
+                before = new Microsoft.UI.Xaml.Controls.Button { Content = "Before" };
+                after = new Microsoft.UI.Xaml.Controls.Button { Content = "After" };
+                var host = new Microsoft.UI.Xaml.Controls.StackPanel();
+                host.Children.Add(before);
+                host.Children.Add(table);
+                host.Children.Add(after);
+                Content = host;
+                host.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var options = new FindNextElementOptions { SearchRoot = table.XamlRoot.Content };
+
+                var cells = VisibleCells(table, 0);
+                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));
+
+                // Forward from a focused cell leaves the table outright - the body is ONE tab stop,
+                // not one per cell and not one per row.
+                var next = FocusManager.FindNextElement(FocusNavigationDirection.Next, options);
+                Verify.IsFalse(IsInside(next as DependencyObject, table),
+                    "Tab from a cell must leave the table, not step to the next cell or row.");
+
+                // And backwards, so focus is never trapped in either direction.
+                var previous = FocusManager.FindNextElement(FocusNavigationDirection.Previous, options);
+                Verify.IsFalse(IsInside(previous as DependencyObject, table),
+                    "Shift+Tab from a cell must leave the table.");
+            });
+        }
+
+        [TestMethod]
+        public void FocusReturnsToTheCellAfterAnEdit()
+        {
+            var table = CreateLoadedNavTable();
+            RunOnUIThread.Execute(() =>
+            {
+                var cells = VisibleCells(table, 0);
+                Verify.IsTrue(cells[2].Focus(FocusState.Keyboard));
+
+                // Drives the real edit lifecycle (BeginEdit / write / CommitEdit) on the focused cell.
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(cells[2]);
+                ((IValueProvider)peer.GetPattern(PatternInterface.Value)).SetValue("Edited");
+                Verify.IsFalse(table.IsEditing, "The edit must have closed.");
+
+                var focused = FocusManager.GetFocusedElement(table.XamlRoot);
+                Verify.IsTrue(focused == cells[2],
+                    "Focus must come back to the CELL after a commit - not to the row, and not be lost.");
+                Verify.AreEqual(2, FocusedColumnIndex(table));
+
+                // And the cursor still navigates from there.
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Home));
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[0]);
+            });
+        }
+
+        [TestMethod]
+        public void CollapsedColumnsAreSkippedByCellNavigation()
+        {
+            var table = CreateLoadedNavTable();
+            RunOnUIThread.Execute(() =>
+            {
+                table.Columns[1].Visibility = Visibility.Collapsed;
+                table.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var cells = VisibleCells(table, 0);
+                Verify.AreEqual(2, cells.Length, "A collapsed column contributes no navigable cell.");
+                Verify.IsTrue(cells[0].Focus(FocusState.Keyboard));
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.Right));
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[1],
+                    "Right must land on the next VISIBLE column, skipping the collapsed one.");
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Right));
+                Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == cells[1]);
+            });
+        }
+
+        [TestMethod]
+        public void SingleArrowPressMovesExactlyOneColumn()
+        {
+            var table = CreateLoadedNavTable();
+            RunOnUIThread.Execute(() =>
+            {
+                var cells = VisibleCells(table, 0);
+                Verify.IsTrue(cells[0].Focus(FocusState.Keyboard));
+                Verify.AreEqual(0, FocusedGridItemColumn(table));
+
+                // The regression: each of these used to advance the cursor by TWO columns, because
+                // the move was computed against live focus after built-in navigation had already
+                // stepped it once.
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.Right));
+                Verify.AreEqual(1, FocusedGridItemColumn(table), "One Right must land on column 1, not 2.");
+
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Right));
+                Verify.AreEqual(2, FocusedGridItemColumn(table), "One Right must land on column 2, not 4.");
+
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Left));
+                Verify.AreEqual(1, FocusedGridItemColumn(table), "One Left must land on column 1.");
+
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Left));
+                Verify.AreEqual(0, FocusedGridItemColumn(table));
+
+                // The row never changes on a horizontal move.
+                Verify.AreEqual(0, FocusedGridItemRow(table));
+            });
+        }
+
+        [TestMethod]
+        public void ArrowStepStaysOneWhenBuiltInNavigationAlreadyMovedFocus()
+        {
+            var table = CreateLoadedNavTable();
+            RunOnUIThread.Execute(() =>
+            {
+                var cells = VisibleCells(table, 0);
+
+                // Reproduce the live sequence exactly: the cursor is anchored on column 0 by the
+                // tunneling PreviewKeyDown pass, then XAML's built-in directional navigation
+                // advances focus to column 1 before the bubbling KeyDown handler runs.
+                Verify.IsTrue(cells[0].Focus(FocusState.Keyboard));
+                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));   // stand-in for built-in nav
+                Verify.AreEqual(1, FocusedGridItemColumn(table));
+
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursorFromAnchor(
+                    cells[1], VirtualKey.Right, anchorRow: 0, anchorColumn: 0));
+                Verify.AreEqual(1, FocusedGridItemColumn(table),
+                    "The handler must honour the pre-key anchor and leave the cursor on column 1.");
+
+                // Same in the other direction.
+                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));
+                Verify.IsTrue(cells[0].Focus(FocusState.Keyboard));   // stand-in for built-in nav
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursorFromAnchor(
+                    cells[0], VirtualKey.Left, anchorRow: 0, anchorColumn: 1));
+                Verify.AreEqual(0, FocusedGridItemColumn(table));
+
+                // And at a boundary the cursor is re-pinned, so built-in navigation cannot walk
+                // focus out of the row past the first column.
+                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));   // stand-in for a stray move
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursorFromAnchor(
+                    cells[1], VirtualKey.Left, anchorRow: 0, anchorColumn: 0));
+                Verify.AreEqual(0, FocusedGridItemColumn(table),
+                    "A clamped arrow must restore the cursor to the cell it started on.");
+            });
+        }
+
+        [TestMethod]
+        public void ArrowStepIsOneColumnAndMirroredInRightToLeft()
+        {
+            var table = CreateLoadedNavTable();
+            RunOnUIThread.Execute(() =>
+            {
+                table.FlowDirection = FlowDirection.RightToLeft;
+                table.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var cells = VisibleCells(table, 0);
+                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));
+                Verify.AreEqual(1, FocusedGridItemColumn(table));
+
+                // Column 0 renders at the RIGHT edge in RTL, so Right moves towards column 0 -
+                // by exactly one column, like every other XAML list.
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Right));
+                Verify.AreEqual(0, FocusedGridItemColumn(table), "RTL Right moves one column towards 0.");
+
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[0], VirtualKey.Left));
+                Verify.AreEqual(1, FocusedGridItemColumn(table), "RTL Left moves one column away from 0.");
+
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[1], VirtualKey.Left));
+                Verify.AreEqual(2, FocusedGridItemColumn(table));
+
+                // Clamping still applies to the logical ends.
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(cells[2], VirtualKey.Left));
+                Verify.AreEqual(2, FocusedGridItemColumn(table), "RTL Left clamps at the last column.");
+            });
+        }
+
+        private const int NavRowCount = 200;
+
+        private TableView CreateLoadedNavTable()
+        {
+            TableView table = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateNavTable();
+                Content = table;
+                table.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.IsTrue(table.IsLoaded));
+            return table;
+        }
+
+        private static TableView CreateNavTable()
+        {
+            var table = new TableView { Width = 500, Height = 240, IsReadOnly = false };
+            table.Resources.MergedDictionaries.Add(new TabularControlsResources());
+            foreach (var header in new[] { "First", "Second", "Third" })
+            {
+                table.Columns.Add(new TableViewTextColumn
+                {
+                    Header = header,
+                    Width = new GridLength(140),
+                    Binding = new Binding { Path = new PropertyPath("Name") }
+                });
+            }
+            var items = new ObservableCollection<Item>();
+            for (int i = 0; i < NavRowCount; ++i)
+            {
+                items.Add(new Item { Name = "B" + i });
+            }
+            table.ItemsSource = items;
+            return table;
+        }
+
+        private static TableViewRow RealizedRow(TableView table, int index)
+        {
+            var repeater = Descendants(table).OfType<Microsoft.UI.Xaml.Controls.ItemsRepeater>().First();
+            return repeater.TryGetElement(index) as TableViewRow;
+        }
+
+        private static UIElement[] VisibleCellsOf(TableViewRow row)
+        {
+            var host = Descendants(row).OfType<TableViewCellsPanel>().Single();
+            return host.Children
+                .Where(child => (child as FrameworkElement)?.Tag is TableViewColumn column &&
+                    column.Visibility == Visibility.Visible)
+                .ToArray();
+        }
+
+        private static UIElement[] VisibleCells(TableView table, int rowIndex) =>
+            VisibleCellsOf(RealizedRow(table, rowIndex));
+
+        private static UIElement FocusedCell(TableView table) =>
+            FocusManager.GetFocusedElement(table.XamlRoot) as UIElement;
+
+        private static int FocusedRowIndex(TableView table)
+        {
+            var repeater = Descendants(table).OfType<Microsoft.UI.Xaml.Controls.ItemsRepeater>().First();
+            DependencyObject node = FocusManager.GetFocusedElement(table.XamlRoot) as DependencyObject;
+            while (node != null)
+            {
+                if (node is TableViewRow row) return repeater.GetElementIndex(row);
+                node = VisualTreeHelper.GetParent(node);
+            }
+            return -1;
+        }
+
+        private static int FocusedColumnIndex(TableView table)
+        {
+            var focused = FocusManager.GetFocusedElement(table.XamlRoot) as DependencyObject;
+            var index = FocusedRowIndex(table);
+            if (index < 0) return -1;
+            return Array.IndexOf(VisibleCells(table, index), focused as UIElement);
+        }
+
+        // Reads the coordinate the way a UIA client does - GridItemPattern on the peer of whatever
+        // FocusManager reports as focused - rather than by comparing element identity, so an
+        // off-by-one in the cursor cannot pass unnoticed.
+        private static IGridItemProvider FocusedGridItem(TableView table)
+        {
+            var focused = FocusManager.GetFocusedElement(table.XamlRoot) as UIElement;
+            Verify.IsNotNull(focused, "Something must have keyboard focus.");
+            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(focused);
+            Verify.IsNotNull(peer);
+            return (IGridItemProvider)peer.GetPattern(PatternInterface.GridItem);
+        }
+
+        private static int FocusedGridItemColumn(TableView table) => FocusedGridItem(table).Column;
+
+        private static int FocusedGridItemRow(TableView table) => FocusedGridItem(table).Row;
+
+        private static bool IsInside(DependencyObject node, DependencyObject ancestor)
+        {
+            while (node != null)
+            {
+                if (node == ancestor) return true;
+                node = VisualTreeHelper.GetParent(node);
+            }
+            return false;
         }
 
         private TableView CreateLoadedTable(TableView table = null)

@@ -10,6 +10,7 @@
 #include "TableViewCellsPanel.h"
 #include "TableViewRowAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
+#include "TableViewAutomationHelpers.h"
 #include "TableViewCell.h"
 #include "TVDiag.h"
 
@@ -121,6 +122,29 @@ TableViewRow::TableViewRow()
                 strongRow->OnIsEnabledChanged(sender, args);
             }
         });
+
+    // Cell-level focus. GettingFocus runs before focus commits, which is the only point at which
+    // focus aimed at the row container can still be redirected onto a cell.
+    m_gettingFocusRevoker = GettingFocus(
+        winrt::auto_revoke,
+        [weakRow](winrt::UIElement const& sender, winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
+        {
+            if (auto strongRow = weakRow.get())
+            {
+                strongRow->OnRowGettingFocus(sender, args);
+            }
+        });
+
+    // Both bubble from the cells, so the row is the one place that sees every cell focus change.
+    m_gotFocusRevoker = GotFocus(
+        winrt::auto_revoke,
+        [weakRow](winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+        {
+            if (auto strongRow = weakRow.get())
+            {
+                strongRow->OnRowGotFocus();
+            }
+        });
 }
 
 void TableViewRow::OnIsEnabledChanged(
@@ -171,6 +195,199 @@ winrt::TableViewColumn TableViewRow::GetCellOwningColumn(const winrt::UIElement&
     }
 
     return nullptr;
+}
+
+// ----- Cell-level keyboard focus -----
+
+int32_t TableViewRow::GetVisibleCellCountInternal() const
+{
+    int32_t count = 0;
+    if (auto const host = m_cellsHost.get())
+    {
+        auto const children = host.Children();
+        const uint32_t size = children.Size();
+        for (uint32_t i = 0; i < size; ++i)
+        {
+            auto const child = children.GetAt(i);
+            // Same predicate as TableViewCellAutomationPeer::Column and the row peer's children, so
+            // the keyboard coordinate space and the UIA one cannot drift apart.
+            if (child && IsVisibleColumn(GetCellOwningColumn(child)))
+            {
+                ++count;
+            }
+        }
+    }
+    return count;
+}
+
+winrt::UIElement TableViewRow::GetVisibleCellInternal(int32_t visibleColumnIndex) const
+{
+    if (visibleColumnIndex < 0)
+    {
+        return nullptr;
+    }
+
+    if (auto const host = m_cellsHost.get())
+    {
+        auto const children = host.Children();
+        const uint32_t size = children.Size();
+        int32_t visible = 0;
+        for (uint32_t i = 0; i < size; ++i)
+        {
+            auto const child = children.GetAt(i);
+            if (!child || !IsVisibleColumn(GetCellOwningColumn(child)))
+            {
+                continue;
+            }
+            if (visible == visibleColumnIndex)
+            {
+                return child;
+            }
+            ++visible;
+        }
+    }
+    return nullptr;
+}
+
+int32_t TableViewRow::GetVisibleCellIndexInternal(const winrt::UIElement& cell) const
+{
+    if (!cell)
+    {
+        return -1;
+    }
+
+    if (auto const host = m_cellsHost.get())
+    {
+        auto const children = host.Children();
+        const uint32_t size = children.Size();
+        int32_t visible = 0;
+        for (uint32_t i = 0; i < size; ++i)
+        {
+            auto const child = children.GetAt(i);
+            if (!child || !IsVisibleColumn(GetCellOwningColumn(child)))
+            {
+                continue;
+            }
+            if (child == cell)
+            {
+                return visible;
+            }
+            ++visible;
+        }
+    }
+    return -1;
+}
+
+winrt::UIElement TableViewRow::FindOwnCellInternal(
+    const winrt::DependencyObject& element, bool requireExact) const
+{
+    auto const host = m_cellsHost.get();
+    if (!element || !host)
+    {
+        return nullptr;
+    }
+
+    winrt::DependencyObject current = element;
+    while (current)
+    {
+        // Stop at the cells host: anything above it is the row's own chrome, and in a nested
+        // TableView it would be the OUTER table's cell - never ours to claim.
+        if (current == host.try_as<winrt::DependencyObject>())
+        {
+            return nullptr;
+        }
+
+        if (auto const candidate = current.try_as<winrt::UIElement>())
+        {
+            if (winrt::VisualTreeHelper::GetParent(candidate) == host.try_as<winrt::DependencyObject>() &&
+                IsVisibleColumn(GetCellOwningColumn(candidate)))
+            {
+                // An exact match is what distinguishes "the cell has focus" (arrow keys navigate)
+                // from "a control inside the cell has focus" (the control owns its keys).
+                return (!requireExact || candidate == element.try_as<winrt::UIElement>())
+                    ? candidate : nullptr;
+            }
+        }
+
+        if (requireExact)
+        {
+            // One hop only; the caller asked for the cell itself.
+            return nullptr;
+        }
+
+        current = winrt::VisualTreeHelper::GetParent(current);
+    }
+
+    return nullptr;
+}
+
+bool TableViewRow::FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::FocusState state)
+{
+    if (auto const cell = GetVisibleCellInternal(visibleColumnIndex))
+    {
+        // Horizontal realization: a cell for a column scrolled out of the viewport must come into
+        // view before it takes focus, or focus lands somewhere the user cannot see.
+        if (auto const cellFE = cell.try_as<winrt::FrameworkElement>())
+        {
+            cellFE.StartBringIntoView();
+        }
+
+        if (cell.Focus(state))
+        {
+            return true;
+        }
+    }
+
+    // A row with no realized visible cell (no columns, or cells not built yet) still has to be
+    // reachable, so fall back to the container the way this control always did.
+    return Focus(state);
+}
+
+void TableViewRow::OnRowGettingFocus(
+    const winrt::UIElement& /*sender*/,
+    const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args)
+{
+    // Only focus aimed at the row CONTAINER is redirected. Focus aimed at a cell, or at a control
+    // inside one, is already where it should be.
+    winrt::TableViewRow const self = *this;
+    if (args.NewFocusedElement() != self.try_as<winrt::DependencyObject>())
+    {
+        return;
+    }
+
+    auto const owner = GetOwningTableView();
+    if (!owner)
+    {
+        return;
+    }
+
+    auto const ownerImpl = winrt::get_self<TableView>(owner);
+
+    // An open editor owns focus; redirecting the row focus the editor teardown performs would
+    // fight the row's own "move focus off the editor before it leaves the tree" step.
+    if (ownerImpl->IsEditing() && m_editingElement.get())
+    {
+        return;
+    }
+
+    auto const target = ownerImpl->ResolveFocusEntryCell(*this, args.OldFocusedElement());
+    if (!target)
+    {
+        return;
+    }
+
+    // TrySetNewFocusedElement is refused during some focus operations (a programmatic move already
+    // in flight, for one). Failing is fine - focus simply stays on the row, which is what this
+    // control did before cell focus existed.
+    args.TrySetNewFocusedElement(target);
+}
+
+void TableViewRow::OnRowGotFocus()
+{
+    if (auto const owner = GetOwningTableView())
+    {
+        winrt::get_self<TableView>(owner)->OnRowCellFocusChanged(*this);
+    }
 }
 
 void TableViewRow::DetachColumnsSubscription()
@@ -378,8 +595,27 @@ void TableViewRow::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
     m_isPressed = true;
     UpdateVisualState(true);
 
-    // Move keyboard focus to the row so the next keyboard interaction targets it.
-    Focus(winrt::FocusState::Pointer);
+    // Move keyboard focus to the CELL the press landed on, so the next keyboard interaction targets
+    // it and UIA reports that cell as focused. Clicking a cell used to focus the whole row, which
+    // made Narrator read every column of the row for a click on one value.
+    winrt::UIElement pressedCell{ nullptr };
+    if (auto const source = args.OriginalSource().try_as<winrt::DependencyObject>())
+    {
+        pressedCell = FindOwnCellInternal(source, false /* requireExact */);
+    }
+    if (pressedCell)
+    {
+        if (!pressedCell.Focus(winrt::FocusState::Pointer))
+        {
+            Focus(winrt::FocusState::Pointer);
+        }
+    }
+    else
+    {
+        // A press on row chrome outside any cell (padding, the selection indicator strip): the row
+        // redirects to the current cell in GettingFocus.
+        Focus(winrt::FocusState::Pointer);
+    }
 
     // Selection state lives on the control; the row is just where the press lands. Left unhandled
     // so the begin-edit handler for this same press still runs. Commits on RELEASE for every
@@ -804,7 +1040,7 @@ void TableViewRow::RebuildCells()
         }
 
         // Cell wrapper root.
-        auto const cellWrapper = winrt::make<TableViewCell>(*this, column, visibleColumnIndex).as<winrt::Grid>();
+        auto const cellWrapper = TableViewCell::Create(*this, column, visibleColumnIndex);
         if (column.Visibility() == winrt::Visibility::Visible)
         {
             ++visibleColumnIndex;
@@ -942,6 +1178,10 @@ void TableViewRow::RefreshGridLines()
     {
         gridLineBrush = winrt::get_self<TableView>(owner)->GetGridLineBrush();
     }
+
+    // The control calls this on ActualTheme / High Contrast changes. The cell focus rectangle needs
+    // nothing here: it is the framework's own, drawn by the focus rect manager from
+    // FocusVisualPrimaryBrush / FocusVisualSecondaryBrush, which re-resolve themselves.
 
     const auto children = host.Children();
     const uint32_t childCount = children.Size();
@@ -1169,7 +1409,22 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
 
         if (editorHasFocus)
         {
-            Focus(winrt::FocusState::Programmatic);
+            // Back to the CELL, not the row: the cell is what keyboard navigation and UIA treat as
+            // the focused element, so returning focus to the container would silently demote the
+            // user from cell focus to row focus every time an edit closed.
+            //
+            // The editor's own FocusState is carried across rather than hard-coding Programmatic:
+            // the framework only draws a focus rectangle for FocusState::Keyboard, so committing a
+            // keyboard-driven edit with Enter has to land the cell back in Keyboard focus or the
+            // ring silently disappears for the rest of the user's navigation.
+            auto const restoreState = editingElement.FocusState() == winrt::FocusState::Unfocused
+                ? winrt::FocusState::Programmatic
+                : editingElement.FocusState();
+
+            if (!cellWrapper.Focus(restoreState))
+            {
+                Focus(restoreState);
+            }
         }
     }
 

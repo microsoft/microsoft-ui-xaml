@@ -50,6 +50,33 @@ public:
     winrt::Panel GetCellsHostPanelInternal() const { return m_cellsHost.get(); }
     winrt::TableViewColumn GetCellOwningColumn(const winrt::UIElement& cellElement) const;
 
+    // ----- Cell-level keyboard focus -----
+    //
+    // The row is still the element the framework and ItemsRepeater deal in, but the element that
+    // actually holds focus is a cell, so that UIA reports a cell and Narrator announces one column
+    // rather than the whole row. These are the row's half of that: the control drives navigation.
+
+    // The number of cells in this row whose column is visible. This is the coordinate space the
+    // control navigates in, and the same one TableViewCellAutomationPeer::Column reports.
+    int32_t GetVisibleCellCountInternal() const;
+
+    // The realized cell at a visible-column index, or null when the index is out of range. Cells
+    // for collapsed columns are skipped, so indexes stay dense across a hidden column.
+    winrt::UIElement GetVisibleCellInternal(int32_t visibleColumnIndex) const;
+
+    // The visible-column index of `cell` within this row, or -1 when it is not one of our visible
+    // cells. Accepts the cell wrapper itself only, not a descendant.
+    int32_t GetVisibleCellIndexInternal(const winrt::UIElement& cell) const;
+
+    // The cell wrapper that is, or contains, `element`; null when `element` is outside this row's
+    // cells. `requireExact` restricts the match to the cell wrapper itself, which is how key
+    // handling tells "focus is on the cell" from "focus is on a control inside the cell".
+    winrt::UIElement FindOwnCellInternal(const winrt::DependencyObject& element, bool requireExact) const;
+
+    // Moves keyboard focus to the cell at a visible-column index. Falls back to the row when the
+    // row has no such cell, so a row with no columns is still reachable.
+    bool FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::FocusState state);
+
     // Keep body and header leading-frozen cells pinned to the same scroll offset.
     void RefreshFrozenColumnLayout(double horizontalOffset, double leadingFrozenWidth);
     void RefreshDensity();
@@ -106,6 +133,17 @@ public:
 private:
     void ResetCellAutomationNames();
 
+    // Focus landing on the row container itself is redirected onto a cell: keyboard navigation,
+    // the editor teardown and Tab all focus the row, and without this the UIA focused element
+    // would be the row - which is the row-level-focus defect this control is fixing.
+    void OnRowGettingFocus(
+        const winrt::UIElement& sender,
+        const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
+
+    // GotFocus bubbles from the cells, so the row is the one place that sees every cell focus
+    // change and can tell the control which cell the cursor is now on.
+    void OnRowGotFocus();
+
     // Installs a generated display element as a cell's content, wiring the ContentPresenter Content
     // binding a template column needs. GenerateElement alone is not a complete cell.
     void AttachCellContent(const winrt::Grid& cellWrapper, const winrt::FrameworkElement& cellElement);
@@ -151,6 +189,8 @@ private:
     // Use auto_revoke for self-event subscriptions instead of manual token cleanup.
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
+    winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
+    winrt::UIElement::GotFocus_revoker m_gotFocusRevoker{};
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
     // Auto-revoking subscription prevents stale delegates during row teardown.
     winrt::IObservableVector<winrt::TableViewColumn>::VectorChanged_revoker m_columnsVectorChangedRevoker{};
