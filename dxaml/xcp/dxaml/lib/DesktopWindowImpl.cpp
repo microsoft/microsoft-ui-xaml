@@ -24,7 +24,9 @@
 #include <windowing.h>
 #include "Microsoft.UI.Windowing.h"
 #include <FrameworkUdk/Theming.h>
+#include <Microsoft.UI.Composition.h>
 #include <Microsoft.UI.Interop.h>
+#include <OptionalChangeState.h>
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -1293,6 +1295,14 @@ LRESULT DesktopWindowImpl::OnMessage(
             return LResultFromHResult(OnNonClientRegionButtonUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
         case WM_ERASEBKGND:
         {
+            // Without a redirection surface there is nothing to erase: GDI painting on this window goes
+            // nowhere, so the themed fill below would have no effect. See CreateDesktopWindow.
+            // Use this HWND's style because tests can change the process-wide opt-in after window creation.
+            if ((::GetWindowLongPtrW(m_hwnd.get(), GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP) != 0)
+            {
+                return 1;
+            }
+
             Theming::Theme appTheme = Theming::Theme::None;
             ctl::ComPtr<xaml::IUIElement> content;
             if(!m_bIsClosed && SUCCEEDED(get_ContentImpl(&content)) && content)
@@ -1708,8 +1718,35 @@ void DesktopWindowImpl::RegisterDesktopWindowClass()
 
 void DesktopWindowImpl::CreateDesktopWindow()
 {
+    // WS_EX_NOREDIRECTIONBITMAP tells the system not to give this window a GDI redirection surface at all.
+    // Xaml barely uses it: the content island covers the client area, so the surface only really shows before
+    // the island's first frame - but DWM still allocates it and blends it every frame, at the cost of one
+    // full-window 32-bit bitmap. Skipping it drops both.
+    //
+    // The catch is that the window can no longer paint with GDI, which is a behavior change rather than a pure
+    // optimization, so it is opt-in through XamlChangeId::SkipWindowRedirectionSurface. We also require the
+    // system compositor: the lifted compositor still needs the themed background to avoid a transparent flash
+    // before its first frame. The style is only honored here - adding it later with SetWindowLongPtr is silently
+    // dropped - so the decision has to be made for the window as a whole, before the app can set anything on it.
+    DWORD extendedStyle = 0;
+    if (OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled())
+    {
+        ctl::ComPtr<ixp::ICompositionEngineStatics> compositionEngineStatics;
+        IFCFAILFAST(ctl::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEngine).Get(),
+            &compositionEngineStatics));
+
+        ctl::ComPtr<IInspectable> systemCompositor;
+        IFCFAILFAST(compositionEngineStatics->GetForSystemEngine(
+            m_dxamlCoreNoRef->GetHandle()->GetCompositor(), &systemCompositor));
+        if (systemCompositor)
+        {
+            extendedStyle = WS_EX_NOREDIRECTIONBITMAP;
+        }
+    }
+
     _CreateWindow(
-        0,                                 // Extended Style
+        extendedStyle,                     // Extended Style
         s_windowClassName,                 // name of window class
         s_defaultWindowTitle,              // title-bar string
         WS_OVERLAPPEDWINDOW | WS_VISIBLE,  // top-level window
