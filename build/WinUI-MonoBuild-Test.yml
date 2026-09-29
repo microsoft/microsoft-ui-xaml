@@ -134,6 +134,10 @@ extends:
       parameters:
         pipelineKind: PR
         stageDisplayName: 'Build Test Infra'
+        # BuildMUX is CPU-bound: msbuild already runs /m with uncapped /MP, but the default
+        # OneBranch host is an 8-vCPU M8ms. Give it a 64-vCPU host to shorten this stage,
+        # which is the first half of this pipeline's critical path.
+        buildHostSku: D64
         buildScenarioApps: true
         MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}

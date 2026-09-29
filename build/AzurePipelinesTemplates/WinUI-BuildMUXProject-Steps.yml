@@ -392,7 +392,7 @@ steps:
         solutionName: MUXControls.sln
         solutionPath: $(Build.SourcesDirectory)\controls
         nugetConfigPath: nuget.config
-        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=${{ parameters.winUIVersion }} /p:PublishAot=$(publishAotValue)'
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true /m ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=${{ parameters.winUIVersion }} /p:PublishAot=$(publishAotValue)'
         msbuildInstallDir: $(_buildToolsDirectory)
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
