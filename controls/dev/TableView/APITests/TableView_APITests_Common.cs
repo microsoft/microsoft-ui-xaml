@@ -78,6 +78,47 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             new Person { Name = "Mei", Role = "Architect" },
         };
 
+        // A minimal two-column, two-row TableView with unbound columns. Distinct from
+        // CreateTableView: tests that assert on row counts or selection indices rely on the
+        // smaller item set, and the columns are deliberately left unbound.
+        internal static TableView CreateBasicTableView() =>
+            CreateTableViewWithItems(
+                new List<Person>
+                {
+                    new Person { Name = "Asha", Role = "Designer" },
+                    new Person { Name = "Diego", Role = "Engineer" },
+                },
+                headers: new[] { "Name", "Role" });
+
+        // Builds a sized, hosted-ready TableView over a caller-supplied items source.
+        // Headers default to a single unbound "Name" column. Deliberately not an overload of
+        // CreateTableView(params string[]): a first parameter of type object would win overload
+        // resolution against the params form and silently capture CreateTableView("Name") calls.
+        internal static TableView CreateTableViewWithItems(
+            object itemsSource,
+            DataTemplate emptyTemplate = null,
+            double width = 400,
+            double height = 300,
+            string[] headers = null)
+        {
+            EnsureTabularControlsResources();
+
+            var tableView = new TableView
+            {
+                ItemsSource = itemsSource,
+                Width = width,
+                Height = height,
+                EmptyTemplate = emptyTemplate,
+            };
+
+            foreach (var header in headers ?? new[] { "Name" })
+            {
+                tableView.Columns.Add(new TableViewTextColumn { Header = header });
+            }
+
+            return tableView;
+        }
+
         internal static void EnsureTabularControlsResources()
         {
             if (!Application.Current.Resources.MergedDictionaries.OfType<TabularControlsResources>().Any())
