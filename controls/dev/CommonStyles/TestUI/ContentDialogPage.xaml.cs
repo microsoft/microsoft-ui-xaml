@@ -34,7 +34,7 @@ namespace MUXControlsTestApp
                 BorderBrush = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)),
             };
             dialog.XamlRoot = this.XamlRoot;
-            _ = CreateContentDialog().ShowAsync();
+            _ = dialog.ShowAsync();
         }
 
         private void ShowInPlaceDialog_Click(object sender, RoutedEventArgs e)
