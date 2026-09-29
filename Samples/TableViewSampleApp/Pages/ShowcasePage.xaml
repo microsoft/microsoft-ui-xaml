@@ -21,6 +21,7 @@
             <local:ShowcaseActiveTextConverter x:Key="ShowcaseActiveTextConverter"/>
             <local:ShowcaseSalaryTintConverter x:Key="ShowcaseSalaryTintConverter"/>
             <local:ShowcaseSalaryTextConverter x:Key="ShowcaseSalaryTextConverter"/>
+            <local:ShowcaseSalaryHelpTextConverter x:Key="ShowcaseSalaryHelpTextConverter"/>
 
             <DataTemplate x:Key="ShowcaseNameTemplate">
                 <TextBlock Text="{Binding FirstName}"
@@ -152,7 +153,7 @@
                         <tabular:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" SortMemberPath="Salary">
                             <tabular:TableViewTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="{Binding Salary, Converter={StaticResource ShowcaseSalaryTintConverter}}" CornerRadius="4" Padding="8,2" Margin="2,2" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                    <Border Background="{Binding Salary, Converter={StaticResource ShowcaseSalaryTintConverter}}" AutomationProperties.HelpText="{Binding Salary, Converter={StaticResource ShowcaseSalaryHelpTextConverter}}" CornerRadius="4" Padding="8,2" Margin="2,2" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Salary, Converter={StaticResource ShowcaseSalaryTextConverter}}" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                                     </Border>
                                 </DataTemplate>
@@ -307,19 +308,19 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Mode" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ModeReadoutText" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseModeReadoutText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ModeReadoutText" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseModeReadoutText" AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap"/>
 
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowsReadoutText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseRowsReadoutText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowsReadoutText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseRowsReadoutText" AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap"/>
 
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Selection" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="SelectionReadoutText" Text="0 (Single)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseSelectionReadoutText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="SelectionReadoutText" Text="0 (Single)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseSelectionReadoutText" AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap"/>
 
                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Sort" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="SortReadoutText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseSortReadoutText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="SortReadoutText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseSortReadoutText" AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap"/>
 
                     <TextBlock Grid.Row="4" Grid.Column="0" Text="Columns" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock Grid.Row="4" Grid.Column="1" x:Name="ColumnsReadoutText" Text="" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseColumnsReadoutText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" x:Name="ColumnsReadoutText" Text="" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseColumnsReadoutText" AutomationProperties.LiveSetting="Polite" TextWrapping="Wrap"/>
                 </Grid>
             </StackPanel>
         </controls:SamplePresenter.Options>

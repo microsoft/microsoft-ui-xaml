@@ -4,6 +4,7 @@
 
   <StackPanel>
   <ComboBox x:Name="ModeCombo"
+            AutomationProperties.Name="Selection mode"
             SelectedIndex="1"
             SelectionChanged="OnModeChanged">
     <ComboBoxItem Content="None"/>
@@ -13,6 +14,7 @@
   <TextBlock Text="Single selects one row; None disables row selection."/>
 
   <tabular:TableView x:Name="PeopleTable"
+                 AutomationProperties.Name="People table"
                  SelectionMode="Single"
                  SelectionChanged="OnTableSelectionChanged">
     <tabular:TableViewTextColumn Header="First name" Binding="{Binding FirstName}"/>

@@ -22,4 +22,4 @@ EmailColumn.MaxWidth = 100.0;
 // EmailColumn.ActualWidth      == 250.0  (floor wins)
 
 // Opt out of the resize gripper for a column. Programmatic Width still works.
-RoleColumn.CanUserResize = false;
+RoleColumn.CanResize = false;

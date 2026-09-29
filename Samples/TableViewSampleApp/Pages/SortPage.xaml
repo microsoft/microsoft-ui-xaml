@@ -40,59 +40,59 @@
                         MinHeight="320">
                         <tabular:TableViewTextColumn x:Name="GroupColumn"          Header="Group" Width="{StaticResource ColWidthNumber}"     SortMemberPath="Group"          Binding="{Binding Group}"/>
                         <tabular:TableViewTextColumn x:Name="TeamColumn"           Header="Team"  Width="*" MinWidth="140" SortMemberPath="Team"           Binding="{Binding Team}"/>
-                        <tabular:TableViewTextColumn x:Name="PlayedColumn"         Header="Played"          Width="{StaticResource ColWidthNumber}"     CanSort="False"             Binding="{Binding Played}">
+                        <tabular:TableViewTextColumn x:Name="PlayedColumn"         Header="P"               HeaderToolTip="Played"          Width="{StaticResource ColWidthNumber}"     CanSort="False"             Binding="{Binding Played}">
                             <tabular:TableViewTextColumn.HeaderTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="P" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                    <TextBlock Text="P" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw"/>
                                 </DataTemplate>
                             </tabular:TableViewTextColumn.HeaderTemplate>
                         </tabular:TableViewTextColumn>
-                        <tabular:TableViewTextColumn x:Name="WinsColumn"           Header="Won"             Width="{StaticResource ColWidthNumber}"     SortMemberPath="Wins"           Binding="{Binding Wins}">
+                        <tabular:TableViewTextColumn x:Name="WinsColumn"           Header="W"               HeaderToolTip="Won"             Width="{StaticResource ColWidthNumber}"     SortMemberPath="Wins"           Binding="{Binding Wins}">
                             <tabular:TableViewTextColumn.HeaderTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="W" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                    <TextBlock Text="W" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw"/>
                                 </DataTemplate>
                             </tabular:TableViewTextColumn.HeaderTemplate>
                         </tabular:TableViewTextColumn>
-                        <tabular:TableViewTextColumn x:Name="DrawsColumn"          Header="Drawn"           Width="{StaticResource ColWidthNumber}"     SortMemberPath="Draws"          Binding="{Binding Draws}">
+                        <tabular:TableViewTextColumn x:Name="DrawsColumn"          Header="D"               HeaderToolTip="Drawn"           Width="{StaticResource ColWidthNumber}"     SortMemberPath="Draws"          Binding="{Binding Draws}">
                             <tabular:TableViewTextColumn.HeaderTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="D" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                    <TextBlock Text="D" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw"/>
                                 </DataTemplate>
                             </tabular:TableViewTextColumn.HeaderTemplate>
                         </tabular:TableViewTextColumn>
-                        <tabular:TableViewTextColumn x:Name="LossesColumn"         Header="Lost"            Width="{StaticResource ColWidthNumber}"     SortMemberPath="Losses"         Binding="{Binding Losses}">
+                        <tabular:TableViewTextColumn x:Name="LossesColumn"         Header="L"               HeaderToolTip="Lost"            Width="{StaticResource ColWidthNumber}"     SortMemberPath="Losses"         Binding="{Binding Losses}">
                             <tabular:TableViewTextColumn.HeaderTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="L" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                    <TextBlock Text="L" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw"/>
                                 </DataTemplate>
                             </tabular:TableViewTextColumn.HeaderTemplate>
                         </tabular:TableViewTextColumn>
-                        <tabular:TableViewTextColumn x:Name="GoalsForColumn"       Header="Goals for"       Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalsFor"       Binding="{Binding GoalsFor}">
+                        <tabular:TableViewTextColumn x:Name="GoalsForColumn"       Header="GF"              HeaderToolTip="Goals for"       Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalsFor"       Binding="{Binding GoalsFor}">
                             <tabular:TableViewTextColumn.HeaderTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="GF" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                    <TextBlock Text="GF" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw"/>
                                 </DataTemplate>
                             </tabular:TableViewTextColumn.HeaderTemplate>
                         </tabular:TableViewTextColumn>
-                        <tabular:TableViewTextColumn x:Name="GoalsAgainstColumn"   Header="Goals against"   Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalsAgainst"   Binding="{Binding GoalsAgainst}">
+                        <tabular:TableViewTextColumn x:Name="GoalsAgainstColumn"   Header="GA"              HeaderToolTip="Goals against"   Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalsAgainst"   Binding="{Binding GoalsAgainst}">
                             <tabular:TableViewTextColumn.HeaderTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="GA" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                    <TextBlock Text="GA" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw"/>
                                 </DataTemplate>
                             </tabular:TableViewTextColumn.HeaderTemplate>
                         </tabular:TableViewTextColumn>
-                        <tabular:TableViewTextColumn x:Name="GoalDifferenceColumn" Header="Goal difference" Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalDifference" Binding="{Binding GoalDifference}">
+                        <tabular:TableViewTextColumn x:Name="GoalDifferenceColumn" Header="GD"              HeaderToolTip="Goal difference" Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalDifference" Binding="{Binding GoalDifference}">
                             <tabular:TableViewTextColumn.HeaderTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="GD" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                    <TextBlock Text="GD" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw"/>
                                 </DataTemplate>
                             </tabular:TableViewTextColumn.HeaderTemplate>
                         </tabular:TableViewTextColumn>
-                        <tabular:TableViewTextColumn x:Name="PointsColumn"         Header="Points"          Width="{StaticResource ColWidthNumber}"     SortMemberPath="Points"         Binding="{Binding Points}">
+                        <tabular:TableViewTextColumn x:Name="PointsColumn"         Header="Pts"             HeaderToolTip="Points"          Width="{StaticResource ColWidthNumber}"     SortMemberPath="Points"         Binding="{Binding Points}">
                             <tabular:TableViewTextColumn.HeaderTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="Pts" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Pts" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" AutomationProperties.AccessibilityView="Raw"/>
                                 </DataTemplate>
                             </tabular:TableViewTextColumn.HeaderTemplate>
                         </tabular:TableViewTextColumn>

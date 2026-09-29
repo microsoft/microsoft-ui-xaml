@@ -5,6 +5,7 @@
      because this page toggles them from the Options rail. -->
 
 <tabular:TableView x:Name="PeopleTable"
+               AutomationProperties.Name="Employee showcase table"
                SelectionMode="Single"
                HeadersVisibility="Column"
                CanUserSortColumns="True"

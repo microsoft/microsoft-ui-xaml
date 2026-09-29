@@ -10,7 +10,7 @@
                 IsHitTestVisible="False"
                 AutomationProperties.Name="{Binding FullName}"
                 AutomationProperties.HelpText="{Binding Department, Converter={StaticResource PersonAvatarColorNameConverter}}">
-            <TextBlock Text="{Binding Initial}" Foreground="White" FontWeight="SemiBold"
+            <TextBlock Text="{Binding Initial}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" FontWeight="SemiBold"
                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Border>
     </DataTemplate>

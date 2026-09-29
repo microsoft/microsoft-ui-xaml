@@ -15,7 +15,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Spacing="4">
-            <TextBlock Text="Filtering" Style="{ThemeResource TitleTextBlockStyle}"/>
+            <TextBlock Text="Filtering" Style="{ThemeResource TitleTextBlockStyle}" AutomationProperties.HeadingLevel="Level1"/>
             <TextBlock Opacity="0.8" TextWrapping="Wrap"
                        Text="TableViewSource.Filter(predicate) narrows the rows the control renders without mutating the underlying collection. Type to match name / department / role / email, and toggle Active only. ClearFilter() restores the full set."/>
         </StackPanel>
@@ -28,7 +28,7 @@
                           Toggled="OnActiveToggled"/>
         </StackPanel>
 
-        <TextBlock Grid.Row="2" x:Name="ReadoutText" Opacity="0.7" FontSize="12"/>
+        <TextBlock Grid.Row="2" x:Name="ReadoutText" Opacity="0.7" FontSize="12" AutomationProperties.AutomationId="FilterReadoutText" AutomationProperties.LiveSetting="Polite"/>
 
         <Border Grid.Row="3"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"

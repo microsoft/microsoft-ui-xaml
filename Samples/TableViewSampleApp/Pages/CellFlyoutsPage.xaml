@@ -28,7 +28,7 @@
                 AutomationProperties.HelpText="{Binding Department, Converter={StaticResource PersonAvatarColorNameConverter}}">
                 <TextBlock
                     Text="{Binding Initial}"
-                    Foreground="White"
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                     FontWeight="SemiBold"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"/>

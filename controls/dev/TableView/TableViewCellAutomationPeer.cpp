@@ -35,6 +35,7 @@ TableViewCellAutomationPeer::TableViewCellAutomationPeer(
     {
         m_column = winrt::make_weak(column);
     }
+    GetRowIndex();
 }
 
 winrt::IInspectable TableViewCellAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
@@ -54,6 +55,11 @@ winrt::IInspectable TableViewCellAutomationPeer::GetPatternCore(winrt::PatternIn
         return *this;
     }
 
+    if (patternInterface == winrt::PatternInterface::VirtualizedItem && IsVirtualized())
+    {
+        return *this;
+    }
+
     return __super::GetPatternCore(patternInterface);
 }
 
@@ -65,8 +71,7 @@ hstring TableViewCellAutomationPeer::GetClassNameCore()
 
 winrt::AutomationControlType TableViewCellAutomationPeer::GetAutomationControlTypeCore()
 {
-    // DataItem lets Narrator read the composed cell name instead of a generic container.
-    return winrt::AutomationControlType::DataItem;
+    return winrt::AutomationControlType::Custom;
 }
 
 hstring TableViewCellAutomationPeer::GetLocalizedControlTypeCore()
@@ -96,7 +101,6 @@ hstring TableViewCellAutomationPeer::GetNameCore()
         {
             auto const name = ReadDisplayName(display.try_as<winrt::FrameworkElement>());
             m_lastName = name;
-            m_editName = name;
             return name;
         }
     }
@@ -145,7 +149,12 @@ void TableViewCellAutomationPeer::EndEditName()
     m_nameLayoutUpdatedRevoker.revoke();
     auto const generation = m_nameGeneration;
     auto const weakThis = get_weak();
-    auto const cell = Owner().as<winrt::FrameworkElement>();
+    auto const cell = Owner().try_as<winrt::FrameworkElement>();
+    if (!cell)
+    {
+        m_editName.reset();
+        return;
+    }
     auto cleanupOnFailure = wil::scope_exit([this]() noexcept
     {
         m_nameLayoutUpdatedRevoker.revoke();
@@ -285,18 +294,157 @@ int32_t TableViewCellAutomationPeer::GetRowIndex()
     if (auto const row = m_row.get())
     {
         // TableView exposes no public row-index API, so resolve it from ItemsRepeater.
+        if (auto const tableView = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
+        {
+            m_lastOwningTable = winrt::make_weak(tableView);
+        }
+
         winrt::DependencyObject parent = winrt::VisualTreeHelper::GetParent(row);
         while (parent)
         {
             if (auto repeater = parent.try_as<winrt::ItemsRepeater>())
             {
-                return repeater.GetElementIndex(row);
+                if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
+                {
+                    m_lastKnownRowIndex = rowIndex;
+                    return rowIndex;
+                }
             }
             parent = winrt::VisualTreeHelper::GetParent(parent);
         }
     }
 
     return -1;
+}
+
+bool TableViewCellAutomationPeer::IsVirtualized()
+{
+    if (GetRowIndex() >= 0)
+    {
+        return false;
+    }
+
+    auto const tableView = m_lastOwningTable.get();
+    if (!tableView || m_lastKnownRowIndex < 0)
+    {
+        return false;
+    }
+
+    auto const tableImpl = winrt::get_self<TableView>(tableView);
+    if (m_lastKnownRowIndex >= tableImpl->GetRowCountInternal())
+    {
+        return false;
+    }
+
+    auto const repeater = tableImpl->GetRowsRepeaterInternal();
+    return repeater && !repeater.TryGetElement(m_lastKnownRowIndex);
+}
+
+void TableViewCellAutomationPeer::Realize()
+{
+    if (!IsVirtualized())
+    {
+        return;
+    }
+
+    const int32_t rowIndex = m_lastKnownRowIndex;
+    if (auto const queue = DispatcherQueue())
+    {
+        auto const weakThis = get_weak();
+        if (queue.TryEnqueue(winrt::DispatcherQueuePriority::Normal, [weakThis, rowIndex]()
+        {
+            if (auto const peer = weakThis.get())
+            {
+                peer->RealizeCore(rowIndex);
+            }
+        }))
+        {
+            return;
+        }
+    }
+
+    RealizeCore(rowIndex);
+}
+
+void TableViewCellAutomationPeer::RealizeCore(int32_t rowIndex)
+{
+    auto const tableView = m_lastOwningTable.get();
+    if (!tableView || rowIndex < 0)
+    {
+        return;
+    }
+
+    auto const tableImpl = winrt::get_self<TableView>(tableView);
+    if (rowIndex >= tableImpl->GetRowCountInternal())
+    {
+        return;
+    }
+
+    auto const repeater = tableImpl->GetRowsRepeaterInternal();
+    if (!repeater)
+    {
+        return;
+    }
+
+    winrt::UIElement element{ nullptr };
+    try
+    {
+        element = repeater.TryGetElement(rowIndex);
+        if (!element)
+        {
+            element = repeater.GetOrCreateElement(rowIndex);
+        }
+    }
+    catch (...)
+    {
+        return;
+    }
+
+    if (auto const row = element.try_as<winrt::TableViewRow>())
+    {
+        if (auto const cell = GetRealizedCellFromRow(row))
+        {
+            if (auto const cellElement = cell.try_as<winrt::FrameworkElement>())
+            {
+                cellElement.StartBringIntoView();
+                return;
+            }
+        }
+    }
+
+    if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+    {
+        frameworkElement.StartBringIntoView();
+    }
+}
+
+winrt::UIElement TableViewCellAutomationPeer::GetRealizedCellFromRow(winrt::TableViewRow const& row)
+{
+    if (!row)
+    {
+        return nullptr;
+    }
+
+    auto const rowImpl = winrt::get_self<TableViewRow>(row);
+    auto const cellsHost = rowImpl ? rowImpl->GetCellsHostPanelInternal() : nullptr;
+    if (!cellsHost)
+    {
+        return nullptr;
+    }
+
+    if (auto const column = m_column.get())
+    {
+        for (auto const& child : cellsHost.Children())
+        {
+            auto const cell = child.try_as<winrt::UIElement>();
+            if (cell && rowImpl->GetCellOwningColumn(cell) == column)
+            {
+                return cell;
+            }
+        }
+    }
+
+    return rowImpl->GetVisibleCellInternal(m_columnIndex);
 }
 
 int32_t TableViewCellAutomationPeer::Row()

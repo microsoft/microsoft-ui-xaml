@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 // tabular-namespace TableView aliases: disambiguate from the (stale-mock) base Microsoft.UI.Xaml.Controls.TableView projection
@@ -349,6 +350,12 @@ public sealed partial class MainWindow : Window
             ElementTheme.Dark => "\uE708",    // QuietHours / Moon-ish
             _ => "\uE793",                    // Color (system default)
         };
+        AutomationProperties.SetName(ThemeToggleButton, theme switch
+        {
+            ElementTheme.Light => "Theme: Light. Switch to Dark",
+            ElementTheme.Dark => "Theme: Dark. Switch to system default",
+            _ => "Theme: System default. Switch to Light",
+        });
     }
 
     private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)

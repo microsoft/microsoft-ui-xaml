@@ -6,6 +6,7 @@ using System.Globalization;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
+using Windows.UI.ViewManagement;
 
 namespace TableViewSampleApp.Pages;
 
@@ -29,7 +30,7 @@ public sealed class ShowcaseDepartmentTintConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (!ShowcasePage.Vibrant || value is not string department)
+        if (ShowcaseConverterAccessibility.IsHighContrast || !ShowcasePage.Vibrant || value is not string department)
         {
             return new SolidColorBrush(Colors.Transparent);
         }
@@ -63,7 +64,7 @@ public sealed class ShowcaseDepartmentDotConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (!ShowcasePage.Vibrant || value is not string department)
+        if (ShowcaseConverterAccessibility.IsHighContrast || !ShowcasePage.Vibrant || value is not string department)
         {
             return new SolidColorBrush(Colors.Transparent);
         }
@@ -79,6 +80,11 @@ public sealed class PersonAvatarBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
+        if (ShowcaseConverterAccessibility.IsHighContrast)
+        {
+            return new SolidColorBrush(Colors.Transparent);
+        }
+
         var department = value as string ?? string.Empty;
         return new SolidColorBrush(PersonAvatarColor(department));
     }
@@ -123,7 +129,7 @@ public sealed class ShowcaseSalaryTintConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (!ShowcasePage.Vibrant || value is not double salary)
+        if (ShowcaseConverterAccessibility.IsHighContrast || !ShowcasePage.Vibrant || value is not double salary)
         {
             return new SolidColorBrush(Colors.Transparent);
         }
@@ -150,6 +156,15 @@ public sealed class ShowcaseSalaryTextConverter : IValueConverter
         throw new NotImplementedException();
 }
 
+public sealed class ShowcaseSalaryHelpTextConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language) =>
+        value is double salary ? $"Salary band: {ShowcaseConverterAccessibility.SalaryBand(salary)}" : string.Empty;
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) =>
+        throw new NotImplementedException();
+}
+
 /// <summary>
 /// Status-chip background — green when Active, slate when Inactive — gated by
 /// <see cref="ShowcasePage.Vibrant"/>. Transparent when vibrant cells are off.
@@ -158,7 +173,7 @@ public sealed class ShowcaseActiveChipConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (!ShowcasePage.Vibrant || value is not bool isActive)
+        if (ShowcaseConverterAccessibility.IsHighContrast || !ShowcasePage.Vibrant || value is not bool isActive)
         {
             return new SolidColorBrush(Colors.Transparent);
         }
@@ -183,4 +198,13 @@ public sealed class ShowcaseActiveTextConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, string language) =>
         throw new NotImplementedException();
+}
+
+internal static class ShowcaseConverterAccessibility
+{
+    internal static bool IsHighContrast => new AccessibilitySettings().HighContrast;
+
+    internal static string SalaryBand(double salary) => salary >= 190_000 ? "high"
+        : salary >= 150_000 ? "medium"
+        : "low";
 }

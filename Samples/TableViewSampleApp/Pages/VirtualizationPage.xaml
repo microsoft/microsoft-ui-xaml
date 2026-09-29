@@ -86,7 +86,7 @@
                     <Button x:Name="RemoveRowButton" AutomationProperties.AutomationId="VirtualizationRemoveRowButton" Content="Remove row" Click="OnRemoveRowClick" IsEnabled="False" HorizontalAlignment="Stretch"/>
                     <Button x:Name="ResetRowsButton" AutomationProperties.AutomationId="VirtualizationResetRowsButton" Content="Reset rows" Click="OnResetRowsClick" HorizontalAlignment="Stretch"/>
                 </StackPanel>
-                <TextBlock x:Name="MutationStatusText" AutomationProperties.AutomationId="VirtualizationMutationStatusText" Text="Select a row to change its data." Style="{StaticResource StatusReadoutValueStyle}"/>
+                <TextBlock x:Name="MutationStatusText" AutomationProperties.AutomationId="VirtualizationMutationStatusText" AutomationProperties.LiveSetting="Polite" Text="Select a row to change its data." Style="{StaticResource StatusReadoutValueStyle}"/>
 
                 <TextBlock Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                 <Grid ColumnSpacing="12" RowSpacing="4">
@@ -102,16 +102,16 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Source mode" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SourceModeText" Text="In-memory" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SourceModeText"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SourceModeText" Text="In-memory" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SourceModeText" AutomationProperties.LiveSetting="Polite"/>
 
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Total rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TotalRowsText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TotalRowsText"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TotalRowsText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TotalRowsText" AutomationProperties.LiveSetting="Polite"/>
 
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Selected rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="SelectedRowsText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedRowsText"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="SelectedRowsText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedRowsText" AutomationProperties.LiveSetting="Polite"/>
 
                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Columns" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ColumnCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ColumnCountText"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ColumnCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ColumnCountText" AutomationProperties.LiveSetting="Polite"/>
                 </Grid>
 
                 <muxc:InfoBar

@@ -6,17 +6,12 @@
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewRow.h"
 
-// Implementation-only access: unlike this framework's FromElement, this never
-// creates a peer. It is not part of the projected TableView API.
 struct __declspec(uuid("843c3f59-aab0-4bcb-a8a4-12327286a29f")) __declspec(novtable)
     ITableViewCellAutomationPeerAccess : ::IUnknown
 {
     virtual HRESULT __stdcall GetExistingPeer(_Outptr_result_maybenull_ ::IInspectable** peer) noexcept = 0;
 };
 
-// Implementation-only navigation hook. API tests run in-process and cannot synthesize a
-// KeyRoutedEventArgs, so this lets them drive the owning TableView's cell cursor through exactly
-// the same code the control's key handler uses. It is not part of the projected TableView API.
 struct __declspec(uuid("6b0d94f1-3c27-4e58-8a6d-71f2c9b40e35")) __declspec(novtable)
     ITableViewCellNavigationAccess : ::IUnknown
 {
@@ -49,8 +44,6 @@ public:
     {
     }
 
-    // Builds a cell wrapper, and the only supported way to create one: a bare
-    // make<TableViewCell> would produce a cell that cannot take focus.
     static winrt::Grid Create(
         winrt::TableViewRow const& row, winrt::TableViewColumn const& column, int32_t columnIndex)
     {
@@ -136,7 +129,6 @@ public:
                 {
                     auto const ownerImpl = winrt::get_self<TableView>(owner);
                     auto const key = static_cast<winrt::Windows::System::VirtualKey>(virtualKey);
-                    // A negative anchor means "no routed event in flight": resolve from live focus.
                     *handled = static_cast<boolean>(anchorRow < 0 || anchorColumn < 0
                         ? ownerImpl->TryMoveCellCursor(key, control != false)
                         : ownerImpl->TryMoveCellCursorFromAnchor(

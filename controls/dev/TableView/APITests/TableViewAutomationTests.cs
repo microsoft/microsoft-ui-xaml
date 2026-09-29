@@ -55,6 +55,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(first == PeerAccess.FromProvider(cellHeaders[0]));
                 Verify.IsTrue(first == PeerAccess.FromProvider(
                     ((ITableProvider)peer.GetPattern(PatternInterface.Table)).GetColumnHeaders()[0]));
+                Verify.IsNotNull(first.GetPattern(PatternInterface.Invoke),
+                    "Sortable headers must expose Invoke so UIA activate can sort.");
+                Verify.IsNull(PeerAccess.FromProvider(headers[1]).GetPattern(PatternInterface.Invoke),
+                    "A non-sortable header must not expose Invoke.");
 
                 AutomationProperties.SetName(visuals[0], "Override");
                 AutomationProperties.SetPositionInSet(visuals[0], 7);
@@ -67,6 +71,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(FocusManager.GetFocusedElement(table.XamlRoot) == visuals[0]);
                 ((IInvokeProvider)first.GetPattern(PatternInterface.Invoke)).Invoke();
                 Verify.AreEqual(SortDirection.Ascending, table.Columns[0].SortDirection);
+            });
+        }
+
+        [TestMethod]
+        public void HeaderInvokeRequiresTableAndColumnSorting()
+        {
+            TableView table = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateTable();
+                table.CanUserSortColumns = false;
+                Content = table;
+                table.UpdateLayout();
+
+                var tablePeer = FrameworkElementAutomationPeer.CreatePeerForElement(table);
+                var header = PeerAccess.FromProvider(
+                    ((ITableProvider)tablePeer.GetPattern(PatternInterface.Table)).GetColumnHeaders()[0]);
+                Verify.IsNull(header.GetPattern(PatternInterface.Invoke),
+                    "Disabling user sorting removes Invoke from otherwise sortable headers.");
+
+                table.CanUserSortColumns = true;
+                table.UpdateLayout();
+                header = PeerAccess.FromProvider(
+                    ((ITableProvider)tablePeer.GetPattern(PatternInterface.Table)).GetColumnHeaders()[1]);
+                Verify.IsNull(header.GetPattern(PatternInterface.Invoke),
+                    "A column with CanSort=false must not expose Invoke.");
             });
         }
 
@@ -637,6 +667,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void DownKeyPreservesTheFocusedColumn()
+        {
+            var table = CreateLoadedRaggedNavTable();
+            RunOnUIThread.Execute(() =>
+            {
+                var cells = VisibleCells(table, 2);
+                Verify.IsTrue(cells[1].Focus(FocusState.Keyboard));
+                Verify.AreEqual(2, FocusedGridItemRow(table));
+                Verify.AreEqual(1, FocusedGridItemColumn(table));
+            });
+
+            PressKey(VirtualKey.Down);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(3, FocusedGridItemRow(table), "One Down must move exactly one row.");
+                Verify.AreEqual(1, FocusedGridItemColumn(table),
+                    "Down must preserve the pre-key column even if built-in navigation moved focus first.");
+            });
+        }
+
+        [TestMethod]
         public void FocusResolvesToTheCellForAutomation()
         {
             var table = CreateLoadedNavTable();
@@ -874,6 +926,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void RecycledRowAndCellExposeVirtualizedItemUntilRealized()
+        {
+            var table = CreateLoadedNavTable();
+            AutomationPeer rowPeer = null;
+            AutomationPeer cellPeer = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var tablePeer = FrameworkElementAutomationPeer.CreatePeerForElement(table);
+                cellPeer = PeerAccess.FromProvider(
+                    ((IGridProvider)tablePeer.GetPattern(PatternInterface.Grid)).GetItem(0, 0));
+                rowPeer = cellPeer.GetParent();
+                Verify.IsNotNull(rowPeer);
+                Verify.IsNull(rowPeer.GetPattern(PatternInterface.VirtualizedItem),
+                    "A realized row must not expose VirtualizedItem.");
+                Verify.IsNull(cellPeer.GetPattern(PatternInterface.VirtualizedItem),
+                    "A realized cell must not expose VirtualizedItem.");
+
+                Verify.IsTrue(VisibleCells(table, 0)[0].Focus(FocusState.Keyboard));
+                Verify.IsTrue(TableViewPeerTestAccess.MoveCellCursor(FocusedCell(table), VirtualKey.End, control: true));
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => table.UpdateLayout());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(RealizedRow(table, 0), "The first row should be outside the realized window.");
+                var rowVirtualized = (IVirtualizedItemProvider)rowPeer.GetPattern(PatternInterface.VirtualizedItem);
+                var cellVirtualized = (IVirtualizedItemProvider)cellPeer.GetPattern(PatternInterface.VirtualizedItem);
+                Verify.IsNotNull(rowVirtualized);
+                Verify.IsNotNull(cellVirtualized);
+
+                rowVirtualized.Realize();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => table.UpdateLayout());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(RealizedRow(table, 0), "Realize should bring the retained row back.");
+                Verify.IsNull(rowPeer.GetPattern(PatternInterface.VirtualizedItem));
+                Verify.IsNull(cellPeer.GetPattern(PatternInterface.VirtualizedItem));
+            });
+        }
+
+        [TestMethod]
         public void ArrowStepStaysOneWhenBuiltInNavigationAlreadyMovedFocus()
         {
             var table = CreateLoadedNavTable();
@@ -951,6 +1050,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 table = CreateNavTable();
+                Content = table;
+                table.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.IsTrue(table.IsLoaded));
+            return table;
+        }
+
+        private TableView CreateLoadedRaggedNavTable()
+        {
+            TableView table = null;
+            RunOnUIThread.Execute(() =>
+            {
+                table = CreateNavTable();
+                table.Columns[0].Width = new GridLength(320);
+                table.Columns[1].Width = new GridLength(36);
+                table.Columns[2].Width = new GridLength(144);
                 Content = table;
                 table.UpdateLayout();
             });
@@ -1037,6 +1153,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static int FocusedGridItemColumn(TableView table) => FocusedGridItem(table).Column;
 
         private static int FocusedGridItemRow(TableView table) => FocusedGridItem(table).Row;
+
+        private const uint KeyEventFKeyUp = 0x0002;
+
+        [DllImport("user32.dll")]
+        private static extern void keybd_event(byte virtualKey, byte scanCode, uint flags, UIntPtr extraInfo);
+
+        private static void PressKey(VirtualKey key)
+        {
+            keybd_event((byte)key, 0, 0, UIntPtr.Zero);
+            keybd_event((byte)key, 0, KeyEventFKeyUp, UIntPtr.Zero);
+            IdleSynchronizer.Wait();
+        }
 
         private static bool IsInside(DependencyObject node, DependencyObject ancestor)
         {

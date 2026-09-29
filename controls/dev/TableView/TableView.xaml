@@ -6,14 +6,9 @@
 
     <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
     <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
-    <!-- Metric defaults remain available alongside the default styles. -->
     <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
 
-    <!-- TabularControlsResources is required to supply TabularSurface* brushes for all themes. -->
 
-    <!-- TableView default style. Header cells stack horizontally (one per
-         column); the body is an ItemsRepeater of TableViewRow, each building its cells from
-         the owning TableView's Columns. -->
     <Style TargetType="controls:TableView">
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
@@ -51,9 +46,7 @@
                                                   VerticalScrollMode="Disabled"
                                                   HorizontalScrollBarVisibility="Hidden"
                                                   VerticalScrollBarVisibility="Disabled">
-                                        <!-- Left, not the default Stretch: the panel reports the summed column
-                                             width, and a wider presenter would centre it. PART_CellsHost
-                                             must match. -->
+                                        <!-- Left, not Stretch: a wider presenter would center the summed column width. -->
                                         <controls:TableViewCellsPanel x:Name="PART_HeaderHost"
                                                                       HorizontalAlignment="Left" />
                                     </ScrollViewer>
@@ -68,31 +61,14 @@
                                           VerticalContentAlignment="Stretch">
                                 
                                 <Grid x:Name="PART_BodyContent" Background="Transparent">
-                                    <!-- Vertical StackLayout ignores horizontal cache length; keep only the effective cache axis. -->
-                                    <!-- TabFocusNavigation="Once": every cell is a tab stop so that a
-                                         cell can hold keyboard focus, but the table as a whole must
-                                         remain a SINGLE tab stop - Tab enters the body once and the
-                                         next Tab leaves it. Without this, Tab would walk every
-                                         realized cell of every realized row. "Once" is also what
-                                         keeps the table free of a focus trap: it only suppresses the
-                                         interior stops, it never blocks tabbing out. -->
+                                    <!-- TabFocusNavigation="Once": cells can hold focus, but Tab enters the body once and then leaves instead of walking every realized cell. -->
                                     <ItemsRepeater x:Name="PART_RowsRepeater"
                                                    TabFocusNavigation="Once"
                                                    VerticalCacheLength="2.0">
                                         <ItemsRepeater.Layout>
                                             <StackLayout Orientation="Vertical" />
                                         </ItemsRepeater.Layout>
-                                        <!-- No ItemTemplate here: it is assigned in code to a
-                                             TableViewRowTemplateSelector that maps the row's
-                                             TableViewRowKind to a TableViewGroupHeader or TableViewRow
-                                             container template. ItemsRepeater accepts a
-                                             DataTemplateSelector and gives each selected template its
-                                             own recycle pool. -->
                                     </ItemsRepeater>
-                                    <!-- Empty-state overlay. The control (C++ UpdateEmptyState) shows
-                                         this ONLY when EmptyTemplate is set AND the effective row source
-                                         is empty; otherwise it stays Collapsed and inert (zero behavior
-                                         change for TableViews that don't set EmptyTemplate). Centered. -->
                                     <ContentControl x:Name="PART_EmptyStatePresenter"
                                                     Visibility="Collapsed"
                                                     IsTabStop="False"
@@ -118,13 +94,7 @@
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGridLineBrush}" />
         <Setter Property="BorderThickness" Value="0,0,0,1" />
-        <!-- The row is not the focus visual any more: focus lives on a CELL, which opts into the
-             framework focus rectangle itself (UseSystemFocusVisuals, set in TableViewCell::Create).
-             This setter stays True for the fallback case where a row has no realized cell to
-             redirect focus to. -->
         <Setter Property="UseSystemFocusVisuals" Value="True" />
-        <!-- One stop per row, on top of the repeater-level "Once". Belt and braces: a row whose
-             cells are reached through a different path must still not become a run of tab stops. -->
         <Setter Property="TabFocusNavigation" Value="Once" />
         <Setter Property="Template">
             <Setter.Value>
@@ -167,11 +137,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
-                                <!-- Selected states live in this SAME group rather than a second one:
-                                     they animate the same PART_RootBorder.Background, and two groups
-                                     would make the result depend on GoToState call order. One group
-                                     whose names encode both dimensions is the pattern TreeViewItem
-                                     and ItemContainer use. -->
+                                <!-- Selected states share CommonStates because a second group would race the same background setter. -->
                                 <VisualState x:Name="Selected">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
@@ -231,28 +197,15 @@
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid>
-                            <!-- Cell host. TableViewRow populates PART_CellsHost with one cell wrapper
-                                 per TableViewColumn, in Columns order, laid out left-to-right.
-                                 The presenter exists so the Selected* states have something with a
-                                 Foreground to animate: PART_RootBorder is a Border and has none, and
-                                 cell text inherits Foreground down from here. Without it the selected
-                                 foreground brushes are unreachable, which is only cosmetic in
-                                 light/dark (the selected fill is ~4% alpha) but makes a selected row
-                                 illegible in High Contrast, where the fill is the opaque
-                                 SystemColorHighlightColor. -->
                             <ContentPresenter x:Name="PART_CellForegroundPresenter"
                                               Foreground="{TemplateBinding Foreground}"
                                               HighContrastAdjustment="None"
                                               HorizontalContentAlignment="Stretch"
                                               VerticalContentAlignment="Stretch">
-                                <!-- Left, matching PART_HeaderHost. -->
                                 <controls:TableViewCellsPanel x:Name="PART_CellsHost"
                                                               HorizontalAlignment="Left" />
                             </ContentPresenter>
 
-                            <!-- Fluent selection indicator: overlays the leading edge, Opacity 0 by
-                                 default; the Selected* states animate it to 1. Not hit-testable, so it
-                                 cannot steal a press from the cell underneath it. -->
                             <Rectangle x:Name="PART_SelectionIndicator"
                                        Width="3"
                                        Height="16"
@@ -270,17 +223,6 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <!--
-        TableViewGroupHeader. The ControlTemplate owns the band chrome and the chevron
-        (PART_ExpanderGutter / PART_ExpanderIcon); PART_ContentPresenter is the only
-        app-customizable region, showing ContentTemplate over the TableViewGroupInfo Content.
-
-        ContentTemplate always resolves: the default Style seeds it, and
-        TableView.GroupHeaderTemplate overrides it as a local value that ClearValue reverts. So
-        there is no default-vs-custom branch, and an app template cannot drop the expander or
-        the band. Expansion, enabled and pointer state are VisualStates, so the chevron glyph
-        is declared here rather than assigned from C++.
-    -->
     <x:Double x:Key="TableViewGroupExpanderSize">24</x:Double>
     <Thickness x:Key="TableViewGroupHeaderPadding">8,6,16,6</Thickness>
 
@@ -290,8 +232,6 @@
                        FontWeight="SemiBold"
                        VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis" />
-            <!-- Inherits Foreground so it follows the PointerOver / Pressed / Disabled states
-                 exactly like the key text; a local brush would win over the state setters. -->
             <TextBlock Text="{Binding ItemCountText, Mode=OneWay}"
                        Opacity="{ThemeResource TabularSurfaceGroupHeaderCountOpacity}"
                        VerticalAlignment="Center" />
@@ -306,8 +246,6 @@
         <Setter Property="Padding" Value="{ThemeResource TableViewGroupHeaderPadding}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <!-- Focusable so keyboard users can expand/collapse: TableViewGroupHeader::OnKeyDown
-             handles Enter/Space (toggle) and Right/Left (expand/collapse), matching TreeViewItem. -->
         <Setter Property="IsTabStop" Value="True" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="ContentTemplate" Value="{StaticResource TableViewDefaultGroupHeaderContentTemplate}" />
@@ -362,8 +300,7 @@
                             <VisualStateGroup x:Name="ExpandabilityStates">
                                 <VisualState x:Name="Expandable" />
                                 <VisualState x:Name="NotExpandable">
-                                    <!-- Only the chevron hides; PART_ExpanderGutter keeps its width so
-                                         content stays aligned across expandable and non-expandable groups. -->
+                                    <!-- Keep the gutter width so expandable and leaf groups align. -->
                                     <VisualState.Setters>
                                         <Setter Target="PART_ExpanderIcon.Visibility" Value="Collapsed" />
                                     </VisualState.Setters>
@@ -377,9 +314,6 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <!-- The chevron is a pure visual. The whole band is the toggle target
-                                 (TableViewGroupHeader::OnPointerReleased), matching ListView /
-                                 TreeView, so there is no nested Button to inflate, focus or name. -->
                             <Border x:Name="PART_ExpanderGutter"
                                     Grid.Column="0"
                                     Width="{ThemeResource TableViewGroupExpanderSize}">

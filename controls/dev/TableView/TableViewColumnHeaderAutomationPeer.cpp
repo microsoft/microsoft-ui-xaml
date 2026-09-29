@@ -13,31 +13,10 @@
 #include "Utils.h"
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
-#include <algorithm>
-#include <vector>
 
 namespace
 {
-    struct ColumnAutomationIdEntry
-    {
-        winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
-        int32_t id{ 0 };
-    };
-
-    struct TableAutomationIdScope
-    {
-        winrt::weak_ref<winrt::TableView> table{ nullptr };
-        std::vector<ColumnAutomationIdEntry> columns;
-        int32_t nextId{ 1 };
-    };
-
-    std::vector<TableAutomationIdScope>& TableAutomationIdScopes()
-    {
-        static std::vector<TableAutomationIdScope> scopes;
-        return scopes;
-    }
-
-    winrt::FrameworkElement ResolveHeader(winrt::TableView const& table, winrt::TableViewColumn const& column)
+    winrt::FrameworkElement TryResolveHeader(winrt::TableView const& table, winrt::TableViewColumn const& column)
     {
         if (table && column)
         {
@@ -49,84 +28,24 @@ namespace
                 }
             }
         }
-        throw winrt::hresult_invalid_argument(L"The column must have a realized header.");
+        return nullptr;
     }
 
-    void DropExpiredColumnEntries(TableAutomationIdScope& scope)
+    winrt::FrameworkElement OwnerForPublicConstructor(winrt::TableView const& table, winrt::TableViewColumn const& column)
     {
-        scope.columns.erase(
-            std::remove_if(scope.columns.begin(), scope.columns.end(), [](auto const& entry)
-            {
-                return !entry.column.get();
-            }),
-            scope.columns.end());
-    }
-
-    TableAutomationIdScope& AutomationIdScopeForTable(winrt::TableView const& table)
-    {
-        auto& scopes = TableAutomationIdScopes();
-        scopes.erase(
-            std::remove_if(scopes.begin(), scopes.end(), [](auto const& scope)
-            {
-                return !scope.table.get();
-            }),
-            scopes.end());
-
-        for (auto& scope : scopes)
+        if (auto const header = TryResolveHeader(table, column))
         {
-            if (scope.table.get() == table)
-            {
-                DropExpiredColumnEntries(scope);
-                return scope;
-            }
+            return header;
         }
 
-        scopes.push_back({ winrt::make_weak(table), {}, 1 });
-        return scopes.back();
-    }
-
-    int32_t RegisteredAutomationIdForColumn(TableAutomationIdScope& scope, winrt::TableViewColumn const& column)
-    {
-        for (auto const& entry : scope.columns)
-        {
-            if (entry.column.get() == column)
-            {
-                return entry.id;
-            }
-        }
-
-        const auto id = scope.nextId++;
-        scope.columns.push_back({ winrt::make_weak(column), id });
-        return id;
-    }
-
-    int32_t StableAutomationIdPartForColumn(winrt::TableView const& table, winrt::TableViewColumn const& column)
-    {
-        if (!table || !column)
-        {
-            return 0;
-        }
-
-        auto& scope = AutomationIdScopeForTable(table);
-        if (auto const columns = table.Columns())
-        {
-            for (auto const& currentColumn : columns)
-            {
-                if (currentColumn)
-                {
-                    RegisteredAutomationIdForColumn(scope, currentColumn);
-                }
-            }
-        }
-
-        return RegisteredAutomationIdForColumn(scope, column);
+        return table.try_as<winrt::FrameworkElement>();
     }
 }
 
 TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
     winrt::TableView const& owner,
     winrt::TableViewColumn const& column)
-    : TableViewColumnHeaderAutomationPeer(ResolveHeader(owner, column), owner, column)
+    : TableViewColumnHeaderAutomationPeer(OwnerForPublicConstructor(owner, column), owner, column)
 {
 }
 
@@ -137,7 +56,6 @@ TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
     : ReferenceTracker(header)
     , m_column(winrt::make_weak(column))
     , m_table(winrt::make_weak(table))
-    , m_columnAutomationIdPart(StableAutomationIdPartForColumn(table, column))
 {
 }
 
@@ -148,15 +66,18 @@ hstring TableViewColumnHeaderAutomationPeer::GetClassNameCore()
 
 hstring TableViewColumnHeaderAutomationPeer::GetNameCore()
 {
-    if (auto const name = winrt::AutomationProperties::GetName(Owner()); !name.empty())
+    if (auto const headerElement = GetHeaderElement())
     {
-        return name;
-    }
-    if (auto const label = GetLabeledBy())
-    {
-        if (auto const name = label.GetName(); !name.empty())
+        if (auto const name = winrt::AutomationProperties::GetName(headerElement); !name.empty())
         {
             return name;
+        }
+        if (auto const label = GetLabeledBy())
+        {
+            if (auto const name = label.GetName(); !name.empty())
+            {
+                return name;
+            }
         }
     }
 
@@ -166,7 +87,7 @@ hstring TableViewColumnHeaderAutomationPeer::GetNameCore()
     }
 
     // Read template content, never re-enter this header's own peer.
-    if (auto const header = Owner().try_as<winrt::Panel>())
+    if (auto const header = GetHeaderElement().try_as<winrt::Panel>())
     {
         uint32_t remaining = 64;
         for (auto const& child : header.Children())
@@ -200,13 +121,7 @@ hstring TableViewColumnHeaderAutomationPeer::GetAutomationIdCore()
         }
     }
 
-    if (m_columnAutomationIdPart > 0)
-    {
-        std::wstring automationId{ L"TableViewColumnHeader_" };
-        automationId.append(std::to_wstring(m_columnAutomationIdPart));
-        return hstring{ automationId };
-    }
-
+    // No synthetic fallback: authors must supply stable AutomationIds for UI-test targeting.
     return {};
 }
 
@@ -316,7 +231,7 @@ void TableViewColumnHeaderAutomationPeer::Invoke()
     }
     if (!IsSortableColumn())
     {
-        throw winrt::hresult_illegal_method_call();
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
     }
     if (auto const column = m_column.get())
     {
@@ -432,5 +347,6 @@ winrt::FrameworkElement TableViewColumnHeaderAutomationPeer::GetHeaderElement()
     }
 
     auto const header = TableViewCellsPanel::CellForColumn(host, col);
-    return header == Owner() ? header : nullptr;
+    auto const ownerElement = owner.try_as<winrt::FrameworkElement>();
+    return header == Owner() || Owner() == ownerElement ? header : nullptr;
 }

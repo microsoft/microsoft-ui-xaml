@@ -45,5 +45,4 @@ private:
 
     winrt::weak_ref<winrt::TableViewColumn> m_column{ nullptr };
     winrt::weak_ref<winrt::TableView> m_table{ nullptr };
-    int32_t m_columnAutomationIdPart{ 0 };
 };
