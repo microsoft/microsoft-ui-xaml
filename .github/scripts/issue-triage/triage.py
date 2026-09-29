@@ -219,6 +219,52 @@ def evidence_text(value: str, limit: int) -> str:
     return CONTROL_CHARS.sub(" ", HTML_COMMENT.sub(" ", value))[:limit]
 
 
+def validate_mapping(mapping: dict, catalog: dict) -> None:
+    if not isinstance(mapping, dict) or not mapping:
+        raise TriageError("Routing configuration must be a nonempty object")
+
+    def check_team(team, area, nullable=False):
+        if nullable and team is None:
+            return
+        if not isinstance(team, str) or not team.startswith("team-") or team not in catalog:
+            raise TriageError(f"Routing configuration references an invalid or missing team for {area}")
+
+    for area, entry in mapping.items():
+        if not isinstance(area, str) or not area.startswith("area-") or area not in catalog:
+            raise TriageError("Routing configuration references an invalid or missing area")
+        required = {"team", "confidence", "match"}
+        if not isinstance(entry, dict) or not required <= set(entry) <= required | {"note", "overrides"}:
+            raise TriageError(f"Invalid routing entry for {area}")
+        check_team(entry["team"], area, nullable=True)
+        if entry["confidence"] not in ("high", "medium", "low"):
+            raise TriageError(f"Invalid ownership confidence for {area}")
+        terms = entry["match"]
+        if (
+            not isinstance(terms, list) or not 1 <= len(terms) <= 30
+            or any(not isinstance(term, str) or not term.strip() or len(term) > 120 for term in terms)
+        ):
+            raise TriageError(f"Invalid match keywords for {area}")
+        if "note" in entry:
+            required_string(entry, "note", 700)
+        overrides = entry.get("overrides", [])
+        if not isinstance(overrides, list) or len(overrides) > 10:
+            raise TriageError(f"Invalid conditional routes for {area}")
+        seen = {"default"}
+        for rule in overrides:
+            if not isinstance(rule, dict) or set(rule) != {"id", "when", "team"}:
+                raise TriageError(f"Invalid conditional route for {area}")
+            rule_id = required_string(rule, "id", 64)
+            if (
+                rule_id != rule["id"]
+                or not re.fullmatch(r"[a-z][a-z0-9-]*", rule_id)
+                or rule_id in seen
+            ):
+                raise TriageError(f"Invalid or repeated routing rule ID for {area}")
+            seen.add(rule_id)
+            required_string(rule, "when", 400)
+            check_team(rule["team"], area)
+
+
 def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
     number = issue_number(event, client.repository)
     current = snapshot(client, number)
@@ -232,13 +278,7 @@ def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
     areas = {name: description for name, description in catalog.items() if name.startswith("area-")}
     if not areas:
         raise TriageError("No existing area labels were found")
-    for area, team in mapping.items():
-        if not isinstance(area, str) or not area.startswith("area-"):
-            raise TriageError("Invalid area-to-team configuration")
-        if team is not None and (
-            not isinstance(team, str) or not team.startswith("team-") or team not in catalog
-        ):
-            raise TriageError(f"Ownership map references an invalid or missing team for {area}")
+    validate_mapping(mapping, catalog)
 
     content = current["content"]
     author_comments = content["author_comments"]
@@ -271,6 +311,7 @@ def prepare(client: GitHub, event: dict, mapping: dict) -> dict:
         ),
         "existing_labels": content["labels"],
         "allowed_areas": areas,
+        "area_guidance": mapping,
         "candidates": candidates,
     }
     # Private to the deterministic publisher; never accepted from agent output.
@@ -294,6 +335,7 @@ def validate(output: dict, evidence: dict) -> dict:
     expected = {
         "type", "input_sha256", "summary", "area", "area_confidence", "issue_kind",
         "reproduction", "missing_information", "duplicate_candidates_json",
+        "routing_rule", "routing_reason",
     }
     if set(item) != expected or item["type"] != "publish_triage_summary":
         raise TriageError("Unexpected triage output schema or operation")
@@ -306,6 +348,8 @@ def validate(output: dict, evidence: dict) -> dict:
         "issue_kind": item["issue_kind"],
         "reproduction": item["reproduction"],
         "missing_information": required_string(item, "missing_information", 700),
+        "routing_rule": required_string(item, "routing_rule", 64),
+        "routing_reason": required_string(item, "routing_reason", 400),
     }
     if result["issue_kind"] != evidence["issue_kind"]:
         raise TriageError("Issue kind does not match deterministic evidence")
@@ -316,6 +360,16 @@ def validate(output: dict, evidence: dict) -> dict:
             raise TriageError("An unknown area must have NONE confidence")
     elif result["area"] not in evidence["allowed_areas"] or result["area_confidence"] == "NONE":
         raise TriageError("Area is not an existing allowlisted label")
+    if result["routing_rule"] == "default":
+        if result["routing_reason"] != "None":
+            raise TriageError("Default routing must use None for its conditional rationale")
+    else:
+        entry = evidence["area_guidance"].get(result["area"], {})
+        rules = {rule["id"] for rule in entry.get("overrides", [])}
+        if result["routing_rule"] not in rules:
+            raise TriageError("Routing rule is not configured for the selected area")
+        if result["routing_reason"] == "None":
+            raise TriageError("Conditional routing requires evidence for the selected rule")
     if result["reproduction"] not in ("SUFFICIENT", "INSUFFICIENT", "NOT_APPLICABLE"):
         raise TriageError("Invalid reproduction classification")
     if (result["reproduction"] == "NOT_APPLICABLE") != (result["issue_kind"] != "BUG"):
@@ -342,21 +396,60 @@ def validate(output: dict, evidence: dict) -> dict:
     return result
 
 
-def planned_labels(result: dict, evidence: dict, mapping: dict) -> list[str]:
+def route_team(mapping: dict, area: str, rule_id: str) -> str | None:
+    entry = mapping.get(area, {})
+    if rule_id == "default":
+        return entry.get("team")
+    for rule in entry.get("overrides", []):
+        if rule["id"] == rule_id:
+            return rule["team"]
+    raise TriageError("Cannot resolve an unconfigured routing rule")
+
+
+def routing_decision(result: dict, evidence: dict, mapping: dict) -> dict:
     existing = set(evidence["existing_labels"])
     areas = sorted(label for label in existing if label.startswith("area-"))
     teams = {label for label in existing if label.startswith("team-")}
-    additions = set()
+    area_to_add = None
+    team_to_add = None
     if not areas and result["area_confidence"] == "HIGH":
         area = result["area"]
-        mapped_team = mapping.get(area)
+        mapped_team = route_team(mapping, area, result["routing_rule"])
         compatible = not teams or not mapped_team or mapped_team in teams
         compatible |= teams == {"team-Core"} and mapped_team in CORE_TEAMS
         if compatible:
-            additions.add(area)
-            areas = [area]
-    if len(areas) == 1 and not teams and mapping.get(areas[0]):
-        additions.add(mapping[areas[0]])
+            area_to_add = area
+    effective_areas = areas or ([area_to_add] if area_to_add else [])
+    effective_area = effective_areas[0] if len(effective_areas) == 1 else None
+    entry = mapping.get(effective_area, {})
+    if effective_area and not teams:
+        if result["area"] == effective_area and result["area_confidence"] == "HIGH":
+            team_to_add = route_team(mapping, effective_area, result["routing_rule"])
+        elif not entry.get("overrides"):
+            team_to_add = entry.get("team")
+        # A conditional owner cannot be inferred from a different/uncertain area.
+    needs_triage = (
+        not effective_areas
+        or (not teams and not team_to_add)
+        or (bool(area_to_add or team_to_add) and entry.get("confidence") == "low")
+    )
+    return {
+        "existing_areas": areas,
+        "existing_teams": sorted(teams),
+        "effective_area": effective_area,
+        "area_to_add": area_to_add,
+        "team_to_add": team_to_add,
+        "needs_triage": needs_triage,
+    }
+
+
+def planned_labels(result: dict, evidence: dict, mapping: dict) -> list[str]:
+    decision = routing_decision(result, evidence, mapping)
+    additions = {
+        label for label in (decision["area_to_add"], decision["team_to_add"]) if label
+    }
+    if decision["needs_triage"]:
+        additions.add("needs-triage")
     if (
         result["issue_kind"] == "BUG"
         and result["reproduction"] == "INSUFFICIENT"
@@ -365,7 +458,7 @@ def planned_labels(result: dict, evidence: dict, mapping: dict) -> list[str]:
         additions.add("needs-repro")
     if not additions <= set(evidence["_catalog"]):
         raise TriageError("A proposed label no longer exists")
-    return sorted(additions - existing)
+    return sorted(additions - set(evidence["existing_labels"]))
 
 
 def plain_text(value: str) -> str:
@@ -379,19 +472,34 @@ def plain_text(value: str) -> str:
 
 
 def render(result: dict, evidence: dict, mapping: dict) -> str:
+    decision = routing_decision(result, evidence, mapping)
     lines = [
         MARKER, "", "## Automated triage", "",
         "**Summary:** " + plain_text(result["summary"]), "",
     ]
+    route_areas = decision["existing_areas"] or (
+        [decision["area_to_add"]] if decision["area_to_add"] else []
+    )
+    route_teams = decision["existing_teams"] or (
+        [decision["team_to_add"]] if decision["team_to_add"] else []
+    )
+    if route_areas or route_teams:
+        lines.append("**Routing plan (existing labels preserved):** "
+                     + ", ".join(f"`{label}`" for label in route_areas + route_teams) + ".")
     if result["area"] != "None":
         area = result["area"]
         lines.append(f"**Suggested area:** `{area}` ({result['area_confidence'].lower()} confidence).")
-        if mapping.get(area):
-            lines.append(f"**Mapped team:** `{mapping[area]}`.")
-        else:
-            lines.append("**Team:** Needs maintainer routing; no reviewed mapping is configured.")
+        if decision["existing_areas"] and area not in decision["existing_areas"]:
+            lines.append("Existing area labels take precedence over this suggestion.")
+        if result["routing_rule"] != "default":
+            lines.append(f"**Conditional routing suggestion (`{result['routing_rule']}`):** "
+                         + plain_text(result["routing_reason"]))
     else:
-        lines.append("**Routing:** Needs maintainer review; the area is unclear.")
+        lines.append("**Suggested area:** Unclear; existing routing is unchanged.")
+    if not route_teams:
+        lines.append("**Team:** No automatic team assignment; maintainer routing is needed.")
+    if decision["needs_triage"] or "needs-triage" in evidence["existing_labels"]:
+        lines.append("**Triage:** Maintainer review remains required (`needs-triage`).")
     if result["missing_information"] != "None":
         lines.extend(["", "**Information needed:** " + plain_text(result["missing_information"])])
     if evidence["context_truncated"]:

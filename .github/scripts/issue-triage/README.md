@@ -10,8 +10,10 @@ issue changes. The Markdown workflow is the source of truth; its compiled
 | Situation | Behavior |
 | --- | --- |
 | Clear primary area, no existing area label | Add one existing `area-*` label at HIGH confidence. |
-| One area with a configured owner, no existing team label | Derive and add its `team-*` label from `area-team-map.json`. |
+| One area with a configured owner, no existing team label | Derive and add its `team-*` label from the selected configured routing rule. |
+| Evidence clearly meets an area's conditional rule | Use that rule's configured owner rather than the default; the model cannot invent a team. |
 | Uncertain area or an unmapped team | Comment with the suggestion; leave the uncertain routing to a maintainer. |
+| Low-confidence or unresolved automatic routing | Keep or add `needs-triage` for human confirmation. Already-established human routing is not reset. |
 | Existing area or team labels | Preserve them. Do not replace a human decision or add a contradictory mapped area. |
 | Multiple existing areas | Preserve all of them; do not infer one team. |
 | Bug with insufficient reproduction information | Ask for the specific missing information and add `needs-repro`. |
@@ -41,16 +43,37 @@ Ownership changes are reviewed in pull requests, like other configuration
 changes. The workflow uses the checked-in `area-team-map.json` immediately;
 there is no separate mapping approval or activation step.
 
-The [public issue-label evidence](area-team-map.md) supports reviewing the initial
-map, which covers all 123 area labels: 65 have a proposed owner and
-58 explicitly use `null` because the sampled history is sparse or conflicting.
-These are reviewable historical inferences, not an authoritative organization
-chart. No team is inferred by the model at runtime.
+The team-maintained configuration covers all 123 area labels. It contains 121
+default owners; `area-External` and `area-Performance` deliberately have no
+default owner. It also provides keyword guidance, ownership confidence, and nine
+conditional routes: eight declared override rules and the explicit
+AnimatedVisualPlayer compositor case. Teams are derived from this configuration,
+never accepted as arbitrary model output.
+
+Each area entry contains:
+
+- `team`: an existing team label, or `null` for no default owner.
+- `confidence`: `high`, `medium`, or `low` ownership confidence, separate from
+  the model's confidence in its area classification.
+- `match`: control/API names and scenario keywords used for area selection.
+- Optional `note`: additional area-selection guidance.
+- Optional `overrides`: entries with a stable `id`, an evidence-based `when`
+  condition, and an existing `team` label.
+
+The model picks an area and either `default` or a rule ID configured for that
+area. Conditional choices require a short evidence-based explanation. The
+publisher rejects cross-area or unknown rule IDs and derives the label itself.
+For example, `area-Scrolling` normally maps to `team-Controls`, but its
+`compositor-input` rule maps compositor-thread interaction tracker/input-latency
+problems to `team-CompInput`.
 
 Maintainers can change individual mappings in `area-team-map.json` as ownership
-changes. An absent or `null` entry means "do not auto-assign a team." Team names
-must already exist in the live label catalog. The publisher fails visibly if a
-configured team has been removed rather than creating or guessing a replacement.
+changes. An absent entry or a `null` default team means "do not auto-assign a
+default owner." Team names must already exist in the live label catalog. The
+publisher fails visibly if a configured team has been removed rather than
+creating or guessing a replacement.
+If a pre-existing area has conditional routes but the model assessed a different
+or uncertain area, no default team is guessed: it remains for human routing.
 
 ## Operation
 
@@ -107,8 +130,8 @@ stale handling, or the maintainer's acceptance/closure process.
   additive label writes. GitHub does not provide a transaction across these
   operations; a concurrent edit can stop label publication after the comment
   was written. A later run safely refreshes the single comment.
-- Only allowlisted routing labels and `needs-repro` can be added, at most three
-  per run. The publisher uses additive label writes, never replacement.
+- Only allowlisted routing labels, `needs-triage`, and `needs-repro` can be added,
+  at most four per run. The publisher uses additive label writes, never replacement.
 - Per-issue concurrency cancels superseded runs. Actor rate limiting allows five
   runs per hour. Ignored label events and other people's comments use separate
   concurrency groups so they cannot cancel an active intake. The triage agent

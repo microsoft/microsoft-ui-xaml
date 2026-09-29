@@ -16,11 +16,15 @@ from test_find_duplicates import BODY, candidate
 
 
 REPO = "example/winui"
-MAPPING = {"area-Expander": "team-Controls", "area-Binding": None}
+MAPPING = {
+    "area-Expander": {"team": "team-Controls", "confidence": "medium", "match": ["Expander"]},
+    "area-Binding": {"team": None, "confidence": "low", "match": ["Binding", "x:Bind"]},
+}
 CATALOG = {
     "bug": "", "feature proposal": "", "needs-triage": "", "needs-repro": "",
     "needs-author-feedback": "", "area-Expander": "", "area-Binding": "",
-    "team-Controls": "", "team-Core": "", "team-Markup": "",
+    "team-Controls": "", "team-Core": "", "team-Markup": "", "team-Rendering": "",
+    "team-CompInput": "", "team-Reach": "",
 }
 
 
@@ -97,6 +101,7 @@ def agent_output(evidence, **changes):
         "input_sha256": evidence["input_sha256"],
         "summary": "The Expander content flashes during its first expansion.",
         "area": "area-Expander", "area_confidence": "HIGH", "issue_kind": "BUG",
+        "routing_rule": "default", "routing_reason": "None",
         "reproduction": "SUFFICIENT", "missing_information": "None",
         "duplicate_candidates_json": "[]",
     }
@@ -118,6 +123,7 @@ class PreparationTests(TriageFixture):
         self.assertTrue(self.evidence["should_process"])
         self.assertEqual(set(self.evidence["allowed_areas"]), set(MAPPING))
         self.assertEqual(self.evidence["candidates"][0]["number"], 1)
+        self.assertEqual(self.evidence["area_guidance"], MAPPING)
 
     def test_transferred_issue_creation_date_does_not_hide_lower_numbered_duplicate(self):
         self.client.issue["created_at"] = "2026-08-03T03:41:27Z"
@@ -327,9 +333,244 @@ class RoutingTests(TriageFixture):
     def test_checked_in_map_is_explicit_and_uses_existing_team_names(self):
         mapping = t.read_json(str(t.MAP_PATH))
         teams = {"team-Controls", "team-Core", "team-Markup", "team-Reach", "team-Rendering", "team-Design", "team-CompInput"}
-        self.assertTrue(all(area.startswith("area-") for area in mapping))
-        self.assertTrue(all(team is None or team in teams for team in mapping.values()))
-        self.assertIsNone(mapping["area-External"])
+        t.validate_mapping(mapping, dict.fromkeys(set(mapping) | teams, ""))
+        self.assertEqual(len(mapping), 123)
+        self.assertEqual(
+            {area for area, entry in mapping.items() if entry["team"] is None},
+            {"area-External", "area-Performance"},
+        )
+
+
+class ConditionalRoutingTests(TriageFixture):
+    def setUp(self):
+        super().setUp()
+        self.mapping = copy.deepcopy(MAPPING)
+        self.mapping["area-Expander"]["overrides"] = [{
+            "id": "rendering-artifact",
+            "when": "The failure is in visual composition.",
+            "team": "team-Rendering",
+        }]
+        self.evidence = t.prepare(self.client, event(), self.mapping)
+
+    def conditional_result(self, **changes):
+        return self.result(
+            routing_rule="rendering-artifact",
+            routing_reason="The report describes a composition clipping failure.",
+            **changes,
+        )
+
+    def test_default_and_conditional_owners_are_derived_from_configuration(self):
+        self.assertEqual(
+            t.planned_labels(self.result(), self.evidence, self.mapping),
+            ["area-Expander", "team-Controls"],
+        )
+        self.assertEqual(
+            t.planned_labels(self.conditional_result(), self.evidence, self.mapping),
+            ["area-Expander", "team-Rendering"],
+        )
+
+    def test_unknown_rule_is_rejected(self):
+        with self.assertRaises(t.TriageError):
+            self.result(routing_rule="invented", routing_reason="A guess.")
+
+    def test_rule_cannot_be_used_for_another_area(self):
+        with self.assertRaises(t.TriageError):
+            self.conditional_result(area="area-Binding")
+
+    def test_conditional_rule_requires_evidence(self):
+        with self.assertRaises(t.TriageError):
+            self.result(routing_rule="rendering-artifact", routing_reason="None")
+        with self.assertRaises(t.TriageError):
+            self.result(routing_rule="rendering-artifact", routing_reason="x" * 401)
+
+    def test_default_rule_cannot_claim_a_conditional_decision(self):
+        with self.assertRaises(t.TriageError):
+            self.result(routing_reason="Use the rendering owner.")
+
+    def test_model_cannot_supply_a_team_directly(self):
+        with self.assertRaises(t.TriageError):
+            self.result(team="team-Rendering")
+
+    def test_medium_confidence_does_not_apply_an_override(self):
+        result = self.conditional_result(area_confidence="MEDIUM")
+        self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), [])
+
+    def test_team_compatibility_uses_the_selected_override_not_the_default(self):
+        self.evidence["existing_labels"].append("team-Rendering")
+        self.assertEqual(
+            t.planned_labels(self.conditional_result(), self.evidence, self.mapping),
+            ["area-Expander"],
+        )
+        self.assertEqual(t.planned_labels(self.result(), self.evidence, self.mapping), [])
+
+    def test_parent_team_is_preserved_for_a_conditional_child_owner(self):
+        self.evidence["existing_labels"].append("team-Core")
+        self.assertEqual(
+            t.planned_labels(self.conditional_result(), self.evidence, self.mapping),
+            ["area-Expander"],
+        )
+
+    def test_existing_area_uses_its_assessed_condition(self):
+        self.evidence["existing_labels"].append("area-Expander")
+        self.assertEqual(
+            t.planned_labels(self.conditional_result(), self.evidence, self.mapping),
+            ["team-Rendering"],
+        )
+
+    def test_unassessed_conditional_area_does_not_guess_default_team(self):
+        self.evidence["existing_labels"] = ["bug", "area-Expander"]
+        result = self.result(area="None", area_confidence="NONE")
+        self.assertEqual(
+            t.planned_labels(result, self.evidence, self.mapping), ["needs-triage"]
+        )
+
+    def test_different_area_assessment_cannot_override_existing_conditional_area(self):
+        self.evidence["existing_labels"] = ["bug", "area-Expander"]
+        result = self.result(area="area-Binding")
+        self.assertEqual(
+            t.planned_labels(result, self.evidence, self.mapping), ["needs-triage"]
+        )
+
+    def test_low_confidence_ownership_keeps_automatic_routing_in_triage(self):
+        self.mapping["area-Expander"]["confidence"] = "low"
+        self.evidence["existing_labels"] = ["bug"]
+        result = self.result(
+            reproduction="INSUFFICIENT", missing_information="Please provide concrete steps."
+        )
+        self.assertEqual(
+            t.planned_labels(result, self.evidence, self.mapping),
+            ["area-Expander", "needs-repro", "needs-triage", "team-Controls"],
+        )
+
+    def test_confirmed_human_routing_is_not_reset_for_low_mapping_confidence(self):
+        self.mapping["area-Expander"]["confidence"] = "low"
+        self.evidence["existing_labels"] = ["bug", "area-Expander", "team-Controls"]
+        self.assertEqual(t.planned_labels(self.result(), self.evidence, self.mapping), [])
+
+    def test_unknown_area_retains_triage_without_guessing_an_owner(self):
+        self.evidence["existing_labels"] = ["bug"]
+        result = self.result(area="None", area_confidence="NONE")
+        self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), ["needs-triage"])
+
+    def test_evidence_contains_keywords_confidence_and_exact_rule_conditions(self):
+        self.assertEqual(
+            self.evidence["area_guidance"]["area-Expander"], self.mapping["area-Expander"]
+        )
+
+    def test_rendered_team_agrees_with_the_conditional_label_plan(self):
+        body = t.render(self.conditional_result(), self.evidence, self.mapping)
+        self.assertIn("`team-Rendering`", body)
+        self.assertNotIn("`team-Controls`", body)
+        self.assertIn("composition clipping", body)
+
+    def test_rendered_comment_does_not_call_an_existing_team_unrouted(self):
+        self.evidence["existing_labels"] += ["area-Binding", "team-Core"]
+        body = t.render(self.result(), self.evidence, self.mapping)
+        self.assertIn("`area-Binding`", body)
+        self.assertIn("`team-Core`", body)
+        self.assertIn("Existing area labels take precedence", body)
+        self.assertNotIn("maintainer routing is needed", body)
+        self.assertNotIn("`team-Controls`", body)
+
+    def test_conditional_publication_stays_idempotent(self):
+        t.publish(self.client, self.conditional_result(), self.evidence, self.mapping, write=True)
+        refreshed = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(
+            refreshed, routing_rule="rendering-artifact",
+            routing_reason="The report describes a composition clipping failure.",
+        ), refreshed)
+        self.client.writes.clear()
+        t.publish(self.client, result, refreshed, self.mapping, write=True)
+        self.assertEqual(self.client.writes, [])
+        self.assertEqual(len(self.client.comments), 1)
+
+    def test_low_confidence_publication_stays_idempotent(self):
+        self.mapping["area-Expander"]["confidence"] = "low"
+        self.client.issue["labels"] = [{"name": "bug"}]
+        evidence = t.prepare(self.client, event(), self.mapping)
+        result = t.validate(agent_output(evidence), evidence)
+        t.publish(self.client, result, evidence, self.mapping, write=True)
+        refreshed = t.prepare(self.client, event(), self.mapping)
+        self.client.writes.clear()
+        t.publish(
+            self.client, t.validate(agent_output(refreshed), refreshed),
+            refreshed, self.mapping, write=True,
+        )
+        self.assertEqual(self.client.writes, [])
+
+
+class MappingConfigurationTests(unittest.TestCase):
+    def test_invalid_shapes_and_confidence_fail_closed(self):
+        for entry in (
+            None, "team-Controls", {},
+            {"team": "team-Controls", "confidence": "certain", "match": ["Expander"]},
+            {"team": "team-Controls", "confidence": "high", "match": []},
+            {"team": "team-Controls", "confidence": "high", "match": [""]},
+            {"team": "team-Controls", "confidence": "high", "match": ["Expander"], "extra": True},
+        ):
+            with self.subTest(entry=entry), self.assertRaises(t.TriageError):
+                t.validate_mapping({"area-Expander": entry}, CATALOG)
+
+    def test_unknown_area_or_non_team_label_is_not_accepted(self):
+        for area, team in (("area-Invented", "team-Controls"), ("area-Expander", "needs-author-feedback")):
+            with self.subTest(area=area, team=team), self.assertRaises(t.TriageError):
+                t.validate_mapping({
+                    area: {"team": team, "confidence": "high", "match": ["Expander"]}
+                }, CATALOG)
+
+    def test_invalid_conditional_rules_fail_closed(self):
+        rule = {"id": "visual", "when": "Visual composition is affected.", "team": "team-Rendering"}
+        for overrides in (
+            {}, [None], [{**rule, "id": "default"}], [rule, rule],
+            [{**rule, "id": " visual"}], [{**rule, "id": "visual;command"}],
+            [{**rule, "team": "team-Invented"}],
+            [{**rule, "team": "needs-author-feedback"}],
+            [{**rule, "when": ""}], [{**rule, "extra": "unexpected"}],
+        ):
+            mapping = copy.deepcopy(MAPPING)
+            mapping["area-Expander"]["overrides"] = overrides
+            with self.subTest(overrides=overrides), self.assertRaises(t.TriageError):
+                t.validate_mapping(mapping, CATALOG)
+
+    def test_team_defaults_cover_each_ownership_family(self):
+        mapping = t.read_json(str(t.MAP_PATH))
+        expected = {
+            "area-NavigationView": "team-Controls",
+            "area-CoreFramework": "team-Markup",
+            "area-Tooling": "team-Markup",
+            "area-WebView": "team-Rendering",
+            "area-Accessibility": "team-Reach",
+            "area-Islands": "team-Reach",
+            "area-Windowing": "team-CompInput",
+            "area-SystemBackdropEement": "team-CompInput",
+            "area-C++/WinRT": "team-Core",
+            "area-DesignDiscussion": "team-Design",
+        }
+        for area, team in expected.items():
+            with self.subTest(area=area):
+                self.assertEqual(mapping[area]["team"], team)
+        self.assertIn("IXamlDiagnostics", mapping["area-LiveVisualTree"]["match"])
+        self.assertIn("x:Bind", mapping["area-Binding"]["match"])
+
+    def test_all_configured_conditional_routes_resolve_the_declared_team(self):
+        mapping = t.read_json(str(t.MAP_PATH))
+        expected = {
+            "area-AnimatedVisualPlayer": ("compositor-failure", "team-CompInput"),
+            "area-Flyouts": ("rendering-artifact", "team-Rendering"),
+            "area-Icon": ("glyph-rendering", "team-Rendering"),
+            "area-Popup": ("composition-layering", "team-Rendering"),
+            "area-Scrolling": ("compositor-input", "team-CompInput"),
+            "area-Layouts": ("layout-engine", "team-Core"),
+            "area-Materials": ("compositor-resource", "team-CompInput"),
+            "area-AppWindow": ("xaml-hosting", "team-Reach"),
+            "area-TitleBar": ("pointer-handling", "team-CompInput"),
+        }
+        self.assertEqual(
+            {area for area, entry in mapping.items() if entry.get("overrides")}, set(expected)
+        )
+        for area, (rule_id, team) in expected.items():
+            with self.subTest(area=area):
+                self.assertEqual(t.route_team(mapping, area, rule_id), team)
 
 
 class PublicationTests(TriageFixture):
