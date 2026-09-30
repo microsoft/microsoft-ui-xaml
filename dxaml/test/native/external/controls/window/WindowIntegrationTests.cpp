@@ -333,7 +333,7 @@ namespace
     {
         TestCleanupWrapper cleanup;
         const bool isChangeEnabled = xaml_settings::XamlOptionalChanges::IsChangeEnabled(
-            xaml_settings::XamlChangeId::AlignExtendsContentIntoTitleBarBehavior);
+            xaml_settings::XamlChangeId::AlignTitleBarTopBorderBehavior);
         VERIFY_ARE_EQUAL(expectedChangeEnabled, isChangeEnabled);
 
         auto createWindow = [&](WindowAutoCloser& window, HWND& windowHandle)

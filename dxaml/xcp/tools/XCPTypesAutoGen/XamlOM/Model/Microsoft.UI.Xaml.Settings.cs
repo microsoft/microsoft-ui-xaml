@@ -24,7 +24,7 @@ namespace Microsoft.UI.Xaml.Settings
         [VelocityFeature("Feature_ExperimentalApi")]
         GamepadKeyRouting = 63117108,
         [VelocityFeature("Feature_ExperimentalApi")]
-        AlignExtendsContentIntoTitleBarBehavior = 8948,
+        AlignTitleBarTopBorderBehavior = 8948,
     }
 
     // Provides static methods to opt in to or out of individual breaking or

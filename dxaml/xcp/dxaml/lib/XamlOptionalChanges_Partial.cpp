@@ -46,8 +46,8 @@ static int GetBitIndex(xaml_settings::XamlChangeId id)
         return OptionalChangeState::BitIndex_DeferContextFlyoutInit;
     case xaml_settings::XamlChangeId_GamepadKeyRouting:
         return OptionalChangeState::BitIndex_GamepadKeyRouting;
-    case xaml_settings::XamlChangeId_AlignExtendsContentIntoTitleBarBehavior:
-        return OptionalChangeState::BitIndex_AlignExtendsContentIntoTitleBarBehavior;
+    case xaml_settings::XamlChangeId_AlignTitleBarTopBorderBehavior:
+        return OptionalChangeState::BitIndex_AlignTitleBarTopBorderBehavior;
     default:
         return -1;
     }

@@ -118,7 +118,7 @@ DPI-aware resize-frame metrics to provide a larger top resize target.
 
 #### Windows 10 frame workaround
 
-The optional change `AlignExtendsContentIntoTitleBarBehavior` makes both ECITB
+The optional change `AlignTitleBarTopBorderBehavior` makes both ECITB
 entry points reserve the same row.
 
 **Compatibility note:** On Windows 10, enabling this change can change the
@@ -142,16 +142,16 @@ that it is the minimum working value. The border-color change noted above
 occurs even though only the top margin is nonzero.
 
 For a top-level HWND with a GDI redirection surface, `WM_ERASEBKGND` retains the
-normal background fill and paints the reserved row with the stock `BLACK_BRUSH`.
+normal background fill below the reserved row and paints the row separately
+with the stock `BLACK_BRUSH`. The two fills do not overlap, so the background
+erase does not temporarily overwrite the frame strip.
 This exposes the DWM frame as described in
 [Custom Window Frame Using DWM](https://learn.microsoft.com/windows/win32/dwm/customframe).
 Windows 10 High Contrast treats that row as opaque black, so WinUI uses the
 configured `COLOR_WINDOWFRAME` brush for the reserved row instead. Moving the
 composition island does not always trigger another background erase, so WinUI
-also paints that High Contrast row when it updates the island position. DWM can
-overwrite the row when it redraws the non-client frame, so WinUI paints it again
-on a short one-shot timer after processing `WM_NCACTIVATE`. None of these paths
-requires a buffered-paint bitmap or explicit alpha writes. HWNDs with
+also paints that High Contrast row when it updates the island position. Neither
+paint path requires a buffered-paint bitmap or explicit alpha writes. HWNDs with
 `WS_EX_NOREDIRECTIONBITMAP` skip the background-erase workaround. The margins
 remain top-only rather than requesting whole-client frame rendering with
 negative values.

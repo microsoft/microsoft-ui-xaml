@@ -1296,36 +1296,53 @@ LRESULT LResultFromHResult(HRESULT hr)
     return 0;
 }
 
+// Handle the complete background erase, including the reserved top strip.
+// Return false if this path does not apply or painting fails, so the caller
+// can fall back to the existing background erase.
 bool DesktopWindowImpl::TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF backgroundColor)
 {
     ASSERT(WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_hwnd.get()));
 
+    // This is the physical row left uncovered by XAML, not the larger DWM
+    // extension margin. There is no reserved row when ExtendsContentIntoTitleBar is off or maximized.
     const int topBorderHeight = m_windowChrome ? m_windowChrome->GetTopBorderHeight() : 0;
     const RECT rc = WindowHelpers::GetClientWindowCoordinates(m_hwnd.get());
 
-    if (topBorderHeight <= 0 ||
-        (rc.top + topBorderHeight) > rc.bottom ||
-        (::GetWindowLongPtrW(m_hwnd.get(), GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP) != 0)
+    if (topBorderHeight <= 0 || (rc.top + topBorderHeight) > rc.bottom)
     {
         return false;
     }
 
-    // Preserve the normal background erase under the composition island.
-    // A composition-only host has no redirected surface, so the style check
-    // above skips this path.
-    const auto oldColor = ::SetBkColor(hdc, backgroundColor);
-    if (oldColor == CLR_INVALID)
+    // If there's no GDI redirection bitmap, there's no reason to draw with GDI.
+    if ((::GetWindowLongPtrW(m_hwnd.get(), GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP) != 0)
     {
-        TRACE_HR_NORETURN(E_FAIL);
         return false;
     }
 
-    const BOOL backgroundErased = ::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
-    ::SetBkColor(hdc, oldColor);
-    if (!backgroundErased)
+    // We're going to draw two rectangles: one for the gap between the top of the client area and the WinUI
+    // content, and one behind the WinUI content itself (to match behavior of WM_ERASEBKGND).
+    // In practice, the borderRect is 1px high because we leave a 1px gap between the top of the client area and the island.
+    const RECT borderRect = { rc.left, rc.top, rc.right, rc.top + topBorderHeight };
+    const RECT backgroundRect = { rc.left, borderRect.bottom, rc.right, rc.bottom };
+
+    if (backgroundRect.top < backgroundRect.bottom)
     {
-        TRACE_HR_NORETURN(E_FAIL);
-        return false;
+        const auto oldColor = ::SetBkColor(hdc, backgroundColor);
+        if (oldColor == CLR_INVALID)
+        {
+            TRACE_HR_NORETURN(E_FAIL);
+            return false;
+        }
+
+        // ETO_OPAQUE with no text fills the rectangle using the DC's background
+        // color. Preserve the existing erase below the strip, then restore the DC.
+        const BOOL backgroundErased = ::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &backgroundRect, NULL, 0, NULL);
+        ::SetBkColor(hdc, oldColor);
+        if (!backgroundErased)
+        {
+            TRACE_HR_NORETURN(E_FAIL);
+            return false;
+        }
     }
 
     HIGHCONTRASTW highContrast = { sizeof(HIGHCONTRASTW) };
@@ -1333,15 +1350,18 @@ bool DesktopWindowImpl::TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF b
         ::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRASTW), &highContrast, 0) &&
         (highContrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
 
-    // BLACK_BRUSH exposes the extended DWM frame through the redirected GDI
-    // surface for standard themes. On Windows 10, High Contrast treats that
-    // row as opaque black, so paint its configured window-frame color instead.
-    // See https://learn.microsoft.com/windows/win32/dwm/customframe.
+    // In standard themes, we want transparent black (RGB = 0, alpha = 0). DWM draws the window border behind the top of
+    // the client area (y=0) when ExtendsContentIntoTitleBar is true (as it is now). Making our strip transparent lets
+    // DWM's border pixels remain visible instead of covering them with our background. The visible border color
+    // therefore comes from DWM, not from this brush. Filling with GDI black produces these all-zero pixels; BLACK_BRUSH
+    // itself is not alpha-aware. This follows the documented DWM black-background technique:
+    // https://learn.microsoft.com/windows/win32/dwm/customframe#extending-the-client-frame
+    //
+    // On Windows 10, High Contrast leaves this row visibly black. Paint the configured window-frame color directly
+    // instead.
     const HBRUSH borderBrush = isHighContrast
         ? ::GetSysColorBrush(COLOR_WINDOWFRAME)
         : static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
-    RECT borderRect = rc;
-    borderRect.bottom = rc.top + topBorderHeight;
     if (!::FillRect(hdc, &borderRect, borderBrush))
     {
         TRACE_HR_NORETURN(E_FAIL);
@@ -1359,8 +1379,6 @@ LRESULT DesktopWindowImpl::OnMessage(
     // Keep the Window alive through callbacks without reviving an owner queued for final release.
     ctl::ComPtr<xaml::IWindow> spWindow;
     IFCFAILFAST(ResolveWindowWeakReference(&spWindow));
-
-    const auto highContrastTopBorderTimerId = reinterpret_cast<UINT_PTR>(this);
 
     // When DispatcherShutdownMode is OnLastWindowClose, exit FrameworkApplication::ProcessMessage when the last WinUI
     // Desktop Window is destroyed.
@@ -1402,28 +1420,6 @@ LRESULT DesktopWindowImpl::OnMessage(
             return LResultFromHResult(OnSizeChanged(wParam, lParam));
         case WM_ACTIVATE:
             return LResultFromHResult(OnActivate(wParam, lParam));
-        case WM_NCACTIVATE:
-        {
-            const auto result = BaseWindow::OnMessage(uMsg, wParam, lParam);
-            // DWM and the redirected client surface can keep updating after
-            // DefWindowProc returns. Repaint once that activation redraw settles.
-            if (!::SetTimer(m_hwnd.get(), highContrastTopBorderTimerId, 100, nullptr))
-            {
-                TRACE_HR_NORETURN(E_FAIL);
-            }
-            return result;
-        }
-        case WM_TIMER:
-            if (wParam == highContrastTopBorderTimerId)
-            {
-                ::KillTimer(m_hwnd.get(), highContrastTopBorderTimerId);
-                if (m_windowChrome)
-                {
-                    m_windowChrome->PaintHighContrastTopBorder();
-                }
-                return 0;
-            }
-            break;
         case WM_NCRBUTTONUP:
             return LResultFromHResult(OnNonClientRegionButtonUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
         case WM_ERASEBKGND:

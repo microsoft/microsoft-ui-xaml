@@ -113,7 +113,7 @@ short WindowHelpers::ClampToShortMax(const long value, const short min) noexcept
 
 bool WindowHelpers::ShouldApplyDwmTopBorderWorkaround(HWND hwnd) noexcept
 {
-    if (!OptionalChangeState::ShouldAlignExtendsContentIntoTitleBarBehavior())
+    if (!OptionalChangeState::ShouldAlignTitleBarTopBorderBehavior())
     {
         return false;
     }

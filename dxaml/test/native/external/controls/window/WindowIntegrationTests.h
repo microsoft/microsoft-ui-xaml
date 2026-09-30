@@ -64,7 +64,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ECITBEntryPointsPreserveCompatBehavior)
             TEST_METHOD_PROPERTY(L"Description", L"Validates legacy ECITB geometry when the optional change is disabled.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{AlignExtendsContentIntoTitleBarBehavior:false}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{AlignTitleBarTopBorderBehavior:false}")
         END_TEST_METHOD()
 
 #ifdef MUX_PRERELEASE

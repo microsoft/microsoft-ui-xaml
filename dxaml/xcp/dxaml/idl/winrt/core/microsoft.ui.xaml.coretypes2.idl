@@ -525,7 +525,7 @@ namespace Microsoft.UI.Xaml.Settings
         GamepadKeyRouting = 63117108,
         [feature(Feature_ExperimentalApi)]
         [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
-        AlignExtendsContentIntoTitleBarBehavior = 8948,
+        AlignTitleBarTopBorderBehavior = 8948,
     };
 }
 

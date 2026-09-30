@@ -171,7 +171,7 @@ LRESULT CWindowChrome::OnCreate()
 // - the height of the border above the title bar or 0 if it's disabled
 int CWindowChrome::GetTopBorderHeight()
 {
-    if (OptionalChangeState::ShouldAlignExtendsContentIntoTitleBarBehavior())
+    if (OptionalChangeState::ShouldAlignTitleBarTopBorderBehavior())
     {
         return GetAlignedTopBorderHeight();
     }
@@ -200,7 +200,7 @@ bool CWindowChrome::IsTitlebarVisible() const
 
 int CWindowChrome::GetAlignedTopBorderHeight()
 {
-    ASSERT(OptionalChangeState::ShouldAlignExtendsContentIntoTitleBarBehavior());
+    ASSERT(OptionalChangeState::ShouldAlignTitleBarTopBorderBehavior());
 
     // Match the existing Window.ExtendsContentIntoTitleBar geometry, but use
     // AppWindow as the source so a direct AppWindow assignment is understood.
