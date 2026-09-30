@@ -116,6 +116,20 @@ override event. The event is synchronous: later changes to retained args
 do not change its completed decision.
 
 The scrollable diagnostic toolbar keeps the table usable in smaller windows.
+With **Keep** selected, try these cell-data actions; their result appears below the table:
+
+- Right-click a **Name** cell and choose **Show name value**. Its
+  `CommandParameter` binds to `Name` on the menu item's inherited row `DataContext`.
+- Right-click **City** or **Score** and choose **Show targeted cell value**.
+  The shared row menu uses `ContextFlyoutRequested`'s `Item` and `Column` to map
+  the requested sample property into a command parameter. It captures the value
+  for that request, not the selected row or a retained event-args object.
+
+Neither action changes data, selection, or the clipboard. Invoke different rows
+and columns to see the parameters update. A null data row has no value, so its
+actions are disabled; row-only requests without a column disable the targeted-cell
+action. There is no automatic cell-value API: the sample supplies the column mapping.
+
 Status shows request/open counts, selection, item, column, and menu binding.
 `fixtureIndex` identifies the requested item in the original 300-row fixture
 (`-1` for headers, null items, or replacement data).
