@@ -17,7 +17,7 @@ using WEX.Logging.Interop;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
-using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewColumnTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -267,16 +267,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
-
                 // Every mutation here happens with no template applied and no visual tree, so the
                 // control cannot rebuild incrementally; it must reconcile on first layout instead.
-                tableView = new TableView
-                {
-                    ItemsSource = MakeItems(),
-                    Width = 500,
-                    Height = 300,
-                };
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
 
                 var scratch = new TableViewTextColumn { Header = "Scratch" };
                 tableView.Columns.Add(scratch);
@@ -392,7 +385,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Builds a TableView with the given text column headers, loads it, and lays it out.
         private TableView CreateLoadedTableView(params string[] headers)
         {
-            var tableView = CreateTableView(headers);
+            var tableView = CreateTableView(headers: headers);
             Content = tableView;
             Content.UpdateLayout();
             return tableView;
@@ -412,7 +405,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role");
+                tableView = CreateTableView(headers: new[] { "Name", "Role" });
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -467,7 +460,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView();
+                tableView = CreateTableView(headers: new string[0]);
                 tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
                 tableView.Columns.Add(new TableViewTextColumn { Header = objectHeader });
                 tableView.Columns.Add(new TableViewTextColumn { Header = null });
@@ -496,7 +489,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role");
+                tableView = CreateTableView(headers: new[] { "Name", "Role" });
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -532,7 +525,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 template = CreateTextTemplate("Templated");
-                tableView = CreateTableView("Name");
+                tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns[0].HeaderTemplate = template;
 
                 Content = tableView;
@@ -558,7 +551,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 selector = new TestHeaderTemplateSelector { Template = CreateTextTemplate("Selected") };
-                tableView = CreateTableView("Name");
+                tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns[0].HeaderTemplateSelector = selector;
 
                 Content = tableView;
@@ -589,7 +582,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 selector = new TestHeaderTemplateSelector { Template = CreateTextTemplate("Selected") };
 
-                tableView = CreateTableView("Name");
+                tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns[0].HeaderTemplate = CreateTextTemplate("Templated");
                 tableView.Columns[0].HeaderTemplateSelector = selector;
 
@@ -616,7 +609,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name");
+                tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns[0].HeaderTemplate = CreateTextTemplate("First");
 
                 Content = tableView;
@@ -652,7 +645,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name");
+                tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns[0].HeaderTemplateSelector = new TestHeaderTemplateSelector { Template = CreateTextTemplate("First") };
 
                 Content = tableView;
@@ -685,7 +678,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role");
+                tableView = CreateTableView(headers: new[] { "Name", "Role" });
                 Verify.AreEqual(TableViewHeadersVisibility.Column, tableView.HeadersVisibility, "Column is the documented default.");
 
                 Content = tableView;
@@ -710,7 +703,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role");
+                tableView = CreateTableView(headers: new[] { "Name", "Role" });
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
 
                 Content = tableView;
@@ -738,7 +731,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role");
+                tableView = CreateTableView(headers: new[] { "Name", "Role" });
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -802,7 +795,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role", "City");
+                tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -849,7 +842,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role");
+                tableView = CreateTableView(headers: new[] { "Name", "Role" });
                 tableView.Columns[1].Width = new GridLength(180.0, GridUnitType.Pixel);
                 tableView.Columns[1].MinWidth = 40.0;
 
@@ -891,7 +884,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role", "City");
+                tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -965,13 +958,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var host = tableView.FindVisualChildByName("PART_HeaderHost") as Panel;
             Verify.IsNotNull(host, "PART_HeaderHost should exist once the template has applied.");
-            return host;
-        }
-
-        private static Panel GetCellsHost(TableViewRow row)
-        {
-            var host = row.FindVisualChildByName("PART_CellsHost") as Panel;
-            Verify.IsNotNull(host, "PART_CellsHost should exist on a realized row.");
             return host;
         }
 
@@ -1099,7 +1085,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 probe = new ProbeColumn { Header = "Probe" };
-                tableView = CreateTableView("Name");
+                tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns.Add(probe);
 
                 Content = tableView;
@@ -1125,7 +1111,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name");
+                tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns.Add(new ProbeColumn { Header = "Probe" });
 
                 Content = tableView;
@@ -1165,15 +1151,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     .Select(i => new Person { Name = $"Person {i:D3}", Role = $"Role {i:D3}" })
                     .ToList();
 
-                tableView = new TableView
-                {
-                    ItemsSource = items,
-                    Width = 500,
-                    Height = 300,
-                };
+                tableView = CreateTableViewShell(items, 500, 300);
                 tableView.Columns.Add(new ProbeColumn { Header = "Probe" });
 
-                EnsureTabularControlsResources();
                 Content = tableView;
                 Content.UpdateLayout();
             });
