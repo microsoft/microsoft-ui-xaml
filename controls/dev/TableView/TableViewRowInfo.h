@@ -49,6 +49,8 @@ struct ITableViewRowMetadataProvider
     virtual bool TryGetIndexForIdentity(winrt::hstring const& identity, int32_t& index) = 0;
     virtual void Expand(winrt::hstring const& key) = 0;
     virtual void Collapse(winrt::hstring const& key) = 0;
+    // True when the toggle changed the expansion state -- a collapse included. Not the resulting
+    // state: callers restamp and announce on any change.
     virtual bool Toggle(winrt::hstring const& key) = 0;
 
     // Bulk expansion, one verb per AXIS. Kept separate because "expand everything" means two

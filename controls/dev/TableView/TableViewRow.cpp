@@ -750,6 +750,9 @@ void TableViewRow::ApplyHierarchyAffordance()
         }
     }
 
+    // The clip is in gutter space, which the margin just moved.
+    UpdateExpanderGutterClip();
+
     // The indent resolved above, handed down rather than recomputed: this is the hot path (once per
     // row preparation) and the resource lookup behind it is not free.
     ApplyHierarchyIndentToCells(indent);
@@ -878,6 +881,122 @@ void TableViewRow::OnExpanderGutterPointerPressed(
         // index is still current, then defers the reshape off the pointer callout -- both of which
         // matter identically here.
         winrt::get_self<TableView>(owner)->ToggleGroupExpansion(*this);
+    }
+}
+
+bool TableViewRow::IsWithinExpanderGutter(const winrt::IInspectable& source) const
+{
+    auto const gutter = m_rowExpanderGutter.get();
+    if (!gutter)
+    {
+        return false;
+    }
+
+    auto const self = static_cast<winrt::DependencyObject>(*this);
+    for (auto current = source.try_as<winrt::DependencyObject>(); current && current != self;
+        current = winrt::VisualTreeHelper::GetParent(current))
+    {
+        if (current == gutter)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void TableViewRow::OnCellsArrangedInternal(double leadLeft, double leadWidth, double height)
+{
+    if (m_cellsArranged && leadLeft == m_leadCellLeft && leadWidth == m_leadCellWidth && height == m_cellsArrangedHeight)
+    {
+        return;
+    }
+
+    m_cellsArranged = true;
+    m_leadCellLeft = leadLeft;
+    m_leadCellWidth = leadWidth;
+    m_cellsArrangedHeight = height;
+    UpdateExpanderGutterClip();
+}
+
+// The gutter overlays the whole cells host, so at a deep level in a narrow lead column its margin
+// alone would place the chevron over the next column, where it would both paint and take that
+// column's presses. Confine it to the lead cell's slot. Gutter and host share their parent's origin
+// and carry the same Translation (SyncExpanderGutterWithLeadCell), so the slot maps into gutter
+// space by subtracting the gutter's left margin alone -- frozen pinning moves both together, and
+// under RTL both are mirrored by the same parent. UIElement.Clip bounds hit-testing as well as
+// rendering; a gutter clipped to nothing is additionally taken out of hit-testing so a press there
+// reaches the row exactly as a press on the cell does.
+void TableViewRow::UpdateExpanderGutterClip()
+{
+    auto const gutter = m_rowExpanderGutter.get();
+    if (!gutter)
+    {
+        return;
+    }
+
+    // Arranged with every column hidden: there is no cell for the chevron to introduce, so it is
+    // clipped away and taken out of hit-testing until a column is shown again (the next arrange).
+    if (Level() > 0 && m_cellsArranged && m_leadCellWidth < 0.0)
+    {
+        auto geometry = gutter.Clip();
+        if (!geometry)
+        {
+            geometry = winrt::RectangleGeometry();
+            gutter.Clip(geometry);
+        }
+        const winrt::Rect empty{ 0.0f, 0.0f, 0.0f, 0.0f };
+        auto const current = geometry.Rect();
+        if (current.Width != 0.0f || current.Height != 0.0f || current.X != 0.0f || current.Y != 0.0f)
+        {
+            geometry.Rect(empty);
+        }
+        if (gutter.IsHitTestVisible())
+        {
+            gutter.IsHitTestVisible(false);
+        }
+        return;
+    }
+
+    // Not arranged yet (or flat): leave the gutter unclipped until the first arrange reports a slot.
+    if (Level() <= 0 || m_leadCellWidth < 0.0 || m_cellsArrangedHeight <= 0.0)
+    {
+        if (gutter.Clip())
+        {
+            gutter.Clip(nullptr);
+        }
+        if (!gutter.IsHitTestVisible())
+        {
+            gutter.IsHitTestVisible(true);
+        }
+        return;
+    }
+
+    const double gutterLeft = gutter.Margin().Left;
+    const double visibleLeft = (std::max)(0.0, m_leadCellLeft - gutterLeft);
+    const double visibleWidth = (std::max)(0.0, m_leadCellLeft + m_leadCellWidth - gutterLeft - visibleLeft);
+
+    auto geometry = gutter.Clip();
+    if (!geometry)
+    {
+        geometry = winrt::RectangleGeometry();
+        gutter.Clip(geometry);
+    }
+    const winrt::Rect rect{
+        static_cast<float>(visibleLeft),
+        0.0f,
+        static_cast<float>(visibleWidth),
+        static_cast<float>(m_cellsArrangedHeight) };
+    auto const current = geometry.Rect();
+    if (current.X != rect.X || current.Y != rect.Y || current.Width != rect.Width || current.Height != rect.Height)
+    {
+        geometry.Rect(rect);
+    }
+
+    const bool hitTestable = visibleWidth > 0.0;
+    if (gutter.IsHitTestVisible() != hitTestable)
+    {
+        gutter.IsHitTestVisible(hitTestable);
     }
 }
 
@@ -1598,6 +1717,15 @@ void TableViewRow::OnPointerPressedForEditing(
 
     // Editing is opt-in and read-only by default, so a read-only table pays nothing beyond this.
     if (ownerImpl->IsReadOnly())
+    {
+        return;
+    }
+
+    // A chevron press is a toggle, not a press on the lead cell underneath it. This handler sees it
+    // anyway (handledEventsToo), and the fallback hit-test below would resolve the lead cell, so two
+    // quick toggles would read as a double-click and open an editor. A leaf's gutter is left alone:
+    // it does not toggle, and a press there already behaves as a press on the cell.
+    if (IsExpandable() && IsWithinExpanderGutter(args.OriginalSource()))
     {
         return;
     }

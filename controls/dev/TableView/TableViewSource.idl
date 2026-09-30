@@ -120,8 +120,10 @@ runtimeclass TableViewSource
     //    or a source collection change) re-validates and throws again until the data is fixed or
     //    ClearParent() is called.
     //  * Invalid data arriving through a source collection change (e.g. list.Add of a duplicate
-    //    key) throws E_INVALIDARG out of the app's own mutation call. The collection keeps the item;
-    //    the previous projection stays on screen.
+    //    key) makes the control throw E_INVALIDARG from its collection-changed handler. Whether
+    //    that surfaces from the app's own mutation call depends on how the collection raises its
+    //    events (C++/WinRT observable vectors swallow handler exceptions). Either way the
+    //    collection keeps the item and the previous projection stays on screen.
     //
     // Every visible row is a real data row, and a row with children can be expanded to reveal them
     // indented beneath it. Rows start COLLAPSED; use TableView.ExpandAllRows() to start expanded.

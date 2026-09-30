@@ -195,7 +195,9 @@ private:
 
     // Builds and validates the parent-key index over the already-sorted, UNFILTERED rows; the
     // active filter is applied inside (matches plus ancestors). Throws E_INVALIDARG on invalid data
-    // before anything is mutated, so the previous projection stays intact.
+    // before anything is mutated, so the previous projection stays intact. Returns null -- and
+    // queues a Refresh -- when a selector re-declared or retracted the relation mid-build; the
+    // caller then publishes nothing.
     std::shared_ptr<ShapingHelpers::ParentKeyIndex> BuildHierarchyIndex(std::vector<winrt::IInspectable> const& sortedRows);
 
     // Creates the adapter on first use, applies a pending intent reset (relation re-declared) and
@@ -221,10 +223,36 @@ private:
     // adapter would keep re-slicing groups -- and keep its last rows alive -- for a projection that
     // is no longer being shown.
     void ReleaseHierarchyProjection();
+    // Completes a ClearParent that arrived while a publication was on the stack. Runs when that
+    // publication unwinds, on success and failure alike; a no-op once non-hierarchical metadata has
+    // been published.
+    void CompleteDeferredHierarchyTeardown();
+    // Set by ClearParent; cleared only once non-hierarchical metadata has actually been published
+    // (m_hierarchyPublished), not merely once the adapter is released or a flat kind is staged.
+    bool m_pendingHierarchyTeardown{ false };
+    // Whether the consumer may currently hold hierarchical row metadata. Tracked apart from m_kind,
+    // which a rebuild sets BEFORE publishing: set when a hierarchical publication starts, cleared
+    // only when a non-hierarchical one completes.
+    bool m_hierarchyPublished{ false };
+    // Raises ProjectionRebuilt for the staged m_kind and maintains m_hierarchyPublished.
+    void PublishProjection();
+    // One completion attempt; CompleteDeferredHierarchyTeardown guards and replays it.
+    void TryCompleteDeferredHierarchyTeardown();
+    // Set while a teardown completion runs (and publishes). Nested ClearParent / completion /
+    // Refresh / source-change requests are deferred behind it rather than re-entering.
+    bool m_completingTeardown{ false };
+    // A completion requested while one was already running; replayed once when it unwinds.
+    bool m_teardownReplayRequested{ false };
+    // The visible rows of a released, ungrouped tree while its teardown is owed.
+    std::vector<winrt::IInspectable> m_releasedHierarchyRows;
     // Drops the adapter's collapse overrides on filter context rows. Called by every filter verb.
     void ResetHierarchyFilterOverlay();
-    // Guards the re-slice against re-entering itself through the group mutations it performs.
+    // Guards the re-slice against re-entering itself through the group mutations it performs, and
+    // defers any Refresh requested meanwhile (see Refresh).
     bool m_reslicingGroups{ false };
+    // Bumped whenever m_hierarchyGroups is replaced or released, so a re-slice that is still
+    // publishing can tell its snapshot is stale.
+    uint64_t m_hierarchyGeneration{ 0 };
     void RebuildUnshapedRows(std::vector<winrt::IInspectable> const& rows, wchar_t const* reason);
     bool IsIdentityRequired() const;
     // True when any of Filter / Sort / GroupBy is in force. Distinct from IsIdentityRequired,
@@ -290,6 +318,12 @@ private:
     // the source must not interleave a nested update against a half-updated projection.
     bool m_isApplyingIncrementalChange{ false };
     bool m_pendingRefresh{ false };
+    // A Refresh request that arrived during a pass that then threw is posted to the dispatcher
+    // (see Refresh); this coalesces the posts.
+    void ScheduleRefreshReplay();
+    // Posts a pending Refresh after a failed incremental application; keeps it if nothing posted.
+    void PostPendingRefresh() noexcept;
+    bool m_refreshReplayScheduled{ false };
     std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> m_groupCache;
     std::shared_ptr<GroupedSourceAdapter> m_groupedAdapter{};
 
@@ -297,6 +331,9 @@ private:
     // declared" test everywhere.
     ShapingHelpers::KeySelector m_keySelector{ nullptr };
     ShapingHelpers::KeySelector m_parentKeySelector{ nullptr };
+    // Bumped by SetParent / ClearParent. An index build that sees it move under it (a selector
+    // re-declared the relation) discards its result, including any validation error.
+    uint64_t m_parentDeclarationGeneration{ 0 };
     // Set by SetParent, consumed by the next publish: re-declaring the relation clears intent.
     bool m_parentRelationRedeclared{ false };
     // Set by the parent verbs, consumed by ApplyShapingChange. The hierarchy axis re-projects

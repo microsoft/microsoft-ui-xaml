@@ -627,6 +627,10 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     // Separate verbs rather than one "expand everything", because the two axes are independent: a
     // grouped tree's headers and its nodes are opened and closed separately. ExpandAllRows makes
     // every row of the tree visible, so the visible row count becomes the size of the source.
+    //
+    // Unlike toggling a single row, these change the remembered expansion state of EVERY node,
+    // including the ancestors a filter keeps expanded for context. So the result persists after
+    // the filter changes or clears: CollapseAllRows under a filter leaves the whole tree collapsed.
     void ExpandAllRows();
     void CollapseAllRows();
 

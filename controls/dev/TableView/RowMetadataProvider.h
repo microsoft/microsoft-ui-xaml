@@ -98,7 +98,8 @@ private:
     // Single implementation behind all six expand/collapse/toggle entry points. They differ only
     // in how the caller names the group (row key vs. the app's GroupBy key), so resolution stays
     // in the wrappers and the state change lives here exactly once. `desired` empty means toggle.
-    // Returns the resulting expansion state; false when there is no group or no adapter.
+    // Returns true when the expansion state changed (in either direction); false when there is no
+    // group, no adapter, or the request was a no-op.
     bool SetGroupExpandedCore(winrt::IInspectable const& group, std::optional<bool> desired);
 
     // The hierarchy equivalent, keyed by node key rather than by a resolved group object. No

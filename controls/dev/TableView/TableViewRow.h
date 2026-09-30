@@ -72,6 +72,9 @@ public:
     // Keep body and header leading-frozen cells pinned to the same scroll offset.
     void RefreshFrozenColumnLayout(double horizontalOffset, double leadingFrozenWidth);
     void SyncExpanderGutterWithLeadCell(winrt::Panel const& host);
+    // The cells panel reports the lead (first visible) cell's arranged slot after every arrange,
+    // so the chevron can be confined to it. leadWidth < 0 means there is no visible cell.
+    void OnCellsArrangedInternal(double leadLeft, double leadWidth, double height);
     void RefreshDensity();
     // Rebuild realized cells when column content changes at runtime.
     void RefreshCells();
@@ -164,6 +167,8 @@ private:
     void OnExpanderGutterPointerPressed(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
+    bool IsWithinExpanderGutter(const winrt::IInspectable& source) const;
+    void UpdateExpanderGutterClip();
 
     void RebuildCells();
     void ClearOwnedCellToolTips(const winrt::Panel& host);
@@ -179,6 +184,12 @@ private:
     // means no toggle affordance -- the indent still applies.
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
     winrt::UIElement::PointerPressed_revoker m_gutterPointerPressedRevoker{};
+    // Lead cell's last arranged slot in the cells host (negative width: none yet / none visible).
+    double m_leadCellLeft{ 0.0 };
+    double m_leadCellWidth{ -1.0 };
+    double m_cellsArrangedHeight{ 0.0 };
+    // Distinguishes "not arranged yet" from "arranged with no visible cell" (both report width -1).
+    bool m_cellsArranged{ false };
     // Use auto_revoke for self-event subscriptions instead of manual token cleanup.
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};

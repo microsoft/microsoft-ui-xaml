@@ -227,6 +227,12 @@ void TableViewSource::OnProjectionRebuilt()
     case ::ShapedItemsSource::ProjectionKind::Grouped:
     {
         auto const adapter = m_engine->GroupedAdapter();
+        if (!adapter)
+        {
+            // Defensive: a projection kind without its adapter is never published coherently; keep
+            // the previous projection until the engine publishes again.
+            return;
+        }
         // No wrap: the grouped view IS an ItemsSourceView, so ItemsRepeater consumes it directly.
         m_itemsSourceView.set(adapter->Entries());
         m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForGroupedRows(adapter, MakeIdentitySelector());
@@ -235,6 +241,11 @@ void TableViewSource::OnProjectionRebuilt()
     case ::ShapedItemsSource::ProjectionKind::Hierarchical:
     {
         auto const adapter = m_engine->HierarchicalAdapter();
+        if (!adapter)
+        {
+            // Defensive, as above.
+            return;
+        }
         // Same as grouped: the adapter's view IS an ItemsSourceView, consumed directly.
         m_itemsSourceView.set(adapter->Entries());
         m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForHierarchicalRows(adapter, MakeIdentitySelector());
@@ -245,10 +256,16 @@ void TableViewSource::OnProjectionRebuilt()
         // The presented axis is the GROUPED adapter's: it carries the header rows. The hierarchy
         // adapter is handed over too, because level and node expansion are only knowable there.
         auto const groupedAdapter = m_engine->GroupedAdapter();
+        auto const hierarchicalAdapter = m_engine->HierarchicalAdapter();
+        if (!groupedAdapter || !hierarchicalAdapter)
+        {
+            // Defensive, as above.
+            return;
+        }
         m_itemsSourceView.set(groupedAdapter->Entries());
         m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForGroupedHierarchicalRows(
             groupedAdapter,
-            m_engine->HierarchicalAdapter(),
+            hierarchicalAdapter,
             MakeIdentitySelector());
         break;
     }
