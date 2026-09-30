@@ -115,6 +115,12 @@ Evaluated over the **whole unfiltered source** on every rebuild.
 
 Bad identity fails fast: a throw leaves the previously published projection intact.
 
+When invalid data arrives through a source collection change rather than through a verb, the engine
+throws `E_INVALIDARG` from its collection-changed handler. Whether that reaches the app's own
+mutation call depends on how the collection raises its events: a .NET `ObservableCollection`
+propagates it, while C++/WinRT observable vectors swallow handler exceptions. The previous projection
+stays on screen either way.
+
 **Cycle detection is a reachability count, not a path walk.** After the index is built, walk from
 every root and count the reached items. Because orphans already became roots, every non-root item
 has a parent inside the set, so any item that is not reached is on a cycle, or below one. This costs
@@ -169,14 +175,23 @@ A collapse on a context row inserts into `m_filterOverlayCollapsed` and an expan
 the set is cleared when the filter changes. `ExpandSubtree` erases context keys from the overlay and
 writes intent only for non-context keys; `ExpandAll` clears the overlay and `CollapseAll` fills it
 with every context key. Persistent intent stays in `RowExpansionModel` and is never written from a
-context row.
+context row's individual toggle.
+
+**Bulk commands are the exception, deliberately.** `ExpandAllRows` / `CollapseAllRows` are an
+explicit whole-tree change of intent, not a toggle on a row. They move the persistent baseline for
+**every** node, context rows included (§5.2), as well as the overlay above. So after
+`CollapseAllRows` under a filter, clearing the filter shows the whole tree collapsed, and after
+`ExpandAllRows` it shows the whole tree expanded; the per-row state from before the filter is not
+restored. Individual toggles on context rows remain overlay-only.
 
 ### 4.3 Grouping: buckets the roots
 
 `GroupBy` buckets the **roots** only, each root's visible
 subtree follows it, and group headers exist at depth 0 and nowhere else. Under a filter, a context
 root is bucketed like any other root. Roots are ordered bucket by bucket, and the adapter must not
-re-sort them.
+re-sort them. Bucket (header) order follows plain `GroupBy` exactly: roots are bucketed in source
+order with only the sorts declared before `GroupBy` applied, and sorts declared after it order the
+roots within each bucket. Descendant sibling sets keep the full sort (§4.1).
 
 ## 5. Expansion
 
@@ -200,7 +215,8 @@ Every item has exactly one parent, and the app supplies the key, so no path key 
 - The baseline is **collapsed** (`SetDefaultExpanded(false)` in the adapter constructor). Any
   source can hold more rows than should be realized on first paint.
 - `ExpandAllRows` / `CollapseAllRows` move the baseline. They call no app code: the index already
-  exists, so the cost is only the size of the visible axis.
+  exists, so the cost is only the size of the visible axis. Moving the baseline changes persistent
+  intent for every node, including filter context rows, so the result outlives the filter (§4.2).
 - **Last writer wins.** A second `WithParent` call *replaces* the previous relation. It does not
   stack or compose with it, which matches how `GroupBy` replaces a previous `GroupBy`. The replaced
   hierarchy is torn down as if `ClearParent()` had been called, and its expansion intent is

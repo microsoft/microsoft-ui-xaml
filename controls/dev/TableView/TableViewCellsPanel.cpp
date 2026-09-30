@@ -256,6 +256,8 @@ winrt::Size TableViewCellsPanel::MeasureOverride(winrt::Size const& availableSiz
 winrt::Size TableViewCellsPanel::ArrangeOverride(winrt::Size const& finalSize)
 {
     float x = 0.0f;
+    float leadLeft = 0.0f;
+    float leadWidth = -1.0f;
 
     for (winrt::UIElement const& child : Children())
     {
@@ -266,7 +268,22 @@ winrt::Size TableViewCellsPanel::ArrangeOverride(winrt::Size const& finalSize)
 
         // Cells are arranged at the resolved column width; content wider than the column clips/ellipsizes.
         child.Arrange({ x, 0.0f, w, finalSize.Height });
+
+        // Same "lead" rule as TableViewRow::ApplyHierarchyIndentToCells: the first visible wrapper.
+        if (leadWidth < 0.0f && child.Visibility() == winrt::Visibility::Visible && child.try_as<winrt::Border>())
+        {
+            leadLeft = x;
+            leadWidth = w;
+        }
         x += w;
+    }
+
+    // The hierarchy chevron overlays the lead cell from outside this panel; it is confined to the
+    // slot arranged here, which is the one place every width change (resize, star redistribution,
+    // column visibility) is guaranteed to pass through.
+    if (auto const row = m_owningRow.get())
+    {
+        winrt::get_self<TableViewRow>(row)->OnCellsArrangedInternal(leadLeft, leadWidth, finalSize.Height);
     }
 
     return { x, finalSize.Height };

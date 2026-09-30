@@ -417,6 +417,9 @@ void TableView::OnThemeSettingsChanged(
     {
         RebuildHeaders();
         RefreshGridLinesOnRealizedRows();
+        // The chevron's width is a ThemeResource but the lead cell's matching padding and the
+        // indent are applied imperatively; re-derive them from the re-resolved metrics.
+        RefreshRealizedRowHierarchyState();
     }
 }
 
@@ -603,6 +606,9 @@ void TableView::OnApplyTemplate()
                     // Rebuild headers and realized rows so grid-line brushes re-resolve.
                     strongThis->RebuildHeaders();
                     strongThis->RefreshGridLinesOnRealizedRows();
+                    // Re-apply indent and lead-cell reservation against the new theme's metrics,
+                    // which the chevron's ThemeResource width has already picked up.
+                    strongThis->RefreshRealizedRowHierarchyState();
                 }
                 catch (...)
                 {

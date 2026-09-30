@@ -37,7 +37,9 @@
 //
 // Lifetime, threading and re-entrancy are copied from GroupedSourceAdapter deliberately:
 // UI-thread-affine, m_rebuildInFlight / m_pendingRebuild coalescing, teardown on the owning thread
-// because every strong owner is a ReferenceTracker.
+// because every strong owner is a ReferenceTracker. Always owned by a shared_ptr: every public entry
+// point that publishes pins itself with shared_from_this, because a handler of its own notification
+// may drop the last external owner (and ClearIndex detaches it; see there).
 //
 // See docs/design-notes/TabularControls/Hierarchical-Data-Rows-Parent-Key-Design.md.
 class HierarchicalSourceAdapter : public std::enable_shared_from_this<HierarchicalSourceAdapter>
@@ -66,6 +68,9 @@ public:
     void SetIndex(std::shared_ptr<const ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments);
 
     // Drops the index WITHOUT publishing (see the .cpp). Intent is kept; see ResetIntentQuietly.
+    // Also DETACHES the adapter: the projection it feeds is being retracted, so a publication that
+    // is still unwinding when this runs (the owner re-entered from one of its notifications) stops
+    // at the next safe point and raises nothing further. Only SetIndex re-attaches it.
     void ClearIndex();
 
     // Clears all expansion intent and the filter overlay WITHOUT rebuilding. Used when the parent
@@ -251,6 +256,10 @@ private:
     // remembered and run once after unwind. Plain bool: the adapter is UI-thread-affine.
     bool m_rebuildInFlight{ false };
     bool m_pendingRebuild{ false };
+
+    // Set by ClearIndex. Every notifying loop checks it after each vector mutation, because the
+    // owner may retract the projection from inside that notification; see ClearIndex.
+    bool m_detached{ false };
 };
 
 using HierarchicalSourceAdapterPtr = std::shared_ptr<HierarchicalSourceAdapter>;

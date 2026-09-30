@@ -90,6 +90,11 @@ bool HierarchicalSourceAdapter::IsNodeKey(winrt::hstring const& key)
 
 void HierarchicalSourceAdapter::SetIndex(std::shared_ptr<const ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments)
 {
+    // Every public entry point that publishes holds its own reference for the duration: a consumer
+    // reacting synchronously to the publish may drop the last external owner.
+    auto const keepAlive = shared_from_this();
+
+    m_detached = false;
     m_index = std::move(index);
     m_rootSegments = std::move(rootSegments);
 
@@ -130,6 +135,11 @@ void HierarchicalSourceAdapter::ClearIndex()
     // repeater may still be bound to Entries() with realized rows; publishing an empty Reset into it
     // mid-teardown is the hazard the grouped path's DetachSourceQuietly exists to avoid. The owner
     // then drops the adapter; the rows go with it once the projection swap has unbound them.
+    //
+    // This can run from inside one of this adapter's own notifications (an app handler retracting
+    // the relation while a rebuild or splice is publishing). The flag makes the frame that is still
+    // publishing stop at its next check rather than keep mutating a projection nobody presents.
+    m_detached = true;
     m_index.reset();
     m_rootSegments.clear();
     m_filterOverlayCollapsed.clear();
@@ -256,6 +266,12 @@ void HierarchicalSourceAdapter::Rebuild()
 {
     AssertRebuildOnUiThread();
 
+    if (m_detached)
+    {
+        // Retracted: publishing even an empty Reset would reach a repeater mid-teardown.
+        return;
+    }
+
     if (m_rebuildInFlight)
     {
         // A change notification raised synchronously inside ReplaceAll re-entered Rebuild. Don't drop
@@ -344,7 +360,13 @@ void HierarchicalSourceAdapter::Rebuild()
         publishGuard.release();
 
         // resetGuard runs here, publishing into runPending whether a re-entrant request arrived.
-    } while (runPending);
+    } while (runPending && !m_detached);
+
+    if (m_detached)
+    {
+        // A handler of the Reset above retracted the projection; see ClearIndex.
+        return;
+    }
 
     // One coherent edge for the whole rebuild, after the last iteration has published.
     RaiseProjectionChanged();
@@ -377,6 +399,8 @@ bool HierarchicalSourceAdapter::IsNodeExpanded(winrt::hstring const& nodeKey) co
 
 void HierarchicalSourceAdapter::SetNodeExpanded(winrt::hstring const& nodeKey, bool isExpanded)
 {
+    auto const keepAlive = shared_from_this();
+
     if (!m_index)
     {
         return;
@@ -433,6 +457,8 @@ void HierarchicalSourceAdapter::SetNodeExpanded(winrt::hstring const& nodeKey, b
 
 void HierarchicalSourceAdapter::ExpandAll()
 {
+    auto const keepAlive = shared_from_this();
+
     const bool hadOverlay = !m_filterOverlayCollapsed.empty();
     m_filterOverlayCollapsed.clear();
 
@@ -446,6 +472,8 @@ void HierarchicalSourceAdapter::ExpandAll()
 
 void HierarchicalSourceAdapter::CollapseAll()
 {
+    auto const keepAlive = shared_from_this();
+
     const bool changed = MutateExpansionQuietly([this]() { m_expansion.SetAllExpanded(false); });
 
     // Context rows are expanded by the overlay, not by intent, so collapsing everything also has to
@@ -467,6 +495,8 @@ void HierarchicalSourceAdapter::CollapseAll()
 
 void HierarchicalSourceAdapter::ExpandSubtree(winrt::hstring const& nodeKey)
 {
+    auto const keepAlive = shared_from_this();
+
     if (!m_index || !IsNodeKey(nodeKey))
     {
         return;
@@ -559,7 +589,7 @@ void HierarchicalSourceAdapter::ApplySingleToggle(winrt::hstring const& nodeKey,
     }
 
     // A re-entrant request, or a splice that couldn't resolve the node, resolves to a single
-    // authoritative Rebuild after the guard unwinds.
+    // authoritative Rebuild after the guard unwinds. Rebuild itself does nothing once detached.
     if (runPending || !applied)
     {
         Rebuild();
@@ -610,7 +640,10 @@ bool HierarchicalSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& no
         // already read "collapsed" by the time anyone reacts to it.
         m_descriptors[static_cast<size_t>(index)].IsExpanded = false;
         RemoveRows(index + 1, runEnd - (index + 1));
-        RaiseProjectionChanged();
+        if (!m_detached)
+        {
+            RaiseProjectionChanged();
+        }
         return true;
     }
 
@@ -633,7 +666,10 @@ bool HierarchicalSourceAdapter::TryApplyExpansionSplice(winrt::hstring const& no
     // Parent first, for the same reason the collapse path does it.
     m_descriptors[static_cast<size_t>(index)].IsExpanded = true;
     InsertRows(index + 1, built, descriptors);
-    RaiseProjectionChanged();
+    if (!m_detached)
+    {
+        RaiseProjectionChanged();
+    }
     return true;
 }
 
@@ -657,7 +693,7 @@ void HierarchicalSourceAdapter::InsertRows(
     // shifted per row (O(visible) each); it is invalidated and rebuilt lazily from the descriptors,
     // so any lookup made mid-splice still agrees with them.
     uint32_t insertAt = static_cast<uint32_t>(index);
-    for (size_t i = 0; i < items.size(); ++i)
+    for (size_t i = 0; i < items.size() && !m_detached; ++i)
     {
         m_descriptors.insert(m_descriptors.begin() + insertAt, descriptors[i]);
         m_indexByNodeKeyValid = false;
@@ -674,8 +710,9 @@ void HierarchicalSourceAdapter::RemoveRows(int32_t index, int32_t count)
     }
 
     // Symmetric with InsertRows: the descriptor leaves immediately before its row does. Removed
-    // from the end of the run so the rows still published keep their indices until they go.
-    for (int32_t i = index + count - 1; i >= index; --i)
+    // from the end of the run so the rows still published keep their indices until they go. A
+    // handler that retracts the projection mid-run stops the loop (see ClearIndex).
+    for (int32_t i = index + count - 1; i >= index && !m_detached; --i)
     {
         m_descriptors.erase(m_descriptors.begin() + i);
         m_indexByNodeKeyValid = false;

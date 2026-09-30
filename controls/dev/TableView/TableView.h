@@ -508,6 +508,15 @@ private:
     // "restored".
     tracker_ref<winrt::IInspectable> m_stickySelectedItem{ this };
 
+    // Tree sources only: the node key of m_stickySelectedItem, captured alongside it. A tree's
+    // selection is anchored on the node, not the object, so a row the app re-creates with the same
+    // key keeps its selection across the Reset that republishes it. Consulted only by the Reset
+    // restore (m_pendingSelectedIdentity), never across a source swap, where the same key may name
+    // an unrelated row. Empty for flat and plain grouped sources.
+    winrt::hstring m_stickySelectedIdentity;
+    winrt::hstring m_pendingSelectedIdentity;
+    winrt::hstring HierarchyIdentityForIndex(int32_t index) const;
+
     // Armed by OnSelectionSourceReset when a Reset drops the selection with a surviving sticky item,
     // consumed by OnSelectionItemsSourceCollectionChanged to run the identity restore once the
     // model has reconciled.
