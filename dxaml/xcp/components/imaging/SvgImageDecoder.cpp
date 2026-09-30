@@ -65,9 +65,17 @@ _Check_return_ HRESULT SvgImageDecoder::DecodeFrame(
 
     if (auto graphicsDevice = m_graphicsDevice.lock())
     {
-        if (SUCCEEDED(DecodeFrameWithDevice(graphicsDevice.get(), encodedImageData, width, height, bitmapSource)))
+        const HRESULT hardwareDecodeResult =
+            DecodeFrameWithDevice(graphicsDevice.get(), encodedImageData, width, height, bitmapSource);
+        switch (SvgImageDecoderHelpers::ClassifyHardwareDecodeResult(hardwareDecodeResult))
         {
+        case SvgImageDecoderHelpers::HardwareDecodeDisposition::Succeeded:
             return S_OK;
+        case SvgImageDecoderHelpers::HardwareDecodeDisposition::DeviceLost:
+            graphicsDevice->RecordDeviceAsLost();
+            return hardwareDecodeResult;
+        case SvgImageDecoderHelpers::HardwareDecodeDisposition::FallbackToSoftware:
+            break;
         }
     }
 

@@ -3,12 +3,35 @@
 
 #pragma once
 #include "ImagingInterfaces.h"
+#include <GraphicsUtility.h>
 #include <weakref_ptr.h>
 
 class CCoreServices;
 class CD3D11Device;
 struct ID2D1Factory1;
 struct ID2D1DeviceContext5;
+
+namespace SvgImageDecoderHelpers
+{
+    enum class HardwareDecodeDisposition
+    {
+        Succeeded,
+        FallbackToSoftware,
+        DeviceLost,
+    };
+
+    inline HardwareDecodeDisposition ClassifyHardwareDecodeResult(HRESULT hardwareDecodeResult)
+    {
+        if (SUCCEEDED(hardwareDecodeResult))
+        {
+            return HardwareDecodeDisposition::Succeeded;
+        }
+
+        return GraphicsUtility::IsDeviceLostError(hardwareDecodeResult)
+            ? HardwareDecodeDisposition::DeviceLost
+            : HardwareDecodeDisposition::FallbackToSoftware;
+    }
+}
 
 class SvgImageDecoder final
     : public IImageDecoder
