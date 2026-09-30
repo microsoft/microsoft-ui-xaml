@@ -6,6 +6,7 @@
 #include "ShapedItemsSource.h"
 #include "RowIdentity.h"
 #include "GroupedSourceAdapter.h"
+#include "HierarchicalSourceAdapter.h"
 #include "SharedHelpers.h"
 #include "TVDiag.h"
 #include "ShapingHelpers.h"
@@ -63,24 +64,28 @@ void ShapedItemsSource::Start()
 void ShapedItemsSource::SetFilter(ShapingHelpers::Predicate const& predicate)
 {
     m_pipeline.SetFilter(predicate);
+    ResetHierarchyFilterOverlay();
     ApplyShapingChange();
 }
 
 void ShapedItemsSource::SetFilter(winrt::hstring const& axisToken, ShapingHelpers::Predicate const& predicate)
 {
     m_pipeline.SetFilter(axisToken, predicate);
+    ResetHierarchyFilterOverlay();
     ApplyShapingChange();
 }
 
 void ShapedItemsSource::ClearFilter()
 {
     m_pipeline.ClearFilter();
+    ResetHierarchyFilterOverlay();
     ApplyShapingChange();
 }
 
 void ShapedItemsSource::ClearFilter(winrt::hstring const& axisToken)
 {
     m_pipeline.ClearFilter(axisToken);
+    ResetHierarchyFilterOverlay();
     ApplyShapingChange();
 }
 
@@ -99,6 +104,43 @@ void ShapedItemsSource::ClearGroup()
     m_groupSelector = nullptr;
     m_groupIdentitySelector = nullptr;
     m_pipeline.ClearGroupVerb();
+    ApplyShapingChange();
+}
+
+void ShapedItemsSource::SetParent(ShapingHelpers::KeySelector key, ShapingHelpers::KeySelector parentKey)
+{
+    m_keySelector = std::move(key);
+    m_parentKeySelector = std::move(parentKey);
+
+    // Last writer wins, and a different relation is a different tree: intent recorded against the
+    // previous one is cleared at the next publish.
+    m_parentRelationRedeclared = true;
+
+    // The hierarchy axis lives here, NOT in the pipeline spec: it does not filter, bucket or sort,
+    // it re-projects. So the spec diff cannot see it, and without this flag a parent verb declared
+    // against an otherwise unchanged shape commits a no-op delta and returns.
+    m_hierarchyAxisDirty = true;
+
+    // Grouping is NOT retracted. The two axes compose: GroupBy buckets the roots, and each root
+    // still expands into its own subtree beneath its bucket's header. See
+    // RebuildGroupedHierarchical for the row stream that produces.
+    ApplyShapingChange();
+}
+
+void ShapedItemsSource::ClearParent()
+{
+    // Nothing declared: genuinely a no-op, so do not fire a Reset that would drop every realized
+    // row for a shape that is already flat.
+    if (!m_parentKeySelector)
+    {
+        return;
+    }
+
+    m_keySelector = nullptr;
+    m_parentKeySelector = nullptr;
+    m_parentRelationRedeclared = false;
+    ReleaseHierarchyProjection();
+    m_hierarchyAxisDirty = true;
     ApplyShapingChange();
 }
 
@@ -149,7 +191,12 @@ void ShapedItemsSource::ApplyShapingChange()
     // change that has already been applied.
     auto const delta = m_pipeline.CommitSpec();
 
-    if (delta.IsNoOp())
+    // Consumed here regardless of the spec delta: the hierarchy axis is invisible to the diff, so
+    // this flag is the only record that the projection kind must change.
+    const bool hierarchyChanged = m_hierarchyAxisDirty;
+    m_hierarchyAxisDirty = false;
+
+    if (delta.IsNoOp() && !hierarchyChanged)
     {
         // Re-declaring the identical shape. The projection already satisfies it, and a rebuild
         // would fire a Reset that drops every realized row for nothing. Reachable only from a
@@ -158,7 +205,9 @@ void ShapedItemsSource::ApplyShapingChange()
         return;
     }
 
-    if (TryApplyShapingDeltaInPlace(delta))
+    // The in-place paths splice the EXISTING projection; none of them can turn a flat projection
+    // into a hierarchical one or back. A hierarchy change therefore always takes the rebuild.
+    if (!hierarchyChanged && TryApplyShapingDeltaInPlace(delta))
     {
         RaiseShapingChanged(true /* reorderOnly */);
         return;
@@ -191,8 +240,9 @@ bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta
     }
 
     // A grouped projection is rebuilt through the group adapter, and sorts declared before the
-    // group verb reorder the GROUPS — which layer 1's within-bucket sort cannot express.
-    if (m_groupSelector || m_projectedAsGrouped)
+    // group verb reorder the GROUPS — which layer 1's within-bucket sort cannot express. A
+    // hierarchy re-sorts every sibling set through a rebuilt parent-key index.
+    if (m_groupSelector || m_projectedAsGrouped || m_parentKeySelector)
     {
         return false;
     }
@@ -407,9 +457,11 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
 
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
 
-    // A rebuild in flight, a grouped projection, or a not-yet-materialized projection -> full
-    // rebuild (the incremental paths need a live flat projection + its view/metadata).
-    if (m_isRefreshing || m_groupSelector || !m_rows || m_kind == ProjectionKind::None)
+    // A rebuild in flight, a grouped or hierarchical projection, or a not-yet-materialized
+    // projection -> full rebuild (the incremental paths need a live flat projection + its
+    // view/metadata). A hierarchy is re-indexed from the whole source on every change: an added
+    // root, a reparented child or a removed parent can move rows anywhere in the tree.
+    if (m_isRefreshing || m_groupSelector || m_parentKeySelector || !m_rows || m_kind == ProjectionKind::None)
     {
         Refresh();
         return;
@@ -573,7 +625,7 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
     // VectorChanged has only a verb + index (no OldItems/NewItems). Keep the low-risk fast path
     // to flat 1:1 projections, where the source index is the projection index and the current
     // source/projection can provide the one item needed to splice m_rows and identity tracking.
-    if (m_isRefreshing || m_groupSelector || HasActiveSort() || m_pipeline.HasFilter() ||
+    if (m_isRefreshing || m_groupSelector || m_parentKeySelector || HasActiveSort() || m_pipeline.HasFilter() ||
         !m_rows || m_kind == ProjectionKind::None)
     {
         Refresh();
@@ -881,12 +933,12 @@ bool ShapedItemsSource::IsSourceMutable() const
 
 bool ShapedItemsSource::IsIdentityRequired() const
 {
-    return m_groupSelector || m_pipeline.HasFilter() || HasActiveSort() || IsSourceMutable();
+    return m_groupSelector || m_parentKeySelector || m_pipeline.HasFilter() || HasActiveSort() || IsSourceMutable();
 }
 
 bool ShapedItemsSource::HasAnyShapingVerb() const
 {
-    return m_pipeline.HasFilter() || m_groupSelector || HasActiveSort();
+    return m_pipeline.HasFilter() || m_groupSelector || m_parentKeySelector || HasActiveSort();
 }
 
 bool ShapedItemsSource::TryGetRequiredRowIdentity(
@@ -983,6 +1035,8 @@ void ShapedItemsSource::RebuildUnshapedRows(std::vector<winrt::IInspectable> con
     // A grouped/degraded projection does not use the flat incremental fast-path.
     ClearFlatRowIdentityTracking();
 
+    ReleaseHierarchyProjection();
+
     if (m_groupSource)
     {
         // Detach the adapter BEFORE clearing the internal group source. Otherwise Clear() fires
@@ -1039,7 +1093,12 @@ void ShapedItemsSource::Refresh()
         }
         else
         {
-            ApplyFilter(rows);
+            // A hierarchy filters inside its index build, not here: keeping a match's ancestors
+            // needs the unfiltered parent chain.
+            if (!m_parentKeySelector)
+            {
+                ApplyFilter(rows);
+            }
 
             // A shaping verb is in force here (the branch above took the no-verb case), and a verb
             // always requires identity, so there is nothing to gate on.
@@ -1071,7 +1130,15 @@ void ShapedItemsSource::Refresh()
                 throw winrt::hresult_invalid_argument(message);
             }
 
-            if (m_groupSelector)
+            if (m_parentKeySelector && m_groupSelector)
+            {
+                RebuildGroupedHierarchical(rows);
+            }
+            else if (m_parentKeySelector)
+            {
+                RebuildHierarchical(rows);
+            }
+            else if (m_groupSelector)
             {
                 RebuildGrouped(rows);
             }
@@ -1125,6 +1192,8 @@ void ShapedItemsSource::RebuildFlat(std::vector<winrt::IInspectable>& rows)
     // duplicate/empty identities and locate sorted removes without O(n) WinRT IndexOf scans.
     RebuildFlatRowIdentityTracking(rows);
 
+    ReleaseHierarchyProjection();
+
     // Releasing any prior grouped projection: switching grouped->flat must not retain the stale
     // group observable/cache. They are rebuilt from scratch by RebuildGrouped on the next GroupBy,
     // so holding them here only leaks the previous grouping (and its cached ShapedGroups).
@@ -1157,6 +1226,9 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     InvalidateShapingState();
     // A grouped projection does not use the flat incremental fast-path.
     ClearFlatRowIdentityTracking();
+    // Plain grouping: no hierarchy axis, so any adapter a previous grouped+hierarchical projection
+    // left behind must go before the group slices are rebuilt from the flat rows.
+    ReleaseHierarchyProjection();
     // Sorts requested before GroupBy establish the group order. Sorts requested after GroupBy
     // are applied per bucket below, preserving the group order while sorting within each group.
     ApplySort(rows, -1, m_pipeline.GroupOrder());
@@ -1305,8 +1377,411 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     RaiseProjectionRebuilt();
 }
 
-ShapingHelpers::ShapingPipeline::SortedInsertPlacement ShapedItemsSource::SortedInsertPlacementFor(winrt::IInspectable const& item) const
+void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& rows)
 {
+    // `rows` arrives UNFILTERED: the filter runs inside the index build, which needs the whole
+    // parent chain to keep a match's ancestors. Sorting the whole list once, then bucketing it by
+    // parent stably, sorts every sibling set among its own peers.
+    ApplySort(rows);
+
+    // May throw on invalid data. Nothing has been mutated yet, so the previous projection stays
+    // intact.
+    auto index = BuildHierarchyIndex(rows);
+
+    // Same reasoning as RebuildGrouped: the presented rows are materialized by an adapter, not by
+    // the retained layer-1 state, so leaving that state live would let the in-place path re-sort a
+    // projection that is no longer the one being shown.
+    InvalidateShapingState();
+    ClearFlatRowIdentityTracking();
+
+    // Releasing any prior grouped projection, for the same reason RebuildFlat does: switching
+    // grouped+hierarchical -> hierarchical must not leave the stale group observable live, or the
+    // grouped adapter would keep publishing headers over a row axis that no longer has any.
+    if (m_groupSource)
+    {
+        if (m_groupedAdapter)
+        {
+            m_groupedAdapter->DetachSourceQuietly();
+        }
+        m_groupSource.Clear();
+    }
+    m_groupCache.clear();
+    m_hierarchyGroups.clear();
+    m_rootBucketIndex.clear();
+
+    // Ungrouped: one segment spanning every root.
+    PublishHierarchyIndex(std::move(index), {});
+
+    // Rows() stays the flat shaped projection. Under a hierarchy the presented row axis is the
+    // adapter's ItemsSourceView, but unlike grouping the VISIBLE row set is itself the meaningful
+    // flat reading -- every visible row is a real data row -- so mirroring the adapter's entries is
+    // both correct and what a consumer expects Rows() to say.
+    //
+    // This is a SNAPSHOT taken at rebuild time. A later expand/collapse splices the adapter's
+    // entries without rebuilding the projection, so Rows() does not track expansion between
+    // rebuilds. The presented row axis (the adapter's view) always does, which is what the control
+    // and the row-metadata provider consume; Rows() is the shaped-data reading, and a consumer
+    // needing live visible rows must read the adapter.
+    m_rows.ReplaceAll(VisibleHierarchicalRows());
+
+    m_kind = ProjectionKind::Hierarchical;
+    // Not a grouped projection: there are no header rows, so a consumer asking "is this grouped"
+    // must hear no, or it will look for a GroupedEntry at every index.
+    m_projectedAsGrouped = false;
+    RaiseProjectionRebuilt();
+}
+
+// Both axes. The row stream is:
+//
+//   [Header A] [rootA1] [rootA1's expanded subtree...] [rootA2] ... [Header B] [rootB1] ...
+//
+// The group key is applied to the ROOTS only. A descendant is never re-bucketed: its depth is what
+// makes it a descendant, and a row cannot simultaneously be at depth 3 under its parent and at
+// depth 0 under a header. So headers exist at the top level and nowhere else, which is also what a
+// user means by "group the tree". Under a filter, a context root is bucketed like any other root.
+void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows)
+{
+    // Every sibling set below the roots is sorted by the full sort, exactly as when ungrouped.
+    ApplySort(rows);
+    auto index = BuildHierarchyIndex(rows);
+
+    // Sorts declared BEFORE GroupBy establish the group order; sorts declared after are applied
+    // within each bucket below. Identical split to RebuildGrouped, applied to the ROOTS.
+    auto roots = index->Roots;
+    ApplySort(roots, -1, m_pipeline.GroupOrder());
+
+    std::vector<ShapingHelpers::KeyedBucket> keyedBuckets;
+    wchar_t const* degradeReason = nullptr;
+    const bool grouped = ShapingHelpers::BucketizeToGroups(
+        roots,
+        [this](winrt::IInspectable const& item) -> winrt::IInspectable
+        {
+            try { return m_groupSelector(item); }
+            catch (...) { return nullptr; }
+        },
+        [this](winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason)
+        {
+            return TryGetGroupIdentity(key, identity, reason);
+        },
+        [this](winrt::IInspectable const& existingKey, winrt::IInspectable const& newKey)
+        {
+            return m_groupIdentitySelector || RowIdentity::GroupKeysEqual(existingKey, newKey);
+        },
+        keyedBuckets,
+        degradeReason);
+
+    if (!grouped)
+    {
+        // Same fail-fast contract as RebuildGrouped: an unusable group identity is a caller bug,
+        // and silently flattening would ship an app whose grouping mysteriously does nothing.
+        MUX_ASSERT_MSG(false,
+            L"GroupBy key selector produced an invalid group identity over a hierarchical source "
+            L"(empty, non-string, throwing, or two distinct group keys collapsing to the same "
+            L"identity without a groupIdentitySelector opt-in).");
+        LogIdentityProjectionDisabled(degradeReason);
+        winrt::hstring message = Diagnostic(L"GroupBy key selector produced an invalid group identity");
+        if (degradeReason)
+        {
+            message = message + L": " + winrt::hstring{ degradeReason };
+        }
+        throw winrt::hresult_invalid_argument(message);
+    }
+
+    // Roots in final presentation order: bucket by bucket, sorted within each. Contiguity is
+    // load-bearing -- the adapter walks one segment per bucket (so a root's sibling position is per
+    // bucket), and the re-slice below finds each bucket's rows by cutting the adapter's entries at
+    // every depth-0 row, which only works if a bucket's roots are adjacent.
+    std::vector<winrt::IInspectable> orderedRoots;
+    orderedRoots.reserve(roots.size());
+    std::vector<size_t> segments;
+    segments.reserve(keyedBuckets.size());
+    std::unordered_map<void*, size_t> rootBucketIndex;
+
+    for (size_t bucketIndex = 0; bucketIndex < keyedBuckets.size(); ++bucketIndex)
+    {
+        auto& bucket = keyedBuckets[bucketIndex];
+        ApplySort(bucket.Items, m_pipeline.GroupOrder(), -1);
+        for (auto const& root : bucket.Items)
+        {
+            // Keyed by raw COM pointer, not by identity string: this map is consulted once per
+            // depth-0 entry during the re-slice, and the entries ARE the same objects.
+            rootBucketIndex[winrt::get_abi(root)] = bucketIndex;
+            orderedRoots.push_back(root);
+        }
+        segments.push_back(bucket.Items.size());
+    }
+
+    // The bucket-ordered roots replace the index's own root order before it is handed over.
+    index->Roots = std::move(orderedRoots);
+
+    InvalidateShapingState();
+    ClearFlatRowIdentityTracking();
+    m_rootBucketIndex = std::move(rootBucketIndex);
+    // Stale slices must not be re-sliced by the publish below; they are rebuilt right after it.
+    m_hierarchyGroups.clear();
+
+    PublishHierarchyIndex(std::move(index), std::move(segments));
+
+    if (!m_groupSource)
+    {
+        m_groupSource = winrt::single_threaded_observable_vector<winrt::IInspectable>();
+    }
+
+    // One ShapedGroup per bucket, reusing the cache on the same terms as RebuildGrouped so a
+    // reshape does not churn the object a group publishes as Group().
+    std::vector<winrt::IInspectable> groups;
+    groups.reserve(keyedBuckets.size());
+    std::unordered_set<winrt::hstring> liveKeys;
+    m_hierarchyGroups.reserve(keyedBuckets.size());
+
+    for (auto const& bucket : keyedBuckets)
+    {
+        auto const& keyString = bucket.Identity;
+
+        winrt::com_ptr<ShapedGroup> group;
+        auto cacheIt = m_groupCache.find(keyString);
+        if (cacheIt != m_groupCache.end())
+        {
+            group = cacheIt->second;
+        }
+        else
+        {
+            group = winrt::make_self<ShapedGroup>(bucket.Key, bucket.Identity);
+            m_groupCache.emplace(keyString, group);
+        }
+
+        group->GroupKey(bucket.Identity);
+        // Items are deliberately NOT the bucket's roots: a group's rows are its roots PLUS every
+        // currently-visible descendant of those roots. ResliceGroupsFromHierarchy fills them in
+        // from the adapter, which is the only thing that knows what is expanded.
+        m_hierarchyGroups.push_back(group);
+        groups.push_back(group.as<winrt::IInspectable>());
+        liveKeys.insert(keyString);
+    }
+
+    for (auto it = m_groupCache.begin(); it != m_groupCache.end();)
+    {
+        if (liveKeys.find(it->first) == liveKeys.end())
+        {
+            it = m_groupCache.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    // Fill the groups BEFORE the grouped adapter is attached, so its subscribe + synchronous
+    // rebuild inside Source(value) sees finished groups and publishes one coherent Reset -- the
+    // same ordering constraint RebuildGrouped documents.
+    ResliceGroupsFromHierarchy();
+
+    if (!m_groupedAdapter)
+    {
+        m_groupedAdapter = std::make_shared<GroupedSourceAdapter>();
+    }
+    else
+    {
+        m_groupedAdapter->DetachSourceQuietly();
+    }
+
+    m_groupSource.ReplaceAll(groups);
+    m_groupedAdapter->Source(m_groupSource);
+
+    // Rows() is the flat shaped projection: every visible row, in group order, headers excluded.
+    m_rows.ReplaceAll(VisibleHierarchicalRows());
+
+    m_kind = ProjectionKind::GroupedHierarchical;
+    // Grouped IS true here: the presented axis is the grouped adapter's, so it carries header rows
+    // and a consumer must look for GroupedEntry.
+    m_projectedAsGrouped = true;
+    RaiseProjectionRebuilt();
+}
+
+std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarchyIndex(std::vector<winrt::IInspectable> const& sortedRows)
+{
+    auto index = std::make_shared<ShapingHelpers::ParentKeyIndex>();
+
+    ShapingHelpers::ParentKeyFilter filter;
+    if (m_pipeline.HasFilter())
+    {
+        filter = [this](winrt::IInspectable const& item) { return m_pipeline.PassesFilter(item); };
+    }
+
+    winrt::hstring error;
+    if (!ShapingHelpers::BuildParentKeyIndex(sortedRows, m_keySelector, m_parentKeySelector, filter, *index, error))
+    {
+        throw winrt::hresult_invalid_argument(Diagnostic(error));
+    }
+
+    return index;
+}
+
+void ShapedItemsSource::PublishHierarchyIndex(std::shared_ptr<ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments)
+{
+    if (!m_hierarchicalAdapter)
+    {
+        m_hierarchicalAdapter = std::make_shared<HierarchicalSourceAdapter>();
+    }
+
+    // Drop the previous projection callback before the publish: it is re-established below only
+    // when this projection actually needs it, and a stale one would re-slice groups that this
+    // rebuild is in the middle of replacing.
+    m_hierarchicalAdapter->ProjectionChanged(nullptr);
+
+    // A re-declared relation is a different tree: its intent starts from the collapsed baseline.
+    if (std::exchange(m_parentRelationRedeclared, false))
+    {
+        m_hierarchicalAdapter->ResetIntentQuietly();
+    }
+
+    m_hierarchicalAdapter->SetIndex(std::move(index), std::move(rootSegments));
+
+    // Under grouping the adapter's entries are NOT the presented axis -- the grouped adapter's
+    // are -- so a node toggle, which splices the hierarchy adapter in place, would otherwise be
+    // invisible. This callback is what carries it across to the groups. It is the adapter's
+    // COHERENT edge rather than the raw vector notification: a multi-row splice raises the latter
+    // once per row and from inside the mutation, so a re-slice driven by it would read the
+    // descriptor side-table mid-repair and would do it N times.
+    if (m_groupSelector)
+    {
+        std::weak_ptr<ShapedItemsSource> weakThis = weak_from_this();
+        m_hierarchicalAdapter->ProjectionChanged(
+            [weakThis]()
+            {
+                if (auto strongThis = weakThis.lock())
+                {
+                    strongThis->ResliceGroupsFromHierarchy();
+                }
+            });
+    }
+}
+
+void ShapedItemsSource::ResetHierarchyFilterOverlay()
+{
+    // A changed filter is a new question: context rows the user collapsed under the previous one
+    // go back to the default (expanded) for the new one. The next refresh publishes.
+    if (m_hierarchicalAdapter)
+    {
+        m_hierarchicalAdapter->ResetFilterOverlay();
+    }
+}
+
+void ShapedItemsSource::ReleaseHierarchyProjection()
+{
+    if (m_hierarchicalAdapter)
+    {
+        // Callback first: nothing below may drive a re-slice on the way out.
+        m_hierarchicalAdapter->ProjectionChanged(nullptr);
+        m_hierarchicalAdapter->ClearIndex();
+
+        // Inert from here on: a row-metadata provider still bound to it until the swap must not
+        // act on intent recorded against the retracted relation.
+        m_hierarchicalAdapter->ResetIntentQuietly();
+
+        // Drop the engine's reference so the last visible rows (and their descriptors) are not kept
+        // alive by a projection that is no longer presented. The previous row-metadata provider
+        // shares ownership, so the adapter stays valid for anything still bound to it until the
+        // projection swap replaces that provider; the next declaration creates a fresh adapter.
+        m_hierarchicalAdapter.reset();
+    }
+
+    m_hierarchyGroups.clear();
+    m_rootBucketIndex.clear();
+}
+
+std::vector<winrt::IInspectable> ShapedItemsSource::VisibleHierarchicalRows() const
+{
+    std::vector<winrt::IInspectable> visibleRows;
+    if (!m_hierarchicalAdapter)
+    {
+        return visibleRows;
+    }
+
+    if (auto const entries = m_hierarchicalAdapter->Entries())
+    {
+        const int32_t count = entries.Count();
+        visibleRows.reserve(static_cast<size_t>(count > 0 ? count : 0));
+        for (int32_t i = 0; i < count; ++i)
+        {
+            visibleRows.push_back(entries.GetAt(i));
+        }
+    }
+    return visibleRows;
+}
+
+void ShapedItemsSource::ResliceGroupsFromHierarchy()
+{
+    if (!m_hierarchicalAdapter || m_hierarchyGroups.empty())
+    {
+        return;
+    }
+
+    // Setting a group's Items notifies the grouped adapter, which rebuilds; that rebuild must not
+    // re-enter here. Plain bool, matching the adapters: this whole stack is UI-thread-affine.
+    if (m_reslicingGroups)
+    {
+        return;
+    }
+    m_reslicingGroups = true;
+    auto guard = wil::scope_exit([this]() noexcept { m_reslicingGroups = false; });
+
+    std::vector<std::vector<winrt::IInspectable>> slices(m_hierarchyGroups.size());
+    // Roots per bucket, tracked separately from the slice size: the slice also carries every
+    // visible descendant, and a header must count the children it owns, not the rows it spans.
+    std::vector<int32_t> rootCounts(m_hierarchyGroups.size(), 0);
+
+    auto const entries = m_hierarchicalAdapter->Entries();
+    const int32_t count = entries ? entries.Count() : 0;
+
+    // One pass. Every depth-0 row opens the bucket it was assigned at build time and every row
+    // after it belongs to that bucket until the next depth-0 row -- which is exactly the adapter's
+    // own emission order, a root immediately followed by its visible subtree.
+    size_t currentBucket = 0;
+    bool haveBucket = false;
+    for (int32_t i = 0; i < count; ++i)
+    {
+        auto const* const node = m_hierarchicalAdapter->TryGetNodeRow(i);
+        if (!node)
+        {
+            continue;
+        }
+
+        if (node->Depth == 0)
+        {
+            auto const it = m_rootBucketIndex.find(winrt::get_abi(node->Item));
+            if (it == m_rootBucketIndex.end())
+            {
+                // A root the bucket map does not know. Only reachable if the source mutated
+                // between the bucketize and this pass, in which case a full rebuild is already
+                // queued; drop this subtree rather than charge it to the previous bucket.
+                haveBucket = false;
+                continue;
+            }
+            currentBucket = it->second;
+            haveBucket = true;
+            if (currentBucket < rootCounts.size())
+            {
+                ++rootCounts[currentBucket];
+            }
+        }
+
+        if (haveBucket && currentBucket < slices.size())
+        {
+            slices[currentBucket].push_back(node->Item);
+        }
+    }
+
+    for (size_t i = 0; i < m_hierarchyGroups.size(); ++i)
+    {
+        // Count before items: SetItems notifies the grouped adapter, which re-mints the header
+        // entry, and the header must never be built from a stale count.
+        m_hierarchyGroups[i]->GroupChildCount(rootCounts[i]);
+        m_hierarchyGroups[i]->SetItems(slices[i]);
+    }
+}
+
+ShapingHelpers::ShapingPipeline::SortedInsertPlacement ShapedItemsSource::SortedInsertPlacementFor(winrt::IInspectable const& item) const{
     return m_pipeline.SortedInsertPlacementFor(
         item,
         m_rows ? m_rows.Size() : 0,
