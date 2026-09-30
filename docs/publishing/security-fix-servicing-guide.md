@@ -72,8 +72,14 @@ themselves are in [Phase 2](#phase-2-at-disclosure-publish-the-fix).
 If you are unsure whether a file is public, check whether it exists on `origin/release/3.0-stable`:
 
 ```powershell
-git fetch origin release/3.0-stable
-git cat-file -e origin/release/3.0-stable:path/to/file.cpp 2>$null; if ($LASTEXITCODE -eq 0) { "public" } else { "internal-only" }
+$branch = 'release/3.0-stable'
+$file   = 'path/to/file.cpp'
+
+git fetch origin "+refs/heads/${branch}:refs/remotes/origin/${branch}"
+if ($LASTEXITCODE -ne 0) { throw "Could not fetch origin/$branch. Resolve this before classifying the file." }
+
+git cat-file -e "origin/${branch}:${file}" 2>$null
+if ($LASTEXITCODE -eq 0) { "public" } else { "internal-only" }
 ```
 
 ## Phase 1, during embargo: land the fix internally
