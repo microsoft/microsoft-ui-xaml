@@ -24,6 +24,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <TextBlock Text="Context menus" FontSize="18" />
         <ScrollViewer Grid.Row="1" MaxHeight="180"
@@ -72,6 +73,12 @@
         </ScrollViewer>
         <tv:TableView x:Name="Table" Grid.Row="2" IsReadOnly="False"
                       AutomationProperties.Name="Context menu table" />
-        <TextBlock x:Name="Status" Grid.Row="3" TextWrapping="Wrap" />
+        <StackPanel Grid.Row="3" Spacing="4">
+            <TextBlock Text="Cell actions: right-click Name to use a bound value; City or Score to use Item + Column."
+                       TextWrapping="Wrap" />
+            <TextBlock x:Name="ActionResult" TextWrapping="Wrap"
+                       AutomationProperties.LiveSetting="Polite" />
+        </StackPanel>
+        <TextBlock x:Name="Status" Grid.Row="4" TextWrapping="Wrap" />
     </Grid>
 </Page>
