@@ -27,6 +27,15 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
     hstring GetLocalizedControlTypeCore();
 
+    // Body navigation is two-level, so a cell is a tab stop only while the cursor is drilled into
+    // its row (TableViewRow::SetCellLevelInternal). The base peer derives both of these from
+    // IsTabStop, which would make a cell report itself unfocusable - and make SetFocus() throw
+    // "Target element cannot receive focus" - whenever the cursor happened to be at row level.
+    // A cell is ALWAYS a valid focus target for automation; the gate is a Tab-order policy, not a
+    // focusability one, so these two restate that and SetFocusCore drills the row in first.
+    bool IsKeyboardFocusableCore();
+    void SetFocusCore();
+
     // IGridItemProvider — per-cell coordinates in the owning TableView.
     int32_t Row();
     int32_t Column();

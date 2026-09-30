@@ -332,36 +332,93 @@ bool TableViewRow::FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::F
             cellFE.StartBringIntoView();
         }
 
+        // Drill in BEFORE focusing: at row level the cells are not tab stops, and
+        // CUIElement::IsFocusable requires IsTabStop even for a programmatic Focus().
+        SetCellLevelInternal(true);
+
         if (cell.Focus(state))
         {
             return true;
         }
+
+        // The cell refused (collapsed column, disabled subtree, a focus operation already in
+        // flight). Undo the drill-in rather than leaving the row in a state where neither level is
+        // a tab stop, which would strand the body with no reachable focus target at all.
+        SetCellLevelInternal(false);
     }
 
-    return FocusFallbackCellInternal(state);
+    return Focus(state);
 }
 
-// Focusing the ROW is no longer possible: the default style sets IsTabStop="False", and
-// CUIElement::IsFocusable requires IsTabStop even for a programmatic Focus(). Every old
-// "fall back to the container" path therefore has to fall back to a CELL of this row.
+// ----- Two-level focus: ROW level vs CELL level -----
 //
-// Passing self as the entry origin makes ResolveFocusEntryCell treat the move as coming from
-// within the table, which pins it to THIS row and reuses the clamped remembered column - exactly
-// the semantics OnRowGettingFocus already applied to a pointer press.
-bool TableViewRow::FocusFallbackCellInternal(winrt::FocusState state)
+// The body is ONE tab stop, and inside it focus is either on the ROW or on one of its CELLS. Both
+// must be focusable, but they must never BOTH be reachable by Tab at the same time, or the body
+// grows a second stop. The framework leaves no declarative way to express that, so the row owns it
+// as state:
+//
+//   CFocusManager::GetNextTabStop step #1 searches the CHILDREN of the focused element before it
+//   looks anywhere else, and it does NOT consult TabFocusNavigation while doing so
+//   (GetFirstFocusableElementInternal ignores the navigation mode entirely). So a focused row with
+//   focusable cells under it hands the next Tab to its own first cell no matter what mode is set
+//   on the row or on PART_CellsHost. The reverse walk has the mirror problem: Shift+Tab out of the
+//   cells host stops on the nearest focusable ancestor, which is the row - that is the phantom
+//   third stop this control had before (forward saw 2, reverse saw 3).
+//
+// Gating both ends removes both: at ROW level the cells are not tab stops, so Tab from the row
+// leaves the body; at CELL level the row is not a tab stop, so Shift+Tab from a cell leaves the
+// body too. Forward and reverse see the same two stops.
+//
+// Cells keep IsTabStop(true) as their own construction default in TableViewCell - the gate is
+// policy and lives here, on the row, not in the cell primitive.
+void TableViewRow::SetCellLevelInternal(bool isCellLevel)
 {
-    auto const owner = GetOwningTableView();
-    if (!owner)
-    {
-        return false;
-    }
+    m_isCellLevel = isCellLevel;
+    ApplyFocusLevelInternal();
+}
 
-    winrt::DependencyObject const selfObject = *this;
-    if (auto const target = winrt::get_self<TableView>(owner)->ResolveFocusEntryCell(*this, selfObject))
+// Re-applies the current level to the live cells. Called after any rebuild, because new cell
+// wrappers arrive with IsTabStop(true) and would otherwise re-open the row-level Tab leak.
+void TableViewRow::ApplyFocusLevelInternal()
+{
+    // Order by DIRECTION. Focus can still be sitting on whichever element is about to lose its tab
+    // stop, so the incoming target is always made focusable BEFORE the outgoing one is cleared -
+    // never the other way round, which would leave this row with no focusable element at all for
+    // an instant.
+    if (m_isCellLevel)
     {
-        return target.Focus(state);
+        SetCellsTabStopInternal(true);
+        IsTabStop(false);
     }
-    return false;
+    else
+    {
+        IsTabStop(true);
+        SetCellsTabStopInternal(false);
+    }
+}
+
+void TableViewRow::SetCellsTabStopInternal(bool isTabStop)
+{
+    if (auto const host = m_cellsHost.get())
+    {
+        auto const children = host.Children();
+        const uint32_t size = children.Size();
+        for (uint32_t i = 0; i < size; ++i)
+        {
+            if (auto const child = children.GetAt(i))
+            {
+                child.IsTabStop(isTabStop);
+            }
+        }
+    }
+}
+
+// Makes the row a tab stop without touching its cells. Used by the pop-out path, which has to give
+// the row a valid focus target BEFORE it moves focus, and only then take the cells out of the tab
+// order - clearing IsTabStop on the cell that currently holds focus first would be the wrong order.
+void TableViewRow::EnableRowFocusInternal()
+{
+    IsTabStop(true);
 }
 
 void TableViewRow::OnRowGettingFocus(
@@ -375,29 +432,21 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
-    // The row container is no longer focusable (IsTabStop="False"), so a Tab entry aims at a CELL,
-    // not at the row. Accept either: the row itself (a host that re-templates the row focusable
-    // again, and the group-header-less legacy path) or anything inside this row. GettingFocus
-    // bubbles, so the row's handler already sees focus aimed at its own descendants.
-    const bool aimedAtThisRow =
-        newFocus == selfObject ||
-        SharedHelpers::IsAncestor(newFocus, selfObject, false /* checkVisibility */);
-    if (!aimedAtThisRow)
+    // GettingFocus bubbles, so this handler sees focus aimed at the row itself and at anything
+    // inside it. Only the row CONTAINER is interesting now: body entry is a row-level landing, and
+    // anything aimed at a descendant already names the exact cell it wants.
+    if (newFocus != selfObject)
     {
         return;
     }
 
+    // Tab / Shift+Tab only. Arrow navigation, an edit-close restore and a pointer press all name
+    // the row they mean; redirecting those would move the user somewhere they did not ask for.
     auto const direction = args.Direction();
     const bool isTabEntry =
         direction == winrt::FocusNavigationDirection::Next ||
         direction == winrt::FocusNavigationDirection::Previous;
-
-    // Only a TAB entry needs resolving. Every other move that aims inside the row already names
-    // the exact cell it wants - arrow navigation between rows, an edit-close restore, a pointer
-    // press on a specific cell - and redirecting those would move the user to a column they did
-    // not ask for. (Focus aimed at the row container is still resolved whatever the direction,
-    // because a bare container target names no cell at all.)
-    if (!isTabEntry && newFocus != selfObject)
+    if (!isTabEntry)
     {
         return;
     }
@@ -417,38 +466,40 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
-    // Focus leaving this row must not be pulled back into a cell, or Tab can never exit the table.
-    // Only focus arriving from outside the row is an entry that wants a cell. This is also what
-    // lets Tab move from a cell into in-cell interactive content without being yanked back.
+    // Focus LEAVING this row must never be pulled back, or Tab can never exit the table. Only
+    // focus arriving from outside the row is an entry that wants resolving.
     auto const oldFocus = args.OldFocusedElement();
-    if (isTabEntry &&
-        (oldFocus == selfObject || SharedHelpers::IsAncestor(oldFocus, selfObject, false /* checkVisibility */)))
+    if (oldFocus == selfObject ||
+        SharedHelpers::IsAncestor(oldFocus, selfObject, false /* checkVisibility */))
     {
         return;
     }
 
-    // A pointer press names the row under the pointer. PART_CellsHost is left-aligned, so a press
-    // to the right of the last column resolves no cell; OnPointerPressed now resolves that case
-    // itself through FocusFallbackCellInternal, but a host that re-templates the row focusable can
-    // still route a press here. The remembered-cursor restore below is for focus ENTERING the
-    // table by keyboard or programmatically; applying it to a press would pull focus to the
-    // remembered row instead of the row that was clicked. Reporting this row as the entry origin
-    // keeps the column restore while pinning the row to the pressed one.
-    auto const entryOrigin = args.FocusState() == winrt::FocusState::Pointer
-        ? selfObject
-        : oldFocus;
-
-    auto const target = ownerImpl->ResolveFocusEntryCell(*this, entryOrigin);
-    if (!target || target.try_as<winrt::DependencyObject>() == newFocus)
+    // Tab into the body lands on the FIRST row in the repeater, because the body is one tab stop.
+    // Redirect that to the row the user left, mirroring what OnHeaderHostGettingFocus does for the
+    // header band.
+    auto const target = ownerImpl->ResolveFocusEntryRow(*this, oldFocus);
+    if (!target || target == *this)
     {
-        // Already aimed at the cell we would have chosen; nothing to redirect.
         return;
     }
+
+    auto const targetObject = target.try_as<winrt::DependencyObject>();
+    if (!targetObject || targetObject == newFocus)
+    {
+        return;
+    }
+
+    // The remembered row may still be parked at cell level from the last visit. Body entry is
+    // always a ROW-level landing, so put it back before handing focus over - otherwise the row is
+    // not a tab stop and TrySetNewFocusedElement has nothing valid to aim at.
+    winrt::get_self<TableViewRow>(target)->SetCellLevelInternal(false);
+    ownerImpl->SetCellCursorActiveInternal(false);
 
     // TrySetNewFocusedElement is refused during some focus operations (a programmatic move already
-    // in flight, for one). Failing is fine - focus simply stays on the element XAML aimed at,
-    // which is still a cell of this row.
-    args.TrySetNewFocusedElement(target);
+    // in flight, for one). Failing is fine - focus simply stays on the row XAML aimed at, which is
+    // still a row-level landing in the body.
+    args.TrySetNewFocusedElement(targetObject);
 }
 
 void TableViewRow::OnRowGotFocus()
@@ -535,6 +586,11 @@ void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
         // inside the double-click interval would otherwise turn the next single click into an
         // edit, and the stale trackers keep the previous item and column alive.
         ResetPressState();
+
+        // A row recycled while the cursor was drilled into its cells would come back out of the
+        // pool with IsTabStop cleared and its cells still tab stops - i.e. a row that Tab cannot
+        // reach whose cells add a second body stop. Body entry is always row level, so reset it.
+        m_isCellLevel = false;
 
         UpdateVisualState(false);
     }
@@ -673,18 +729,23 @@ void TableViewRow::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
     }
     if (pressedCell)
     {
+        // A press names a specific CELL, which is an explicit request for cell level - so drill in
+        // before focusing, the way Right does. Without this the cell is not a tab stop and
+        // therefore not focusable at all, and every click would silently demote to the row.
+        SetCellLevelInternal(true);
         if (!pressedCell.Focus(winrt::FocusState::Pointer))
         {
-            FocusFallbackCellInternal(winrt::FocusState::Pointer);
+            SetCellLevelInternal(false);
+            Focus(winrt::FocusState::Pointer);
         }
     }
     else
     {
-        // A press right of the last column resolves no cell. Focusing the row is not an option any
-        // more, so land on this row's remembered cell - which is what OnRowGettingFocus used to do
-        // for a pointer press, and keeps the press pinned to the row the user actually hit rather
-        // than teleporting focus to the remembered row somewhere else in the table.
-        FocusFallbackCellInternal(winrt::FocusState::Pointer);
+        // A press to the right of the last column resolves no cell. PART_CellsHost is
+        // left-aligned, so this is the ordinary "clicked the empty strip" case: land on the ROW,
+        // which is the body's row-level focus target.
+        SetCellLevelInternal(false);
+        Focus(winrt::FocusState::Pointer);
     }
 
     m_selectOnPointerRelease = true;
@@ -1048,6 +1109,10 @@ void TableViewRow::RebuildCells()
             winrt::get_self<TableView>(owningView)->PinFrozenColumnsForRow(*this);
         }
 
+        // Same reason as the rebuild path below: these wrappers came out of the recycle pool and
+        // carry whatever tab-stop state their previous row left on them.
+        ApplyFocusLevelInternal();
+
         RefreshGridLines();
         RefreshRowBackground();
         return;
@@ -1136,6 +1201,12 @@ void TableViewRow::RebuildCells()
     {
         winrt::get_self<TableView>(owningView)->PinFrozenColumnsForRow(*this);
     }
+
+    // Freshly generated cell wrappers arrive as tab stops (TableViewCell sets IsTabStop(true)), so
+    // the two-level gate has to be re-stamped or a row-level rebuild would silently re-open the
+    // "Tab from the row falls into its own first cell" leak. Re-applies the row's CURRENT level
+    // rather than forcing row level: a rebuild can run while the user is drilled into this row.
+    ApplyFocusLevelInternal();
 
     RefreshGridLines();
     RefreshRowBackground();
@@ -1468,9 +1539,15 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
                 ? winrt::FocusState::Programmatic
                 : editingElement.FocusState();
 
+            // An edit is opened from cell level and closes back to it, so make sure the cells are
+            // tab stops before aiming at one: an edit that outlived a row-level move would
+            // otherwise try to focus a cell the two-level gate has switched off.
+            SetCellLevelInternal(true);
+
             if (!cellWrapper.Focus(restoreState))
             {
-                FocusFallbackCellInternal(restoreState);
+                SetCellLevelInternal(false);
+                Focus(restoreState);
             }
         }
     }
