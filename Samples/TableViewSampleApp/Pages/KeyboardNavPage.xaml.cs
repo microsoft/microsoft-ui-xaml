@@ -46,7 +46,7 @@ namespace TableViewSampleApp.Pages;
 ///   * Selection stays row-scoped: a vertical arrow moves focus and selection
 ///     together in Single selection mode, while Left / Right raise no selection
 ///     change.
-///   * Column headers are focusable and Enter toggles sort, which raises a UIA
+///   * Column headers are focusable and Enter or Space toggles sort, which raises a UIA
 ///     notification.
 /// </summary>
 public sealed partial class KeyboardNavPage : Page
