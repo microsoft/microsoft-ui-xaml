@@ -851,6 +851,32 @@ private:
         const winrt::KeyRoutedEventArgs& args);
 
     bool TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args);
+    // Bare Left/Right on a focused column header: steps to the previous/next visible actionable
+    // header, clamping at the band's ends. Arrows stay inside the band; Tab is the only way
+    // between the header band and the body.
+    bool TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& args);
+    // Up/Down on a focused column header: clamped inside the band, never crossing into the body.
+    bool TryHandleHeaderVerticalKey(const winrt::KeyRoutedEventArgs& args);
+    // Moves focus to a visible header by visible-column index, stepping by `step` (0 = exact only)
+    // past headers that refuse focus. Returns the index actually focused, or -1.
+    int32_t FocusVisibleHeaderFrom(int32_t visibleIndex, int32_t step);
+    // Visible-column index of the header that currently has focus, or -1 when focus is elsewhere.
+    int32_t GetFocusedVisibleHeaderIndex() const;
+    // Header the band should be entered on: the remembered column (m_currentCellColumn) when it is
+    // actionable, else the nearest actionable header outward from it. -1 when none is actionable.
+    int32_t ResolveHeaderEntryIndex(const std::vector<winrt::FrameworkElement>& cells) const;
+    // Tab entry into the header band: redirects focus from the band's first header to the
+    // remembered column, and records the landing column so Tab onward into the body keeps it.
+    // The band is ONE tab stop (KeyboardNavigationMode::Once on PART_HeaderHost), so without the
+    // redirect every entry would land on column 0.
+    void OnHeaderHostGettingFocus(
+        const winrt::IInspectable& sender,
+        const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
+    void OnHeaderHostGotFocus(
+        const winrt::IInspectable& sender,
+        const winrt::RoutedEventArgs& args);
+    winrt::UIElement::GettingFocus_revoker m_headerHostGettingFocusRevoker{};
+    winrt::UIElement::GotFocus_revoker m_headerHostGotFocusRevoker{};
     // Enter / Space on a focused, sortable column header: the keyboard path to sorting.
     bool TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args);
     bool TryHandleHeaderSortKeyUp(const winrt::KeyRoutedEventArgs& args);
@@ -875,6 +901,10 @@ private:
     // Cell cursor snapshot for keys whose bubbling handler must ignore post-key live focus.
     int32_t m_navAnchorCellRow{ -1 };
     int32_t m_navAnchorCellColumn{ -1 };
+    // Same snapshot for the header band: built-in directional navigation can move header focus
+    // before the bubbling handler runs, so the header move is computed from the PRE-KEY header and
+    // re-asserted idempotently, exactly as the cell move is.
+    int32_t m_navAnchorHeaderColumn{ -1 };
     // The cell the keyboard cursor is on, in visible-column coordinates. Up/Down/PageUp/PageDown
     // preserve it, Left/Right move it, and entering the table from outside restores it. Kept as an
     // index rather than an element so it survives row recycling, which destroys cell elements on

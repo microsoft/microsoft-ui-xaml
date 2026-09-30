@@ -42,7 +42,7 @@
 
     <controls:SamplePresenter
         Header="Keyboard navigation + accessibility"
-        Description="An accessibility regression fixture. Focus moves ROW by ROW — Up / Down / Home / End / Page Up / Page Down move the focused row, and clicking a cell focuses that cell's whole row. Individual cells are not keyboard focusable, and Left / Right do not move between cells. Column headers are focusable and Enter toggles sort. Use the Options rail to drive the table through the states a Narrator or UI Automation pass needs — column shapes, grouping, editing, enablement, selection mode, the edit lifecycle, and live data mutation — without rebuilding the app."
+        Description="An accessibility regression fixture. Focus moves CELL by CELL — Left / Right step between cells in a row, Up / Down move between rows and keep the focused column, Home / End jump to the first and last cell in the row, and Ctrl+Home / Ctrl+End jump to the first and last cell in the table. Column headers are focusable and Enter toggles sort. Use the Options rail to drive the table through the states a Narrator or UI Automation pass needs — column shapes, grouping, editing, enablement, selection mode, the edit lifecycle, and live data mutation — without rebuilding the app."
         SourceCaption="KeyboardNavPage.xaml (excerpt)"
         SourceSnippet="KeyboardNav.xaml.txt"
         AdditionalSnippetCaption="KeyboardNavPage.xaml.cs (excerpt)"
@@ -65,7 +65,7 @@
                     IsClosable="False"
                     Severity="Informational"
                     Title="Keyboard entry and exit"
-                    Message="Focus the Before table button, then press Tab to enter the table and Tab again to leave it for the After table button. Shift+Tab walks the same boundary backwards. Inside the table, move with Up / Down / Home / End / Page Up / Page Down — focus moves a whole row at a time. Do not expect Tab or Left / Right to step between cells: there is no spreadsheet-style cell navigation here."
+                    Message="Focus the Before table button, then press Tab to enter the table and keep pressing Tab to leave it for the After table button. Shift+Tab walks the same boundary backwards. Inside the table, move with the arrow keys — Left and Right step between cells, Up and Down move between rows and keep the column. The body is a single tab stop, so Tab does not walk cell by cell."
                     MinHeight="104"/>
 
                 <Button
@@ -110,10 +110,10 @@
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Left">
                     <StackPanel Spacing="6" Margin="0,4,0,4">
-                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Entry and exit — Tab from Before table lands inside the table (column header or row); one more Tab leaves for After table. Shift+Tab reverses it. If you cannot Tab out, that is a focus trap and a bug."/>
-                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Focus granularity — the focused element is a ROW, never a cell. Cells report IsKeyboardFocusable = false, and calling SetFocus on a cell fails with 'Target element cannot receive focus.' That is today's behaviour, not a defect to file from this page."/>
-                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Arrow keys — Up and Down move the focused row. Home and End jump to the first and last row. Page Up and Page Down move roughly one viewport. Left and Right do nothing at all."/>
-                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Focus versus selection — in Single selection mode focus and selection move together, so one arrow press raises both a focus change and a selection change. Switch Selection mode to None to observe focus movement with no selection events."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Entry and exit — Tab from Before table walks the actionable column headers, then lands on a cell in the body; one more Tab leaves for After table. Shift+Tab reverses it. If you cannot Tab out, that is a focus trap and a bug."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Focus granularity — the focused element is a CELL. Cells are keyboard focusable and name themselves '{column}, {value}', so each move announces the column it landed in as well as the value."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Arrow keys — Left and Right move one cell within the row. Up and Down move between rows and keep the focused column, including on ragged column widths. Home and End jump to the first and last cell in the row; Ctrl+Home and Ctrl+End jump to the first and last cell in the table. Page Up and Page Down move roughly one viewport."/>
+                        <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Focus versus selection — selection stays row-scoped. In Single selection mode a vertical arrow moves focus and selection together, while Left and Right move focus within the same row and raise no selection change. Switch Selection mode to None to observe focus movement with no selection events."/>
                         <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Column headers — headers are focusable and Enter toggles sort. A correct sort raises a UI Automation notification such as 'Sorted by Department ascending.' The Status rail mirrors the last sort the control reported."/>
                         <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Table name — scenarios other than Unlabeled table expose AutomationProperties.Name = 'People grid'. Pick Unlabeled table to clear it and confirm what Narrator and Inspect fall back to when a table is unnamed."/>
                         <TextBlock Style="{StaticResource StatusReadoutValueStyle}" Text="Grouping — with Group by department on, group header rows appear and should expose the ExpandCollapse pattern; collapsing a group should remove its rows from the navigable set."/>

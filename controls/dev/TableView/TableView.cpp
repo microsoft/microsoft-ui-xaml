@@ -488,6 +488,11 @@ void TableView::OnApplyTemplate()
             }
             m_headerHostLoadedToken = {};
         }
+
+        // Auto-revoke would also release these on reassignment below, but the old band must not
+        // raise focus events into a control whose template has already been swapped.
+        m_headerHostGettingFocusRevoker.revoke();
+        m_headerHostGotFocusRevoker.revoke();
     }
     if (auto oldBodyScroller = m_bodyScroller.get())
     {
@@ -514,6 +519,42 @@ void TableView::OnApplyTemplate()
     // Defer ScrollViewer ancestor lookup until Loaded because template parts are not fully connected here.
     if (auto headerHost = m_headerHost.get())
     {
+        // ONE tab stop for the whole header band, matching Explorer's Details view and WinUI's own
+        // ListView / GridView / ItemsView, and matching the single body tab stop that
+        // TableViewRow::OnApplyTemplate already applies to PART_CellsHost. Two bands, one stop
+        // each, with Tab the only way between them and the arrows confined to the band they start
+        // in. Collapsing the stops costs no reach: every actionable column is one arrow away.
+        //
+        // Applied HERE rather than in the TableViewCellsPanel constructor deliberately. The panel
+        // is a layout primitive shared by both bands and by any app that re-templates the control;
+        // baking a focus policy into its constructor would make it the silent owner of a decision
+        // that belongs to the two hosts, and would leave two sources of truth once TableViewRow
+        // already sets the same property explicitly. Two explicit, commented call sites instead.
+        headerHost.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
+
+        // One tab stop means Tab lands on the band's FIRST focusable header. Redirect it to the
+        // remembered column, the same way TableViewRow redirects row entry to the remembered cell.
+        m_headerHostGettingFocusRevoker = headerHost.GettingFocus(winrt::auto_revoke,
+            [weakThis](winrt::IInspectable const& sender,
+                winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->OnHeaderHostGettingFocus(sender, args);
+                }
+            });
+
+        // Keeps the shared column cursor on whatever header actually took focus, including a
+        // pointer press, so Tab onward into the body enters at that column.
+        m_headerHostGotFocusRevoker = headerHost.GotFocus(winrt::auto_revoke,
+            [weakThis](winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    strongThis->OnHeaderHostGotFocus(sender, args);
+                }
+            });
+
         // Focus on an off-screen header must not scroll PART_HeaderScroller: header/body sync is
         // one-way, so the band would end up offset from the columns it labels.
         m_headerBringIntoViewRevoker = headerHost.BringIntoViewRequested(winrt::auto_revoke,
@@ -1578,13 +1619,17 @@ void TableView::RebuildHeaders()
             auto const headerCell = winrt::make<TableViewHeaderCell>(*this, column).as<winrt::Grid>();
             headerCell.Visibility(column.Visibility());
             // The header cell, not the gripper, is the keyboard target: column commands live here,
-            // and a bare focusable Grid is unnamed and Raw to a screen reader. Only a tab stop when
-            // focusing it can actually do something -- otherwise every column costs a Tab press for
-            // nothing.
+            // and a bare focusable Grid is unnamed and Raw to a screen reader.
+            //
+            // IsTabStop no longer buys this header its own Tab press - PART_HeaderHost is a single
+            // tab stop (KeyboardNavigationMode::Once), so the band costs ONE Tab and Left/Right
+            // move within it. What the flag decides now is whether the header is FOCUSABLE, and
+            // therefore whether arrow navigation can land on it: a header that can neither sort nor
+            // resize has nothing to activate, so it is skipped rather than made a dead stop.
             //
             // Actionable is resize OR sort: gating on resize alone left the common
             // CanUserSortColumns=true / CanUserResizeColumns=false case with a header that sorts on
-            // click but has no tab stop, so a keyboard-only user could never sort it.
+            // click but was not focusable, so a keyboard-only user could never sort it.
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             const bool headerIsActionable = headerIsResizable || headerIsSortable;

@@ -15,6 +15,18 @@
          column); the body is an ItemsRepeater of TableViewRow, each building its cells from
          the owning TableView's Columns. -->
     <Style TargetType="controls:TableView">
+        <!-- The control is a focus SCOPE, not a focus STOP: Tab must land on the header band and
+             then the body, never on the table element itself. Matches the ListView default style
+             (dxaml\xcp\dxaml\themes\generic.xaml), which sets IsTabStop="False" for the same
+             reason. Control.IsTabStop defaults to true, so this has to be stated.
+
+             Deliberately NOT paired with TabNavigation="Once". ListView sets that because it wants
+             exactly ONE stop for the whole control; TableView wants TWO - the header band and the
+             body - and Once here would swallow the body, leaving it unreachable by Tab. The two
+             stops come from the two bands owning their own scopes: KeyboardNavigationMode::Once on
+             PART_HeaderHost (TableView::OnApplyTemplate) and the same mode that ItemsRepeater sets
+             on itself for PART_RowsRepeater. -->
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceRowForegroundBrush}" />
@@ -92,6 +104,17 @@
     </Style>
 
     <Style TargetType="controls:TableViewRow">
+        <!-- The row is a focus CONTAINER, not a focus target: the CELL is what keyboard navigation
+             and UIA treat as focused. Control.IsTabStop defaults to true, which made the row a
+             valid park target for the REVERSE tab walk - Shift+Tab out of the cells host left the
+             PART_CellsHost scope and stopped on the nearest focusable ancestor, the row. That was
+             a phantom third stop (forward saw 2, reverse saw 3) and Narrator read the whole row's
+             composed cell join instead of a cell.
+
+             Note this also removes PROGRAMMATIC focusability: CUIElement::IsFocusable requires
+             IsTabStop. Every path that used to fall back to focusing the row now falls back to one
+             of its cells via TableViewRow::FocusFallbackCellInternal. -->
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />        
