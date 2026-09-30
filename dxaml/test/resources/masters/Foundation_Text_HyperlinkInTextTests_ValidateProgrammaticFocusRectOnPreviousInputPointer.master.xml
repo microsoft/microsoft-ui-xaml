@@ -62,7 +62,7 @@
                             </Mask>
                           </MaskBrush>
                         </wucSpriteVisual>
-                        <wucSpriteVisual SizeX="50" SizeY="10" BorderMode="Hard" OffsetX="75" OffsetY="95" OffsetZ="0">
+                        <wucSpriteVisual SizeX="52" SizeY="12" BorderMode="Hard" OffsetX="74" OffsetY="94" OffsetZ="0">
                           <MaskBrush>
                             <Source>
                               <ColorBrush Color="#ffffffff" />
@@ -96,7 +96,7 @@
                 <wucSpriteVisual SizeX="58.99" SizeY="0.8133" BorderMode="Soft" OffsetX="100" OffsetY="317" OffsetZ="0">
                   <ColorBrush Color="rgb {0.6784, 0.8471, 0.902}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="57" SizeY="13" BorderMode="Hard" OffsetX="101" OffsetY="305" OffsetZ="0">
+                <wucSpriteVisual SizeX="59" SizeY="15" BorderMode="Hard" OffsetX="100" OffsetY="304" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="rgb {0.6784, 0.8471, 0.902}" />

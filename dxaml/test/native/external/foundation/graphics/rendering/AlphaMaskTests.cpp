@@ -226,18 +226,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         // (tb6 in the test XAML). Thai stacks combining vowel marks above the base
         // glyph, and that glyph shaping/positioning got touched in newer OS builds,
         // so its rasterized mask (and thus its CRC) moved. Verified on real VMs: the
-        // older baseline (rs5_release) renders CRC 980343538, and newer builds
-        // (ge_current) render 1545754801. There's no JPEG here -- this is a real
+        // With the one-pixel glyph-mask padding, the older baseline (rs5_release)
+        // renders CRC 2367817773, and newer builds (ge_current) render 1838690936.
+        // There's no JPEG here -- this is a real
         // text-rendering difference, not decode rounding. (A couple of other surfaces in
         // this test also shift between OS builds; those already ship both CRC variants as
         // additive .master.png files, so only this one needs the per-OS swap.)
         if (IsOSBuildAtLeast(26200))
         {
-            TestServices::Utilities->SetDCompXmlVariable(L"TextMaskCRC", L"1545754801");
+            TestServices::Utilities->SetDCompXmlVariable(L"TextMaskCRC", L"1838690936");
         }
         else
         {
-            TestServices::Utilities->SetDCompXmlVariable(L"TextMaskCRC", L"980343538");
+            TestServices::Utilities->SetDCompXmlVariable(L"TextMaskCRC", L"2367817773");
         }
         WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree, false);
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 800));

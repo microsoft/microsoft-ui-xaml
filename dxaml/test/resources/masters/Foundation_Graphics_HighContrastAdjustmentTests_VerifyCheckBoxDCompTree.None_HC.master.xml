@@ -551,7 +551,7 @@
                             </Visual>
                           </Visual>
                         </Visual>
-                        <wucSpriteVisual SizeX="69" SizeY="10" BorderMode="Hard" OffsetX="28" OffsetY="10" OffsetZ="0">
+                        <wucSpriteVisual SizeX="71" SizeY="12" BorderMode="Hard" OffsetX="27" OffsetY="9" OffsetZ="0">
                           <MaskBrush>
                             <Source>
                               <ColorBrush Color="#ffffffff" />
@@ -1090,7 +1090,7 @@
                             </Visual>
                           </Visual>
                         </Visual>
-                        <wucSpriteVisual SizeX="71" SizeY="10" BorderMode="Hard" OffsetX="28" OffsetY="10" OffsetZ="0">
+                        <wucSpriteVisual SizeX="73" SizeY="12" BorderMode="Hard" OffsetX="27" OffsetY="9" OffsetZ="0">
                           <MaskBrush>
                             <Source>
                               <ColorBrush Color="#ffffffff" />
@@ -1144,7 +1144,7 @@
                 <wucSpriteVisual SizeX="20" SizeY="20" BorderMode="Soft" OffsetX="0" OffsetY="70" OffsetZ="0">
                   <ColorBrush Color="#ff000000" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="11" SizeY="8" BorderMode="Hard" OffsetX="5" OffsetY="76" OffsetZ="0">
+                <wucSpriteVisual SizeX="13" SizeY="10" BorderMode="Hard" OffsetX="4" OffsetY="75" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -1154,7 +1154,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="71" SizeY="10" BorderMode="Hard" OffsetX="28" OffsetY="74" OffsetZ="0">
+                <wucSpriteVisual SizeX="73" SizeY="12" BorderMode="Hard" OffsetX="27" OffsetY="73" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
