@@ -1152,11 +1152,19 @@ OrientedVirtualizingPanel::UpdateLogicalScrollData(
     wf::Size viewport = constraint;
     ScrollVector offset = m_ScrollData.get_Offset();
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::UpdateLogicalScrollDataStart(reinterpret_cast<uint64_t>(GetHandle()));
+#else
     TraceUpdateLogicalScrollDataBegin();
+#endif
 
     auto guard = wil::scope_exit([]()
     {
+#ifdef XAMLPROFILER_ENABLED
+        XamlProfilerTracing::UpdateLogicalScrollDataStop();
+#else
         TraceUpdateLogicalScrollDataEnd();
+#endif
     });
 
     IFC_RETURN(get_RealizedChildren(&spRealizedChildren));
@@ -1477,7 +1485,11 @@ OrientedVirtualizingPanel::AddContainerFromGenerator(
     _In_ BOOLEAN newlyRealized,
     _Inout_ BOOLEAN& visualOrderChanged)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::VirtualizationAddStart(pChild ? reinterpret_cast<uint64_t>(static_cast<UIElement*>(pChild)->GetHandle()) : 0);
+#else
     TraceVirtualizationAddBegin();
+#endif
     HRESULT hr = S_OK;
     ctl::ComPtr<wfc::IVector<xaml::UIElement*>> spChildren;
     ctl::ComPtr<xaml::IUIElement> spChildAtPosition;
@@ -1555,7 +1567,11 @@ OrientedVirtualizingPanel::AddContainerFromGenerator(
     }
 
 Cleanup:
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::VirtualizationAddStop();
+#else
     TraceVirtualizationAddEnd();
+#endif
     RRETURN(hr);
 }
 
@@ -1975,11 +1991,19 @@ OrientedVirtualizingPanel::CleanupContainers(
     _In_ xaml_controls::IItemsControl* pItemsControl,
     _In_ wf::Size constraint)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::VirtualizationCleanupStart(reinterpret_cast<uint64_t>(GetHandle()));
+#else
     TraceVirtualizationCleanupBegin();
+#endif
 
     auto guard = wil::scope_exit([]()
     {
+#ifdef XAMLPROFILER_ENABLED
+        XamlProfilerTracing::VirtualizationCleanupStop();
+#else
         TraceVirtualizationCleanupEnd();
+#endif
     });
 
     ctl::ComPtr<wfc::IVector<xaml::UIElement*>> spRealizedChildren;
