@@ -90,6 +90,43 @@ hstring TableViewCellAutomationPeer::GetLocalizedControlTypeCore()
     return __super::GetLocalizedControlTypeCore();
 }
 
+// A cell's IsTabStop is owned by the two-level navigation gate: it is true only while the keyboard
+// cursor is drilled into this cell's row. The base peer reads IsTabStop for both of the methods
+// below, which would make a cell report itself unfocusable - and make SetFocus() throw - purely
+// because the cursor happened to be resting at ROW level. Automation focusability is not a Tab
+// question, so both are answered here from the cell's own enabled/visible state instead.
+bool TableViewCellAutomationPeer::IsKeyboardFocusableCore()
+{
+    auto const cell = Owner().try_as<winrt::FrameworkElement>();
+    if (!cell || cell.Visibility() != winrt::Visibility::Visible || IsVirtualized())
+    {
+        return false;
+    }
+
+    // The cell wrapper is a Grid, so IsEnabled lives on the owning row, not on the cell.
+    auto const row = m_row.get();
+    return !row || row.IsEnabled();
+}
+
+void TableViewCellAutomationPeer::SetFocusCore()
+{
+    auto const row = m_row.get();
+    auto const cell = row ? GetRealizedCellFromRow(row) : nullptr;
+
+    if (row && cell)
+    {
+        // Drill the row in first, exactly as Right does: the cell is not focusable at all while the
+        // row is at row level, so a bare Focus() here would silently do nothing.
+        winrt::get_self<TableViewRow>(row)->SetCellLevelInternal(true);
+        if (cell.Focus(winrt::FocusState::Programmatic))
+        {
+            return;
+        }
+    }
+
+    __super::SetFocusCore();
+}
+
 hstring TableViewCellAutomationPeer::GetNameCore()
 {
     auto const row = m_row.get();

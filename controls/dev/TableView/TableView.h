@@ -212,22 +212,32 @@ public:
     int32_t GetRowCountInternal() const { return GetItemsSourceCount(); }
     winrt::ScrollViewer GetBodyScrollerInternal() const { return m_bodyScroller.get(); }
 
-    // Test hook for moving keyboard focus to a row; false for invalid indexes or before rows exist.
-    // Focus lands on the row's CURRENT CELL, which is what the control navigates in.
+    // Test hook for moving keyboard focus into the body at a row index; false for invalid indexes
+    // or before rows exist. Focus lands at whichever LEVEL the cursor is on - the ROW container by
+    // default, or that row's current cell once the user has drilled in with Right.
     bool FocusRow(int32_t index);
 
 
     // Moves keyboard focus to a cell by row index and VISIBLE column index, realizing and scrolling
     // the row into view first. A negative column means "keep the current one". Group-header rows
-    // have no cells and fall back to focusing the header container.
+    // have no cells and fall back to focusing the header container. Drills the cursor to CELL level.
     bool FocusCell(int32_t rowIndex, int32_t visibleColumnIndex);
 
-    // The cell a row should hand focus to when focus is aimed at the row CONTAINER. Used by
-    // TableViewRow's GettingFocus redirect: entering the table from outside returns to the cell the
-    // user left, while a move inside the table keeps the current column on the requested row.
-    // Null when the row has no realized visible cell, in which case the row keeps container focus.
-    winrt::UIElement ResolveFocusEntryCell(
+    // Moves keyboard focus to the row CONTAINER at a flat row index, realizing and scrolling it
+    // into view first, and leaves the cursor at ROW level. This is the body's entry level and what
+    // Up/Down move between while the user has not drilled into cells.
+    bool FocusRowContainer(int32_t rowIndex);
+
+    // The row that body entry should land on when focus is aimed at a row CONTAINER from outside
+    // the table. Used by TableViewRow's GettingFocus redirect: entering the table returns to the
+    // row the user left, while a move that started inside the table keeps the row it names.
+    winrt::TableViewRow ResolveFocusEntryRow(
         winrt::TableViewRow const& row, winrt::DependencyObject const& oldFocusedElement);
+
+    // Two-level cursor state. False = ROW level, true = CELL level. Owned here rather than on the
+    // row because it has to survive row recycling and follow the cursor from row to row.
+    bool IsCellCursorActiveInternal() const noexcept { return m_cellCursorActive; }
+    void SetCellCursorActiveInternal(bool active);
 
     void OnRowCellFocusChanged(winrt::TableViewRow const& row);
 
@@ -911,6 +921,46 @@ private:
     // every scroll.
     int32_t m_currentCellColumn{ 0 };
     int32_t m_currentCellRow{ -1 };
+
+    // Whether m_currentCellColumn means anything yet. It is an int that starts at 0, so "column 0"
+    // and "no column chosen" are the same value - and the header band needs to tell them apart, or
+    // any incidental write before the band is first entered silently relocates its entry point.
+    // False = the band enters on its FIRST focusable header; true = it honours the remembered
+    // column. Set by SetColumnCursorInternal, cleared by ResetColumnCursorInternal.
+    bool m_columnCursorEstablished{ false };
+    void SetColumnCursorInternal(int32_t visibleColumnIndex);
+    void ResetColumnCursorInternal();
+
+    // Two-level body navigation (W3C ARIA APG `treegrid`). False = the cursor is on the ROW, true =
+    // it has been drilled into that row's CELLS with Right. Drives which element Up/Down move
+    // between, whether Left steps a column or pops back out to the row, and which of the row / its
+    // cells is the body's single tab stop.
+    bool m_cellCursorActive{ false };
+    // The row currently drilled in, so the cursor can pop it back to row level when it moves on.
+    // Weak: rows are recycled on every scroll.
+    winrt::weak_ref<winrt::TableViewRow> m_cellLevelRow{ nullptr };
+
+    // Right on a focused ROW drills into its first cell; Left on the FIRST cell pops back out to
+    // the row. Never claims a group header - that is the handler below.
+    bool TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args);
+    // Left / Right on a focused GROUP HEADER collapse / expand it. A group header has no cells, so
+    // this is the explicit alternative to drilling in, not a variant of it.
+    bool TryHandleGroupHeaderExpandCollapseKey(const winrt::KeyRoutedEventArgs& args);
+    // Focuses an already-realized container at ROW level.
+    bool FocusRowContainerInternal(winrt::UIElement const& element);
+    // Shared realization + deferred-focus path behind FocusCell / FocusRowContainer.
+    bool FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel);
+    // Repeater index of the focused element when it is one of OUR row CONTAINERS, else -1.
+    int32_t GetFocusedRowContainerIndex() const;
+    // Repeater index of the focused GROUP HEADER, else -1.
+    int32_t GetFocusedGroupHeaderIndex() const;
+    // Pre-key snapshot of the row-level half of the two-level cursor, the counterpart to
+    // m_navAnchorCellRow / m_navAnchorCellColumn. -1 when focus was not on a row container.
+    int32_t m_navAnchorRowContainer{ -1 };
+    // Pre-key snapshot of the third possibility: focus on a group header. Mutually exclusive with
+    // both of the above.
+    int32_t m_navAnchorGroupHeader{ -1 };
+
     void OnPreviewKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);

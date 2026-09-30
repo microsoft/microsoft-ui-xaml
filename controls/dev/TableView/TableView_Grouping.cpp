@@ -399,7 +399,18 @@ void TableView::RestoreGroupHeaderFocusIfPending(winrt::hstring const& identity)
                 strongThis->m_pendingGroupFocusLayoutToken = {};
             }
 
-            strongThis->FocusGroupHeaderByIdentity(identity, focusState);
+            // This runs from a LAYOUT callback, where an escaping exception reaches no app handler
+            // and fails the process fast instead. FocusGroupHeaderByIdentity realizes a container
+            // and moves focus, both of which can throw when the projection has moved underneath a
+            // deferred restore.
+            try
+            {
+                strongThis->FocusGroupHeaderByIdentity(identity, focusState);
+            }
+            catch (...)
+            {
+                // Best-effort focus restore: the group can be gone by the time layout settles.
+            }
         });
 }
 
@@ -418,6 +429,18 @@ void TableView::FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt
 
     auto repeater = m_rowsRepeater.get();
     if (!repeater)
+    {
+        return;
+    }
+
+    // TryGetIndexForIdentity answers from a cached identity -> index map built over the METADATA
+    // provider's row list. The repeater's own ItemsSourceView is a separate view of the same
+    // source, and the two are not guaranteed to have absorbed a reshape in the same order, so a
+    // resolved index can still be past the end of what the repeater will accept.
+    // ItemsRepeater::GetOrCreateElement THROWS on an out-of-range index, and this runs from a
+    // deferred layout callback where a throw fails the process rather than surfacing to the app.
+    auto const sourceView = repeater.ItemsSourceView();
+    if (!sourceView || index >= sourceView.Count())
     {
         return;
     }

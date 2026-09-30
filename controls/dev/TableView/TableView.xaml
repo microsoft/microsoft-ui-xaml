@@ -104,17 +104,15 @@
     </Style>
 
     <Style TargetType="controls:TableViewRow">
-        <!-- The row is a focus CONTAINER, not a focus target: the CELL is what keyboard navigation
-             and UIA treat as focused. Control.IsTabStop defaults to true, which made the row a
-             valid park target for the REVERSE tab walk - Shift+Tab out of the cells host left the
-             PART_CellsHost scope and stopped on the nearest focusable ancestor, the row. That was
-             a phantom third stop (forward saw 2, reverse saw 3) and Narrator read the whole row's
-             composed cell join instead of a cell.
+        <!-- The row IS a focus target. Body navigation is TWO-LEVEL, following the W3C ARIA APG
+             `treegrid` pattern: focus enters the body on a ROW, Right drills into that row's first
+             CELL, and Left from the first cell comes back out to the ROW. So Control.IsTabStop's
+             default of true is what we want here and there is deliberately no setter overriding it.
 
-             Note this also removes PROGRAMMATIC focusability: CUIElement::IsFocusable requires
-             IsTabStop. Every path that used to fall back to focusing the row now falls back to one
-             of its cells via TableViewRow::FocusFallbackCellInternal. -->
-        <Setter Property="IsTabStop" Value="False" />
+             The row's IsTabStop is not static, though: TableViewRow::SetCellLevelInternal clears it
+             for exactly as long as the cursor is drilled into that row's cells, and restores it on
+             the way back out. That is what keeps the body ONE tab stop in BOTH directions - see the
+             comment on SetCellLevelInternal for why the framework's tab walk forces the trade. -->
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />        

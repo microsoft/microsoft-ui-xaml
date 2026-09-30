@@ -797,6 +797,12 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     // left over from the previous data set can never match an item from the new one.
     SetCurrentCell(nullptr, nullptr);
 
+    // The column cursor described the old column set. Resetting it puts the header band back to
+    // entering on its FIRST focusable header, which is what a table the user has not interacted
+    // with should do - a stale cursor would otherwise make the new band look like it had an
+    // unreachable first column.
+    ResetColumnCursorInternal();
+
     // New data set: clear the grow-only Auto accumulators so widths recompute from scratch. The next
     // table measure pass pulls measured widths from the by-then re-realized rows, so the outgoing rows'
     // stale content no longer pins the columns.
