@@ -13,8 +13,11 @@
 #include "TableViewToolTipHelpers.h"
 #include "ResourceAccessor.h"
 #include "TableViewCellAutomationPeer.properties.cpp"
+#include "TVDiag.h"
 
+#include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 TableViewCellAutomationPeer::TableViewCellAutomationPeer(
@@ -34,6 +37,10 @@ TableViewCellAutomationPeer::TableViewCellAutomationPeer(
     {
         m_column = winrt::make_weak(column);
     }
+    // Primes m_lastOwningTable / m_lastKnownRowIndex for IsVirtualized(). It has to happen while
+    // the row is still in the tree: once the row is recycled the index is unresolvable, and a
+    // client may not query VirtualizedItem until after that point.
+    std::ignore = GetRowIndex();
 }
 
 winrt::IInspectable TableViewCellAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
@@ -53,19 +60,22 @@ winrt::IInspectable TableViewCellAutomationPeer::GetPatternCore(winrt::PatternIn
         return *this;
     }
 
+    if (patternInterface == winrt::PatternInterface::VirtualizedItem && IsVirtualized())
+    {
+        return *this;
+    }
+
     return __super::GetPatternCore(patternInterface);
 }
 
 hstring TableViewCellAutomationPeer::GetClassNameCore()
 {
-    // The cell is a Border, so report a stable TableView cell class name.
     return L"TableViewCell";
 }
 
 winrt::AutomationControlType TableViewCellAutomationPeer::GetAutomationControlTypeCore()
 {
-    // DataItem lets Narrator read the composed cell name instead of a generic container.
-    return winrt::AutomationControlType::DataItem;
+    return winrt::AutomationControlType::Custom;
 }
 
 hstring TableViewCellAutomationPeer::GetLocalizedControlTypeCore()
@@ -80,11 +90,238 @@ hstring TableViewCellAutomationPeer::GetLocalizedControlTypeCore()
     return __super::GetLocalizedControlTypeCore();
 }
 
+// A cell's IsTabStop is owned by the two-level navigation gate: it is true only while the keyboard
+// cursor is drilled into this cell's row. The base peer reads IsTabStop for both of the methods
+// below, which would make a cell report itself unfocusable - and make SetFocus() throw - purely
+// because the cursor happened to be resting at ROW level. Automation focusability is not a Tab
+// question, so both are answered here from the cell's own enabled/visible state instead.
+bool TableViewCellAutomationPeer::IsKeyboardFocusableCore()
+{
+    auto const cell = Owner().try_as<winrt::FrameworkElement>();
+    if (!cell || cell.Visibility() != winrt::Visibility::Visible || IsVirtualized())
+    {
+        return false;
+    }
+
+    // The cell wrapper is a Grid, so IsEnabled lives on the owning row, not on the cell.
+    auto const row = m_row.get();
+    return !row || row.IsEnabled();
+}
+
+void TableViewCellAutomationPeer::SetFocusCore()
+{
+    auto const row = m_row.get();
+    auto const cell = row ? GetRealizedCellFromRow(row) : nullptr;
+
+    if (row && cell)
+    {
+        // Drill the row in first, exactly as Right does: the cell is not focusable at all while the
+        // row is at row level, so a bare Focus() here would silently do nothing.
+        winrt::get_self<TableViewRow>(row)->SetCellLevelInternal(true);
+        if (cell.Focus(winrt::FocusState::Programmatic))
+        {
+            return;
+        }
+    }
+
+    __super::SetFocusCore();
+}
+
 hstring TableViewCellAutomationPeer::GetNameCore()
 {
-    // Compose "{column header}, {cell value}", falling back to either part alone.
+    auto const row = m_row.get();
+    UpdateNameItem(row && winrt::get_self<TableViewRow>(row)->GetOwningTableView()
+        ? row.DataContext() : nullptr);
+    if (m_editName)
+    {
+        return *m_editName;
+    }
+    if (row)
+    {
+        if (auto const display = winrt::get_self<TableViewRow>(row)->GetDisplayElementForAutomation(Owner()))
+        {
+            auto const name = ReadDisplayName(display.try_as<winrt::FrameworkElement>());
+            m_lastName = name;
+            return name;
+        }
+    }
+    auto const name = ReadDisplayName();
+    m_lastName = name;
+    return name;
+}
+
+winrt::hstring TableViewCellAutomationPeer::ReadNameForEdit()
+{
+    auto const row = m_row.get();
+    UpdateNameItem(row && winrt::get_self<TableViewRow>(row)->GetOwningTableView()
+        ? row.DataContext() : nullptr);
+    auto const name = ReadDisplayName();
+    m_lastName = name;
+    return name;
+}
+
+void TableViewCellAutomationPeer::UpdateNameItem(winrt::IInspectable const& item)
+{
+    if (!TableView::SameInspectableIdentity(m_nameItem.get(), item))
+    {
+        ResetEditName();
+        m_nameItem.set(item);
+    }
+}
+
+void TableViewCellAutomationPeer::BeginEditName()
+{
+    ++m_nameGeneration;
+    m_nameLayoutUpdatedRevoker.revoke();
+    m_editName = m_lastName;
+}
+
+void TableViewCellAutomationPeer::ResetEditName()
+{
+    ++m_nameGeneration;
+    m_nameLayoutUpdatedRevoker.revoke();
+    m_editName.reset();
+    m_lastName.reset();
+    m_nameItem.set(nullptr);
+}
+
+void TableViewCellAutomationPeer::EndEditName()
+{
+    m_nameLayoutUpdatedRevoker.revoke();
+    auto const generation = m_nameGeneration;
+    auto const weakThis = get_weak();
+    auto const cell = Owner().try_as<winrt::FrameworkElement>();
+    if (!cell)
+    {
+        m_editName.reset();
+        return;
+    }
+    auto cleanupOnFailure = wil::scope_exit([this]() noexcept
+    {
+        m_nameLayoutUpdatedRevoker.revoke();
+        m_editName.reset();
+    });
+
+    // Released by whichever of the three paths below resolves first. Owned by the backstop's
+    // lambda, so the subscription cannot outlive one frame.
+    auto const unloadRevoker = std::make_shared<winrt::FrameworkElement::Unloaded_revoker>();
+
+    // LayoutUpdated precedes the framework's automatic-property pass. Queue
+    // release from that event, leaving the held old Name intact for the pass.
+    m_nameLayoutUpdatedRevoker = cell.LayoutUpdated(winrt::auto_revoke,
+        [weakThis, generation](auto const&, auto const&)
+        {
+            if (auto const peer = weakThis.get(); peer && peer->m_nameGeneration == generation)
+            {
+                peer->m_nameLayoutUpdatedRevoker.revoke();
+                try
+                {
+                    peer->QueueFinalName(generation);
+                }
+                catch (...)
+                {
+                    peer->m_editName.reset();
+                    TVDiag::LogRetailF(L"[TableView] Optional post-layout name publication could not be queued.");
+                }
+            }
+        });
+
+    // An unloaded, collapsed, or hidden-column cell never sees another LayoutUpdated, so the pinned
+    // pre-edit name would otherwise be returned by GetNameCore forever.
+    *unloadRevoker = cell.Unloaded(winrt::auto_revoke,
+        [weakThis, generation](auto const&, auto const&)
+        {
+            if (auto const peer = weakThis.get(); peer && peer->m_nameGeneration == generation)
+            {
+                peer->m_nameLayoutUpdatedRevoker.revoke();
+                peer->m_editName.reset();
+                try
+                {
+                    peer->InvalidatePeer();
+                }
+                catch (...)
+                {
+                    TVDiag::LogRetailF(L"[TableView] Optional cell-name invalidation on unload failed.");
+                }
+            }
+        });
+
+    cell.InvalidateMeasure();
+
+    // Backstop: LayoutUpdated is not guaranteed to run for this cell at all. An armed layout
+    // revoker at end of frame means it did not, so release rather than stay pinned.
+    auto const queue = DispatcherQueue();
+    if (!queue || !queue.TryEnqueue(winrt::DispatcherQueuePriority::Low,
+        [weakThis, generation, unloadRevoker]()
+        {
+            unloadRevoker->revoke();
+            if (auto const peer = weakThis.get();
+                peer && peer->m_nameGeneration == generation && peer->m_nameLayoutUpdatedRevoker)
+            {
+                peer->m_nameLayoutUpdatedRevoker.revoke();
+                peer->m_editName.reset();
+                try
+                {
+                    peer->InvalidatePeer();
+                }
+                catch (...)
+                {
+                    TVDiag::LogRetailF(L"[TableView] Optional cell-name backstop invalidation failed.");
+                }
+            }
+        }))
+    {
+        // Without the backstop the one-frame bound cannot be honoured, so do not pin at all.
+        TVDiag::LogRetailF(L"[TableView] Optional cell-name release backstop could not be queued.");
+        return;
+    }
+
+    cleanupOnFailure.release();
+}
+
+void TableViewCellAutomationPeer::QueueFinalName(uint64_t generation)
+{
+    auto const weakThis = get_weak();
+    auto const queue = DispatcherQueue();
+    if (queue && queue.TryEnqueue(winrt::DispatcherQueuePriority::Low, [weakThis, generation]()
+    {
+        if (auto const peer = weakThis.get(); peer && peer->m_nameGeneration == generation)
+        {
+            try
+            {
+                auto const row = peer->m_row.get();
+                auto const cell = peer->Owner();
+                if (!row || !winrt::get_self<TableViewRow>(row)->GetOwningTableView() ||
+                    !TableView::SameInspectableIdentity(row.DataContext(), peer->m_nameItem.get()) ||
+                    winrt::VisualTreeHelper::GetParent(cell).try_as<winrt::Panel>() !=
+                        winrt::get_self<TableViewRow>(row)->GetCellsHostPanelInternal())
+                {
+                    peer->ResetEditName();
+                    return;
+                }
+                peer->m_editName.reset();
+                peer->InvalidatePeer();
+            }
+            catch (...)
+            {
+                TVDiag::LogRetailF(L"[TableView] Optional final cell-name invalidation failed.");
+            }
+        }
+    }))
+    {
+        return;
+    }
+    m_editName.reset();
+    TVDiag::LogRetailF(L"[TableView] Optional final cell-name invalidation could not be queued.");
+}
+
+winrt::hstring TableViewCellAutomationPeer::ReadDisplayName(winrt::FrameworkElement const& display)
+{
     const auto headerText = GetColumnHeaderText();
-    const auto valueText = GetCellValueText();
+    uint32_t remaining = 32;
+    const auto valueText = display
+        ? GetCellContentName(display, true, 8, remaining)
+        : GetCellDisplayText(Owner().try_as<winrt::FrameworkElement>());
 
     if (headerText.empty())
     {
@@ -112,6 +349,16 @@ winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText()
 
 winrt::hstring TableViewCellAutomationPeer::GetCellValueText()
 {
+    auto const content = GetCellContentElement(Owner().try_as<winrt::FrameworkElement>());
+    // ValuePattern describes editable text, not the accessibility label naming that text.
+    if (auto const text = content.try_as<winrt::TextBlock>())
+    {
+        return text.Text();
+    }
+    if (auto const editor = content.try_as<winrt::TextBox>())
+    {
+        return editor.Text();
+    }
     return GetCellDisplayText(Owner().try_as<winrt::FrameworkElement>());
 }
 
@@ -141,13 +388,34 @@ int32_t TableViewCellAutomationPeer::GetRowIndex()
 {
     if (auto const row = m_row.get())
     {
-        // TableView exposes no public row-index API, so resolve it from ItemsRepeater.
+        if (auto const tableView = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
+        {
+            m_lastOwningTable = winrt::make_weak(tableView);
+
+            // Same resolution TableViewRowAutomationPeer::GetRowIndex uses, so the two peers agree
+            // on the coordinate; it also avoids a visual-tree walk per cell of every realized row.
+            if (auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal())
+            {
+                if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
+                {
+                    m_lastKnownRowIndex = rowIndex;
+                    return rowIndex;
+                }
+            }
+        }
+
+        // TableView exposes no public row-index API, so fall back to the hosting ItemsRepeater for
+        // a row whose owner is not resolvable yet.
         winrt::DependencyObject parent = winrt::VisualTreeHelper::GetParent(row);
         while (parent)
         {
             if (auto repeater = parent.try_as<winrt::ItemsRepeater>())
             {
-                return repeater.GetElementIndex(row);
+                if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
+                {
+                    m_lastKnownRowIndex = rowIndex;
+                    return rowIndex;
+                }
             }
             parent = winrt::VisualTreeHelper::GetParent(parent);
         }
@@ -156,9 +424,125 @@ int32_t TableViewCellAutomationPeer::GetRowIndex()
     return -1;
 }
 
+bool TableViewCellAutomationPeer::IsVirtualized()
+{
+    if (GetRowIndex() >= 0)
+    {
+        return false;
+    }
+
+    auto const tableView = m_lastOwningTable.get();
+    if (!tableView || m_lastKnownRowIndex < 0)
+    {
+        return false;
+    }
+
+    auto const tableImpl = winrt::get_self<TableView>(tableView);
+    if (m_lastKnownRowIndex >= tableImpl->GetRowCountInternal())
+    {
+        return false;
+    }
+
+    auto const repeater = tableImpl->GetRowsRepeaterInternal();
+    return repeater && !repeater.TryGetElement(m_lastKnownRowIndex);
+}
+
+void TableViewCellAutomationPeer::Realize()
+{
+    if (!IsVirtualized())
+    {
+        return;
+    }
+
+    // IVirtualizedItemProvider::Realize is synchronous: on return the client immediately re-queries
+    // this provider and expects the element realized, with VirtualizedItem no longer supported.
+    // Deferring to the dispatcher hands the client a still-virtualized provider.
+    RealizeCore(m_lastKnownRowIndex);
+}
+
+void TableViewCellAutomationPeer::RealizeCore(int32_t rowIndex)
+{
+    auto const tableView = m_lastOwningTable.get();
+    if (!tableView || rowIndex < 0)
+    {
+        return;
+    }
+
+    auto const tableImpl = winrt::get_self<TableView>(tableView);
+    if (rowIndex >= tableImpl->GetRowCountInternal())
+    {
+        return;
+    }
+
+    auto const repeater = tableImpl->GetRowsRepeaterInternal();
+    if (!repeater)
+    {
+        return;
+    }
+
+    winrt::UIElement element{ nullptr };
+    try
+    {
+        element = repeater.TryGetElement(rowIndex);
+        if (!element)
+        {
+            element = repeater.GetOrCreateElement(rowIndex);
+        }
+    }
+    catch (...)
+    {
+        return;
+    }
+
+    if (auto const row = element.try_as<winrt::TableViewRow>())
+    {
+        if (auto const cell = GetRealizedCellFromRow(row))
+        {
+            if (auto const cellElement = cell.try_as<winrt::FrameworkElement>())
+            {
+                cellElement.StartBringIntoView();
+                return;
+            }
+        }
+    }
+
+    if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+    {
+        frameworkElement.StartBringIntoView();
+    }
+}
+
+winrt::UIElement TableViewCellAutomationPeer::GetRealizedCellFromRow(winrt::TableViewRow const& row)
+{
+    if (!row)
+    {
+        return nullptr;
+    }
+
+    auto const rowImpl = winrt::get_self<TableViewRow>(row);
+    auto const cellsHost = rowImpl ? rowImpl->GetCellsHostPanelInternal() : nullptr;
+    if (!cellsHost)
+    {
+        return nullptr;
+    }
+
+    if (auto const column = m_column.get())
+    {
+        for (auto const& child : cellsHost.Children())
+        {
+            auto const cell = child.try_as<winrt::UIElement>();
+            if (cell && rowImpl->GetCellOwningColumn(cell) == column)
+            {
+                return cell;
+            }
+        }
+    }
+
+    return rowImpl->GetVisibleCellInternal(m_columnIndex);
+}
+
 int32_t TableViewCellAutomationPeer::Row()
 {
-    // Returns -1 only while the row has no resolvable repeater index.
     return GetRowIndex();
 }
 
@@ -245,27 +629,17 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewCellAutomationPeer::
         {
             if (auto const owner = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
             {
-                // Through the TableView's peer so this cell's header reference and the table's own
-                // header peer are one provider; a client correlates a cell to its column by that
-                // identity.
-                winrt::AutomationPeer headerPeer{ nullptr };
-                if (auto const ownerPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(owner)
-                        .try_as<winrt::TableViewAutomationPeer>())
-                {
-                    headerPeer = winrt::get_self<TableViewAutomationPeer>(ownerPeer)
-                        ->GetOrCreateColumnHeaderPeer(owner, column);
-                }
-
-                if (!headerPeer)
-                {
-                    headerPeer = winrt::make<TableViewColumnHeaderAutomationPeer>(owner, column);
-                }
+                // Resolve the visual's peer even when the app supplies a custom table peer.
+                auto const headerPeer = GetRealizedColumnHeaderPeer(owner, column);
 
                 // A provider array must not contain nulls - UIA marshals every element. An empty
                 // array correctly reports "this cell has no reachable column header".
-                if (auto const provider = ProviderFromPeer(headerPeer))
+                if (headerPeer)
                 {
-                    headers.push_back(provider);
+                    if (auto const provider = ProviderFromPeer(headerPeer))
+                    {
+                        headers.push_back(provider);
+                    }
                 }
             }
         }

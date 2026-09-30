@@ -116,15 +116,14 @@ void TableViewGroupHeader::OnPropertyChanged(const winrt::DependencyPropertyChan
 
 void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState)
 {
-    // Route through the peer the client is connected to. FromElement returns the already-created
-    // peer; CreatePeerForElement is the fallback because a container freshly prepared out of the
-    // recycle pool may not have had its peer created yet, and XAML caches the peer per element so
-    // this returns that same instance rather than a disconnected one.
-    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
-    if (!peer)
+    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
     {
-        peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(*this);
+        return;
     }
+
+    // FromElement only: no live peer means no listener, so creating one purely to announce would
+    // materialize automation objects a client never asked for.
+    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
 
     if (auto const headerPeer = peer ? peer.try_as<winrt::TableViewGroupHeaderAutomationPeer>() : nullptr)
     {

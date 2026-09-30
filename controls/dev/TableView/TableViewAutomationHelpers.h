@@ -5,6 +5,8 @@
 
 #include <optional>
 #include <string_view>
+#include "TableView.h"
+#include "TableViewCellsPanel.h"
 #include "TableViewColumn.h"
 #include "ResourceAccessor.h"
 
@@ -29,6 +31,26 @@ inline winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceNam
 inline bool IsVisibleColumn(winrt::TableViewColumn const& column)
 {
     return column && column.Visibility() == winrt::Visibility::Visible;
+}
+
+inline winrt::AutomationPeer GetRealizedColumnHeaderPeer(
+    winrt::TableView const& table,
+    winrt::TableViewColumn const& column)
+{
+    if (!table || !IsVisibleColumn(column) ||
+        winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table)
+    {
+        return nullptr;
+    }
+
+    if (auto const host = winrt::get_self<TableView>(table)->GetHeaderHostInternal())
+    {
+        if (auto const header = TableViewCellsPanel::CellForColumn(host, column))
+        {
+            return winrt::FrameworkElementAutomationPeer::CreatePeerForElement(header);
+        }
+    }
+    return nullptr;
 }
 
 // Stringifies a data item for UIA. Shared by the TableView peer's item search and the row peer's
@@ -63,6 +85,17 @@ inline winrt::hstring ItemToName(winrt::IInspectable const& item)
     return {};
 }
 
+inline winrt::hstring GroupInfoToName(winrt::TableViewGroupInfo const& info)
+{
+    const auto keyText = info.KeyText();
+    const auto countText = info.ItemCountText();
+    if (!keyText.empty() && !countText.empty())
+    {
+        return winrt::hstring{ std::wstring{ keyText } + L" " + std::wstring{ countText } };
+    }
+    return keyText;
+}
+
 inline int32_t CountVisibleColumns(winrt::IVector<winrt::TableViewColumn> const& columns)
 {
     int32_t count = 0;
@@ -82,39 +115,95 @@ inline int32_t CountVisibleColumns(winrt::IVector<winrt::TableViewColumn> const&
 // allowPeerCreation gates the fallback: CreatePeerForElement does not just read a name, it creates
 // and permanently attaches a peer. Worth it for a cell naming itself; not for the row name, which
 // walks every cell on every name query, so it passes false and skips template content.
-inline winrt::hstring GetCellDisplayText(winrt::FrameworkElement const& cell, bool allowPeerCreation = true)
+inline winrt::hstring GetCellContentName(
+    winrt::FrameworkElement const& content, bool allowPeerCreation, uint32_t depth, uint32_t& remaining)
 {
-    if (!cell)
+    if (!content || content.Visibility() != winrt::Visibility::Visible || depth == 0 || remaining == 0)
     {
         return {};
     }
+    --remaining;
 
-    winrt::FrameworkElement content{ nullptr };
-    if (auto const border = cell.try_as<winrt::Border>())
+    if (auto const name = winrt::AutomationProperties::GetName(content); !name.empty())
     {
-        content = border.Child().try_as<winrt::FrameworkElement>();
+        return name;
     }
-    if (!content)
+    if (auto const label = winrt::AutomationProperties::GetLabeledBy(content))
     {
-        content = cell;
+        auto const peer = allowPeerCreation
+            ? winrt::FrameworkElementAutomationPeer::CreatePeerForElement(label)
+            : winrt::FrameworkElementAutomationPeer::FromElement(label);
+        if (peer)
+        {
+            if (auto const name = peer.GetName(); !name.empty())
+            {
+                return name;
+            }
+        }
     }
-
     if (auto const textBlock = content.try_as<winrt::TextBlock>())
     {
         return textBlock.Text();
     }
 
-    if (!allowPeerCreation)
+    // Templated presenter peers can stringify the data object instead of the visible template.
+    auto const presenter = content.try_as<winrt::ContentPresenter>();
+    if (!presenter || !presenter.ContentTemplate())
     {
-        return {};
+        auto const peer = allowPeerCreation
+            ? winrt::FrameworkElementAutomationPeer::CreatePeerForElement(content)
+            : winrt::FrameworkElementAutomationPeer::FromElement(content);
+        if (peer)
+        {
+            if (auto const name = peer.GetName(); !name.empty())
+            {
+                return name;
+            }
+        }
     }
 
-    if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(content))
+    // A named control describes its own content; do not repeat its inner interactive labels.
+    // Only traverse layout wrappers, and bound the work of each cell-name query.
+    if (presenter || content.try_as<winrt::Panel>() || content.try_as<winrt::Border>())
     {
-        return peer.GetName();
+        const auto count = winrt::VisualTreeHelper::GetChildrenCount(content);
+        for (int32_t i = 0; i < count && remaining > 0; ++i)
+        {
+            if (auto const child = winrt::VisualTreeHelper::GetChild(content, i).try_as<winrt::FrameworkElement>())
+            {
+                if (auto const name = GetCellContentName(child, allowPeerCreation, depth - 1, remaining); !name.empty())
+                {
+                    return name;
+                }
+            }
+        }
     }
-
     return {};
+}
+
+inline winrt::FrameworkElement GetCellContentElement(winrt::FrameworkElement const& cell)
+{
+    if (!cell)
+    {
+        return nullptr;
+    }
+    if (auto const border = cell.try_as<winrt::Border>())
+    {
+        return border.Child().try_as<winrt::FrameworkElement>();
+    }
+    if (auto const grid = cell.try_as<winrt::Grid>(); grid && grid.Tag().try_as<winrt::TableViewColumn>())
+    {
+        auto const children = grid.Children();
+        return children.Size() ? children.GetAt(0).try_as<winrt::FrameworkElement>() : nullptr;
+    }
+    return cell;
+}
+
+inline winrt::hstring GetCellDisplayText(winrt::FrameworkElement const& cell, bool allowPeerCreation = true)
+{
+    auto const content = GetCellContentElement(cell);
+    uint32_t remaining = 32;
+    return GetCellContentName(content, allowPeerCreation, 8, remaining);
 }
 
 // Returns the column Header's string form (an IStringable, or a String-typed IPropertyValue), or

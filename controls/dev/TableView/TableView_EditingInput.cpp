@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -184,14 +184,17 @@ void TableView::CompleteFocusLossCommit()
             return;
         }
 
-        // Focus settling on the ROW CONTAINER itself is the tail of the gesture that opened the
-        // editor - the row takes pointer focus before the editor does - so re-focus the editor
-        // rather than closing an edit the user just started.
+        // Focus settling on the ROW CONTAINER itself - or on the CELL that hosts the editor - is
+        // the tail of the gesture that opened the editor: the row takes pointer focus (now onto the
+        // pressed cell) before the editor does. Re-focus the editor rather than closing an edit the
+        // user has only just started.
         //
-        // Deliberately the container only, not its subtree: a Button, ComboBox or hyperlink in
-        // another cell of the same row is a genuine focus target, and stealing focus back from it
-        // would make those controls unusable while an edit is open.
-        if (focused == row.try_as<winrt::DependencyObject>())
+        // Deliberately those two elements only, not the whole subtree: a Button, ComboBox or
+        // hyperlink in another cell of the same row is a genuine focus target, and stealing focus
+        // back from it would make those controls unusable while an edit is open.
+        auto const editingCell = winrt::get_self<TableViewRow>(row)->GetEditingCellWrapper();
+        if (focused == row.try_as<winrt::DependencyObject>() ||
+            (editingCell && focused == editingCell.try_as<winrt::DependencyObject>()))
         {
             editingElement.Focus(winrt::FocusState::Programmatic);
             return;
