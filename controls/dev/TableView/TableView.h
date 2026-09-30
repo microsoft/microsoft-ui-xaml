@@ -25,6 +25,15 @@ struct ColumnResizeBounds
     double Max{ std::numeric_limits<double>::infinity() };
 };
 
+// A Star column before the dragged one, held at the width it already renders. The local Width
+// value is kept -- not the effective one -- so a canceled gesture restores a binding rather than
+// overwriting it with a local value.
+struct ColumnResizeFrozenColumn
+{
+    winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
+    winrt::IInspectable width{ nullptr };
+};
+
 // One in-flight resize drag. The gripper owns the gesture; this is only the host's anchor for it,
 // kept reachable so Escape can cancel the drag in flight.
 struct ColumnResizeDragState
@@ -33,14 +42,19 @@ struct ColumnResizeDragState
     // reference here is a cycle the XAML reference tracker cannot see.
     winrt::weak_ref<winrt::ResizeGripper> gripper{ nullptr };
     double startValue{ 0.0 };
-    // The column's Width as authored: reverting a canceled drag to startValue would rewrite an
-    // Auto or Star column as fixed pixels.
-    winrt::GridLength startWidth{};
+    // The column's Width as a local value: reverting a canceled drag to startValue would rewrite an
+    // Auto or Star column as fixed pixels, and restoring the effective value would overwrite a binding.
+    winrt::IInspectable startWidth{ nullptr };
     // Captured once per gesture: the drag does not change the other columns' widths.
     ColumnResizeBounds bounds{};
     // Set once a DragDelta has actually written Width, so a canceled press that never moved
     // leaves the column completely untouched.
     bool didWrite{ false };
+    // Set once any DragDelta arrived, even one the bounds swallowed, so a step held at a bound
+    // still announces its width instead of going silent.
+    bool didDelta{ false };
+    // Filled on the first write, not at DragStarted, so a press that never moves mutates nothing.
+    std::vector<ColumnResizeFrozenColumn> frozen;
 };
 
 // Per-instance cache of density metrics and the resolved gridline brush. Held as a
@@ -847,7 +861,8 @@ private:
     // Limits a resize gesture to the width the other columns can absorb. Unbounded when nothing
     // constrains it.
     ColumnResizeBounds ResizeBoundsForColumn(const winrt::TableViewColumn& column);
-    void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column);
+    void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, std::vector<ColumnResizeFrozenColumn>& frozen);
+    static void RestoreColumnWidth(const winrt::TableViewColumn& column, const winrt::IInspectable& localWidth);
     // Re-invalidate the header + realized row cells panels so they re-measure/arrange after a resolve.
     void InvalidateCellPanels();
 

@@ -2010,6 +2010,8 @@ void TableView::AppendResizeGripperVisual(
 
         // Before the guard below: a stale didWrite would revert to the previous drag's start width.
         state->didWrite = false;
+        state->didDelta = false;
+        state->frozen.clear();
 
         // One resize at a time. Manipulation arbitrates per element, so a second contact on a
         // DIFFERENT gripper would otherwise run a concurrent drag that Escape could not reach.
@@ -2030,12 +2032,8 @@ void TableView::AppendResizeGripperVisual(
 
         if (auto const col = weakColumn.get())
         {
-            if (strongThis)
-            {
-                strongThis->FreezeColumnsBeforeResize(col);
-            }
             state->startValue = col.ActualWidth();
-            state->startWidth = col.Width();
+            state->startWidth = col.ReadLocalValue(winrt::TableViewColumn::WidthProperty());
             if (strongThis)
             {
                 state->bounds = strongThis->ResizeBoundsForColumn(col);
@@ -2052,7 +2050,7 @@ void TableView::AppendResizeGripperVisual(
     });
 
     gripperVisual.DragDelta(
-        [weakColumn, state](winrt::ResizeGripper const&, winrt::ResizeGripperDragDeltaEventArgs const& vargs)
+        [weakColumn, weakThis, state](winrt::ResizeGripper const&, winrt::ResizeGripperDragDeltaEventArgs const& vargs)
     {
         auto const col = weakColumn.get();
         if (!col)
@@ -2060,6 +2058,7 @@ void TableView::AppendResizeGripperVisual(
             return;
         }
 
+        state->didDelta = true;
         // std::max mirrors TableViewColumn::UpdateActualWidth, so a column whose MaxWidth is below
         // its MinWidth cannot make Width and ActualWidth disagree.
         double lo = (std::isfinite(col.MinWidth()) && col.MinWidth() >= 0.0) ? col.MinWidth() : 0.0;
@@ -2085,6 +2084,13 @@ void TableView::AppendResizeGripperVisual(
         }
 
         auto const columnImpl = winrt::get_self<TableViewColumn>(col);
+        if (!state->didWrite)
+        {
+            if (auto const strongThis = weakThis.get())
+            {
+                strongThis->FreezeColumnsBeforeResize(col, state->frozen);
+            }
+        }
         auto const resizeScope = columnImpl->BeginUserResizeScope();
         col.Width(winrt::GridLengthHelper::FromPixels(next));
         state->didWrite = true;
@@ -2112,18 +2118,26 @@ void TableView::AppendResizeGripperVisual(
         {
             // Only when a write actually happened, so a press that never moved cannot pin an
             // Auto/Star column.
+            // Non-empty only when a freeze actually ran, so this needs no didWrite gate: a write
+            // that threw after freezing would otherwise strand the predecessors as pixels.
+            for (auto const& entry : state->frozen)
+            {
+                if (auto const frozenCol = entry.column.get())
+                {
+                    TableView::RestoreColumnWidth(frozenCol, entry.width);
+                }
+            }
+
             if (state->didWrite && col)
             {
-                auto const columnImpl = winrt::get_self<TableViewColumn>(col);
-                auto const resizeScope = columnImpl->BeginUserResizeScope();
-                col.Width(state->startWidth);
+                TableView::RestoreColumnWidth(col, state->startWidth);
             }
             return;
         }
 
         // Attributed to the header cell: it is the focusable element that represents the column,
         // and the one assistive technology is already on during a keyboard resize.
-        if (strongThis && col && state->didWrite)
+        if (strongThis && col && state->didDelta)
         {
             strongThis->AnnounceColumnWidth(weakHeaderCell.get(), col);
         }

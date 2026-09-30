@@ -274,6 +274,15 @@ void TableView::ResolveColumnWidths()
         case winrt::GridUnitType::Pixel:
         default:
         {
+            // A locked column the authored pass below sizes from its Star share must not also be
+            // booked as fixed here, or it lands in fixedTotal twice and starves the real donors.
+            if (CanUserResizeColumns() && !column.CanResize() &&
+                winrt::get_self<TableViewColumn>(column)->AuthoredWidthInternal().GridUnitType == winrt::GridUnitType::Star)
+            {
+                starColumns.push_back(column);
+                break;
+            }
+
             const double resolved = layoutRound(std::clamp(width.Value, lo, hi));
             changed |= setResolvedActualWidth(column, resolved);
             fixedTotal += resolved;
@@ -399,10 +408,27 @@ void TableView::ResolveColumnWidths()
     }
 }
 
+// Puts Width back the way the app left it. Restoring the effective value would convert a binding
+// or an inherited default into a local value the app never set.
+void TableView::RestoreColumnWidth(const winrt::TableViewColumn& column, const winrt::IInspectable& localWidth)
+{
+    auto const columnImpl = winrt::get_self<TableViewColumn>(column);
+    auto const resizeScope = columnImpl->BeginUserResizeScope();
+    if (!localWidth || localWidth == winrt::DependencyProperty::UnsetValue())
+    {
+        column.ClearValue(winrt::TableViewColumn::WidthProperty());
+    }
+    else
+    {
+        column.SetValue(winrt::TableViewColumn::WidthProperty(), localWidth);
+    }
+}
+
 // A resize takes space only from the columns after the dragged one (the WPF DataGrid contract).
-// Freezing the earlier Star columns at the width they already render keeps them out of both the
-// bound below and the redistribution pass, without changing what the user sees.
-void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column)
+// Holding the earlier Star columns at the width they already render keeps them out of the
+// redistribution pass without changing what the user sees. A locked column is skipped: the
+// authored pass below already pins it, and freezing it would double-count it there.
+void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, std::vector<ColumnResizeFrozenColumn>& frozen)
 {
     auto columns = Columns();
     uint32_t index = 0;
@@ -411,16 +437,26 @@ void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column)
         return;
     }
 
-    for (uint32_t i = 0; i < index; ++i)
+    // Collected before any write: writing Width runs app callbacks that may mutate Columns, and
+    // indexing a live vector across that would throw out of the manipulation.
+    std::vector<winrt::TableViewColumn> candidates;
+    for (uint32_t i = 0; i < index && i < columns.Size(); ++i)
     {
         auto const other = columns.GetAt(i);
         if (!other ||
             winrt::get_self<TableViewColumn>(other)->GetOwningTableView() != *this ||
             other.Visibility() != winrt::Visibility::Visible ||
-            other.Width().GridUnitType != winrt::GridUnitType::Star)
+            other.Width().GridUnitType != winrt::GridUnitType::Star ||
+            !other.CanResize())
         {
             continue;
         }
+        candidates.push_back(other);
+    }
+
+    for (auto const& other : candidates)
+    {
+        frozen.push_back({ winrt::make_weak(other), other.ReadLocalValue(winrt::TableViewColumn::WidthProperty()) });
 
         auto const columnImpl = winrt::get_self<TableViewColumn>(other);
         auto const resizeScope = columnImpl->BeginUserResizeScope();
@@ -448,14 +484,21 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
     };
 
     const bool resizeEnabled = CanUserResizeColumns();
+    uint32_t draggedIndex = 0;
+    if (!columns.IndexOf(column, draggedIndex))
+    {
+        return bounds;
+    }
+
     double reservedForOthers = 0.0;
     bool dividesViewport = authoredType(column) == winrt::GridUnitType::Star;
     bool hasParticipant = false;
 
-    for (auto const& other : columns)
+    for (uint32_t i = 0; i < columns.Size(); ++i)
     {
+        auto const other = columns.GetAt(i);
         if (!other ||
-            other == column ||
+            i == draggedIndex ||
             winrt::get_self<TableViewColumn>(other)->GetOwningTableView() != *this ||
             other.Visibility() != winrt::Visibility::Visible)
         {
@@ -464,10 +507,12 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
 
         dividesViewport |= authoredType(other) == winrt::GridUnitType::Star;
 
-        // Only a column that is Star *now* can yield space: the layout pass re-divides by current
-        // Width, so one an earlier drag rewrote as pixels donates nothing.
+        // Only a column that is Star *now* and sits after the dragged one can yield space: the
+        // layout pass re-divides by current Width, and a resize never takes from its left.
         const bool participates =
-            other.Width().GridUnitType == winrt::GridUnitType::Star && resizeEnabled && other.CanResize();
+            i > draggedIndex &&
+            other.Width().GridUnitType == winrt::GridUnitType::Star &&
+            resizeEnabled && other.CanResize();
         hasParticipant |= participates;
 
         if (!participates)
