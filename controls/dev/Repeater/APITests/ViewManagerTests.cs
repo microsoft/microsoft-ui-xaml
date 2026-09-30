@@ -405,6 +405,162 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void MoveUpdatesAllIndicesBeforeRaisingEvents()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new ObservableCollection<UIElement>(Enumerable.Range(0, 12)
+                    .Select(i => (UIElement)new Button { Content = i, Height = 100 }));
+                var layout = new MockVirtualizingLayout();
+                layout.MeasureLayoutFunc = (availableSize, context) =>
+                {
+                    context.GetOrCreateElementAt(0).Measure(availableSize);
+                    context.GetOrCreateElementAt(1).Measure(availableSize);
+                    return new Size(200, 200);
+                };
+                var repeater = new ItemsRepeater
+                {
+                    ItemsSource = data,
+                    ItemTemplate = new DataAsElementElementFactory(),
+                    Layout = layout
+                };
+                Content = repeater;
+                repeater.UpdateLayout();
+                Verify.IsNotNull(repeater.TryGetElement(0));
+                Verify.IsNotNull(repeater.TryGetElement(1));
+                Verify.IsNull(repeater.TryGetElement(5));
+
+                UIElement createdDuringCallback = null;
+                bool mappingsValidDuringCallback = true;
+                int eventCount = 0;
+                repeater.ElementIndexChanged += (sender, args) =>
+                {
+                    eventCount++;
+                    mappingsValidDuringCallback &= sender.TryGetElement(0) == data[0];
+                    createdDuringCallback = sender.GetOrCreateElement(5);
+                };
+
+                data.Move(0, 10);
+
+                Verify.AreEqual(2, eventCount);
+                Verify.IsTrue(mappingsValidDuringCallback);
+                Verify.AreEqual(data[5], createdDuringCallback);
+                Verify.AreEqual(5, repeater.GetElementIndex(createdDuringCallback));
+                Verify.AreEqual(createdDuringCallback, repeater.TryGetElement(5));
+                Verify.AreEqual(data[0], repeater.TryGetElement(0));
+                Verify.AreEqual(data[10], repeater.TryGetElement(10));
+            });
+        }
+
+        [TestMethod]
+        public void MoveUpdatesPinnedElementOnlyOnce()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => i.ToString()));
+            ScrollViewer scrollViewer;
+            var repeater = SetupRepeater(data, new StackLayout(), out scrollViewer);
+            Control pinned = null;
+            RunOnUIThread.Execute(() =>
+            {
+                pinned = (Control)repeater.TryGetElement(0);
+                Verify.IsNotNull(pinned);
+                Verify.IsTrue(pinned.Focus(FocusState.Programmatic));
+            });
+            IdleSynchronizer.Wait();
+
+            using (var viewChanged = new ManualResetEvent(false))
+            {
+                Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollViewerViewChangedEventArgs> onViewChanged =
+                    (sender, args) =>
+                    {
+                        if (!args.IsIntermediate) viewChanged.Set();
+                    };
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        scrollViewer.ViewChanged += onViewChanged;
+                        scrollViewer.ChangeView(null, 1000, null, true);
+                    });
+                    Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTime), "Waiting for scroll away from the focused element.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(pinned, repeater.TryGetElement(0));
+                        Verify.IsNull(repeater.TryGetElement(1));
+                        int indexChangedCount = 0;
+                        repeater.ElementIndexChanged += (sender, args) =>
+                        {
+                            if (args.Element == pinned)
+                            {
+                                indexChangedCount++;
+                                Verify.AreEqual(0, args.OldIndex);
+                                Verify.AreEqual(2, args.NewIndex);
+                            }
+                        };
+
+                        data.Move(0, 2);
+
+                        Verify.AreEqual(1, indexChangedCount);
+                        Verify.AreEqual(2, repeater.GetElementIndex(pinned));
+                        Verify.AreEqual(pinned, repeater.TryGetElement(2));
+                        Verify.AreEqual(pinned, repeater.GetOrCreateElement(2));
+                    });
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() => scrollViewer.ViewChanged -= onViewChanged);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void MovePreservesSuggestedAnchorPosition()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 10000).Select(i => i.ToString()));
+            ScrollViewer scrollViewer;
+            var repeater = SetupRepeater(data, new StackLayout(), out scrollViewer);
+            using (var viewChanged = new ManualResetEvent(false))
+            {
+                Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollViewerViewChangedEventArgs> onViewChanged =
+                    (sender, args) =>
+                    {
+                        if (!args.IsIntermediate) viewChanged.Set();
+                    };
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        scrollViewer.ViewChanged += onViewChanged;
+                        scrollViewer.ChangeView(null, 300000, null, true);
+                    });
+                    Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTime), "Waiting for deep scroll.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsNotNull(repeater.TryGetElement(3000));
+                        Verify.IsNotNull(repeater.TryGetElement(3001));
+                        var anchor = repeater.GetOrCreateElement(3000);
+                        int preparedCount = 0;
+                        repeater.ElementPrepared += (sender, args) => preparedCount++;
+
+                        data.Move(3000, 3001);
+                        repeater.UpdateLayout();
+
+                        Verify.IsLessThan(preparedCount, 20, "A move within the viewport must not realize the gap from the beginning of the source.");
+                        Verify.AreEqual(anchor, repeater.TryGetElement(3001));
+                        Verify.AreEqual(data[3001], ((Button)anchor).Content);
+                    });
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() => scrollViewer.ViewChanged -= onViewChanged);
+                }
+            }
+        }
+
+        [TestMethod]
         public void ValidateElementEvents()
         {
             CustomItemsSource dataSource = null;

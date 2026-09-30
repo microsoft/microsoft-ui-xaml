@@ -567,39 +567,40 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
                 return dataIndex;
             };
 
-            auto children = m_owner->Children();
+            struct IndexChange
+            {
+                winrt::UIElement element;
+                int oldIndex;
+                int newIndex;
+            };
+            std::vector<IndexChange> changes;
+            const auto children = m_owner->Children();
             for (unsigned i = 0u; i < children.Size(); ++i)
             {
-                auto element = children.GetAt(i);
-                auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+                const auto element = children.GetAt(i);
+                const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
                 if (virtInfo->IsRealized())
                 {
-                    const auto currentDataIndex = virtInfo->Index();
-                    const auto updatedDataIndex = updateIndex(currentDataIndex);
-                    if (currentDataIndex != updatedDataIndex)
+                    const auto oldDataIndex = virtInfo->Index();
+                    const auto newDataIndex = updateIndex(oldDataIndex);
+                    if (oldDataIndex != newDataIndex)
                     {
-                        UpdateElementIndex(element, virtInfo, updatedDataIndex);
+                        changes.push_back({ element, oldDataIndex, newDataIndex });
                     }
                 }
             }
 
-            for (size_t i = 0; i < m_pinnedPool.size(); ++i)
+            // Pinned elements are also children. Update each container once, and
+            // finish remapping before callbacks can query or realize elements.
+            for (const auto& change : changes)
             {
-                auto elementInfo = m_pinnedPool[i];
-                auto virtInfo = elementInfo.VirtualizationInfo();
-                if (virtInfo->IsRealized())
-                {
-                    const auto currentDataIndex = virtInfo->Index();
-                    const auto updatedDataIndex = updateIndex(currentDataIndex);
-                    if (currentDataIndex != updatedDataIndex)
-                    {
-                        auto element = elementInfo.PinnedElement();
-                        UpdateElementIndex(element, virtInfo, updatedDataIndex);
-                    }
-                }
+                ItemsRepeater::GetVirtualizationInfo(change.element)->UpdateIndex(change.newIndex);
             }
-
             InvalidateRealizedIndicesHeldByLayout();
+            for (const auto& change : changes)
+            {
+                m_owner->OnElementIndexChanged(change.element, change.oldIndex, change.newIndex);
+            }
         }
         break;
     }

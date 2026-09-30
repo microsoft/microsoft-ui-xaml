@@ -359,7 +359,8 @@ void ElementManager::DataSourceChanged(const winrt::IInspectable& /*source*/, wi
 
                 if (isOldRangeRealized && isNewRangeRealized)
                 {
-                    // Move within the realized range: shift elements without recycling
+                    // Keep bounds at their layout positions so a suggested anchor
+                    // has a valid position until the moved elements are remeasured.
                     const int oldRangeStart = GetRealizedRangeIndexFromDataIndex(oldStartIndex);
                     const int newRangeStart = GetRealizedRangeIndexFromDataIndex(newStartIndex);
 
@@ -369,14 +370,6 @@ void ElementManager::DataSourceChanged(const winrt::IInspectable& /*source*/, wi
                             m_realizedElements.begin() + oldRangeStart,
                             m_realizedElements.begin() + oldRangeStart + count,
                             m_realizedElements.begin() + newRangeStart + count);
-
-                        if (m_useLayoutBounds)
-                        {
-                            std::rotate(
-                                m_realizedElementLayoutBounds.begin() + oldRangeStart,
-                                m_realizedElementLayoutBounds.begin() + oldRangeStart + count,
-                                m_realizedElementLayoutBounds.begin() + newRangeStart + count);
-                        }
                     }
                     else
                     {
@@ -384,24 +377,6 @@ void ElementManager::DataSourceChanged(const winrt::IInspectable& /*source*/, wi
                             m_realizedElements.begin() + newRangeStart,
                             m_realizedElements.begin() + oldRangeStart,
                             m_realizedElements.begin() + oldRangeStart + count);
-
-                        if (m_useLayoutBounds)
-                        {
-                            std::rotate(
-                                m_realizedElementLayoutBounds.begin() + newRangeStart,
-                                m_realizedElementLayoutBounds.begin() + oldRangeStart,
-                                m_realizedElementLayoutBounds.begin() + oldRangeStart + count);
-                        }
-                    }
-
-                    if (m_useLayoutBounds)
-                    {
-                        const int affectedStart = std::min(oldRangeStart, newRangeStart);
-                        const int affectedEnd = std::max(oldRangeStart, newRangeStart) + count;
-                        for (int i = affectedStart; i < affectedEnd; ++i)
-                        {
-                            m_realizedElementLayoutBounds[i] = InvalidBounds;
-                        }
                     }
                 }
                 else
