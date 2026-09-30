@@ -22,6 +22,7 @@ from find_duplicates import (
     MAX_BODY,
     MAX_SUGGESTIONS,
     retrieve_candidates,
+    version_fields,
 )
 
 MARKER = "<!-- winui-ai-triage:canonical:v1 -->"
@@ -568,58 +569,103 @@ def plain_text(value: str) -> str:
 
 def render(result: dict, evidence: dict, mapping: dict) -> str:
     decision = routing_decision(result, evidence, mapping)
-    lines = [
-        MARKER, "", "## Automated triage", "",
-        "**Summary:** " + plain_text(result["summary"]), "",
-    ]
+    lines = [MARKER, "", "## \U0001f9ed Triage summary", ""]
+    if result["missing_information"] != "None":
+        lines.extend([
+            "### \U0001f64b For the issue author", "",
+            "Please review the following:", "",
+            "- **Needed:** " + plain_text(result["missing_information"]), "",
+        ])
+
+    lines.extend(["### \U0001f6e0\ufe0f For the WinUI team", ""])
     route_areas = decision["existing_areas"] or (
         [decision["area_to_add"]] if decision["area_to_add"] else []
     )
     route_teams = decision["existing_teams"] or (
         [decision["team_to_add"]] if decision["team_to_add"] else []
     )
+    kind_badges = {
+        "BUG": "\U0001f41e Bug",
+        "FEATURE": "\u2728 Feature proposal",
+        "OTHER": "\U0001f4ac Question / other",
+    }
+    area_badge = ", ".join(f"`{label}`" for label in route_areas) or "Area needs review"
+    team_badge = ", ".join(f"`{label}`" for label in route_teams) or "Team needs routing"
+    badges = [
+        f"**\U0001f9e9 {area_badge}**",
+        f"**\U0001f465 {team_badge}**",
+        "**" + kind_badges[result["issue_kind"]] + "**",
+    ]
+    package = version_fields(evidence["body"]).get("nuget package version", "")
+    if package:
+        short_package = package[:80] + ("..." if len(package) > 80 else "")
+        badges.append("**\U0001f4e6 Package: " + plain_text(short_package) + "**")
+    lines.extend([" \u00b7 ".join(badges), "", plain_text(result["summary"]), ""])
+
+    details_tag = "<details open>" if result["review_notes"] or evidence["context_truncated"] else "<details>"
+    lines.extend([details_tag, "<summary>\U0001f9ea Investigation details</summary>", ""])
+    if result["reproduction"] == "NOT_APPLICABLE":
+        reproduction = "\u2139\ufe0f Not applicable"
+    elif result["reproduction"] == "SUFFICIENT":
+        reproduction = "\u2705 Sufficient detail for initial investigation"
+    elif result["needs_repro"]:
+        reproduction = "\u26a0\ufe0f Needs more detail"
+    else:
+        reproduction = "\u26a0\ufe0f Needs maintainer review"
+    lines.append("- **Reproduction:** " + reproduction)
+    if package:
+        lines.append("- **Package version (reported):** " + plain_text(package))
     if route_areas or route_teams:
-        lines.append("**Routing plan (existing labels preserved):** "
+        lines.append("- **Routing plan (existing labels preserved):** "
                      + ", ".join(f"`{label}`" for label in route_areas + route_teams) + ".")
     if result["area"] != "None":
         area = result["area"]
-        lines.append(f"**Suggested area:** `{area}` ({result['area_confidence'].lower()} confidence).")
+        lines.append(f"- **Suggested area:** `{area}` ({result['area_confidence'].lower()} confidence).")
         if decision["existing_areas"] and area not in decision["existing_areas"]:
-            lines.append("Existing area labels take precedence over this suggestion.")
+            lines.append("- Existing area labels take precedence over this suggestion.")
         if result["routing_rule"] != "default":
-            lines.append(f"**Conditional routing suggestion (`{result['routing_rule']}`):** "
+            lines.append(f"- **Conditional routing suggestion (`{result['routing_rule']}`):** "
                          + plain_text(result["routing_reason"]))
         elif result["routing_reason"] != "None":
-            lines.append("**Routing rationale:** " + plain_text(result["routing_reason"]))
+            lines.append("- **Routing rationale:** " + plain_text(result["routing_reason"]))
     else:
-        lines.append("**Suggested area:** Unclear; existing routing is unchanged.")
+        lines.append("- **Suggested area:** Unclear; existing routing is unchanged.")
     if not route_teams:
-        lines.append("**Team:** No automatic team assignment; maintainer routing is needed.")
+        lines.append("- **Team:** No automatic team assignment; maintainer routing is needed.")
     if decision["needs_triage"] or result["review_notes"] or "needs-triage" in evidence["existing_labels"]:
-        lines.append("**Triage:** Maintainer review remains required (`needs-triage`).")
+        lines.append("- **Triage:** Maintainer review remains required (`needs-triage`).")
     for note in result["normalization_notes"]:
-        lines.extend(["", "**Routing adjustment:** " + plain_text(note)])
+        lines.append("- **Routing adjustment:** " + plain_text(note))
+    if evidence["context_truncated"]:
+        lines.append("- **Context:** \u26a0\ufe0f Bounded excerpts were used. "
+                     "No reproduction label is applied from incomplete context.")
     if result["review_notes"]:
         lines.extend(["", "### Assessment needs review", ""])
         lines.extend("- " + plain_text(note) for note in result["review_notes"])
-    if result["missing_information"] != "None":
-        lines.extend(["", "**Information needed:** " + plain_text(result["missing_information"])])
-    if evidence["context_truncated"]:
-        lines.extend(["", "_Long report or discussion: this analysis used bounded excerpts. "
-                      "No reproduction label is applied from incomplete context._"])
+    lines.extend(["", "</details>"])
     if result["duplicates"]:
         candidates = {item["number"]: item for item in evidence["candidates"]}
-        lines.extend(["", "### Possible duplicates", ""])
+        lines.extend([
+            "", "<details>",
+            f"<summary>\U0001f50e Possible duplicates ({len(result['duplicates'])})</summary>", "",
+        ])
         for duplicate in result["duplicates"]:
             candidate = candidates[duplicate["number"]]
             lines.append(
                 f"- #{candidate['number']} ({candidate['state']}) - "
                 + plain_text(duplicate["reason"]) + " **Confidence: high.**"
             )
+        lines.extend([
+            "",
+            "_Suggestions only. A maintainer confirms duplicate relationships; "
+            "a closed match may need further investigation._",
+            "",
+            "</details>",
+        ])
     lines.extend([
         "",
-        "_Automated suggestions, not a triage decision. Existing labels are preserved. "
-        "A maintainer confirms ownership, reproduction, and duplicates; this workflow never closes issues._",
+        "_AI-assisted automated triage; WinUI maintainers make final decisions. "
+        "Existing labels are preserved; this workflow never closes issues automatically._",
     ])
     return "\n".join(lines)
 

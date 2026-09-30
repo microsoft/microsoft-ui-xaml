@@ -39,6 +39,27 @@ One comment is recognized by `<!-- winui-ai-triage:canonical:v1 -->`, at the
 beginning of a comment authored by `github-actions[bot]`. A marker in an issue
 author's comment cannot make the publisher edit it.
 
+## Comment presentation
+
+The canonical comment uses a compact, decorated triage-summary layout:
+
+- An **issue-author** section appears only when there is an actual information
+  request. The request stays visible outside collapsed details, without adding
+  new mention/notification behavior.
+- The **WinUI-team** section shows area, team, issue-kind, and optional reported
+  package-version badges, followed by the summary.
+- **Investigation details** contains reproduction status, routing/confidence,
+  conditional rationale, and triage notes. It opens automatically when an
+  assessment needs review or the analyzed context was truncated.
+- **Possible duplicates** is a separate expandable section when suggestions
+  exist, preserving issue state, confidence, rationale, and human confirmation.
+
+The metadata uses the preserved/planned routing, not a model suggestion that
+would be ignored. Sufficient reproduction details are not presented as a claim
+that the automation reproduced the bug. All issue-derived prose and package
+metadata remain escaped, and the canonical marker remains the first line so
+updates do not create additional comments.
+
 ## Ownership mapping
 
 Ownership changes are reviewed in pull requests, like other configuration
