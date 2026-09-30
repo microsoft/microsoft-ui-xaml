@@ -72,6 +72,58 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Hosting:Mode", "UAP")]
+        public void ScrollBarInitializesTrackStyleOnPointerExpansion()
+        {
+            ScrollBar scrollBar = null;
+            Button button = null;
+            UIExecutor.Execute(() =>
+            {
+                scrollBar = new ScrollBar
+                {
+                    Orientation = Orientation.Vertical,
+                    Width = 12,
+                    Height = 200,
+                    Maximum = 100,
+                    ViewportSize = 20,
+                    IndicatorMode = ScrollingIndicatorMode.MouseIndicator,
+                    Style = (Style)new XamlControlsResources()["DefaultScrollBarStyle"]
+                };
+                button = new Button { Content = "Pointer parking", Width = 150, Height = 100 };
+                var panel = new StackPanel { Orientation = Orientation.Horizontal };
+                panel.Children.Add(scrollBar);
+                panel.Children.Add(button);
+                TestServices.WindowHelper.WindowContent = panel;
+            });
+            TestServices.WindowHelper.WaitForIdle();
+            TestServices.InputHelper.MoveMouse(button);
+            TestServices.WindowHelper.WaitForIdle();
+            TestServices.InputHelper.MoveMouse(scrollBar);
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                var root = (FrameworkElement)VisualTreeHelper.GetChild(scrollBar, 0);
+                var track = (Microsoft.UI.Xaml.Shapes.Rectangle)root.FindName("VerticalTrackRect");
+                Verify.IsNotNull(track);
+                Verify.AreEqual(root.Resources["DeferredTrackBrushStyle"], track.Style,
+                    "Pointer expansion installs the template's persistent base style.");
+                Verify.IsNotNull(track.Fill);
+                Verify.IsNotNull(track.Stroke);
+                scrollBar.IsEnabled = false;
+            });
+            TestServices.WindowHelper.WaitForIdle();
+            UIExecutor.Execute(() =>
+            {
+                var root = (FrameworkElement)VisualTreeHelper.GetChild(scrollBar, 0);
+                var track = (Microsoft.UI.Xaml.Shapes.Rectangle)root.FindName("VerticalTrackRect");
+                Verify.IsNotNull(track.Fill, "Disabling an expanded bar must not lose its base fill.");
+                Verify.IsNotNull(track.Stroke, "Disabling an expanded bar must not lose its base stroke.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        [TestProperty("Hosting:Mode", "UAP")]
         [TestProperty("Ignore", "True")] // DCPP: Unreliable test: Controls.ScrollBarTests.ScrollBarExpandCollapseWithoutAnimation
         public void ScrollBarExpandCollapseWithoutAnimations()
         {

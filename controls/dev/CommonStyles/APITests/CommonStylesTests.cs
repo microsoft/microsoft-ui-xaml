@@ -31,6 +31,72 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class CommonStylesApiTests : ApiTestBase
     {
         [TestMethod]
+        public void ScrollBarDeferredTrackStyleSupportsVisualStateOverrides()
+        {
+            foreach (var orientation in new[] { Orientation.Horizontal, Orientation.Vertical })
+            {
+                ScrollBar scrollBar = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    scrollBar = new ScrollBar
+                    {
+                        Orientation = orientation,
+                        Width = orientation == Orientation.Horizontal ? 200 : 12,
+                        Height = orientation == Orientation.Horizontal ? 12 : 200,
+                        Maximum = 100,
+                        ViewportSize = 20,
+                        IndicatorMode = ScrollingIndicatorMode.MouseIndicator,
+                        IsHitTestVisible = false,
+                        Style = (Style)new XamlControlsResources()["DefaultScrollBarStyle"]
+                    };
+                    Content = scrollBar;
+                });
+                MUXControlsTestApp.Utilities.IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var trackName = orientation == Orientation.Horizontal ? "HorizontalTrackRect" : "VerticalTrackRect";
+                    var track = VisualTreeUtils.FindVisualChildByName(scrollBar, trackName) as Microsoft.UI.Xaml.Shapes.Rectangle;
+                    Verify.IsNotNull(track);
+                    var templateRoot = (FrameworkElement)VisualTreeHelper.GetChild(scrollBar, 0);
+                    var consciousState = VisualStateManager.GetVisualStateGroups(templateRoot)
+                        .Single(group => group.Name == "ConsciousStates").CurrentState.Name;
+                    // Always-visible scrollbars and disabled animations select different initial states.
+                    if (consciousState == "Collapsed" || consciousState == "CollapsedWithoutAnimation")
+                    {
+                        Verify.IsNull(track.Fill, "The hidden track must not connect an Acrylic fill at startup.");
+                        Verify.IsNull(track.Stroke, "The hidden track must not connect an Acrylic stroke at startup.");
+                    }
+                    else
+                    {
+                        Verify.IsNotNull(track.Fill);
+                        Verify.IsNotNull(track.Stroke);
+                    }
+
+                    // Exercise the style contract independently of pointer input.
+                    var trackStyle = (Style)templateRoot.Resources["DeferredTrackBrushStyle"];
+                    foreach (var name in new[] { "HorizontalTrackRect", "VerticalTrackRect" })
+                    {
+                        var trackPart = (Microsoft.UI.Xaml.Shapes.Rectangle)VisualTreeUtils.FindVisualChildByName(scrollBar, name);
+                        trackPart.Style = trackStyle;
+                    }
+
+                    Verify.IsTrue(VisualStateManager.GoToState(scrollBar, "Expanded", false));
+                    Verify.IsNotNull(track.Fill, "Expansion must restore the themed track fill.");
+                    Verify.IsNotNull(track.Stroke, "Expansion must restore the themed track stroke.");
+
+                    Verify.IsTrue(VisualStateManager.GoToState(scrollBar, "Collapsed", false));
+                    Verify.IsNotNull(track.Fill, "Collapse restores the persistent normal fill.");
+                    Verify.IsNotNull(track.Stroke, "Collapse restores the persistent normal stroke.");
+
+                    Verify.IsTrue(VisualStateManager.GoToState(scrollBar, "Expanded", false));
+                    Verify.IsNotNull(track.Fill, "The track must also render on subsequent expansions.");
+                    Verify.IsNotNull(track.Stroke);
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyAllThemesContainSameResourceKeys()
         {
             bool dictionariesContainSameElements = true;
