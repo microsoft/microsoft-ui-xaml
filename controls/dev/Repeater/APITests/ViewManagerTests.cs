@@ -469,7 +469,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             using (var viewChanged = new ManualResetEvent(false))
             {
-                ScrollViewerViewChangedEventHandler onViewChanged =
+                EventHandler<ScrollViewerViewChangedEventArgs> onViewChanged =
                     (sender, args) =>
                     {
                         if (!args.IsIntermediate) viewChanged.Set();
@@ -522,7 +522,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             var repeater = SetupRepeater(data, new StackLayout(), out scrollViewer);
             using (var viewChanged = new ManualResetEvent(false))
             {
-                ScrollViewerViewChangedEventHandler onViewChanged =
+                EventHandler<ScrollViewerViewChangedEventArgs> onViewChanged =
                     (sender, args) =>
                     {
                         if (!args.IsIntermediate) viewChanged.Set();
