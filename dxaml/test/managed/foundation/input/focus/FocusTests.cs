@@ -456,7 +456,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyCyclingWithTabIndexWhenTabFocusNavigationSet()
         {
             const string rootPanelXaml =
@@ -534,7 +534,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyShiftTabWhenOnceTabFocusNavigationSet()
         {
             const string rootPanelXaml =
@@ -775,7 +775,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Validates Hyperlink TabIndex property affects focus order.")]
-        [TestProperty("Hosting:Mode", "WPF")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyHyperlinkTabIndex()
         {
             StackPanel rootPanel = null;
@@ -854,7 +854,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Validates Hyperlink TabIndex property affects focus order in RichTextBlock.")]
-        [TestProperty("Hosting:Mode", "WPF")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyHyperlinkTabIndexWithRichTextBlock()
         {
             StackPanel rootPanel = null;
@@ -935,7 +935,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Validates Hyperlink TabIndex property affects focus order with tab index once.")]
-        [TestProperty("Hosting:Mode", "WPF")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyHyperlinkTabIndexWithTabNavigationOnce()
         {
             StackPanel rootPanel = null;
