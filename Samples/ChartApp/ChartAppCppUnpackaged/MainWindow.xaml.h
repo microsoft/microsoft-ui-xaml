@@ -16,6 +16,9 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         MainWindow();
 
         void OnLayoutSizeChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::SizeChangedEventArgs const&);
+        void OnWorkspaceSizeChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::SizeChangedEventArgs const&);
+        void OnViewportSizeChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::SizeChangedEventArgs const&);
+        void OnEditorSizeChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::SizeChangedEventArgs const&);
         void OnDateLayoutSizeChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::SizeChangedEventArgs const&);
         void OnScenarioSelectionChanged(Microsoft::UI::Xaml::Controls::NavigationView const&, Microsoft::UI::Xaml::Controls::NavigationViewSelectionChangedEventArgs const&);
         void OnThemeChoiceChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&);
@@ -70,6 +73,7 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         void OnDtLabelFormatBApply(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
 
     private:
+        void UpdateWorkspaceLayout(Microsoft::UI::Xaml::Controls::Grid const& workspace);
         void ApplyEdit(std::function<void()> const& edit,
             Microsoft::UI::Xaml::Controls::Charts::Chart const& chart = nullptr);
         void ApplyExampleEdit(bool area, std::function<void()> const& edit, winrt::hstring const& message);

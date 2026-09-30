@@ -14,9 +14,16 @@ packaged and unpackaged forms.
 ## Using the sample
 
 Use the left navigation to choose **Line**, **Area**, **Bar**, **Date & time**,
-**Axes & ordering**, **Labels & markers**, or **Live data**. Each page places
-the chart preview first, followed by its related controls and readable data.
-Navigation preserves the chart instances and the settings you have entered.
+**Axes & ordering**, **Labels & markers**, or **Live data**. Most pages place
+the chart preview next to a compact settings pane when space permits. The pane
+scrolls independently if needed, keeping the preview visible while you edit.
+Narrow windows stack the controls below a shorter preview. Navigation and
+resizing preserve the chart instances and the settings you have entered.
+
+Common appearance controls and reset actions stay together near the preview.
+Read-only data is available in expandable sections rather than pushing the
+editing controls down the page. Date-time cards keep interval and label-format
+controls directly below their respective previews.
 
 | Area | Controls and scenarios |
 |---|---|

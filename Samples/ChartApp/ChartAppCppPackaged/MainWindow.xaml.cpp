@@ -9,6 +9,7 @@
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <winrt/Windows.Globalization.DateTimeFormatting.h>
 #include <winrt/Windows.Globalization.NumberFormatting.h>
+#include <algorithm>
 #include <array>
 #include <atomic>
 #include <chrono>
@@ -813,8 +814,76 @@ namespace winrt::ChartAppCppPackaged::implementation
         Grid::SetRow(ThemeChoice(), compact ? 2 : 0);
         Grid::SetColumn(ThemeChoice(), compact ? 0 : 1);
         ThemeChoice().HorizontalAlignment(compact ? HorizontalAlignment::Left : HorizontalAlignment::Right);
-        ScenarioHeader().ColumnSpacing(compact ? 0 : 24);
-        ScenarioContent().Padding(Thickness{ 24, width < 840 ? 56.0 : 24.0, 24, 24 });
+        ScenarioHeader().ColumnSpacing(compact ? 0 : 16);
+        ScenarioHeader().Margin(Thickness{ 16, width < 840 ? 48.0 : 16.0, 16, 12 });
+    }
+
+    void MainWindow::UpdateWorkspaceLayout(Grid const& workspace)
+    {
+        if (!m_ready || m_closing) return;
+        bool wide = workspace.ActualWidth() >= 900;
+        double viewportHeight = ScenarioScroller().ActualHeight();
+        auto preview = workspace.Children().GetAt(0).as<Border>();
+        auto editor = workspace.Children().GetAt(1).as<ScrollViewer>();
+        workspace.ColumnDefinitions().GetAt(1).Width(GridLength{ wide ? 440.0 : 0.0, GridUnitType::Pixel });
+        workspace.ColumnSpacing(wide ? 16 : 0);
+        workspace.RowSpacing(wide ? 0 : 12);
+        Grid::SetColumn(editor, wide ? 1 : 0);
+        Grid::SetRow(editor, wide ? 0 : 1);
+        preview.Child().as<FrameworkElement>().Height(wide
+            ? (std::min)(420.0, (std::max)(240.0, viewportHeight - 50.0))
+            : (std::min)(240.0, (std::max)(180.0, viewportHeight * 0.35)));
+        editor.MaxHeight(wide ? (std::max)(1.0, viewportHeight - 16.0) : std::numeric_limits<double>::infinity());
+        editor.VerticalScrollMode(wide ? ScrollMode::Auto : ScrollMode::Disabled);
+        editor.VerticalScrollBarVisibility(wide ? ScrollBarVisibility::Auto : ScrollBarVisibility::Disabled);
+    }
+
+    void MainWindow::OnWorkspaceSizeChanged(IInspectable const& sender, SizeChangedEventArgs const&)
+    {
+        UpdateWorkspaceLayout(sender.as<Grid>());
+    }
+
+    void MainWindow::OnViewportSizeChanged(IInspectable const&, SizeChangedEventArgs const&)
+    {
+        if (!m_ready || m_closing) return;
+        for (auto const& workspace : { LineScenario(), AreaScenario(), BarScenario(), LiveScenario() })
+            UpdateWorkspaceLayout(workspace);
+    }
+
+    void MainWindow::OnEditorSizeChanged(IInspectable const& sender, SizeChangedEventArgs const& args)
+    {
+        if (!m_ready || m_closing) return;
+        auto grid = sender.as<Grid>();
+        auto tag = unbox_value_or<hstring>(grid.Tag(), hstring{});
+        uint32_t columns = args.NewSize().Width >= (tag == L"Choices" ? 300 : 360)
+            ? (tag == L"Bounds" ? 3u : 2u) : 1u;
+        uint32_t rows = (grid.Children().Size() + columns - 1) / columns;
+        if (grid.ColumnDefinitions().Size() != columns)
+        {
+            grid.ColumnDefinitions().Clear();
+            for (uint32_t i = 0; i < columns; ++i)
+            {
+                ColumnDefinition column;
+                column.Width(GridLength{ 1, GridUnitType::Star });
+                grid.ColumnDefinitions().Append(column);
+            }
+        }
+        if (grid.RowDefinitions().Size() != rows)
+        {
+            grid.RowDefinitions().Clear();
+            for (uint32_t i = 0; i < rows; ++i)
+            {
+                RowDefinition row;
+                row.Height(GridLength{ 1, GridUnitType::Auto });
+                grid.RowDefinitions().Append(row);
+            }
+        }
+        for (uint32_t i = 0; i < grid.Children().Size(); ++i)
+        {
+            auto child = grid.Children().GetAt(i).as<FrameworkElement>();
+            Grid::SetColumn(child, static_cast<int32_t>(i % columns));
+            Grid::SetRow(child, static_cast<int32_t>(i / columns));
+        }
     }
 
     void MainWindow::OnScenarioSelectionChanged(NavigationView const&, NavigationViewSelectionChangedEventArgs const& args)
@@ -876,6 +945,7 @@ namespace winrt::ChartAppCppPackaged::implementation
     {
         if (!m_ready || m_closing) return;
         bool wide = args.NewSize().Width >= 900;
+        DateTimeScenario().ColumnSpacing(wide ? 16 : 0);
         DateTimeScenario().ColumnDefinitions().GetAt(1).Width(GridLength{ wide ? 1.0 : 0.0, GridUnitType::Star });
         Grid::SetColumn(MonthlyDateCard(), wide ? 1 : 0);
         Grid::SetRow(MonthlyDateCard(), wide ? 0 : 1);

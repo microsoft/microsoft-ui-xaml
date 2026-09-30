@@ -257,10 +257,18 @@ namespace ChartsSample
                 sender.IsPaneOpen = false;
         }
 
-        private void OnHeaderSizeChanged(object sender, SizeChangedEventArgs e)
+        private void OnHeaderSizeChanged(object sender, SizeChangedEventArgs e) =>
+            UpdateHeaderLayout();
+
+        private void OnNavigationDisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args) =>
+            UpdateHeaderLayout();
+
+        private void UpdateHeaderLayout()
         {
-            if (ThemeChoice == null) return;
-            bool stacked = e.NewSize.Width < 640;
+            if (ThemeChoice == null || PageHeader == null || ScenarioNavigation == null) return;
+            bool stacked = PageHeader.ActualWidth < 640;
+            PageHeader.Margin = new Thickness(16,
+                ScenarioNavigation.DisplayMode == NavigationViewDisplayMode.Minimal ? 56 : 16, 16, 12);
             Grid.SetRow(ThemeChoice, stacked ? 1 : 0);
             Grid.SetColumn(ThemeChoice, stacked ? 0 : 1);
             Grid.SetColumnSpan(HeadingPanel, stacked ? 2 : 1);
@@ -270,7 +278,14 @@ namespace ChartsSample
         private void OnEditorSizeChanged(object sender, SizeChangedEventArgs e)
         {
             var grid = (Grid)sender;
-            int columns = e.NewSize.Width >= (grid == DateTimeScenario ? 900 : 600) ? 2 : 1;
+            double threshold = grid == DateTimeScenario ? 900 : grid.Tag switch
+            {
+                "Choices" => 300,
+                "Actions" => 180,
+                _ => 360
+            };
+            int columns = e.NewSize.Width >= threshold ? 2 : 1;
+            if (grid.Tag as string == "Bounds" && e.NewSize.Width >= 360) columns = 3;
             int rows = (grid.Children.Count + columns - 1) / columns;
             if (grid.ColumnDefinitions.Count == columns && grid.RowDefinitions.Count == rows) return;
             grid.ColumnDefinitions.Clear();
@@ -285,6 +300,38 @@ namespace ChartsSample
                 Grid.SetRow(field, i / columns);
                 Grid.SetColumn(field, i % columns);
             }
+        }
+
+        private void OnWorkspaceSizeChanged(object sender, SizeChangedEventArgs e) =>
+            UpdateWorkspaceLayout((Grid)sender);
+
+        private void OnViewportSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (!_ready || _closing) return;
+            UpdateWorkspaceLayout(LineScenario);
+            UpdateWorkspaceLayout(AreaScenario);
+            UpdateWorkspaceLayout(BarScenario);
+            UpdateWorkspaceLayout(LiveScenario);
+        }
+
+        private void UpdateWorkspaceLayout(Grid workspace)
+        {
+            if (!_ready || _closing) return;
+            bool wide = workspace.ActualWidth >= 900;
+            var preview = (Border)workspace.Children[0];
+            var editors = (ScrollViewer)workspace.Children[1];
+            workspace.ColumnDefinitions[1].Width = new GridLength(wide ? 440 : 0);
+            workspace.ColumnSpacing = wide ? 16 : 0;
+            workspace.RowSpacing = wide ? 0 : 12;
+            Grid.SetColumn(editors, wide ? 1 : 0);
+            Grid.SetRow(editors, wide ? 0 : 1);
+            // Bound only the wide inspector so its controls scroll without moving the preview.
+            editors.MaxHeight = wide ? Math.Max(1, ScenarioScroll.ActualHeight - 16) : double.PositiveInfinity;
+            editors.VerticalScrollMode = wide ? ScrollMode.Enabled : ScrollMode.Disabled;
+            editors.VerticalScrollBarVisibility = wide ? ScrollBarVisibility.Auto : ScrollBarVisibility.Disabled;
+            ((FrameworkElement)preview.Child).Height = wide
+                ? Math.Clamp(ScenarioScroll.ActualHeight - 50, 240, 420)
+                : Math.Clamp(ScenarioScroll.ActualHeight * 0.35, 180, 240);
         }
 
         private void OnToggleUpdatesClick(object sender, RoutedEventArgs e)
