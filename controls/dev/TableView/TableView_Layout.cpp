@@ -487,8 +487,9 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
     }
 
     // Pinned in both directions: bounding only growth would let the drag hand width to a column
-    // that is then not allowed to give it back.
-    if (!hasParticipant)
+    // that is then not allowed to give it back. A Pixel or Auto column owns its width outright, so
+    // it may still shrink -- that only makes the table narrower and needs nothing from a neighbour.
+    if (!hasParticipant && column.Width().GridUnitType == winrt::GridUnitType::Star)
     {
         bounds.Min = column.ActualWidth();
         bounds.Max = bounds.Min;
