@@ -426,9 +426,13 @@ bool RowMetadataProvider::SetGroupExpandedCore(winrt::IInspectable const& group,
         return false;
     }
 
-    const bool isExpanded = desired.value_or(!m_groupedAdapter->IsGroupExpanded(group));
-    m_groupedAdapter->SetGroupExpanded(group, isExpanded);
-    return isExpanded;
+    // A local strong ref for every notifying call in this class: a handler of the resulting
+    // collection change may re-declare the source's shape, which replaces this provider (and its
+    // members) while the call is still running.
+    auto const adapter = m_groupedAdapter;
+    const bool before = adapter->IsGroupExpanded(group);
+    adapter->SetGroupExpanded(group, desired.value_or(!before));
+    return adapter->IsGroupExpanded(group) != before;
 }
 
 void RowMetadataProvider::Expand(winrt::hstring const& key)
@@ -483,9 +487,14 @@ bool RowMetadataProvider::SetNodeExpandedCore(winrt::hstring const& nodeKey, std
         return false;
     }
 
-    const bool isExpanded = desired.value_or(!m_hierarchicalAdapter->IsNodeExpanded(nodeKey));
-    m_hierarchicalAdapter->SetNodeExpanded(nodeKey, isExpanded);
-    return isExpanded;
+    auto const adapter = m_hierarchicalAdapter;
+    const bool before = adapter->IsNodeExpanded(nodeKey);
+    adapter->SetNodeExpanded(nodeKey, desired.value_or(!before));
+
+    // A change in either direction, not the resulting state: the caller restamps the toggled row
+    // and announces the new structure on a collapse just as on an expand. A leaf or an unknown key
+    // keeps its state and reports no change.
+    return adapter->IsNodeExpanded(nodeKey) != before;
 }
 
 winrt::IInspectable RowMetadataProvider::GetGroupedRow(int32_t index) const
@@ -513,17 +522,17 @@ void RowMetadataProvider::ExpandAllGroups()
     // grouped adapter already holds, so this is bounded by the number of groups. Driving the
     // hierarchy from here as well would move the tree's expansion baseline and open every node of
     // a tree whose app only asked for its headers. Tree nodes have their own verb; see ExpandAllRows.
-    if (m_groupedAdapter)
+    if (auto const adapter = m_groupedAdapter)
     {
-        m_groupedAdapter->ExpandAll();
+        adapter->ExpandAll();
     }
 }
 
 void RowMetadataProvider::CollapseAllGroups()
 {
-    if (m_groupedAdapter)
+    if (auto const adapter = m_groupedAdapter)
     {
-        m_groupedAdapter->CollapseAll();
+        adapter->CollapseAll();
     }
 }
 
@@ -534,9 +543,9 @@ void RowMetadataProvider::ExpandAllRows()
     //
     // Under the composed projection this does NOT also open the group headers. A node that becomes
     // visible inside a collapsed bucket stays behind that bucket, which is what the header means.
-    if (m_hierarchicalAdapter)
+    if (auto const adapter = m_hierarchicalAdapter)
     {
-        m_hierarchicalAdapter->ExpandAll();
+        adapter->ExpandAll();
     }
 }
 
@@ -544,15 +553,16 @@ void RowMetadataProvider::ExpandSubtree(winrt::hstring const& key)
 {
     if (IsNodeExpansionKey(key))
     {
-        m_hierarchicalAdapter->ExpandSubtree(key);
+        auto const adapter = m_hierarchicalAdapter;
+        adapter->ExpandSubtree(key);
     }
 }
 
 void RowMetadataProvider::CollapseAllRows()
 {
-    if (m_hierarchicalAdapter)
+    if (auto const adapter = m_hierarchicalAdapter)
     {
-        m_hierarchicalAdapter->CollapseAll();
+        adapter->CollapseAll();
     }
 }
 

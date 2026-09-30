@@ -111,6 +111,8 @@ void ShapedItemsSource::SetParent(ShapingHelpers::KeySelector key, ShapingHelper
 {
     m_keySelector = std::move(key);
     m_parentKeySelector = std::move(parentKey);
+    // An index build in flight (this ran from inside one of the selectors) discards its result.
+    ++m_parentDeclarationGeneration;
 
     // Last writer wins, and a different relation is a different tree: intent recorded against the
     // previous one is cleared at the next publish.
@@ -133,13 +135,34 @@ void ShapedItemsSource::ClearParent()
     // row for a shape that is already flat.
     if (!m_parentKeySelector)
     {
+        // Already cleared, but a teardown deferred behind a publication may still be owed. Once no
+        // publication is on the stack a repeat call finishes it rather than leaving the tree live.
+        if (m_pendingHierarchyTeardown)
+        {
+            CompleteDeferredHierarchyTeardown();
+        }
         return;
     }
 
     m_keySelector = nullptr;
     m_parentKeySelector = nullptr;
+    ++m_parentDeclarationGeneration;
     m_parentRelationRedeclared = false;
-    ReleaseHierarchyProjection();
+
+    // Torn down now only when no publication of this engine is on the stack (a rebuild, a group
+    // re-slice or a teardown completion). From inside one (an app
+    // handler of a notification the rebuild or group re-slice raised) the outer frame is still
+    // publishing THIS hierarchy and will hand its adapter to consumers; releasing it underneath would
+    // hand them none. The Refresh requested below is deferred behind that frame, and every
+    // non-hierarchical rebuild path releases the hierarchy itself, so the teardown still happens --
+    // one coherent publication later. That rebuild can fail (invalid data), so the teardown is also
+    // owed separately -- until non-hierarchical metadata is actually published -- and completed
+    // when the publication unwinds either way. Set before the release so it snapshots the rows.
+    m_pendingHierarchyTeardown = true;
+    if (!m_isRefreshing && !m_reslicingGroups && !m_completingTeardown)
+    {
+        ReleaseHierarchyProjection();
+    }
     m_hierarchyAxisDirty = true;
     ApplyShapingChange();
 }
@@ -384,7 +407,7 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
     // Re-entrant during a full rebuild: the in-flight Refresh() re-materializes the live source
     // when it completes, but changes after its initial materialization still need one coalesced
     // follow-up rebuild after the outer rebuild unwinds.
-    if (m_isRefreshing)
+    if (m_isRefreshing || m_completingTeardown)
     {
         m_pendingRefresh = true;
         return;
@@ -402,10 +425,19 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
         return;
     }
 
+    try
     {
         m_isApplyingIncrementalChange = true;
         auto guard = wil::scope_exit([this]() noexcept { m_isApplyingIncrementalChange = false; });
         ApplyIncrementalChange(args);
+    }
+    catch (...)
+    {
+        // The application (or the full rebuild it fell back to) failed. A request deferred behind it
+        // -- a verb issued from a publication callback, say -- would otherwise wait for the next
+        // unrelated change. Posted, never run inline: the caller is already receiving this error.
+        PostPendingRefresh();
+        throw;
     }
 
     // A notification re-entered while we were applying: now that the projection/identity
@@ -421,7 +453,7 @@ void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collec
 {
     // See the UI-thread contract on OnSourceCollectionChanged().
 
-    if (m_isRefreshing)
+    if (m_isRefreshing || m_completingTeardown)
     {
         m_pendingRefresh = true;
         return;
@@ -433,10 +465,19 @@ void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collec
         return;
     }
 
+    try
     {
         m_isApplyingIncrementalChange = true;
         auto guard = wil::scope_exit([this]() noexcept { m_isApplyingIncrementalChange = false; });
         ApplyIncrementalVectorChange(args);
+    }
+    catch (...)
+    {
+        // The application (or the full rebuild it fell back to) failed. A request deferred behind it
+        // -- a verb issued from a publication callback, say -- would otherwise wait for the next
+        // unrelated change. Posted, never run inline: the caller is already receiving this error.
+        PostPendingRefresh();
+        throw;
     }
 
     if (m_pendingRefresh)
@@ -1052,7 +1093,7 @@ void ShapedItemsSource::RebuildUnshapedRows(std::vector<winrt::IInspectable> con
     }
     m_groupCache.clear();
     m_projectedAsGrouped = false;
-    RaiseProjectionRebuilt();
+    PublishProjection();
 }
 
 void ShapedItemsSource::Refresh()
@@ -1062,7 +1103,12 @@ void ShapedItemsSource::Refresh()
     // (e.g. an app mutating the source from a filter/sort/group callback) must not re-enter
     // ReplaceAll on the projection. Remember it and run one coalesced rebuild after the outer
     // rebuild unwinds so changes after materialization are not lost.
-    if (m_isRefreshing)
+    //
+    // A group re-slice is part of the same guarded publication: it mutates the grouped adapter's
+    // groups one by one, and a rebuild nested inside it would replace those groups under its loop.
+    // It is deferred the same way and replayed by the re-slice once it finishes. So is one requested
+    // from inside a teardown completion's publication (see CompleteDeferredHierarchyTeardown).
+    if (m_isRefreshing || m_reslicingGroups || m_completingTeardown)
     {
         m_pendingRefresh = true;
         return;
@@ -1070,6 +1116,7 @@ void ShapedItemsSource::Refresh()
 
     bool const wasProjectedAsGrouped = m_projectedAsGrouped;
     bool runPendingRefresh = false;
+    try
     {
         m_isRefreshing = true;
         m_pendingRefresh = false;
@@ -1149,6 +1196,24 @@ void ShapedItemsSource::Refresh()
         }
         MUX_ASSERT(m_source == authoritativeSource);
     }
+    catch (...)
+    {
+        // The pass failed (invalid data) and its error must still reach the caller, with the
+        // previous projection intact. But a request that arrived DURING the pass -- a selector or
+        // handler that fixed the data, say -- describes newer state than the one that failed, and
+        // the guard above has already consumed it. Replaying it synchronously would throw into the
+        // same app call again, so it is posted instead. Only a request that arrived during the
+        // failing pass is replayed, so persistently bad data cannot loop.
+        if (runPendingRefresh)
+        {
+            ScheduleRefreshReplay();
+        }
+
+        // A ClearParent from inside the pass must still take effect: the rebuild that would have
+        // released the hierarchy is the one that just failed.
+        CompleteDeferredHierarchyTeardown();
+        throw;
+    }
 
     if (runPendingRefresh)
     {
@@ -1168,6 +1233,71 @@ void ShapedItemsSource::Refresh()
     {
         RaiseShapeSwapped();
     }
+
+    // Normally already done by the non-hierarchical rebuild that just published; this only acts if
+    // the pass ended without releasing a hierarchy whose relation was cleared.
+    CompleteDeferredHierarchyTeardown();
+}
+
+void ShapedItemsSource::PostPendingRefresh() noexcept
+{
+    if (!m_pendingRefresh)
+    {
+        return;
+    }
+
+    try
+    {
+        ScheduleRefreshReplay();
+    }
+    catch (...)
+    {
+    }
+
+    // Kept when nothing could be posted (no dispatcher): the obligation then stays with the next
+    // change, which sees the pending flag and rebuilds in full.
+    if (m_refreshReplayScheduled)
+    {
+        m_pendingRefresh = false;
+    }
+}
+
+void ShapedItemsSource::ScheduleRefreshReplay()
+{
+    if (m_refreshReplayScheduled)
+    {
+        return;
+    }
+
+    // No dispatcher means no UI thread (test host): there is no later turn to post to, and the
+    // next reshape re-materializes the source anyway.
+    auto const queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+    if (!queue)
+    {
+        return;
+    }
+
+    std::weak_ptr<ShapedItemsSource> weakThis = weak_from_this();
+    m_refreshReplayScheduled = queue.TryEnqueue([weakThis]()
+    {
+        auto strongThis = weakThis.lock();
+        if (!strongThis)
+        {
+            return;
+        }
+
+        strongThis->m_refreshReplayScheduled = false;
+        try
+        {
+            strongThis->Refresh();
+        }
+        catch (...)
+        {
+            // No app call is on the stack to receive this. The data is still invalid; the previous
+            // projection stays, and the next verb or source change re-validates and throws to the
+            // app as usual.
+        }
+    });
 }
 
 void ShapedItemsSource::RebuildFlat(std::vector<winrt::IInspectable>& rows)
@@ -1210,7 +1340,7 @@ void ShapedItemsSource::RebuildFlat(std::vector<winrt::IInspectable>& rows)
     }
     m_groupCache.clear();
     m_projectedAsGrouped = false;
-    RaiseProjectionRebuilt();
+    PublishProjection();
 }
 
 std::vector<winrt::IInspectable> ShapedItemsSource::Materialize(winrt::IInspectable const& source)
@@ -1226,9 +1356,6 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     InvalidateShapingState();
     // A grouped projection does not use the flat incremental fast-path.
     ClearFlatRowIdentityTracking();
-    // Plain grouping: no hierarchy axis, so any adapter a previous grouped+hierarchical projection
-    // left behind must go before the group slices are rebuilt from the flat rows.
-    ReleaseHierarchyProjection();
     // Sorts requested before GroupBy establish the group order. Sorts requested after GroupBy
     // are applied per bucket below, preserving the group order while sorting within each group.
     ApplySort(rows, -1, m_pipeline.GroupOrder());
@@ -1265,13 +1392,10 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
         // to the same identity unless the app opted in via groupIdentitySelector. Silently
         // flattening the projection would let the app ship with grouping mysteriously "not
         // working" and no diagnostic.
-        MUX_ASSERT_MSG(false,
-            L"GroupBy key selector produced an invalid group identity "
-            L"(empty, non-string, throwing, or two distinct group keys collapsing to the "
-            L"same identity without a groupIdentitySelector opt-in). Fix the GroupBy(...) "
-            L"selector so every group has a stable non-empty unique string identity, or "
-            L"supply a groupIdentitySelector that resolves the collision intentionally. "
-            L"See the per-bucket reason string logged via LogIdentityProjectionDisabled.");
+        //
+        // Reported by throwing, not by a debug assert: this is caller data, not an internal
+        // invariant, and an assert would abort the pass without its unwind (guards, deferred work)
+        // in checked builds -- leaving a different engine state than the one apps get.
         LogIdentityProjectionDisabled(rejectReason);
         winrt::hstring message = Diagnostic(L"GroupBy key selector produced an invalid group identity");
         if (rejectReason)
@@ -1280,6 +1404,12 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
         }
         throw winrt::hresult_invalid_argument(message);
     }
+
+    // Plain grouping: no hierarchy axis, so any adapter a previous grouped+hierarchical projection
+    // left behind must go before the group slices are rebuilt from the flat rows. Not before the
+    // bucketize above: that can still throw, and the previous projection -- hierarchy included --
+    // must then stay whole for the error contract (and for an owed teardown to republish).
+    ReleaseHierarchyProjection();
 
     if (!m_groupSource)
     {
@@ -1374,7 +1504,7 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
 
     m_kind = ProjectionKind::Grouped;
     m_projectedAsGrouped = true;
-    RaiseProjectionRebuilt();
+    PublishProjection();
 }
 
 void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& rows)
@@ -1387,6 +1517,11 @@ void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& ro
     // May throw on invalid data. Nothing has been mutated yet, so the previous projection stays
     // intact.
     auto index = BuildHierarchyIndex(rows);
+    if (!index)
+    {
+        // The relation was re-declared or retracted mid-build; the queued Refresh projects that.
+        return;
+    }
 
     // Same reasoning as RebuildGrouped: the presented rows are materialized by an adapter, not by
     // the retained layer-1 state, so leaving that state live would let the in-place path re-sort a
@@ -1407,6 +1542,7 @@ void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& ro
     }
     m_groupCache.clear();
     m_hierarchyGroups.clear();
+    ++m_hierarchyGeneration;
     m_rootBucketIndex.clear();
 
     // Ungrouped: one segment spanning every root.
@@ -1428,7 +1564,7 @@ void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& ro
     // Not a grouped projection: there are no header rows, so a consumer asking "is this grouped"
     // must hear no, or it will look for a GroupedEntry at every index.
     m_projectedAsGrouped = false;
-    RaiseProjectionRebuilt();
+    PublishProjection();
 }
 
 // Both axes. The row stream is:
@@ -1441,13 +1577,40 @@ void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& ro
 // user means by "group the tree". Under a filter, a context root is bucketed like any other root.
 void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows)
 {
+    // Kept in source order: the roots are bucketed from here, not from the sorted list below.
+    const std::vector<winrt::IInspectable> sourceOrder = rows;
+
     // Every sibling set below the roots is sorted by the full sort, exactly as when ungrouped.
     ApplySort(rows);
     auto index = BuildHierarchyIndex(rows);
+    if (!index)
+    {
+        // Obsolete relation, as in RebuildHierarchical.
+        return;
+    }
 
-    // Sorts declared BEFORE GroupBy establish the group order; sorts declared after are applied
-    // within each bucket below. Identical split to RebuildGrouped, applied to the ROOTS.
-    auto roots = index->Roots;
+    // The roots are bucketed exactly as RebuildGrouped buckets rows: in SOURCE order with only the
+    // sorts declared BEFORE GroupBy applied, so those alone establish the group (header) order.
+    // Sorts declared after GroupBy are applied within each bucket below. Deriving the roots from
+    // the fully sorted list instead would let a post-GroupBy sort decide which bucket is seen first.
+    std::vector<winrt::IInspectable> roots;
+    {
+        std::unordered_set<void*> rootSet;
+        rootSet.reserve(index->Roots.size());
+        for (auto const& root : index->Roots)
+        {
+            rootSet.insert(winrt::get_abi(root));
+        }
+
+        roots.reserve(index->Roots.size());
+        for (auto const& item : sourceOrder)
+        {
+            if (rootSet.contains(winrt::get_abi(item)))
+            {
+                roots.push_back(item);
+            }
+        }
+    }
     ApplySort(roots, -1, m_pipeline.GroupOrder());
 
     std::vector<ShapingHelpers::KeyedBucket> keyedBuckets;
@@ -1474,10 +1637,6 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
     {
         // Same fail-fast contract as RebuildGrouped: an unusable group identity is a caller bug,
         // and silently flattening would ship an app whose grouping mysteriously does nothing.
-        MUX_ASSERT_MSG(false,
-            L"GroupBy key selector produced an invalid group identity over a hierarchical source "
-            L"(empty, non-string, throwing, or two distinct group keys collapsing to the same "
-            L"identity without a groupIdentitySelector opt-in).");
         LogIdentityProjectionDisabled(degradeReason);
         winrt::hstring message = Diagnostic(L"GroupBy key selector produced an invalid group identity");
         if (degradeReason)
@@ -1519,6 +1678,7 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
     m_rootBucketIndex = std::move(rootBucketIndex);
     // Stale slices must not be re-sliced by the publish below; they are rebuilt right after it.
     m_hierarchyGroups.clear();
+    ++m_hierarchyGeneration;
 
     PublishHierarchyIndex(std::move(index), std::move(segments));
 
@@ -1595,7 +1755,7 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
     // Grouped IS true here: the presented axis is the grouped adapter's, so it carries header rows
     // and a consumer must look for GroupedEntry.
     m_projectedAsGrouped = true;
-    RaiseProjectionRebuilt();
+    PublishProjection();
 }
 
 std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarchyIndex(std::vector<winrt::IInspectable> const& sortedRows)
@@ -1608,8 +1768,27 @@ std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarch
         filter = [this](winrt::IInspectable const& item) { return m_pipeline.PassesFilter(item); };
     }
 
+    // The selectors run app code, which may re-declare or retract the relation mid-build. Copies
+    // keep the ones this pass started with alive, and the generation says whether they are still
+    // the declared ones afterwards.
+    auto const keySelector = m_keySelector;
+    auto const parentKeySelector = m_parentKeySelector;
+    const uint64_t generation = m_parentDeclarationGeneration;
+
     winrt::hstring error;
-    if (!ShapingHelpers::BuildParentKeyIndex(sortedRows, m_keySelector, m_parentKeySelector, filter, *index, error))
+    const bool built = ShapingHelpers::BuildParentKeyIndex(sortedRows, keySelector, parentKeySelector, filter, *index, error);
+
+    if (generation != m_parentDeclarationGeneration)
+    {
+        // Obsolete: whatever this pass built or rejected describes a relation that is no longer
+        // declared, so neither the index nor its validation error may surface. The verb that
+        // replaced it requested a Refresh, which the one on the stack replays; making sure of
+        // that here keeps the latest declaration from being dropped.
+        m_pendingRefresh = true;
+        return nullptr;
+    }
+
+    if (!built)
     {
         throw winrt::hresult_invalid_argument(Diagnostic(error));
     }
@@ -1671,8 +1850,18 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
 {
     if (m_hierarchicalAdapter)
     {
+        // A cleared relation whose replacement may yet fail: keep what the tree was showing, so an
+        // inert fallback can still be published for the rows on screen (see
+        // CompleteDeferredHierarchyTeardown). Grouped trees keep their rows in the group slices.
+        if (m_pendingHierarchyTeardown && m_kind == ProjectionKind::Hierarchical)
+        {
+            m_releasedHierarchyRows = VisibleHierarchicalRows();
+        }
+
         // Callback first: nothing below may drive a re-slice on the way out.
         m_hierarchicalAdapter->ProjectionChanged(nullptr);
+        // Also detaches it: this can run from inside one of its own notifications (an app handler
+        // calling ClearParent), and the publication still on the stack must stop there.
         m_hierarchicalAdapter->ClearIndex();
 
         // Inert from here on: a row-metadata provider still bound to it until the swap must not
@@ -1687,6 +1876,7 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
     }
 
     m_hierarchyGroups.clear();
+    ++m_hierarchyGeneration;
     m_rootBucketIndex.clear();
 }
 
@@ -1712,7 +1902,11 @@ std::vector<winrt::IInspectable> ShapedItemsSource::VisibleHierarchicalRows() co
 
 void ShapedItemsSource::ResliceGroupsFromHierarchy()
 {
-    if (!m_hierarchicalAdapter || m_hierarchyGroups.empty())
+    // Everything this pass reads is pinned or snapshotted up front. The SetItems calls below notify
+    // the grouped adapter and through it app handlers, and a handler may retract or rebuild the
+    // hierarchy (ClearParent tears it down directly; a Refresh is deferred, see below).
+    auto const adapter = m_hierarchicalAdapter;
+    if (!adapter || m_hierarchyGroups.empty())
     {
         return;
     }
@@ -1723,61 +1917,239 @@ void ShapedItemsSource::ResliceGroupsFromHierarchy()
     {
         return;
     }
-    m_reslicingGroups = true;
-    auto guard = wil::scope_exit([this]() noexcept { m_reslicingGroups = false; });
 
-    std::vector<std::vector<winrt::IInspectable>> slices(m_hierarchyGroups.size());
-    // Roots per bucket, tracked separately from the slice size: the slice also carries every
-    // visible descendant, and a header must count the children it owns, not the rows it spans.
-    std::vector<int32_t> rootCounts(m_hierarchyGroups.size(), 0);
-
-    auto const entries = m_hierarchicalAdapter->Entries();
-    const int32_t count = entries ? entries.Count() : 0;
-
-    // One pass. Every depth-0 row opens the bucket it was assigned at build time and every row
-    // after it belongs to that bucket until the next depth-0 row -- which is exactly the adapter's
-    // own emission order, a root immediately followed by its visible subtree.
-    size_t currentBucket = 0;
-    bool haveBucket = false;
-    for (int32_t i = 0; i < count; ++i)
     {
-        auto const* const node = m_hierarchicalAdapter->TryGetNodeRow(i);
-        if (!node)
-        {
-            continue;
-        }
+        m_reslicingGroups = true;
+        auto guard = wil::scope_exit([this]() noexcept { m_reslicingGroups = false; });
 
-        if (node->Depth == 0)
+        // A handler of one of the SetItems below can throw. The re-slice guard is released on the
+        // way out, and what the pass deferred behind itself -- a Refresh, a ClearParent teardown --
+        // must not be lost with it: the teardown completes now, the Refresh is posted (replaying it
+        // synchronously would throw into the same app call).
+        auto completion = wil::scope_exit([this]() noexcept
         {
-            auto const it = m_rootBucketIndex.find(winrt::get_abi(node->Item));
-            if (it == m_rootBucketIndex.end())
+            m_reslicingGroups = false;
+            if (!m_isRefreshing && !m_isApplyingIncrementalChange)
             {
-                // A root the bucket map does not know. Only reachable if the source mutated
-                // between the bucketize and this pass, in which case a full rebuild is already
-                // queued; drop this subtree rather than charge it to the previous bucket.
-                haveBucket = false;
+                if (std::exchange(m_pendingRefresh, false))
+                {
+                    try { ScheduleRefreshReplay(); } catch (...) {}
+                }
+                CompleteDeferredHierarchyTeardown();
+            }
+        });
+
+        // The groups this pass publishes into, and the generation they belong to. Any rebuild or
+        // teardown that replaces them bumps the generation, which ends the publish below.
+        auto const groups = m_hierarchyGroups;
+        const uint64_t generation = m_hierarchyGeneration;
+
+        std::vector<std::vector<winrt::IInspectable>> slices(groups.size());
+        // Roots per bucket, tracked separately from the slice size: the slice also carries every
+        // visible descendant, and a header must count the children it owns, not the rows it spans.
+        std::vector<int32_t> rootCounts(groups.size(), 0);
+
+        auto const entries = adapter->Entries();
+        const int32_t count = entries ? entries.Count() : 0;
+
+        // One pass. Every depth-0 row opens the bucket it was assigned at build time and every row
+        // after it belongs to that bucket until the next depth-0 row -- which is exactly the
+        // adapter's own emission order, a root immediately followed by its visible subtree.
+        size_t currentBucket = 0;
+        bool haveBucket = false;
+        for (int32_t i = 0; i < count; ++i)
+        {
+            auto const* const node = adapter->TryGetNodeRow(i);
+            if (!node)
+            {
                 continue;
             }
-            currentBucket = it->second;
-            haveBucket = true;
-            if (currentBucket < rootCounts.size())
+
+            if (node->Depth == 0)
             {
-                ++rootCounts[currentBucket];
+                auto const it = m_rootBucketIndex.find(winrt::get_abi(node->Item));
+                if (it == m_rootBucketIndex.end())
+                {
+                    // A root the bucket map does not know. Only reachable if the source mutated
+                    // between the bucketize and this pass, in which case a full rebuild is already
+                    // queued; drop this subtree rather than charge it to the previous bucket.
+                    haveBucket = false;
+                    continue;
+                }
+                currentBucket = it->second;
+                haveBucket = true;
+                if (currentBucket < rootCounts.size())
+                {
+                    ++rootCounts[currentBucket];
+                }
+            }
+
+            if (haveBucket && currentBucket < slices.size())
+            {
+                slices[currentBucket].push_back(node->Item);
             }
         }
 
-        if (haveBucket && currentBucket < slices.size())
+        for (size_t i = 0; i < groups.size(); ++i)
         {
-            slices[currentBucket].push_back(node->Item);
+            // Stale: a handler of an earlier SetItems retracted or replaced the hierarchy. The rest
+            // of these slices describe a projection that is no longer the one presented.
+            if (generation != m_hierarchyGeneration)
+            {
+                break;
+            }
+
+            // Count before items: SetItems notifies the grouped adapter, which re-mints the header
+            // entry, and the header must never be built from a stale count.
+            groups[i]->GroupChildCount(rootCounts[i]);
+            groups[i]->SetItems(slices[i]);
+        }
+
+        completion.release();
+    }
+
+    // A Refresh requested while re-slicing was deferred (see Refresh). Replay it now, unless an
+    // outer Refresh or incremental application is on the stack; each of those replays it itself.
+    if (!m_isRefreshing && !m_isApplyingIncrementalChange)
+    {
+        if (std::exchange(m_pendingRefresh, false))
+        {
+            Refresh();
+        }
+        else
+        {
+            CompleteDeferredHierarchyTeardown();
+        }
+    }
+}
+
+void ShapedItemsSource::CompleteDeferredHierarchyTeardown()
+{
+    if (!m_pendingHierarchyTeardown || m_isRefreshing || m_reslicingGroups)
+    {
+        return;
+    }
+
+    // The teardown publication runs app code (the consumer's swap raises property-change,
+    // selection and collection notifications). A ClearParent from there would otherwise land right
+    // back here while the obligation is still owed and publish again from inside this publication,
+    // without bound. Nested requests are recorded instead and replayed at most once, after the
+    // outer attempt has unwound.
+    if (m_completingTeardown)
+    {
+        m_teardownReplayRequested = true;
+        return;
+    }
+
+    bool const refreshAlreadyPending = m_pendingRefresh;
+    {
+        m_completingTeardown = true;
+        m_teardownReplayRequested = false;
+        auto guard = wil::scope_exit([this]() noexcept
+        {
+            m_completingTeardown = false;
+            m_teardownReplayRequested = false;
+        });
+
+        TryCompleteDeferredHierarchyTeardown();
+
+        // Only matters if the outer attempt failed: success already discharged the obligation. If
+        // this attempt fails too, the obligation stays for the next ClearParent or Refresh.
+        if (std::exchange(m_teardownReplayRequested, false))
+        {
+            TryCompleteDeferredHierarchyTeardown();
         }
     }
 
-    for (size_t i = 0; i < m_hierarchyGroups.size(); ++i)
+    // A Refresh requested from inside the publication (a verb or source change in a handler) was
+    // deferred behind it. Posted rather than run here: this is often reached from an unwind, where
+    // nothing may throw. An outer incremental application replays a pending Refresh itself.
+    if (!refreshAlreadyPending && m_pendingRefresh && !m_isApplyingIncrementalChange)
     {
-        // Count before items: SetItems notifies the grouped adapter, which re-mints the header
-        // entry, and the header must never be built from a stale count.
-        m_hierarchyGroups[i]->GroupChildCount(rootCounts[i]);
-        m_hierarchyGroups[i]->SetItems(slices[i]);
+        m_pendingRefresh = false;
+        try { ScheduleRefreshReplay(); } catch (...) {}
+    }
+}
+
+void ShapedItemsSource::TryCompleteDeferredHierarchyTeardown()
+{
+    // Done once the consumer has actually been handed non-hierarchical metadata. Neither a released
+    // adapter nor a non-hierarchical m_kind is enough: a rebuild can release the adapter and stage a
+    // flat kind, then fail before or during publication, leaving the previous provider (and the
+    // detached adapter it owns) in place. Re-declared since: the new relation's rebuild owns the
+    // projection.
+    if (!m_pendingHierarchyTeardown || m_parentKeySelector || !m_hierarchyPublished)
+    {
+        m_pendingHierarchyTeardown = false;
+        m_releasedHierarchyRows.clear();
+        return;
+    }
+
+    // The rebuild that would have replaced this projection failed, so the error contract keeps the
+    // previous rows on screen. They stay -- but no longer as a tree: the relation is gone, so the
+    // adapter is released and the rows are republished without it, not expandable and not bound to
+    // intent recorded against the retracted relation. The next successful Refresh re-shapes them.
+    //
+    // Reached from an unwind (a failed pass, a scope guard, a repeat ClearParent), so nothing here
+    // may escape: the pass's own error is the one the app hears. The flag stays set until a
+    // publication succeeds, so a repeat ClearParent or the next Refresh can retry it; each of those
+    // makes at most one attempt, so a publication that keeps failing cannot loop.
+    try
+    {
+        if (m_kind == ProjectionKind::GroupedHierarchical)
+        {
+            // The grouped adapter still presents the same headers and slices; only the hierarchy
+            // reading of them goes.
+            ReleaseHierarchyProjection();
+            m_kind = ProjectionKind::Grouped;
+        }
+        else if (m_kind == ProjectionKind::Hierarchical)
+        {
+            if (m_hierarchicalAdapter)
+            {
+                m_releasedHierarchyRows = VisibleHierarchicalRows();
+            }
+            auto const visibleRows = std::move(m_releasedHierarchyRows);
+            m_releasedHierarchyRows.clear();
+            ReleaseHierarchyProjection();
+            m_releasedHierarchyRows.clear();
+            InvalidateShapingState();
+            ClearFlatRowIdentityTracking();
+            m_rows.ReplaceAll(visibleRows);
+            // Degraded: a verb is still configured, so every later change re-shapes through
+            // Refresh rather than splicing into these rows.
+            m_kind = ProjectionKind::Unshaped;
+        }
+        // Otherwise a non-hierarchical projection is already staged (a rebuild or an earlier
+        // fallback got that far) but its publication failed: publishing it again is the teardown.
+
+        PublishProjection();
+        m_pendingHierarchyTeardown = false;
+        m_releasedHierarchyRows.clear();
+    }
+    catch (...)
+    {
+    }
+}
+
+void ShapedItemsSource::PublishProjection()
+{
+    // Conservatively "published" before the callback: a consumer that throws part-way may already
+    // have swapped to the hierarchical provider. Only a completed non-hierarchical publication
+    // retires it. An app handler reached from the callback can throw (the event sources used by
+    // the consumer propagate handler exceptions), which is why this is tracked apart from m_kind.
+    bool const hierarchical =
+        m_kind == ProjectionKind::Hierarchical || m_kind == ProjectionKind::GroupedHierarchical;
+    if (hierarchical)
+    {
+        m_hierarchyPublished = true;
+    }
+
+    RaiseProjectionRebuilt();
+
+    if (!hierarchical)
+    {
+        m_hierarchyPublished = false;
     }
 }
 

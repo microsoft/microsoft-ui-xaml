@@ -441,9 +441,12 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     bool changed = false;
     try
     {
+        // A local strong ref: a handler of the collection change this raises may re-declare the
+        // source's shape, which replaces m_tableViewSourceRowMetadata while the call is running.
+        auto const provider = m_tableViewSourceRowMetadata;
         if (subtree)
         {
-            m_tableViewSourceRowMetadata->ExpandSubtree(identity);
+            provider->ExpandSubtree(identity);
             changed = true;
         }
         else if (desired.has_value())
@@ -451,17 +454,17 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
             // Idempotent set: applying the state we already have is a no-op in the provider.
             if (*desired)
             {
-                m_tableViewSourceRowMetadata->Expand(identity);
+                provider->Expand(identity);
             }
             else
             {
-                m_tableViewSourceRowMetadata->Collapse(identity);
+                provider->Collapse(identity);
             }
             changed = true;
         }
         else
         {
-            changed = m_tableViewSourceRowMetadata->Toggle(identity);
+            changed = provider->Toggle(identity);
         }
     }
     catch (...)
@@ -651,6 +654,16 @@ void TableView::SetBulkExpansion(bool expand, BulkExpansionAxis axis)
         return;
     }
 
+    // Documented no-ops must stay no-ops: without a tree (Rows) or groups (Groups) there is nothing
+    // to reshape, and terminating the edit first would commit and close an open editor for nothing.
+    const bool hasAxis = (axis == BulkExpansionAxis::Rows)
+        ? m_tableViewSourceRowMetadata->IsHierarchicalSource()
+        : IsTableViewSourceGrouped();
+    if (!hasAxis)
+    {
+        return;
+    }
+
     if (!TryTerminateEditForControlInitiatedReshape())
     {
         if (m_editState == EditState::Ending)
@@ -670,18 +683,20 @@ void TableView::SetBulkExpansion(bool expand, BulkExpansionAxis axis)
     bool changed = false;
     try
     {
+        // Local strong ref, as in ApplyGroupExpansionByIdentity.
+        auto const provider = m_tableViewSourceRowMetadata;
         switch (axis)
         {
         case BulkExpansionAxis::Groups:
             expand
-                ? m_tableViewSourceRowMetadata->ExpandAllGroups()
-                : m_tableViewSourceRowMetadata->CollapseAllGroups();
+                ? provider->ExpandAllGroups()
+                : provider->CollapseAllGroups();
             break;
 
         case BulkExpansionAxis::Rows:
             expand
-                ? m_tableViewSourceRowMetadata->ExpandAllRows()
-                : m_tableViewSourceRowMetadata->CollapseAllRows();
+                ? provider->ExpandAllRows()
+                : provider->CollapseAllRows();
             break;
         }
 
