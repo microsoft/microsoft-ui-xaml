@@ -177,23 +177,9 @@ jobs:
     - task: PowerShell@2
       displayName: 'Prepare final runtime copies for code coverage'
       inputs:
-        targetType: inline
-        script: |
-          # Test apps can carry component-package DLLs from an earlier link.
-          # Even with identical machine code, their PDB GUID/age can differ.
-          # Coverage downloads only the final product PDBs, so use their matching
-          # DLLs for every loose payload copy before instrumentation.
-          foreach ($module in @('Microsoft.ui.xaml.dll', 'Microsoft.UI.Xaml.Controls.dll'))
-          {
-              $source = Get-Item -LiteralPath "$(artifactsDir)\drop\$(buildFlavor)\Product\$module"
-              $copies = @(Get-ChildItem -LiteralPath "$(testBinaryPath)" -Recurse -File -Filter $module)
-              if ($copies.Count -eq 0) { throw "No payload copies of $module found." }
-              foreach ($copy in $copies)
-              {
-                  Copy-Item -LiteralPath $source.FullName -Destination $copy.FullName -Force
-              }
-              Write-Host "Prepared $($copies.Count) copies of $module from $($source.FullName)."
-          }
+        targetType: filePath
+        filePath: build\PipelineScripts\coverage\Prepare-CoveragePayload.ps1
+        arguments: -ProductDir "$(artifactsDir)\drop\$(buildFlavor)\Product" -PayloadDir "$(testBinaryPath)"
 
     - template: WinUI-DownloadPipelineArtifacts-Steps.yml
       parameters:
@@ -208,7 +194,7 @@ jobs:
       displayName: 'Instrument runtime DLLs for code coverage'
       inputs:
         targetType: filePath
-        filePath: Helix\common\pipeline\coverage\Instrument-CoveragePayload.ps1
+        filePath: build\PipelineScripts\coverage\Instrument-CoveragePayload.ps1
         # All OS payloads share the run's session ID because the test job overlays them.
         arguments: -PayloadDir "$(testBinaryPath)" -SymbolsSearchRoot "$(artifactsDir)\CoverageSymbols" -SessionId "winui-$(Build.BuildId)"
 

@@ -4,6 +4,7 @@
 # Tests coverage-script behavior and failure paths with fixtures, without running WinUI tests.
 
 $script:coverageScripts = Split-Path $PSScriptRoot -Parent
+$script:repoRoot = [IO.Path]::GetFullPath("$PSScriptRoot\..\..\..\..")
 $script:fixtureRoot = Join-Path $PSScriptRoot ('.fixtures-' + [guid]::NewGuid().ToString('N'))
 $script:compiledTool = Join-Path $script:fixtureRoot 'CoverageToolFixture.exe'
 $script:caseSequence = 0
@@ -106,12 +107,7 @@ function Assert-FixtureProcessExited([int]$ProcessId)
 
 function Invoke-PayloadPreparation
 {
-    $template = Get-Content -LiteralPath "$PSScriptRoot\..\..\..\..\..\build\AzurePipelinesTemplates\WinUI-CreateTestPayload-Job.yml" -Raw
-    $match = [regex]::Match($template, "(?ms)displayName: 'Prepare final runtime copies for code coverage'.*?script: \|\r?\n(?<code>(?: {10}[^\r\n]*\r?\n)+)")
-    if (-not $match.Success) { throw 'Coverage preparation task was not found.' }
-    $code = $match.Groups['code'].Value.Replace('$(artifactsDir)', "$script:caseRoot\artifacts")
-    $code = $code.Replace('$(buildFlavor)', 'x86chk').Replace('$(testBinaryPath)', $script:payload)
-    & ([scriptblock]::Create($code))
+    & "$script:coverageScripts\Prepare-CoveragePayload.ps1" -ProductDir $script:product -PayloadDir $script:payload
 }
 
 try
@@ -1013,7 +1009,7 @@ try
                 {
                     if ($collectorMode -eq 'empty-slice')
                     {
-                        $global:CoverageTestCollector.SliceRunner = Join-Path $script:coverageScripts '..\RunTestPassSliceOnBuildAgent.ps1'
+                        $global:CoverageTestCollector.SliceRunner = Join-Path $script:repoRoot 'Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1'
                         $global:CoverageTestCollector.WorkItemProjDir = Join-Path $script:caseRoot 'empty workitems'
                         $global:CoverageTestCollector.Payload = $script:payload
                         $global:CoverageTestCollector.UploadRoot = Split-Path $script:coverageOutput
@@ -1327,7 +1323,7 @@ try
 
     Describe 'Coverage merge retry gating' {
         BeforeEach {
-            $script:mergeTemplate = Get-Content -LiteralPath "$PSScriptRoot\..\..\..\..\..\build\AzurePipelinesTemplates\WinUI-MergeCodeCoverage-Job.yml" -Raw
+            $script:mergeTemplate = Get-Content -LiteralPath "$script:repoRoot\build\AzurePipelinesTemplates\WinUI-MergeCodeCoverage-Job.yml" -Raw
         }
 
         It 'requires successful test dependencies before merging' {
@@ -1346,7 +1342,7 @@ try
 
     Describe 'Coverage artifact publication' {
         It 'preserves cleanup-failure suppression in coverage jobs without changing the coverage-off probe condition' {
-            $template = Get-Content -LiteralPath "$PSScriptRoot\..\..\..\..\..\build\AzurePipelinesTemplates\WinUI-RunTestPassOnPipeline-Job.yml" -Raw
+            $template = Get-Content -LiteralPath "$script:repoRoot\build\AzurePipelinesTemplates\WinUI-RunTestPassOnPipeline-Job.yml" -Raw
             $probe = [regex]::Match($template, '(?ms)displayName: Check whether test-output artifact already exists.*?(?=  - task: PublishPipelineArtifact@1)')
             $probe.Success | Should Be $true
             $probe.Value | Should Match '(?m)^    \$\{\{ if eq\(parameters.collectCodeCoverage, true\) \}\}:\r?\n(?:      #[^\r\n]*\r?\n)*      condition: and\(always\(\), ne\(variables\[''skipPublish''\], ''true''\)\)\r?\n    \$\{\{ else \}\}:\r?\n      condition: always\(\)'
