@@ -628,12 +628,14 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         PresentationKnobStatusText().Text(text);
     }
 
-    void MainWindow::ApplyEdit(std::function<void()> const& edit)
+    void MainWindow::ApplyEdit(std::function<void()> const& edit, Chart const& chart)
     {
         if (!m_ready || m_syncing || m_closing) return;
         try
         {
             edit();
+            // Brush changes alone can leave the rendered plot at its previous appearance.
+            if (chart) chart.InvalidateArrange();
             StatusText().Text(L"Settings applied.");
             PresentationKnobStatusText().Text(L"Editors show the selected series and point's current settings.");
         }
@@ -655,6 +657,8 @@ namespace winrt::ChartAppCppUnpackaged::implementation
             {
                 SyncGuard guard{ m_syncing };
                 edit();
+                // Brush changes alone can leave the rendered plot at its previous appearance.
+                (area ? AreaMarkupChart() : BarMarkupChart()).InvalidateArrange();
             }
             synchronize();
             status.Text(message);
@@ -748,7 +752,6 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         m_syncing = true;
         auto series = SelectedPresentationSeries();
         LegendVisibilityCheckBox().IsChecked(MarkupChart().ShowLegend());
-        LegendTitleTextBox().Text(MarkupChart().LegendTitle());
         ShowDataLabelsCheckBox().IsChecked(series.ShowDataLabels());
         ShowDataMarkersCheckBox().IsChecked(series.ShowDataMarkers());
         DataLabelBrushCheckBox().IsChecked(series.DataLabelBrush() != nullptr);
@@ -1229,19 +1232,19 @@ namespace winrt::ChartAppCppUnpackaged::implementation
     }
     void MainWindow::OnGridLineBrushChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
-        ApplyEdit([&] { auto brush = AxisBrush(GridLineBrushBox()); m_yAxis.GridLineMajorBrush(brush); m_xAxis.GridLineMajorBrush(brush); });
+        ApplyEdit([&] { auto brush = AxisBrush(GridLineBrushBox()); m_yAxis.GridLineMajorBrush(brush); m_xAxis.GridLineMajorBrush(brush); }, MarkupChart());
     }
     void MainWindow::OnTickBrushChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
-        ApplyEdit([&] { auto brush = AxisBrush(TickBrushBox()); m_yAxis.TickBrush(brush); m_xAxis.TickBrush(brush); });
+        ApplyEdit([&] { auto brush = AxisBrush(TickBrushBox()); m_yAxis.TickBrush(brush); m_xAxis.TickBrush(brush); }, MarkupChart());
     }
     void MainWindow::OnTickLabelBrushChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
-        ApplyEdit([&] { auto brush = AxisBrush(TickLabelBrushBox()); m_yAxis.TickLabelBrush(brush); m_xAxis.TickLabelBrush(brush); });
+        ApplyEdit([&] { auto brush = AxisBrush(TickLabelBrushBox()); m_yAxis.TickLabelBrush(brush); m_xAxis.TickLabelBrush(brush); }, MarkupChart());
     }
     void MainWindow::OnAxisLineBrushChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
-        ApplyEdit([&] { auto brush = AxisBrush(AxisLineBrushBox()); m_yAxis.AxisLineBrush(brush); m_xAxis.AxisLineBrush(brush); });
+        ApplyEdit([&] { auto brush = AxisBrush(AxisLineBrushBox()); m_yAxis.AxisLineBrush(brush); m_xAxis.AxisLineBrush(brush); }, MarkupChart());
     }
 
     void MainWindow::ApplyDateInterval(bool monthly)

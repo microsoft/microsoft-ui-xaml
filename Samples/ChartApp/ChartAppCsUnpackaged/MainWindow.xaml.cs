@@ -353,13 +353,13 @@ namespace ChartsSample
         private void EditArea(Action edit, string message)
         {
             if (_closing) return;
-            ApplyEdit(edit, SyncAreaOptions, AreaStatusText, message);
+            ApplyEdit(edit, SyncAreaOptions, AreaStatusText, message, chart: AreaMarkupChart);
         }
 
         private void EditBar(Action edit, string message)
         {
             if (_closing) return;
-            ApplyEdit(edit, SyncBarOptions, BarStatusText, message);
+            ApplyEdit(edit, SyncBarOptions, BarStatusText, message, chart: BarMarkupChart);
         }
 
         private void OnAreaStyleChanged(object sender, SelectionChangedEventArgs e)
@@ -592,12 +592,14 @@ namespace ChartsSample
         }
 
         private void ApplyEdit(Action edit, Action sync, TextBlock status, string success,
-            string invalid = "That value is not supported. The current setting has been restored.")
+            string invalid = "That value is not supported. The current setting has been restored.", Chart chart = null)
         {
             if (!_ready || _syncing) return;
             try
             {
                 edit();
+                // Brush changes alone can leave the rendered plot at its previous appearance.
+                chart?.InvalidateArrange();
                 status.Text = success;
             }
             catch (ArgumentException)
@@ -632,7 +634,8 @@ namespace ChartsSample
         }
 
         private void EditAxis(Action edit, Action sync) => ApplyEdit(edit, sync, AxisStatusText, "Profit axes updated.",
-            "Invalid axis value. Use finite bounds with minimum below maximum, and positive spacing, or leave blank for Auto. Current settings restored.");
+            "Invalid axis value. Use finite bounds with minimum below maximum, and positive spacing, or leave blank for Auto. Current settings restored.",
+            MarkupChart);
         private static double? OptionalNumber(NumberBox box) => double.IsNaN(box.Value) ? null : box.Value;
         private void OnLinearMinChanged(NumberBox sender, NumberBoxValueChangedEventArgs e) =>
             EditAxis(() => _yAxis.Minimum = OptionalNumber(sender), () => sender.Value = _yAxis.Minimum ?? double.NaN);

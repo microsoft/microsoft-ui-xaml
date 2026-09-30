@@ -70,7 +70,8 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         void OnDtLabelFormatBApply(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
 
     private:
-        void ApplyEdit(std::function<void()> const& edit);
+        void ApplyEdit(std::function<void()> const& edit,
+            Microsoft::UI::Xaml::Controls::Charts::Chart const& chart = nullptr);
         void ApplyExampleEdit(bool area, std::function<void()> const& edit, winrt::hstring const& message);
         void SyncAreaOptions();
         void SyncBarOptions();

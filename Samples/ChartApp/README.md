@@ -49,6 +49,9 @@ example, or resets the application theme. Appearance choices survive navigation.
 For an outline-only area, the sample sets an explicitly transparent fill color.
 A null fill would instead request the chart's palette color. Point-marker colors
 follow the area's stroke color when markers are enabled.
+After an Area, Bar, or axis-brush edit, the sample requests a new chart layout with
+`InvalidateArrange()` so repeated appearance changes reach the rendered plot
+without replacing the chart or its data.
 
 ## Data and ownership
 
@@ -159,6 +162,11 @@ together.
 
 This is an engineering sample, not a chart-validation harness. It does not assert
 rendering, numerical, performance, or accessibility conformance.
+
+The development runtime used for local evaluation can retain old plotted
+positions when a date interval changes back to **Auto**. In the daily example,
+selecting **Day** and then **Auto** restores the original curve. This remains an
+open control-integration issue; requesting another layout does not resolve it.
 
 Chart-specific per-point automation and keyboard interaction are not supplied by
 this sample. Accessible chart descriptions and a readable data table supplement
