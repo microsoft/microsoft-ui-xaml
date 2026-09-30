@@ -502,6 +502,12 @@ public:
     DEFINE_ELEMENT_ACTIVITY(PrepareContainer);
     DEFINE_ELEMENT_ACTIVITY(MeasureChild);
     DEFINE_ELEMENT_ACTIVITY(VirtualizationMeasure);
+    // OrientedVirtualizingPanel-scoped virtualization bookkeeping (CleanupContainers,
+    // UpdateLogicalScrollData: ElementId is the panel itself). VirtualizationAdd is
+    // per-container: ElementId is the container being added.
+    DEFINE_ELEMENT_ACTIVITY(VirtualizationAdd);
+    DEFINE_ELEMENT_ACTIVITY(VirtualizationCleanup);
+    DEFINE_ELEMENT_ACTIVITY(UpdateLogicalScrollData);
     // VirtualizationIsEnabledByLayout stays a point event (retail form is win:Info).
     // IsVirtualizationActive/ElementName/ClassName/ParentClassName mirror the retail Info1 payload.
     DEFINE_TRACELOGGING_EVENT_PARAM5(VirtualizationIsEnabledByLayout,
