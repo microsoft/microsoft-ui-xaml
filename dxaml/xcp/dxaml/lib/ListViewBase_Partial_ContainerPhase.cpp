@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif
 #include "ListViewBase.g.h"
 #include "SelectorItem.g.h"
 #include "ContainerContentChangingEventArgs.g.h"
@@ -111,7 +114,11 @@ ListViewBase::SetupContainerContentChangingAfterPrepare(
     INT itemIndex,
     wf::Size measureSize)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::SetupCCCStart(container ? reinterpret_cast<uint64_t>(static_cast<DependencyObject*>(container)->GetHandle()) : 0, itemIndex);
+#else
     TraceSetupCCCBegin(itemIndex);
+#endif
     ctl::ComPtr<xaml::IDependencyObject> itemAsDO;
 
     // this is being called by modern panels after the prepare has occurred.
@@ -317,7 +324,11 @@ ListViewBase::SetupContainerContentChangingAfterPrepare(
         IFC_RETURN(RegisterWorkFromArgs(argsConcrete.Get()));
     }
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::SetupCCCStop();
+#else
     TraceSetupCCCEnd();
+#endif
     return S_OK;
 }
 

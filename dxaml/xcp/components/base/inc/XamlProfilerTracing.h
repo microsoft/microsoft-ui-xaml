@@ -528,6 +528,58 @@ public:
             TraceLoggingValue(StyleName, "StyleName"));
     }
 
+    // Hit-testing (CUIElement::BoundsTestEntry) — ElementId is the element hit-tested.
+    DEFINE_ELEMENT_ACTIVITY(HitTest);
+    // Per-hit-test bounds cache stats, emitted once BoundsTestEntry completes. ElementId is the
+    // same element as the enclosing HitTest activity; RecalculatedCount/ReusedCount mirror the
+    // retail Info payload.
+    DEFINE_TRACELOGGING_EVENT_PARAM3(OuterBoundsStats,
+        uint64_t, ElementId, uint32_t, RecalculatedCount, uint32_t, ReusedCount,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM3(InnerBoundsStats,
+        uint64_t, ElementId, uint32_t, RecalculatedCount, uint32_t, ReusedCount,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM3(ContentBoundsStats,
+        uint64_t, ElementId, uint32_t, RecalculatedCount, uint32_t, ReusedCount,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM3(ChildBoundsStats,
+        uint64_t, ElementId, uint32_t, RecalculatedCount, uint32_t, ReusedCount,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Hub section count (Hub_Partial.cpp) — ElementId is the Hub whose section count changed.
+    DEFINE_TRACELOGGING_EVENT_PARAM2(HubSectionCount,
+        uint64_t, ElementId, uint32_t, SectionCount,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Frame navigation (Frame_Partial.cpp) — ElementId is the Frame performing the navigation.
+    DEFINE_TRACELOGGING_EVENT_PARAM3(FrameNavigated,
+        uint64_t, ElementId, PCWSTR, Descriptor, uint8_t, NavigationMode,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM3(FrameNavigating,
+        uint64_t, ElementId, PCWSTR, Descriptor, uint8_t, NavigationMode,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Text input scope/keyboard skin (CPasswordBox) — ElementId is the owning PasswordBox.
+    DEFINE_TRACELOGGING_EVENT_PARAM2(SendInputScopeToRichEdit,
+        uint64_t, ElementId, uint32_t, InputScope,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM2(SetIhmKeyboardSkin,
+        uint64_t, ElementId, uint32_t, KeyboardSkin,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Container-content-changing setup (ListViewBase_Partial_ContainerPhase.cpp) — ElementId is
+    // the container being set up.
+    DEFINE_ELEMENT_ACTIVITY(SetupCCC);
+    // SetupCCC adds the retail Begin's item index on the Start edge.
+    static void SetupCCCStart(uint64_t ElementId, int32_t ItemIndex)
+    {
+        TraceLoggingWrite(TraceLoggingType::Provider(), "SetupCCC",
+            TraceLoggingOpcode(WINEVENT_OPCODE_START),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+            TraceLoggingValue(ElementId, "ElementId"),
+            TraceLoggingValue(ItemIndex, "ItemIndex"));
+    }
+
 #undef DEFINE_ELEMENT_ACTIVITY
 };
 

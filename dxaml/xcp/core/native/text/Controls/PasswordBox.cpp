@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif
 #include "PasswordBox.h"
 #include "Indexes.g.h"
 #include <RuntimeEnabledFeatures.h>
@@ -726,7 +729,14 @@ _Check_return_ HRESULT CPasswordBox::OnInputScopeChanged(_In_ CInputScope *pInpu
             m_fNumericPinInputScope = FALSE;
             inputScopeList[0] = IS_PASSWORD;
         }
+#ifndef XAMLPROFILER_ENABLED
         TraceSendInputScopeToRichEditInfo(static_cast<UINT32>(inputScopeList[0])); // in reality, only first input scope in the list is used
+#else
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            XamlProfilerTracing::SendInputScopeToRichEdit(reinterpret_cast<uint64_t>(this), static_cast<UINT32>(inputScopeList[0]));
+        }
+#endif
         IFC_RETURN(GetTextServices()->TxSendMessage(EM_SETCTFINPUTSCOPES, inputScopeCount, reinterpret_cast<LPARAM>(inputScopeList), nullptr));
         IFC_RETURN(UpdateIhmSkinToBitLocker(!!m_fNumericPinInputScope));
     }
@@ -744,12 +754,26 @@ _Check_return_ HRESULT CPasswordBox::UpdateIhmSkinToBitLocker(bool skinBitLocker
             if (skinBitLocker)
             {
                 IFC_RETURN(::TextInput_SetKeyboardSkin(::TextInput_KeyboardSkins::Bitlocker, inputHwnd));
+#ifndef XAMLPROFILER_ENABLED
                 TraceSetIhmKeyboardSkinInfo(static_cast<UINT32>(::TextInput_KeyboardSkins::Bitlocker));
+#else
+                if (XamlProfilerTracing::IsEnabled())
+                {
+                    XamlProfilerTracing::SetIhmKeyboardSkin(reinterpret_cast<uint64_t>(this), static_cast<UINT32>(::TextInput_KeyboardSkins::Bitlocker));
+                }
+#endif
             }
             else
             {
                 IFC_RETURN(::TextInput_SetKeyboardSkin(::TextInput_KeyboardSkins::Default, inputHwnd));
+#ifndef XAMLPROFILER_ENABLED
                 TraceSetIhmKeyboardSkinInfo(static_cast<UINT32>(::TextInput_KeyboardSkins::Default));
+#else
+                if (XamlProfilerTracing::IsEnabled())
+                {
+                    XamlProfilerTracing::SetIhmKeyboardSkin(reinterpret_cast<uint64_t>(this), static_cast<UINT32>(::TextInput_KeyboardSkins::Default));
+                }
+#endif
             }
         }
     }
