@@ -457,7 +457,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             var data = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => i.ToString()));
             ScrollViewer scrollViewer;
-            var repeater = SetupRepeater(data, new StackLayout(), out scrollViewer);
+            StackLayout layout = null;
+            RunOnUIThread.Execute(() => layout = new StackLayout());
+            var repeater = SetupRepeater(data, layout, out scrollViewer);
             Control pinned = null;
             RunOnUIThread.Execute(() =>
             {
@@ -519,7 +521,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             var data = new ObservableCollection<string>(Enumerable.Range(0, 10000).Select(i => i.ToString()));
             ScrollViewer scrollViewer;
-            var repeater = SetupRepeater(data, new StackLayout(), out scrollViewer);
+            StackLayout layout = null;
+            RunOnUIThread.Execute(() => layout = new StackLayout());
+            var repeater = SetupRepeater(data, layout, out scrollViewer);
             using (var viewChanged = new ManualResetEvent(false))
             {
                 EventHandler<ScrollViewerViewChangedEventArgs> onViewChanged =
