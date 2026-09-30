@@ -12,6 +12,7 @@
 #include "windows.graphics.h"
 #include "WindowHelpers.h"
 #include "Microsoft.UI.Windowing.h"
+#include <OptionalChangeState.h>
 
 
 using namespace DirectUI;
@@ -211,8 +212,10 @@ ctl::ComPtr<ixp::IAppWindow> WindowChrome::GetAppWindow() const
     return appWindow;
 }
 
-_Check_return_ HRESULT WindowChrome::GetIsAppWindowTitleBarExtended(_Out_ bool* value) const
+_Check_return_ HRESULT WindowChrome::ShouldReserveAppWindowTopBorder(_Out_ bool* value) const
 {
+    ASSERT(OptionalChangeState::ShouldAlignTitleBarTopBorderBehavior());
+
     *value = false;
 
     // Window messages can reenter while the Window is being created or torn
@@ -234,7 +237,17 @@ _Check_return_ HRESULT WindowChrome::GetIsAppWindowTitleBarExtended(_Out_ bool* 
 
     boolean extendsContentIntoTitleBar = false;
     IFC_RETURN(appWindowTitleBar->get_ExtendsContentIntoTitleBar(&extendsContentIntoTitleBar));
-    *value = !!extendsContentIntoTitleBar;
+    if (!extendsContentIntoTitleBar)
+    {
+        return S_OK;
+    }
+
+    // FullScreen keeps ECITB enabled, but has no frame row to reserve.
+    ctl::ComPtr<ixp::IAppWindowPresenter> presenter;
+    IFC_RETURN(appWindow->get_Presenter(&presenter));
+    ixp::AppWindowPresenterKind presenterKind{};
+    IFC_RETURN(presenter->get_Kind(&presenterKind));
+    *value = presenterKind != ixp::AppWindowPresenterKind_FullScreen;
     return S_OK;
 }
 

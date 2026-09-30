@@ -67,6 +67,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{AlignTitleBarTopBorderBehavior:false}")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ECITBFullScreenUsesEntireClientArea)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates fullscreen startup and transitions through both ECITB entry points without a reserved top border.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ECITBFullScreenPreservesCompatBehavior)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates legacy fullscreen ECITB geometry when the optional change is disabled.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{AlignTitleBarTopBorderBehavior:false}")
+        END_TEST_METHOD()
+
 #ifdef MUX_PRERELEASE
         // Experimental Width/Height properties on Window are only present in prerelease builds.
         BEGIN_TEST_METHOD(CanGetSetWindowWidthHeight)
@@ -263,6 +274,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     private:
         void VerifyECITBEntryPointOffsets(bool expectedChangeEnabled);
+        void VerifyECITBFullScreenOffsets(bool expectedChangeEnabled);
 
     };
 

@@ -86,7 +86,6 @@ private:
     HRESULT RefreshToolbarOffset();
     
     int GetAlignedTopBorderHeight();
-    bool IsAppWindowTitleBarExtended();
     _Check_return_ HRESULT UpdateDwmFrameMargins(int topBorderHeight);
 
     // Tracks Window.ExtendsContentIntoTitleBar.

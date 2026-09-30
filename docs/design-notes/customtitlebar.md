@@ -119,7 +119,12 @@ DPI-aware resize-frame metrics to provide a larger top resize target.
 #### Windows 10 frame workaround
 
 The optional change `AlignTitleBarTopBorderBehavior` makes both ECITB
-entry points reserve the same row.
+entry points reserve the same row when ECITB is enabled and the window is
+neither maximized nor using the `FullScreen` presenter. In fullscreen, XAML
+starts at client y=0 and fills the client area, including when fullscreen is
+selected before the first activation. Presenter changes update this geometry
+without changing either ECITB property. Disabling the optional change preserves
+the legacy fullscreen behavior.
 
 **Compatibility note:** On Windows 10, enabling this change can change the
 app's window border colors, including the side and bottom borders, not just
@@ -132,6 +137,8 @@ On systems where
 frame into the client area. The top margin comes from `AdjustWindowRectExForDpi`
 using the window's styles and DPI. It is the standard caption/resize-frame
 height, not the visible border height or an additional offset for XAML.
+WinUI clears its own DWM margins when the reserved row is removed, including
+on entry to fullscreen, and reapplies them when the row is needed again.
 
 This follows Windows Terminal's
 [`_UpdateFrameMargins` workaround](https://github.com/microsoft/terminal/blob/0b94a7ea041a0b67f13ac281a645a82e077e4578/src/cascadia/WindowsTerminal/NonClientIslandWindow.cpp#L884-L943).

@@ -15,6 +15,7 @@
 #include <ControlHelper.h>
 #include <WindowAutoCloser.h>
 #include <microsoft.ui.xaml.window.h> // for IWindowNative
+#include <wrl.h>
 
 #include <memory>
 #include <string>
@@ -29,6 +30,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
 namespace
 {
+    HWND GetWindowHandle(xaml::Window^ window)
+    {
+        Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window)->QueryInterface(IID_PPV_ARGS(&windowNative)));
+        VERIFY_IS_NOT_NULL(windowNative.Get());
+
+        HWND windowHandle = nullptr;
+        VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+        VERIFY_IS_TRUE(windowHandle != nullptr);
+        return windowHandle;
+    }
+
     HWND FindDesktopChildSiteBridge(HWND parentWindow)
     {
         HWND bridgeWindow = nullptr;
@@ -260,16 +273,7 @@ namespace
             VERIFY_IS_TRUE(Platform::String::CompareOrdinal(window1->Title, "Test Window Title") == 0);
 
             LOG_OUTPUT(L"----- Check the HWND's text -----");
-            IWindowNative* windowNative = nullptr;
-            auto hr = reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(__uuidof(IWindowNative), (void**)&windowNative);
-            VERIFY_SUCCEEDED(hr);
-
-            HWND windowHandle = nullptr;
-            hr = windowNative->get_WindowHandle(&windowHandle);
-            VERIFY_SUCCEEDED(hr);
-
-            windowNative->Release();
-            windowNative = nullptr;
+            const HWND windowHandle = GetWindowHandle(window1.get());
 
             wchar_t buffer[128] = {};
             GetWindowText(windowHandle, buffer, ARRAYSIZE(buffer));
@@ -347,11 +351,7 @@ namespace
                     L"</Window>")));
                 window->Activate();
 
-                IWindowNative* windowNative = nullptr;
-                VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window.get())->QueryInterface(
-                    __uuidof(IWindowNative), reinterpret_cast<void**>(&windowNative)));
-                VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
-                windowNative->Release();
+                windowHandle = GetWindowHandle(window.get());
             });
             TestServices::WindowHelper->WaitForIdle();
         };
@@ -386,6 +386,117 @@ namespace
         RunOnUIThread([&]() { appWindowEntryPoint->AppWindow->TitleBar->ExtendsContentIntoTitleBar = false; });
         TestServices::WindowHelper->WaitForIdle();
         verifyTopOffset(appWindowEntryPointHandle, 0, L"AppWindow ECITB off should remove the top border.");
+    }
+
+    void WindowIntegrationTests::ECITBFullScreenUsesEntireClientArea()
+    {
+        VerifyECITBFullScreenOffsets(true);
+    }
+
+    void WindowIntegrationTests::ECITBFullScreenPreservesCompatBehavior()
+    {
+        VerifyECITBFullScreenOffsets(false);
+    }
+
+    void WindowIntegrationTests::VerifyECITBFullScreenOffsets(bool expectedChangeEnabled)
+    {
+        // FullScreen leaves ECITB enabled without maximizing the HWND, so the legacy
+        // border calculation can leave a one-pixel gap. Exercise both ECITB entry points
+        // with fullscreen selected before and after activation. The opt-in must let
+        // XAML fill the client area, preserve the ECITB getters across presenter changes,
+        // and restore the border when returning to Overlapped. The opt-out test verifies
+        // that legacy offsets remain unchanged.
+        TestCleanupWrapper cleanup;
+        using Microsoft::UI::Windowing::AppWindowPresenterKind;
+
+        const bool isChangeEnabled = xaml_settings::XamlOptionalChanges::IsChangeEnabled(
+            xaml_settings::XamlChangeId::AlignTitleBarTopBorderBehavior);
+        VERIFY_ARE_EQUAL(expectedChangeEnabled, isChangeEnabled);
+
+        for (const bool useAppWindow : { false, true })
+        {
+            for (const bool startFullScreen : { false, true })
+            {
+                LOG_OUTPUT(L"ECITB entry point: %s; start fullscreen: %d",
+                    useAppWindow ? L"AppWindow" : L"Window", startFullScreen);
+
+                WindowAutoCloser window;
+                HWND windowHandle = nullptr;
+                auto setECITB = [&](bool value)
+                {
+                    if (useAppWindow)
+                    {
+                        window->AppWindow->TitleBar->ExtendsContentIntoTitleBar = value;
+                    }
+                    else
+                    {
+                        window->ExtendsContentIntoTitleBar = value;
+                    }
+                };
+
+                RunOnUIThread([&]()
+                {
+                    window.Attach(ref new xaml::Window());
+                    window->Content = ref new xaml_controls::Grid();
+                    setECITB(true);
+                    if (startFullScreen)
+                    {
+                        window->AppWindow->SetPresenter(AppWindowPresenterKind::FullScreen);
+                    }
+                    window->Activate();
+
+                    windowHandle = GetWindowHandle(window.get());
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                auto verifyGeometry = [&](AppWindowPresenterKind presenterKind, int expectedOffset, bool ecitbEnabled)
+                {
+                    RunOnUIThread([&]()
+                    {
+                        VERIFY_IS_TRUE(window->AppWindow->Presenter->Kind == presenterKind);
+                        VERIFY_ARE_EQUAL(ecitbEnabled, window->AppWindow->TitleBar->ExtendsContentIntoTitleBar);
+                        VERIFY_ARE_EQUAL(!useAppWindow && ecitbEnabled, window->ExtendsContentIntoTitleBar);
+                        VERIFY_ARE_EQUAL(expectedOffset, GetDesktopChildSiteBridgeTopOffset(windowHandle));
+
+                        RECT clientRect{};
+                        RECT bridgeRect{};
+                        VERIFY_IS_TRUE(!!::GetClientRect(windowHandle, &clientRect));
+                        VERIFY_IS_TRUE(!!::GetClientRect(FindDesktopChildSiteBridge(windowHandle), &bridgeRect));
+                        VERIFY_ARE_EQUAL(clientRect.right - clientRect.left, bridgeRect.right - bridgeRect.left);
+                        VERIFY_ARE_EQUAL(clientRect.bottom - clientRect.top - expectedOffset, bridgeRect.bottom - bridgeRect.top);
+                    });
+                };
+
+                const int restoredOffset = isChangeEnabled || !useAppWindow ? 1 : 0;
+                const int fullScreenOffset = isChangeEnabled ? 0 : restoredOffset;
+                verifyGeometry(
+                    startFullScreen ? AppWindowPresenterKind::FullScreen : AppWindowPresenterKind::Overlapped,
+                    startFullScreen ? fullScreenOffset : restoredOffset,
+                    true);
+
+                if (!startFullScreen)
+                {
+                    RunOnUIThread([&]() { window->AppWindow->SetPresenter(AppWindowPresenterKind::FullScreen); });
+                    TestServices::WindowHelper->WaitForIdle();
+                    verifyGeometry(AppWindowPresenterKind::FullScreen, fullScreenOffset, true);
+                }
+
+                if (isChangeEnabled)
+                {
+                    RunOnUIThread([&]() { setECITB(false); });
+                    TestServices::WindowHelper->WaitForIdle();
+                    verifyGeometry(AppWindowPresenterKind::FullScreen, 0, false);
+
+                    RunOnUIThread([&]() { setECITB(true); });
+                    TestServices::WindowHelper->WaitForIdle();
+                    verifyGeometry(AppWindowPresenterKind::FullScreen, fullScreenOffset, true);
+                }
+
+                RunOnUIThread([&]() { window->AppWindow->SetPresenter(AppWindowPresenterKind::Default); });
+                TestServices::WindowHelper->WaitForIdle();
+                verifyGeometry(AppWindowPresenterKind::Overlapped, restoredOffset, true);
+            }
+        }
     }
 
 #ifdef MUX_PRERELEASE
@@ -1580,13 +1691,7 @@ namespace
 
         RunOnUIThread([&]()
         {
-            IWindowNative* windowNative = nullptr;
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(__uuidof(IWindowNative), (void**)&windowNative));
-            VERIFY_IS_NOT_NULL(windowNative);
-            HWND windowHandle = nullptr;
-            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
-            windowNative->Release();
-            VERIFY_IS_TRUE(windowHandle != nullptr);
+            const HWND windowHandle = GetWindowHandle(window1.get());
 
             // Minimize, then set Width/Height while minimized. Per WPF parity this must update
             // the *restore* size and leave the window minimized - it must not resize the live
@@ -1648,11 +1753,7 @@ namespace
         HWND windowHandle = nullptr;
         RunOnUIThread([&]()
         {
-            IWindowNative* windowNative = nullptr;
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
-                __uuidof(IWindowNative), (void**)&windowNative));
-            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
-            windowNative->Release();
+            windowHandle = GetWindowHandle(window1.get());
         });
 
         // --- Mode 1: ExtendsContentIntoTitleBar OFF (standard Win32 title bar) ---
@@ -1794,11 +1895,7 @@ namespace
         HWND windowHandle = nullptr;
         RunOnUIThread([&]()
         {
-            IWindowNative* windowNative = nullptr;
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
-                __uuidof(IWindowNative), (void**)&windowNative));
-            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
-            windowNative->Release();
+            windowHandle = GetWindowHandle(window1.get());
         });
 
         // Test both chrome modes: the caption height changes how the client area
@@ -1886,11 +1983,7 @@ namespace
         HWND windowHandle = nullptr;
         RunOnUIThread([&]()
         {
-            IWindowNative* windowNative = nullptr;
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
-                __uuidof(IWindowNative), (void**)&windowNative));
-            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
-            windowNative->Release();
+            windowHandle = GetWindowHandle(window1.get());
         });
 
         auto captureOuterClientOffset = [&](double& widthOffset, double& heightOffset)
@@ -1991,11 +2084,7 @@ namespace
         double normalWidth = 0, normalHeight = 0;
         RunOnUIThread([&]()
         {
-            IWindowNative* windowNative = nullptr;
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
-                __uuidof(IWindowNative), (void**)&windowNative));
-            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
-            windowNative->Release();
+            windowHandle = GetWindowHandle(window1.get());
 
             normalWidth = window1->Width;
             normalHeight = window1->Height;
@@ -2107,11 +2196,7 @@ namespace
         // Establish a known restored size, then capture the HWND.
         RunOnUIThread([&]()
         {
-            IWindowNative* windowNative = nullptr;
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
-                __uuidof(IWindowNative), (void**)&windowNative));
-            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
-            windowNative->Release();
+            windowHandle = GetWindowHandle(window1.get());
 
             window1->Width = initialWidth;
             window1->Height = initialHeight;
@@ -2498,11 +2583,7 @@ namespace
 
         RunOnUIThread([&]()
         {
-            IWindowNative* windowNative = nullptr;
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
-                __uuidof(IWindowNative), (void**)&windowNative));
-            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
-            windowNative->Release();
+            windowHandle = GetWindowHandle(window1.get());
 
             // Start from a known state: standard title bar (ECITB off). We never set Width/Height.
             window1->ExtendsContentIntoTitleBar = false;
@@ -2889,11 +2970,7 @@ namespace
 
             RunOnUIThread([&]()
             {
-                IWindowNative* windowNative = nullptr;
-                VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
-                    __uuidof(IWindowNative), (void**)&windowNative));
-                VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
-                windowNative->Release();
+                windowHandle = GetWindowHandle(window1.get());
 
                 // App sets Width/Height (opts in).
                 window1->Width = setWidth;
@@ -2994,11 +3071,7 @@ namespace
         // measures and caches the true (ECITB-aware) chrome from the live window.
         RunOnUIThread([&]()
         {
-            IWindowNative* windowNative = nullptr;
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
-                __uuidof(IWindowNative), (void**)&windowNative));
-            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
-            windowNative->Release();
+            windowHandle = GetWindowHandle(window1.get());
 
             window1->ExtendsContentIntoTitleBar = true;
             window1->Width = initialWidth;
@@ -3134,11 +3207,7 @@ namespace
         // Establish a known pre-drag tracked size.
         RunOnUIThread([&]()
         {
-            IWindowNative* windowNative = nullptr;
-            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
-                __uuidof(IWindowNative), (void**)&windowNative));
-            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
-            windowNative->Release();
+            windowHandle = GetWindowHandle(window1.get());
 
             window1->Width = preDragWidth;
             window1->Height = preDragHeight;

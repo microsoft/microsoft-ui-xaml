@@ -25,6 +25,7 @@
 #include "Microsoft.UI.Windowing.h"
 #include <FrameworkUdk/Theming.h>
 #include <Microsoft.UI.Interop.h>
+#include <OptionalChangeState.h>
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -159,11 +160,9 @@ void DesktopWindowImpl::OnCreate() noexcept
     ctl::ComPtr<ixp::IAppWindow> appWindow;
     IFCFAILFAST(get_AppWindowImpl(&appWindow));
 
-    // Watch for presenter changes so a Width/Height or Min/Max constraint set while a non-sizing presenter
-    // (FullScreen/CompactOverlay) was active gets applied when we return to one that sizes. See
-    // OnAppWindowChanged. One eager subscription shared by both features; skipped when the new windowing
-    // APIs are off so we don't add a subscription that never fires.
-    if (AreNewWindowingApisEnabled())
+    // Share presenter-change notifications between deferred window sizing and
+    // the optional top-border geometry, which must track FullScreen transitions.
+    if (AreNewWindowingApisEnabled() || OptionalChangeState::ShouldAlignTitleBarTopBorderBehavior())
     {
         IFCFAILFAST(appWindow->add_Changed(
             wrl::Callback<AppWindowChangedHandler>(this, &DesktopWindowImpl::OnAppWindowChanged).Get(),
@@ -1143,10 +1142,9 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplyPendingClientSizeIfNeeded()
 
 _Check_return_ HRESULT DesktopWindowImpl::OnAppWindowChanged(_In_ ixp::IAppWindow* /*sender*/, _In_ ixp::IAppWindowChangedEventArgs* args)
 {
-    // We only subscribe when the new windowing APIs are enabled, so the flag is always true here.
-    ASSERT(AreNewWindowingApisEnabled());
+    ASSERT(AreNewWindowingApisEnabled() || OptionalChangeState::ShouldAlignTitleBarTopBorderBehavior());
 
-    // Internal callback shared by the Width/Height and Min/Max size features. Once the window is closed
+    // Internal callback shared by window sizing and top-border geometry. Once the window is closed
     // there's nothing to update, so quietly do nothing (unlike the public getters/setters, which error).
     if (m_bIsClosed)
     {
@@ -1160,19 +1158,29 @@ _Check_return_ HRESULT DesktopWindowImpl::OnAppWindowChanged(_In_ ixp::IAppWindo
         return S_OK;
     }
 
-    // Width/Height: when the presenter changes to one that supports Width/Height again (Default/Overlapped),
-    // apply any client size we remembered while a non-sizing presenter (FullScreen/CompactOverlay) was
-    // active. ApplyPendingClientSizeIfNeeded is a no-op when nothing is pending or the new presenter still
-    // doesn't support sizing. We skip this until the window has been shown once - the initial pending size
-    // is applied by ActivateImpl to avoid resizing before the first show.
-    if (!m_bInitialWindowActivation)
+    if (OptionalChangeState::ShouldAlignTitleBarTopBorderBehavior())
     {
-        IFC_RETURN(ApplyPendingClientSizeIfNeeded());
+        // Refresh after AppWindow publishes the new presenter, even if the
+        // client size did not change.
+        m_windowChrome->MoveContainer(0, 0);
     }
 
-    // Min/Max size: re-apply the app's constraints now that we may be back on an OverlappedPresenter (they
-    // may have been set while a different presenter was active). No-op if the app never set any.
-    IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
+    if (AreNewWindowingApisEnabled())
+    {
+        // Width/Height: when the presenter changes to one that supports Width/Height again (Default/Overlapped),
+        // apply any client size we remembered while a non-sizing presenter (FullScreen/CompactOverlay) was
+        // active. ApplyPendingClientSizeIfNeeded is a no-op when nothing is pending or the new presenter still
+        // doesn't support sizing. We skip this until the window has been shown once - the initial pending size
+        // is applied by ActivateImpl to avoid resizing before the first show.
+        if (!m_bInitialWindowActivation)
+        {
+            IFC_RETURN(ApplyPendingClientSizeIfNeeded());
+        }
+
+        // Min/Max size: re-apply the app's constraints now that we may be back on an OverlappedPresenter (they
+        // may have been set while a different presenter was active). No-op if the app never set any.
+        IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
+    }
 
     return S_OK;
 }

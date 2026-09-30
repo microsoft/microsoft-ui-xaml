@@ -176,8 +176,7 @@ int CWindowChrome::GetTopBorderHeight()
         return GetAlignedTopBorderHeight();
     }
 
-    // No border when maximized, or when the titlebar is invisible (by being in
-    // fullscreen or focus mode).
+    // The compatibility path uses Window ECITB without checking the presenter.
     if (!IsTitlebarVisible() || IsMaximized(m_topLevelWindow))
     {
         return 0;
@@ -187,12 +186,11 @@ int CWindowChrome::GetTopBorderHeight()
 }
 
 // Method Description:
-// - Returns true if the titlebar is visible. For things like fullscreen mode,
-//   borderless mode (aka "focus mode"), this will return false.
+// - Returns the cached Window ECITB state, not the presenter's title-bar visibility.
 // Arguments:
 // - <none>
 // Return Value:
-// - true iff the titlebar is visible
+// - true iff Window.ExtendsContentIntoTitleBar is enabled
 bool CWindowChrome::IsTitlebarVisible() const
 {
     return IsChromeActive();
@@ -202,21 +200,14 @@ int CWindowChrome::GetAlignedTopBorderHeight()
 {
     ASSERT(OptionalChangeState::ShouldAlignTitleBarTopBorderBehavior());
 
-    // Match the existing Window.ExtendsContentIntoTitleBar geometry, but use
-    // AppWindow as the source so a direct AppWindow assignment is understood.
-    if (!IsAppWindowTitleBarExtended() || IsMaximized(m_topLevelWindow))
+    if (IsMaximized(m_topLevelWindow))
     {
         return 0;
     }
 
-    return topBorderVisibleHeight;
-}
-
-bool CWindowChrome::IsAppWindowTitleBarExtended()
-{
-    bool extendsContentIntoTitleBar = false;
-    IFCFAILFAST(GetPeer()->GetIsAppWindowTitleBarExtended(&extendsContentIntoTitleBar));
-    return extendsContentIntoTitleBar;
+    bool shouldReserveTopBorder = false;
+    IFCFAILFAST(GetPeer()->ShouldReserveAppWindowTopBorder(&shouldReserveTopBorder));
+    return shouldReserveTopBorder ? topBorderVisibleHeight : 0;
 }
 
 void CWindowChrome::PaintHighContrastTopBorder()
