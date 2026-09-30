@@ -162,6 +162,10 @@ if ($InstallPackage)
         {
             if (Test-Path $PackagePath)
             {
+                # Delete the `.nupkg.metadata` first in case of error when subsequently
+                # deleting the rest of the directory; this will prevent Nuget from
+                # erroneously believing that the package is still in a successfully
+                # extracted state.
                 $MetadataPath = Join-Path $PackagePath ".nupkg.metadata"
                 if (Test-Path $MetadataPath)
                 {
@@ -174,20 +178,24 @@ if ($InstallPackage)
         }
     }
 
-    $EffectivePackageCache = $PackageCache
+    $PackageCaches = @($PackageCache)
     if ($env:NUGET_PACKAGES)
     {
         if (![System.IO.Path]::IsPathRooted($env:NUGET_PACKAGES))
         {
+            # `nuget.exe` will raise a clear error message if `NUGET_PACKAGES` is not 
+            # a rooted path. We will simply ignore it as a potential package cache to be 
+            # cleared as we are unable to resolve it ourselves and otherwise let 
+            # `nuget.exe`'s own validation logic handle this scenario.
             Write-Warning "Skipping cleanup for relative NUGET_PACKAGES path: $env:NUGET_PACKAGES"
         }
         else
         {
-            $EffectivePackageCache = [System.IO.Path]::GetFullPath($env:NUGET_PACKAGES)
+            $PackageCaches += [System.IO.Path]::GetFullPath($env:NUGET_PACKAGES)
         }
     }
 
-    $PackageCaches = @($PackageCache, $EffectivePackageCache) | Sort-Object -Unique
+    $PackageCaches = $PackageCaches | Sort-Object -Unique
 
     foreach ($CacheRoot in $PackageCaches)
     {
