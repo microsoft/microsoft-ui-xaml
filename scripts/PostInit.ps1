@@ -64,14 +64,19 @@ Write-Progress "Restoring packages for build platform $buildPlatform..." -Comple
 . $repoRoot\build\DownloadDotNetCoreSdk.ps1
 . $repoRoot\build\DownloadDotNetRuntimeInstaller.ps1
 
-Write-Host "Restoring Maestro and ensuring authentication..."
-msbuild -nologo -t:Restore $repoRoot\eng\Microsoft.MaestroRestore.csproj -v:$Verbosity -p:Configuration=Release -p:NugetInteractive=true -p:PublishReadyToRun=true
+# FrameworkUdk and WinUIDetails are consumed by raw path Import, not PackageReference, so no
+# solution restore pulls them. This is the local equivalent of the pipeline's
+# "Restore component dependencies" step in WinUI-InstallDependencies-Steps.yml.
+Write-Host "Restoring component dependencies..."
+msbuild -nologo -t:Restore $repoRoot\eng\RestoreComponentDependencies.csproj -v:$Verbosity -p:Configuration=Release -p:NugetInteractive=true
 
 Write-Host "Restoring additional packages..."
 $projectPackages = @(
     'perf\packages.config',
     'eng\BuildGenXbfForMSBuild\BuildGenXbfForMSBuild.csproj',
-    'eng\Microsoft.MaestroRestore.csproj',
+    # Also restored above, but that honours NUGET_PACKAGES; this pass is what lands the
+    # components under $(NugetPackageDirectory), where the raw-path Imports look for them.
+    'eng\RestoreComponentDependencies.csproj',
     'controls\dev\dll\packages.config',
     'XamlCompilerPrerequisites.sln',
     'dxaml\Microsoft.UI.Xaml.sln',
