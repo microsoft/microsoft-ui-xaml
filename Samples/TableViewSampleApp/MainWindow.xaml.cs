@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -15,6 +16,24 @@ public sealed partial class MainWindow : Window
 
         // Select the first item, which navigates the frame to the playground via SelectionChanged.
         Nav.SelectedItem = Nav.MenuItems[0];
+
+        // Unattended runs: a trigger file in the app's data directory opens the matching page and runs it.
+        // The self-check wins when both exist; the perf trigger is then left in place for the next launch.
+        var dir = HierarchySelfCheckPage.DataDirectory;
+        var checkTrigger = System.IO.Path.Combine(dir, HierarchySelfCheckPage.TriggerFileName);
+        var perfTrigger = System.IO.Path.Combine(dir, HierarchyPage.PerfTriggerFileName);
+        if (System.IO.File.Exists(checkTrigger))
+        {
+            System.IO.File.Delete(checkTrigger);
+            HierarchySelfCheckPage.AutoRun = true;
+            Nav.SelectedItem = Nav.MenuItems.OfType<NavigationViewItem>().First(i => (i.Tag as string) == "selfcheck");
+        }
+        else if (System.IO.File.Exists(perfTrigger))
+        {
+            System.IO.File.Delete(perfTrigger);
+            HierarchyPage.AutoPerf = true;
+            Nav.SelectedItem = Nav.MenuItems.OfType<NavigationViewItem>().First(i => (i.Tag as string) == "hierarchy");
+        }
     }
 
     private void Nav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -34,6 +53,8 @@ public sealed partial class MainWindow : Window
             "selection" => typeof(SelectionPage),
             "tooltips" => typeof(ToolTipsPage),
             "shaping" => typeof(ShapingPage),
+            "hierarchy" => typeof(HierarchyPage),
+            "selfcheck" => typeof(HierarchySelfCheckPage),
             _ => typeof(PlaygroundPage),
         };
 

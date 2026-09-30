@@ -33,6 +33,16 @@ namespace ShapingHelpers
         virtual winrt::hstring StableGroupIdentity() const = 0;
     };
 
+    // A group's count of IMMEDIATE children. Over a flat source that is just its row count, so
+    // nothing implements this; over a hierarchy a group's rows are its roots plus every visible
+    // descendant, and reporting that as the header's count would make the number jump every time
+    // an unrelated node deep in the group was expanded. Only the projection that sliced the group
+    // knows how many of those rows were roots, so it publishes the answer here.
+    struct __declspec(uuid("9D3B0F7A-6B2E-4E67-93A2-1C8A9F5E4B10")) IGroupChildCount : ::IUnknown
+    {
+        virtual int32_t GroupChildCount() const = 0;
+    };
+
     struct ValueKey
     {
         static bool TryFormatPropertyValue(

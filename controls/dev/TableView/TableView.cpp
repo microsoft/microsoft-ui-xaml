@@ -30,6 +30,13 @@ static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGri
 // Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
 // unusable.
 static constexpr double c_resizeGripperWidthFallback{ 8.0 };
+
+// Mirrors the TableViewRowIndentSize resource shipped in TableView.xaml. Used when the resource is
+// missing or unusable.
+static constexpr double c_defaultRowIndentSize{ 16.0 };
+
+// Mirrors the TableViewRowExpanderSize resource shipped in TableView.xaml.
+static constexpr double c_defaultRowExpanderSize{ 24.0 };
 static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator"sv };
 // ScrollViewer template names are documented; ancestors are resolved by walking from child parts.
 
@@ -169,6 +176,8 @@ namespace
         cache.density.hasHeaderCellPadding = false;
         cache.font.hasCellFontSize = false;
         cache.font.hasHeaderFontSize = false;
+        cache.hierarchy.hasRowIndentSize = false;
+        cache.hierarchy.hasRowExpanderSize = false;
         cache.gridLine.hasBrush = false;
     }
 
@@ -981,6 +990,7 @@ void TableView::RefreshRowsPipeline()
 
         UpdateEmptyStateCollectionChangedSubscription();
         UpdateEmptyState();
+        UpdateRowHierarchyResetSubscription();
 
         // Re-point selection at the new source. SelectionModel::Source clears unconditionally, so a
         // swap always drops the selection; then drain anything requested before a source existed.
@@ -1001,6 +1011,85 @@ void TableView::OnTableViewSourceProjectionChanged()
     }
 
     RefreshRowsPipeline();
+
+    // The pipeline above only re-points the repeater when the projected view OBJECT changed; a
+    // verb that rewrites the projection in place (declaring or retracting a hierarchy over the same
+    // view) tears nothing down, so no row is re-prepared and every realized row keeps the level and
+    // chevron it was stamped with under the previous shape. Deferred, because the repeater has not
+    // necessarily reconciled the new shape at the moment this notification is raised.
+    QueueRefreshRealizedRowHierarchyState();
+}
+
+void TableView::UpdateRowHierarchyResetSubscription()
+{
+    winrt::ItemsSourceView view{ nullptr };
+    if (auto const repeater = m_rowsRepeater.get())
+    {
+        view = repeater.ItemsSourceView();
+    }
+
+    if (m_rowHierarchyResetRevoker && SameInspectableIdentity(view, m_rowHierarchyResetView))
+    {
+        return;
+    }
+
+    // auto_revoke drops the prior source's subscription.
+    m_rowHierarchyResetRevoker = {};
+    m_rowHierarchyResetView = nullptr;
+
+    if (view)
+    {
+        m_rowHierarchyResetRevoker = view.CollectionChanged(
+            winrt::auto_revoke, { this, &TableView::OnRowsSourceResetForHierarchy });
+        m_rowHierarchyResetView = view;
+    }
+}
+
+void TableView::OnRowsSourceResetForHierarchy(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::NotifyCollectionChangedEventArgs& args)
+{
+    // Reset ONLY. An expand/collapse splices rows in and out, and every realized row it affects
+    // either moves index (ElementIndexChanged restamps it) or is the toggled row itself (already
+    // restamped by the verb) -- restamping on those would be pure overhead on the hot path. A Reset
+    // is the projection saying "every index you hold may now describe a different node", which is
+    // exactly the case nothing else covers: a rebuild that republishes metadata for the same rows,
+    // such as a node whose last child was removed while it was collapsed.
+    if (!args || args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    {
+        return;
+    }
+
+    QueueRefreshRealizedRowHierarchyState();
+}
+
+void TableView::QueueRefreshRealizedRowHierarchyState()
+{
+    // Deferred and coalesced: the notifications that bring us here are raised from inside the
+    // projection's own rebuild, before the repeater has reconciled it. Reading element indices then
+    // would stamp one row's level onto another, and a rebuild can raise several notifications.
+    if (m_rowHierarchyRefreshQueued)
+    {
+        return;
+    }
+    m_rowHierarchyRefreshQueued = true;
+
+    auto weakThis = get_weak();
+    if (auto const queue = winrt::DispatcherQueue::GetForCurrentThread())
+    {
+        queue.TryEnqueue([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->m_rowHierarchyRefreshQueued = false;
+                strongThis->RefreshRealizedRowHierarchyState();
+            }
+        });
+    }
+    else
+    {
+        m_rowHierarchyRefreshQueued = false;
+    }
 }
 
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
@@ -1264,6 +1353,62 @@ double TableView::GetHeaderFontSize()
     return cache.font.headerFontSize;
 }
 
+double TableView::GetRowIndentSize()
+{
+    // Cached like the density and font metrics: this is reached for every realized row on every
+    // scroll, recycle and reindex pass, and LookupElementResource walks control resources, then
+    // every ancestor, then application resources, then the generic dictionary before answering.
+    //
+    // A theme resource carries no change notification, so the cache cannot be refreshed on a swap.
+    // It is cleared by the same density / theme / high-contrast invalidation as the neighbouring
+    // metrics; swapping the resource outside one of those still requires the rows to be re-prepared
+    // before it is visible, which is the documented behaviour of every other resource here.
+    auto& cache = GetTableViewResourceCache(this);
+    if (cache.hierarchy.hasRowIndentSize)
+    {
+        return cache.hierarchy.rowIndentSize;
+    }
+
+    double resolved = c_defaultRowIndentSize;
+    if (auto raw = LookupElementResource(*this, L"TableViewRowIndentSize"))
+    {
+        const double value = winrt::unbox_value_or<double>(raw, c_defaultRowIndentSize);
+        // A negative or non-finite indent would pull cell content left, under the chevron. Fall
+        // back rather than render an unreadable row.
+        if (std::isfinite(value) && value >= 0.0)
+        {
+            resolved = value;
+        }
+    }
+
+    cache.hierarchy.rowIndentSize = resolved;
+    cache.hierarchy.hasRowIndentSize = true;
+    return resolved;
+}
+
+double TableView::GetRowExpanderSize()
+{
+    auto& cache = GetTableViewResourceCache(this);
+    if (cache.hierarchy.hasRowExpanderSize)
+    {
+        return cache.hierarchy.rowExpanderSize;
+    }
+
+    double resolved = c_defaultRowExpanderSize;
+    if (auto raw = LookupElementResource(*this, L"TableViewRowExpanderSize"))
+    {
+        const double value = winrt::unbox_value_or<double>(raw, c_defaultRowExpanderSize);
+        if (std::isfinite(value) && value >= 0.0)
+        {
+            resolved = value;
+        }
+    }
+
+    cache.hierarchy.rowExpanderSize = resolved;
+    cache.hierarchy.hasRowExpanderSize = true;
+    return resolved;
+}
+
 void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (args.OldValue() == args.NewValue())
@@ -1367,6 +1512,7 @@ void TableView::OnRowElementPrepared(
         rowImpl->SetOwningTableViewInternal(*this);
         rowImpl->RefreshGridLines();
         rowImpl->RefreshRowBackground();
+        RefreshRowHierarchyState(row, args.Index());
         RefreshRowSelectionState(row);
         InvalidateMeasure();
     }
@@ -1444,10 +1590,50 @@ void TableView::OnRowElementIndexChanged(
         winrt::get_self<TableViewRow>(row)->RefreshRowBackground();
     }
 
+    // ...and so must the hierarchy affordance: a row whose index moved is at a new depth, which is
+    // exactly what an expand above it does to every row below.
+    RefreshRowHierarchyState(row, args.NewIndex());
+
     // ...and so must selected chrome. The element keeps its item here (only its index moved), so
     // this normally re-derives the same answer - it is the cheap guarantee that a row whose index
     // shifted under an insert cannot end up disagreeing with the model.
     RefreshRowSelectionState(row);
+}
+
+// Pushes this index's hierarchy metadata onto the row. A flat or grouped source reports Level 0
+// here, which is what makes the chevron and indent disappear without a mode switch.
+void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t index)
+{
+    if (!row)
+    {
+        return;
+    }
+
+    TableViewRowInfo rowInfo{};
+    // Trust the metadata only when it actually describes a data row. A realized row can be
+    // re-prepared at an index that has just become a GROUP HEADER, where the info is valid but
+    // describes the header - taking IsExpandable/IsExpanded from that would give a data row a
+    // chevron for someone else's group. Same window, same guard as PrepareGroupHeaderElement.
+    const bool hasRowInfo =
+        TryGetTableViewSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::Data;
+
+    auto const rowImpl = winrt::get_self<TableViewRow>(row);
+    if (!hasRowInfo)
+    {
+        rowImpl->SetHierarchyStateInternal(0, false, false);
+        return;
+    }
+
+    // A grouped source also reports Level 1 for its data rows, but never IsExpandable - a data row
+    // under a group has nothing to expand. Asking the SOURCE whether it is a tree, rather than
+    // inferring it from this row, is what keeps a leaf root (Level 1, not expandable) aligned with
+    // its expandable siblings while leaving a merely grouped table rendering exactly as before.
+    const bool isHierarchicalRow =
+        m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource();
+    rowImpl->SetHierarchyStateInternal(
+        isHierarchicalRow ? (std::max)(1, rowInfo.Level) : 0,
+        rowInfo.IsExpandable,
+        rowInfo.IsExpanded);
 }
 
 // One header-text extraction per column, shared by the header cell's automation name and the
@@ -1770,7 +1956,8 @@ void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPrope
     QueueRebuildHeaders();
 }
 
-void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column){
+void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
+{
     // A column that just opted out must not keep an active sort applied to it.
     if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None)
     {
