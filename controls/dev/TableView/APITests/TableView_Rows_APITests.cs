@@ -18,7 +18,7 @@ using WEX.Logging.Interop;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
-using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewColumnTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewRowTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
@@ -39,7 +39,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateRowTable();
+                tableView = CreateTableViewWithColumns();
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -73,7 +73,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = MakeItems();
-                tableView = CreateRowTable(items);
+                tableView = CreateTableViewWithColumns(items);
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -86,8 +86,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(items[0], row.DataContext,
                     "A realized row must carry its backing source item as DataContext.");
 
-                var host = RequireCellsHost(row);
-                var wrapper = RequireCellWrapper(row, 0);
+                var host = GetCellsHost(row);
+                var wrapper = GetRowCell(row, 0);
                 var cellElement = wrapper.Child as FrameworkElement;
                 Verify.IsNotNull(cellElement, "The cell wrapper should host a generated cell element.");
 
@@ -122,7 +122,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 // A column far wider than its short text leaves a large slice of the wrapper with no
                 // TextBlock over it, which is exactly the area that used to be dead.
-                tableView = CreateRowTable(MakeItems(), ("Name", new GridLength(320.0, GridUnitType.Pixel)));
+                tableView = CreateTableViewWithColumns(columns: new[] { ("Name", new GridLength(320.0, GridUnitType.Pixel)) });
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -132,7 +132,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var row = RequireFirstRow(tableView);
-                var wrapper = RequireCellWrapper(row, 0);
+                var wrapper = GetRowCell(row, 0);
                 var text = wrapper.Child as FrameworkElement;
                 Verify.IsNotNull(text, "The cell wrapper should host a generated cell element.");
 
@@ -177,7 +177,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     new Person { Name = VeryLongText, Role = "R" },
                 };
 
-                tableView = CreateRowTable(items, ("Name", new GridLength(90.0, GridUnitType.Pixel)));
+                tableView = CreateTableViewWithColumns(items, columns: new[] { ("Name", new GridLength(90.0, GridUnitType.Pixel)) });
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -189,8 +189,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var rows = GetRealizedRows(tableView);
                 Verify.IsGreaterThan(rows.Count, 1, "Both rows should be realized.");
 
-                var shortText = RequireCellWrapper(rows[0], 0).Child as TextBlock;
-                var longText = RequireCellWrapper(rows[1], 0).Child as TextBlock;
+                var shortText = GetRowCell(rows[0], 0).Child as TextBlock;
+                var longText = GetRowCell(rows[1], 0).Child as TextBlock;
                 Verify.IsNotNull(shortText, "A text column should generate a TextBlock.");
                 Verify.IsNotNull(longText, "A text column should generate a TextBlock.");
 
@@ -230,7 +230,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var row = RequireFirstRow(tableView);
-                var wrapper = RequireCellWrapper(row, 0);
+                var wrapper = GetRowCell(row, 0);
 
                 var presenter = wrapper.Child as ContentPresenter;
                 Verify.IsNotNull(presenter, "A template column generates a ContentPresenter hosted by the cell wrapper.");
@@ -284,7 +284,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment($"{before.Count} rows realized before scrolling.");
             });
 
-            ScrollBodyToVerticalOffset(tableView, 1600.0);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 1600.0);
 
             RunOnUIThread.Execute(() =>
             {
@@ -303,12 +303,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         sawRecycledItem = true;
                     }
 
-                    var text = RequireCellWrapper(row, 0).Child as TextBlock;
+                    var text = GetRowCell(row, 0).Child as TextBlock;
                     Verify.IsNotNull(text, "The text column should generate a TextBlock.");
                     Verify.AreEqual(item.Name, text.Text,
                         "A recycled text cell must show the value of the item its row now represents.");
 
-                    var presenter = RequireCellWrapper(row, 1).Child as ContentPresenter;
+                    var presenter = GetRowCell(row, 1).Child as ContentPresenter;
                     Verify.IsNotNull(presenter, "The template column should generate a ContentPresenter.");
 
                     // Asserted on the rendered output rather than on ContentPresenter.Content: the
@@ -346,7 +346,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = MakeManyItems(120);
-                tableView = CreateRowTable(items);
+                tableView = CreateTableViewWithColumns(items);
                 baseBrush = new SolidColorBrush(Colors.LightGray);
                 alternateBrush = new SolidColorBrush(Colors.LightBlue);
                 tableView.RowBackground = baseBrush;
@@ -359,7 +359,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() => VerifyBanding(tableView, items, baseBrush, alternateBrush, "before scrolling"));
 
-            ScrollBodyToVerticalOffset(tableView, 1600.0);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 1600.0);
 
             RunOnUIThread.Execute(() =>
             {
@@ -390,7 +390,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = MakeManyItems(120);
-                tableView = CreateRowTable(items);
+                tableView = CreateTableViewWithColumns(items);
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -413,7 +413,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Precondition: the selected row must be in the Selected state before scrolling.");
             });
 
-            ScrollBodyToVerticalOffset(tableView, 1600.0);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 1600.0);
 
             RunOnUIThread.Execute(() =>
             {
@@ -460,7 +460,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = MakeManyItems(6);
-                tableView = CreateRowTable(items);
+                tableView = CreateTableViewWithColumns(items);
                 baseBrush = new SolidColorBrush(Colors.LightGray);
                 alternateBrush = new SolidColorBrush(Colors.LightBlue);
                 tableView.RowBackground = baseBrush;
@@ -506,7 +506,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = MakeManyItems(6);
-                tableView = CreateRowTable(items);
+                tableView = CreateTableViewWithColumns(items);
                 firstBrush = new SolidColorBrush(Colors.LightGray);
                 secondBrush = new SolidColorBrush(Colors.Khaki);
                 tableView.RowBackground = firstBrush;
@@ -579,7 +579,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateRowTable();
+                tableView = CreateTableViewWithColumns();
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -601,7 +601,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     var row = RequireFirstRow(tableView);
-                    var wrapper = RequireCellWrapper(row, 0);
+                    var wrapper = GetRowCell(row, 0);
 
                     Log.Comment($"{current.Value}: row border {row.BorderThickness.Bottom}, cell border {wrapper.BorderThickness.Right}.");
 
@@ -657,7 +657,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateRowTable();
+                tableView = CreateTableViewWithColumns();
                 Content = tableView;
                 Content.UpdateLayout();
             });

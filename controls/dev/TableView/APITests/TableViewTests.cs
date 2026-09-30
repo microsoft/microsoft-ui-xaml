@@ -17,7 +17,7 @@ using WEX.Logging.Interop;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
-using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewColumnTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -554,7 +554,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role");
+                tableView = CreateTableView(headers: new[] { "Name", "Role" });
                 tableView.Loaded += delegate { unorderedLoadEvent |= (++loadCount > unloadCount + 1); };
                 tableView.Unloaded += delegate { unorderedLoadEvent |= (++unloadCount > loadCount); };
 
@@ -658,7 +658,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     new Person { Name = "Diego", Role = "Engineer" },
                 });
 
-                tableView = CreateTableViewWithItems(itemsSource);
+                tableView = CreateTableView(itemsSource, bound: false);
 
                 host = new Grid();
                 host.Children.Add(tableView);
@@ -726,11 +726,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    var tableView = CreateTableViewWithItems(new List<Person>
+                    var tableView = CreateTableView(new List<Person>
                     {
                         new Person { Name = "Asha", Role = "Designer" },
                         new Person { Name = "Diego", Role = "Engineer" },
-                    });
+                    }, bound: false);
 
                     Content = tableView;
                     Content.UpdateLayout();
@@ -764,7 +764,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role");
+                tableView = CreateTableView(headers: new[] { "Name", "Role" });
                 Content = tableView;
                 Content.UpdateLayout();
             });
@@ -790,7 +790,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableViewWithItems(new List<Person>(), CreateTextTemplate("No rows"));
+                tableView = CreateTableView(new List<Person>(), bound: false, emptyTemplate: CreateTextTemplate("No rows"));
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -815,7 +815,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 // UpdateEmptyState defaults isEmpty to true when there is no ItemsSourceView at all,
                 // so a null source must reach the same state as an empty collection.
-                tableView = CreateTableViewWithItems(null, CreateTextTemplate("No rows"));
+                tableView = CreateTableView(null, bound: false, emptyTemplate: CreateTextTemplate("No rows"));
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -838,7 +838,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role");
+                tableView = CreateTableView(headers: new[] { "Name", "Role" });
                 tableView.EmptyTemplate = CreateTextTemplate("No rows");
 
                 Content = tableView;
@@ -864,7 +864,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 items = new ObservableCollection<Person> { new Person { Name = "Asha", Role = "Designer" } };
 
-                tableView = CreateTableViewWithItems(items, CreateTextTemplate("No rows"));
+                tableView = CreateTableView(items, bound: false, emptyTemplate: CreateTextTemplate("No rows"));
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -902,7 +902,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 items = new ObservableCollection<Person>();
 
-                tableView = CreateTableViewWithItems(items, CreateTextTemplate("No rows"));
+                tableView = CreateTableView(items, bound: false, emptyTemplate: CreateTextTemplate("No rows"));
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -935,7 +935,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 // No EmptyTemplate yet: the control loads empty but shows nothing.
-                tableView = CreateTableViewWithItems(new List<Person>());
+                tableView = CreateTableView(new List<Person>(), bound: false);
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -970,7 +970,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableViewWithItems(new List<Person>(), CreateTextTemplate("No rows"));
+                tableView = CreateTableView(new List<Person>(), bound: false, emptyTemplate: CreateTextTemplate("No rows"));
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -1007,7 +1007,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableViewWithItems(null);
+                tableView = CreateTableView(null, bound: false);
 
                 Content = tableView;
                 Content.UpdateLayout();
