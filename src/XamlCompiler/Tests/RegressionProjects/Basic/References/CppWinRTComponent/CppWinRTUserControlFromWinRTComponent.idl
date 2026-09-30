@@ -1,0 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace CppWinRTComponent
+{
+    [default_interface]
+    runtimeclass CppWinRTUserControlFromWinRTComponent : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        CppWinRTUserControlFromWinRTComponent();
+    }
+}

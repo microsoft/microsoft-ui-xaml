@@ -17,9 +17,9 @@ namespace winrt::MultipleViewsTestbedCppWinRT::implementation
         int32_t Dummy();
         void Dummy(int32_t value);
 
-        void MyControl_Click(::Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
-        void MyControl_Checked(::Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
-        void WindowSizeChanged(::Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args);
+        void MyControl_Click(::winrt::Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void MyControl_Checked(::winrt::Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void WindowSizeChanged(::winrt::Windows::Foundation::IInspectable const& sender, Microsoft::UI::Xaml::WindowSizeChangedEventArgs const& args);
 
         void LoadCorrectXamlFile();
 
