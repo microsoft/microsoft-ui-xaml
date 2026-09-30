@@ -115,9 +115,6 @@ private:
         const winrt::UIElement& sender,
         const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
 
-    // True when `element` is this row or sits inside its visual subtree.
-    bool IsSelfOrDescendantInternal(const winrt::DependencyObject& element);
-
     void OnRowGotFocus();
 
     // Installs a generated display element as a cell's content, wiring the ContentPresenter Content

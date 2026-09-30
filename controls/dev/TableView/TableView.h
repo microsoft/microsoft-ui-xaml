@@ -237,8 +237,6 @@ public:
     // headers share the repeater and have no cells, so they keep taking container focus.
     bool FocusRealizedRowCell(winrt::UIElement const& element, int32_t visibleColumnIndex);
 
-    bool IsWithinThisTableView(winrt::DependencyObject const& element);
-
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 
 
@@ -889,7 +887,6 @@ private:
 
     bool TryHandleCellNavigationKey(const winrt::KeyRoutedEventArgs& args);
 
-public:
     // The cell-cursor move itself, free of routed-event args. Returns true when the key belongs to
     // cell navigation (including at a boundary, where the cursor does not move).
     //
@@ -900,7 +897,6 @@ public:
         winrt::Windows::System::VirtualKey key, bool isControlDown,
         int32_t anchorRow, int32_t anchorColumn);
 
-private:
     static constexpr int32_t c_lastColumnSentinel{ 0x7ffffffe };
 
     winrt::TableViewRow GetRealizedRowAt(int32_t rowIndex) const;

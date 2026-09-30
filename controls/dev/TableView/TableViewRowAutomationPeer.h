@@ -65,8 +65,7 @@ private:
         bool allowPeerCreation,
         winrt::UIElement const& excludedCell);
 
-    // One peer per realized cell, keyed weakly so a recycled or rebuilt cell releases immediately.
-    // tracker_ref is the convention for a strong WinRT ref owned by a ReferenceTracker type.
+    // Dead cell entries stay cached until the next prune during child enumeration or peer lookup.
     struct CellPeerCacheEntry
     {
         CellPeerCacheEntry(

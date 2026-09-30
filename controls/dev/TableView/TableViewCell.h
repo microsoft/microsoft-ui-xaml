@@ -38,8 +38,8 @@ public:
         // instead of throwing "Target element cannot receive focus". CUIElement::IsFocusable gates
         // on IsTabStop, so this is what makes the cell reachable at all.
         //
-        // Every cell being a tab stop does NOT make the table a tab trap: the rows repeater uses
-        // TabFocusNavigation="Once", so the whole body stays a single tab stop and Tab leaves.
+        // PART_CellsHost is the single-tab-stop scope; focus already inside the row is allowed to
+        // leave instead of being redirected back to the first cell.
         wrapper.IsTabStop(true);
 
         // The focus rect manager honours this on any focusable UIElement, not just on a Control.

@@ -411,7 +411,6 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
     catch (...)
     {
         // Best-effort; IsHighContrast falls back to a one-shot AccessibilitySettings read.
-        // Best-effort; IsHighContrast falls back while ThemeSettings is unavailable.
     }
 }
 
@@ -426,7 +425,7 @@ void TableView::OnThemeSettingsChanged(
     }
     catch (...)
     {
-        // Keep the previous HC state if the window is tearing down.
+        // Best-effort during teardown; keep the previous HC state if the read fails.
     }
 
     InvalidateTableViewResourceCache(this);
@@ -1904,7 +1903,6 @@ void TableView::QueueRebuildHeaders()
                 catch (...)
                 {
                     // Coalesced header rebuild is best-effort; never fail-fast the dispatcher.
-                    // Coalesced header rebuild is best-effort.
                 }
             }
         }))
@@ -1972,7 +1970,6 @@ void TableView::OnTableViewUnloaded()
     // revoke() becomes a no-op (no ABI call, no throw); if the framework still holds the object it is
     // alive and remove_Changed succeeds normally. Either way remove_Changed is never called against a
     // half-torn-down feature.
-    // Release ThemeSettings before revoking: at app shutdown remove_Changed can throw through auto_revoke's noexcept path.
     m_themeSettings = nullptr;
     m_themeSettingsChangedRevoker.revoke();
 }

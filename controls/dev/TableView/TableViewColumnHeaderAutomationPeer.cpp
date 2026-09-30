@@ -267,7 +267,6 @@ int32_t TableViewColumnHeaderAutomationPeer::GetPositionInSetCore()
         }
     }
 
-    // 1-based visible column position, so AT can announce "column i of n".
     const auto index = GetColumnIndex();
 
     // 0 is UIA's "not specified"; valid values are 1-based, so -1 reached the client as a nonsense

@@ -25,7 +25,6 @@ public:
     hstring GetNameCore();
     hstring GetHelpTextCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
-    // Custom peers may supply "cell" as their localized control type.
     hstring GetLocalizedControlTypeCore();
 
     // IGridItemProvider — per-cell coordinates in the owning TableView.

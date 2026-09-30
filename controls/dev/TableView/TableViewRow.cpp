@@ -12,6 +12,7 @@
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewCell.h"
+#include "SharedHelpers.h"
 #include "TVDiag.h"
 
 static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
@@ -156,17 +157,17 @@ void TableViewRow::OnApplyTemplate()
     __super::OnApplyTemplate();
 
     ResetCellAutomationNames();
-    m_cellsHost.set(GetTemplateChild(hstring{ s_CellsHostPartName }).try_as<winrt::Panel>());
+    auto const host = GetTemplateChild(hstring{ s_CellsHostPartName }).try_as<winrt::Panel>();
+    m_cellsHost.set(host);
 
-    if (auto const host = m_cellsHost.get())
+    if (host)
     {
-        // Scope must sit on the cells host, not on TableViewRow: the row is a Control and therefore
-        // focusable, so a "Once" scope there makes the focus manager hand focus to the row, which
-        // OnRowGettingFocus redirects back into a cell - a trap. A Panel is never focusable.
+        // Scoped on the row's own cells host, not on the TableViewCellsPanel type: the same type is
+        // PART_HeaderHost, which must keep one tab stop per actionable header.
         host.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
     }
 
-    if (auto const cellsPanel = m_cellsHost.get().try_as<winrt::TableViewCellsPanel>())
+    if (auto const cellsPanel = host.try_as<winrt::TableViewCellsPanel>())
     {
         winrt::get_self<TableViewCellsPanel>(cellsPanel)->SetOwningRowInternal(*this);
     }
@@ -366,9 +367,11 @@ void TableViewRow::OnRowGettingFocus(
     // Focus leaving this row must not be pulled back into a cell, or Tab can never exit the table.
     // Only focus arriving from outside the row is an entry that wants a cell.
     auto const direction = args.Direction();
+    auto const oldFocus = args.OldFocusedElement();
+    winrt::DependencyObject const selfObject = *this;
     if ((direction == winrt::FocusNavigationDirection::Next ||
          direction == winrt::FocusNavigationDirection::Previous) &&
-        IsSelfOrDescendantInternal(args.OldFocusedElement()))
+        (oldFocus == selfObject || SharedHelpers::IsAncestor(oldFocus, selfObject, false /* checkVisibility */)))
     {
         return;
     }
@@ -393,22 +396,6 @@ void TableViewRow::OnRowGettingFocus(
     // in flight, for one). Failing is fine - focus simply stays on the row, which is what this
     // control did before cell focus existed.
     args.TrySetNewFocusedElement(target);
-}
-
-bool TableViewRow::IsSelfOrDescendantInternal(const winrt::DependencyObject& element)
-{
-    winrt::TableViewRow const self = *this;
-    auto const selfObject = self.try_as<winrt::DependencyObject>();
-    auto current = element;
-    while (current)
-    {
-        if (current == selfObject)
-        {
-            return true;
-        }
-        current = winrt::VisualTreeHelper::GetParent(current);
-    }
-    return false;
 }
 
 void TableViewRow::OnRowGotFocus()
@@ -1187,9 +1174,7 @@ void TableViewRow::RefreshGridLines()
         gridLineBrush = winrt::get_self<TableView>(owner)->GetGridLineBrush();
     }
 
-    // The control calls this on ActualTheme / High Contrast changes. The cell focus rectangle needs
-    // nothing here: it is the framework's own, drawn by the focus rect manager from
-    // FocusVisualPrimaryBrush / FocusVisualSecondaryBrush, which re-resolve themselves.
+    // The control calls this on ActualTheme / High Contrast changes.
 
     const auto children = host.Children();
     const uint32_t childCount = children.Size();
