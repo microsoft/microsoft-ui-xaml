@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.UI.Private.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
@@ -13,7 +14,7 @@ using System.Linq;
 
 using WEX.TestExecution;
 
-using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewColumnTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -46,7 +47,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         protected override string GetSortMemberPathCore() => ValuePath;
     }
 
-    internal static class TableViewColumnTestHelpers
+    // Which axis ScrollBodyTo drives; the body scroller can scroll on either.
+    internal enum ScrollAxis
+    {
+        Horizontal,
+        Vertical,
+    }
+
+    internal static class TableViewTestHelpers
     {
         // Resource init + the column-less TableView shell shared by every Create* variation. Each
         // builder decides how to attach its columns (bound/unbound, widths, template) afterward.
@@ -67,22 +75,63 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             };
         }
 
-        // Builds an unloaded TableView whose text columns each bind to the property named by their
-        // header (e.g. "Name", "Role"). A header with no matching property renders empty cells.
-        internal static TableView CreateTableView(params string[] headers)
+        // The single builder behind every fixture TableView. 
+        //      itemsSource defaults to MakeItems() for bound tables, null for unbound tables.
+        //      headers default to a single "Name" column (pass an empty array for a column-less table).
+        //      bound: true binds each text column to the property named by its header
+        //                  (a header with no matching property renders empty cells); 
+        //      bound: false leaves the columns purely structural.
+        internal static TableView CreateTableView(
+            object itemsSource = null,
+            string[] headers = null,
+            bool bound = true,
+            DataTemplate emptyTemplate = null,
+            double width = 500,
+            double height = 300)
         {
-            var tableView = CreateTableViewShell(MakeItems(), 500, 300);
+            object source = itemsSource ?? (bound ? MakeItems() : null);
+            var tableView = CreateTableViewShell(source, width, height, emptyTemplate);
 
-            foreach (var header in headers)
+            foreach (var header in headers ?? new[] { "Name" })
             {
-                tableView.Columns.Add(new TableViewTextColumn
-                {
-                    Header = header,
-                    Binding = new Binding { Path = new PropertyPath(header), Mode = BindingMode.OneWay },
-                });
+                tableView.Columns.Add(MakeTextColumn(header, bound: bound));
             }
 
             return tableView;
+        }
+
+        // A text column bound one-way to bindingPath (defaulting to the header). Width is left at the
+        // column default unless supplied. Pass bound: false for a header-only column whose cells stay
+        // empty - the unbound structural column CreateTableView(bound: false) uses.
+        internal static TableViewTextColumn MakeTextColumn(string header, string bindingPath = null, GridLength? width = null, bool bound = true)
+        {
+            var column = new TableViewTextColumn { Header = header };
+
+            if (bound)
+            {
+                column.Binding = new Binding { Path = new PropertyPath(bindingPath ?? header), Mode = BindingMode.OneWay };
+            }
+
+            if (width.HasValue)
+            {
+                column.Width = width.Value;
+            }
+
+            return column;
+        }
+
+        // A template column whose cells inflate cellTemplate. Width is left at the column default
+        // unless supplied.
+        internal static TableViewTemplateColumn MakeTemplateColumn(string header, DataTemplate cellTemplate, GridLength? width = null)
+        {
+            var column = new TableViewTemplateColumn { Header = header, CellTemplate = cellTemplate };
+
+            if (width.HasValue)
+            {
+                column.Width = width.Value;
+            }
+
+            return column;
         }
 
         internal static List<Person> MakeItems() => new List<Person>
@@ -91,27 +140,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             new Person { Name = "Diego", Role = "Engineer" },
             new Person { Name = "Mei", Role = "Architect" },
         };
-
-        // Builds a sized, hosted-ready TableView over a caller-supplied items source.
-        // Headers default to a single unbound "Name" column. Deliberately not an overload of
-        // CreateTableView(params string[]): a first parameter of type object would win overload
-        // resolution against the params form and silently capture CreateTableView("Name") calls.
-        internal static TableView CreateTableViewWithItems(
-            object itemsSource,
-            DataTemplate emptyTemplate = null,
-            double width = 400,
-            double height = 300,
-            string[] headers = null)
-        {
-            var tableView = CreateTableViewShell(itemsSource, width, height, emptyTemplate);
-
-            foreach (var header in headers ?? new[] { "Name" })
-            {
-                tableView.Columns.Add(new TableViewTextColumn { Header = header });
-            }
-
-            return tableView;
-        }
 
         internal static void EnsureTabularControlsResources()
         {
@@ -220,16 +248,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        internal static Panel RequireCellsHost(TableViewRow row)
+        internal static Panel GetCellsHost(TableViewRow row)
         {
             var host = row.FindVisualChildByName("PART_CellsHost") as Panel;
             Verify.IsNotNull(host, "PART_CellsHost should exist on a realized row.");
             return host;
         }
 
-        internal static Border RequireCellWrapper(TableViewRow row, int index)
+        internal static Border GetRowCell(TableViewRow row, int index)
         {
-            var host = RequireCellsHost(row);
+            var host = GetCellsHost(row);
             Verify.IsGreaterThan(host.Children.Count, index, "The cells host should have a cell at the requested index.");
 
             var wrapper = host.Children[index] as Border;
@@ -237,16 +265,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return wrapper;
         }
 
-        internal static void ScrollBodyToVerticalOffset(TableView tableView, double offset)
+        internal static void ScrollBodyTo(TableView tableView, ScrollAxis axis, double offset)
         {
             RunOnUIThread.Execute(() =>
             {
-                var scroller = tableView.FindVisualChildByName("PART_BodyScroller") as ScrollViewer;
-                Verify.IsNotNull(scroller, "PART_BodyScroller should exist once the template has applied.");
-                Verify.IsGreaterThan(scroller.ScrollableHeight, offset,
-                    "Precondition: the source must be long enough to scroll by the offset under test.");
+                var scroller = GetBodyScroller(tableView);
+                var scrollableExtent = axis == ScrollAxis.Horizontal ? scroller.ScrollableWidth : scroller.ScrollableHeight;
+                Verify.IsGreaterThan(scrollableExtent, offset,
+                    "Precondition: the source must be scrollable on the requested axis by more than the offset under test.");
 
-                scroller.ChangeView(null, offset, null, true);
+                // disableAnimation so the offset lands synchronously rather than over a composition
+                // animation the test would have to poll for.
+                scroller.ChangeView(
+                    axis == ScrollAxis.Horizontal ? offset : (double?)null,
+                    axis == ScrollAxis.Vertical ? offset : (double?)null,
+                    null,
+                    true);
             });
 
             IdleSynchronizer.Wait();
@@ -254,7 +288,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => tableView.UpdateLayout());
             IdleSynchronizer.Wait();
         }
+
+        internal static ScrollViewer GetBodyScroller(TableView tableView)
+        {
+            var scroller = tableView.FindVisualChildByName("PART_BodyScroller") as ScrollViewer;
+            Verify.IsNotNull(scroller, "PART_BodyScroller should exist once the template has applied.");
+            return scroller;
+        }
+
+        internal static FrameworkElement GetHeaderCell(TableView tableView, int index)
+        {
+            var host = tableView.FindVisualChildByName("PART_HeaderHost") as Panel;
+            Verify.IsNotNull(host, "PART_HeaderHost should exist once the template has applied.");
+            Verify.IsGreaterThan(host.Children.Count, index, "The header host should have a cell at the requested index.");
+            return (FrameworkElement)host.Children[index];
+        }
+
+        internal static ResizeGripper FindGripper(DependencyObject headerCell)
+            => FindVisualChildrenByType<ResizeGripper>(headerCell).FirstOrDefault();
+
+        internal static ResizeGripper RequireGripper(TableView tableView, int columnIndex)
+        {
+            var gripper = FindGripper(GetHeaderCell(tableView, columnIndex));
+            Verify.IsNotNull(gripper, $"Column {columnIndex} should have a resize gripper in its header cell.");
+            return gripper;
+        }
+
+        // The general fixture builder: a TableView over items (default sample rows) sized width x
+        // height, with text columns each bound to "Name" at the given widths. Defaults to a single
+        // 200px "Name" column when none are supplied.
+        internal static TableView CreateTableViewWithColumns(
+            List<Person> items = null,
+            double width = 500,
+            double height = 260,
+            params (string Header, GridLength Width)[] columns)
+        {
+            var tableView = CreateTableViewShell(items ?? MakeItems(), width, height);
+
+            if (columns.Length == 0)
+            {
+                columns = new[] { ("Name", new GridLength(200.0, GridUnitType.Pixel)) };
+            }
+
+            foreach (var (header, columnWidth) in columns)
+            {
+                tableView.Columns.Add(MakeTextColumn(header, "Name", columnWidth));
+            }
+
+            return tableView;
+        }
     }
+    
     // The default row item: two plain, non-notifying string properties. Tests that need change
     // notification, validation, or grouping keys use the richer items defined by their own area.
     internal sealed class Person
@@ -268,40 +352,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     {
         internal const string VeryLongText = "A considerably longer piece of cell text than the column can possibly show";
 
-        internal static TableView CreateRowTable() => CreateRowTable(MakeItems());
-
-        internal static TableView CreateRowTable(List<Person> items, params (string Header, GridLength Width)[] columns)
-        {
-            var tableView = CreateTableViewShell(items, 500, 260);
-
-            if (columns.Length == 0)
-            {
-                columns = new[] { ("Name", new GridLength(200.0, GridUnitType.Pixel)) };
-            }
-
-            foreach (var (header, width) in columns)
-            {
-                tableView.Columns.Add(new TableViewTextColumn
-                {
-                    Header = header,
-                    Width = width,
-                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
-                });
-            }
-
-            return tableView;
-        }
-
         internal static TableView CreateTemplateColumnTable(List<Person> items)
         {
             var tableView = CreateTableViewShell(items, 500, 260);
 
-            tableView.Columns.Add(new TableViewTemplateColumn
-            {
-                Header = "Name",
-                Width = new GridLength(200.0, GridUnitType.Pixel),
-                CellTemplate = CreateBoundTextTemplate(),
-            });
+            tableView.Columns.Add(MakeTemplateColumn("Name", CreateBoundTextTemplate(), new GridLength(200.0, GridUnitType.Pixel)));
 
             return tableView;
         }
@@ -310,14 +365,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // both content routes on the same row.
         internal static TableView CreateMixedColumnTable(List<Person> items)
         {
-            var tableView = CreateRowTable(items, ("Text", new GridLength(180.0, GridUnitType.Pixel)));
+            var tableView = CreateTableViewWithColumns(items, columns: new[] { ("Text", new GridLength(180.0, GridUnitType.Pixel)) });
 
-            tableView.Columns.Add(new TableViewTemplateColumn
-            {
-                Header = "Template",
-                Width = new GridLength(180.0, GridUnitType.Pixel),
-                CellTemplate = CreateBoundTextTemplate(),
-            });
+            tableView.Columns.Add(MakeTemplateColumn("Template", CreateBoundTextTemplate(), new GridLength(180.0, GridUnitType.Pixel)));
 
             return tableView;
         }

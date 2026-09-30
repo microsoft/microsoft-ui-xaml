@@ -19,7 +19,7 @@ using WEX.Logging.Interop;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
-using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewColumnTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewSizingTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
@@ -407,7 +407,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "An Auto column must widen when a wider cell realizes, otherwise the new content clips.");
             });
 
-            ScrollBodyToVerticalOffset(tableView, 0.0);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 0.0);
 
             RunOnUIThread.Execute(() =>
             {
@@ -438,11 +438,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             TableView tableView = null;
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateSizedTable(
+                tableView = CreateTableViewWithColumns(
                     width: 600,
-                    ("Fixed", new GridLength(100.0, GridUnitType.Pixel)),
-                    ("One", new GridLength(1.0, GridUnitType.Star)),
-                    ("Two", new GridLength(2.0, GridUnitType.Star)));
+                    columns: new[]
+                    {
+                        ("Fixed", new GridLength(100.0, GridUnitType.Pixel)),
+                        ("One", new GridLength(1.0, GridUnitType.Star)),
+                        ("Two", new GridLength(2.0, GridUnitType.Star)),
+                    });
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -494,10 +497,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 // Two equal star columns in a 600px-wide table: each would take about half. A
                 // MinWidth well above half on the first forces the clamp-and-redivide path.
-                tableView = CreateSizedTable(
+                tableView = CreateTableViewWithColumns(
                     width: 600,
-                    ("Bounded", new GridLength(1.0, GridUnitType.Star)),
-                    ("Free", new GridLength(1.0, GridUnitType.Star)));
+                    columns: new[]
+                    {
+                        ("Bounded", new GridLength(1.0, GridUnitType.Star)),
+                        ("Free", new GridLength(1.0, GridUnitType.Star)),
+                    });
 
                 tableView.Columns[0].MinWidth = 420.0;
 
@@ -540,15 +546,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                defaulted = CreateSizedTable(
+                defaulted = CreateTableViewWithColumns(
                     width: 600,
-                    ("Zero", new GridLength(0.0, GridUnitType.Star)),
-                    ("Rest", new GridLength(1.0, GridUnitType.Star)));
+                    columns: new[]
+                    {
+                        ("Zero", new GridLength(0.0, GridUnitType.Star)),
+                        ("Rest", new GridLength(1.0, GridUnitType.Star)),
+                    });
 
-                explicitMin = CreateSizedTable(
+                explicitMin = CreateTableViewWithColumns(
                     width: 600,
-                    ("Zero", new GridLength(0.0, GridUnitType.Star)),
-                    ("Rest", new GridLength(1.0, GridUnitType.Star)));
+                    columns: new[]
+                    {
+                        ("Zero", new GridLength(0.0, GridUnitType.Star)),
+                        ("Rest", new GridLength(1.0, GridUnitType.Star)),
+                    });
                 explicitMin.Columns[0].MinWidth = 75.0;
 
                 Content = StackTables(defaulted, explicitMin);
@@ -592,10 +604,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateSizedTable(
+                tableView = CreateTableViewWithColumns(
                     width: double.NaN,
-                    ("Star", new GridLength(1.0, GridUnitType.Star)),
-                    ("WiderStar", new GridLength(3.0, GridUnitType.Star)));
+                    columns: new[]
+                    {
+                        ("Star", new GridLength(1.0, GridUnitType.Star)),
+                        ("WiderStar", new GridLength(3.0, GridUnitType.Star)),
+                    });
 
                 // Width-to-content host: a horizontal StackPanel measures its child at infinite width,
                 // so nothing above the table supplies a width for star columns to divide.
@@ -691,21 +706,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                EnsureTabularControlsResources();
+                tableView = CreateTableViewShell(MakeItems(), 500, 300);
 
-                tableView = new TableView
-                {
-                    ItemsSource = MakeItems(),
-                    Width = 500,
-                    Height = 300,
-                };
-
-                tableView.Columns.Add(new TableViewTemplateColumn
-                {
-                    Header = "Cell",
-                    Width = GridLength.Auto,
-                    CellTemplate = CreateFixedWidthTemplate(60.0),
-                });
+                tableView.Columns.Add(MakeTemplateColumn("Cell", CreateFixedWidthTemplate(60.0), GridLength.Auto));
 
                 Content = tableView;
                 Content.UpdateLayout();
@@ -766,7 +769,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role", "City");
+                tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
                 tableView.CanUserResizeColumns = false;
                 Content = tableView;
                 Content.UpdateLayout();
@@ -805,7 +808,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView("Name", "Role", "City");
+                tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
                 tableView.Columns[1].CanResize = false;
                 Content = tableView;
                 Content.UpdateLayout();
@@ -1276,7 +1279,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
 
-            ScrollBodyTo(tableView, c_scrollOffset);
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
 
             RunOnUIThread.Execute(() =>
             {
@@ -1295,8 +1298,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 foreach (var row in rows)
                 {
-                    VerifyPinned(RequireCellWrapper(row, 0), offset, "a frozen row cell");
-                    VerifyNotPinned(RequireCellWrapper(row, 1), "a non-frozen row cell");
+                    VerifyPinned(GetRowCell(row, 0), offset, "a frozen row cell");
+                    VerifyNotPinned(GetRowCell(row, 1), "a non-frozen row cell");
                 }
             });
         }
@@ -1321,7 +1324,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
 
-            ScrollBodyTo(tableView, c_scrollOffset);
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
 
             RunOnUIThread.Execute(() =>
             {
@@ -1385,7 +1388,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
 
-            ScrollBodyTo(tableView, c_scrollOffset);
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
 
             RunOnUIThread.Execute(() =>
             {
@@ -1402,8 +1405,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 foreach (var row in GetRealizedRows(tableView))
                 {
-                    VerifyPinned(RequireCellWrapper(row, 0), offset, "the prefix frozen row cell");
-                    VerifyNotPinned(RequireCellWrapper(row, 2), "the out-of-prefix Leading row cell");
+                    VerifyPinned(GetRowCell(row, 0), offset, "the prefix frozen row cell");
+                    VerifyNotPinned(GetRowCell(row, 2), "the out-of-prefix Leading row cell");
                 }
             });
         }
@@ -1427,7 +1430,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
 
-            ScrollBodyTo(tableView, c_scrollOffset);
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
 
             RunOnUIThread.Execute(() =>
             {
@@ -1441,7 +1444,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 foreach (var row in GetRealizedRows(tableView))
                 {
-                    VerifyNotPinned(RequireCellWrapper(row, 4), "a Trailing row cell, which must behave exactly like None");
+                    VerifyNotPinned(GetRowCell(row, 4), "a Trailing row cell, which must behave exactly like None");
                 }
             });
         }
@@ -1492,8 +1495,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(FlowDirection.RightToLeft, cellsHost.FlowDirection,
                     "Precondition: FlowDirection must reach the cells panel, or nothing downstream can mirror.");
 
-                frozenRightBefore = GetVisualRight(RequireCellWrapper(GetRealizedRows(tableView).First(), 0), wrapper);
-                scrolledRightBefore = GetVisualRight(RequireCellWrapper(GetRealizedRows(tableView).First(), 1), wrapper);
+                frozenRightBefore = GetVisualRight(GetRowCell(GetRealizedRows(tableView).First(), 0), wrapper);
+                scrolledRightBefore = GetVisualRight(GetRowCell(GetRealizedRows(tableView).First(), 1), wrapper);
                 Log.Comment($"Before scrolling: frozen cell right edge at {frozenRightBefore}, neighbour right edge at {scrolledRightBefore}.");
 
                 // The first column must be arranged at the visual right under RTL. If this fails the
@@ -1503,7 +1506,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Precondition: under RTL the first column must be arranged to the right of the second.");
             });
 
-            ScrollBodyTo(tableView, c_scrollOffset);
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
 
             RunOnUIThread.Execute(() =>
             {
@@ -1512,8 +1515,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsGreaterThan(offset, 0.0, "Precondition: the body must actually have scrolled horizontally.");
 
                 var row = GetRealizedRows(tableView).First();
-                var frozenRightAfter = GetVisualRight(RequireCellWrapper(row, 0), wrapper);
-                var scrolledRightAfter = GetVisualRight(RequireCellWrapper(row, 1), wrapper);
+                var frozenRightAfter = GetVisualRight(GetRowCell(row, 0), wrapper);
+                var scrolledRightAfter = GetVisualRight(GetRowCell(row, 1), wrapper);
                 Log.Comment($"After scrolling: frozen cell right edge at {frozenRightAfter}, neighbour right edge at {scrolledRightAfter}.");
 
                 // The neighbour moving is what makes the frozen cell's stillness meaningful.
@@ -1601,7 +1604,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Precondition: the source must be long enough to scroll the target row into view.");
             });
 
-            ScrollBodyToVerticalOffset(tableView, target);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, target);
         }
 
         internal static UIElement StackTables(params TableView[] tables)
@@ -1621,36 +1624,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var tableView = CreateTableViewShell(
                 names.Select(name => new Person { Name = name, Role = "Role" }).ToList(), 600, 260);
 
-            tableView.Columns.Add(new TableViewTextColumn
-            {
-                Header = header,
-                Width = GridLength.Auto,
-                Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
-            });
-
-            return tableView;
-        }
-
-        internal static TableView CreateSizedTable(double width, params (string Header, GridLength Width)[] columns)
-        {
-            var tableView = CreateTableViewShell(MakeItems(), width, 260);
-
-            foreach (var (header, columnWidth) in columns)
-            {
-                tableView.Columns.Add(new TableViewTextColumn
-                {
-                    Header = header,
-                    Width = columnWidth,
-                    Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay },
-                });
-            }
+            tableView.Columns.Add(MakeTextColumn(header, "Name", GridLength.Auto));
 
             return tableView;
         }
 
         internal static TableView CreateResizableTable(params (string Header, GridLength Width)[] columns)
         {
-            var tableView = CreateSizedTable(600, columns);
+            var tableView = CreateTableViewWithColumns(width: 600, columns: columns);
             tableView.CanUserResizeColumns = true;
             return tableView;
         }
@@ -1664,7 +1645,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 .Select(i => ($"Column {i}", new GridLength(160.0, GridUnitType.Pixel)))
                 .ToArray();
 
-            var tableView = CreateSizedTable(360, columns);
+            var tableView = CreateTableViewWithColumns(width: 360, columns: columns);
             tableView.Height = 260;
             return tableView;
         }
@@ -1674,53 +1655,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                    <Border Width=""{width.ToString(CultureInfo.InvariantCulture)}"" Height=""20"" />
                </DataTemplate>");
 
-        internal static FrameworkElement GetHeaderCell(TableView tableView, int index)
-        {
-            var host = tableView.FindVisualChildByName("PART_HeaderHost") as Panel;
-            Verify.IsNotNull(host, "PART_HeaderHost should exist once the template has applied.");
-            Verify.IsGreaterThan(host.Children.Count, index, "The header host should have a cell at the requested index.");
-            return (FrameworkElement)host.Children[index];
-        }
-
-        internal static ResizeGripper FindGripper(DependencyObject headerCell)
-            => FindVisualChildrenByType<ResizeGripper>(headerCell).FirstOrDefault();
-
-        internal static ResizeGripper RequireGripper(TableView tableView, int columnIndex)
-        {
-            var gripper = FindGripper(GetHeaderCell(tableView, columnIndex));
-            Verify.IsNotNull(gripper, $"Column {columnIndex} should have a resize gripper in its header cell.");
-            return gripper;
-        }
-
-        internal static ScrollViewer GetBodyScroller(TableView tableView)
-        {
-            var scroller = tableView.FindVisualChildByName("PART_BodyScroller") as ScrollViewer;
-            Verify.IsNotNull(scroller, "PART_BodyScroller should exist once the template has applied.");
-            return scroller;
-        }
-
         internal static double GetBodyViewportWidth(TableView tableView) => GetBodyScroller(tableView).ViewportWidth;
 
         internal static double GetBodyHorizontalOffset(TableView tableView) => GetBodyScroller(tableView).HorizontalOffset;
-
-        internal static void ScrollBodyTo(TableView tableView, double offset)
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                var scroller = GetBodyScroller(tableView);
-                Verify.IsGreaterThan(scroller.ScrollableWidth, offset,
-                    "Precondition: the table must be wider than its viewport by more than the offset under test.");
-
-                // disableAnimation so the offset lands synchronously rather than over a composition
-                // animation the test would have to poll for.
-                scroller.ChangeView(offset, null, null, true);
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() => tableView.UpdateLayout());
-            IdleSynchronizer.Wait();
-        }
 
         // A pinned cell counter-translates by the scroll offset so it holds its viewport position, and
         // paints above the scrolled cells.
