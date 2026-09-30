@@ -462,7 +462,6 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
         return nullptr;
     }
 
-    // Resolve startAfter through its owning realized repeater child.
     int32_t startIndex = -1;
     if (startAfter)
     {

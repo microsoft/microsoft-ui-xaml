@@ -158,14 +158,10 @@ bool TableViewColumn::CommitCellEdit(const winrt::FrameworkElement& editingEleme
 
 // The editing bindings use UpdateSourceTrigger::Explicit, so this is what actually moves the typed
 // value onto the data item.
-// Transactional editors use UpdateSourceTrigger::Explicit, so this moves the typed value onto the
-// item. Application templates choose their own trigger; the base does not rewrite those bindings.
 //
 // Resolved HERE rather than when the edit opened: a CellEditingTemplate's ContentPresenter has not
 // stamped its template at begin time, so a walk then finds nothing. By commit time the editor is
 // realized. WPF sidesteps the same ordering problem with an UpdateLayout() call in BeginEdit.
-// Resolve at commit rather than caching during preparation: a custom editing template can realize
-// or replace descendants after the initial focus attempt.
 //
 // Returns false when nothing could be written, so the control keeps the edit open instead of
 // reporting a commit that never reached the item.
@@ -203,14 +199,10 @@ void TableViewColumn::CancelCellEdit(const winrt::FrameworkElement& editingEleme
 //
 // The editing binding is UpdateSourceTrigger::Explicit, so a cancelled edit never reached the data
 // item: the source still holds the pre-edit value. The editor is then discarded and the display
-// With UpdateSourceTrigger::Explicit, an uncommitted edit never reached the data item: the source
-// still holds the pre-edit value. The editor is then discarded and the display
 // element - bound to that same untouched source - is put back. WinUI's BindingExpression has no
 // UpdateTarget(), but none is needed, because the target being refreshed is thrown away.
 //
 // A column whose editor writes outside its binding must override this.
-// A template that writes automatically or performs other side effects needs application-owned
-// rollback; the base cannot infer arbitrary source mutations.
 void TableViewColumn::CancelCellEditCore(const winrt::FrameworkElement& /*editingElement*/, const winrt::IInspectable& /*uneditedValue*/)
 {
 }

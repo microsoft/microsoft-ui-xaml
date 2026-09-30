@@ -10,11 +10,13 @@
 #include "GridCoordinateHelper.h"
 #include "ResourceAccessor.h"
 #include "Utils.h"
+#include "SharedHelpers.h"
 
 #include <algorithm>
 #include <cmath>
-// Row keyboard navigation and its focus/measurement helpers live here.
 #include <limits>
+
+// Row keyboard navigation and its focus/measurement helpers live here.
 
 namespace
 {
@@ -646,7 +648,12 @@ winrt::UIElement TableView::ResolveFocusEntryCell(
 
     auto targetRow = row;
 
-    if (m_currentCellRow >= 0 && !IsWithinThisTableView(oldFocusedElement))
+    winrt::DependencyObject const selfObject = *this;
+    const bool focusCameFromWithin =
+        oldFocusedElement == selfObject ||
+        SharedHelpers::IsAncestor(oldFocusedElement, selfObject, false /* checkVisibility */);
+
+    if (m_currentCellRow >= 0 && !focusCameFromWithin)
     {
         // m_currentCellRow is a bare index, and nothing renumbers it when the source reshapes
         // (sort, filter, group expand/collapse, insert, remove), so index 2 can name a different
@@ -679,22 +686,6 @@ winrt::UIElement TableView::ResolveFocusEntryCell(
     }
 
     return rowImpl->GetVisibleCellInternal(std::clamp(m_currentCellColumn, 0, cellCount - 1));
-}
-
-bool TableView::IsWithinThisTableView(winrt::DependencyObject const& element)
-{
-    winrt::TableView const self = *this;
-    auto const selfObject = self.try_as<winrt::DependencyObject>();
-    auto current = element;
-    while (current)
-    {
-        if (current == selfObject)
-        {
-            return true;
-        }
-        current = winrt::VisualTreeHelper::GetParent(current);
-    }
-    return false;
 }
 
 void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)

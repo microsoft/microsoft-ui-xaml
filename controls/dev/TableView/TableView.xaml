@@ -69,9 +69,7 @@
                                           VerticalContentAlignment="Stretch">
                                 
                                 <Grid x:Name="PART_BodyContent" Background="Transparent">
-                                    <!-- TabFocusNavigation="Once": cells can hold focus, but Tab enters the body once and then leaves instead of walking every realized cell. -->
                                     <ItemsRepeater x:Name="PART_RowsRepeater"
-                                                   TabFocusNavigation="Once"
                                                    VerticalCacheLength="2.0">
                                         <ItemsRepeater.Layout>
                                             <StackLayout Orientation="Vertical" />

@@ -763,15 +763,19 @@ void TableView::SelectRowIndexFromKeyboardFocus(int32_t index)
     SelectRowIndexFromInteraction(index, false /* toggle */);
 }
 
-
+// ----- Public API -----
 void TableView::Select(int32_t index)
 {
     if (index < 0)
     {
+        // Explicit "select nothing".
         DeselectAll();
         return;
     }
 
+    // Reject rather than coerce. ApplySelection turns an unresolvable index into "clear", which is
+    // right for a coercion path but wrong here: Select(999) must not wipe an existing selection.
+    // ItemsView::Select is a straight pass-through to SelectionModel and never clears either.
     if (!CanSelectRows() || index >= GetItemsSourceCount())
     {
         return;
