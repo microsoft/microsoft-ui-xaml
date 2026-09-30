@@ -2030,6 +2030,10 @@ void TableView::AppendResizeGripperVisual(
 
         if (auto const col = weakColumn.get())
         {
+            if (strongThis)
+            {
+                strongThis->FreezeColumnsBeforeResize(col);
+            }
             state->startValue = col.ActualWidth();
             state->startWidth = col.Width();
             if (strongThis)

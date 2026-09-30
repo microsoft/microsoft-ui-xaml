@@ -847,6 +847,7 @@ private:
     // Limits a resize gesture to the width the other columns can absorb. Unbounded when nothing
     // constrains it.
     ColumnResizeBounds ResizeBoundsForColumn(const winrt::TableViewColumn& column);
+    void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column);
     // Re-invalidate the header + realized row cells panels so they re-measure/arrange after a resolve.
     void InvalidateCellPanels();
 

@@ -399,6 +399,35 @@ void TableView::ResolveColumnWidths()
     }
 }
 
+// A resize takes space only from the columns after the dragged one (the WPF DataGrid contract).
+// Freezing the earlier Star columns at the width they already render keeps them out of both the
+// bound below and the redistribution pass, without changing what the user sees.
+void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column)
+{
+    auto columns = Columns();
+    uint32_t index = 0;
+    if (!columns || !columns.IndexOf(column, index))
+    {
+        return;
+    }
+
+    for (uint32_t i = 0; i < index; ++i)
+    {
+        auto const other = columns.GetAt(i);
+        if (!other ||
+            winrt::get_self<TableViewColumn>(other)->GetOwningTableView() != *this ||
+            other.Visibility() != winrt::Visibility::Visible ||
+            other.Width().GridUnitType != winrt::GridUnitType::Star)
+        {
+            continue;
+        }
+
+        auto const columnImpl = winrt::get_self<TableViewColumn>(other);
+        auto const resizeScope = columnImpl->BeginUserResizeScope();
+        other.Width(winrt::GridLengthHelper::FromPixels(other.ActualWidth()));
+    }
+}
+
 // How far a drag may take this column. A table whose columns divide the viewport may not grow past
 // it, and a column the user may not resize neither gives width away nor takes any.
 ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn& column)
