@@ -11,6 +11,8 @@
 #include "etwrealtimeconsumer.h"
 #include <TraceLoggingEvent.h>
 #include <ppltasks.h>
+#include <mutex>
+#include <TraceEventScope.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     namespace Common {
@@ -19,6 +21,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         {
         public:
             static void EnableTracingByEventId(int eventId);
+            static void BeginCountingForProcess(unsigned int processId, __int64 startTimestamp);
             static void Start(GUID xamlGuid);
             static void Start();
             static void Stop();
@@ -35,6 +38,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             static bool s_processing;
             static bool s_guidProvided;
             static std::map<int, unsigned int> s_IdCountMap;
+            static std::mutex s_eventMutex;
+            static TraceEventScope s_eventScope;
             static Event s_syncEvent;
         };
     }

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using System;
-using Debug=Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal.Debug;
+using Debug = System.Diagnostics.Debug;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;

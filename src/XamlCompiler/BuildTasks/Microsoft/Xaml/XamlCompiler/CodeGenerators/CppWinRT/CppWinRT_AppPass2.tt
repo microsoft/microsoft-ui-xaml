@@ -81,7 +81,7 @@ namespace
 #endif
 
 #ifndef DISABLE_XAML_GENERATED_MAIN
-int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
+int __stdcall wWinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ PWSTR, _In_ int)
 #else
 int __stdcall wXamlGeneratedMain()
 #endif

@@ -20,7 +20,7 @@ stages:
     pool:
       type: windows
     variables:
-      ob_outputDirectory: '$(Build.ArtifactStagingDirectory)\packages'
+      ob_outputDirectory: '$(Build.SourcesDirectory)\out'
       ob_artifactBaseName: "LocalizationDrop"
     steps:
     - template: WinUI-LocalizeResources-Steps.yml

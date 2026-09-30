@@ -30,6 +30,11 @@ public:
         return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarEraserButtonName);
     }
 
+    winrt::hstring GetFlyoutName() override
+    {
+        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarEraserFlyoutName);
+    }
+
     // These functions are ambiguous with InkToolbarToolButton, disambiguate
     using InkToolbarEraserButtonProperties::EnsureProperties;
     using InkToolbarEraserButtonProperties::ClearProperties;

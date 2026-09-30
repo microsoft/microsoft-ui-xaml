@@ -13,7 +13,12 @@ In System XAML (UWP XAML), this gamepad-driven navigation was on by default — 
 for free without any opt-in. WinUI 3 XAML does not turn it on automatically, so today the
 same app loses gamepad navigation unless it (or its host) explicitly enables it. We consider
 that gap a regression from System XAML, and this spec describes closing it by having the
-WinUI framework enable gamepad key routing on by default, the way System XAML did.
+WinUI framework enable gamepad key routing during XAML startup, the way System XAML did.
+
+Because this changes existing behavior, the framework's enable is gated behind a
+**XAML optional change**, `XamlChangeId.GamepadKeyRouting`. An app opts in explicitly today;
+the change becomes the default in a later release. See
+[Opting in with XamlOptionalChanges](#opting-in-with-xamloptionalchanges).
 
 Whether gamepad input is delivered to an app as virtual keys is controlled by an existing
 operating-system API, `Windows.UI.Input.GamepadKeyRoutingConfiguration`. This is a
@@ -21,8 +26,9 @@ process-wide setting: when key routing is enabled, gamepad input arrives as virt
 for the whole process; when it is disabled, it does not.
 
 Today an app (or host) has to turn this on itself. This spec describes enabling it inside
-the WinUI framework, so that a full WinUI app gets gamepad-driven navigation on by default,
-while still allowing the app to opt out.
+the WinUI framework, so that a full WinUI app gets gamepad-driven navigation without writing
+input code — initially by enabling the `GamepadKeyRouting` optional change, and by default in
+a later release — while still allowing the app to opt out.
 
 The framework enables key routing only for a **full WinUI app** — one that starts XAML by
 calling `Application.Start()`. A process that merely embeds WinUI as a **XAML Island** is
@@ -30,15 +36,43 @@ deliberately left alone: the framework does not flip the process-wide switch for
 host's non-XAML input code is unaffected. A host that wants routing can still enable it
 itself.
 
-This spec does not introduce a new API. `GamepadKeyRoutingConfiguration` already ships
+This spec introduces no new *runtime class*. `GamepadKeyRoutingConfiguration` already ships
 in the OS (`Windows.Foundation.UniversalApiContract`, version 19). The work here is a
-framework-internal call to that existing API at the right point in XAML startup, plus
-guidance for how an app opts out. The API surface is reproduced in
-[API Details](#api-details) for reference only.
+framework-internal call to that existing API at the right point in XAML startup, gated by a
+new `XamlChangeId` enum value, plus guidance for how an app opts in and out. The surfaces are
+listed in [API Details](#api-details).
 
 # Conceptual pages (How To)
 
-## Gamepad navigation is on by default
+## Opting in with XamlOptionalChanges
+
+Enabling gamepad key routing changes how an existing app receives input, so it is delivered
+as a **XAML optional change** rather than switched on unconditionally. The change id is
+`XamlChangeId.GamepadKeyRouting`.
+
+An app opts in with the `EnabledXamlOptionalChanges` MSBuild property, which makes the XAML
+compiler emit the enable call into your generated `App` entry point, before
+`Application.Start()` runs:
+
+```xml
+<PropertyGroup>
+  <EnabledXamlOptionalChanges>GamepadKeyRouting</EnabledXamlOptionalChanges>
+</PropertyGroup>
+```
+
+Optional changes are locked when XAML initializes, so enabling the change after
+`Application.Start()` is too late — see
+[Where the framework makes the call](#where-the-framework-makes-the-call).
+
+Planned rollout:
+
+| Release | State |
+| --- | --- |
+| 2.x | Available, disabled by default (explicit opt-in as above) |
+| 3.x | Enabled by default; apps can still opt out |
+| 4.x | Always enabled; the optional change is deprecated |
+
+## Gamepad navigation once the change is enabled
 
 When your full WinUI app starts XAML — which it does by calling `Application.Start()` from
 its generated entry point — the framework enables gamepad key routing for the process.
@@ -47,7 +81,7 @@ keys) is delivered to your app as keyboard virtual keys. This means WinUI's norm
 and focus behaviors — XY focus navigation, `Enter`/`Space` to invoke, `Esc` to dismiss, and
 similar — respond to the gamepad automatically, with no additional code in your app.
 
-If your app does nothing special, this is the recommended experience: you get gamepad
+If your app does nothing further, this is the recommended experience: you get gamepad
 navigation for free, and if your app has no interest in gamepad input it can simply ignore
 those virtual keys.
 
@@ -87,9 +121,9 @@ setting. So the framework has to be deliberate about *which processes* it turns 
 
 It enables routing only from the **full-app entry point**, `Application.Start()`. A normal
 WinUI app reaches that method from its generated entry point, owns its process, and gets
-gamepad navigation on by default — process-wide is exactly what it wants.
-A process that embeds WinUI only as a **XAML Island** never calls `Application.Start()`, so
-the framework does not auto-enable routing for it.
+gamepad navigation once the optional change is enabled — process-wide is exactly what it
+wants. A process that embeds WinUI only as a **XAML Island** never calls `Application.Start()`,
+so the framework does not auto-enable routing for it, regardless of the optional change.
 
 One residual point worth stating plainly: within a full WinUI app the setting is still
 process-wide, so if that app *also* hosts non-XAML UI in the same process, that UI's input
@@ -108,17 +142,18 @@ The framework makes the call once per process, from the full-app entry point
 ```cpp
 // Inside Application.Start() (FrameworkApplicationFactory::StartImpl), on the branch that
 // starts a full WinUI app. Island hosts don't reach here, so their process is left alone.
-// IsApiContractPresent checks the OS actually has the API (it ships in a newer contract than
-// WinUI's minimum OS); IsSupported checks the feature is usable on this device.
-if (Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(
-        L"Windows.Foundation.UniversalApiContract", 19) &&
-    Windows::UI::Input::GamepadKeyRoutingConfiguration::IsSupported())
+// The optional change must have been enabled before Application.Start(); the contract check
+// confirms the OS actually has the API, which ships in a newer contract than WinUI's minimum OS.
+if (OptionalChangeState::IsGamepadKeyRoutingEnabled())
 {
-    Windows::UI::Input::GamepadKeyRoutingConfiguration::TrySetKeyRoutingEnabled(true);
+    if (ApiInformation::IsApiContractPresentByMajor(L"Windows.Foundation.UniversalApiContract", 19))
+    {
+        GamepadKeyRoutingConfiguration::TrySetKeyRoutingEnabled(true);
+    }
 }
 ```
 
-Your app does not need to do anything to get this behavior.
+Your app does not need to do anything beyond enabling the optional change.
 
 ## Opting out from your app
 
@@ -135,9 +170,8 @@ public partial class App : Application
 
         // Opt out of gamepad-to-key routing; the framework enabled it during XAML init.
         // IsApiContractPresent guards OS versions without the API (the type ships in a newer
-        // contract than WinUI's minimum OS); IsSupported guards devices where it's unusable.
-        if (Windows.Foundation.Metadata.ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 19) &&
-            Windows.UI.Input.GamepadKeyRoutingConfiguration.IsSupported())
+        // contract than WinUI's minimum OS).
+        if (Windows.Foundation.Metadata.ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 19))
         {
             Windows.UI.Input.GamepadKeyRoutingConfiguration.TrySetKeyRoutingEnabled(false);
         }
@@ -160,10 +194,9 @@ App::App()
 {
     // Opt out of gamepad-to-key routing; the framework enabled it during XAML init.
     // IsApiContractPresent guards OS versions without the API (the type ships in a newer
-    // contract than WinUI's minimum OS); IsSupported guards devices where it's unusable.
+    // contract than WinUI's minimum OS).
     if (winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(
-            L"Windows.Foundation.UniversalApiContract", 19) &&
-        winrt::Windows::UI::Input::GamepadKeyRoutingConfiguration::IsSupported())
+            L"Windows.Foundation.UniversalApiContract", 19))
     {
         winrt::Windows::UI::Input::GamepadKeyRoutingConfiguration::TrySetKeyRoutingEnabled(false);
     }
@@ -172,13 +205,30 @@ App::App()
 
 # API Pages
 
-_Spec note: This feature introduces no new WinUI API. It calls the existing OS API
-[`Windows.UI.Input.GamepadKeyRoutingConfiguration`](https://learn.microsoft.com/uwp/api/windows.ui.input.gamepadkeyroutingconfiguration).
-The existing surface is listed in [API Details](#api-details) for reviewer convenience._
+_Spec note: This feature introduces no new WinUI runtime class. It adds one value to the
+existing `Microsoft.UI.Xaml.XamlChangeId` enum, and calls the existing OS API
+[`Windows.UI.Input.GamepadKeyRoutingConfiguration`](https://learn.microsoft.com/uwp/api/windows.ui.input.gamepadkeyroutingconfiguration)._
 
 # API Details
 
 ```c# (but really MIDL3)
+namespace Microsoft.UI.Xaml
+{
+    enum XamlChangeId
+    {
+        _Reserved,
+        IconNoGridOptimization = 61276805,
+        OptimizeApplyStyles = 61697456,
+        DefaultStyleOptimizations = 60995620,
+        DeferContextFlyoutInit = 61098986,
+
+        // New in this work. Experimental until it completes API review.
+        [feature(Feature_ExperimentalApi)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        GamepadKeyRouting = 63117108,
+    };
+}
+
 namespace Windows.UI.Input
 {
     // Existing OS API (Windows.Foundation.UniversalApiContract, version 19).
@@ -206,8 +256,9 @@ namespace Windows.UI.Input
 The enable is placed at the **full-app entry point**: `Application.Start()`, whose
 implementation is `FrameworkApplicationFactory::StartImpl` in
 `/dxaml/xcp/dxaml/lib/FrameworkApplication_Partial.cpp`. `StartImpl` reads the app's
-windowing model and dispatches to `StartDesktop()` (WinUI Desktop) or `StartUWP()` (WinUI
-UWP). A full WinUI app reaches this method from its generated entry point; a process that
+windowing model and dispatches to `StartDesktop()` (WinUI Desktop) or `StartUWP()` (retained
+only for tests that have not been ported; WinUI does not support the UWP windowing model).
+A full WinUI app reaches this method from its generated entry point; a process that
 only embeds WinUI as a XAML Island never does. Because the enable lives here, only full
 WinUI apps turn routing on — anything that starts XAML without going through
 `Application.Start()` leaves the process-wide setting untouched.
@@ -229,25 +280,18 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
         IFC_RETURN(E_FAIL);
     }
 
-    if (policy == AppPolicyWindowingModel_ClassicDesktop ||
-        policy == AppPolicyWindowingModel_Universal)
-    {
-        // Full WinUI app: enable gamepad-to-key routing for the process. Island hosts never
-        // reach here (they start via WindowsXamlManager.InitializeForCurrentThread()), so the
-        // host process is left untouched.
-        // IsApiContractPresent: the OS has the type (it ships in UniversalApiContract 19,
-        // newer than WinUI's minimum OS, so on downlevel OS the type is absent and even
-        // calling IsSupported() would throw). IsSupported: usable on this device.
-        if (winrt::Windows::Foundation::Metadata::ApiInformation::IsApiContractPresent(
-                L"Windows.Foundation.UniversalApiContract", 19) &&
-            winrt::Windows::UI::Input::GamepadKeyRoutingConfiguration::IsSupported())
-        {
-            winrt::Windows::UI::Input::GamepadKeyRoutingConfiguration::TrySetKeyRoutingEnabled(true);
-        }
-    }
-
     if (policy == AppPolicyWindowingModel_ClassicDesktop)
     {
+        if (OptionalChangeState::IsGamepadKeyRoutingEnabled())
+        {
+            // Full WinUI app: enable gamepad-to-key routing for the process, so XAML's
+            // keyboard navigation responds to a gamepad the way it did in System XAML.
+            // Island hosts never reach here (they start via
+            // WindowsXamlManager.InitializeForCurrentThread()), so the host process is
+            // left untouched.
+            VERIFYHR(EnableGamepadKeyRouting());
+        }
+
         return FrameworkApplication::StartDesktop();
     }
     else if (policy == AppPolicyWindowingModel_Universal)
@@ -259,25 +303,42 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
 }
 ```
 
-`ApiInformation::IsApiContractPresent(..., 19)` guards OS versions that predate the API
-(where the type isn't registered and calling any member — including `IsSupported()` — would
-throw), and `IsSupported()` guards devices where the feature exists but is unusable.
+## Why the call lives in a light-up translation unit
 
-`FrameworkApplication_Partial.cpp` will need `#include <winrt/Windows.UI.Input.h>` and
-`#include <winrt/Windows.Foundation.Metadata.h>`.
+`GamepadKeyRoutingConfiguration` requires `UniversalApiContract` 19, but WinUI normally
+compiles against contract 7 (Windows build 17763, its downlevel limit), so the type is not
+even declared in a normal translation unit. `EnableGamepadKeyRouting()` therefore lives in
+`DXamlCoreLightup.cpp`, which is compiled without the PCH and with
+`WINDOWS_FOUNDATION_UNIVERSALAPICONTRACT_VERSION` undefined so the SDK headers expose their
+latest contract. It is declared in `GamepadKeyRoutingLightup.h`, which `StartImpl` includes.
+A `static_assert` in that file fails the build if the SDK in use predates contract 19.
+
+At run time the OS may still be older than the SDK, so the implementation checks
+`ApiInformation::IsApiContractPresentByMajor("Windows.Foundation.UniversalApiContract", 19)`
+before activating the type. It does **not** call `IsSupported()` first:
+`TrySetKeyRoutingEnabled` always returns `S_OK`, reporting refusal through its out-parameter,
+and internally gates on the same feature state that `IsSupported()` reports. A refusal is not
+treated as an error — gamepad navigation is an enhancement, and the app is fully usable
+without it.
 
 ## Startup ordering (why app opt-out works)
 
 On the desktop path the sequence is:
 
-1. `Application.Start()` → `StartImpl` — the framework's `TrySetKeyRoutingEnabled(true)` runs
-   here, before dispatching to `StartDesktop()`.
-2. `StartDesktop()` brings up the framework.
-3. Construct the app's `Application` object (`App` ctor).
-4. `OnLaunched` → app creates its first window.
-5. Run the message loop.
+1. The generated entry point calls `XamlOptionalChanges.EnableChange(GamepadKeyRouting)` (if
+   the app opted in) — this must happen before the next step.
+2. `Application.Start()` → `StartImpl` — if the optional change is enabled, the framework's
+   `TrySetKeyRoutingEnabled(true)` runs here, before dispatching to `StartDesktop()`.
+3. `StartDesktop()` brings up the framework, which locks optional changes during
+   `DXamlCore::Initialize()`.
+4. Construct the app's `Application` object (`App` ctor).
+5. `OnLaunched` → app creates its first window.
+6. Run the message loop.
 
-The framework's enable (step 1) runs before any app code (step 3 onward) and never runs
+The framework's enable (step 2) runs before any app code (step 4 onward) and never runs
 again. So to turn gamepad navigation off, an app just calls the setter with `false` from its
 `App` constructor or `OnLaunched` — that later write is the last one and sticks for the
-process.
+process. Note that by step 4 the optional changes are already locked, so opting out at that
+point means calling `GamepadKeyRoutingConfiguration.TrySetKeyRoutingEnabled(false)` directly;
+calling `XamlOptionalChanges.DisableChange()` would both fail and, even if it succeeded, have
+no effect on the OS setting that was already applied.

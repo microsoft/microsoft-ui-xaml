@@ -6,28 +6,10 @@
 
     <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
     <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
-    <!-- Mirrored: TableView_themeresources.xaml is not emitted for the Tabular binary. -->
+    <!-- Metric defaults remain available alongside the default styles. -->
     <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
-        
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundPointerOverBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="{ThemeResource TextFillColorDisabled}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPointerOverBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPressedBrush" Color="{ThemeResource SubtleFillColorTertiary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="Transparent" />
-    <!-- Last-resort selection fallbacks for hosts that do not merge
-         CommonStyles/TabularSurfaces_themeresources.xaml, which is the canonical source. -->
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="{ThemeResource SubtleFillColorTertiary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPointerOverBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPressedBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColor}" />
-    <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
-    <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="{ThemeResource DividerStrokeColorDefault}" />
+
+    <!-- TabularControlsResources is required to supply TabularSurface* brushes for all themes. -->
 
     <!-- TableView default style. Header cells stack horizontally (one per
          column); the body is an ItemsRepeater of TableViewRow, each building its cells from
@@ -57,8 +39,12 @@
                             <Border x:Name="PART_HeaderRow"
                                     Grid.Row="0"
                                     Background="{ThemeResource TabularSurfaceHeaderBackgroundBrush}"
-                                    BorderBrush="{ThemeResource TabularSurfaceGridLineBrush}"
-                                    BorderThickness="0,0,0,1">
+                                    BorderBrush="{ThemeResource TabularSurfaceGridLineBrush}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
+                                    </Style>
+                                </Border.Style>
                                 <Grid>
                                     <ScrollViewer x:Name="PART_HeaderScroller"
                                                   HorizontalScrollMode="Disabled"
@@ -141,6 +127,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundPointerOverBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundPointerOverBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -148,14 +137,18 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundPressedBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundPressedBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
-                                <!-- Disabled state takes the Disabled background brush. PART_RootBorder is a
-                                     Border (no Foreground), so disabled text-color routing is deferred. -->
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundDisabledBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
@@ -203,12 +196,16 @@
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
-                                <!-- A disabled row keeps the accent strip so its selected state stays
-                                     legible, but drops the selected fill for the disabled one. -->
                                 <VisualState x:Name="SelectedDisabled">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowBackgroundDisabledBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CellForegroundPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceRowForegroundDisabledBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Fill">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TabularSurfaceSelectionIndicatorDisabledBrush}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionIndicator" Storyboard.TargetProperty="Opacity">
                                             <LinearDoubleKeyFrame KeyTime="0:0:0.083" Value="1" />

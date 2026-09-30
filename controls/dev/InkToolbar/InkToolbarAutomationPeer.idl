@@ -23,9 +23,9 @@ namespace MU_XAP_NAMESPACE
     [MUX_PREVIEW]
     [default_interface]
     unsealed runtimeclass InkToolbarFlyoutItemAutomationPeer : Microsoft.UI.Xaml.Automation.Peers.ButtonBaseAutomationPeer,
-        Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
+        Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider,
+        Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider
     {
         InkToolbarFlyoutItemAutomationPeer(MU_XC_NAMESPACE.InkToolbarFlyoutItem owner);
     }
 }
-

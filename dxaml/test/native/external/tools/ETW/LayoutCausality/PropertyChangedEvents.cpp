@@ -12,6 +12,7 @@
 #include "PropertyChangedEvents.h"
 #include "TraceConsumerSession.h"
 #include "MUX-ETWEvents.h"
+#include <TraceEventScope.h>
 #include <TestEvent.h>
 #include <SafeEventRegistration.h>
 
@@ -171,6 +172,7 @@ namespace Tools { namespace ETW { namespace LayoutCausality {
         RunOnUIThread([&]()
         {
             LOG_OUTPUT(L"Changing property on rectangle");
+            TraceConsumer::BeginCountingForCurrentProcess();
             rect->Fill = ref new SolidColorBrush(Microsoft::UI::Colors::Green);
         });
 
@@ -183,6 +185,44 @@ namespace Tools { namespace ETW { namespace LayoutCausality {
 
         TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
     }
+
+    void PropertyChangedEventTests::CountingScopeExcludesForeignAndBufferedEvents()
+    {
+        const TraceEventScope scope{6200, 33114060464};
+        struct CapturedEvent
+        {
+            unsigned int processId;
+            __int64 timestamp;
+            int id;
+        };
+        // Replay the startup and foreign-process records that contaminated the CI capture.
+        const CapturedEvent events[] =
+        {
+            {6200, 33112141827, InvalidateMeasureInfo_value},
+            {6200, 33112142272, PropertyChangedInfo_value},
+            {6200, 33112143030, PropertyChangedInfo_value},
+            {6200, 33112156578, PropertyChangedInfo_value},
+            {6228, 33113859254, PropertyChangedInfo_value},
+            {6200, 33114083768, PropertyChangedInfo_value},
+        };
+        unsigned int propertyChanges = 0;
+        unsigned int measureInvalidations = 0;
+        for (const auto& event : events)
+        {
+            if (scope.Includes(event.processId, event.timestamp))
+            {
+                propertyChanges += event.id == PropertyChangedInfo_value ? 1 : 0;
+                measureInvalidations += event.id == InvalidateMeasureInfo_value ? 1 : 0;
+            }
+        }
+        VERIFY_ARE_EQUAL(1u, propertyChanges);
+        VERIFY_ARE_EQUAL(0u, measureInvalidations);
+        VERIFY_IS_TRUE(scope.Includes(6200, 33114060464));
+        VERIFY_IS_TRUE(scope.Includes(6200, 33114083769));
+        VERIFY_IS_FALSE(scope.Includes(6228, 33114083769));
+        VERIFY_IS_TRUE(TraceEventScope{}.Includes(6228, 33112141827));
+    }
+
     void PropertyChangedEventTests::UpdateDoesntAffectLayout()
     {
         TestCleanupWrapper cleanup;

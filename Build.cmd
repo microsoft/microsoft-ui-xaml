@@ -31,6 +31,7 @@ set _verbosity=/verbosity:minimal
 set _analyze=
 set _quiet=
 set _initFlavor=
+set _exitCode=0
 
 :parseArgs
 if "%1"=="/c" (
@@ -66,7 +67,7 @@ if "%1"=="/c" (
 ) else if "%1" == "/normalpri" (
     set _lowpriority=0
 ) else if "%1" == "/q" (
-    rem Quiet mode: suppress informational output, show only errors and elapsed time.
+    rem Quiet mode: show errors, stage names, final result, and elapsed time.
     rem Useful for AI agents and CI/CD pipelines.
     set _quiet=1
     set _verbosity=/verbosity:quiet
@@ -136,15 +137,18 @@ if not "%_initFlavor%" == "" (
     )
     if ERRORLEVEL 1 (
         echo ERROR: init.cmd %_initFlavor% /envcheck failed
-        exit /b 1
+        set _exitCode=1
+        goto:showDurationAndExit
     )
 ) else if "%EnvironmentInitialized%" == "" (
     echo Please run init.cmd or use /i ^<flavor^> to initialize the build environment
-    exit /b 1
+    set _exitCode=1
+    goto:showDurationAndExit
 )
 
 if "%_clean%"=="1" (
     call :callScript clean.cmd /all
+    if ERRORLEVEL 1 goto:showDurationAndExit
     set _restore=1
 )
 
@@ -164,14 +168,17 @@ if "%_targetMux%" == "1" (
    call :buildSolution %reporoot%\Microsoft.UI.Xaml-Product.sln
    if ERRORLEVEL 1 goto:showDurationAndExit
    call :buildSolution %reporoot%\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj
+   if ERRORLEVEL 1 goto:showDurationAndExit
    if not "%_nomock%"=="1" call :buildMockPackage
 ) else if "%_targetProdTest%" == "1" (
    call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.sln
    if ERRORLEVEL 1 goto:showDurationAndExit
    if not "%_nomock%"=="1" call :buildMockPackage
+   if ERRORLEVEL 1 goto:showDurationAndExit
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
 ) else if "%_targetTest%" == "1" (
    if not "%_nomock%"=="1" call :buildMockPackage
+   if ERRORLEVEL 1 goto:showDurationAndExit
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
 )
 if ERRORLEVEL 1 goto:showDurationAndExit
@@ -179,6 +186,7 @@ if ERRORLEVEL 1 goto:showDurationAndExit
 if "%_targetSamples%" == "1" (
     rem If not fake and not building prodtest (so already built the mock), do so
     if "%_fake%%_targetProdTest%%_nomock%"=="" call :buildMockPackage
+    if ERRORLEVEL 1 goto:showDurationAndExit
 
     rem Note that buildsamples.cmd does it's own check for "fake", so we just call it directly.
     call :callScript buildsamples.cmd %_versionOption%
@@ -189,11 +197,6 @@ if "%_targetSamples%" == "1" (
     )
     if ERRORLEVEL 1 goto :showDurationAndExit
 )
-if not "%_quiet%"=="1" (
-    echo ---
-    echo BUILD SUCCEEDED.
-)
-
 git diff --exit-code "controls/dev/dll/XamlMetadataProviderGenerated.h" > nul
 if ERRORLEVEL 1 (
     set _muxcIXMPChanged=1
@@ -275,14 +278,16 @@ if NOT "%PSModulePath%" == "" (
     set PSModulePath=
 )
 
+echo Building %_title%...
 %_command%
 
 if ERRORLEVEL 1  (
+    set _exitCode=!ERRORLEVEL!
     echo ---
     echo ERROR: buildSolution for !_solution! FAILED.  Binlog is here: !_binlog!
 )
 
-goto:eof
+exit /b %_exitCode%
 
 :callScript
 
@@ -291,13 +296,15 @@ if "%_fake%"=="1" (
     goto :eof
 )
 
+echo Running %*...
 call %*
 
 if ERRORLEVEL 1  (
+    set _exitCode=!ERRORLEVEL!
     echo ---
     echo ERROR: callScript FAILED.
 )
-goto :eof
+exit /b %_exitCode%
 
 
 :buildMockPackage
@@ -305,9 +312,10 @@ if "%_fake%"=="1" (
     echo COMMAND: call %RepoRoot%\pack.component.cmd /version %_version%
     goto :eof
 )
+echo Building mock package...
 call %RepoRoot%\pack.component.cmd /version %_version%
-if ERRORLEVEL 1 goto :showDurationAndExit
-goto :eof
+if ERRORLEVEL 1 set _exitCode=%ERRORLEVEL%
+exit /b %_exitCode%
 
 
 :showDurationAndExit
@@ -346,8 +354,14 @@ if not "%_quiet%"=="1" (
     echo Start time: %BUILDCMDSTARTTIME%. End time: %BUILDCMDENDTIME%
 )
 echo    Elapsed: %BUILDDURATION_HRS:~-2%:%BUILDDURATION_MIN:~-2%:%BUILDDURATION_SEC:~-2%.%BUILDDURATION_HSC:~-2%
-endlocal
-goto :eof
+if not "%_exitCode%"=="0" (
+    echo BUILD FAILED ^(exit code %_exitCode%^).
+) else if "%_fake%"=="1" (
+    echo DRY RUN COMPLETE.
+) else (
+    echo BUILD SUCCEEDED.
+)
+endlocal & exit /b %_exitCode%
 
 :usage
 echo Usage:
@@ -362,7 +376,7 @@ echo        samples             Builds sample apps
 echo        all                 Builds the world
 echo.
 echo    Options:
-echo        /q              Quiet mode. Minimal output, only errors are shown. Useful for AI/automation.
+echo        /q              Quiet mode. Errors, stage names, result, and elapsed time.
 echo        /i [flavor]     Initialize build environment inline (e.g. /i amd64chk, /i arm64fre).
 echo                        Runs init.cmd with /envcheck so no restore is performed. Use when
 echo                        the build environment has not been initialized in the current session.

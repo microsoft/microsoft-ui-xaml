@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Reflection.Metadata;
-using Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal;
+using Debug = System.Diagnostics.Debug;
 using System.Globalization;
 
 namespace System.Reflection.Adds
