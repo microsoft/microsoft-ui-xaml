@@ -1,0 +1,16 @@
+private void OnHeadersVisibilityChecked(object sender, RoutedEventArgs e)
+{
+    if (sender is RadioButton rb && rb.Tag is string tag &&
+        Enum.TryParse<TableViewHeadersVisibility>(tag, out var v))
+    {
+        EnsureTableStyle().HeadersVisibility = v;
+    }
+}
+
+private TableStyle EnsureTableStyle()
+{
+    return DemoTable.TableStyle ??= new TableStyle
+    {
+        HeadersVisibility = TableViewHeadersVisibility.Column,
+    };
+}

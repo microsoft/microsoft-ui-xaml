@@ -2233,7 +2233,7 @@ HRESULT STDMETHODCALLTYPE CUIATableProviderWrapper::GetColumnHeaders(_Out_ SAFEA
     length = static_cast<XINT32>(retCValue.GetArrayElementCount());
     pAPArray = static_cast<CAutomationPeer**>(retCValue.m_pvValue);
     safeArray.reset(SafeArrayCreateVector(VT_UNKNOWN, 0, length));
-    IFCOOM(safeArray.release());
+    IFCOOM(safeArray.get());
     for (LONG i = 0; i < length; i++)
     {
         IFC(GetUIAWindow()->CreateProviderForAP(pAPArray[i], &pWrapper));

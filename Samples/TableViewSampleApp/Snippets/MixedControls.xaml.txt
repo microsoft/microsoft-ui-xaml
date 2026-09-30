@@ -1,0 +1,76 @@
+<!-- Display-only controls: disabled semantics and OneWay values match the
+     intentionally noninteractive TableViewTemplateColumn example. -->
+
+<Page.Resources>
+    <DataTemplate x:Key="JoinDateCell" x:DataType="models:Person">
+        <DatePicker
+            AutomationProperties.Name="{Binding JoinDateAccessibleName, Mode=OneWay}"
+            Date="{Binding JoinDate, Mode=OneWay}"
+            IsEnabled="False"
+            IsHitTestVisible="False"
+            IsTabStop="False"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="ShiftStartCell" x:DataType="models:Person">
+        <TimePicker
+            AutomationProperties.Name="{Binding ShiftStartAccessibleName, Mode=OneWay}"
+            Time="{Binding ShiftStart, Mode=OneWay}"
+            IsEnabled="False"
+            IsHitTestVisible="False"
+            IsTabStop="False"
+            ClockIdentifier="24HourClock"
+            MinuteIncrement="15"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DepartmentCell" x:DataType="models:Person">
+        <ComboBox
+            AutomationProperties.Name="Department"
+            SelectedItem="{Binding Department, Mode=OneWay}"
+            IsEnabled="False"
+            Loaded="OnDepartmentComboBoxLoaded"
+            IsHitTestVisible="False"
+            IsTabStop="False"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="IsActiveCell" x:DataType="models:Person">
+        <CheckBox
+            AutomationProperties.Name="Active"
+            IsChecked="{Binding IsActive, Mode=OneWay}"
+            IsEnabled="False"
+            IsHitTestVisible="False"
+            IsTabStop="False"
+            MinWidth="0"
+            Margin="14,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Left"/>
+    </DataTemplate>
+</Page.Resources>
+
+<tabular:TableView x:Name="PeopleTable" SelectionMode="Single">
+    <tabular:TableViewTextColumn Header="Name" Binding="{Binding FullName}" CanSort="False"/>
+    <tabular:TableViewTemplateColumn Header="Join date" SortMemberPath="JoinDate" CellTemplate="{StaticResource JoinDateCell}" CanSort="False"/>
+    <tabular:TableViewTemplateColumn Header="Shift start" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftStartCell}" CanSort="False"/>
+    <tabular:TableViewTemplateColumn Header="Department" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentCell}" CanSort="False"/>
+    <tabular:TableViewTemplateColumn Header="Active" SortMemberPath="IsActive" CellTemplate="{StaticResource IsActiveCell}" CanSort="False"/>
+</tabular:TableView>
+
+// Code-behind wires the source and ComboBox choices in this split-binary host.
+People = new ObservableCollection<Person>(PersonData.Take(18));
+PeopleTable.ItemsSource = People;
+
+private void OnDepartmentComboBoxLoaded(object sender, RoutedEventArgs e)
+{
+    if (sender is ComboBox comboBox)
+    {
+        comboBox.ItemsSource = PersonData.Departments;
+    }
+}

@@ -3,7 +3,7 @@
     x:Class="TableViewSampleApp.ShapingPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular">
 
     <Page.KeyboardAccelerators>
         <KeyboardAccelerator Key="C" Modifiers="Control,Shift" Invoked="CollapseAccel_Invoked"/>
@@ -45,8 +45,9 @@
 
         <!-- Filter -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-            <TextBlock Text="Filter:" VerticalAlignment="Center" Width="52"/>
+            <TextBlock x:Name="FilterLabel" Text="Filter:" VerticalAlignment="Center" Width="52"/>
             <TextBox x:Name="FilterBox" Width="220" PlaceholderText="name, role or city"
+                     AutomationProperties.LabeledBy="{Binding ElementName=FilterLabel}"
                      TextChanged="Filter_Changed"/>
             <CheckBox x:Name="HighScoresOnly" Content="Score &#8805; 50" Checked="Filter_Toggled" Unchecked="Filter_Toggled"/>
             <Button Content="Clear filter" Click="ClearFilter_Click"/>
@@ -54,8 +55,9 @@
 
         <!-- Group -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-            <TextBlock Text="Group:" VerticalAlignment="Center" Width="52"/>
-            <ComboBox x:Name="GroupCombo" Width="160" SelectionChanged="Group_Changed">
+            <TextBlock x:Name="GroupLabel" Text="Group:" VerticalAlignment="Center" Width="52"/>
+            <ComboBox x:Name="GroupCombo" Width="160" SelectionChanged="Group_Changed"
+                      AutomationProperties.LabeledBy="{Binding ElementName=GroupLabel}">
                 <ComboBoxItem Content="None" IsSelected="True"/>
                 <ComboBoxItem Content="Role"/>
                 <ComboBoxItem Content="City"/>
@@ -69,8 +71,9 @@
 
         <!-- Sort -->
         <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-            <TextBlock Text="Sort:" VerticalAlignment="Center" Width="52"/>
-            <ComboBox x:Name="SortCombo" Width="160" SelectionChanged="Sort_Changed">
+            <TextBlock x:Name="SortLabel" Text="Sort:" VerticalAlignment="Center" Width="52"/>
+            <ComboBox x:Name="SortCombo" Width="160" SelectionChanged="Sort_Changed"
+                      AutomationProperties.LabeledBy="{Binding ElementName=SortLabel}">
                 <ComboBoxItem Content="None" IsSelected="True"/>
                 <ComboBoxItem Content="Name"/>
                 <ComboBoxItem Content="Role"/>
@@ -78,10 +81,12 @@
                 <ComboBoxItem Content="Score"/>
                 <ComboBoxItem Content="Joined"/>
             </ComboBox>
-            <ComboBox x:Name="DirectionCombo" Width="140" SelectionChanged="Sort_Changed">
+            <ComboBox x:Name="DirectionCombo" Width="140" SelectionChanged="Sort_Changed"
+                      AutomationProperties.Name="Sort direction">
                 <ComboBoxItem Content="Ascending" IsSelected="True"/>
                 <ComboBoxItem Content="Descending"/>            </ComboBox>
-            <ComboBox x:Name="ViaCombo" Width="230" SelectionChanged="Sort_Changed">
+            <ComboBox x:Name="ViaCombo" Width="230" SelectionChanged="Sort_Changed"
+                      AutomationProperties.Name="Sort API">
                 <ComboBoxItem Content="via TableView" IsSelected="True"/>
                 <ComboBoxItem Content="via source (path)"/>
                 <ComboBoxItem Content="via source (key)"/>
@@ -94,8 +99,9 @@
         <!-- Sort cycle: what a header click walks through, per column. Only reachable when
              click-to-sort is on. -->
         <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-            <TextBlock Text="Cycle:" VerticalAlignment="Center" Width="52"/>
-            <ComboBox x:Name="CycleCombo" Width="260" SelectionChanged="SortCycle_Changed">
+            <TextBlock x:Name="CycleLabel" Text="Cycle:" VerticalAlignment="Center" Width="52"/>
+            <ComboBox x:Name="CycleCombo" Width="260" SelectionChanged="SortCycle_Changed"
+                      AutomationProperties.LabeledBy="{Binding ElementName=CycleLabel}">
                 <ComboBoxItem Content="As authored" IsSelected="True"/>
                 <ComboBoxItem Content="AscendingDescending"/>
                 <ComboBoxItem Content="AscendingDescendingNone"/>
@@ -119,7 +125,7 @@
         </StackPanel>
 
         <Border x:Name="TableHost" Grid.Row="5" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
-            <tv:TableView x:Name="Table" SelectionMode="Single"/>
+            <tabular:TableView x:Name="Table" AutomationProperties.Name="Sorting and filtering playground table" SelectionMode="Single"/>
         </Border>
 
         <TextBlock x:Name="StatusText" Grid.Row="6" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>

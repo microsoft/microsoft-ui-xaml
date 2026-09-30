@@ -43,6 +43,14 @@
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
+  <!-- Source snippets shown in each page's Source expander. Embedded rather than loose content so
+       CodeBlock can resolve them by name with no file I/O and no deployment step. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Snippets\*.txt">
+      <WithCulture>false</WithCulture>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>

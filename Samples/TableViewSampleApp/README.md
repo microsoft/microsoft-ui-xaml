@@ -1,8 +1,14 @@
-# TableView sample
+# TableView gallery
 
-A small WinUI 3 desktop app that exercises the live public API of the
-`Microsoft.UI.Xaml.Controls.Tabular.TableView` control. The left panel lets you tweak columns,
-sizing, headers, grid lines, density, backgrounds, and more while the table updates in real time.
+A multi-page WinUI 3 desktop gallery that exercises the live public API of
+`Microsoft.UI.Xaml.Controls.Tabular.TableView`. It replaces the old single-window Playground
+with scenario pages, live examples, options, and embedded source snippets.
+The 27 gallery destinations are joined by **Grouped rows** and the existing
+**Filter / sort / group** page, for 29 navigation destinations.
+
+Grouping uses the current `TableViewSource.GroupBy` API; row identity comes from the item
+objects, not an app-supplied `KeyBy` selector. Selection remains `None` or `Single`;
+this integration does not add multi-selection or change the control's visual defaults.
 
 `TableView` ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`, separate from the main framework DLL,
 but its API is published through the WindowsAppSDK NuGet package: type information reaches the
@@ -101,3 +107,52 @@ The **Filter / sort / group** page exercises the data-shaping surface:
 ## More detail
 
 See [AGENTS.md](AGENTS.md).
+
+## Sample accessibility
+
+The gallery labels its own controls separately from TableView's automation providers.
+Visible labels use `AutomationProperties.LabeledBy`; icon-only commands and template
+editors have purpose names. Existing content/header-based names remain in use where
+they already describe the control. The sample currently authors its UI strings inline;
+it does not have a localized string-resource catalog.
+
+In File Explorer, Enter opens the selected folder and Alt+L focuses the folder path.
+The performance page identifies each Run button by its scenario and announces completed
+results through polite live regions, outside the measured interval. Run all announces
+one completion rather than each intermediate result. Table selection, sorting, editing,
+and timer-driven telemetry do not receive duplicate sample-level announcements.
+
+Density & read-only uses ordinary two-way TextBox templates, not transactional
+`CellEditingTemplate` bindings. The Cell editing page exercises the framework's built-in
+text-column editor. Sample labeling does not fix or replace the control's focus,
+commit/cancel, or UI Automation event implementation.
+
+A real sample build and runtime checks are still required: keyboard traversal in both
+directions, folder activation, screen-reader names and results, high text scaling,
+and the control-owned editing/provider scenarios.
+
+For live-data and recycled-row checks, the Virtualization page supports 100, 1,000,
+10,000, or 50,000 rows. Select a row and use **Update role**, **Insert row**, or
+**Remove row**, then scroll away and back. Updates raise `INotifyPropertyChanged`;
+insert/remove mutate the bound `ObservableCollection` without replacing surviving
+row objects or IDs. **Reset rows** restores the chosen dataset. Verify actual cell
+values, selection, and focus rather than treating the status text as a provider test.
+An emptied dataset stays empty when revisiting the page; inserting then continues
+the existing ID sequence.
+
+Empty state, Text wrap, Interactive cell flyouts, and Cell editing provide the
+other data/template/editing fixtures. Real Windows contrast themes and text scaling
+are tested through Windows Settings, not an app-simulated palette. Nested grouping
+and multi-selection are not part of this sample's current API scope.
+
+**Template cells is display-only.** Its four embedded pickers/checkboxes are explicitly
+disabled, non-tabstop, and OneWay-bound; they must not edit through mouse, keyboard,
+or automation. Use Interactive cell flyouts for enabled child controls and Cell editing
+for built-in text-column transactions. A successful table-row navigation check does
+not prove keyboard navigation to a specific cell or successful editor focus.
+
+The display-only date/time pickers use live, value-bound accessible names with column
+context. The date follows the current culture; the time retains the sample's explicit
+24-hour clock with the culture's time separator. Native roles and value providers are
+not replaced. Actual Narrator row/cell announcements and native Value-pattern behavior
+must be tested independently; a correct bound Name is not a speech-test pass.

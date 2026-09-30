@@ -1,0 +1,64 @@
+// Column shape is swapped at runtime by the Assessment scenario picker.
+// "Unlabeled" reuses the text columns but clears the table's UIA name so the
+// unnamed-table behaviour can be inspected.
+private void ApplyScenario(string scenario)
+{
+    PeopleTable.Columns.Clear();
+    // ... AddTextColumn / AddTemplateColumn per scenario ...
+
+    if (scenario == "Unlabeled")
+    {
+        PeopleTable.ClearValue(AutomationProperties.NameProperty);
+    }
+    else
+    {
+        AutomationProperties.SetName(PeopleTable, "People grid");
+    }
+}
+
+// A template column has no Binding to fall back on, so SortMemberPath is
+// mandatory for its header to sort.
+private void AddTemplateColumn(string header, string templateKey, string sortMemberPath, double width)
+{
+    PeopleTable.Columns.Add(new TableViewTemplateColumn
+    {
+        Header = header,
+        Width = new GridLength(width),
+        SortMemberPath = sortMemberPath,
+        CellTemplate = (DataTemplate)Resources[templateKey],
+    });
+}
+
+// Grouping goes through the canonical shaping surface.
+private void ApplySource()
+{
+    var source = TableViewSource.From(Rows);
+    if (GroupByDepartmentToggle.IsOn)
+    {
+        source = source.GroupBy(new TableViewKeySelector(item => ((FixtureRow)item).Department));
+    }
+
+    PeopleTable.ItemsSource = source;
+}
+
+// Read-only versus editable, enablement, and selection mode.
+PeopleTable.IsReadOnly = !AllowEditingToggle.IsOn;
+PeopleTable.IsEnabled = EnableTableToggle.IsOn;
+PeopleTable.SelectionMode = TableViewSelectionMode.None; // or Single
+
+// Edit lifecycle, driven programmatically. Both return false when no editor
+// is open or the close was vetoed.
+bool committed = PeopleTable.CommitEdit();
+bool cancelled = PeopleTable.CancelEdit();
+
+// Data mutation: rewrite values on the EXISTING row object (identity kept) so a
+// recycled row must re-read them. A stale announcement after scrolling away and
+// back is the bug this is looking for.
+public void Mutate(int generation)
+{
+    CaptureOriginal();
+    FirstName = $"Mutated{generation}";
+    Department = $"Dept-{generation}";
+    Role = $"Role after mutation {generation}";
+    IsActive = !IsActive;
+}

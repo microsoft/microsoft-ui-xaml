@@ -1,0 +1,63 @@
+<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular">
+
+  <tabular:TableView
+      x:Name="TeamsTable"
+      AutomationProperties.Name="League standings table"
+      SelectionMode="Single"
+      Sorted="OnTableSorted">
+
+    <!-- SortMemberPath identifies the property to sort by. When omitted,
+         TableViewTextColumn falls back to its Binding.Path. -->
+    <tabular:TableViewTextColumn Header="Group"
+                              SortMemberPath="Group"
+                              Binding="{Binding Group}"/>
+    <tabular:TableViewTextColumn Header="Team"
+                              SortMemberPath="Team"
+                              Binding="{Binding Team}"/>
+
+    <!-- CanSort=False hides the SortIndicator and makes the header
+         non-interactive. Programmatic SortByColumn can still target it. -->
+    <tabular:TableViewTextColumn Header="P"
+                              HeaderToolTip="Played"
+                              CanSort="False"
+                              Binding="{Binding Played}">
+      <tabular:TableViewTextColumn.HeaderTemplate>
+        <DataTemplate>
+          <TextBlock Text="P" AutomationProperties.AccessibilityView="Raw"/>
+        </DataTemplate>
+      </tabular:TableViewTextColumn.HeaderTemplate>
+    </tabular:TableViewTextColumn>
+
+    <tabular:TableViewTextColumn Header="GD"
+                              HeaderToolTip="Goal difference"
+                              SortMemberPath="GoalDifference"
+                              Binding="{Binding GoalDifference}">
+      <tabular:TableViewTextColumn.HeaderTemplate>
+        <DataTemplate>
+          <TextBlock Text="GD" AutomationProperties.AccessibilityView="Raw"/>
+        </DataTemplate>
+      </tabular:TableViewTextColumn.HeaderTemplate>
+    </tabular:TableViewTextColumn>
+    <tabular:TableViewTextColumn Header="Pts"
+                              HeaderToolTip="Points"
+                              SortMemberPath="Points"
+                              Binding="{Binding Points}">
+      <tabular:TableViewTextColumn.HeaderTemplate>
+        <DataTemplate>
+          <TextBlock Text="Pts" AutomationProperties.AccessibilityView="Raw"/>
+        </DataTemplate>
+      </tabular:TableViewTextColumn.HeaderTemplate>
+    </tabular:TableViewTextColumn>
+  </tabular:TableView>
+
+</Page>
+
+<!--
+  Header click   → ToggleSortDirection(col). Cycles
+                   None -> Ascending -> Descending -> None and replaces any
+                   prior sort (single-column).
+  SortByColumn   → Sets the sort to one column + direction in a single call.
+  ClearSort      → Clears the sort; Sorted fires with no sorted columns, so the
+                   consumer restores the original row order.
+-->

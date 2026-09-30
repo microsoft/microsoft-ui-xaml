@@ -1,0 +1,29 @@
+<tabular:TableView x:Name="PeopleTable" AutomationProperties.Name="People table" SelectionMode="Single">
+
+    <!-- Width preserves user intent verbatim. -->
+    <tabular:TableViewTextColumn
+        x:Name="FirstNameColumn"
+        Header="First name"
+        Width="140"
+        Binding="{Binding FirstName}"/>
+
+    <!-- MinWidth / MaxWidth define clamp bounds. ActualWidth (read-only) is
+         the rendered, clamped value: clamp(Width, MinWidth, MaxWidth). -->
+    <tabular:TableViewTextColumn
+        x:Name="EmailColumn"
+        Header="Email"
+        Width="260"
+        MinWidth="140"
+        MaxWidth="400"
+        Binding="{Binding Email}"/>
+
+    <!-- CanResize=False hides the per-header resize gripper. Programmatic
+         Width changes still work — only the drag interaction is disabled. -->
+    <tabular:TableViewTextColumn
+        x:Name="RoleColumn"
+        Header="Role (locked)"
+        Width="180"
+        CanResize="False"
+        Binding="{Binding Role}"/>
+
+</tabular:TableView>

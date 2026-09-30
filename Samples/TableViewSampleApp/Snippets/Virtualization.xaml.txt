@@ -1,0 +1,7 @@
+<!-- VirtualizationPage.xaml — bind a large source; the v1 TableView realizes
+     only the rows in the viewport, so memory and scroll stay flat. -->
+<tabular:TableView x:Name="PeopleTable" SelectionMode="Single" MinHeight="320">
+    <tabular:TableViewTextColumn Header="#"          Binding="{Binding Id}"        CanSort="False"/>
+    <tabular:TableViewTextColumn Header="First name" Binding="{Binding FirstName}" CanSort="False"/>
+    <tabular:TableViewTextColumn Header="Email"      Binding="{Binding Email}"     CanSort="False"/>
+</tabular:TableView>

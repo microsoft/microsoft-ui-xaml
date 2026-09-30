@@ -1,0 +1,4 @@
+// Switch grouping on / off through the canonical model-first source.
+PeopleTableControl.ItemsSource = grouped
+    ? TableViewSource.From(_people).GroupBy(item => ((Person)item).Department)
+    : TableViewSource.From(_people);

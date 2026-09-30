@@ -1,0 +1,16 @@
+// Show / hide a column without removing its instance from the Columns vector.
+
+private void SetColumnVisible(int canonicalIndex, bool visible)
+{
+    var column = _canonical[canonicalIndex];
+    column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+}
+
+// Add an extra column.
+DynamicTable.Columns.Add(new TableViewTextColumn
+{
+    Header = "Tenure",
+    Width = new GridLength(120),
+    Binding = new Binding { Path = new PropertyPath("JoinDateText") },
+    SortMemberPath = "JoinDate",
+});

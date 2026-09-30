@@ -1,0 +1,29 @@
+<!-- Density and IsReadOnly are table-level properties. This page demonstrates
+     ordinary template TextBoxes, not framework edit transactions. The separate
+     Cell editing page uses built-in TableViewTextColumn editing and Escape cancel. -->
+
+<Page.Resources>
+    <local:ReadOnlyState x:Key="ReadOnlyState"/>
+
+    <DataTemplate x:Key="FirstNameCell">
+        <TextBox Text="{Binding FirstName, Mode=TwoWay}"
+                 AutomationProperties.Name="First name"
+                 IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
+                 BorderThickness="0" Background="Transparent"/>
+    </DataTemplate>
+</Page.Resources>
+
+<tabular:TableView x:Name="DemoTable" SelectionMode="Single">
+    <tabular:TableViewTextColumn     Header="Name"       Binding="{Binding FullName}"/>
+    <tabular:TableViewTemplateColumn Header="First name" SortMemberPath="FirstName"
+                                 CellTemplate="{StaticResource FirstNameCell}"/>
+    <!-- Last name / Role / Email columns follow the same editable pattern -->
+</tabular:TableView>
+
+<!-- Density picker -->
+<RadioButton Content="Compact"     Tag="Compact"     GroupName="Density" Checked="OnDensityChecked"/>
+<RadioButton Content="Standard"    Tag="Standard"    GroupName="Density" IsChecked="True" Checked="OnDensityChecked"/>
+<RadioButton Content="Comfortable" Tag="Comfortable" GroupName="Density" Checked="OnDensityChecked"/>
+
+<!-- Read-only toggle -->
+<ToggleSwitch Header="IsReadOnly" Toggled="OnReadOnlyToggled"/>

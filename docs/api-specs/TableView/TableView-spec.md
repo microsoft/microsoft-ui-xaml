@@ -254,7 +254,7 @@ Orders.Clear();
 
 ### Keyboard navigation & accessibility
 
-TableView supports read-only row focus. Up, Down, Home, End, PageUp, and PageDown move focus through displayed rows.
+TableView supports read-only cell focus. Up, Down, PageUp, and PageDown move to the same visible column in another displayed row; Left and Right move the cell cursor within the focused row. Home and End move to the first or last cell of the current row once a cell has focus, and Ctrl+Home / Ctrl+End move to the first or last cell in the table. Enter and Space on a column header sort that column.
 
 Read-only UI Automation grid/table peers are provided for the table, rows, cells, and column headers.
 
@@ -358,7 +358,7 @@ private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs
 
 `CellEditEnding` is raised synchronously. Set `Cancel` before the handler returns; the control reads it immediately after the handler completes.
 
-A cancelled edit never reaches the data item. Editors use `UpdateSourceTrigger=Explicit`, so cancelling discards the editor and the display element re-reads the unchanged source.
+Built-in text editors use `UpdateSourceTrigger=Explicit`, so an uncommitted cancelled edit never reaches the data item. Application-supplied editing templates must likewise buffer writes until commit (for classic bindings, use `UpdateSourceTrigger=Explicit`) or provide their own rollback behavior. The control cannot undo arbitrary application side effects or automatic source writes performed by a template.
 
 # API Pages
 
@@ -467,7 +467,10 @@ Selection is raised only for real changes: a re-select of the already-selected r
 | Gesture | Behaviour |
 |---|---|
 | Pointer | Selects on **release**, for every pointer type — touch included, which reports no pressed button and so is admitted on device type rather than button state — matching `ListViewBaseItem` — which starts only timers and visuals on press and routes the actual selection through the tap interaction on release. Committing on press would select the row a touch pan started on, and would select on a press the user drags away from and cancels. The event is left **unhandled** so a begin-edit gesture on the same press still runs. |
-| <kbd>Up</kbd>/<kbd>Down</kbd>/<kbd>Home</kbd>/<kbd>End</kbd>/<kbd>PageUp</kbd>/<kbd>PageDown</kbd> | Selection follows the keyboard cursor. This matches `ListView`'s default, where `SingleSelectionFollowsFocus` is `true`. When focus is not on a row (the user clicked a header, or tabbed away and back), <kbd>Up</kbd>/<kbd>Down</kbd> resume from the **selected** row rather than restarting at the top. |
+| <kbd>Up</kbd>/<kbd>Down</kbd>/<kbd>PageUp</kbd>/<kbd>PageDown</kbd> | Selection follows the row reached by the keyboard cursor. This matches `ListView`'s default, where `SingleSelectionFollowsFocus` is `true`. When focus is not on a row or cell (the user clicked a header, or tabbed away and back), <kbd>Up</kbd>/<kbd>Down</kbd> resume from the **selected** row rather than restarting at the top. |
+| <kbd>Left</kbd>/<kbd>Right</kbd> | Moves the cell cursor within the focused row without changing row selection. |
+| <kbd>Home</kbd>/<kbd>End</kbd> | Moves the cell cursor to the first or last visible cell of the current row without changing row selection. |
+| <kbd>Ctrl</kbd> + <kbd>Home</kbd>/<kbd>End</kbd> | Moves focus to the first or last cell in the table without changing selection. |
 | <kbd>Space</kbd> | Selects the focused row without moving. Only when the row itself has focus — a <kbd>Space</kbd> inside a cell's interactive content belongs to that control. |
 | <kbd>Ctrl</kbd> + click, <kbd>Ctrl</kbd> + <kbd>Space</kbd> | Toggles: selects an unselected row, and **deselects the selected one**. Matches `SingleSelector` and `ListViewBase` single-selection behaviour, and is the only gesture that can clear a selection — without it the app would have to call `DeselectAll`. |
 | <kbd>Ctrl</kbd> + navigation key | Moves the focus cursor **without** changing the selection, matching `ListViewBase`. This is how a keyboard or screen-reader user reviews other rows and returns without disturbing the selection. |
@@ -552,9 +555,9 @@ Placement and ownership match the cell path, including leaving an app-set toolti
 
 String content is reported as the header's UIA help text by
 `TableViewColumnHeaderAutomationPeer`, joined with the column's sort state when it has one — the
-header peer is virtual, so it publishes the text itself rather than through
-`AutomationProperties.HelpText`, and it reads the value from the column so the answer does not
-depend on whether the header is currently realized. As with cells, non-string content is
+header peer publishes the text itself rather than through
+`AutomationProperties.HelpText`, and it reads the value from the column rather than the
+tooltip visual. The provider is available once the header is realized. As with cells, non-string content is
 mouse-only: pair it with `Header` text that carries the same information when it matters.
 
 ## TableViewTextColumn class
@@ -593,7 +596,7 @@ A column that uses a consumer-provided `DataTemplate` for cell content.
 
 `CellEditingTemplate` is inherited from `TableViewColumn` — it is not specific to template columns. A template column with no `CellEditingTemplate` is not editable: there is no single value to infer an editor from, and falling back to `CellTemplate` would open an "editor" that silently discards every change.
 
-The editable value inside a `CellEditingTemplate` should use classic `{Binding}`, not `{x:Bind}`. The base commit discovers editor bindings with `GetBindingExpression`, and compiled `{x:Bind}` bindings are not discoverable that way.
+The editable value inside a `CellEditingTemplate` should use classic `{Binding}`, not `{x:Bind}`. The base commit discovers editor bindings with `GetBindingExpression`, and compiled `{x:Bind}` bindings are not discoverable that way. Use `Mode=TwoWay, UpdateSourceTrigger=Explicit` for commit/cancel editing: a default TextBox binding writes on LostFocus, including when Escape restores focus to the row. Other interactive templates may intentionally write immediately; those writes are outside the control's buffered-cancel guarantee. Template editors are realized before the initial keyboard focus retry so F2 can target their focusable content.
 
 Example:
 
@@ -607,7 +610,7 @@ Example:
     <tabular:TableViewTemplateColumn.CellEditingTemplate>
         <DataTemplate x:DataType="local:Order">
             <ComboBox ItemsSource="{x:Bind StatusChoices}"
-                      SelectedItem="{Binding Status, Mode=TwoWay}" />
+                      SelectedItem="{Binding Status, Mode=TwoWay, UpdateSourceTrigger=Explicit}" />
         </DataTemplate>
     </tabular:TableViewTemplateColumn.CellEditingTemplate>
 </tabular:TableViewTemplateColumn>
@@ -710,7 +713,7 @@ The control owns the `ToolTip`; the bound value is its content, not a `ToolTip` 
 
 - String tooltip text is published as the cell's `AutomationProperties.HelpText`, and retracted on recycle and when a cell edit begins.
 - `TableViewCellAutomationPeer` suppresses it at UIA query time when it equals the cell's own UIA text, so Narrator does not read it twice. Suppression is gated on the control's ownership record, so text the app set is never dropped, and it is resolved at query time because the cell's own binding may not have produced a value when the tooltip is applied.
-- The popup is **pointer-only**: cell focus in `TableView` is row-level, so there is no cell element for the framework's keyboard-tooltip path to fire on. The UIA pairing is what serves keyboard and screen-reader users, which is why it is not optional.
+- The popup is **pointer-only**. The UIA pairing serves keyboard and screen-reader users, which is why it is not optional.
 - Placement is control-owned and fixed (`PlacementMode.Mouse`), matching `TabViewItem`. An app needing different placement uses a tooltip inside its own cell content template.
 - Non-string content is **mouse-only** and has no accessible representation: no `HelpText` is published (it cannot be stringified), and the cell wrapper is internal so an app cannot set `HelpText` on it either. Keyboard and screen-reader users get nothing. `TabViewItem` and `NavigationViewItem` refuse non-string tooltip content outright for this reason; `TableView` allows it, so **use a converter that returns text whenever the value must be accessible**. Reaching parity needs a public cell element, which is post-v1.
 
@@ -730,10 +733,34 @@ TableView provides UI Automation peers for grid/table accessibility, cell value 
 |---|---|---|
 | `TableViewAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionProvider`, `IGridProvider`, `ITableProvider`, `IItemContainerProvider` |
 | `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider` |
-| `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | (none) |
+| `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IInvokeProvider` (sort) |
 | `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
 
-These peers expose the table structure to assistive technologies. Cell peers also expose their value.
+These peers expose the table structure to assistive technologies. Cell peers also expose their value and use the `Custom` automation control type with localized control type `cell`; UIA only permits that localized-control-type override on `Custom`, and the previous `DataItem`-inside-`DataItem` shape broke Narrator item counting.
+
+Migration notes:
+
+- Header `AutomationId` is no longer synthesized. `GetAutomationIdCore` returns empty unless the app sets `AutomationProperties.AutomationId`; the old pointer-derived value varied per process. Apps that need stable header IDs must set `AutomationProperties.AutomationId` on the header explicitly.
+- Programmatic row focus now resolves to a cell. Apps with `GotFocus` / `LostFocus` handlers on `TableViewRow`, row focus-visual styling, or `FocusManager` assertions can observe a cell as the focused element instead of the row.
+- Cell automation peers now report control type `Custom`, with localized control type `cell`.
+
+Rows report `PositionInSet` / `SizeOfSet` and compose their name from their visible cells, so a virtualized row still announces "row *i* of *n*" and what it contains. When the source is grouped, both values are **relative to the containing group** and exclude the group-header bands, matching `ItemsControlAutomationPeer`. An app-set `AutomationProperties.PositionInSet` / `SizeOfSet` / `Level` always takes precedence over the computed value.
+
+Row and group names honor explicit `AutomationProperties.Name` and `LabeledBy`. For template cells, naming reads the realized visible template rather than stringifying the data object. Layout-wrapper traversal is bounded; a named interactive control describes its own content without also concatenating its inner editors. Column-header set metadata comes from the actual header element.
+
+`FindItemByProperty(Name)` returns only an exact public peer name. Data text can identify an unrealized candidate, but its name is checked again after preparation. Arbitrary template or application names cannot be inferred for never-realized items; clients can enumerate with a null property and read each returned peer's name.
+
+Successful text-cell edits explicitly notify an already-created canonical cell provider of changed `Value`, including peers obtained directly from the cell visual without prior row-cache enumeration. The cell holds its semantic display `Name` while editing and lets the framework's automatic Name notification path publish the completed display state, rather than raising a second explicit Name event. Cancelled, vetoed, unchanged, or abandoned/recycled edits do not synthesize successful-commit notifications. Deferred work rechecks the cell/item identity and current value; editing does not create automation peers solely to send events. Name invalidation may coalesce rapid unobserved edits; waited transactions and failed-advisory recovery are validated separately.
+
+Accessible labels name a cell but do not replace its intrinsic text `Value`. For example, a text display labeled "Employee name" still exposes `Al` or `Alice` through ValuePattern, while its accessible name can remain unchanged. Snapshot reads, notification preparation and dispatcher submission are advisory: exceptions from a custom name/label peer are logged and must not prevent beginning or completing an edit. A failed snapshot is discarded rather than partially reused by a later edit.
+
+A cell visual owns its peer through normal `OnCreateAutomationPeer` discovery; the row peer caches that same instance. Both tree enumeration and `IGridProvider.GetItem` connect it to its row before returning it. Child-parent queries and framework automation walks therefore cannot replace the visual's native peer association behind a retained provider. The implementation-only single-child Grid keeps the cell's border chrome and inherited data binding while allowing peer creation to be overridden (`Border` is sealed). Grid-only clients do not need a preliminary tree walk to establish the parent relationship.
+
+Each realized column-header visual owns its `HeaderItem` peer. `ITableProvider.GetColumnHeaders`, `ITableItemProvider.GetColumnHeaderItems`, tree navigation, focus, and hit-testing use that same peer. Names and set metadata honor overrides on the header itself. The existing Grid layout and mouse handlers are unchanged; sortable headers expose Invoke and sort on Enter or Space on the actual keyboard target. Surviving header visuals retain identity, while a header rebuild creates new visuals and identities; a retained old header cannot invoke sorting on its replacement. No provider is fabricated before header realization. Cell names still include the semantic column name when the header strip is hidden. The preview peer constructor requires a realized header for its column and returns `E_INVALIDARG` before realization or when that column has no header in the table.
+
+Header `IsEnabled` reflects the owning table's effective state and disabled control ancestors between the header visual and the table (including template controls); Invoke rejects a disabled header without changing sort state. Cell header lookup resolves the realized visual independently of the table's peer type, so application-supplied table peers preserve canonical header identity. A cell with no reachable header (including a collapsed or removed column) returns an empty header array.
+
+`ScrollItem` is not implemented explicitly — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a row or cell into view after reaching it through `IGridProvider.GetItem`.
 
 `Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's provider when that row is realized; a selected row scrolled out of the realization window is reached through `IItemContainerProvider.FindItemByProperty`, which realizes it.
 
@@ -998,8 +1025,8 @@ WPF keeps pending values in the row's `BindingGroup`, and the values reach the i
 `BindingGroup.CommitEdit()` runs at row scope. Cancelling the row therefore reverts every cell
 edited in it, with no cooperation from the data item.
 
-WinUI has no `BindingGroup`. TableView instead binds the editor with
-`UpdateSourceTrigger=Explicit` and writes on commit, which keeps `Esc` restorable for the cell being
+WinUI has no `BindingGroup`. TableView's built-in text editor uses
+`UpdateSourceTrigger=Explicit`; application editing templates must opt into the same buffering contract. Writing on commit keeps `Esc` restorable for the cell being
 edited. The consequences:
 
 - Cancelling a cell reverts that cell because the pending value never reached the item.

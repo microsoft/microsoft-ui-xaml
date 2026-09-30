@@ -1,0 +1,42 @@
+private void ApplySelectedMode()
+{
+    WidthsTable.Columns.Clear();
+    PlaygroundPanel.Visibility =
+        ModeSelector.SelectedItem as string == "Playground"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+    switch (ModeSelector.SelectedItem as string)
+    {
+        case "Playground":
+            BuildPlaygroundColumns();
+            PopulateColumnCombo();
+            SetActiveColumn(WidthsTable.Columns[0] as TableViewTextColumn);
+            ModeDescription.Text = "Playground — pick a column and tweak MinWidth, Width, and MaxWidth live while watching ActualWidth clamp.";
+            break;
+
+        case "Pixel":
+            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Px(180)));
+            WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Px(180)));
+            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Px(320)));
+            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Px(220)));
+            WidthsTable.Columns.Add(Text("Role", nameof(Person.Role), Px(260)));
+            WidthsTable.Columns.Add(Text("Join date", nameof(Person.JoinDateText), Px(180)));
+            WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Px(520)));
+            ModeDescription.Text = "All Pixel columns — every column has a fixed GridUnitType.Pixel width, independent of content. Their combined width exceeds a narrow window, so the body scrolls horizontally and the sticky header stays in sync.";
+            break;
+    }
+
+    AttachHorizontalSyncReadout();
+    QueueHorizontalSyncReadout();
+}
+
+private void UpdateHorizontalSyncReadout()
+{
+    var headerOffset = _headerScroller.HorizontalOffset;
+    var bodyOffset = _bodyScroller.HorizontalOffset;
+    var delta = Math.Abs(headerOffset - bodyOffset);
+    var status = delta <= 0.5 ? "Synced" : "Desynced";
+    HorizontalSyncText.Text =
+        $"{status}: header {headerOffset:0.##} px / body {bodyOffset:0.##} px (delta {delta:0.##} px).";
+}

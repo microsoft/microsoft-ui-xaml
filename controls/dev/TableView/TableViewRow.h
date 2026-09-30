@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -50,63 +50,95 @@ public:
     winrt::Panel GetCellsHostPanelInternal() const { return m_cellsHost.get(); }
     winrt::TableViewColumn GetCellOwningColumn(const winrt::UIElement& cellElement) const;
 
-    // Keep body and header leading-frozen cells pinned to the same scroll offset.
+    // ----- Cell-level keyboard focus -----
+    //
+    // The row is still the element the framework and ItemsRepeater deal in, but the element that
+    // actually holds focus is a cell, so that UIA reports a cell and Narrator announces one column
+    // rather than the whole row. These are the row's half of that: the control drives navigation.
+
+    // The number of cells in this row whose column is visible. This is the coordinate space the
+    // control navigates in, and the same one TableViewCellAutomationPeer::Column reports.
+    int32_t GetVisibleCellCountInternal() const;
+
+    winrt::UIElement GetVisibleCellInternal(int32_t visibleColumnIndex) const;
+
+    int32_t GetVisibleCellIndexInternal(const winrt::UIElement& cell) const;
+
+    winrt::UIElement FindOwnCellInternal(const winrt::DependencyObject& element, bool requireExact) const;
+
+    // Moves keyboard focus to the cell at a visible-column index, drilling the row to CELL level
+    // first. Falls back to the ROW when the row has no such cell or the cell refuses focus.
+    bool FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::FocusState state);
+
+    // Body navigation is two-level (ARIA APG `treegrid`): focus sits either on the ROW or on one of
+    // its CELLS. This switches between them. It is not just bookkeeping - it moves IsTabStop from
+    // the row to the cells and back, which is what keeps the body ONE tab stop in both directions.
+    // See the definition for why the framework's tab walk forces that.
+    void SetCellLevelInternal(bool isCellLevel);
+    bool IsCellLevelInternal() const noexcept { return m_isCellLevel; }
+    // Makes the row a tab stop without disarming its cells, so the pop-out path can move focus to
+    // the row before it takes the cells out of the tab order.
+    void EnableRowFocusInternal();
+
     void RefreshFrozenColumnLayout(double horizontalOffset, double leadingFrozenWidth);
     void RefreshDensity();
-    // Rebuild realized cells when column content changes at runtime.
     void RefreshCells();
 
     // Releases control-owned cell tooltips (recycle-out).
     void ReleaseCellToolTips();
 
-    // Apply a column's current visibility to this row's matching cell (the row owns its cells,
-    // so TableView asks the row instead of reaching into the row's cell panel). The visibility is
-    // passed in (snapshotted once by the caller) so header and all rows apply the same value.
     void RefreshColumnVisibility(const winrt::TableViewColumn& column, winrt::Visibility visibility);
-    // Measured (unconstrained) width this row's cell reported for a column, forwarded from the row's
-    // own cell panel so TableView asks the row instead of reaching into the panel via GetCellsHostPanelInternal.
     double MeasuredWidthForColumn(const winrt::TableViewColumn& column) const;
-    // Invalidate this row's cell panel measure (the row owns its panel).
     void InvalidateCells();
 
-    // ----- Editing (the row owns its cells, so the control asks the row to swap the visual) -----
 
-    // Replaces the display visual of this row's cell for `column` with the column's editing
-    // element. Returns false if the cell or an editing element could not be produced, in which
-    // case nothing has been mutated and the edit must not proceed.
     bool BeginCellEdit(const winrt::TableViewColumn& column, const winrt::IInspectable& dataItem);
 
     // Restores the display visual. Safe to call when no cell edit is open.
     void EndCellEdit(winrt::TableViewEditAction action);
 
-    // The live editing element, or null when no cell edit is open.
     winrt::FrameworkElement GetEditingElement() const { return m_editingElement.get(); }
 
-    // The cell wrapper hosting the editor, or null when no cell edit is open. Used by the cells panel
-    // to keep an editing cell out of the Auto-width calculation.
     winrt::UIElement GetEditingCellWrapper() const { return m_editingCellWrapper.get(); }
+    winrt::UIElement GetDisplayElementForAutomation(winrt::UIElement const& cell) const
+    {
+        return m_editingCellWrapper.get() == cell || m_pendingEditingCell.get() == cell
+            ? m_editingDisplayElement.get() : nullptr;
+    }
 
     // Drops the edit bookkeeping and puts the display visual back, WITHOUT moving focus. Used on the
     // recycle / rebuild paths, which run inside the measure pass where changing focus would trip
     // XAML's re-entrancy guard (0xc0000420).
     void AbandonCellEdit();
 
-    // Pointer entry point for editing. The row owns its cells, so it is the level that can resolve
-    // which cell a press landed on; the control keeps the edit state machine. Mirrors WPF, where
-    // DataGridCell handles the gesture and calls DataGrid.BeginEdit.
     void OnPointerPressedForEditing(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
 
 private:
+    void ResetCellAutomationNames();
+
+    // Re-stamps the current focus level onto the live row + cells. Needed after every cell rebuild,
+    // because new and recycled cell wrappers arrive as tab stops.
+    void ApplyFocusLevelInternal();
+    void SetCellsTabStopInternal(bool isTabStop);
+
+    // Tab into the body lands on the FIRST row, because the body is one tab stop. This redirects
+    // that entry to the row the user left, the way the header band redirects to its remembered
+    // column. Body entry is always a ROW-level landing.
+    void OnRowGettingFocus(
+        const winrt::UIElement& sender,
+        const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
+
+    void OnRowGotFocus();
+
     // Installs a generated display element as a cell's content, wiring the ContentPresenter Content
     // binding a template column needs. GenerateElement alone is not a complete cell.
-    void AttachCellContent(const winrt::Border& cellWrapper, const winrt::FrameworkElement& cellElement);
+    void AttachCellContent(const winrt::Grid& cellWrapper, const winrt::FrameworkElement& cellElement);
 
     // Drops begin-edit gesture state (recycle, owner change).
     void ResetPressState();
 
-    // Which of this row's cells a press landed on.
     winrt::TableViewColumn ResolvePressedColumn(
         const winrt::IInspectable& originalSource,
         const winrt::Point& hostPoint);
@@ -141,34 +173,38 @@ private:
     void UpdateVisualState(bool useTransitions);
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
-    // Use auto_revoke for self-event subscriptions instead of manual token cleanup.
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
+    winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
+    winrt::UIElement::GotFocus_revoker m_gotFocusRevoker{};
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
-    // Auto-revoking subscription prevents stale delegates during row teardown.
     winrt::IObservableVector<winrt::TableViewColumn>::VectorChanged_revoker m_columnsVectorChangedRevoker{};
     weak_ref<winrt::IObservableVector<winrt::TableViewColumn>> m_observedColumns{};
 
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
-
-    // Selection commits on pointer-release (ListViewBaseItem parity), so a pan or a cancelled
-    // press does not select the row it started on. The id pins it to the arming pointer.
     bool m_selectOnPointerRelease{ false };
     uint32_t m_selectPointerId{ 0 };
+
+    // False = focus level is the ROW (the row is a tab stop, its cells are not).
+    // True  = focus is drilled into this row's CELLS (the cells are tab stops, the row is not).
+    // Rows come out of the recycle pool at row level, which is what body entry lands on.
+    bool m_isCellLevel{ false };
 
     // Prevent DataContextChanged re-entry while RebuildCells updates child DCs.
     bool m_isRebuildingCells{ false };
 
-    // Set while a coalesced RebuildCells is pending on the dispatcher (Columns-vector-changed burst).
     bool m_rebuildCellsQueued{ false };
 
-    // Open cell edit, if any. The display child is parked here rather than regenerated on commit
-    // so the cell returns to the exact element (and bindings) it had before the edit.
     tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
-    tracker_ref<winrt::Border> m_editingCellWrapper{ this };
+    tracker_ref<winrt::Grid> m_editingCellWrapper{ this };
+    winrt::weak_ref<winrt::UIElement> m_pendingEditingCell{ nullptr };
     tracker_ref<winrt::FrameworkElement> m_editingElement{ this };
     tracker_ref<winrt::UIElement> m_editingDisplayElement{ this };
+    winrt::weak_ref<winrt::TableViewCellAutomationPeer> m_editingAutomationPeer{ nullptr };
+    tracker_ref<winrt::IInspectable> m_editingAutomationItem{ this };
+    winrt::hstring m_editingAutomationValue;
+    winrt::hstring m_editingAutomationName;
 
     // Begin-edit gesture state. Held per row rather than on the control: a double-click that starts
     // on one row and finishes on another is not a double-click, and per-row state makes that fall

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.MixedControlsPage"
+    NavigationCacheMode="Disabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:tabular="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls"
+    xmlns:data="using:TableViewSampleApp.Data"
+    xmlns:models="using:TableViewSampleApp.Models">
+
+    <Page.Resources>
+
+        <!-- Disabled controls retain their rich display while exposing the same
+             noninteractive state to mouse, keyboard, and automation clients. -->
+
+        <DataTemplate x:Key="JoinDateCell" x:DataType="models:Person">
+            <!-- MinYear/MaxYear are intentionally NOT set in XAML. The XAML
+                 markup compiler can't convert ISO-8601 strings to DateTimeOffset
+                 attribute values; setting these via XAML attributes fails
+                 WMC0055. Defaults (1900-9999) are fine for this demo. -->
+            <DatePicker
+                AutomationProperties.Name="{Binding JoinDateAccessibleName, Mode=OneWay}"
+                Date="{Binding JoinDate, Mode=OneWay}"
+                IsEnabled="False"
+                IsHitTestVisible="False"
+                IsTabStop="False"
+                Margin="6,2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ShiftStartCell" x:DataType="models:Person">
+            <TimePicker
+                AutomationProperties.Name="{Binding ShiftStartAccessibleName, Mode=OneWay}"
+                Time="{Binding ShiftStart, Mode=OneWay}"
+                IsEnabled="False"
+                IsHitTestVisible="False"
+                IsTabStop="False"
+                ClockIdentifier="24HourClock"
+                MinuteIncrement="15"
+                Margin="6,2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DepartmentCell" x:DataType="models:Person">
+            <ComboBox
+                AutomationProperties.Name="Department"
+                SelectedItem="{Binding Department, Mode=OneWay}"
+                IsEnabled="False"
+                IsHitTestVisible="False"
+                IsTabStop="False"
+                Loaded="OnDepartmentComboBoxLoaded"
+                Margin="6,2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="IsActiveCell" x:DataType="models:Person">
+            <CheckBox
+                AutomationProperties.Name="Active"
+                IsChecked="{Binding IsActive, Mode=OneWay}"
+                IsEnabled="False"
+                IsHitTestVisible="False"
+                IsTabStop="False"
+                MinWidth="0"
+                Margin="14,2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Left"/>
+        </DataTemplate>
+
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="Template cells"
+        Description="Display-only TableViewTemplateColumn examples. DatePicker, TimePicker, ComboBox, and CheckBox are disabled and bound OneWay: they show row values, but do not accept mouse, keyboard, or automation edits."
+        SourceCaption="MixedControlsPage.xaml (excerpt)"
+        SourceSnippet="MixedControls.xaml.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Display-only controls"
+                    Message="These pickers and checkboxes are disabled, not editable fields. Use Interactive cell flyouts for enabled template controls, or Cell editing for built-in text-column editing. Table row navigation is separate from editing these child controls."
+                    MinHeight="104"/>
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                    <tabular:TableView
+                        x:Name="PeopleTable" AutomationProperties.Name="People table"
+                        SelectionMode="Single"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+
+                        <!-- Plain text column for context.  Width matches the other
+                             columns so the table looks balanced. -->
+                        <tabular:TableViewTextColumn
+                            Header="Name"
+                            Width="{StaticResource ColWidthLongName}"
+                            Binding="{Binding FullName}" CanSort="False"/>
+
+                        <!-- DatePicker in a read-only cell — bound to Person.JoinDate.
+                             SortMemberPath is mandatory on a template column (the column
+                             has no Binding the framework can fall back to — the binding
+                             lives inside the DataTemplate). -->
+                        <tabular:TableViewTemplateColumn
+                            Header="Join date"
+                            Width="{StaticResource ColWidthDatePicker}"
+                            SortMemberPath="JoinDate"
+                            CellTemplate="{StaticResource JoinDateCell}" CanSort="False"/>
+
+                        <!-- TimePicker in a read-only cell — bound to Person.ShiftStart. -->
+                        <tabular:TableViewTemplateColumn
+                            Header="Shift start"
+                            Width="{StaticResource ColWidthTimePicker}"
+                            SortMemberPath="ShiftStart"
+                            CellTemplate="{StaticResource ShiftStartCell}" CanSort="False"/>
+
+                        <!-- ComboBox in a cell — choices come from
+                             PersonData.Departments; selected item is bound to
+                             Person.Department. -->
+                        <tabular:TableViewTemplateColumn
+                            Header="Department"
+                            Width="{StaticResource ColWidthDepartment}"
+                            SortMemberPath="Department"
+                            CellTemplate="{StaticResource DepartmentCell}" CanSort="False"/>
+
+                        <!-- CheckBox in a read-only cell — bound to Person.IsActive. -->
+                        <tabular:TableViewTemplateColumn
+                            Header="Active"
+                            Width="{StaticResource ColWidthBoolean}"
+                            SortMemberPath="IsActive"
+                            CellTemplate="{StaticResource IsActiveCell}" CanSort="False"/>
+                    </tabular:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Live data readout" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock Text="First row" Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <TextBlock
+                    x:Name="LiveReadout"
+                    FontFamily="Consolas"
+                    FontSize="12"
+                    TextWrapping="Wrap"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+    </controls:SamplePresenter>
+</Page>

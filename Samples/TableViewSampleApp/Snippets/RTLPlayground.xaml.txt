@@ -1,0 +1,5 @@
+<tabular:TableView x:Name="PlaygroundTable" FlowDirection="RightToLeft" SelectionMode="Single">
+    <tabular:TableViewTextColumn Header="Index"      Binding="{Binding Index}"      CanSort="False"/>
+    <tabular:TableViewTextColumn Header="Name"       Binding="{Binding Name}"       CanSort="False"/>
+    <tabular:TableViewTextColumn Header="Department" Binding="{Binding Department}" CanSort="False"/>
+</tabular:TableView>

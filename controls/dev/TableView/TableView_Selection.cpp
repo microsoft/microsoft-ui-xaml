@@ -31,6 +31,31 @@ namespace
         bool& m_flag;
         bool m_previous;
     };
+
+    bool IsResolvableSelectionAnnouncementRow(
+        winrt::TableView const& owner,
+        winrt::TableViewRow const& row,
+        winrt::AutomationPeer const& peer)
+    {
+        if (!owner || !row || !peer ||
+            winrt::get_self<TableViewRow>(row)->GetOwningTableView() != owner)
+        {
+            return false;
+        }
+
+        auto const repeater = winrt::get_self<TableView>(owner)->GetRowsRepeaterInternal();
+        if (!repeater)
+        {
+            return false;
+        }
+
+        const int32_t index = repeater.GetElementIndex(row);
+        auto const element = index >= 0 ? repeater.TryGetElement(index).try_as<winrt::TableViewRow>() : nullptr;
+        // Identity, not just index: a recycled container can still report an index while it has
+        // already been re-bound to a different item, so either announcement - selected or removed
+        // from selection - would name the wrong record.
+        return element == row;
+    }
 }
 
 bool TableView::CanSelectRows()
@@ -388,7 +413,10 @@ void TableView::RaiseSelectionAutomationEvents(
     {
         if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(selectedRow))
         {
-            peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+            if (IsResolvableSelectionAnnouncementRow(*this, selectedRow, peer))
+            {
+                peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+            }
         }
     }
 
@@ -397,7 +425,10 @@ void TableView::RaiseSelectionAutomationEvents(
     {
         if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(deselectedRow))
         {
-            peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementRemovedFromSelection);
+            if (IsResolvableSelectionAnnouncementRow(*this, deselectedRow, peer))
+            {
+                peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementRemovedFromSelection);
+            }
         }
     }
 
@@ -727,8 +758,12 @@ void TableView::SelectRowIndexFromInteraction(int32_t index, bool toggle)
     ApplySelection(index);
 }
 
-// ----- Public API -----
+void TableView::SelectRowIndexFromKeyboardFocus(int32_t index)
+{
+    SelectRowIndexFromInteraction(index, false /* toggle */);
+}
 
+// ----- Public API -----
 void TableView::Select(int32_t index)
 {
     if (index < 0)
