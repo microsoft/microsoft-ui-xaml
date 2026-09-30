@@ -147,7 +147,9 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GetRootOfItemTemplateAsContain
 _Check_return_ HRESULT ModernCollectionBasePanel::GenerateContainerAtIndexImpl(_In_ INT indexInItemCollection, _Outptr_ xaml::IUIElement** ppReturnValue ) noexcept
 {
     HRESULT hr = S_OK;
+#ifndef XAMLPROFILER_ENABLED
     TraceGenerateMCContainerBegin(indexInItemCollection);
+#endif
 
     ctl::ComPtr<IGeneratorHost> spIHost;
     ctl::ComPtr<IInspectable> spItem;
@@ -400,7 +402,9 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GenerateContainerAtIndexImpl(_
     IFC(spContainer.MoveTo(ppReturnValue));
 
 Cleanup:
+#ifndef XAMLPROFILER_ENABLED
     TraceGenerateMCContainerEnd();
+#endif
     RRETURN(hr);
 }
 
