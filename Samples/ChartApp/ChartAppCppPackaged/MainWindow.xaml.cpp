@@ -48,6 +48,62 @@ namespace
         Windows::UI::Color{ 255, 40, 80, 220 },
         Windows::UI::Color{ 255, 40, 180, 60 }
     };
+    constexpr Windows::UI::Color AreaOriginalFill{ 0x60, 0x4F, 0x6B, 0xED };
+    constexpr Windows::UI::Color AreaOriginalStroke{ 0xFF, 0x30, 0x47, 0xB8 };
+    constexpr Windows::UI::Color BarOriginalFill{ 0xFF, 0x0F, 0x6C, 0xBD };
+    constexpr Windows::UI::Color BarOriginalStroke{ 0xFF, 0x07, 0x3B, 0x66 };
+    constexpr std::array SeriesColors{
+        Windows::UI::Color{ 0xFF, 0x0F, 0x6C, 0xBD },
+        Windows::UI::Color{ 0xFF, 0x10, 0x7C, 0x10 },
+        Windows::UI::Color{ 0xFF, 0xD8, 0x3B, 0x01 }
+    };
+    constexpr std::array<uint8_t, 3> AreaFillAlphas{ 0x60, 0xFF, 0x00 };
+
+    struct SyncGuard
+    {
+        explicit SyncGuard(bool& flag) : m_flag(flag), m_previous(flag) { m_flag = true; }
+        ~SyncGuard() { m_flag = m_previous; }
+        SyncGuard(SyncGuard const&) = delete;
+        SyncGuard& operator=(SyncGuard const&) = delete;
+    private:
+        bool& m_flag;
+        bool m_previous;
+    };
+
+    bool SameRgb(Windows::UI::Color const& left, Windows::UI::Color const& right)
+    {
+        return left.R == right.R && left.G == right.G && left.B == right.B;
+    }
+
+    int32_t SeriesColorIndex(Brush const& fill, Brush const& stroke, bool area)
+    {
+        auto solidFill = fill.try_as<SolidColorBrush>();
+        auto solidStroke = stroke.try_as<SolidColorBrush>();
+        if (!solidFill || !solidStroke) return -1;
+        auto fillColor = solidFill.Color();
+        auto strokeColor = solidStroke.Color();
+        if (strokeColor.A != 0xFF || (!area && fillColor.A != 0xFF)) return -1;
+        if (SameRgb(fillColor, area ? AreaOriginalFill : BarOriginalFill) &&
+            SameRgb(strokeColor, area ? AreaOriginalStroke : BarOriginalStroke)) return 0;
+        for (size_t i = 0; i < SeriesColors.size(); ++i)
+        {
+            if (SameRgb(fillColor, SeriesColors[i]) && SameRgb(strokeColor, SeriesColors[i]))
+                return static_cast<int32_t>(i + 1);
+        }
+        return -1;
+    }
+
+    int32_t AreaFillIndex(Brush const& fill)
+    {
+        if (auto solid = fill.try_as<SolidColorBrush>())
+        {
+            for (size_t i = 0; i < AreaFillAlphas.size(); ++i)
+            {
+                if (solid.Color().A == AreaFillAlphas[i]) return static_cast<int32_t>(i);
+            }
+        }
+        return -1;
+    }
 
     bool Checked(CheckBox const& box)
     {
@@ -362,6 +418,8 @@ namespace winrt::ChartAppCppPackaged::implementation
         m_ready = true;
         SyncPresentationKnobs();
         SyncAxisControls();
+        SyncAreaOptions();
+        SyncBarOptions();
         UpdateDataText();
         ScenarioNavigation().SelectedItem(NavLine());
         AppWindow().Resize(Windows::Graphics::SizeInt32{ 1280, 900 });
@@ -585,6 +643,80 @@ namespace winrt::ChartAppCppPackaged::implementation
             SyncPresentationKnobs();
             ReportError(error);
         }
+    }
+
+    void MainWindow::ApplyExampleEdit(bool area, std::function<void()> const& edit, hstring const& message)
+    {
+        if (!m_ready || m_syncing || m_closing) return;
+        auto status = area ? AreaStatusText() : BarStatusText();
+        auto synchronize = [&] { if (area) SyncAreaOptions(); else SyncBarOptions(); };
+        try
+        {
+            {
+                SyncGuard guard{ m_syncing };
+                edit();
+            }
+            synchronize();
+            status.Text(message);
+        }
+        catch (hresult_error const& error)
+        {
+            synchronize();
+            status.Text(error.code() == E_INVALIDARG
+                ? hstring{ area ? L"The area option is not valid. Choose an available option." : L"The bar option is not valid. Choose an available option." }
+                : hstring{ area ? L"Area options: " : L"Bar options: " } + ErrorText(error));
+        }
+    }
+
+    void MainWindow::SyncAreaOptions()
+    {
+        SyncGuard guard{ m_syncing };
+        auto series = MarkupAreaSeries();
+        AreaColorChoice().SelectedIndex(SeriesColorIndex(series.Fill(), series.Stroke(), true));
+        AreaFillChoice().SelectedIndex(AreaFillIndex(series.Fill()));
+        AreaVisibleCheckBox().IsChecked(series.IsVisible());
+        AreaValuesCheckBox().IsChecked(series.ShowDataLabels());
+        AreaMarkersCheckBox().IsChecked(series.ShowDataMarkers());
+        AreaLegendCheckBox().IsChecked(AreaMarkupChart().ShowLegend());
+    }
+
+    void MainWindow::SyncBarOptions()
+    {
+        SyncGuard guard{ m_syncing };
+        auto series = MarkupBarSeries();
+        BarColorChoice().SelectedIndex(SeriesColorIndex(series.Fill(), series.Stroke(), false));
+        BarVisibleCheckBox().IsChecked(series.IsVisible());
+        BarValuesCheckBox().IsChecked(series.ShowDataLabels());
+        BarLegendCheckBox().IsChecked(BarMarkupChart().ShowLegend());
+        BarOrientationText().Text(series.Orientation() == BarOrientation::Horizontal
+            ? L"Orientation: Horizontal" : L"Orientation: Vertical");
+    }
+
+    void MainWindow::SetAreaAppearance(int32_t colorIndex, int32_t fillIndex)
+    {
+        auto series = MarkupAreaSeries();
+        auto fill = colorIndex == 0 ? AreaOriginalFill : SeriesColors[colorIndex - 1];
+        auto stroke = colorIndex == 0 ? AreaOriginalStroke : SeriesColors[colorIndex - 1];
+        fill.A = AreaFillAlphas[fillIndex];
+        // A transparent brush preserves outline-only mode; null would restore a palette fill.
+        series.Fill(SolidColorBrush{ fill });
+        series.Stroke(SolidColorBrush{ stroke });
+        if (series.ShowDataMarkers()) SetAreaMarkers(true);
+    }
+
+    void MainWindow::SetAreaMarkers(bool visible)
+    {
+        auto series = MarkupAreaSeries();
+        series.ShowDataMarkers(visible);
+        series.MarkerShape(Charts::MarkerShape::Circle);
+        series.DataMarkerBrush(visible ? series.Stroke() : nullptr);
+    }
+
+    void MainWindow::SetBarColor(int32_t colorIndex)
+    {
+        auto series = MarkupBarSeries();
+        series.Fill(SolidColorBrush{ colorIndex == 0 ? BarOriginalFill : SeriesColors[colorIndex - 1] });
+        series.Stroke(SolidColorBrush{ colorIndex == 0 ? BarOriginalStroke : SeriesColors[colorIndex - 1] });
     }
 
     LineSeries MainWindow::SelectedPresentationSeries()
@@ -813,11 +945,75 @@ namespace winrt::ChartAppCppPackaged::implementation
 
     void MainWindow::OnToggleBarOrientationClick(IInspectable const&, RoutedEventArgs const&)
     {
-        ApplyEdit([&]
+        ApplyExampleEdit(false, [&]
         {
             auto series = MarkupBarSeries();
             series.Orientation(series.Orientation() == BarOrientation::Horizontal ? BarOrientation::Vertical : BarOrientation::Horizontal);
-        });
+        }, L"Bar orientation updated.");
+    }
+
+    void MainWindow::OnAreaChoiceChanged(IInspectable const&, SelectionChangedEventArgs const&)
+    {
+        ApplyExampleEdit(true, [&]
+        {
+            SetAreaAppearance(Selection(AreaColorChoice(), 4), Selection(AreaFillChoice(), 3));
+        }, L"Area color and fill updated.");
+    }
+    void MainWindow::OnAreaVisibleClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(true, [&] { MarkupAreaSeries().IsVisible(Checked(AreaVisibleCheckBox())); }, L"Area series visibility updated.");
+    }
+    void MainWindow::OnAreaValuesClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(true, [&] { MarkupAreaSeries().ShowDataLabels(Checked(AreaValuesCheckBox())); }, L"Area value labels updated.");
+    }
+    void MainWindow::OnAreaMarkersClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(true, [&] { SetAreaMarkers(Checked(AreaMarkersCheckBox())); }, L"Area point markers updated.");
+    }
+    void MainWindow::OnAreaLegendClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(true, [&] { AreaMarkupChart().ShowLegend(Checked(AreaLegendCheckBox())); }, L"Area legend updated.");
+    }
+    void MainWindow::OnAreaResetClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(true, [&]
+        {
+            auto series = MarkupAreaSeries();
+            SetAreaMarkers(false);
+            SetAreaAppearance(0, 0);
+            series.IsVisible(true);
+            series.ShowDataLabels(false);
+            AreaMarkupChart().ShowLegend(true);
+        }, L"Area example reset.");
+    }
+    void MainWindow::OnBarColorChanged(IInspectable const&, SelectionChangedEventArgs const&)
+    {
+        ApplyExampleEdit(false, [&] { SetBarColor(Selection(BarColorChoice(), 4)); }, L"Bar color updated.");
+    }
+    void MainWindow::OnBarVisibleClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(false, [&] { MarkupBarSeries().IsVisible(Checked(BarVisibleCheckBox())); }, L"Bar series visibility updated.");
+    }
+    void MainWindow::OnBarValuesClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(false, [&] { MarkupBarSeries().ShowDataLabels(Checked(BarValuesCheckBox())); }, L"Bar value labels updated.");
+    }
+    void MainWindow::OnBarLegendClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(false, [&] { BarMarkupChart().ShowLegend(Checked(BarLegendCheckBox())); }, L"Bar legend updated.");
+    }
+    void MainWindow::OnBarResetClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(false, [&]
+        {
+            auto series = MarkupBarSeries();
+            SetBarColor(0);
+            series.IsVisible(true);
+            series.ShowDataLabels(false);
+            BarMarkupChart().ShowLegend(true);
+            series.Orientation(BarOrientation::Horizontal);
+        }, L"Bar example reset.");
     }
 
     void MainWindow::OnLegendVisibilityClick(IInspectable const&, RoutedEventArgs const&)

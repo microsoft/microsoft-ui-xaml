@@ -225,8 +225,31 @@
                                 </Border>
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel Spacing="16">
+                                        <TextBlock Text="Fill and presentation" Style="{StaticResource ControlHeadingStyle}" />
+                                        <TextBlock Text="Compare translucent, solid and outline-only fills without changing the data." Style="{StaticResource DescriptionStyle}" />
+                                        <Grid ColumnSpacing="24" RowSpacing="16" SizeChanged="OnEditorSizeChanged">
+                                            <ComboBox x:Name="AreaColorChoice" Header="Series color" SelectedIndex="0" SelectionChanged="OnAreaStyleChanged">
+                                                <ComboBoxItem Content="Original" />
+                                                <ComboBoxItem Content="Blue" />
+                                                <ComboBoxItem Content="Green" />
+                                                <ComboBoxItem Content="Orange" />
+                                            </ComboBox>
+                                            <ComboBox x:Name="AreaFillChoice" Header="Area fill" SelectedIndex="0" SelectionChanged="OnAreaStyleChanged">
+                                                <ComboBoxItem Content="Translucent" />
+                                                <ComboBoxItem Content="Solid" />
+                                                <ComboBoxItem Content="Outline only" />
+                                            </ComboBox>
+                                        </Grid>
+                                        <Grid ColumnSpacing="24" RowSpacing="12" SizeChanged="OnEditorSizeChanged">
+                                            <CheckBox x:Name="AreaVisibleCheckBox" Content="Show series" IsChecked="True" Click="OnAreaVisibilityClick" />
+                                            <CheckBox x:Name="AreaValuesCheckBox" Content="Value labels" Click="OnAreaValuesClick" />
+                                            <CheckBox x:Name="AreaMarkersCheckBox" Content="Point markers" Click="OnAreaMarkersClick" />
+                                            <CheckBox x:Name="AreaLegendCheckBox" Content="Legend" IsChecked="True" Click="OnAreaLegendClick" />
+                                        </Grid>
+                                        <Button x:Name="AreaResetButton" Content="Reset area example" Click="OnResetAreaClick" />
+                                        <TextBlock x:Name="AreaStatusText" Style="{StaticResource DescriptionStyle}" AutomationProperties.LiveSetting="Polite"
+                                                   Text="Reset restores this example's original presentation, without changing other charts." />
                                         <TextBlock Text="Monthly area data" Style="{StaticResource ControlHeadingStyle}" />
-                                        <TextBlock Text="A markup-defined area series with a translucent fill and an outlined edge." Style="{StaticResource DescriptionStyle}" />
                                         <TextBlock x:Name="AreaDataText" IsTextSelectionEnabled="True" />
                                     </StackPanel>
                                 </Border>
@@ -242,9 +265,25 @@
                                 </Border>
                                 <Border Style="{StaticResource CardStyle}">
                                     <StackPanel Spacing="16">
-                                        <TextBlock Text="Orientation &amp; data" Style="{StaticResource ControlHeadingStyle}" />
-                                        <TextBlock Text="Switch orientation while keeping the same explicit axes connected." Style="{StaticResource DescriptionStyle}" />
+                                        <TextBlock Text="Orientation and presentation" Style="{StaticResource ControlHeadingStyle}" />
+                                        <TextBlock Text="Change colors, labels and orientation while keeping the same data and explicit axes." Style="{StaticResource DescriptionStyle}" />
+                                        <ComboBox x:Name="BarColorChoice" Header="Series color" SelectedIndex="0" SelectionChanged="OnBarColorChanged">
+                                            <ComboBoxItem Content="Original" />
+                                            <ComboBoxItem Content="Blue" />
+                                            <ComboBoxItem Content="Green" />
+                                            <ComboBoxItem Content="Orange" />
+                                        </ComboBox>
+                                        <Grid ColumnSpacing="24" RowSpacing="12" SizeChanged="OnEditorSizeChanged">
+                                            <CheckBox x:Name="BarVisibleCheckBox" Content="Show series" IsChecked="True" Click="OnBarVisibilityClick" />
+                                            <CheckBox x:Name="BarValuesCheckBox" Content="Value labels" Click="OnBarValuesClick" />
+                                            <CheckBox x:Name="BarLegendCheckBox" Content="Legend" IsChecked="True" Click="OnBarLegendClick" />
+                                        </Grid>
+                                        <TextBlock x:Name="BarOrientationText" Text="Orientation: Horizontal" Style="{StaticResource DescriptionStyle}" />
                                         <Button x:Name="BarOrientationButton" Content="Toggle connected bar orientation" Click="OnToggleBarOrientationClick" />
+                                        <Button x:Name="BarResetButton" Content="Reset bar example" Click="OnResetBarClick" />
+                                        <TextBlock x:Name="BarStatusText" Style="{StaticResource DescriptionStyle}" AutomationProperties.LiveSetting="Polite"
+                                                   Text="Reset restores horizontal bars and this example's original presentation." />
+                                        <TextBlock Text="Monthly bar data" Style="{StaticResource ControlHeadingStyle}" />
                                         <TextBlock x:Name="BarDataText" IsTextSelectionEnabled="True" />
                                     </StackPanel>
                                 </Border>

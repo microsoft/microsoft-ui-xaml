@@ -21,12 +21,13 @@ Navigation preserves the chart instances and the settings you have entered.
 | Area | Controls and scenarios |
 |---|---|
 | Markup charts | Two line series, an area series, and a bar series, using named `Samples` handles. |
+| Area appearance | Choose original/blue/green/orange colors and translucent, solid, or outline-only fill. Show/hide the series, value labels, circle markers, or legend. |
 | Legend and series | Show/hide the legend, edit its title, select either line series, and change default labels, markers, and their brushes. |
 | Individual points | Select an index, add/remove a label or marker override, choose its brush or shape, or clear the selected series' overrides. Selecting another series or index reloads its current settings. |
 | Numeric axes | Set or clear the minimum, maximum, and spacing. An empty value restores automatic behavior; invalid input is reported without replacing the current valid setting. |
 | Category axes | Choose source-index or category-value ordering and ascending or descending order. |
 | Axis presentation | Change visibility, tick labels, tick marks, grid lines, and brush overrides. Choose **Theme** to restore a resource fallback. |
-| Bar orientation | Change a connected bar series between horizontal and vertical layouts without swapping its X/Y data dimensions. |
+| Bar appearance | Choose original/blue/green/orange colors, show/hide the series, value labels, or legend, and switch between horizontal and vertical layouts without swapping X/Y data dimensions. |
 | Code-created chart | Attach a line series before completing its data sources, then supply the observable data. |
 | Live data | Update the code-created line and both markup line sources once per second; pause and resume the updates. |
 | Date-time charts | Compare 75 daily points with 36 monthly points, each with a target series. Choose Auto/Day/Week/Month/Year intervals and edit the date-label format. |
@@ -37,6 +38,17 @@ The data is deterministic and synthetic. No network connection or external
 data file is required. The primary data summary makes the current values
 available as text. Marker shapes, dash styles, titles, and descriptions
 supplement color distinctions.
+
+The Area and Bar pages each have a reset button. **Reset area example** restores
+the original translucent fill, hides value labels and markers, and shows the
+series and legend. **Reset bar example** restores the original colors,
+horizontal orientation, visible series and legend, and hidden value labels.
+Neither reset replaces the chart, changes its source data, changes another
+example, or resets the application theme. Appearance choices survive navigation.
+
+For an outline-only area, the sample sets an explicitly transparent fill color.
+A null fill would instead request the chart's palette color. Point-marker colors
+follow the area's stroke color when markers are enabled.
 
 ## Data and ownership
 

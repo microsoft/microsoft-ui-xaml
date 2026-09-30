@@ -16,6 +16,17 @@ namespace ChartsSample
 {
     public sealed partial class MainWindow : Window
     {
+        private static readonly Color OriginalAreaFill = Color.FromArgb(0x60, 0x4F, 0x6B, 0xED);
+        private static readonly Color OriginalAreaStroke = Color.FromArgb(0xFF, 0x30, 0x47, 0xB8);
+        private static readonly Color OriginalBarFill = Color.FromArgb(0xFF, 0x0F, 0x6C, 0xBD);
+        private static readonly Color OriginalBarStroke = Color.FromArgb(0xFF, 0x07, 0x3B, 0x66);
+        private static readonly Color[] ExampleColors =
+        {
+            Color.FromArgb(0xFF, 0x0F, 0x6C, 0xBD),
+            Color.FromArgb(0xFF, 0x10, 0x7C, 0x10),
+            Color.FromArgb(0xFF, 0xD8, 0x3B, 0x01)
+        };
+
         private readonly ObservableCollection<string> _months = new() { "Jan", "Feb", "Mar", "Apr", "May", "Jun" };
         private readonly ObservableVector<double> _profit = new() { 18, 27, 22, 41, 36, 52 };
         private readonly ObservableVector<double> _expenses = new() { 31, 25, 29, 24, 32, 28 };
@@ -69,6 +80,8 @@ namespace ChartsSample
             ScenarioNavigation.SelectedItem = NavLine;
             Synchronize(SyncPresentationKnobs);
             Synchronize(SyncAxes);
+            Synchronize(SyncAreaOptions);
+            Synchronize(SyncBarOptions);
             UpdateDataText();
             _updates.Tick += OnUpdateTick;
             _updates.Start();
@@ -231,8 +244,8 @@ namespace ChartsSample
             AxisEditors.Visibility = scenario == "axes" ? Visibility.Visible : Visibility.Collapsed;
             (ScenarioHeading.Text, ScenarioDescription.Text) = scenario switch
             {
-                "area" => ("Area charts", "Explore six monthly values with a filled area series."),
-                "bar" => ("Bar charts", "Compare monthly values and switch the connected bar orientation."),
+                "area" => ("Area charts", "Explore fill styles, colors, labels and markers using six monthly values."),
+                "bar" => ("Bar charts", "Compare monthly values with configurable colors, labels and orientation."),
                 "datetime" => ("Date & time", "Explore daily and monthly timelines, intervals and date label formats."),
                 "axes" => ("Axes & ordering", "Adjust profit bounds, category ordering, ticks and grid lines."),
                 "presentation" => ("Labels & markers", "Customize series defaults and indexed point labels and markers."),
@@ -292,9 +305,149 @@ namespace ChartsSample
 
         private void OnToggleBarOrientationClick(object sender, RoutedEventArgs e)
         {
-            MarkupBarSeries.Orientation = MarkupBarSeries.Orientation == BarOrientation.Horizontal
-                ? BarOrientation.Vertical : BarOrientation.Horizontal;
-            StatusText.Text = $"Bar orientation: {MarkupBarSeries.Orientation}. The same explicit axes remain connected.";
+            EditBar(() =>
+            {
+                MarkupBarSeries.Orientation = MarkupBarSeries.Orientation == BarOrientation.Horizontal
+                    ? BarOrientation.Vertical : BarOrientation.Horizontal;
+                StatusText.Text = $"Bar orientation: {MarkupBarSeries.Orientation}. The same explicit axes remain connected.";
+            }, "Bar orientation changed. X remains categories; Y remains values.");
+        }
+
+        private static Color SelectedExampleColor(ComboBox choice, Color original)
+        {
+            int index = choice.SelectedIndex;
+            if (index == 0) return original;
+            if (index > 0 && index <= ExampleColors.Length) return ExampleColors[index - 1];
+            throw new ArgumentException("Choose an available series color.");
+        }
+
+        private static int ExampleColorIndex(Brush brush, Color original)
+        {
+            if (brush is not SolidColorBrush solid) return -1;
+            if (solid.Color == original) return 0;
+            int index = Array.IndexOf(ExampleColors, solid.Color);
+            return index < 0 ? -1 : index + 1;
+        }
+
+        private void SyncAreaOptions()
+        {
+            AreaColorChoice.SelectedIndex = ExampleColorIndex(MarkupAreaSeries.Stroke, OriginalAreaStroke);
+            AreaFillChoice.SelectedIndex = MarkupAreaSeries.Fill is SolidColorBrush fill
+                ? fill.Color.A switch { 0x60 => 0, 0xFF => 1, 0 => 2, _ => -1 }
+                : -1;
+            AreaVisibleCheckBox.IsChecked = MarkupAreaSeries.IsVisible;
+            AreaValuesCheckBox.IsChecked = MarkupAreaSeries.ShowDataLabels;
+            AreaMarkersCheckBox.IsChecked = MarkupAreaSeries.ShowDataMarkers;
+            AreaLegendCheckBox.IsChecked = AreaMarkupChart.ShowLegend;
+        }
+
+        private void SyncBarOptions()
+        {
+            BarColorChoice.SelectedIndex = ExampleColorIndex(MarkupBarSeries.Stroke, OriginalBarStroke);
+            BarVisibleCheckBox.IsChecked = MarkupBarSeries.IsVisible;
+            BarValuesCheckBox.IsChecked = MarkupBarSeries.ShowDataLabels;
+            BarLegendCheckBox.IsChecked = BarMarkupChart.ShowLegend;
+            BarOrientationText.Text = $"Orientation: {MarkupBarSeries.Orientation}";
+        }
+
+        private void EditArea(Action edit, string message)
+        {
+            if (_closing) return;
+            ApplyEdit(edit, SyncAreaOptions, AreaStatusText, message);
+        }
+
+        private void EditBar(Action edit, string message)
+        {
+            if (_closing) return;
+            ApplyEdit(edit, SyncBarOptions, BarStatusText, message);
+        }
+
+        private void OnAreaStyleChanged(object sender, SelectionChangedEventArgs e)
+        {
+            EditArea(() =>
+            {
+                Color fill = SelectedExampleColor(AreaColorChoice, OriginalAreaFill);
+                Color stroke = SelectedExampleColor(AreaColorChoice, OriginalAreaStroke);
+                fill.A = AreaFillChoice.SelectedIndex switch
+                {
+                    0 => 0x60,
+                    1 => 0xFF,
+                    2 => 0,
+                    _ => throw new ArgumentException("Choose an available area fill.")
+                };
+                // Null selects the palette; an explicit transparent color keeps outline-only mode.
+                MarkupAreaSeries.Fill = new SolidColorBrush(fill);
+                MarkupAreaSeries.Stroke = new SolidColorBrush(stroke);
+                if (MarkupAreaSeries.ShowDataMarkers)
+                    MarkupAreaSeries.DataMarkerBrush = MarkupAreaSeries.Stroke;
+            }, "Area color and fill updated. The source data is unchanged.");
+        }
+
+        private void OnAreaVisibilityClick(object sender, RoutedEventArgs e) =>
+            EditArea(() => MarkupAreaSeries.IsVisible = AreaVisibleCheckBox.IsChecked == true, "Area series visibility updated.");
+
+        private void OnAreaValuesClick(object sender, RoutedEventArgs e) =>
+            EditArea(() => MarkupAreaSeries.ShowDataLabels = AreaValuesCheckBox.IsChecked == true, "Area value labels updated.");
+
+        private void OnAreaMarkersClick(object sender, RoutedEventArgs e)
+        {
+            EditArea(() =>
+            {
+                MarkupAreaSeries.ShowDataMarkers = AreaMarkersCheckBox.IsChecked == true;
+                MarkupAreaSeries.MarkerShape = MarkerShape.Circle;
+                MarkupAreaSeries.DataMarkerBrush = MarkupAreaSeries.ShowDataMarkers ? MarkupAreaSeries.Stroke : null;
+            }, "Area point markers updated.");
+        }
+
+        private void OnAreaLegendClick(object sender, RoutedEventArgs e) =>
+            EditArea(() => AreaMarkupChart.ShowLegend = AreaLegendCheckBox.IsChecked == true, "Area legend updated.");
+
+        private void OnResetAreaClick(object sender, RoutedEventArgs e)
+        {
+            EditArea(() =>
+            {
+                MarkupAreaSeries.Fill = new SolidColorBrush(OriginalAreaFill);
+                MarkupAreaSeries.Stroke = new SolidColorBrush(OriginalAreaStroke);
+                MarkupAreaSeries.IsVisible = true;
+                MarkupAreaSeries.ShowDataLabels = false;
+                MarkupAreaSeries.ShowDataMarkers = false;
+                MarkupAreaSeries.MarkerShape = MarkerShape.Circle;
+                MarkupAreaSeries.DataMarkerBrush = null;
+                AreaMarkupChart.ShowLegend = true;
+            }, "Area example reset. Other charts and the application theme are unchanged.");
+        }
+
+        private void OnBarColorChanged(object sender, SelectionChangedEventArgs e)
+        {
+            EditBar(() =>
+            {
+                Color fill = SelectedExampleColor(BarColorChoice, OriginalBarFill);
+                Color stroke = SelectedExampleColor(BarColorChoice, OriginalBarStroke);
+                MarkupBarSeries.Fill = new SolidColorBrush(fill);
+                MarkupBarSeries.Stroke = new SolidColorBrush(stroke);
+            }, "Bar color updated. The source data is unchanged.");
+        }
+
+        private void OnBarVisibilityClick(object sender, RoutedEventArgs e) =>
+            EditBar(() => MarkupBarSeries.IsVisible = BarVisibleCheckBox.IsChecked == true, "Bar series visibility updated.");
+
+        private void OnBarValuesClick(object sender, RoutedEventArgs e) =>
+            EditBar(() => MarkupBarSeries.ShowDataLabels = BarValuesCheckBox.IsChecked == true, "Bar value labels updated.");
+
+        private void OnBarLegendClick(object sender, RoutedEventArgs e) =>
+            EditBar(() => BarMarkupChart.ShowLegend = BarLegendCheckBox.IsChecked == true, "Bar legend updated.");
+
+        private void OnResetBarClick(object sender, RoutedEventArgs e)
+        {
+            EditBar(() =>
+            {
+                MarkupBarSeries.Fill = new SolidColorBrush(OriginalBarFill);
+                MarkupBarSeries.Stroke = new SolidColorBrush(OriginalBarStroke);
+                MarkupBarSeries.IsVisible = true;
+                MarkupBarSeries.ShowDataLabels = false;
+                BarMarkupChart.ShowLegend = true;
+                MarkupBarSeries.Orientation = BarOrientation.Horizontal;
+            }, "Bar example reset to horizontal. Other charts and the application theme are unchanged.");
         }
 
         private LineSeries SelectedPresentationSeries() => PresentationSeriesComboBox.SelectedIndex == 1 ? ExpensesSeries : ProfitSeries;

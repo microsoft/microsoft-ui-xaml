@@ -233,9 +233,25 @@
                                     </charts:Chart>
                                 </Border>
                                 <Border Style="{StaticResource ScenarioCard}">
-                                    <StackPanel Spacing="12">
-                                        <TextBlock Text="Monthly area data" Style="{StaticResource SectionHeading}" />
+                                    <StackPanel Spacing="16">
+                                        <TextBlock Text="Area options" Style="{StaticResource SectionHeading}" />
                                         <TextBlock Text="A markup-created area series with connected category and numeric samples." Style="{StaticResource SecondaryText}" />
+                                        <VariableSizedWrapGrid Style="{StaticResource EditorRow}">
+                                            <ComboBox x:Name="AreaColorChoice" Header="Series color" SelectedIndex="0" SelectionChanged="OnAreaChoiceChanged" Style="{StaticResource EditorChoice}">
+                                                <ComboBoxItem Content="Original" /><ComboBoxItem Content="Blue" /><ComboBoxItem Content="Green" /><ComboBoxItem Content="Orange" />
+                                            </ComboBox>
+                                            <ComboBox x:Name="AreaFillChoice" Header="Area fill" SelectedIndex="0" SelectionChanged="OnAreaChoiceChanged" Style="{StaticResource EditorChoice}">
+                                                <ComboBoxItem Content="Translucent" /><ComboBoxItem Content="Solid" /><ComboBoxItem Content="Outline only" />
+                                            </ComboBox>
+                                        </VariableSizedWrapGrid>
+                                        <VariableSizedWrapGrid Style="{StaticResource ChoiceRow}">
+                                            <CheckBox x:Name="AreaVisibleCheckBox" Content="Show series" IsChecked="True" Click="OnAreaVisibleClick" />
+                                            <CheckBox x:Name="AreaValuesCheckBox" Content="Value labels" IsChecked="False" Click="OnAreaValuesClick" />
+                                            <CheckBox x:Name="AreaMarkersCheckBox" Content="Point markers" IsChecked="False" Click="OnAreaMarkersClick" />
+                                            <CheckBox x:Name="AreaLegendCheckBox" Content="Legend" IsChecked="True" Click="OnAreaLegendClick" />
+                                        </VariableSizedWrapGrid>
+                                        <Button x:Name="AreaResetButton" Content="Reset area example" Click="OnAreaResetClick" />
+                                        <TextBlock x:Name="AreaStatusText" Text="Choose options for the area example." Style="{StaticResource SecondaryText}" AutomationProperties.LiveSetting="Polite" />
                                         <TextBlock Text="Jan: 8, Feb: 18, Mar: 14, Apr: 29, May: 24, Jun: 37." IsTextSelectionEnabled="True" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Border>
@@ -251,9 +267,22 @@
                                 </Border>
                                 <Border Style="{StaticResource ScenarioCard}">
                                     <StackPanel Spacing="16">
-                                        <TextBlock Text="Orientation and data" Style="{StaticResource SectionHeading}" />
+                                        <TextBlock Text="Bar options" Style="{StaticResource SectionHeading}" />
                                         <TextBlock Text="Change orientation while the series remains connected to its explicit axes." Style="{StaticResource SecondaryText}" />
-                                        <Button Content="Toggle connected bar orientation" Click="OnToggleBarOrientationClick" />
+                                        <VariableSizedWrapGrid Style="{StaticResource EditorRow}">
+                                            <ComboBox x:Name="BarColorChoice" Header="Series color" SelectedIndex="0" SelectionChanged="OnBarColorChanged" Style="{StaticResource EditorChoice}">
+                                                <ComboBoxItem Content="Original" /><ComboBoxItem Content="Blue" /><ComboBoxItem Content="Green" /><ComboBoxItem Content="Orange" />
+                                            </ComboBox>
+                                        </VariableSizedWrapGrid>
+                                        <VariableSizedWrapGrid Style="{StaticResource ChoiceRow}">
+                                            <CheckBox x:Name="BarVisibleCheckBox" Content="Show series" IsChecked="True" Click="OnBarVisibleClick" />
+                                            <CheckBox x:Name="BarValuesCheckBox" Content="Value labels" IsChecked="False" Click="OnBarValuesClick" />
+                                            <CheckBox x:Name="BarLegendCheckBox" Content="Legend" IsChecked="True" Click="OnBarLegendClick" />
+                                        </VariableSizedWrapGrid>
+                                        <Button x:Name="BarOrientationButton" Content="Toggle connected bar orientation" Click="OnToggleBarOrientationClick" />
+                                        <TextBlock x:Name="BarOrientationText" Text="Orientation: Horizontal" Style="{StaticResource SecondaryText}" />
+                                        <Button x:Name="BarResetButton" Content="Reset bar example" Click="OnBarResetClick" />
+                                        <TextBlock x:Name="BarStatusText" Text="Choose options for the bar example." Style="{StaticResource SecondaryText}" AutomationProperties.LiveSetting="Polite" />
                                         <TextBlock Text="Jan: 12, Feb: 20, Mar: 17, Apr: 31, May: 26, Jun: 39." IsTextSelectionEnabled="True" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Border>
