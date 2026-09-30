@@ -33,6 +33,9 @@ public sealed partial class ContextMenuPage : Page
     private bool _innerMenus = true;
     private string _nullRealized = "PENDING";
     private TableViewContextFlyoutRequestedEventArgs? _retainedArgs;
+    private MenuFlyoutItem? _targetedCellAction;
+
+    private sealed record CellActionValue(string Row, string Column, object Value);
 
     public ContextMenuPage()
     {
@@ -164,10 +167,22 @@ public sealed partial class ContextMenuPage : Page
         _requestedFixtureIndex = -1;
         _lastRequest = "none";
         _lastOpen = "none";
-        _name.CellContextFlyout = Menu("CELL", true);
+        ActionResult.Text = "Choose a cell menu action to display its row, column, and value.";
+        var nameMenu = Menu("CELL", true);
+        var nameAction = new MenuFlyoutItem { Text = "Show name value" };
+        nameAction.SetBinding(MenuFlyoutItem.CommandParameterProperty,
+            new Binding { Path = new PropertyPath(nameof(Item.Name)) });
+        nameAction.Click += OnShowNameValue;
+        nameMenu.Items.Add(nameAction);
+        nameMenu.Opened += (_, _) => nameAction.IsEnabled = nameAction.DataContext is Item;
+        _name.CellContextFlyout = nameMenu;
         _name.HeaderContextFlyout = Menu("HEADER");
         _city.HeaderContextFlyout = Menu("CITY HEADER");
-        Table.RowContextFlyout = Menu("ROW", true);
+        var rowMenu = Menu("ROW", true);
+        _targetedCellAction = new MenuFlyoutItem { Text = "Show targeted cell value", IsEnabled = false };
+        _targetedCellAction.Click += OnShowTargetedCellValue;
+        rowMenu.Items.Add(_targetedCellAction);
+        Table.RowContextFlyout = rowMenu;
         Table.ContextFlyout = Menu("NATIVE");
         Table.ItemsSource = _items;
         Mode.SelectedIndex = 0;
@@ -182,6 +197,7 @@ public sealed partial class ContextMenuPage : Page
         _requestedFixtureIndex = args.Item is Item item ? _items.IndexOf(item) : -1;
         _lastRequest = $"{(args.IsHeader ? "header" : "body")}; " +
             $"column={args.Column?.Header ?? "(none)"}; item={(args.Item as Item)?.Name ?? "(none)"}";
+        ConfigureTargetedCellAction(args);
         switch (Mode.SelectedIndex)
         {
             case 1:
@@ -222,6 +238,47 @@ public sealed partial class ContextMenuPage : Page
         }
 
         Report();
+    }
+
+    private void OnShowNameValue(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuFlyoutItem { DataContext: Item row, CommandParameter: string value })
+        {
+            ActionResult.Text = $"Binding: row={row.Name}; column=Name; value={value}";
+        }
+        else
+        {
+            ActionResult.Text = "No bound Name value is available for this row.";
+        }
+    }
+
+    private void ConfigureTargetedCellAction(TableViewContextFlyoutRequestedEventArgs args)
+    {
+        if (_targetedCellAction is null) return;
+        _targetedCellAction.CommandParameter = null;
+        _targetedCellAction.IsEnabled = false;
+        if (args.IsHeader || args.Item is not Item row) return;
+
+        // The menu inherits the row, not a cell value. Map the known sample columns explicitly.
+        CellActionValue? target =
+            ReferenceEquals(args.Column, _name) ? new(row.Name, nameof(Item.Name), row.Name) :
+            ReferenceEquals(args.Column, _city) ? new(row.Name, nameof(Item.City), row.City) :
+            ReferenceEquals(args.Column, _score) ? new(row.Name, nameof(Item.Score), row.Score) :
+            ReferenceEquals(args.Column, _notes) ? new(row.Name, nameof(Item.Notes), row.Notes) : null;
+        _targetedCellAction.CommandParameter = target;
+        _targetedCellAction.IsEnabled = target is not null;
+    }
+
+    private void OnShowTargetedCellValue(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuFlyoutItem { CommandParameter: CellActionValue target })
+        {
+            ActionResult.Text = $"Item + Column: row={target.Row}; column={target.Column}; value={target.Value}";
+        }
+        else
+        {
+            ActionResult.Text = "No targeted cell value is available for this request.";
+        }
     }
 
     private void Report() =>
