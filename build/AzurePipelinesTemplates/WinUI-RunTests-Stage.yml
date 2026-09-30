@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 parameters:
   pipelineKind: ''
+  collectCodeCoverage: false
 
 stages:
 - stage: RunTests
@@ -15,6 +16,7 @@ stages:
       pipelineKind: ${{ parameters.pipelineKind }}
       testSuite: 'DevTestSuite'
       testPayloadArtifactName: 'TestPayload'
+      collectCodeCoverage: ${{ parameters.collectCodeCoverage }}
 
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:
@@ -22,6 +24,7 @@ stages:
       dependsOn: CreateTestPayload
       testOS: 'Win11-25H2'
       testPayloadArtifactName: 'TestPayload'
+      collectCodeCoverage: ${{ parameters.collectCodeCoverage }}
 
   - ${{ if ne(parameters.pipelineKind, 'QuickPR') }}:
     - template: WinUI-RunTestPassOnPipeline-Job.yml
@@ -30,6 +33,7 @@ stages:
         dependsOn: CreateTestPayload
         testOS: 'Win11-23H2'
         testPayloadArtifactName: 'TestPayload'
+        collectCodeCoverage: ${{ parameters.collectCodeCoverage }}
 
     - template: WinUI-RunTestPassOnPipeline-Job.yml
       parameters:
@@ -37,3 +41,13 @@ stages:
         dependsOn: CreateTestPayload
         testOS: 'Win10-RS5'
         testPayloadArtifactName: 'TestPayload'
+        collectCodeCoverage: ${{ parameters.collectCodeCoverage }}
+
+  - ${{ if eq(parameters.collectCodeCoverage, true) }}:
+    - template: WinUI-MergeCodeCoverage-Job.yml
+      parameters:
+        dependsOn:
+        - RunTests25H2
+        - ${{ if ne(parameters.pipelineKind, 'QuickPR') }}:
+          - RunTests23H2
+          - RunTestsRS5

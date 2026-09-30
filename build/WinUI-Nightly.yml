@@ -26,6 +26,10 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   displayName: "Run Api Diff against latest stable package"
   type: boolean
   default: true
+- name: CollectCodeCoverage
+  displayName: "Collect runtime code coverage (experimental)"
+  type: boolean
+  default: false
 
 variables:
 - template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
@@ -93,6 +97,7 @@ extends:
     - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
       parameters:
         pipelineKind: Nightly
+        collectCodeCoverage: ${{ parameters.CollectCodeCoverage }}
         signOutput: ${{ parameters.SignOutput }}
         MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
@@ -112,6 +117,7 @@ extends:
     - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
       parameters:
         pipelineKind: Nightly
+        collectCodeCoverage: ${{ parameters.CollectCodeCoverage }}
 
     - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
       parameters:
