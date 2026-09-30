@@ -9,12 +9,14 @@
 #include "TableViewGroupHeader.h"
 #include "GridCoordinateHelper.h"
 #include "ResourceAccessor.h"
+#include "TableViewAutomationHelpers.h"
 #include "Utils.h"
 #include "SharedHelpers.h"
 
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <vector>
 
 // Row keyboard navigation and its focus/measurement helpers live here.
 
@@ -67,6 +69,64 @@ namespace
 
         headerCell = nullptr;
         return nullptr;
+    }
+
+    // The header band in visible-column order. The predicate is the same one TableViewRow uses to
+    // enumerate its visible cells (IsVisibleColumn on the owning column), so a header's index here
+    // and a row's visible-column index are ONE coordinate space - which is what lets Tab hand the
+    // column the user was on in one band to the other band instead of guessing at it.
+    std::vector<winrt::FrameworkElement> GetVisibleHeaderCells(const winrt::Panel& headerHost)
+    {
+        std::vector<winrt::FrameworkElement> cells;
+        if (!headerHost)
+        {
+            return cells;
+        }
+
+        auto const children = headerHost.Children();
+        const uint32_t size = children.Size();
+        cells.reserve(size);
+        for (uint32_t i = 0; i < size; ++i)
+        {
+            auto const cell = children.GetAt(i).try_as<winrt::FrameworkElement>();
+            if (!cell)
+            {
+                continue;
+            }
+            if (!IsVisibleColumn(cell.Tag().try_as<winrt::TableViewColumn>()))
+            {
+                continue;
+            }
+            cells.push_back(cell);
+        }
+        return cells;
+    }
+
+    int32_t IndexOfHeaderCell(
+        const std::vector<winrt::FrameworkElement>& cells, const winrt::FrameworkElement& cell)
+    {
+        if (!cell)
+        {
+            return -1;
+        }
+        for (size_t i = 0; i < cells.size(); ++i)
+        {
+            if (cells[i] == cell)
+            {
+                return static_cast<int32_t>(i);
+            }
+        }
+        return -1;
+    }
+
+    // "Actionable" (sortable or resizable) is what RebuildHeaders stamps onto IsTabStop. Now that
+    // the band is a single tab stop, that flag no longer buys a header its own Tab press - it
+    // decides whether the header is focusable at all, and therefore whether ARROW navigation can
+    // land on it. A header with nothing to activate is still skipped, exactly as before.
+    bool IsFocusableHeaderCell(const winrt::FrameworkElement& cell)
+    {
+        auto const element = cell.try_as<winrt::UIElement>();
+        return element && element.IsTabStop() && element.Visibility() == winrt::Visibility::Visible;
     }
 
     // The focused header is the element AT is on, so attribute the announcement to its peer.
@@ -130,9 +190,11 @@ void TableView::AnnounceColumnWidth(const winrt::IInspectable& announcer, const 
     AnnounceColumnWidthOn(announcer, column);
 }
 
-// Left/Right resizes the column whose header has focus; Shift takes the large step, and Ctrl is
-// accepted as an alias. Tab moves between headers, so the arrows are free to resize. Driving the
-// gripper's own Begin/Try/End keeps pointer and keyboard on one clamping path.
+// Alt+Left / Alt+Right resizes the column whose header has focus; Shift takes the large step, and
+// Ctrl is accepted as an alias. This is the WPF DataGrid binding ("Default Keyboard and Mouse
+// Behavior in the DataGrid Control"), which leaves the bare arrows free to NAVIGATE between
+// headers inside the band. Driving the gripper's own Begin/Try/End keeps pointer and keyboard on
+// one clamping path.
 bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args)
 {
     if (args.Handled())
@@ -160,8 +222,11 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
         return false;
     }
 
-    // Alt is reserved: Alt alone opens the window menu.
-    if (IsKeyDown(winrt::VirtualKey::Menu))
+    // Alt is the resize modifier, not a disqualifier. Alt+Arrow is an ordinary accelerator chord:
+    // the window menu opens on SC_KEYMENU, which the OS only synthesizes when Alt is pressed and
+    // released with NO other key in the chord, so an arrow in the chord already suppresses it.
+    // Marking the key handled below additionally stops the chord reaching the access-key manager.
+    if (!IsKeyDown(winrt::VirtualKey::Menu))
     {
         return false;
     }
@@ -193,6 +258,292 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
 
     // The gripper carries no UIA value, so the resize is otherwise silent. The announcement is
     // raised from DragCompleted, which both input paths reach.
+
+    args.Handled(true);
+    return true;
+}
+
+// ----- Header-band keyboard navigation -----
+//
+// Model: two bands, each ONE tab stop, arrows confined to the band they start in. This is what
+// Explorer's Details view does, and what WinUI's own ListView / GridView / ItemsView do. Tab and
+// Shift+Tab are the ONLY way between the header band and the body; no arrow key crosses between
+// them in either direction.
+//
+// Within the band the arrows work in the same visible-column coordinate space as the cell cursor,
+// so the column a user leaves the band on is the column Tab hands to the body.
+
+int32_t TableView::GetFocusedVisibleHeaderIndex() const
+{
+    auto const host = m_headerHost.get();
+    auto const root = XamlRoot();
+    if (!host || !root)
+    {
+        return -1;
+    }
+
+    auto const focused = winrt::FocusManager::GetFocusedElement(root);
+    if (!focused)
+    {
+        return -1;
+    }
+
+    winrt::FrameworkElement headerCell{ nullptr };
+    if (!ResolveFocusedHeaderColumn(focused, host, headerCell) || !headerCell)
+    {
+        return -1;
+    }
+
+    return IndexOfHeaderCell(GetVisibleHeaderCells(host), headerCell);
+}
+
+// `step` of 0 tries only `visibleIndex`; +1/-1 keeps walking in that direction while the header
+// refuses focus. A header is focusable only while it is a tab stop (IsTabStop is set from
+// "resizable or sortable"), so a decorative header transparently hands the move on to the next
+// actionable one instead of swallowing the key. This is what keeps EVERY actionable column's sort
+// and resize reachable now that the band is a single tab stop.
+int32_t TableView::FocusVisibleHeaderFrom(int32_t visibleIndex, int32_t step)
+{
+    auto const host = m_headerHost.get();
+    if (!host)
+    {
+        return -1;
+    }
+
+    auto const cells = GetVisibleHeaderCells(host);
+    const int32_t count = static_cast<int32_t>(cells.size());
+    if (count <= 0 || visibleIndex < 0 || visibleIndex >= count)
+    {
+        return -1;
+    }
+
+    for (int32_t i = visibleIndex; i >= 0 && i < count; i += step)
+    {
+        auto const& cell = cells[static_cast<size_t>(i)];
+        if (IsFocusableHeaderCell(cell))
+        {
+            if (auto const element = cell.try_as<winrt::UIElement>();
+                element && element.Focus(winrt::FocusState::Keyboard))
+            {
+                return i;
+            }
+        }
+        if (step == 0)
+        {
+            break;
+        }
+    }
+
+    return -1;
+}
+
+// The header the band should be entered on: the remembered column when it is actionable, else the
+// nearest actionable header searching outward from it, which for a fresh table (cursor 0) is the
+// FIRST actionable header.
+//
+// The "remembered column" is m_currentCellColumn - the body's existing cell cursor - not a second
+// header-only cursor. One cursor is what makes Tab in either direction between the two bands agree
+// on which column the user is in.
+int32_t TableView::ResolveHeaderEntryIndex(const std::vector<winrt::FrameworkElement>& cells) const
+{
+    const int32_t count = static_cast<int32_t>(cells.size());
+    if (count <= 0)
+    {
+        return -1;
+    }
+
+    const int32_t preferred = std::clamp(m_currentCellColumn, 0, count - 1);
+    for (int32_t i = preferred; i < count; ++i)
+    {
+        if (IsFocusableHeaderCell(cells[static_cast<size_t>(i)]))
+        {
+            return i;
+        }
+    }
+    for (int32_t i = preferred - 1; i >= 0; --i)
+    {
+        if (IsFocusableHeaderCell(cells[static_cast<size_t>(i)]))
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// Tab into the band lands on its first focusable header, because the band is one tab stop. Redirect
+// that to the remembered column. Modelled on TableViewRow::OnRowGettingFocus, including its
+// escape-hatch guard: focus LEAVING the band is never pulled back, or Tab could not get out.
+void TableView::OnHeaderHostGettingFocus(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args)
+{
+    auto const host = m_headerHost.get();
+    if (!host)
+    {
+        return;
+    }
+
+    // Tab / Shift+Tab only. A programmatic Focus() (an arrow step within the band, a test hook)
+    // reports Direction None and already names the header it means; redirecting it would break the
+    // column-exact contract those paths depend on.
+    auto const direction = args.Direction();
+    if (direction != winrt::FocusNavigationDirection::Next &&
+        direction != winrt::FocusNavigationDirection::Previous)
+    {
+        return;
+    }
+
+    auto const hostObject = host.try_as<winrt::DependencyObject>();
+    auto const oldFocus = args.OldFocusedElement();
+    if (oldFocus &&
+        (oldFocus == hostObject || SharedHelpers::IsAncestor(oldFocus, hostObject, false /* checkVisibility */)))
+    {
+        // Tabbing OUT of the band. Leave it alone.
+        return;
+    }
+
+    auto const cells = GetVisibleHeaderCells(host);
+    const int32_t target = ResolveHeaderEntryIndex(cells);
+    if (target < 0)
+    {
+        // No actionable header: the band has no tab stop at all and XAML's own target stands.
+        return;
+    }
+
+    auto const element = cells[static_cast<size_t>(target)].try_as<winrt::DependencyObject>();
+    if (!element || element == args.NewFocusedElement())
+    {
+        return;
+    }
+
+    // Refused during some focus operations; failing just leaves focus on the band's first header,
+    // which is still inside the band.
+    args.TrySetNewFocusedElement(element);
+}
+
+// Records the column of whatever header actually took focus - Tab entry, arrow step or pointer
+// press - into the shared cursor, so Tab onward into the body enters at that column instead of
+// snapping back to column 0.
+void TableView::OnHeaderHostGotFocus(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::RoutedEventArgs& /*args*/)
+{
+    if (const int32_t index = GetFocusedVisibleHeaderIndex(); index >= 0)
+    {
+        m_currentCellColumn = index;
+    }
+}
+
+// Bare Left/Right on a focused header steps one header, clamping at the band's ends.
+//
+// Like the cell move, this is an idempotent RE-ASSERT computed from the PRE-KEY anchor captured in
+// PreviewKeyDown, not a blind step from live focus: XAML's built-in directional navigation may
+// already have moved header focus before this bubbling handler runs, and stepping again from there
+// would skip a column. Applied only when focus is not already on the target.
+bool TableView::TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Handled())
+    {
+        return false;
+    }
+
+    // Alt is the resize chord and Ctrl is not a header gesture; neither navigates.
+    if (IsKeyDown(winrt::VirtualKey::Menu) || IsKeyDown(winrt::VirtualKey::Control))
+    {
+        return false;
+    }
+
+    const auto key = args.Key();
+    const bool isLeft = key == winrt::Windows::System::VirtualKey::Left;
+    const bool isRight = key == winrt::Windows::System::VirtualKey::Right;
+    if (!isLeft && !isRight)
+    {
+        return false;
+    }
+
+    auto const host = m_headerHost.get();
+    if (!host)
+    {
+        return false;
+    }
+
+    auto const cells = GetVisibleHeaderCells(host);
+    const int32_t count = static_cast<int32_t>(cells.size());
+    if (count <= 0)
+    {
+        return false;
+    }
+
+    const int32_t liveIndex = GetFocusedVisibleHeaderIndex();
+
+    // Anchor on the header focus was on BEFORE the key; fall back to live focus when the snapshot
+    // is stale (no routed snapshot ran, or the band was rebuilt under it).
+    int32_t currentIndex = m_navAnchorHeaderColumn;
+    if (currentIndex < 0 || currentIndex >= count)
+    {
+        currentIndex = liveIndex;
+    }
+    if (currentIndex < 0)
+    {
+        // Focus is not on the header band; this is not a header gesture.
+        return false;
+    }
+
+    // RTL mirrors the arrows exactly as the cell move does: Right means "towards the row end" in
+    // reading order. Same expression, so the two bands can never disagree.
+    const bool isRtl = FlowDirection() == winrt::FlowDirection::RightToLeft;
+    const bool forward = isRight != isRtl;
+    const int32_t step = forward ? 1 : -1;
+    const int32_t targetIndex = std::clamp(currentIndex + step, 0, count - 1);
+
+    if (liveIndex != targetIndex)
+    {
+        FocusVisibleHeaderFrom(targetIndex, targetIndex == currentIndex ? 0 : step);
+    }
+
+    // Consumed even at a bound and even when focus refused: letting Left on the first header or
+    // Right on the last fall through to directional focus navigation would walk focus straight out
+    // of the table, which is the escape the cell cursor already blocks at its own bounds.
+    args.Handled(true);
+    return true;
+}
+
+// Up/Down on a focused header are clamped inside the band: the header band and the body are
+// separate tab stops, and Tab is the only way between them.
+//
+// Consumed rather than left to fall through, following the same precedent the cell cursor uses at
+// its horizontal bounds: an unconsumed arrow reaches directional focus navigation, which would
+// walk focus out of the band - and, before the band had its own vertical handling, reached ROW
+// navigation, which read "focus is not on a row" as "enter the table" and jumped into row 0.
+bool TableView::TryHandleHeaderVerticalKey(const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Handled())
+    {
+        return false;
+    }
+
+    if (IsKeyDown(winrt::VirtualKey::Menu))
+    {
+        return false;
+    }
+
+    const auto key = args.Key();
+    if (key != winrt::Windows::System::VirtualKey::Down &&
+        key != winrt::Windows::System::VirtualKey::Up)
+    {
+        return false;
+    }
+
+    int32_t headerIndex = m_navAnchorHeaderColumn;
+    if (headerIndex < 0)
+    {
+        headerIndex = GetFocusedVisibleHeaderIndex();
+    }
+    if (headerIndex < 0)
+    {
+        // Focus is not on the header band; this is not a header gesture.
+        return false;
+    }
 
     args.Handled(true);
     return true;
@@ -347,8 +698,12 @@ void TableView::OnPreviewKeyDownForNavigation(
         m_navAnchorCellRow = -1;
         m_navAnchorCellColumn = -1;
         TryGetFocusedCell(m_navAnchorCellRow, m_navAnchorCellColumn, true /* requireExactCell */);
+        // The header band needs the same pre-key snapshot as the cell grid: the arrows now
+        // navigate it, and built-in directional navigation can move header focus first.
+        m_navAnchorHeaderColumn = GetFocusedVisibleHeaderIndex();
         break;
     default:
+        m_navAnchorHeaderColumn = -1;
         break;
     }
 }
@@ -381,8 +736,21 @@ void TableView::OnKeyDownForNavigation(
     }
 
     // Column resize from a focused header: after the editing guard, so an open editor keeps its
-    // arrow keys, and before row navigation, since the header band is not part of it.
+    // arrow keys. Alt+Left/Alt+Right only, so it cannot shadow the bare arrows below.
     if (TryHandleHeaderColumnResizeKey(args))
+    {
+        return;
+    }
+
+    // The header band is a band of its own: bare Left/Right step between headers, Up/Down are
+    // clamped inside it. Before sort, so an arrow cannot reach the sort gesture, and before row
+    // navigation, whose row cursor has no meaning while focus is on a header.
+    if (TryHandleHeaderNavigationKey(args))
+    {
+        return;
+    }
+
+    if (TryHandleHeaderVerticalKey(args))
     {
         return;
     }

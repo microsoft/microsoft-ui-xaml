@@ -162,8 +162,10 @@ void TableViewRow::OnApplyTemplate()
 
     if (host)
     {
-        // Scoped on the row's own cells host, not on the TableViewCellsPanel type: the same type is
-        // PART_HeaderHost, which must keep one tab stop per actionable header.
+        // Scoped on the row's own cells host. TableView::OnApplyTemplate applies the same scope to
+        // PART_HeaderHost, which is the same type: both bands are one tab stop each, and arrows
+        // move within them. Set at the two hosts rather than in the TableViewCellsPanel
+        // constructor, so the shared layout primitive stays free of focus policy.
         host.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
     }
 
@@ -336,15 +338,66 @@ bool TableViewRow::FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::F
         }
     }
 
-    return Focus(state);
+    return FocusFallbackCellInternal(state);
+}
+
+// Focusing the ROW is no longer possible: the default style sets IsTabStop="False", and
+// CUIElement::IsFocusable requires IsTabStop even for a programmatic Focus(). Every old
+// "fall back to the container" path therefore has to fall back to a CELL of this row.
+//
+// Passing self as the entry origin makes ResolveFocusEntryCell treat the move as coming from
+// within the table, which pins it to THIS row and reuses the clamped remembered column - exactly
+// the semantics OnRowGettingFocus already applied to a pointer press.
+bool TableViewRow::FocusFallbackCellInternal(winrt::FocusState state)
+{
+    auto const owner = GetOwningTableView();
+    if (!owner)
+    {
+        return false;
+    }
+
+    winrt::DependencyObject const selfObject = *this;
+    if (auto const target = winrt::get_self<TableView>(owner)->ResolveFocusEntryCell(*this, selfObject))
+    {
+        return target.Focus(state);
+    }
+    return false;
 }
 
 void TableViewRow::OnRowGettingFocus(
     const winrt::UIElement& /*sender*/,
     const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args)
 {
-    winrt::TableViewRow const self = *this;
-    if (args.NewFocusedElement() != self.try_as<winrt::DependencyObject>())
+    winrt::DependencyObject const selfObject = *this;
+    auto const newFocus = args.NewFocusedElement();
+    if (!newFocus)
+    {
+        return;
+    }
+
+    // The row container is no longer focusable (IsTabStop="False"), so a Tab entry aims at a CELL,
+    // not at the row. Accept either: the row itself (a host that re-templates the row focusable
+    // again, and the group-header-less legacy path) or anything inside this row. GettingFocus
+    // bubbles, so the row's handler already sees focus aimed at its own descendants.
+    const bool aimedAtThisRow =
+        newFocus == selfObject ||
+        SharedHelpers::IsAncestor(newFocus, selfObject, false /* checkVisibility */);
+    if (!aimedAtThisRow)
+    {
+        return;
+    }
+
+    auto const direction = args.Direction();
+    const bool isTabEntry =
+        direction == winrt::FocusNavigationDirection::Next ||
+        direction == winrt::FocusNavigationDirection::Previous;
+
+    // Only a TAB entry needs resolving. Every other move that aims inside the row already names
+    // the exact cell it wants - arrow navigation between rows, an edit-close restore, a pointer
+    // press on a specific cell - and redirecting those would move the user to a column they did
+    // not ask for. (Focus aimed at the row container is still resolved whatever the direction,
+    // because a bare container target names no cell at all.)
+    if (!isTabEntry && newFocus != selfObject)
     {
         return;
     }
@@ -365,36 +418,36 @@ void TableViewRow::OnRowGettingFocus(
     }
 
     // Focus leaving this row must not be pulled back into a cell, or Tab can never exit the table.
-    // Only focus arriving from outside the row is an entry that wants a cell.
-    auto const direction = args.Direction();
+    // Only focus arriving from outside the row is an entry that wants a cell. This is also what
+    // lets Tab move from a cell into in-cell interactive content without being yanked back.
     auto const oldFocus = args.OldFocusedElement();
-    winrt::DependencyObject const selfObject = *this;
-    if ((direction == winrt::FocusNavigationDirection::Next ||
-         direction == winrt::FocusNavigationDirection::Previous) &&
+    if (isTabEntry &&
         (oldFocus == selfObject || SharedHelpers::IsAncestor(oldFocus, selfObject, false /* checkVisibility */)))
     {
         return;
     }
 
     // A pointer press names the row under the pointer. PART_CellsHost is left-aligned, so a press
-    // to the right of the last column resolves no cell and TableViewRow::OnPointerPressed falls
-    // back to focusing the row container, which arrives here. The remembered-cursor restore below
-    // is for focus ENTERING the table by keyboard or programmatically; applying it to a press would
-    // pull focus to the remembered row instead of the row that was clicked. Reporting this row as
-    // the entry origin keeps the column restore while pinning the row to the pressed one.
+    // to the right of the last column resolves no cell; OnPointerPressed now resolves that case
+    // itself through FocusFallbackCellInternal, but a host that re-templates the row focusable can
+    // still route a press here. The remembered-cursor restore below is for focus ENTERING the
+    // table by keyboard or programmatically; applying it to a press would pull focus to the
+    // remembered row instead of the row that was clicked. Reporting this row as the entry origin
+    // keeps the column restore while pinning the row to the pressed one.
     auto const entryOrigin = args.FocusState() == winrt::FocusState::Pointer
-        ? self.try_as<winrt::DependencyObject>()
-        : args.OldFocusedElement();
+        ? selfObject
+        : oldFocus;
 
     auto const target = ownerImpl->ResolveFocusEntryCell(*this, entryOrigin);
-    if (!target)
+    if (!target || target.try_as<winrt::DependencyObject>() == newFocus)
     {
+        // Already aimed at the cell we would have chosen; nothing to redirect.
         return;
     }
 
     // TrySetNewFocusedElement is refused during some focus operations (a programmatic move already
-    // in flight, for one). Failing is fine - focus simply stays on the row, which is what this
-    // control did before cell focus existed.
+    // in flight, for one). Failing is fine - focus simply stays on the element XAML aimed at,
+    // which is still a cell of this row.
     args.TrySetNewFocusedElement(target);
 }
 
@@ -622,12 +675,16 @@ void TableViewRow::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
     {
         if (!pressedCell.Focus(winrt::FocusState::Pointer))
         {
-            Focus(winrt::FocusState::Pointer);
+            FocusFallbackCellInternal(winrt::FocusState::Pointer);
         }
     }
     else
     {
-        Focus(winrt::FocusState::Pointer);
+        // A press right of the last column resolves no cell. Focusing the row is not an option any
+        // more, so land on this row's remembered cell - which is what OnRowGettingFocus used to do
+        // for a pointer press, and keeps the press pinned to the row the user actually hit rather
+        // than teleporting focus to the remembered row somewhere else in the table.
+        FocusFallbackCellInternal(winrt::FocusState::Pointer);
     }
 
     m_selectOnPointerRelease = true;
@@ -1413,7 +1470,7 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
 
             if (!cellWrapper.Focus(restoreState))
             {
-                Focus(restoreState);
+                FocusFallbackCellInternal(restoreState);
             }
         }
     }

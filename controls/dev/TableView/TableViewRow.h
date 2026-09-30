@@ -66,9 +66,13 @@ public:
 
     winrt::UIElement FindOwnCellInternal(const winrt::DependencyObject& element, bool requireExact) const;
 
-    // Moves keyboard focus to the cell at a visible-column index. Falls back to the row when the
-    // row has no such cell, so a row with no columns is still reachable.
+    // Moves keyboard focus to the cell at a visible-column index. Falls back to the row's
+    // remembered cell when the row has no such cell; the row CONTAINER is never a focus target.
     bool FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::FocusState state);
+    // The row container is not focusable (IsTabStop=False in the default style), so every path
+    // that used to fall back to Focus() on the row must land on one of its CELLS instead, or it
+    // silently focuses nothing. Resolves the row's remembered column, clamped.
+    bool FocusFallbackCellInternal(winrt::FocusState state);
 
     void RefreshFrozenColumnLayout(double horizontalOffset, double leadingFrozenWidth);
     void RefreshDensity();

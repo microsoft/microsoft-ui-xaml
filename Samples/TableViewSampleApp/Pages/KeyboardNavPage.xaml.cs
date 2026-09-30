@@ -36,12 +36,16 @@ namespace TableViewSampleApp.Pages;
 ///
 /// Behaviour the page documents (verified against the live control, so the copy
 /// must not drift from it):
-///   * Focus is ROW-scoped. Cells are not keyboard focusable and cannot be
-///     given focus programmatically.
-///   * Up / Down / Home / End / PageUp / PageDown move the focused row;
-///     Left / Right do nothing. There is no spreadsheet-style cell navigation.
-///   * Clicking a cell focuses that cell's whole row.
-///   * In Single selection mode focus and selection move together.
+///   * Focus is CELL-scoped. Cells are keyboard focusable and name themselves
+///     "{column}, {value}".
+///   * Left / Right step between cells in a row; Up / Down move between rows and
+///     keep the focused column; Home / End jump to the first and last cell in the
+///     row; Ctrl+Home / Ctrl+End jump to the first and last cell in the table.
+///   * The table body is a single tab stop, so Tab enters it once and then leaves.
+///   * Clicking a cell focuses that cell.
+///   * Selection stays row-scoped: a vertical arrow moves focus and selection
+///     together in Single selection mode, while Left / Right raise no selection
+///     change.
 ///   * Column headers are focusable and Enter toggles sort, which raises a UIA
 ///     notification.
 /// </summary>
