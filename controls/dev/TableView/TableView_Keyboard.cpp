@@ -119,7 +119,17 @@ namespace
 // handler: a pointer resize was otherwise completely silent to assistive technology.
 void TableView::AnnounceColumnWidth(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column)
 {
-    AnnounceColumnWidthOn(announcer, column);
+    // FromElement never creates a peer. During a keyboard resize the header cell is focused so one
+    // exists, but a pointer drag needs no focus, so fall back to the table's own peer.
+    if (auto const element = announcer.try_as<winrt::UIElement>();
+        element && winrt::FrameworkElementAutomationPeer::FromElement(element))
+    {
+        AnnounceColumnWidthOn(announcer, column);
+    }
+    else
+    {
+        AnnounceColumnWidthOn(*this, column);
+    }
 }
 
 // Left/Right resizes the column whose header has focus; Shift takes the large step, and Ctrl is

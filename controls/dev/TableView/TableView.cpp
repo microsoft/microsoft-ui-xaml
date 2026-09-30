@@ -2067,6 +2067,7 @@ void TableView::AppendResizeGripperVisual(
         // Before the guard below: a stale didWrite would revert to the previous drag's start width.
         state->didWrite = false;
         state->didDelta = false;
+        state->frozen.clear();
 
         // One resize at a time. Manipulation arbitrates per element, so a second contact on a
         // DIFFERENT gripper would otherwise run a concurrent drag that Escape could not reach.
@@ -2088,7 +2089,11 @@ void TableView::AppendResizeGripperVisual(
         if (auto const col = weakColumn.get())
         {
             state->startValue = col.ActualWidth();
-            state->startWidth = col.Width();
+            state->startWidth = col.ReadLocalValue(winrt::TableViewColumn::WidthProperty());
+            if (strongThis)
+            {
+                state->bounds = strongThis->ResizeBoundsForColumn(col);
+            }
         }
 
         // Published so Escape can find the gesture in flight; the gripper owns everything else
@@ -2101,7 +2106,7 @@ void TableView::AppendResizeGripperVisual(
     });
 
     gripperVisual.DragDelta(
-        [weakColumn, state](winrt::ResizeGripper const&, winrt::ResizeGripperDragDeltaEventArgs const& vargs)
+        [weakColumn, weakThis, state](winrt::ResizeGripper const&, winrt::ResizeGripperDragDeltaEventArgs const& vargs)
     {
         auto const col = weakColumn.get();
         if (!col)
@@ -2110,24 +2115,39 @@ void TableView::AppendResizeGripperVisual(
         }
 
         state->didDelta = true;
-
         // std::max mirrors TableViewColumn::UpdateActualWidth, so a column whose MaxWidth is below
         // its MinWidth cannot make Width and ActualWidth disagree.
-        const double lo = (std::isfinite(col.MinWidth()) && col.MinWidth() >= 0.0) ? col.MinWidth() : 0.0;
-        const double hi = (std::isfinite(col.MaxWidth()) && col.MaxWidth() >= 0.0)
+        double lo = (std::isfinite(col.MinWidth()) && col.MinWidth() >= 0.0) ? col.MinWidth() : 0.0;
+        double hi = (std::isfinite(col.MaxWidth()) && col.MaxWidth() >= 0.0)
             ? std::max(lo, col.MaxWidth())
             : std::numeric_limits<double>::infinity();
 
+        // The upper bound never falls below the width the drag started from, so a table that
+        // already overflows can still shrink.
+        lo = std::max(lo, state->bounds.Min);
+        hi = std::max(lo, std::min(hi, std::max(state->startValue, state->bounds.Max)));
+
         const double next = std::clamp(state->startValue + vargs.TotalDelta(), lo, hi);
 
-        // Pinned at a bound the pointer keeps moving but the width does not: writing anyway would
-        // re-run measure and every cell panel on each move.
-        if (auto const current = col.Width();
-            current.GridUnitType == winrt::GridUnitType::Pixel && std::abs(current.Value - next) < 0.0001)
+        // Pinned at a bound the pointer keeps moving but the width does not. Writing anyway would
+        // re-run measure, and on a Star column it would also latch the width to pixels.
+        auto const current = col.Width();
+        const double currentValue =
+            current.GridUnitType == winrt::GridUnitType::Pixel ? current.Value : col.ActualWidth();
+        if (std::abs(currentValue - next) < 0.0001)
         {
             return;
         }
 
+        auto const columnImpl = winrt::get_self<TableViewColumn>(col);
+        if (!state->didWrite)
+        {
+            if (auto const strongThis = weakThis.get())
+            {
+                strongThis->FreezeColumnsBeforeResize(col, state->frozen);
+            }
+        }
+        auto const resizeScope = columnImpl->BeginUserResizeScope();
         col.Width(winrt::GridLengthHelper::FromPixels(next));
         state->didWrite = true;
     });
@@ -2154,9 +2174,19 @@ void TableView::AppendResizeGripperVisual(
         {
             // Only when a write actually happened, so a press that never moved cannot pin an
             // Auto/Star column.
+            // Non-empty only when a freeze actually ran, so this needs no didWrite gate: a write
+            // that threw after freezing would otherwise strand the predecessors as pixels.
+            for (auto const& entry : state->frozen)
+            {
+                if (auto const frozenCol = entry.column.get())
+                {
+                    TableView::RestoreColumnWidth(frozenCol, entry.width);
+                }
+            }
+
             if (state->didWrite && col)
             {
-                col.Width(state->startWidth);
+                TableView::RestoreColumnWidth(col, state->startWidth);
             }
             return;
         }

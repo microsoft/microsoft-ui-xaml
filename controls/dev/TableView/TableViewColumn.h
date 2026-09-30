@@ -80,12 +80,24 @@ public:
     void ResetDesiredWidthInternal();
     double DesiredWidthInternal() const noexcept { return m_desiredWidth; }
 
+    // Internal - resize: the width the app authored. A user resize rewrites Width as pixels, and
+    // the layout needs the original mode to know whether the table is meant to fit its viewport.
+    winrt::GridLength AuthoredWidthInternal() const noexcept { return m_authoredWidth; }
+    // Width written inside this scope is the control resizing, not the app re-authoring the column.
+    [[nodiscard]] auto BeginUserResizeScope()
+    {
+        m_inUserResize = true;
+        return gsl::finally([this]() { m_inUserResize = false; });
+    }
+
 private:
     // Write the resolved, clamped width into the read-only ActualWidth DP.
     void UpdateActualWidth();
 
     // Monotonic max of pulled realized-cell measured widths for an Auto column (0 until first pull).
     double m_desiredWidth{ 0.0 };
+    winrt::GridLength m_authoredWidth{ c_widthDefault };
+    bool m_inUserResize{ false };
 
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_cellToolTipBinding{ this };
 
