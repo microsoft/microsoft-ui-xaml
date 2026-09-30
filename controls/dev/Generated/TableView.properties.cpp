@@ -115,7 +115,7 @@ void TableViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TableViewGridLinesVisibility>(),
                 winrt::name_of<winrt::TableView>(),
                 false /* isAttached */,
-                ValueHelper<winrt::TableViewGridLinesVisibility>::BoxValueIfNecessary(winrt::TableViewGridLinesVisibility::None),
+                ValueHelper<winrt::TableViewGridLinesVisibility>::BoxValueIfNecessary(winrt::TableViewGridLinesVisibility::All),
                 winrt::PropertyChangedCallback(&OnGridLinesVisibilityPropertyChanged));
     }
     if (!s_GroupHeaderTemplateProperty)

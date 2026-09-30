@@ -142,9 +142,6 @@ public:
     // Density resources fall back to Standard defaults; rows and columns call these via get_self.
     double GetDensityRowMinHeight();
     double GetDensityHeaderMinHeight();
-    // Contrast themes flatten banding to the window colour, leaving rules as the only row
-    // separation, so they are forced on there.
-    winrt::TableViewGridLinesVisibility EffectiveGridLinesVisibility();
     winrt::Thickness GetDensityCellPadding();
     winrt::Thickness GetDensityHeaderCellPadding();
     double GetCellFontSize();

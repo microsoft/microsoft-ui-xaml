@@ -19,7 +19,6 @@
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceRowForegroundBrush}" />
-        <Setter Property="AlternatingRowBackground" Value="{ThemeResource TabularSurfaceRowBackgroundAlternatingBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceVerticalGridLineBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />

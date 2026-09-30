@@ -148,17 +148,16 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
-`GridLinesVisibility` controls gridlines and defaults to `None`: the default table is banded
-and ungridded.
+`GridLinesVisibility` controls gridlines and defaults to `All`, matching WPF `DataGrid`, whose
+enum this mirrors. Row banding is opt-in: set `AlternatingRowBackground` to switch it on.
 `Density` controls row and cell spacing. Column headers are shorter than body rows:
 `TableViewHeaderMinHeight` resolves 32 / 26 / 40 for Standard / Compact / Comfortable, against
 `TableViewRowMinHeight` at 40 / 30 / 48. Both keys are app-overridable. Built-in header and
 text-cell content remains vertically centered.
 
-Local property values override the style. To retain an unbanded grid, set
-`GridLinesVisibility="All"` and `AlternatingRowBackground="{x:Null}"`. Set a local
-`RowBackground` as well to provide a uniform custom fill. Custom cell templates continue to
-control their own content alignment.
+To get the design's banded treatment, set `AlternatingRowBackground` and
+`GridLinesVisibility="None"`. Set a local `RowBackground` as well to provide a uniform custom
+fill. Custom cell templates continue to control their own content alignment.
 
 ```xaml
 <tabular:TableView
@@ -417,7 +416,7 @@ Template parts:
 | `ItemsSource` | `Object` | `null` | Source collection for table rows. |
 | `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
 | `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
-| `GridLinesVisibility` | `TableViewGridLinesVisibility` | `None` | Controls horizontal and vertical gridlines. |
+| `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls horizontal and vertical gridlines. |
 | `Density` | `TableViewDensity` | `Standard` | Controls row/cell spacing. |
 | `RowBackground` | `Brush` | `null` | Background brush for rows. |
 | `AlternatingRowBackground` | `Brush` | `TabularSurfaceRowBackgroundAlternatingBrush` in the default style; `null` in DP metadata | Alternating row background. A local `null` disables default banding. |

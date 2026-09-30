@@ -249,11 +249,6 @@ namespace
 
 }
 
-winrt::TableViewGridLinesVisibility TableView::EffectiveGridLinesVisibility()
-{
-    return IsHighContrast() ? winrt::TableViewGridLinesVisibility::All : GridLinesVisibility();
-}
-
 winrt::Brush TableView::GetGridLineBrush()
 {
     return ResolveGridLineBrush(this, GetResourceCacheInternal().gridLine, L"TabularSurfaceGridLineBrush", 0x1a);
@@ -810,7 +805,7 @@ void TableView::ApplyGridLinesToHeader()
 {
     // The header's bottom rule is owned by the template: the design draws it even on the
     // ungridded default table, so it is structural rather than a grid line.
-    const bool wantVertical = WantsVerticalLines(EffectiveGridLinesVisibility());
+    const bool wantVertical = WantsVerticalLines(GridLinesVisibility());
     for (auto const& weakSeparator : m_headerGridLines)
     {
         if (auto separator = weakSeparator.get())
@@ -1515,7 +1510,7 @@ void TableView::RebuildHeaders()
     // Cache theme-resource padding once per header rebuild; values are stable for the pass.
     winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
     const double cachedHeaderMinHeight = GetDensityHeaderMinHeight();
-    const bool wantVerticalHeaderLines = WantsVerticalLines(EffectiveGridLinesVisibility());
+    const bool wantVerticalHeaderLines = WantsVerticalLines(GridLinesVisibility());
     const auto cachedHeaderGridLineBrush = GetVerticalGridLineBrush();
     const double cachedHeaderFontSize = GetHeaderFontSize();
     const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };

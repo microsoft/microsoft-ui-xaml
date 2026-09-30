@@ -870,7 +870,7 @@ void TableViewRow::RefreshGridLines()
         return;
     }
 
-    const auto visibility = winrt::get_self<TableView>(owner)->EffectiveGridLinesVisibility();
+    const auto visibility = owner.GridLinesVisibility();
     if (WantsHorizontalLines(visibility))
     {
         ClearValue(winrt::Control::BorderThicknessProperty());
@@ -934,20 +934,12 @@ void TableViewRow::RefreshRowBackground()
         }
         if (rowIndex >= 0)
         {
-            // A style-supplied band must not repaint over an app-supplied RowBackground: banding is
-            // the default, but an app that sets only RowBackground is asking for a uniform fill.
-            const auto alternating = owner.AlternatingRowBackground();
-            const bool bandingIsAppOwned =
-                owner.ReadLocalValue(winrt::TableView::AlternatingRowBackgroundProperty()) != winrt::DependencyProperty::UnsetValue();
-            const bool baseIsAppOwned =
-                owner.ReadLocalValue(winrt::TableView::RowBackgroundProperty()) != winrt::DependencyProperty::UnsetValue();
-
             // Group headers count toward the repeater index, so banding parity does not restart
             // per group. Tracked as an open design question, not a code defect.
             auto background = owner.RowBackground();
-            if ((rowIndex % 2) == 0 && alternating != nullptr && (bandingIsAppOwned || !baseIsAppOwned))
+            if ((rowIndex % 2) == 0 && owner.AlternatingRowBackground() != nullptr)
             {
-                background = alternating;
+                background = owner.AlternatingRowBackground();
             }
             if (background)
             {
