@@ -10,7 +10,7 @@
 
     <controls:SamplePresenter
         Header="Cell editing"
-        Description="Built-in in-place editing of TableViewTextColumn cells. Set TableView.IsReadOnly = false, then double-tap a cell (or press F2 on the focused row) to edit it in place; Enter or Tab commits the edit back to the bound model, Esc cancels. This is the framework editing path — unlike the Density &amp; read-only page, no editable TextBox template cells are needed: the plain text columns become editable on their own. Every committed edit writes straight to the Person model (INotifyPropertyChanged), shown live in the edit log."
+        Description="Built-in in-place editing of TableViewTextColumn cells. Set TableView.IsReadOnly = false, then double-tap a cell (or press F2 on a focused cell) to edit it in place; Enter or Tab commits the edit back to the bound model, Esc cancels. This is the framework editing path — unlike the Density &amp; read-only page, no editable TextBox template cells are needed: the plain text columns become editable on their own. Every committed edit writes straight to the Person model (INotifyPropertyChanged), shown live in the edit log."
         StretchExample="True">
 
         <controls:SamplePresenter.Example>

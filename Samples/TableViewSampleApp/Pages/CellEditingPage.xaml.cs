@@ -15,7 +15,7 @@ namespace TableViewSampleApp.Pages;
 /// <summary>
 /// Demonstrates the control's built-in in-place cell editing. When
 /// <c>TableView.IsReadOnly</c> is <c>false</c>, a <c>TableViewTextColumn</c>
-/// cell enters edit on double-tap (or F2 on the focused row); Enter / Tab
+/// cell enters edit on double-tap (or F2 on a focused cell); Enter / Tab
 /// commit the edited value back to the bound model and Esc cancels.
 ///
 /// Unlike <see cref="DensityReadOnlyPage"/> — which hosts editable TextBox
