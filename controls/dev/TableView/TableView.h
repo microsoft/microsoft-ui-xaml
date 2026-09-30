@@ -14,6 +14,7 @@
 #include "TableView.g.h"
 #include "TableView.properties.h"
 #include "TableViewRowInfo.h"
+#include "TableViewTelemetry.h"
 
 // ThemeSettings (Microsoft.UI.System) is used below for UI-thread High Contrast change notifications.
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
@@ -602,6 +603,31 @@ private:
         winrt::TableViewColumn const& column) const;
 
 private:
+    void BeginInitializationTelemetry(TableViewTelemetry::Origin origin) noexcept;
+    void QueueTelemetryLayout() noexcept;
+    void StopTelemetryLayout() noexcept;
+    void OnTelemetryLayout();
+    void WatchTelemetrySourceChanges();
+    void WatchTelemetryVisualProperty(winrt::DependencyObject const& object, winrt::DependencyProperty const& property);
+    bool TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& configuration);
+    uint64_t BeginOperationTelemetry(TableViewTelemetry::Operation operation) noexcept;
+    void EndOperationTelemetry() noexcept;
+    void InvalidateOperationTelemetry() noexcept;
+    void FailOperationTelemetry(TableViewTelemetry::Operation operation, uint64_t generation, TableViewTelemetry::Stage stage) noexcept;
+
+    TableViewTelemetry::State m_telemetry;
+    winrt::event_token m_telemetryLayoutToken{};
+    winrt::ItemsSourceView::CollectionChanged_revoker m_telemetrySourceChangedRevoker{};
+    struct TelemetryVisualWatch
+    {
+        winrt::weak_ref<winrt::DependencyObject> object{ nullptr };
+        winrt::DependencyProperty property{ nullptr };
+        std::optional<int64_t> token;
+    };
+    std::vector<TelemetryVisualWatch> m_telemetryVisualWatches;
+    uint64_t m_telemetryLayoutGeneration{};
+    uint32_t m_telemetryMutationDepth{};
+
     void OnColumnsVectorChanged(
         const winrt::IObservableVector<winrt::TableViewColumn>& sender,
         const winrt::IVectorChangedEventArgs& args);

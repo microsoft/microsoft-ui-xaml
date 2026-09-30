@@ -118,9 +118,19 @@ namespace
 
 winrt::Size TableView::MeasureOverride(winrt::Size const& availableSize)
 {
-    auto desired = __super::MeasureOverride(availableSize);
-    ResolveColumnWidths();
-    return desired;
+    try
+    {
+        auto desired = __super::MeasureOverride(availableSize);
+        ResolveColumnWidths();
+        QueueTelemetryLayout();
+        return desired;
+    }
+    catch (...)
+    {
+        FailOperationTelemetry(TableViewTelemetry::Operation::Layout,
+            m_telemetry.operationGeneration, TableViewTelemetry::Stage::Layout);
+        throw;
+    }
 }
 
 // Requested from a cell panel's MeasureOverride when a realized cell's own measured width changed

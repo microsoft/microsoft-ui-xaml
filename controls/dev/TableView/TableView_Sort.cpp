@@ -630,6 +630,17 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         return;
     }
 
+    auto const telemetryGeneration = BeginOperationTelemetry(TableViewTelemetry::Operation::Sort);
+    bool completed = false;
+    auto telemetryCompletion = wil::scope_exit([this, telemetryGeneration, &completed]() noexcept
+    {
+        if (!completed)
+        {
+            FailOperationTelemetry(TableViewTelemetry::Operation::Sort, telemetryGeneration, TableViewTelemetry::Stage::Sort);
+        }
+        EndOperationTelemetry();
+    });
+
     // Reshapes through whichever source is active. A cancelled Sorting never reaches this point,
     // so anything that does gets both the reshape and the published state.
     const auto requestedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
@@ -638,6 +649,10 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     // afterwards so the selection follows the row rather than the slot.
     const auto preservedSelection = SelectedItemInternal();
     const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection);
+    if (!reshaped && telemetryGeneration == m_telemetry.operationGeneration)
+    {
+        TableViewTelemetry::CompleteOperation(m_telemetry, TableViewTelemetry::Result::Cancelled);
+    }
 
     if (reshaped && preservedSelection)
     {
@@ -697,6 +712,7 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
 
     // The chevrons are already current: SetSortStateInternal republished them through
     // RefreshSortIndicators as each column's DP was written.
+    completed = true;
 }
 
 void TableView::QueueReconcileSortStateWithSource()
