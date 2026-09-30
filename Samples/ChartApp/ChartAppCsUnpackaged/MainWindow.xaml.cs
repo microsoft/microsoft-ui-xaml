@@ -36,11 +36,12 @@ namespace ChartsSample
         private bool _closing;
         private bool _allowClose;
 
-        public MainWindow()
+        public MainWindow(string variant)
         {
             InitializeComponent();
             _appWindow = AppWindow;
-            _appWindow.Resize(new SizeInt32(820, 900));
+            _appWindow.Resize(new SizeInt32(1280, 900));
+            VariantText.Text = variant;
 
             Month.ItemsSource = _months;
             Profit.ItemsSource = _profit;
@@ -65,6 +66,7 @@ namespace ChartsSample
             CreateCodeChart();
             CreateDateTimeCharts();
             _ready = true;
+            ScenarioNavigation.SelectedItem = NavLine;
             Synchronize(SyncPresentationKnobs);
             Synchronize(SyncAxes);
             UpdateDataText();
@@ -184,9 +186,13 @@ namespace ChartsSample
         private void UpdateDataText()
         {
             var text = new StringBuilder();
+            var areaText = new StringBuilder();
+            var barText = new StringBuilder();
             for (int i = 0; i < _months.Count; i++)
             {
                 text.AppendLine($"{_months[i]}: profit {_profit[i]:0}, expenses {_expenses[i]:0}, area {_area[i]:0}, bars {_bars[i]:0}");
+                areaText.AppendLine($"{_months[i]}: {_area[i]:0}");
+                barText.AppendLine($"{_months[i]}: {_bars[i]:0}");
             }
             text.AppendLine("Code-created line:");
             for (int i = 0; i < _codeValues.Count; i++)
@@ -194,11 +200,79 @@ namespace ChartsSample
                 text.AppendLine($"{_codeCategories[i]}: {_codeValues[i]:0}");
             }
             DataText.Text = text.ToString();
+            AreaDataText.Text = areaText.ToString().TrimEnd();
+            BarDataText.Text = barText.ToString().TrimEnd();
         }
 
-        private void OnLightClick(object sender, RoutedEventArgs e) => RootGrid.RequestedTheme = ElementTheme.Light;
-        private void OnDarkClick(object sender, RoutedEventArgs e) => RootGrid.RequestedTheme = ElementTheme.Dark;
-        private void OnSystemClick(object sender, RoutedEventArgs e) => RootGrid.RequestedTheme = ElementTheme.Default;
+        private void OnThemeChoiceChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_ready) return;
+            RootGrid.RequestedTheme = ThemeChoice.SelectedIndex switch
+            {
+                1 => ElementTheme.Light,
+                2 => ElementTheme.Dark,
+                _ => ElementTheme.Default
+            };
+        }
+
+        private void OnScenarioSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            if (!_ready || args.SelectedItem is not NavigationViewItem item) return;
+            string scenario = item.Tag as string;
+            bool sharedLine = scenario is "line" or "axes" or "presentation";
+            LineScenario.Visibility = sharedLine ? Visibility.Visible : Visibility.Collapsed;
+            AreaScenario.Visibility = scenario == "area" ? Visibility.Visible : Visibility.Collapsed;
+            BarScenario.Visibility = scenario == "bar" ? Visibility.Visible : Visibility.Collapsed;
+            DateTimeScenario.Visibility = scenario == "datetime" ? Visibility.Visible : Visibility.Collapsed;
+            LiveScenario.Visibility = scenario == "live" ? Visibility.Visible : Visibility.Collapsed;
+            SeriesEditors.Visibility = scenario is "line" or "presentation" ? Visibility.Visible : Visibility.Collapsed;
+            PointOverrideEditors.Visibility = scenario == "presentation" ? Visibility.Visible : Visibility.Collapsed;
+            PresentationKnobStatusText.Visibility = scenario is "line" or "presentation" ? Visibility.Visible : Visibility.Collapsed;
+            AxisEditors.Visibility = scenario == "axes" ? Visibility.Visible : Visibility.Collapsed;
+            (ScenarioHeading.Text, ScenarioDescription.Text) = scenario switch
+            {
+                "area" => ("Area charts", "Explore six monthly values with a filled area series."),
+                "bar" => ("Bar charts", "Compare monthly values and switch the connected bar orientation."),
+                "datetime" => ("Date & time", "Explore daily and monthly timelines, intervals and date label formats."),
+                "axes" => ("Axes & ordering", "Adjust profit bounds, category ordering, ticks and grid lines."),
+                "presentation" => ("Labels & markers", "Customize series defaults and indexed point labels and markers."),
+                "live" => ("Live data", "Watch values update and exercise an independent secondary UI thread."),
+                _ => ("Line charts", "Compare monthly profit and expenses. Explore series defaults and the legend.")
+            };
+            ScenarioScroll.ChangeView(null, 0, null, true);
+            if (sender.IsLoaded && sender.DisplayMode != NavigationViewDisplayMode.Expanded)
+                sender.IsPaneOpen = false;
+        }
+
+        private void OnHeaderSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (ThemeChoice == null) return;
+            bool stacked = e.NewSize.Width < 640;
+            Grid.SetRow(ThemeChoice, stacked ? 1 : 0);
+            Grid.SetColumn(ThemeChoice, stacked ? 0 : 1);
+            Grid.SetColumnSpan(HeadingPanel, stacked ? 2 : 1);
+            ThemeChoice.HorizontalAlignment = stacked ? HorizontalAlignment.Left : HorizontalAlignment.Right;
+        }
+
+        private void OnEditorSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var grid = (Grid)sender;
+            int columns = e.NewSize.Width >= (grid == DateTimeScenario ? 900 : 600) ? 2 : 1;
+            int rows = (grid.Children.Count + columns - 1) / columns;
+            if (grid.ColumnDefinitions.Count == columns && grid.RowDefinitions.Count == rows) return;
+            grid.ColumnDefinitions.Clear();
+            grid.RowDefinitions.Clear();
+            for (int i = 0; i < columns; i++)
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            for (int i = 0; i < rows; i++)
+                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            for (int i = 0; i < grid.Children.Count; i++)
+            {
+                var field = (FrameworkElement)grid.Children[i];
+                Grid.SetRow(field, i / columns);
+                Grid.SetColumn(field, i % columns);
+            }
+        }
 
         private void OnToggleUpdatesClick(object sender, RoutedEventArgs e)
         {

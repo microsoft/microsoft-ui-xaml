@@ -363,6 +363,9 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         SyncPresentationKnobs();
         SyncAxisControls();
         UpdateDataText();
+        ScenarioNavigation().SelectedItem(NavLine());
+        AppWindow().Resize(Windows::Graphics::SizeInt32{ 1280, 900 });
+        ScenarioNavigation().IsPaneOpen(true);
 
         m_codeChartTimer = DispatcherTimer{};
         m_codeChartTimer.Interval(std::chrono::seconds{ 1 });
@@ -420,6 +423,7 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         auto line = LineSeries{};
         line.YValues(yValues);
         m_codeChart = Chart{};
+        m_codeChart.FontSize(14);
         m_codeChart.Series().Append(line);
         CodeChartHost().Child(m_codeChart);
 
@@ -489,6 +493,7 @@ namespace winrt::ChartAppCppUnpackaged::implementation
             auto yAxis = LinearAxis{};
             auto line = LineSeries{};
             line.Title(monthly ? L"Monthly value" : L"Daily value");
+            line.StrokeThickness(3);
             line.XValues(x);
             line.YValues(y);
             line.XAxis(xAxis);
@@ -501,6 +506,7 @@ namespace winrt::ChartAppCppUnpackaged::implementation
             targetLine.XAxis(xAxis);
             targetLine.YAxis(yAxis);
             auto chart = Chart{};
+            chart.FontSize(14);
             chart.ShowLegend(true);
             chart.Data().Append(x);
             chart.Data().Append(y);
@@ -662,6 +668,95 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         DtLabelFormatBoxA().Text(m_dtAxisA.LabelFormat());
         DtLabelFormatBoxB().Text(m_dtAxisB.LabelFormat());
         m_syncing = false;
+    }
+
+    void MainWindow::OnLayoutSizeChanged(IInspectable const&, SizeChangedEventArgs const& args)
+    {
+        if (!m_ready || m_closing) return;
+        auto width = args.NewSize().Width;
+        bool compact = width < 1000;
+        Grid::SetRow(ThemeChoice(), compact ? 2 : 0);
+        Grid::SetColumn(ThemeChoice(), compact ? 0 : 1);
+        ThemeChoice().HorizontalAlignment(compact ? HorizontalAlignment::Left : HorizontalAlignment::Right);
+        ScenarioHeader().ColumnSpacing(compact ? 0 : 24);
+        ScenarioContent().Padding(Thickness{ 24, width < 840 ? 56.0 : 24.0, 24, 24 });
+    }
+
+    void MainWindow::OnScenarioSelectionChanged(NavigationView const&, NavigationViewSelectionChangedEventArgs const& args)
+    {
+        if (!m_ready || m_closing) return;
+        auto item = args.SelectedItem().try_as<NavigationViewItem>();
+        if (!item) return;
+        auto tag = unbox_value<hstring>(item.Tag());
+        auto visible = [](bool selected) { return selected ? Visibility::Visible : Visibility::Collapsed; };
+        LineScenario().Visibility(visible(tag == L"line" || tag == L"axes" || tag == L"presentation"));
+        SeriesEditorPanel().Visibility(visible(tag == L"line" || tag == L"presentation"));
+        AxesEditorPanel().Visibility(visible(tag == L"axes"));
+        PresentationEditorPanel().Visibility(visible(tag == L"presentation"));
+        AreaScenario().Visibility(visible(tag == L"area"));
+        BarScenario().Visibility(visible(tag == L"bar"));
+        DateTimeScenario().Visibility(visible(tag == L"datetime"));
+        LiveScenario().Visibility(visible(tag == L"live"));
+
+        hstring heading{ L"Line charts" };
+        hstring description{ L"Compare monthly profit and expenses. Explore the legend and series defaults." };
+        if (tag == L"area")
+        {
+            heading = L"Area charts";
+            description = L"Explore a filled monthly trend created in markup.";
+        }
+        else if (tag == L"bar")
+        {
+            heading = L"Bar charts";
+            description = L"Compare monthly values and switch the connected series orientation.";
+        }
+        else if (tag == L"datetime")
+        {
+            heading = L"Date & time";
+            description = L"Explore daily and monthly timelines with date intervals and label formatting.";
+        }
+        else if (tag == L"axes")
+        {
+            heading = L"Axes & ordering";
+            description = L"Adjust bounds, category order, ticks and grid lines on the same monthly line chart.";
+        }
+        else if (tag == L"presentation")
+        {
+            heading = L"Labels & markers";
+            description = L"Make points stand out with series defaults, brushes and indexed overrides.";
+        }
+        else if (tag == L"live")
+        {
+            heading = L"Live data";
+            description = L"Watch observable data update and open an independent secondary UI thread.";
+        }
+        ScenarioHeading().Text(heading);
+        ScenarioDescription().Text(description);
+        ScenarioScroller().ChangeView(nullptr, 0.0, nullptr, true);
+        if (ScenarioNavigation().DisplayMode() != NavigationViewDisplayMode::Expanded)
+            ScenarioNavigation().IsPaneOpen(false);
+    }
+
+    void MainWindow::OnDateLayoutSizeChanged(IInspectable const&, SizeChangedEventArgs const& args)
+    {
+        if (!m_ready || m_closing) return;
+        bool wide = args.NewSize().Width >= 900;
+        DateTimeScenario().ColumnDefinitions().GetAt(1).Width(GridLength{ wide ? 1.0 : 0.0, GridUnitType::Star });
+        Grid::SetColumn(MonthlyDateCard(), wide ? 1 : 0);
+        Grid::SetRow(MonthlyDateCard(), wide ? 0 : 1);
+        Grid::SetColumnSpan(DateFormatHelp(), wide ? 2 : 1);
+        Grid::SetRow(DateFormatHelp(), wide ? 1 : 2);
+    }
+
+    void MainWindow::OnThemeChoiceChanged(IInspectable const&, SelectionChangedEventArgs const&)
+    {
+        if (!m_ready || m_closing) return;
+        switch (ThemeChoice().SelectedIndex())
+        {
+        case 1: OnLightClick(nullptr, nullptr); break;
+        case 2: OnDarkClick(nullptr, nullptr); break;
+        default: OnSystemClick(nullptr, nullptr); break;
+        }
     }
 
     void MainWindow::OnLightClick(IInspectable const&, RoutedEventArgs const&) { RootGrid().RequestedTheme(ElementTheme::Light); }

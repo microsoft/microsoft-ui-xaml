@@ -18,7 +18,7 @@ namespace ChartAppCsUnpackaged
                 return;
             }
 
-            m_window ??= new ChartsSample.MainWindow();
+            m_window ??= new ChartsSample.MainWindow("C# | Unpackaged");
             m_window.Activate();
         }
 

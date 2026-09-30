@@ -13,9 +13,10 @@ packaged and unpackaged forms.
 
 ## Using the sample
 
-The **Charts** page combines markup and code-created charts with live data and
-interactive presentation controls. The **DateTime** page demonstrates short and
-long time ranges.
+Use the left navigation to choose **Line**, **Area**, **Bar**, **Date & time**,
+**Axes & ordering**, **Labels & markers**, or **Live data**. Each page places
+the chart preview first, followed by its related controls and readable data.
+Navigation preserves the chart instances and the settings you have entered.
 
 | Area | Controls and scenarios |
 |---|---|
@@ -75,6 +76,24 @@ Open `ChartApp.sln` and select the desired startup project:
 | `ChartAppCsUnpackaged` | C# | Unpackaged |
 | `ChartAppCppPackaged` | C++/WinRT | Single-project MSIX |
 | `ChartAppCppUnpackaged` | C++/WinRT | Unpackaged |
+
+### Why four projects?
+
+This is one engineering sample with a two-language, two-deployment consumer
+matrix, not four different feature sets. C# and C++/WinRT exercise different
+language projections; packaged and unpackaged applications use different
+activation, resource and deployment paths. Keeping all four catches problems
+that one host shape alone would miss.
+
+The matrix predates this expansion. The repository's
+[TableView sample](../TableViewApp/TableViewApp.sln) uses the same four-project
+structure; its [introduction PR](https://github.com/microsoft/microsoft-ui-xaml/pull/11691)
+explicitly follows the ChartApp pattern. This is an existing consumer-sample
+precedent, not a requirement that every control have four sample applications.
+
+For exploring Chart features, start with `ChartAppCsUnpackaged`. The other
+projects demonstrate the same functionality through their respective host
+configurations.
 
 Each project merges `XamlControlsResources` and `XamlChartsResources` in
 `App.xaml`, followed by sample Light/Dark theme overrides. `MainWindow.xaml`

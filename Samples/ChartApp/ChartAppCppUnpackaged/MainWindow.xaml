@@ -6,178 +6,327 @@
     xmlns:charts="using:Microsoft.UI.Xaml.Controls.Charts"
     Title="Charts engineering sample">
     <!-- Keep themed backgrounds below the element whose RequestedTheme changes. -->
-    <Grid x:Name="RootGrid">
-        <Grid x:Name="ThemeRoot" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="24">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                <StackPanel Spacing="12" MinWidth="340" MaxWidth="1100" HorizontalAlignment="Stretch">
-                    <TextBlock Text="Charts engineering sample" FontSize="24" FontWeight="SemiBold" TextWrapping="Wrap" />
-                    <TextBlock Text="Explore observable data, series presentation, axes and dates. All data is synthetic. Readable data accompanies each chart." TextWrapping="Wrap" />
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button x:Name="LightButton" Content="Light" Click="OnLightClick" />
-                        <Button x:Name="DarkButton" Content="Dark" Click="OnDarkClick" />
-                        <Button x:Name="SystemButton" Content="System" Click="OnSystemClick" />
-                    </StackPanel>
-                    <StackPanel Spacing="8">
-                        <Button x:Name="UpdatesButton" Content="Pause updates" Click="OnToggleUpdatesClick" />
-                        <Button x:Name="SecondaryButton" Content="Toggle secondary UI thread" Click="OnToggleSecondaryClick" />
-                    </StackPanel>
-                    <TextBlock x:Name="StatusText" Text="Primary data updates once per second." TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
-                    <Pivot>
-                        <PivotItem Header="Charts">
-                            <StackPanel Spacing="12">
-                                <TextBlock Text="Line chart from markup" FontSize="20" FontWeight="SemiBold" />
-                                <charts:Chart x:Name="MarkupChart" Height="280" ShowLegend="True" LegendTitle="Monthly totals"
-                                              AutomationProperties.Name="Monthly profit and expenses, line chart"
-                                              AutomationProperties.HelpText="Six months of data are listed under Current data. Profit uses markers; expenses use a dashed line.">
-                                    <charts:Chart.Data>
-                                        <charts:Samples x:Name="Month" />
-                                        <charts:Samples x:Name="Profit" />
-                                        <charts:Samples x:Name="Expenses" />
-                                    </charts:Chart.Data>
-                                    <charts:LineSeries x:Name="ProfitSeries" Title="Monthly profit" StrokeThickness="3" ShowDataMarkers="True"
-                                                       XValues="{x:Bind Month, Mode=OneTime}" YValues="{x:Bind Profit, Mode=OneTime}" />
-                                    <charts:LineSeries x:Name="ExpensesSeries" Title="Monthly expenses" StrokeThickness="2" StrokeDashStyle="Dash" ShowDataLabels="True"
-                                                       XValues="{x:Bind Month, Mode=OneTime}" YValues="{x:Bind Expenses, Mode=OneTime}" />
-                                </charts:Chart>
-                                <TextBlock Text="Presentation knobs" FontSize="20" FontWeight="SemiBold" />
-                                <CheckBox x:Name="LegendVisibilityCheckBox" Content="Show legend" IsChecked="True" Click="OnLegendVisibilityClick" />
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBox x:Name="LegendTitleTextBox" Header="Legend title" Width="220" Text="Monthly totals" />
-                                    <Button Content="Apply title" VerticalAlignment="Bottom" Click="OnApplyLegendTitleClick" />
+    <Grid x:Name="RootGrid" SizeChanged="OnLayoutSizeChanged">
+        <Grid.Resources>
+            <Style x:Key="ScenarioCard" TargetType="Border">
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="20" />
+            </Style>
+            <Style x:Key="SectionHeading" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="20" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+            </Style>
+            <Style x:Key="SecondaryText" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+            </Style>
+            <Style x:Key="EditorText" TargetType="TextBox">
+                <Setter Property="Width" Value="212" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Top" />
+            </Style>
+            <Style x:Key="EditorChoice" TargetType="ComboBox">
+                <Setter Property="Width" Value="212" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Top" />
+            </Style>
+            <Style x:Key="EditorNumber" TargetType="NumberBox">
+                <Setter Property="Width" Value="212" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Top" />
+            </Style>
+            <Style x:Key="EditorRow" TargetType="VariableSizedWrapGrid">
+                <Setter Property="Orientation" Value="Horizontal" />
+                <Setter Property="ItemWidth" Value="228" />
+                <Setter Property="ItemHeight" Value="84" />
+            </Style>
+            <Style x:Key="ChoiceRow" TargetType="VariableSizedWrapGrid" BasedOn="{StaticResource EditorRow}">
+                <Setter Property="ItemHeight" Value="44" />
+            </Style>
+            <Style x:Key="ActionRow" TargetType="VariableSizedWrapGrid" BasedOn="{StaticResource ChoiceRow}">
+                <Setter Property="ItemWidth" Value="180" />
+            </Style>
+        </Grid.Resources>
+        <Grid x:Name="ThemeRoot" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+            <NavigationView x:Name="ScenarioNavigation" PaneTitle="Charts" OpenPaneLength="224"
+                            PaneDisplayMode="Auto" CompactModeThresholdWidth="840" ExpandedModeThresholdWidth="1100"
+                            IsSettingsVisible="False" IsBackButtonVisible="Collapsed"
+                            SelectionChanged="OnScenarioSelectionChanged">
+                <NavigationView.MenuItems>
+                    <NavigationViewItem x:Name="NavLine" Content="Line" Tag="line">
+                        <NavigationViewItem.Icon><FontIcon Glyph="&#xE9D9;" /></NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem x:Name="NavArea" Content="Area" Tag="area">
+                        <NavigationViewItem.Icon><FontIcon Glyph="&#xE9D2;" /></NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem x:Name="NavBar" Content="Bar" Tag="bar">
+                        <NavigationViewItem.Icon><FontIcon Glyph="&#xE9D5;" /></NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItemSeparator />
+                    <NavigationViewItem x:Name="NavDateTime" Content="Date &amp; time" Tag="datetime">
+                        <NavigationViewItem.Icon><SymbolIcon Symbol="Calendar" /></NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem x:Name="NavAxes" Content="Axes &amp; ordering" Tag="axes">
+                        <NavigationViewItem.Icon><SymbolIcon Symbol="Sort" /></NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem x:Name="NavPresentation" Content="Labels &amp; markers" Tag="presentation">
+                        <NavigationViewItem.Icon><SymbolIcon Symbol="Edit" /></NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem x:Name="NavLive" Content="Live data" Tag="live">
+                        <NavigationViewItem.Icon><SymbolIcon Symbol="Sync" /></NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </NavigationView.MenuItems>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ScrollViewer x:Name="ScenarioScroller" VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled" HorizontalScrollMode="Disabled">
+                        <StackPanel x:Name="ScenarioContent" Padding="24" Spacing="24" MaxWidth="1200" HorizontalAlignment="Stretch">
+                            <Grid x:Name="ScenarioHeader" ColumnSpacing="24" RowSpacing="8">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                <StackPanel Spacing="8">
+                                    <TextBlock x:Name="ScenarioHeading" Text="Line charts" FontSize="28" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                    <TextBlock x:Name="ScenarioDescription" Text="Compare monthly profit and expenses. Explore the legend and series defaults." Style="{StaticResource SecondaryText}" />
                                 </StackPanel>
-                                <ComboBox x:Name="PresentationSeriesComboBox" Header="Series" SelectedIndex="0" SelectionChanged="OnPresentationSeriesChanged">
-                                    <ComboBoxItem Content="Monthly profit" /><ComboBoxItem Content="Monthly expenses" />
+                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="C++/WinRT | Unpackaged | Synthetic data" FontSize="12" Style="{StaticResource SecondaryText}" />
+                                <ComboBox x:Name="ThemeChoice" Grid.Column="1" Width="184" SelectedIndex="0"
+                                          AutomationProperties.Name="Theme" SelectionChanged="OnThemeChoiceChanged">
+                                    <ComboBoxItem Content="System theme" />
+                                    <ComboBoxItem Content="Light theme" />
+                                    <ComboBoxItem Content="Dark theme" />
                                 </ComboBox>
-                                <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <CheckBox x:Name="ShowDataLabelsCheckBox" Content="Default labels" Click="OnShowDataLabelsClick" />
-                                    <CheckBox x:Name="ShowDataMarkersCheckBox" Content="Default markers" IsChecked="True" Click="OnShowDataMarkersClick" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <CheckBox x:Name="DataLabelBrushCheckBox" Content="Blue label brush" Click="OnDataLabelBrushClick" />
-                                    <CheckBox x:Name="DataMarkerBrushCheckBox" Content="Orange marker brush" Click="OnDataMarkerBrushClick" />
-                                </StackPanel>
-                                <NumberBox x:Name="OverrideIndexNumberBox" Header="Point index (0–5)" Width="160" HorizontalAlignment="Left"
-                                           Minimum="0" Maximum="5" Value="0" SmallChange="1" SpinButtonPlacementMode="Compact"
-                                           ValidationMode="Disabled" ValueChanged="OnOverrideIndexChanged" LostFocus="OnOverrideIndexLostFocus" />
-                                <TextBox x:Name="LabelOverrideTextBox" Header="Label override" MaxWidth="340" HorizontalAlignment="Left" MinWidth="220" />
-                                <CheckBox x:Name="LabelOverrideBrushCheckBox" Content="Green brush" />
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button Content="Apply label" Click="OnApplyLabelOverrideClick" />
-                                    <Button Content="Remove label" Click="OnRemoveLabelOverrideClick" />
-                                </StackPanel>
-                                <ComboBox x:Name="MarkerShapeComboBox" Header="Marker shape" SelectedIndex="8">
-                                    <ComboBoxItem Content="None" /><ComboBoxItem Content="Square" />
-                                    <ComboBoxItem Content="Diamond" /><ComboBoxItem Content="Triangle" />
-                                    <ComboBoxItem Content="X" /><ComboBoxItem Content="Asterisk" />
-                                    <ComboBoxItem Content="ShortDash" /><ComboBoxItem Content="LongDash" />
-                                    <ComboBoxItem Content="Circle" /><ComboBoxItem Content="Plus" />
-                                </ComboBox>
-                                <CheckBox x:Name="MarkerOverrideBrushCheckBox" Content="Purple brush" />
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button Content="Apply marker" Click="OnApplyMarkerOverrideClick" />
-                                    <Button Content="Remove marker" Click="OnRemoveMarkerOverrideClick" />
-                                </StackPanel>
-                                <Button Content="Clear overrides" Click="OnClearOverridesClick" />
-                                <TextBlock x:Name="PresentationKnobStatusText" Text="Choose settings and apply an override." TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
-                                <TextBlock Text="Axis controls — explicit axes of Monthly profit (first series)" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                <TextBlock Text="Expenses retains automatic axes. Clear a number to restore Auto; spacing must be positive and minimum must be less than maximum." TextWrapping="Wrap" />
-                                <TextBlock Text="LinearAxis Y" FontWeight="SemiBold" />
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <NumberBox x:Name="LinearMinBox" Header="Minimum" Width="100" PlaceholderText="Auto" ValidationMode="Disabled" SpinButtonPlacementMode="Compact" ValueChanged="OnLinearMinChanged" LostFocus="OnAxisNumberLostFocus" />
-                                    <NumberBox x:Name="LinearMaxBox" Header="Maximum" Width="100" PlaceholderText="Auto" ValidationMode="Disabled" SpinButtonPlacementMode="Compact" ValueChanged="OnLinearMaxChanged" LostFocus="OnAxisNumberLostFocus" />
-                                    <NumberBox x:Name="LinearSpacingBox" Header="Spacing" Width="100" PlaceholderText="Auto" ValidationMode="Disabled" SpinButtonPlacementMode="Compact" ValueChanged="OnLinearSpacingChanged" LostFocus="OnAxisNumberLostFocus" />
-                                </StackPanel>
-                                <TextBlock Text="CategoryAxis X" FontWeight="SemiBold" />
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <ComboBox x:Name="SortKeyBox" Header="SortKey" SelectedIndex="0" SelectionChanged="OnSortKeyChanged">
-                                        <x:String>Index</x:String><x:String>Value</x:String>
-                                    </ComboBox>
-                                    <ComboBox x:Name="SortOrderBox" Header="SortOrder" SelectedIndex="0" SelectionChanged="OnSortOrderChanged">
-                                        <x:String>Ascending</x:String><x:String>Descending</x:String>
-                                    </ComboBox>
-                                </StackPanel>
-                                <TextBlock Text="Presentation (both explicit axes)" FontWeight="SemiBold" />
-                                <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <CheckBox x:Name="AxisVisibleCheck" Content="Visible" IsChecked="True" Click="OnAxisVisibleChanged" />
-                                    <CheckBox x:Name="TickLabelsCheck" Content="Tick labels" IsChecked="True" Click="OnTickLabelsChanged" />
-                                    <CheckBox x:Name="TickMarksCheck" Content="Tick marks" Click="OnTickMarksChanged" />
-                                </StackPanel>
-                                <ComboBox x:Name="GridLinesBox" Header="Grid lines" SelectedIndex="0" SelectionChanged="OnGridLinesChanged">
-                                    <x:String>None</x:String><x:String>Major</x:String><x:String>Minor</x:String>
-                                </ComboBox>
-                                <TextBlock Text="Brush overrides (both explicit axes)" FontWeight="SemiBold" />
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <ComboBox x:Name="GridLineBrushBox" Header="Major grid" SelectedIndex="0" SelectionChanged="OnGridLineBrushChanged">
-                                        <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
-                                    </ComboBox>
-                                    <ComboBox x:Name="TickBrushBox" Header="Ticks" SelectedIndex="0" SelectionChanged="OnTickBrushChanged">
-                                        <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
-                                    </ComboBox>
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <ComboBox x:Name="TickLabelBrushBox" Header="Tick labels" SelectedIndex="0" SelectionChanged="OnTickLabelBrushChanged">
-                                        <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
-                                    </ComboBox>
-                                    <ComboBox x:Name="AxisLineBrushBox" Header="Axis line" SelectedIndex="0" SelectionChanged="OnAxisLineBrushChanged">
-                                        <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
-                                    </ComboBox>
-                                </StackPanel>
-                                <TextBlock Text="Area chart from markup" FontSize="20" FontWeight="SemiBold" />
-                                <charts:Chart x:Name="AreaMarkupChart" Height="220" ShowLegend="True" AutomationProperties.Name="Monthly area, January through June: 8, 18, 14, 29, 24, 37">
-                                    <charts:Chart.Data><charts:Samples x:Name="AreaMonth" /><charts:Samples x:Name="AreaValues" /></charts:Chart.Data>
-                                    <charts:AreaSeries x:Name="MarkupAreaSeries" Title="Monthly area" Fill="#604F6BED" Stroke="#FF3047B8" StrokeThickness="2"
-                                                       XValues="{x:Bind AreaMonth, Mode=OneTime}" YValues="{x:Bind AreaValues, Mode=OneTime}" />
-                                </charts:Chart>
-                                <TextBlock Text="Area, Jan–Jun: 8, 18, 14, 29, 24, 37." TextWrapping="Wrap" />
-                                <TextBlock Text="Bar chart from markup" FontSize="20" FontWeight="SemiBold" />
-                                <charts:Chart x:Name="BarMarkupChart" Height="220" ShowLegend="True" AutomationProperties.Name="Monthly bars, January through June: 12, 20, 17, 31, 26, 39">
-                                    <charts:Chart.Data><charts:Samples x:Name="BarMonth" /><charts:Samples x:Name="BarValues" /></charts:Chart.Data>
-                                    <charts:BarSeries x:Name="MarkupBarSeries" Title="Monthly bars" Orientation="Horizontal" Fill="#FF0F6CBD" Stroke="#FF073B66" StrokeThickness="1.5"
-                                                      XValues="{x:Bind BarMonth, Mode=OneTime}" YValues="{x:Bind BarValues, Mode=OneTime}" />
-                                </charts:Chart>
-                                <TextBlock Text="Bars, Jan–Jun: 12, 20, 17, 31, 26, 39." TextWrapping="Wrap" />
-                                <Button Content="Toggle connected bar orientation" Click="OnToggleBarOrientationClick" />
-                                <TextBlock Text="Line chart from code" FontSize="20" FontWeight="SemiBold" />
-                                <TextBlock Text="The series is connected before its sources are populated. A value in each of three observable vectors changes once per second." TextWrapping="Wrap" />
-                                <Border x:Name="CodeChartHost" Height="240" />
-                                <TextBlock Text="Current data" FontSize="20" FontWeight="SemiBold" />
-                                <TextBlock x:Name="DataText" FontFamily="Consolas" IsTextSelectionEnabled="True" TextWrapping="Wrap" AutomationProperties.Name="Current primary chart data" />
-                            </StackPanel>
-                        </PivotItem>
-                        <PivotItem Header="DateTime">
-                            <StackPanel Spacing="12">
-                                <TextBlock Text="Short range (75 days): Day · Week · Month" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                <Border x:Name="DtChartHostA" Height="360" />
-                                <ComboBox x:Name="DtIntervalTypeBoxA" Header="IntervalType" SelectedIndex="0" SelectionChanged="OnDtIntervalTypeAChanged">
-                                    <x:String>Auto</x:String><x:String>Day</x:String><x:String>Week</x:String><x:String>Month</x:String><x:String>Year</x:String>
-                                </ComboBox>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBox x:Name="DtLabelFormatBoxA" Header="LabelFormat" Width="240" PlaceholderText="Default (shortdate)" />
-                                    <Button Content="Apply" VerticalAlignment="Bottom" Click="OnDtLabelFormatAApply" />
-                                </StackPanel>
-                                <TextBlock x:Name="DtWarningA" Visibility="Collapsed" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
-                                <Expander Header="Daily data — 1 January to 15 March 2024">
-                                    <TextBlock x:Name="DtDataTextA" FontFamily="Consolas" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                            </Grid>
+
+                            <StackPanel x:Name="LineScenario" Spacing="24">
+                                <Border Style="{StaticResource ScenarioCard}">
+                                    <charts:Chart x:Name="MarkupChart" Height="380" FontSize="14" ShowLegend="True" LegendTitle="Monthly totals"
+                                                  AutomationProperties.Name="Monthly profit and expenses, line chart"
+                                                  AutomationProperties.HelpText="Six months of values are listed on the Live data page. Profit uses markers; expenses use a dashed line.">
+                                        <charts:Chart.Data>
+                                            <charts:Samples x:Name="Month" />
+                                            <charts:Samples x:Name="Profit" />
+                                            <charts:Samples x:Name="Expenses" />
+                                        </charts:Chart.Data>
+                                        <charts:LineSeries x:Name="ProfitSeries" Title="Monthly profit" StrokeThickness="3" ShowDataMarkers="True"
+                                                           XValues="{x:Bind Month, Mode=OneTime}" YValues="{x:Bind Profit, Mode=OneTime}" />
+                                        <charts:LineSeries x:Name="ExpensesSeries" Title="Monthly expenses" StrokeThickness="2" StrokeDashStyle="Dash" ShowDataLabels="True"
+                                                           XValues="{x:Bind Month, Mode=OneTime}" YValues="{x:Bind Expenses, Mode=OneTime}" />
+                                    </charts:Chart>
+                                </Border>
+                                <Border x:Name="SeriesEditorPanel" Style="{StaticResource ScenarioCard}">
+                                    <StackPanel Spacing="16">
+                                        <TextBlock Text="Legend and series" Style="{StaticResource SectionHeading}" />
+                                        <VariableSizedWrapGrid Style="{StaticResource EditorRow}">
+                                            <TextBox x:Name="LegendTitleTextBox" Header="Legend title" Text="Monthly totals" Style="{StaticResource EditorText}" />
+                                            <Button Content="Apply title" VerticalAlignment="Center" Click="OnApplyLegendTitleClick" />
+                                            <CheckBox x:Name="LegendVisibilityCheckBox" Content="Show legend" IsChecked="True" Click="OnLegendVisibilityClick" />
+                                        </VariableSizedWrapGrid>
+                                        <VariableSizedWrapGrid Style="{StaticResource EditorRow}">
+                                            <ComboBox x:Name="PresentationSeriesComboBox" Header="Series" SelectedIndex="0" SelectionChanged="OnPresentationSeriesChanged" Style="{StaticResource EditorChoice}">
+                                                <ComboBoxItem Content="Monthly profit" /><ComboBoxItem Content="Monthly expenses" />
+                                            </ComboBox>
+                                            <CheckBox x:Name="ShowDataLabelsCheckBox" Content="Default labels" Click="OnShowDataLabelsClick" />
+                                            <CheckBox x:Name="ShowDataMarkersCheckBox" Content="Default markers" IsChecked="True" Click="OnShowDataMarkersClick" />
+                                        </VariableSizedWrapGrid>
+                                    </StackPanel>
+                                </Border>
+                                <Border x:Name="PresentationEditorPanel" Visibility="Collapsed" Style="{StaticResource ScenarioCard}">
+                                    <StackPanel Spacing="16">
+                                        <TextBlock Text="Labels and markers" Style="{StaticResource SectionHeading}" />
+                                        <TextBlock Text="Set brushes for the selected series, then edit a single point. Overrides remain attached to their original point index." Style="{StaticResource SecondaryText}" />
+                                        <VariableSizedWrapGrid Style="{StaticResource ChoiceRow}">
+                                            <CheckBox x:Name="DataLabelBrushCheckBox" Content="Blue label brush" Click="OnDataLabelBrushClick" />
+                                            <CheckBox x:Name="DataMarkerBrushCheckBox" Content="Orange marker brush" Click="OnDataMarkerBrushClick" />
+                                        </VariableSizedWrapGrid>
+                                        <NumberBox x:Name="OverrideIndexNumberBox" Header="Point index (0-5)" Style="{StaticResource EditorNumber}"
+                                                   Minimum="0" Maximum="5" Value="0" SmallChange="1" SpinButtonPlacementMode="Compact"
+                                                   ValidationMode="Disabled" ValueChanged="OnOverrideIndexChanged" LostFocus="OnOverrideIndexLostFocus" />
+                                        <VariableSizedWrapGrid Style="{StaticResource EditorRow}">
+                                            <TextBox x:Name="LabelOverrideTextBox" Header="Label override" Style="{StaticResource EditorText}" />
+                                            <CheckBox x:Name="LabelOverrideBrushCheckBox" Content="Green brush" />
+                                        </VariableSizedWrapGrid>
+                                        <VariableSizedWrapGrid Style="{StaticResource ActionRow}">
+                                            <Button Content="Apply label" Click="OnApplyLabelOverrideClick" />
+                                            <Button Content="Remove label" Click="OnRemoveLabelOverrideClick" />
+                                        </VariableSizedWrapGrid>
+                                        <VariableSizedWrapGrid Style="{StaticResource EditorRow}">
+                                            <ComboBox x:Name="MarkerShapeComboBox" Header="Marker shape" SelectedIndex="8" Style="{StaticResource EditorChoice}">
+                                                <ComboBoxItem Content="None" /><ComboBoxItem Content="Square" />
+                                                <ComboBoxItem Content="Diamond" /><ComboBoxItem Content="Triangle" />
+                                                <ComboBoxItem Content="X" /><ComboBoxItem Content="Asterisk" />
+                                                <ComboBoxItem Content="ShortDash" /><ComboBoxItem Content="LongDash" />
+                                                <ComboBoxItem Content="Circle" /><ComboBoxItem Content="Plus" />
+                                            </ComboBox>
+                                            <CheckBox x:Name="MarkerOverrideBrushCheckBox" Content="Purple brush" />
+                                        </VariableSizedWrapGrid>
+                                        <VariableSizedWrapGrid Style="{StaticResource ActionRow}">
+                                            <Button Content="Apply marker" Click="OnApplyMarkerOverrideClick" />
+                                            <Button Content="Remove marker" Click="OnRemoveMarkerOverrideClick" />
+                                            <Button Content="Clear overrides" Click="OnClearOverridesClick" />
+                                        </VariableSizedWrapGrid>
+                                    </StackPanel>
+                                </Border>
+                                <Border x:Name="AxesEditorPanel" Visibility="Collapsed" Style="{StaticResource ScenarioCard}">
+                                    <StackPanel Spacing="16">
+                                        <TextBlock Text="Axes of Monthly profit" Style="{StaticResource SectionHeading}" />
+                                        <TextBlock Text="Expenses retains automatic axes. Clear a number to restore Auto; spacing must be positive and minimum must be less than maximum." Style="{StaticResource SecondaryText}" />
+                                        <TextBlock Text="Linear Y axis" FontWeight="SemiBold" />
+                                        <VariableSizedWrapGrid Style="{StaticResource EditorRow}">
+                                            <NumberBox x:Name="LinearMinBox" Header="Minimum" Style="{StaticResource EditorNumber}" PlaceholderText="Auto" ValidationMode="Disabled" SpinButtonPlacementMode="Compact" ValueChanged="OnLinearMinChanged" LostFocus="OnAxisNumberLostFocus" />
+                                            <NumberBox x:Name="LinearMaxBox" Header="Maximum" Style="{StaticResource EditorNumber}" PlaceholderText="Auto" ValidationMode="Disabled" SpinButtonPlacementMode="Compact" ValueChanged="OnLinearMaxChanged" LostFocus="OnAxisNumberLostFocus" />
+                                            <NumberBox x:Name="LinearSpacingBox" Header="Spacing" Style="{StaticResource EditorNumber}" PlaceholderText="Auto" ValidationMode="Disabled" SpinButtonPlacementMode="Compact" ValueChanged="OnLinearSpacingChanged" LostFocus="OnAxisNumberLostFocus" />
+                                        </VariableSizedWrapGrid>
+                                        <TextBlock Text="Category X axis" FontWeight="SemiBold" />
+                                        <VariableSizedWrapGrid Style="{StaticResource EditorRow}">
+                                            <ComboBox x:Name="SortKeyBox" Header="Sort key" SelectedIndex="0" SelectionChanged="OnSortKeyChanged" Style="{StaticResource EditorChoice}">
+                                                <x:String>Index</x:String><x:String>Value</x:String>
+                                            </ComboBox>
+                                            <ComboBox x:Name="SortOrderBox" Header="Sort order" SelectedIndex="0" SelectionChanged="OnSortOrderChanged" Style="{StaticResource EditorChoice}">
+                                                <x:String>Ascending</x:String><x:String>Descending</x:String>
+                                            </ComboBox>
+                                        </VariableSizedWrapGrid>
+                                        <TextBlock Text="Appearance of both explicit axes" FontWeight="SemiBold" />
+                                        <VariableSizedWrapGrid Style="{StaticResource ChoiceRow}">
+                                            <CheckBox x:Name="AxisVisibleCheck" Content="Visible" IsChecked="True" Click="OnAxisVisibleChanged" />
+                                            <CheckBox x:Name="TickLabelsCheck" Content="Tick labels" IsChecked="True" Click="OnTickLabelsChanged" />
+                                            <CheckBox x:Name="TickMarksCheck" Content="Tick marks" Click="OnTickMarksChanged" />
+                                        </VariableSizedWrapGrid>
+                                        <ComboBox x:Name="GridLinesBox" Header="Grid lines" SelectedIndex="0" SelectionChanged="OnGridLinesChanged" Style="{StaticResource EditorChoice}">
+                                            <x:String>None</x:String><x:String>Major</x:String><x:String>Minor</x:String>
+                                        </ComboBox>
+                                        <TextBlock Text="Brush overrides" FontWeight="SemiBold" />
+                                        <VariableSizedWrapGrid Style="{StaticResource EditorRow}">
+                                            <ComboBox x:Name="GridLineBrushBox" Header="Major grid" SelectedIndex="0" SelectionChanged="OnGridLineBrushChanged" Style="{StaticResource EditorChoice}">
+                                                <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
+                                            </ComboBox>
+                                            <ComboBox x:Name="TickBrushBox" Header="Ticks" SelectedIndex="0" SelectionChanged="OnTickBrushChanged" Style="{StaticResource EditorChoice}">
+                                                <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
+                                            </ComboBox>
+                                            <ComboBox x:Name="TickLabelBrushBox" Header="Tick labels" SelectedIndex="0" SelectionChanged="OnTickLabelBrushChanged" Style="{StaticResource EditorChoice}">
+                                                <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
+                                            </ComboBox>
+                                            <ComboBox x:Name="AxisLineBrushBox" Header="Axis line" SelectedIndex="0" SelectionChanged="OnAxisLineBrushChanged" Style="{StaticResource EditorChoice}">
+                                                <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
+                                            </ComboBox>
+                                        </VariableSizedWrapGrid>
+                                    </StackPanel>
+                                </Border>
+                                <TextBlock x:Name="PresentationKnobStatusText" Text="Choose settings and apply an override." Style="{StaticResource SecondaryText}" AutomationProperties.LiveSetting="Polite" />
+                                <Expander Header="Current data" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                                    <TextBlock Text="{Binding Text, ElementName=DataText}" FontFamily="Consolas" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
                                 </Expander>
-                                <TextBlock Text="Long range (3 years, monthly): Month · Year" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
-                                <Border x:Name="DtChartHostB" Height="360" />
-                                <ComboBox x:Name="DtIntervalTypeBoxB" Header="IntervalType" SelectedIndex="0" SelectionChanged="OnDtIntervalTypeBChanged">
-                                    <x:String>Auto</x:String><x:String>Day</x:String><x:String>Week</x:String><x:String>Month</x:String><x:String>Year</x:String>
-                                </ComboBox>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <TextBox x:Name="DtLabelFormatBoxB" Header="LabelFormat" Width="240" PlaceholderText="Default (shortdate)" />
-                                    <Button Content="Apply" VerticalAlignment="Bottom" Click="OnDtLabelFormatBApply" />
-                                </StackPanel>
-                                <TextBlock x:Name="DtWarningB" Visibility="Collapsed" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
-                                <TextBlock Text="LabelFormat uses Windows DateTimeFormatter templates, for example day month.abbreviated or month year. Empty uses shortdate. Unsupported templates can fall back to platform date labels." TextWrapping="Wrap" />
-                                <Expander Header="Monthly data — January 2022 to December 2024">
-                                    <TextBlock x:Name="DtDataTextB" FontFamily="Consolas" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <StackPanel x:Name="AreaScenario" Spacing="24" Visibility="Collapsed">
+                                <Border Style="{StaticResource ScenarioCard}">
+                                    <charts:Chart x:Name="AreaMarkupChart" Height="380" FontSize="14" ShowLegend="True" AutomationProperties.Name="Monthly area, January through June: 8, 18, 14, 29, 24, 37">
+                                        <charts:Chart.Data><charts:Samples x:Name="AreaMonth" /><charts:Samples x:Name="AreaValues" /></charts:Chart.Data>
+                                        <charts:AreaSeries x:Name="MarkupAreaSeries" Title="Monthly area" Fill="#604F6BED" Stroke="#FF3047B8" StrokeThickness="2"
+                                                           XValues="{x:Bind AreaMonth, Mode=OneTime}" YValues="{x:Bind AreaValues, Mode=OneTime}" />
+                                    </charts:Chart>
+                                </Border>
+                                <Border Style="{StaticResource ScenarioCard}">
+                                    <StackPanel Spacing="12">
+                                        <TextBlock Text="Monthly area data" Style="{StaticResource SectionHeading}" />
+                                        <TextBlock Text="A markup-created area series with connected category and numeric samples." Style="{StaticResource SecondaryText}" />
+                                        <TextBlock Text="Jan: 8, Feb: 18, Mar: 14, Apr: 29, May: 24, Jun: 37." IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel x:Name="BarScenario" Spacing="24" Visibility="Collapsed">
+                                <Border Style="{StaticResource ScenarioCard}">
+                                    <charts:Chart x:Name="BarMarkupChart" Height="380" FontSize="14" ShowLegend="True" AutomationProperties.Name="Monthly bars, January through June: 12, 20, 17, 31, 26, 39">
+                                        <charts:Chart.Data><charts:Samples x:Name="BarMonth" /><charts:Samples x:Name="BarValues" /></charts:Chart.Data>
+                                        <charts:BarSeries x:Name="MarkupBarSeries" Title="Monthly bars" Orientation="Horizontal" Fill="#FF0F6CBD" Stroke="#FF073B66" StrokeThickness="1.5"
+                                                          XValues="{x:Bind BarMonth, Mode=OneTime}" YValues="{x:Bind BarValues, Mode=OneTime}" />
+                                    </charts:Chart>
+                                </Border>
+                                <Border Style="{StaticResource ScenarioCard}">
+                                    <StackPanel Spacing="16">
+                                        <TextBlock Text="Orientation and data" Style="{StaticResource SectionHeading}" />
+                                        <TextBlock Text="Change orientation while the series remains connected to its explicit axes." Style="{StaticResource SecondaryText}" />
+                                        <Button Content="Toggle connected bar orientation" Click="OnToggleBarOrientationClick" />
+                                        <TextBlock Text="Jan: 12, Feb: 20, Mar: 17, Apr: 31, May: 26, Jun: 39." IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <Grid x:Name="DateTimeScenario" ColumnSpacing="24" RowSpacing="24" Visibility="Collapsed" SizeChanged="OnDateLayoutSizeChanged">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="0" /></Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                                <Border x:Name="DailyDateCard" Style="{StaticResource ScenarioCard}">
+                                    <StackPanel Spacing="16">
+                                        <TextBlock Text="Daily values | 75 days" Style="{StaticResource SectionHeading}" />
+                                        <TextBlock Text="1 January to 15 March 2024. Compare daily values with their target." Style="{StaticResource SecondaryText}" />
+                                        <Border x:Name="DtChartHostA" Height="360" MaxWidth="600" />
+                                        <VariableSizedWrapGrid Style="{StaticResource EditorRow}">
+                                            <ComboBox x:Name="DtIntervalTypeBoxA" Header="Date interval" SelectedIndex="0" SelectionChanged="OnDtIntervalTypeAChanged" Style="{StaticResource EditorChoice}">
+                                                <x:String>Auto</x:String><x:String>Day</x:String><x:String>Week</x:String><x:String>Month</x:String><x:String>Year</x:String>
+                                            </ComboBox>
+                                            <TextBox x:Name="DtLabelFormatBoxA" Header="Label format" PlaceholderText="Default (shortdate)" Style="{StaticResource EditorText}" />
+                                            <Button Content="Apply format" VerticalAlignment="Center" Click="OnDtLabelFormatAApply" />
+                                        </VariableSizedWrapGrid>
+                                        <TextBlock x:Name="DtWarningA" Visibility="Collapsed" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                                        <Expander Header="Daily data" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                                            <TextBlock x:Name="DtDataTextA" FontFamily="Consolas" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                        </Expander>
+                                    </StackPanel>
+                                </Border>
+                                <Border x:Name="MonthlyDateCard" Grid.Row="1" Style="{StaticResource ScenarioCard}">
+                                    <StackPanel Spacing="16">
+                                        <TextBlock Text="Monthly values | 3 years" Style="{StaticResource SectionHeading}" />
+                                        <TextBlock Text="36 monthly values from January 2022 to December 2024." Style="{StaticResource SecondaryText}" />
+                                        <Border x:Name="DtChartHostB" Height="360" MaxWidth="400" />
+                                        <VariableSizedWrapGrid Style="{StaticResource EditorRow}">
+                                            <ComboBox x:Name="DtIntervalTypeBoxB" Header="Date interval" SelectedIndex="0" SelectionChanged="OnDtIntervalTypeBChanged" Style="{StaticResource EditorChoice}">
+                                                <x:String>Auto</x:String><x:String>Day</x:String><x:String>Week</x:String><x:String>Month</x:String><x:String>Year</x:String>
+                                            </ComboBox>
+                                            <TextBox x:Name="DtLabelFormatBoxB" Header="Label format" PlaceholderText="Default (shortdate)" Style="{StaticResource EditorText}" />
+                                            <Button Content="Apply format" VerticalAlignment="Center" Click="OnDtLabelFormatBApply" />
+                                        </VariableSizedWrapGrid>
+                                        <TextBlock x:Name="DtWarningB" Visibility="Collapsed" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                                        <Expander Header="Monthly data" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                                            <TextBlock x:Name="DtDataTextB" FontFamily="Consolas" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                        </Expander>
+                                    </StackPanel>
+                                </Border>
+                                <TextBlock x:Name="DateFormatHelp" Grid.Row="2" Text="Label format uses Windows DateTimeFormatter templates, for example day month.abbreviated or month year. Empty uses shortdate. Unsupported templates can fall back to platform date labels." Style="{StaticResource SecondaryText}" />
+                            </Grid>
+
+                            <StackPanel x:Name="LiveScenario" Spacing="24" Visibility="Collapsed">
+                                <Border Style="{StaticResource ScenarioCard}">
+                                    <Border x:Name="CodeChartHost" Height="380" />
+                                </Border>
+                                <Border Style="{StaticResource ScenarioCard}">
+                                    <StackPanel Spacing="16">
+                                        <TextBlock Text="Observable data and independent updates" Style="{StaticResource SectionHeading}" />
+                                        <TextBlock Text="The series is connected before its sources are populated. A value in each of three observable vectors changes once per second, including the monthly line series." Style="{StaticResource SecondaryText}" />
+                                        <VariableSizedWrapGrid Orientation="Horizontal" ItemWidth="276" ItemHeight="48">
+                                            <Button x:Name="UpdatesButton" Content="Pause updates" Click="OnToggleUpdatesClick" />
+                                            <Button x:Name="SecondaryButton" Content="Toggle secondary UI thread" Click="OnToggleSecondaryClick" />
+                                        </VariableSizedWrapGrid>
+                                        <TextBlock Text="The secondary window owns its chart and data on a separate UI thread." Style="{StaticResource SecondaryText}" />
+                                    </StackPanel>
+                                </Border>
+                                <Expander Header="Current data" IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                                    <TextBlock x:Name="DataText" FontFamily="Consolas" IsTextSelectionEnabled="True" TextWrapping="Wrap" AutomationProperties.Name="Current primary chart data" />
                                 </Expander>
                             </StackPanel>
-                        </PivotItem>
-                    </Pivot>
-                </StackPanel>
-            </ScrollViewer>
+                        </StackPanel>
+                    </ScrollViewer>
+                    <Border Grid.Row="1" BorderThickness="0,1,0,0" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" Padding="24,12">
+                        <TextBlock x:Name="StatusText" Text="Primary data updates once per second." Style="{StaticResource SecondaryText}" AutomationProperties.LiveSetting="Polite" />
+                    </Border>
+                </Grid>
+            </NavigationView>
         </Grid>
     </Grid>
 </Window>
