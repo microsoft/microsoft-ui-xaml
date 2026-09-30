@@ -4347,15 +4347,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         xaml_controls::CalendarView^ cv = helper.GetCalendarView();
 
-        TestServices::Utilities->SetDCompXmlVariable(
-            L"CalendarDecadePrependOpen",
-            IsOSBuildAtLeast(26200)
-                ? L"                              <Visual Tag=\"PrependVisual\">\r\n"
-                : L"                              <Visual Tag=\"PrependVisual\" SizeX=\"55.5\" SizeY=\"56\">\r\n");
-        TestServices::Utilities->SetDCompXmlVariable(
-            L"CalendarDecadePrependClose",
-            L"                              </Visual>\r\n");
-
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
 
@@ -4380,6 +4371,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
 
         TestServices::WindowHelper->WaitForIdle();
+        TestServices::WindowHelper->SynchronouslyTickUIThread(2);
         TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
     }
 

@@ -8,7 +8,7 @@
         <Visual Tag="ContentVisual">
           <Visual Tag="PrependVisual" SizeX="401" SizeY="300">
             <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
-            <Visual PixelSnappingEnabled="True" Tag="PrimaryVisual" SizeX="401" SizeY="300">
+            <Visual PixelSnappingEnabled="True" VisualId="1" Tag="PrimaryVisual" SizeX="401" SizeY="300">
               <TransformMatrix>
                 <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
                   <ReferenceParameter Name="LOCAL">
@@ -48,7 +48,7 @@
                       </wucSpriteVisual>
                       <Visual PixelSnappingEnabled="True" Tag="PrependVisual" SizeX="201" SizeY="300">
                         <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
-                        <Visual PixelSnappingEnabled="True" HasInteraction="True" Tag="PrimaryVisual" SizeX="201" SizeY="300">
+                        <Visual PixelSnappingEnabled="True" VisualId="2" HasInteraction="True" Tag="PrimaryVisual" SizeX="201" SizeY="300">
                           <TransformMatrix>
                             <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
                               <ReferenceParameter Name="LOCAL">
@@ -77,7 +77,7 @@
                             </ExpressionAnimation>
                           </TransformMatrix>
                           <Visual Tag="ContentVisual">
-                            <Visual Tag="PrependVisual" SizeX="201" SizeY="40">
+                            <Visual Tag="PrependVisual">
                               <Visual Tag="PrimaryVisual" SizeX="201" SizeY="40">
                                 <Visual Tag="RoundedCornerClipVisual">
                                   <Clip ClipLeft="0" ClipTop="0" ClipRight="201" ClipBottom="40" ClipTopLeftRadiusX="4" ClipTopLeftRadiusY="4" ClipTopRightRadiusX="4" ClipTopRightRadiusY="4" ClipBottomLeftRadiusX="4" ClipBottomLeftRadiusY="4" ClipBottomRightRadiusX="4" ClipBottomRightRadiusY="4" TransformMatrix="Identity" />
@@ -99,7 +99,7 @@
                                 </Visual>
                               </Visual>
                             </Visual>
-                            <Visual Tag="PrependVisual" SizeX="201" SizeY="40">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate Y="40" />
                               </TransformMatrix>
@@ -124,7 +124,7 @@
                                 </Visual>
                               </Visual>
                             </Visual>
-                            <Visual Tag="PrependVisual" SizeX="201" SizeY="40">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate Y="80" />
                               </TransformMatrix>
@@ -149,7 +149,7 @@
                                 </Visual>
                               </Visual>
                             </Visual>
-                            <Visual Tag="PrependVisual" SizeX="201" SizeY="40">
+                            <Visual Tag="PrependVisual">
                               <TransformMatrix>
                                 <Translate Y="120" />
                               </TransformMatrix>
