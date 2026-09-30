@@ -36,11 +36,14 @@ namespace TableViewSampleApp.Pages;
 ///
 /// Behaviour the page documents (verified against the live control, so the copy
 /// must not drift from it):
-///   * Focus is CELL-scoped. Cells are keyboard focusable and name themselves
-///     "{column}, {value}".
-///   * Left / Right step between cells in a row; Up / Down move between rows and
-///     keep the focused column; Home / End jump to the first and last cell in the
-///     row; Ctrl+Home / Ctrl+End jump to the first and last cell in the table.
+///   * Body focus is TWO-LEVEL (W3C ARIA APG `treegrid`): it enters on a ROW,
+///     Right drills into that row's first cell, and Left on the first cell
+///     returns to the ROW. Cells name themselves "{column}, {value}".
+///   * At row level Up / Down move between rows. At cell level Left / Right step
+///     between cells in a row and clamp, Up / Down move between rows keeping the
+///     focused column, Home / End jump to the first and last cell in the row, and
+///     Ctrl+Home / Ctrl+End jump to the first and last cell in the table.
+///   * On a group header, Right expands and Left collapses.
 ///   * The table body is a single tab stop, so Tab enters it once and then leaves.
 ///   * Clicking a cell focuses that cell.
 ///   * Selection stays row-scoped: a vertical arrow moves focus and selection
@@ -219,7 +222,7 @@ public sealed partial class KeyboardNavPage : Page
         UpdateReadout();
         SetLastAction(PeopleTable.IsReadOnly
             ? "IsReadOnly = true: text cells are display-only and expose no ValuePattern."
-            : "IsReadOnly = false: double-tap a text cell, or press F2 on the focused row, to open an editor.");
+            : "IsReadOnly = false: double-tap a text cell, or press F2 on a focused cell, to open an editor.");
     }
 
     private void OnEnableTableToggled(object sender, RoutedEventArgs e)
