@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Charts;
 using Microsoft.UI.Xaml.Media;
@@ -856,7 +857,7 @@ namespace ChartsSample
             double value = OverrideIndexNumberBox.Value;
             if (!double.IsFinite(value) || value < 0 || value >= _months.Count || value != Math.Truncate(value))
             {
-                PresentationKnobStatusText.Text = "Point index must be a whole number from 0 to 5.";
+                AnnounceStatus(PresentationKnobStatusText, "Point index must be a whole number from 0 to 5.");
                 return null;
             }
             return (uint)value;
@@ -1020,16 +1021,32 @@ namespace ChartsSample
             }
             catch (ArgumentException)
             {
-                status.Text = invalid;
+                AnnounceStatus(status, invalid);
             }
             catch (COMException ex) when (ex.HResult == unchecked((int)0x80070057))
             {
-                status.Text = invalid;
+                AnnounceStatus(status, invalid);
             }
             finally
             {
                 Synchronize(sync);
             }
+        }
+
+        // Validation errors are usually raised while focus leaves the edited field, and a Polite
+        // live-region update is dropped when it coincides with that focus change. Set the status
+        // text and raise an explicit UIA notification so it is announced without moving focus.
+        private void AnnounceStatus(TextBlock target, string message)
+        {
+            target.Text = message;
+            if (string.IsNullOrEmpty(message)) return;
+            AutomationPeer peer = FrameworkElementAutomationPeer.FromElement(target)
+                ?? FrameworkElementAutomationPeer.CreatePeerForElement(target);
+            peer?.RaiseNotificationEvent(
+                AutomationNotificationKind.Other,
+                AutomationNotificationProcessing.MostRecent,
+                message,
+                "ChartsSampleStatus");
         }
 
         private void SyncAxes()

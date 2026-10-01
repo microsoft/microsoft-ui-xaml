@@ -5,6 +5,7 @@
 #endif
 
 #include <winrt/Microsoft.UI.Xaml.Automation.h>
+#include <winrt/Microsoft.UI.Xaml.Automation.Peers.h>
 #include <winrt/Microsoft.UI.Xaml.Hosting.h>
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <winrt/Windows.Globalization.DateTimeFormatting.h>
@@ -706,6 +707,25 @@ namespace winrt::ChartsSample::implementation
         auto text = ErrorText(error);
         StatusText().Text(text);
         PresentationKnobStatusText().Text(text);
+        // Validation errors are usually raised while focus leaves the edited field (lost focus),
+        // and a Polite live-region update is dropped when it coincides with that focus change.
+        // Raise an explicit UIA notification so the message is announced without moving focus.
+        AnnounceStatus(text);
+    }
+
+    void MainWindow::AnnounceStatus(hstring const& message)
+    {
+        if (message.empty()) return;
+        auto peer = Automation::Peers::FrameworkElementAutomationPeer::FromElement(StatusText());
+        if (!peer) peer = Automation::Peers::FrameworkElementAutomationPeer::CreatePeerForElement(StatusText());
+        if (peer)
+        {
+            peer.RaiseNotificationEvent(
+                Automation::Peers::AutomationNotificationKind::Other,
+                Automation::Peers::AutomationNotificationProcessing::MostRecent,
+                message,
+                L"ChartsSampleStatus");
+        }
     }
 
     void MainWindow::ApplyEdit(std::function<void()> const& edit, Chart const& chart, std::function<void()> const& restore)

@@ -108,6 +108,7 @@ namespace winrt::ChartsSample::implementation
         void SetAreaMarkers(bool visible);
         void SetBarColor(int32_t colorIndex);
         void ReportError(winrt::hresult_error const& error);
+        void AnnounceStatus(winrt::hstring const& message);
         void SyncPresentationKnobs();
         void SyncAxisControls(bool includeDateTime = true);
         void QueueLinearAxisEdit(Microsoft::UI::Xaml::Controls::NumberBox const& box, int property);
