@@ -70,7 +70,7 @@
                   <ColorBrush Color="#ff000000" />
                 </wucSpriteVisual>
                 <wucSpriteVisual SizeX="60.84" SizeY="0.87" BorderMode="Soft" OffsetX="140.1" OffsetY="99" OffsetZ="0">
-                  <ColorBrush Color="$$HighContrastHyperlinkHoverColor$$" />
+                  <ColorBrush Color="#ffffffff" />
                 </wucSpriteVisual>
                 <wucSpriteVisual SizeX="111" SizeY="26" BorderMode="Hard" OffsetX="19" OffsetY="73" OffsetZ="0">
                   <MaskBrush>
@@ -85,7 +85,7 @@
                 <wucSpriteVisual SizeX="62" SizeY="16" BorderMode="Hard" OffsetX="140" OffsetY="86" OffsetZ="0">
                   <MaskBrush>
                     <Source>
-                      <ColorBrush Color="$$HighContrastHyperlinkHoverColor$$" />
+                      <ColorBrush Color="#ffffffff" />
                     </Source>
                     <Mask>
                       <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="6" />

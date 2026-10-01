@@ -98,18 +98,6 @@ void HyperlinkInTextTests::ValidateHyperlinkInTextWithoutPointerOverUnderline()
 // Validates the look of hyperlink in text with underline in HighContrast theme
 void HyperlinkInTextTests::ValidateHyperlinkInTextWithHighContrastUnderline()
 {
-    if (IsOSBuildAtLeast(26200))
-    {
-        TestServices::Utilities->SetDCompXmlVariable(L"HighContrastHyperlinkHoverColor", L"rgb {1, 0.6471, 0}");
-    }
-    else
-    {
-        TestServices::Utilities->SetDCompXmlVariable(L"HighContrastHyperlinkHoverColor", L"#ffffffff");
-    }
-
-    // The padded 25H2 glyph surface differs by at most 31/255 from the shared
-    // RS5/23H2 surface while retaining the same shape and dimensions.
-    ImageCompareToleranceGuard tolerance(IsOSBuildAtLeast(26200) ? 31 : 0);
     ValidateHyperlinkInText(true /*testPointerOver*/, false /*withUnderline*/, true /*useHighContrast*/);
 }
 

@@ -2228,8 +2228,8 @@ D2DTextDrawingContext::GetGlyphRunTransformAndBounds(
                 &d2dBrushBounds
                 ));
 
-            // Bug 25278712: D2D can underreport monochrome glyph bounds by one pixel,
-            // clipping edge coverage. Pad the mask before integer alignment.
+            // D2D can underreport monochrome glyph bounds by one pixel, clipping edge
+            // coverage. Pad the mask before integer alignment.
             if (d2dBrushBounds.top != d2dBrushBounds.bottom)
             {
                 d2dBrushBounds.top--;
