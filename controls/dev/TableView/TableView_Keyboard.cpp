@@ -239,6 +239,13 @@ bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
         return false;
     }
 
+    // Consume auto-repeats without advancing the sort cycle or letting Space scroll an ancestor.
+    if (args.KeyStatus().WasKeyDown)
+    {
+        args.Handled(true);
+        return true;
+    }
+
     // Same Handled policy as the Tapped handler: consume the key only when the toggle actually ran.
     // ToggleSortDirection returns false when an open editor blocks the reshape or the app cancelled
     // Sorting, and in those cases the key belongs to whatever else wants it.

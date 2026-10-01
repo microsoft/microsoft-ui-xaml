@@ -346,8 +346,10 @@ The group key is any object, but its **string identity** is what buckets rows. `
 ```csharp
 var source = TableViewSource.From(People)
                             .GroupBy(item => ((Person)item).Team,          // key object
-                                     item => ((Person)item).Team.Id);      // stable string identity
+                                     key => ((Team)key).Id);               // stable string identity
 ```
+
+The identity selector receives the key object returned by the key selector, not the original source item.
 
 If an identity cannot be produced — it is empty, it is not a string, the selector throws, or two genuinely different keys collapse onto the same identity without the identity overload — the call **throws** rather than quietly rendering an ungrouped table, so the mistake surfaces at development time.
 
@@ -477,7 +479,7 @@ Template parts:
 | `IsEditing` | `Boolean` | `false` | `true` while a cell editor is open, through the matching commit/cancel close. Read-only. |
 | `SelectionMode` | `TableViewSelectionMode` | `Single` | Gates row selection for the whole control. Selection is on by default, matching `ItemsView`, `ListView` and WPF's `DataGrid`; set `None` for a display-only table, which also clears any selection. |
 | `SelectedItem` | `Object` | `null` | The selected data item. **Read-only** — drive selection through `Select`/`Deselect`/`DeselectAll`. |
-| `SelectedIndex` | `Int32` | `-1` | The selected item's index in the `ItemsSource` index space; `-1` is "nothing selected". **Read-only.** |
+| `SelectedIndex` | `Int32` | `-1` | The selected item's index in the displayed row projection; `-1` is "nothing selected". Under grouping, group headers occupy projection indexes but cannot be selected, so this value is not necessarily an index into `ItemsSource`. **Read-only.** |
 
 `SelectedItem` and `SelectedIndex` are two read-only views of the same state and are always coherent. Both are dependency properties, so they can be bound *from* — `{x:Bind Table.SelectedItem.Name, Mode=OneWay}` — but not written. This matches `ItemsView`, whose `SelectedItem` and `CurrentItemIndex` are likewise get-only, and diverges from `Selector`/`ListView`, whose settable properties require a deferral-and-coercion layer to survive markup ordering and two-way bindings. Apps that need to drive selection from a view model do so through `Select(index)`. Selection is independent of editing: opening or closing an edit never changes what is selected.
 
@@ -1181,7 +1183,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
 
 ## Cell editing scope
 
-This release adds **opt-in cell editing** and **single row selection** on top of the display-only TableView. The remaining interactive v1 features (multiple/extended selection, sorting, grouping, cell keyboard navigation, column resize/reorder) are planned separately and land additively.
+This section describes the release that added **opt-in cell editing** and **single row selection** on top of the display-only TableView. Sorting and grouping are documented above; other interactive v1 features land additively in separate changes.
 
 Added here:
 
