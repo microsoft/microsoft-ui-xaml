@@ -7,7 +7,7 @@
   <PropertyGroup>
     <XamlProfilerTapWinAppSdkVersion>2.0.1</XamlProfilerTapWinAppSdkVersion>
     <XamlProfilerTapWindowsSdkBuildToolsVersion>10.0.26100.4654</XamlProfilerTapWindowsSdkBuildToolsVersion>
-    <XamlProfilerTapCppWinRTVersion>2.0.250303.1</XamlProfilerTapCppWinRTVersion>
+    <XamlProfilerTapCppWinRTVersion>3.0.260818.1</XamlProfilerTapCppWinRTVersion>
     <XamlProfilerTapWilVersion>1.0.240803.1</XamlProfilerTapWilVersion>
   </PropertyGroup>
 
