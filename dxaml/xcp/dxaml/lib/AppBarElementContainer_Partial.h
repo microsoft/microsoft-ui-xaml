@@ -17,5 +17,7 @@ namespace DirectUI
         AppBarElementContainer();
 
         IFACEMETHOD(OnApplyTemplate)() override;
+
+        _Check_return_ HRESULT OnVisibilityChanged() override;
     };
 }

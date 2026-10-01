@@ -23,3 +23,9 @@ IFACEMETHODIMP AppBarElementContainer::OnApplyTemplate()
 {
     return S_OK;
 }
+
+_Check_return_ HRESULT AppBarElementContainer::OnVisibilityChanged()
+{
+    IFC_RETURN(__super::OnVisibilityChanged());
+    return CommandBar::OnCommandBarElementVisibilityChanged(this);
+}
