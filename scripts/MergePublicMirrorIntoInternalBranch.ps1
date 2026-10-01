@@ -6,8 +6,10 @@ Merges the exact public mirror branch into the internal integration branch.
 The script creates and publishes a no-fast-forward merge commit directly to
 the configured target branch. It never rewrites history or force-pushes.
 
-The source and target must already share history. Conflicts and concurrent
-target updates fail the run without modifying the target branch.
+The source and target must already share history. Line endings are normalized
+according to .gitattributes during the merge so formatting-only differences do
+not cause conflicts. Content conflicts and concurrent target updates fail the
+run without modifying the target branch.
 #>
 
 [CmdletBinding()]
@@ -249,6 +251,8 @@ for ($publishAttempt = 1; $publishAttempt -le $maximumPublishAttempts; $publishA
     }
 
     $mergeResult = Get-GitCommandResult -Repository $repositoryFullPath -Arguments @(
+        "-c",
+        "merge.renormalize=true",
         "merge",
         "--no-ff",
         "--no-edit",

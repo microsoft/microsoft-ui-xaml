@@ -13,17 +13,12 @@
 // References
 
 #include "winrt/BindTestbedModel.h"
-#ifdef DESKTOP
-    #include "winrt/BindTestbedModel.BindTestbedModelDesktop_XamlTypeInfo.h"
-#else
-    #include "winrt/BindTestbedModel.BindTestbedModel_XamlTypeInfo.h"
-#endif
 
 namespace winrt::BindTestbed::implementation
 {
-    namespace wa = ::Windows::ApplicationModel;
-    namespace wf = ::Windows::Foundation;
-    namespace wfc = ::Windows::Foundation::Collections;
+    namespace wa = ::winrt::Windows::ApplicationModel;
+    namespace wf = ::winrt::Windows::Foundation;
+    namespace wfc = ::winrt::Windows::Foundation::Collections;
     namespace wux = Microsoft::UI::Xaml;
     namespace wuxc = Microsoft::UI::Xaml::Controls;
 }
@@ -38,11 +33,8 @@ inline winrt::Microsoft::UI::Xaml::DependencyProperty RegisterDependencyProperty
     winrt::Windows::UI::Xaml::Interop::TypeName const& ownerType,
     winrt::Microsoft::UI::Xaml::PropertyMetadata const& metadata)
 {
-#ifdef DESKTOP
+    // Desktop (Win32) apps run single-threaded apartment.
     struct ensure_initialize { ensure_initialize() { winrt::init_apartment(winrt::apartment_type::single_threaded); } } static init;
-#else
-    struct ensure_initialize { ensure_initialize() { winrt::init_apartment(winrt::apartment_type::multi_threaded); } } static init;
-#endif
     return winrt::Microsoft::UI::Xaml::DependencyProperty::Register(name, propertyType, ownerType, metadata);
 }
 
@@ -53,7 +45,7 @@ namespace winrt
     {
         return hstring{ value == Microsoft::UI::Xaml::Visibility::Visible ? L"Visible" : L"Hidden" };
     }
-    inline hstring to_hstring(::Windows::UI::Color const& value)
+    inline hstring to_hstring(::winrt::Windows::UI::Color const& value)
     {
         std::wstring color = L"";
         color.append(std::to_wstring(value.A));
@@ -64,7 +56,7 @@ namespace winrt
     }
 
     // For scenarios where IInspectable boxed into string
-    inline hstring to_hstring(::Windows::Foundation::IInspectable const& value)
+    inline hstring to_hstring(::winrt::Windows::Foundation::IInspectable const& value)
     {
         return unbox_value<hstring>(value);
     }

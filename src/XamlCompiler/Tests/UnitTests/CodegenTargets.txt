@@ -1,0 +1,77 @@
+# Shared codegen-to-master mapping consumed by copynewmasters.cmd and CodegenTests.cs.
+# Format: <master directory>|<codegen directory>
+# Master directories are relative to TestMasters\RegressionProjects\<chk|fre>.
+# Codegen directories are $(GeneratedFilesDir) paths relative to the build flavor root.
+# The two paths are independent and do not need matching names.
+# Blank lines and lines starting with # are ignored.
+
+# Basic
+Basic\CSharp\Simple\generated|CompilerTests\Basic\CSharp\Simple\generated
+Basic\CppWinRT\Simple\generated|CompilerTests\Basic\CppWinRT\Simple\generated
+Basic\CppWinRT\EventHandling_968976\generated|CompilerTests\Basic\CppWinRT\EventHandling_968976\generated
+
+# Basic - references
+Basic\References\CSharpExe\generated|CompilerTests\Basic\References\CSharpExe\generated
+Basic\References\CSharpLib\generated|CompilerTests\Basic\References\CSharpLib\generated
+Basic\References\CSharpWinrtComponent\generated|CompilerTests\Basic\References\CSharpWinrtComponent\generated
+Basic\References\CppWinRTComponent\generated|CompilerTests\Basic\References\CppWinRTComponent\generated
+Basic\References\CppWinRTExe\generated|CompilerTests\Basic\References\CppWinRTExe\generated
+
+# NonStandard
+NonStandard\NonStandardCppWinRT\NonStandardCppWinRT\generated|CompilerTests\NonStandard\NonStandardCppWinRT\NonStandardCppWinRT\generated
+
+# Bind phasing
+Features\BindPhasingTestBedCppWinRT\BindPhasingTestBedCppWinRT\generated|CompilerTests\Features\BindPhasingTestBedCppWinRT\BindPhasingTestBedCppWinRT\generated
+
+# Compiled binding
+Features\CompiledBinding\BindTestbedCppWinRT\generated|CompilerTests\BindTestbedCppWinRT\generated
+Features\CompiledBinding\BindTestbedCppWinRT\Incremental\generated|CompilerTests\BindTestbedCppWinRT\BindTestbedCppWinRTIncremental\generated
+Features\CompiledBinding\BindTestbedModel\generated|CompilerTests\BindTestbedModel\generated
+Features\CompiledBinding\BindTestbedCS\generated|CompilerTests\BindTestbedCS\generated
+
+# Conditionals
+Features\Conditionals\ConditionalControls\generated|CompilerTests\Features\Conditionals\ConditionalControls\generated
+Features\Conditionals\ConditionalsCppWinRT\generated|CompilerTests\Features\Conditionals\ConditionalsCppWinRT\generated
+Features\Conditionals\ConditionalsCS\generated|CompilerTests\Features\Conditionals\ConditionalsCS\generated
+Features\Conditionals\ConditionalsModel\generated|CompilerTests\Features\Conditionals\ConditionalsModel\generated
+Features\Conditionals\Platform Conditionals\PlatformConditionalsCS\generated|CompilerTests\Features\Conditionals\Platform Conditionals\PlatformConditionalsCS\generated
+Features\Conditionals\Platform Conditionals\PlatformConditionalsModel\generated|CompilerTests\Features\Conditionals\Platform Conditionals\PlatformConditionalsModel\generated
+
+# Deferred loading
+Features\DeferLoadStrategy\CSharp\generated|CompilerTests\Features\DeferLoadStrategy\CSharp\generated
+Features\DeferLoadStrategy\CppWinRT\generated|CompilerTests\Features\DeferLoadStrategy\CppWinRT\generated
+
+# Linked metadata
+Features\LinkedMD\LinkedMDAppCppWinRT\generated|CompilerTests\Features\LinkedMD\LinkedMDAppCppWinRT\generated
+Features\LinkedMD\LinkedMdAppCS\generated|CompilerTests\Features\LinkedMD\LinkedMdAppCS\generated
+Features\LinkedMD\LinkedMDControlsCppWinRT\generated|CompilerTests\Features\LinkedMD\LinkedMDControlsCppWinRT\generated
+Features\LinkedMD\LinkedMdControlsCS\generated|CompilerTests\Features\LinkedMD\LinkedMdControlsCS\generated
+Features\LinkedMD\LinkedMDSubControlsCppWinRT\generated|CompilerTests\Features\LinkedMD\LinkedMDSubControlsCppWinRT\generated
+Features\LinkedMD\LinkedMdSubControlsCS\generated|CompilerTests\Features\LinkedMD\LinkedMdSubControlsCS\generated
+
+# Markup extensions
+Features\MarkupExtensions\MarkupExtensionsCppWinRT\generated|CompilerTests\Features\MarkupExtensions\MarkupExtensionsCppWinRT\generated
+Features\MarkupExtensions\MarkupExtensionsCS\generated|CompilerTests\Features\MarkupExtensions\MarkupExtensionsCS\generated
+
+# Metadata
+Features\Metadata\MetadataTestbedCS\generated|CompilerTests\Features\Metadata\MetadataTestbedCS\generated
+Features\Metadata\MetadataTestbedCppWinRT\generated|CompilerTests\Features\Metadata\MetadataTestbedCppWinRT\generated
+
+# Multiple XAML files
+Features\MultiXamlFiles\MultipleViewsTestbedCppWinRT\generated|CompilerTests\Features\MultiXamlFiles\MultipleViewsTestbedCppWinRT\generated
+Features\MultiXamlFiles\MultipleViewsTestbed\generated|CompilerTests\Features\MultiXamlFiles\MultipleViewsTestbed\generated
+
+# Reduced provider loading
+Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs\generated|CompilerTests\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCs\generated
+Features\ReduceProviderLoading\ConsumerProvider\ProviderCs\generated|CompilerTests\Features\ReduceProviderLoading\ConsumerProvider\ProviderCs\generated
+Features\ReduceProviderLoading\ConsumerProvider\ConsumerCppWinRT\generated|CompilerTests\Features\ReduceProviderLoading\ConsumerProvider\ConsumerCppWinRT\generated
+Features\ReduceProviderLoading\ConsumerProvider\ProviderCppWinRT\generated|CompilerTests\Features\ReduceProviderLoading\ConsumerProvider\ProviderCppWinRT\generated
+
+# Static libraries
+Features\StaticLibs\RuntimeComponentWithStaticLibInApp\generated|CompilerTests\Features\StaticLibs\RuntimeComponentWithStaticLibInApp\generated
+Features\StaticLibs\StaticControlsLib\generated|CompilerTests\Features\StaticLibs\StaticControlsLib\generated
+Features\StaticLibs\StaticLibInApp\generated|CompilerTests\Features\StaticLibs\StaticLibInApp\generated
+Features\StaticLibs\StaticLibInRuntimeComponent\generated|CompilerTests\Features\StaticLibs\StaticLibInRuntimeComponent\generated
+
+# Custom App.xaml
+Features\CustomAppXaml\CustomAppXaml\generated|CompilerTests\Features\CustomAppXaml\CustomAppXaml\generated

@@ -40,17 +40,17 @@
     <MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.SDK.BuildTools.MSIX".*?version="(.*?)"').Groups[1].Value)</MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion>
     <MSBuildCachePackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.MSBuildCache.*?version="(.*?)"').Groups[1].Value)</MSBuildCachePackageVersion>
     <MicrosoftCsWinRTVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Windows.CsWinRT.*?version="(.*?)"').Groups[1].Value)</MicrosoftCsWinRTVersion>
-    <!-- Determine the configured versions based upon the Vesion.Details.xml file. -->
-    <VersionDetailsFile>$(MSBuildThisFileDirectory)Version.Details.xml</VersionDetailsFile>
-    <VersionDetailsFileContents>$([System.IO.File]::ReadAllText("$(VersionDetailsFile)"))</VersionDetailsFileContents>
-    <FoundationTransportPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(ProjectReunionFoundationTransportPackageName)".*?Version="(.*?)"').Groups[1].Value)</FoundationTransportPackageVersion>
-    <FrameworkUdkPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.FrameworkUdk.*?Version="(.*?)"').Groups[1].Value)</FrameworkUdkPackageVersion>
-    <IxpTransportPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(LiftedIXPTransportPackageName).*?Version="(.*?)"').Groups[1].Value)</IxpTransportPackageVersion>
-    <BasePackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(BasePackageName)".*?Version="(.*?)"').Groups[1].Value)</BasePackageVersion>
-    <WinUIDetailsNugetVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.Internal.WinUIDetails.*?Version="(.*?)"').Groups[1].Value)</WinUIDetailsNugetVersion>
+    <!-- Internal component versions, carried over from the deleted eng\Version.Details.xml and kept
+         byte-identical to the values it pinned. ValueOrDefault => $(WindowsAppSDKVersionPinned) in
+         the mono-build, else the literal fallback (update manually). -->
+    <FoundationTransportPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '3.0.0-20260802.0.nightly.internal'))</FoundationTransportPackageVersion>
+    <FrameworkUdkPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '3.0.0-experimental-27300.1905.260822-1925.0'))</FrameworkUdkPackageVersion>
+    <IxpTransportPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '3.0.0-experimental-27300.1905.260822-1925.0'))</IxpTransportPackageVersion>
+    <BasePackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.0.6-dev.experimental2'))</BasePackageVersion>
+    <WinUIDetailsNugetVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '3.10.0-experimental.20260819.0'))</WinUIDetailsNugetVersion>
     <!-- Package Versions for use in sample and test apps. Once Transport packages are removed revert to using old version variables -->
-    <FoundationPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(FoundationPackageName)".*?Version="(.*?)"').Groups[1].Value)</FoundationPackageVersion>
-    <IXPPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(LiftedIXPPackageName)".*?Version="(.*?)"').Groups[1].Value)</IXPPackageVersion>
+    <FoundationPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '3.0.0-dev.experimental11'))</FoundationPackageVersion>
+    <IXPPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '3.0.0-experimental-Rolling.20260823.1'))</IXPPackageVersion>
     <!-- ====================================================================================== -->
     <!-- OSS builds currently pin to last-known-good versions. -->
     <FoundationTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.19-experimental</FoundationTransportPackageVersion>
@@ -62,6 +62,20 @@
     <FoundationPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.19-experimental</FoundationPackageVersion>
     <IXPPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.11-experimental</IXPPackageVersion>
     <!-- ====================================================================================== -->
+    <!-- A mono-build checkout can stage its authoritative package-version file above this repository. -->
+    <WindowsAppSDKPackageVersionProps>$([MSBuild]::GetPathOfFileAbove('WindowsAppSDK.PackageVersion.props', '$(MSBuildThisFileDirectory)..\'))</WindowsAppSDKPackageVersionProps>
+  </PropertyGroup>
+  <Import Project="$(WindowsAppSDKPackageVersionProps)" Condition="'$(WindowsAppSDKPackageVersionProps)' != ''" />
+  <PropertyGroup Condition="'$(WindowsAppSDKPackageVersionProps)' != ''">
+    <FoundationTransportPackageVersion>$(MicrosoftWindowsAppSDKFoundationTransportPackagePackageVersion)</FoundationTransportPackageVersion>
+    <FrameworkUdkPackageVersion>$(MicrosoftFrameworkUdkPackageVersion)</FrameworkUdkPackageVersion>
+    <IxpTransportPackageVersion>$(MicrosoftProjectReunionInteractiveExperiencesTransportPackagePackageVersion)</IxpTransportPackageVersion>
+    <BasePackageVersion>$(MicrosoftWindowsAppSDKBasePackagePackageVersion)</BasePackageVersion>
+    <WinUIDetailsNugetVersion>$(MicrosoftInternalWinUIDetailsPackageVersion)</WinUIDetailsNugetVersion>
+    <FoundationPackageVersion>$(MicrosoftWindowsAppSDKFoundationPackagePackageVersion)</FoundationPackageVersion>
+    <IXPPackageVersion>$(MicrosoftWindowsAppSDKInteractiveExperiencesPackagePackageVersion)</IXPPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
     <!-- It is at this point that we might want our non-product code to be able to use a package version different than the primary configuration -->
     <!-- If so, this would probably be the point at which we would override the above version with what is configured for the app                 -->
     <!-- The package version identifies the targeted package version based on the configured packages. -->

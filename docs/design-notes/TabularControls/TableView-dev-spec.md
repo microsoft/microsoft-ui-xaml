@@ -82,6 +82,8 @@ Each `TableViewCellsPanel` measures its cells unconstrained and arranges them at
 
 `PART_HeaderRow` provides the header-surface background and a 1px bottom gridline. `PART_HeaderScroller` is horizontal-only (`HorizontalScrollMode="Auto"`, horizontal scrollbar hidden, vertical disabled). `PART_HeaderHost` is a `TableViewCellsPanel` (inherently horizontal); `RebuildHeaders` fills it with one `Grid` header cell per non-null column (each cell mirrors the column's `Visibility`), in `Columns` order, left-to-right. Header cells use the density row minimum height, so the header band matches body rows. Header content comes from `TableViewColumn.Header`, displayed via `HeaderTemplateSelector` when set, otherwise `HeaderTemplate`, otherwise the default text presenter.
 
+Custom templates using a `Border` for `PART_HeaderRow` must supply its gridline `BorderThickness` through a style setter rather than a local value, so `GridLinesVisibility` can restore it with `ClearValue` for `Horizontal` or `All`.
+
 ## Body band
 
 `ScrollViewer` `PART_BodyScroller` → `Grid` `PART_BodyContent` → `ItemsRepeater` `PART_RowsRepeater`.
@@ -131,6 +133,40 @@ Interactive column resize is a **policy split** between a framework-internal pri
 **Axis and RTL.** `DragOrientation` is the axis the drag is **measured along**, which for a divider is perpendicular to how it looks: `Horizontal` drags left/right. It is named `DragOrientation` rather than `Orientation` precisely because the primitive owns no shape — the host sizes it — so the control's own layout axis is not something it can describe. This is also the opposite of the Windows Community Toolkit's `SizerBase.Orientation`, which describes the bar; the distinct name prevents a silent mix-up. The primitive normalizes to a **logical** delta, so positive always grows in reading order and both input paths agree; only the horizontal axis mirrors under RTL.
 
 **Keyboard.** The header cell, not the gripper, is the keyboard target — column commands belong there, and one tab stop per column would sit between the user and the data. The table therefore sets `IsTabStop(false)` on the gripper and routes Left/Right into `TryKeyboardStep(VirtualKey)`, which owns direction, the RTL mirror, `KeyboardIncrement` and the Shift multiplier so both keyboard paths cannot drift apart.
+
+### Resize policy — what each column configuration does
+
+The reference behavior is **WPF `DataGrid`**, and the rules below are derived from measuring it rather than from its source. `ResizeBoundsForColumn` turns them into a `[Min, Max]` the drag is clamped to.
+
+Three rules decide everything:
+
+1. **Donor.** A column can give width away only if it is currently `*`, is user-resizable (`CanUserResizeColumns` and `TableViewColumn.CanResize`), and sits **after** the dragged column. Only `*` qualifies because only `*` columns are re-divided by `ResolveColumnWidths`; reserving space from a `Pixel` or `Auto` neighbour would promise width that never materializes.
+2. **Direction.** A resize takes space only from the columns after the dragged divider. `*` columns before it are frozen at the width they already render (`FreezeColumnsBeforeResize`), which keeps them out of both the bound and the redistribution pass without changing what the user sees.
+3. **Ownership.** A `*` column can only change width by taking from another `*` column, so with no donor it cannot move at all. A `Pixel` or `Auto` column owns its width outright, so it may still **shrink** even with no donor — that only makes the table narrower and needs nothing from a neighbour.
+
+This yields three outcomes:
+
+| Condition | Outcome |
+|---|---|
+| No column authored `*` anywhere | **Unbounded** — the column grows, the extent exceeds the viewport, the body scrolls |
+| `*` present, at least one donor after the dragged column | **Capped** at `viewport − Σ reserved` |
+| `*` present, no donor, dragged column is `*` | **Pinned** — the divider does not move |
+| `*` present, no donor, dragged column is `Pixel`/`Auto` | **Shrink-only** — may narrow to its own `MinWidth`, may not grow |
+
+What each other column reserves: a donor reserves its `MinWidth`; a `Pixel` column its pixel width; an `Auto` column its content width; a locked `*` column its share of the **authored** layout, so a neighbour's drag cannot move it.
+
+Two-column expectations, viewport 478, `MinWidth` 50 (`!` = `CanResize="False"`):
+
+| Config | Outcome | Config | Outcome |
+|---|---|---|---|
+| `P,P` `P,P!` | unbounded, scrolls | `S,S` | capped |
+| `P,A` `P,A!` | unbounded, scrolls | `S,S!` | pinned |
+| `A,P` `A,P!` | unbounded, scrolls | `S,P` `S,P!` | pinned |
+| `A,A` `A,A!` | unbounded, scrolls | `S,A` `S,A!` | pinned |
+| `P,S` `A,S` | capped | `A,S!` | shrink-only |
+| `P,S!` | shrink-only | | |
+
+**Known divergences from WPF.** WPF's resize *assigns* the neighbour an explicit width instead of relying on a redistribution pass, so it can shrink a `Pixel` or `Auto` neighbour. Ours cannot, so `S,P`, `S,A` and the growth direction of `P,S!,A` **pin** where WPF resizes. This is deliberate: promising space that a non-`*` neighbour never surrenders is what produced the original overflow bug. Matching WPF here would mean adopting its assign-the-neighbour model, which is a larger change to the drag path. All other configurations agree with WPF on whether the divider moves.
 
 ## Row virtualization
 

@@ -47,6 +47,7 @@
         <ClInclude Include="precomp.h"/>
         <ClInclude Include="PredictableDManipEnablerServer.h"/>
         <ClInclude Include="TraceConsumerRoutineHelper.h"/>
+        <ClInclude Include="..\inc\TraceEventScope.h"/>
         <ClInclude Include="UtilitiesRoutineHelper.h"/>
         <ClInclude Include="WindowingHelper.h"/>
         <ClInclude Include="ResourcesPriHelper.h"/>
