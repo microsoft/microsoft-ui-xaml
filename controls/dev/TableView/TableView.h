@@ -782,6 +782,10 @@ private:
     tracker_ref<winrt::ItemsRepeater> m_rowsRepeater{ this };
     tracker_ref<winrt::ContentControl> m_emptyStatePresenter{ this };
     tracker_ref<winrt::FrameworkElement> m_headerRow{ this };
+    // The header rule's "on" thickness, captured from the template at OnApplyTemplate so a
+    // GridLinesVisibility toggle restores what the template declared instead of a hard-coded
+    // value, and so a custom template's other three edges survive the toggle.
+    winrt::Thickness m_headerRowBorderThickness{ 0, 0, 0, 1 };
     tracker_ref<winrt::Panel> m_headerHost{ this };
     // Captured at creation so a GridLinesVisibility toggle does not re-walk the header visual
     // tree looking for named children. Non-owning: the header host owns the Borders, so weak_ref

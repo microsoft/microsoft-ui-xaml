@@ -152,9 +152,6 @@ namespace
             visibility == winrt::TableViewGridLinesVisibility::All;
     }
 
-    constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
-    constexpr winrt::Thickness s_headerBottomThickness{ 0, 0, 0, 1 };
-
     TableViewResourceCache& GetTableViewResourceCache(TableView* owner)
     {
         // Per-instance member (not a process-global map) so multi-UI-thread instances never share state.
@@ -496,6 +493,14 @@ void TableView::OnApplyTemplate()
 
     m_rowsRepeater.set(GetTemplateChild(hstring{ s_RowsRepeaterPartName }).try_as<winrt::ItemsRepeater>());
     m_headerRow.set(GetTemplateChild(hstring{ s_HeaderRowPartName }).try_as<winrt::FrameworkElement>());
+    // Capture the template's own header rule before any toggle overwrites it, so turning grid
+    // lines back on restores what the template asked for rather than a hard-coded 1px. A custom
+    // template may also declare the other three edges; those are never touched.
+    m_headerRowBorderThickness = { 0, 0, 0, 1 };
+    if (auto headerBorder = m_headerRow.get().try_as<winrt::Border>())
+    {
+        m_headerRowBorderThickness = headerBorder.BorderThickness();
+    }
     m_headerHost.set(GetTemplateChild(hstring{ s_HeaderHostPartName }).try_as<winrt::Panel>());
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
     auto weakThis = get_weak();
@@ -815,15 +820,19 @@ void TableView::ApplyGridLinesToHeader()
     const auto visibility = GridLinesVisibility();
 
     // The rule under the header row is the header's share of the horizontal grid, so it tracks
-    // GridLinesVisibility like every other rule. Both branches assign an explicit thickness
-    // rather than using ClearValue, so the toggle does not depend on whether the template
-    // supplied the "on" value as a style setter or as a local value.
+    // GridLinesVisibility like every other rule. Only Bottom is toggled, against the thickness
+    // the template declared: a custom template's left/top/right edges are left alone, and the
+    // "on" value comes from the template rather than being hard-coded here.
     if (auto headerFE = m_headerRow.get())
     {
         if (auto headerBorder = headerFE.try_as<winrt::Border>())
         {
-            headerBorder.BorderThickness(
-                WantsHorizontalLines(visibility) ? s_headerBottomThickness : s_zeroThickness);
+            auto thickness = m_headerRowBorderThickness;
+            if (!WantsHorizontalLines(visibility))
+            {
+                thickness.Bottom = 0;
+            }
+            headerBorder.BorderThickness(thickness);
         }
     }
 
