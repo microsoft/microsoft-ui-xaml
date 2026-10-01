@@ -499,7 +499,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             long long eventToken = 0;
             TestCleanupWrapper cleanup([&]()
             {
-                border->UnregisterPropertyChangedCallback(xaml_controls::Border::BackgroundProperty, eventToken);
+                RunOnUIThread([&]()
+                {
+                    border->UnregisterPropertyChangedCallback(xaml_controls::Border::BackgroundProperty, eventToken);
+                    border = nullptr;
+                    root = nullptr;
+                });
+                TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
             });
 
 

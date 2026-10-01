@@ -794,11 +794,11 @@ namespace Microsoft { namespace UI { namespace Xaml {
 
         void ScopedResourcesTests::RedefinedResourcesInAppDontTriggerOverride()
         {
-            TestCleanupWrapper cleanup;
-
             // This leak is unrelated to what's being tested here.  In this test scenario Application object
             // is not destroyed, but we set BaseUri on it, which causes a leak.
             TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
+            TestCleanupWrapper cleanup;
 
             RunOnUIThread([&]()
             {

@@ -1622,11 +1622,15 @@ void HitTestBasic::LTESkipsSubtreeCommon(bool isDepthOnLTE)
 
 void HitTestBasic::LTESkipsSubtree_DepthUnderLTE()
 {
+    TestCleanupWrapper cleanup;
+
     LTESkipsSubtreeCommon(false /* isDepthOnLTE */);
 }
 
 void HitTestBasic::LTESkipsSubtree_DepthOnLTE()
 {
+    TestCleanupWrapper cleanup;
+
     LTESkipsSubtreeCommon(true /* isDepthOnLTE */);
 }
 

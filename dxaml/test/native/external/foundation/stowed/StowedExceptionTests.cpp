@@ -365,6 +365,10 @@ private:
 
 void StowedExceptionTests::ErrorInfoCreateRestrictedErrorInfo()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, StackPanel, Border, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations after the error scenario.
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     ::Windows::Foundation::EventRegistrationToken renderingEventToken = {};
 
     TestCleanupWrapper cleanup([&]()
@@ -492,6 +496,10 @@ void StowedExceptionTests::ErrorInfoCreateRestrictedErrorInfo()
 
 void StowedExceptionTests::ReportUnhandledErrorNonRestrictedError()
 {
+    // WPF shutdown reports DesktopWindowXamlSource, StackPanel, Border, SizeChangedEventArgs,
+    // and associated event-source/weak-reference allocations after the error scenario.
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     ::Windows::Foundation::EventRegistrationToken renderingEventToken = {};
 
     TestCleanupWrapper cleanup([&]()

@@ -199,6 +199,10 @@ namespace Microsoft.Toolkit.Wpf.UI.XamlHost
         {
             if (disposing && !this.IsDisposed)
             {
+                // We dispose before removing the host from the WPF tree, so HwndHost will not
+                // receive the source-change notification that unregisters its keyboard input site.
+                ((IKeyboardInputSink)this).KeyboardInputSite?.Unregister();
+
                 // Free any other managed objects here.
                 //
 
