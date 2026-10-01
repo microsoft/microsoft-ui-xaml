@@ -137,7 +137,9 @@
       <FileWrites Include="@(TestMasters->'$(OutDir)TestMasters\%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
   </Target>
-  <Target Name="AfterBuild" AfterTargets="Build" Inputs="@(TestMasters)" Outputs="@(TestMasters->'$(OutDir)TestMasters\%(RecursiveDir)%(Filename)%(Extension)')">
+  <!-- Always restage: deleted or moved masters must disappear from the test payload. -->
+  <Target Name="AfterBuild" AfterTargets="Build">
+    <RemoveDir Directories="$(OutDir)TestMasters\RegressionProjects" />
     <Copy SourceFiles="@(TestMasters)" DestinationFolder="$(OutDir)TestMasters\%(RecursiveDir)" ContinueOnError="false" />
   </Target>
   <PropertyGroup>
