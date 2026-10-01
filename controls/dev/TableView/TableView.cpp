@@ -182,23 +182,6 @@ namespace
         return (0.5 + layoutEpsilonPixels) / scale;
     }
 
-    // A thickness that paints nothing reserves space without drawing an edge, so an internal
-    // separator meeting it is not a duplicate.
-    bool PaintsEdge(const winrt::Brush& brush) noexcept
-    {
-        if (!brush)
-        {
-            return false;
-        }
-
-        if (const auto solid = brush.try_as<winrt::SolidColorBrush>())
-        {
-            return solid.Color().A != 0;
-        }
-
-        return true;
-    }
-
     bool TryGetBoundsRelativeTo(
         const winrt::FrameworkElement& element,
         const winrt::UIElement& relativeTo,
@@ -1054,7 +1037,7 @@ std::optional<bool> TableView::ShouldSuppressTrailingGridLine()
     // Both edges are read in the panel's logical coordinate space, which XAML mirrors wholesale
     // under RTL, so the logical trailing edge meets BorderThickness.Right in either direction.
     const double outerThickness = (std::max)(0.0, border.Right);
-    if (outerThickness <= 0.0 || ActualWidth() <= 0.0 || !PaintsEdge(BorderBrush()))
+    if (outerThickness <= 0.0 || ActualWidth() <= 0.0)
     {
         return false;
     }
@@ -1114,7 +1097,7 @@ std::optional<bool> TableView::ShouldSuppressBottomGridLine(
     }
 
     const double bottomThickness = (std::max)(0.0, BorderThickness().Bottom);
-    if (bottomThickness <= 0.0 || ActualHeight() <= 0.0 || !PaintsEdge(BorderBrush()))
+    if (bottomThickness <= 0.0 || ActualHeight() <= 0.0)
     {
         return false;
     }
@@ -1236,9 +1219,15 @@ void TableView::RefreshTerminalGridLines()
         terminalRow
             ? WantsHorizontalLines(GridLinesVisibility())
             : terminalGroupHeader && terminalGroupHeader.BorderThickness().Bottom > 0.0;
-    const auto bottomResult = terminalElement
+    auto bottomResult = terminalElement
         ? ShouldSuppressBottomGridLine(terminalElement, hasBottomGridLine)
-        : (terminalGeometryUnavailable ? std::optional<bool>{} : std::optional<bool>{ false });
+        : std::optional<bool>{ false };
+    // A container that failed its transform could be the real edge container, so a negative
+    // result is only trustworthy once every container was measurable.
+    if (terminalGeometryUnavailable && !bottomResult.value_or(false))
+    {
+        bottomResult = std::nullopt;
+    }
     const bool suppressBottom = bottomResult.value_or(m_suppressBottomGridLine);
     m_suppressBottomGridLine = suppressBottom;
 
