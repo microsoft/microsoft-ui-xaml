@@ -934,7 +934,7 @@ winrt::Size ScrollPresenter::ArrangeOverride(winrt::Size const& finalSize)
                 OnContentLayoutOffsetChanged(ScrollPresenterDimension::VerticalScroll);
             }
 
-            OnViewChanged(contentLayoutOffsetXDelta != 0.0f /*horizontalOffsetChanged*/, contentLayoutOffsetYDelta != 0.0f /*verticalOffsetChanged*/);
+            OnViewChanged(contentLayoutOffsetXDelta != 0.0f /*horizontalOffsetChanged*/, contentLayoutOffsetYDelta != 0.0f /*verticalOffsetChanged*/, false /*zoomFactorChanged*/);
         }
 
         renderSizeChanged = content.RenderSize() != oldRenderSize;
@@ -1211,7 +1211,8 @@ void ScrollPresenter::ValuesChanged(
     if (oldZoomFactor != m_zoomFactor || oldZoomedHorizontalOffset != m_zoomedHorizontalOffset || oldZoomedVerticalOffset != m_zoomedVerticalOffset)
     {
         OnViewChanged(oldZoomedHorizontalOffset != m_zoomedHorizontalOffset /*horizontalOffsetChanged*/,
-                      oldZoomedVerticalOffset != m_zoomedVerticalOffset /*verticalOffsetChanged*/);
+                      oldZoomedVerticalOffset != m_zoomedVerticalOffset /*verticalOffsetChanged*/,
+                      oldZoomFactor != m_zoomFactor /*zoomFactorChanged*/);
     }
 
     TraceLoggingProviderWrite(
@@ -3782,7 +3783,7 @@ void ScrollPresenter::SetContentLayoutOffsetXDbg(float contentLayoutOffsetX)
         m_contentLayoutOffsetX = contentLayoutOffsetX;
         InvalidateArrange();
         OnContentLayoutOffsetChanged(ScrollPresenterDimension::HorizontalScroll);
-        OnViewChanged(true /*horizontalOffsetChanged*/, false /*verticalOffsetChanged*/);
+        OnViewChanged(true /*horizontalOffsetChanged*/, false /*verticalOffsetChanged*/, false /*zoomFactorChanged*/);
     }
 }
 
@@ -3796,7 +3797,7 @@ void ScrollPresenter::SetContentLayoutOffsetYDbg(float contentLayoutOffsetY)
         m_contentLayoutOffsetY = contentLayoutOffsetY;
         InvalidateArrange();
         OnContentLayoutOffsetChanged(ScrollPresenterDimension::VerticalScroll);
-        OnViewChanged(false /*horizontalOffsetChanged*/, true /*verticalOffsetChanged*/);
+        OnViewChanged(false /*horizontalOffsetChanged*/, true /*verticalOffsetChanged*/, false /*zoomFactorChanged*/);
     }
 }
 
@@ -5674,17 +5675,20 @@ void ScrollPresenter::OnContentSizeChanged(const winrt::UIElement& content)
     }
 }
 
-void ScrollPresenter::OnViewChanged(bool horizontalOffsetChanged, bool verticalOffsetChanged)
+void ScrollPresenter::OnViewChanged(bool horizontalOffsetChanged, bool verticalOffsetChanged, bool zoomFactorChanged)
 {
     //SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, horizontalOffsetChanged, verticalOffsetChanged);
     SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL_FLT, METH_NAME, this, m_zoomedHorizontalOffset, m_zoomedVerticalOffset, m_zoomFactor);
 
-    if (horizontalOffsetChanged)
+    // A zoom factor change alters the scrollable width/height even when the offsets are unchanged,
+    // so the scroll controllers must be refreshed to reflect the new CanScroll state (e.g. so that
+    // Auto scrollbars collapse after a non-animated ZoomTo fits the content within the viewport).
+    if (horizontalOffsetChanged || zoomFactorChanged)
     {
         UpdateScrollControllerValues(ScrollPresenterDimension::HorizontalScroll);
     }
 
-    if (verticalOffsetChanged)
+    if (verticalOffsetChanged || zoomFactorChanged)
     {
         UpdateScrollControllerValues(ScrollPresenterDimension::VerticalScroll);
     }
