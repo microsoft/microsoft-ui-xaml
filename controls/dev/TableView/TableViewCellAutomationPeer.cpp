@@ -224,6 +224,9 @@ void TableViewCellAutomationPeer::UpdateNameItem(winrt::IInspectable const& item
     {
         ResetEditName();
         m_nameItem.set(item);
+        m_item.Track(item);
+        m_lastKnownRowIndex = -1;
+        m_trackedItemOccurrence = -1;
     }
 }
 

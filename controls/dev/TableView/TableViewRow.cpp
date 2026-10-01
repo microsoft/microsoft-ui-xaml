@@ -588,6 +588,28 @@ void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
     RebuildCells();
 }
 
+void TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
+{
+    if (!owner)
+    {
+        return;
+    }
+
+    if (m_owningTableView.get() != owner)
+    {
+        SetOwningTableViewInternal(owner);
+        return;
+    }
+
+    RebuildCells();
+
+    if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
+        .try_as<winrt::TableViewRowAutomationPeer>())
+    {
+        winrt::get_self<TableViewRowAutomationPeer>(peer)->RetargetRowItem(*this, owner);
+    }
+}
+
 // Rewire realized rows when Columns changes but the owner identity does not.
 void TableViewRow::RefreshColumnsSubscriptionInternal()
 {

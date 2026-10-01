@@ -30,6 +30,7 @@ public:
 
     // Updates the weak owner ref, column subscription, and realized cells.
     void SetOwningTableViewInternal(winrt::TableView const& owner);
+    void EnsureOwningTableViewInternal(winrt::TableView const& owner);
 
     // Rewire realized rows when the owner keeps the same identity but Columns changes.
     void RefreshColumnsSubscriptionInternal();

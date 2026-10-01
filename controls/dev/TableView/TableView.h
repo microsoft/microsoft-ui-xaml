@@ -660,6 +660,8 @@ private:
     void ApplyGridLinesToHeader();
     void RefreshGridLinesOnRealizedRows();
     void RefreshRowBackgroundsOnRealizedRows();
+    void QueueGroupExpansionRowRefresh();
+    void RefreshRealizedRowsAfterGroupExpansion();
 
     // Invoke fn for each realized row in PART_RowsRepeater. Centralizes the "enumerate realized
     // rows" walk shared by the density / gridline / frozen-column / column-change update paths
@@ -845,6 +847,7 @@ private:
     winrt::event_token m_pendingGroupFocusLayoutToken{};
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
+    winrt::event_token m_pendingGroupRowRefreshLayoutToken{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_emptyStateCollectionChangedRevoker{};
     // ActualThemeChanged refreshes imperatively-resolved brushes that ItemsRepeater rows do not re-pump.
     winrt::event_token m_actualThemeChangedToken{};

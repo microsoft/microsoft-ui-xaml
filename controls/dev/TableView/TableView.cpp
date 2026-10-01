@@ -452,6 +452,11 @@ void TableView::OnApplyTemplate()
         LayoutUpdated(m_pendingGroupFocusLayoutToken);
         m_pendingGroupFocusLayoutToken = {};
     }
+    if (m_pendingGroupRowRefreshLayoutToken.value)
+    {
+        LayoutUpdated(m_pendingGroupRowRefreshLayoutToken);
+        m_pendingGroupRowRefreshLayoutToken = {};
+    }
     if (auto oldRepeater = m_rowsRepeater.get())
     {
         // Drop per-template Loaded handlers so old elements cannot keep this alive.
@@ -932,6 +937,52 @@ void TableView::RefreshRowBackgroundsOnRealizedRows()
     });
 }
 
+void TableView::QueueGroupExpansionRowRefresh()
+{
+    if (m_pendingGroupRowRefreshLayoutToken.value)
+    {
+        return;
+    }
+
+    auto weakThis = get_weak();
+    m_pendingGroupRowRefreshLayoutToken = LayoutUpdated(
+        [weakThis](winrt::IInspectable const&, winrt::IInspectable const&)
+        {
+            auto strongThis = weakThis.get();
+            if (!strongThis)
+            {
+                return;
+            }
+
+            if (strongThis->m_pendingGroupRowRefreshLayoutToken.value)
+            {
+                strongThis->LayoutUpdated(strongThis->m_pendingGroupRowRefreshLayoutToken);
+                strongThis->m_pendingGroupRowRefreshLayoutToken = {};
+            }
+
+            try
+            {
+                strongThis->RefreshRealizedRowsAfterGroupExpansion();
+            }
+            catch (...)
+            {
+                // Best-effort repair after a deferred grouped reshape.
+            }
+        });
+}
+
+void TableView::RefreshRealizedRowsAfterGroupExpansion()
+{
+    ForEachRealizedRow([this](winrt::TableViewRow const& row)
+    {
+        auto* const rowImpl = winrt::get_self<TableViewRow>(row);
+        rowImpl->EnsureOwningTableViewInternal(*this);
+        RefreshRowSelectionState(row);
+    });
+
+    InvalidateMeasure();
+}
+
 void TableView::AdoptItemsSource()
 {
     auto const itemsSource = ItemsSource();
@@ -1061,10 +1112,16 @@ void TableView::OnTableViewSourceProjectionChanged()
     }
 
     RefreshRowsPipeline();
+    QueueGroupExpansionRowRefresh();
 }
 
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
 {
+    if (!reorderOnly)
+    {
+        QueueGroupExpansionRowRefresh();
+    }
+
     // The app may have declared or cleared a sort straight on the source, which the control has no
     // other way to learn about. Reconcile before anything else so the chevrons never outlive the
     // axis they describe.
@@ -1424,7 +1481,7 @@ void TableView::OnRowElementPrepared(
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
         auto rowImpl = winrt::get_self<TableViewRow>(row);
-        rowImpl->SetOwningTableViewInternal(*this);
+        rowImpl->EnsureOwningTableViewInternal(*this);
         rowImpl->RefreshGridLines();
         rowImpl->RefreshRowBackground();
         RefreshRowSelectionState(row);
@@ -1477,7 +1534,7 @@ void TableView::OnRowElementClearing(
         // ElementPrepared/ElementIndexChanged callback. Keep the weak owner available so that path
         // can rebuild cells and publish a live row peer; item-identity tracking still rejects stale
         // peers after the rebind.
-        rowImpl->SetOwningTableViewInternal(*this);
+        rowImpl->EnsureOwningTableViewInternal(*this);
         InvalidateMeasure();
     }
     else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())

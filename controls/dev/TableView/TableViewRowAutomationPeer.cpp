@@ -337,6 +337,11 @@ void TableViewRowAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, wi
     }
 }
 
+void TableViewRowAutomationPeer::RetargetRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView)
+{
+    TrackRowItem(row, tableView);
+}
+
 [[noreturn]] void TableViewRowAutomationPeer::ThrowElementNotAvailable()
 {
     throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);

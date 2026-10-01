@@ -408,6 +408,7 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     // told clients to re-read a structure that had not changed yet.
     if (changed)
     {
+        QueueGroupExpansionRowRefresh();
         RaiseGroupStructureChanged();
     }
 
@@ -578,6 +579,7 @@ void TableView::SetAllGroupsExpansion(bool expand)
 
     if (changed)
     {
+        QueueGroupExpansionRowRefresh();
         RaiseGroupStructureChanged();
     }
 
