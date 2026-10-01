@@ -66,7 +66,6 @@
                                         <!-- Left, not the default Stretch: the panel reports the summed column
                                              width, and a wider presenter would centre it. PART_CellsHost
                                              must match. -->
-                                        <!-- Left, not Stretch: a wider presenter would center the summed column width. -->
                                         <controls:TableViewCellsPanel x:Name="PART_HeaderHost"
                                                                       HorizontalAlignment="Left" />
                                     </ScrollViewer>
@@ -168,7 +167,6 @@
                                      would make the result depend on GoToState call order. One group
                                      whose names encode both dimensions is the pattern TreeViewItem
                                      and ItemContainer use. -->
-                                <!-- Selected states share CommonStates because a second group would race the same background setter. -->
                                 <VisualState x:Name="Selected">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_RootBorder" Storyboard.TargetProperty="Background">
@@ -373,7 +371,6 @@
                                 <VisualState x:Name="NotExpandable">
                                     <!-- Only the chevron hides; PART_ExpanderGutter keeps its width so
                                          content stays aligned across expandable and non-expandable groups. -->
-                                    <!-- Keep the gutter width so expandable and leaf groups align. -->
                                     <VisualState.Setters>
                                         <Setter Target="PART_ExpanderIcon.Visibility" Value="Collapsed" />
                                     </VisualState.Setters>

@@ -523,7 +523,7 @@ void TableView::OnApplyTemplate()
         // ListView / GridView / ItemsView, and matching the single body tab stop that
         // TableViewRow::OnApplyTemplate already applies to PART_CellsHost. Two bands, one stop
         // each, with Tab the only way between them and the arrows confined to the band they start
-        // in. Collapsing the stops costs no reach: every actionable column is one arrow away.
+        // in. Collapsing the stops costs no reach: every visible column header is one arrow away.
         //
         // Applied HERE rather than in the TableViewCellsPanel constructor deliberately. The panel
         // is a layout primitive shared by both bands and by any app that re-templates the control;
@@ -1661,18 +1661,13 @@ void TableView::RebuildHeaders()
             //
             // IsTabStop no longer buys this header its own Tab press - PART_HeaderHost is a single
             // tab stop (KeyboardNavigationMode::Once), so the band costs ONE Tab and Left/Right
-            // move within it. What the flag decides now is whether the header is FOCUSABLE, and
-            // therefore whether arrow navigation can land on it: a header that can neither sort nor
-            // resize has nothing to activate, so it is skipped rather than made a dead stop.
-            //
-            // Actionable is resize OR sort: gating on resize alone left the common
-            // CanUserSortColumns=true / CanUserResizeColumns=false case with a header that sorts on
-            // click but was not focusable, so a keyboard-only user could never sort it.
+            // move within it. Every visible header is focusable even when it has no command, so
+            // keyboard users can reach and read every column instead of having non-actionable
+            // headers disappear from the navigation sequence.
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
-            const bool headerIsActionable = headerIsResizable || headerIsSortable;
-            headerCell.IsTabStop(headerIsActionable);
-            headerCell.UseSystemFocusVisuals(headerIsActionable);
+            headerCell.IsTabStop(true);
+            headerCell.UseSystemFocusVisuals(true);
             const winrt::hstring headerText = GetColumnHeaderText(column);
             if (!headerText.empty())
             {

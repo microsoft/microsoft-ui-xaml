@@ -119,14 +119,37 @@ namespace
         return -1;
     }
 
-    // "Actionable" (sortable or resizable) is what RebuildHeaders stamps onto IsTabStop. Now that
-    // the band is a single tab stop, that flag no longer buys a header its own Tab press - it
-    // decides whether the header is focusable at all, and therefore whether ARROW navigation can
-    // land on it. A header with nothing to activate is still skipped, exactly as before.
+    // Headers with no command are still keyboard targets: the header band is a single tab stop, and
+    // arrow navigation must let keyboard users reach and read every visible column header.
     bool IsFocusableHeaderCell(const winrt::FrameworkElement& cell)
     {
         auto const element = cell.try_as<winrt::UIElement>();
-        return element && element.IsTabStop() && element.Visibility() == winrt::Visibility::Visible;
+        return element && element.Visibility() == winrt::Visibility::Visible;
+    }
+
+    winrt::UIElement FindFirstFocusableDescendant(const winrt::UIElement& element)
+    {
+        if (!element)
+        {
+            return nullptr;
+        }
+
+        const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(element);
+        for (int32_t i = 0; i < childCount; ++i)
+        {
+            if (auto const child = winrt::VisualTreeHelper::GetChild(element, i).try_as<winrt::DependencyObject>())
+            {
+                if (auto const target = winrt::FocusManager::FindFirstFocusableElement(child))
+                {
+                    if (auto const targetElement = target.try_as<winrt::UIElement>())
+                    {
+                        return targetElement;
+                    }
+                }
+            }
+        }
+
+        return nullptr;
     }
 
     // The focused header is the element AT is on, so attribute the announcement to its peer.
@@ -308,10 +331,8 @@ int32_t TableView::GetFocusedVisibleHeaderIndex() const
 }
 
 // `step` of 0 tries only `visibleIndex`; +1/-1 keeps walking in that direction while the header
-// refuses focus. A header is focusable only while it is a tab stop (IsTabStop is set from
-// "resizable or sortable"), so a decorative header transparently hands the move on to the next
-// actionable one instead of swallowing the key. This is what keeps EVERY actionable column's sort
-// and resize reachable now that the band is a single tab stop.
+// refuses focus. The header should normally accept focus because every visible header is a keyboard
+// target; the walk still keeps navigation robust across collapsed or unrealized cells.
 int32_t TableView::FocusVisibleHeaderFrom(int32_t visibleIndex, int32_t step)
 {
     auto const host = m_headerHost.get();
@@ -425,7 +446,7 @@ void TableView::OnHeaderHostGettingFocus(
     const int32_t target = ResolveHeaderEntryIndex(cells);
     if (target < 0)
     {
-        // No actionable header: the band has no tab stop at all and XAML's own target stands.
+        // No focusable header: XAML's own target stands.
         return;
     }
 
@@ -837,6 +858,15 @@ void TableView::OnKeyDownForNavigation(
 
     const auto key = args.Key();
 
+    // Escape for cell-interaction mode runs after the handled guard, not in PreviewKeyDown: a
+    // ComboBox hosted in a display cell marks the first Escape handled to close its popup. Seeing
+    // only the unhandled second Escape is what lets the grid restore navigation without stealing
+    // the control's own close gesture. Header resize already had first chance above.
+    if (TryHandleCellInteractionEscapeKey(args))
+    {
+        return;
+    }
+
     // Two-level body navigation. Group headers first: they have no cells, so Left/Right there mean
     // collapse/expand, and the row-level drill must never claim them. Then the row/cell drill:
     // Right on a ROW enters its first cell, Left on a row's FIRST cell pops back out to the row.
@@ -853,6 +883,11 @@ void TableView::OnKeyDownForNavigation(
         return;
     }
 
+    if (TryHandleCellInteractionEnterKey(args))
+    {
+        return;
+    }
+
     if (TryHandleCellNavigationKey(args))
     {
         return;
@@ -864,7 +899,11 @@ void TableView::OnKeyDownForNavigation(
         return;
     }
 
-    if (key == winrt::Windows::System::VirtualKey::Space && CanSelectRows())
+    const bool isRowSelectionSpace =
+        key == winrt::Windows::System::VirtualKey::Space &&
+        !IsKeyDown(winrt::VirtualKey::Menu) &&
+        !IsKeyDown(winrt::VirtualKey::Control);
+    if (isRowSelectionSpace && CanSelectRows())
     {
         if (auto const root = XamlRoot())
         {
@@ -1543,6 +1582,96 @@ int32_t TableView::GetFocusedGroupHeaderIndex() const
 
     // Also rejects a nested TableView's header, which is not an element of our repeater.
     return repeater.GetElementIndex(header);
+}
+
+bool TableView::TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Handled() ||
+        args.Key() != winrt::Windows::System::VirtualKey::Enter ||
+        IsEditing() ||
+        IsKeyDown(winrt::VirtualKey::Menu) ||
+        IsKeyDown(winrt::VirtualKey::Control) ||
+        IsKeyDown(winrt::VirtualKey::Shift))
+    {
+        return false;
+    }
+
+    int32_t rowIndex = -1;
+    int32_t columnIndex = -1;
+    if (!TryGetFocusedCell(rowIndex, columnIndex, true /* requireExactCell */))
+    {
+        return false;
+    }
+
+    auto const row = GetRealizedRowAt(rowIndex);
+    if (!row)
+    {
+        return false;
+    }
+
+    // Deliberately does NOT open an editor. F2 owns editing; Enter owns stepping into content the
+    // cell DISPLAYS, which is the only way to reach a ComboBox or CheckBox in a template column now
+    // that PART_CellsHost is a single tab stop. An editable text cell shows a non-focusable
+    // TextBlock until F2 swaps in the editor, so it finds no target here and the key falls through.
+    auto const cell = winrt::get_self<TableViewRow>(row)->GetVisibleCellInternal(columnIndex);
+    auto const target = FindFirstFocusableDescendant(cell);
+    if (!target || !target.Focus(winrt::FocusState::Keyboard))
+    {
+        return false;
+    }
+
+    SetColumnCursorInternal(columnIndex);
+    SetCellCursorActiveInternal(true);
+    m_cellInteractionActive = true;
+    args.Handled(true);
+    return true;
+}
+
+bool TableView::TryHandleCellInteractionEscapeKey(const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Handled() ||
+        args.Key() != winrt::Windows::System::VirtualKey::Escape ||
+        !m_cellInteractionActive ||
+        IsEditing())
+    {
+        return false;
+    }
+
+    int32_t rowIndex = -1;
+    int32_t columnIndex = -1;
+    if (!TryGetFocusedCell(rowIndex, columnIndex, false /* requireExactCell */))
+    {
+        m_cellInteractionActive = false;
+        return false;
+    }
+
+    int32_t exactRow = -1;
+    int32_t exactColumn = -1;
+    if (TryGetFocusedCell(exactRow, exactColumn, true /* requireExactCell */))
+    {
+        m_cellInteractionActive = false;
+        return false;
+    }
+
+    SetColumnCursorInternal(columnIndex);
+    if (!FocusCell(rowIndex, columnIndex))
+    {
+        return false;
+    }
+
+    int32_t focusedRow = -1;
+    int32_t focusedColumn = -1;
+    if (!TryGetFocusedCell(focusedRow, focusedColumn, true /* requireExactCell */) ||
+        focusedRow != rowIndex ||
+        focusedColumn != columnIndex)
+    {
+        return false;
+    }
+
+    SetCellCursorActiveInternal(true);
+    m_cellInteractionActive = false;
+    args.Handled(true);
+    return true;
 }
 
 // Right on a focused ROW drills into that row's first cell; Left on the FIRST cell pops back out to

@@ -891,7 +891,7 @@ private:
         const winrt::KeyRoutedEventArgs& args);
 
     bool TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args);
-    // Bare Left/Right on a focused column header: steps to the previous/next visible actionable
+    // Bare Left/Right on a focused column header: steps to the previous/next visible focusable
     // header, clamping at the band's ends. Arrows stay inside the band; Tab is the only way
     // between the header band and the body.
     bool TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& args);
@@ -903,7 +903,7 @@ private:
     // Visible-column index of the header that currently has focus, or -1 when focus is elsewhere.
     int32_t GetFocusedVisibleHeaderIndex() const;
     // Header the band should be entered on: the remembered column (m_currentCellColumn) when it is
-    // actionable, else the nearest actionable header outward from it. -1 when none is actionable.
+    // focusable, else the nearest focusable header outward from it. -1 when none is focusable.
     int32_t ResolveHeaderEntryIndex(const std::vector<winrt::FrameworkElement>& cells) const;
     // Tab entry into the header band: redirects focus from the band's first header to the
     // remembered column, and records the landing column so Tab onward into the body keeps it.
@@ -966,6 +966,10 @@ private:
     // between, whether Left steps a column or pops back out to the row, and which of the row / its
     // cells is the body's single tab stop.
     bool m_cellCursorActive{ false };
+    // True after Enter has moved focus from a cell into focusable content hosted by that cell.
+    // Escape uses it to restore grid navigation without stealing Escape from controls that handled
+    // it first, such as ComboBox closing its popup.
+    bool m_cellInteractionActive{ false };
     // The row currently drilled in, so the cursor can pop it back to row level when it moves on.
     // Weak: rows are recycled on every scroll.
     winrt::weak_ref<winrt::TableViewRow> m_cellLevelRow{ nullptr };
@@ -976,6 +980,9 @@ private:
     // Left / Right on a focused GROUP HEADER collapse / expand it. A group header has no cells, so
     // this is the explicit alternative to drilling in, not a variant of it.
     bool TryHandleGroupHeaderExpandCollapseKey(const winrt::KeyRoutedEventArgs& args);
+    // Enter from a focused cell moves into interactive display content; Escape moves back out.
+    bool TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs& args);
+    bool TryHandleCellInteractionEscapeKey(const winrt::KeyRoutedEventArgs& args);
     // Focuses an already-realized container at ROW level.
     bool FocusRowContainerInternal(winrt::UIElement const& element);
     // Shared realization + deferred-focus path behind FocusCell / FocusRowContainer.
