@@ -103,11 +103,8 @@ hstring TableViewCellAutomationPeer::GetLocalizedControlTypeCore()
     return __super::GetLocalizedControlTypeCore();
 }
 
-// A cell's IsTabStop is owned by the two-level navigation gate: it is true only while the keyboard
-// cursor is drilled into this cell's row. The base peer reads IsTabStop for both of the methods
-// below, which would make a cell report itself unfocusable - and make SetFocus() throw - purely
-// because the cursor happened to be resting at ROW level. Automation focusability is not a Tab
-// question, so both are answered here from the cell's own enabled/visible state instead.
+// UIA focusability is not Tab reachability: row-level cells still need SetFocus and
+// IsKeyboardFocusable to succeed when enabled and visible.
 bool TableViewCellAutomationPeer::IsKeyboardFocusableCore()
 {
     auto const cell = Owner().try_as<winrt::FrameworkElement>();
@@ -437,8 +434,7 @@ int32_t TableViewCellAutomationPeer::GetRowIndex()
         {
             m_lastOwningTable = winrt::make_weak(tableView);
 
-            // Same resolution TableViewRowAutomationPeer::GetRowIndex uses, so the two peers agree
-            // on the coordinate; it also avoids a visual-tree walk per cell of every realized row.
+            // Use the row peer's coordinate basis and avoid a visual-tree walk per realized cell.
             if (auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal())
             {
                 if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)

@@ -71,10 +71,8 @@ namespace
         return nullptr;
     }
 
-    // The header band in visible-column order. The predicate is the same one TableViewRow uses to
-    // enumerate its visible cells (IsVisibleColumn on the owning column), so a header's index here
-    // and a row's visible-column index are ONE coordinate space - which is what lets Tab hand the
-    // column the user was on in one band to the other band instead of guessing at it.
+    // Header and row cells share visible-column coordinates, letting Tab preserve the current
+    // column across bands.
     std::vector<winrt::FrameworkElement> GetVisibleHeaderCells(const winrt::Panel& headerHost)
     {
         std::vector<winrt::FrameworkElement> cells;
@@ -200,8 +198,7 @@ namespace
         }
         catch (...)
         {
-            // The host app may not merge the control's PRI; a missing string must not break resize.
-            // Best-effort UIA announcement; missing PRI/UIA must not cancel the resize.
+            // Best-effort UIA announcement; missing PRI/UIA must not cancel resize.
         }
     }
 }
@@ -223,11 +220,8 @@ void TableView::AnnounceColumnWidth(const winrt::IInspectable& announcer, const 
     }
 }
 
-// Alt+Left / Alt+Right resizes the column whose header has focus; Shift takes the large step, and
-// Ctrl is accepted as an alias. This is the WPF DataGrid binding ("Default Keyboard and Mouse
-// Behavior in the DataGrid Control"), which leaves the bare arrows free to NAVIGATE between
-// headers inside the band. Driving the gripper's own Begin/Try/End keeps pointer and keyboard on
-// one clamping path.
+// Alt+Left/Right resizes the focused header using WPF DataGrid's binding; Shift is large-step,
+// Ctrl is accepted as an alias, and the gripper keeps pointer and keyboard on one clamp path.
 bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args)
 {
     if (args.Handled())
@@ -298,13 +292,8 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
 
 // ----- Header-band keyboard navigation -----
 //
-// Model: two bands, each ONE tab stop, arrows confined to the band they start in. This is what
-// Explorer's Details view does, and what WinUI's own ListView / GridView / ItemsView do. Tab and
-// Shift+Tab are the ONLY way between the header band and the body; no arrow key crosses between
-// them in either direction.
-//
-// Within the band the arrows work in the same visible-column coordinate space as the cell cursor,
-// so the column a user leaves the band on is the column Tab hands to the body.
+// One tab stop per band: Tab crosses bands, arrows stay within the starting band, and both bands
+// share visible-column coordinates.
 
 int32_t TableView::GetFocusedVisibleHeaderIndex() const
 {
@@ -330,9 +319,7 @@ int32_t TableView::GetFocusedVisibleHeaderIndex() const
     return IndexOfHeaderCell(GetVisibleHeaderCells(host), headerCell);
 }
 
-// `step` of 0 tries only `visibleIndex`; +1/-1 keeps walking in that direction while the header
-// refuses focus. The header should normally accept focus because every visible header is a keyboard
-// target; the walk still keeps navigation robust across collapsed or unrealized cells.
+// step=0 tries the exact header; +/-1 walks to the next focusable visible header.
 int32_t TableView::FocusVisibleHeaderFrom(int32_t visibleIndex, int32_t step)
 {
     auto const host = m_headerHost.get();
@@ -368,20 +355,8 @@ int32_t TableView::FocusVisibleHeaderFrom(int32_t visibleIndex, int32_t step)
     return -1;
 }
 
-// The header the band should be entered on.
-//
-// FIRST entry - nothing has moved the shared column cursor yet - is always the band's FIRST
-// focusable header. The remembered column is honoured only once the cursor has actually been
-// established by a user move (m_columnCursorEstablished).
-//
-// This distinction has to be explicit because m_currentCellColumn is an int that starts at 0, and
-// 0 is indistinguishable from "never set". Any write to the shared cursor before the band is first
-// entered therefore silently relocated the entry point, and the band looked like it had an
-// unreachable first column even though Left could still get there.
-//
-// The "remembered column" is m_currentCellColumn - the body's existing cell cursor - not a second
-// header-only cursor. One cursor is what makes Tab in either direction between the two bands agree
-// on which column the user is in, once there IS a column the user is in.
+// Before any real column cursor exists, enter the first focusable header; afterward, honor the
+// shared body/header column cursor. m_columnCursorEstablished distinguishes column 0 from "none".
 int32_t TableView::ResolveHeaderEntryIndex(const std::vector<winrt::FrameworkElement>& cells) const
 {
     const int32_t count = static_cast<int32_t>(cells.size());
@@ -410,9 +385,8 @@ int32_t TableView::ResolveHeaderEntryIndex(const std::vector<winrt::FrameworkEle
     return -1;
 }
 
-// Tab into the band lands on its first focusable header, because the band is one tab stop. Redirect
-// that to the remembered column. Modelled on TableViewRow::OnRowGettingFocus, including its
-// escape-hatch guard: focus LEAVING the band is never pulled back, or Tab could not get out.
+// Redirect Tab entry from the band's first header to the remembered column; never redirect focus
+// leaving the band.
 void TableView::OnHeaderHostGettingFocus(
     const winrt::IInspectable& /*sender*/,
     const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args)
@@ -423,9 +397,7 @@ void TableView::OnHeaderHostGettingFocus(
         return;
     }
 
-    // Tab / Shift+Tab only. A programmatic Focus() (an arrow step within the band, a test hook)
-    // reports Direction None and already names the header it means; redirecting it would break the
-    // column-exact contract those paths depend on.
+    // Redirect Tab entry only; programmatic focus already names its exact header.
     auto const direction = args.Direction();
     if (direction != winrt::FocusNavigationDirection::Next &&
         direction != winrt::FocusNavigationDirection::Previous)
@@ -461,27 +433,20 @@ void TableView::OnHeaderHostGettingFocus(
     args.TrySetNewFocusedElement(element);
 }
 
-// Records the column of whatever header actually took focus - Tab entry, arrow step or pointer
-// press - into the shared cursor, so Tab onward into the body enters at that column instead of
-// snapping back to column 0.
+// Records the focused header column into the shared cursor for body entry.
 void TableView::OnHeaderHostGotFocus(
     const winrt::IInspectable& /*sender*/,
     const winrt::RoutedEventArgs& /*args*/)
 {
     if (const int32_t index = GetFocusedVisibleHeaderIndex(); index >= 0)
     {
-        // A header actually took focus, so the user IS in a column now. From here on the band's
-        // entry point follows the cursor rather than restarting at the first header.
+        // From here on, band entry follows the shared cursor rather than restarting at column 0.
         SetColumnCursorInternal(index);
     }
 }
 
-// Bare Left/Right on a focused header steps one header, clamping at the band's ends.
-//
-// Like the cell move, this is an idempotent RE-ASSERT computed from the PRE-KEY anchor captured in
-// PreviewKeyDown, not a blind step from live focus: XAML's built-in directional navigation may
-// already have moved header focus before this bubbling handler runs, and stepping again from there
-// would skip a column. Applied only when focus is not already on the target.
+// Bare Left/Right re-asserts from the pre-key header anchor; live focus may already have moved, so
+// stepping again would skip a column.
 bool TableView::TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& args)
 {
     if (args.Handled())
@@ -518,8 +483,7 @@ bool TableView::TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& ar
 
     const int32_t liveIndex = GetFocusedVisibleHeaderIndex();
 
-    // Anchor on the header focus was on BEFORE the key; fall back to live focus when the snapshot
-    // is stale (no routed snapshot ran, or the band was rebuilt under it).
+    // Prefer the pre-key header anchor; fall back to live focus if the snapshot is stale.
     int32_t currentIndex = m_navAnchorHeaderColumn;
     if (currentIndex < 0 || currentIndex >= count)
     {
@@ -531,8 +495,7 @@ bool TableView::TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& ar
         return false;
     }
 
-    // RTL mirrors the arrows exactly as the cell move does: Right means "towards the row end" in
-    // reading order. Same expression, so the two bands can never disagree.
+    // RTL mirrors the cell move: Right means "towards the row end" in reading order.
     const bool isRtl = FlowDirection() == winrt::FlowDirection::RightToLeft;
     const bool forward = isRight != isRtl;
     const int32_t step = forward ? 1 : -1;
@@ -543,20 +506,13 @@ bool TableView::TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& ar
         FocusVisibleHeaderFrom(targetIndex, targetIndex == currentIndex ? 0 : step);
     }
 
-    // Consumed even at a bound and even when focus refused: letting Left on the first header or
-    // Right on the last fall through to directional focus navigation would walk focus straight out
-    // of the table, which is the escape the cell cursor already blocks at its own bounds.
+    // Consume bounds/refusals so directional focus navigation cannot walk out of the table.
     args.Handled(true);
     return true;
 }
 
-// Up/Down on a focused header are clamped inside the band: the header band and the body are
-// separate tab stops, and Tab is the only way between them.
-//
-// Consumed rather than left to fall through, following the same precedent the cell cursor uses at
-// its horizontal bounds: an unconsumed arrow reaches directional focus navigation, which would
-// walk focus out of the band - and, before the band had its own vertical handling, reached ROW
-// navigation, which read "focus is not on a row" as "enter the table" and jumped into row 0.
+// Clamp Up/Down inside the header band; otherwise focus navigation can escape the band or row
+// navigation can enter row 0.
 bool TableView::TryHandleHeaderVerticalKey(const winrt::KeyRoutedEventArgs& args)
 {
     if (args.Handled())
@@ -612,9 +568,8 @@ winrt::TableViewColumn TableView::ResolveHeaderSortKeyTarget(const winrt::KeyRou
         return nullptr;
     }
 
-    // The walk above matches any descendant of a header cell, so require the key to have been
-    // raised on the header chrome itself: a header template can host a TextBox, and
-    // AcceptsReturn=false leaves Enter unhandled, which would otherwise toggle the sort.
+    // Require the header chrome itself; an unhandled Enter from a TextBox in a header template must
+    // not toggle sort.
     if (args.OriginalSource().try_as<winrt::DependencyObject>() != headerCell)
     {
         return nullptr;
@@ -623,12 +578,8 @@ winrt::TableViewColumn TableView::ResolveHeaderSortKeyTarget(const winrt::KeyRou
     return column;
 }
 
-// Enter sorts the column whose header has focus. Left/Right are already taken by resize, so
-// activation lands on the standard activation keys.
-//
-// Space is deliberately NOT activated here: XAML activation semantics (ButtonInteraction) are that
-// Enter fires on key down while Space arms on key down and fires on key up, which is what lets a
-// user press Space, change their mind and move focus away without activating.
+// Enter activates on KeyDown; Space follows XAML activation semantics: arm on KeyDown, fire on
+// unhandled KeyUp.
 bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
 {
     if (args.Handled())
@@ -721,10 +672,7 @@ void TableView::OnPreviewKeyDownForNavigation(
     const winrt::IInspectable& /*sender*/,
     const winrt::KeyRoutedEventArgs& args)
 {
-    // Snapshot before XAML's built-in focus navigation so bubbling handlers move from the pre-key
-    // cell. Left/Right deliberately snapshot only the CELL anchor: row navigation never handles
-    // them, and overwriting m_navAnchorRow here would discard the row anchor instead of leaving it
-    // for the next vertical key.
+    // Snapshot before XAML focus navigation; Left/Right only need the cell anchor.
     switch (args.Key())
     {
     case winrt::Windows::System::VirtualKey::Up:
@@ -740,17 +688,12 @@ void TableView::OnPreviewKeyDownForNavigation(
         m_navAnchorCellRow = -1;
         m_navAnchorCellColumn = -1;
         TryGetFocusedCell(m_navAnchorCellRow, m_navAnchorCellColumn, true /* requireExactCell */);
-        // Body navigation is two-level, so the pre-key snapshot has to record WHICH level focus was
-        // on. A cell anchor above means cell level; this is the row-level counterpart, and it is
-        // what lets Right on a row drill in even after built-in directional navigation has already
-        // moved focus off the row.
+        // Record the pre-key body level: cell, row container, or group header.
         m_navAnchorRowContainer = m_navAnchorCellColumn >= 0 ? -1 : GetFocusedRowContainerIndex();
-        // A group header is the third possibility, and it is mutually exclusive with the other two:
-        // it is neither a TableViewRow nor a cell. Left/Right there collapse/expand.
+        // Group headers own Left/Right for collapse/expand, not cell drill-in.
         m_navAnchorGroupHeader =
             (m_navAnchorCellColumn >= 0 || m_navAnchorRowContainer >= 0) ? -1 : GetFocusedGroupHeaderIndex();
-        // The header band needs the same pre-key snapshot as the cell grid: the arrows now
-        // navigate it, and built-in directional navigation can move header focus first.
+        // Header navigation needs the same pre-key anchor.
         m_navAnchorHeaderColumn = GetFocusedVisibleHeaderIndex();
         break;
     default:
@@ -765,10 +708,8 @@ void TableView::OnKeyDownForNavigation(
     const winrt::IInspectable& /*sender*/,
     const winrt::KeyRoutedEventArgs& args)
 {
-    // An open editor owns its keys. Row navigation would scroll the edited row out of the
-    // realization window, recycling it mid-edit, and a single-line TextBox does not mark
-    // PageUp/PageDown handled - so without this guard the DEFAULT editor is enough to trigger it.
-    // WPF's DataGrid suppresses navigation the same way while a cell is being edited.
+    // While editing, let the editor own keys; otherwise PageUp/PageDown can recycle the edited row
+    // mid-edit. WPF DataGrid does the same.
     if (IsEditing())
     {
         if (auto const editingElement = CurrentEditingElement())
@@ -788,16 +729,14 @@ void TableView::OnKeyDownForNavigation(
         }
     }
 
-    // Column resize from a focused header: after the editing guard, so an open editor keeps its
-    // arrow keys. Alt+Left/Alt+Right only, so it cannot shadow the bare arrows below.
+    // After the editing guard so an open editor keeps its arrow keys; Alt+Arrow cannot shadow the
+    // bare navigation arrows below.
     if (TryHandleHeaderColumnResizeKey(args))
     {
         return;
     }
 
-    // The header band is a band of its own: bare Left/Right step between headers, Up/Down are
-    // clamped inside it. Before sort, so an arrow cannot reach the sort gesture, and before row
-    // navigation, whose row cursor has no meaning while focus is on a header.
+    // Header arrows run before sort and row navigation so focus stays inside the header band.
     if (TryHandleHeaderNavigationKey(args))
     {
         return;
@@ -813,27 +752,15 @@ void TableView::OnKeyDownForNavigation(
         return;
     }
 
-    // Registered with handledEventsToo so navigation can still run after the ancestor
-    // PART_BodyScroller marks nav keys Handled for scrolling. But handledEventsToo also
-    // surfaces keys a focused *descendant* consumed (e.g. an editor/ComboBox inside a
-    // TableViewTemplateColumn cell). Distinguish the two: only act on an already-handled
-    // key when focus is on one of OUR TableViewRow containers (the scroller-handled case).
-    // Requiring the focused row to belong to m_rowsRepeater also prevents a nested
-    // TableView's inner-row key from double-navigating this outer table.
+    // handledEventsToo recovers keys swallowed by PART_BodyScroller, but not keys consumed by
+    // hosted controls. Accept exact focus on our row/group/cell only, excluding nested TableViews.
     if (args.Handled())
     {
         bool focusOnOurRow = false;
         if (auto const root = XamlRoot())
         {
-            // A group header is as much "one of our containers" as a data row: both are elements of
-            // m_rowsRepeater and both are valid arrow-navigation anchors. Recognizing only rows here
-            // ate keys pressed while a header had focus (the scroller marks nav keys Handled before
-            // this bubbling handler runs, so the guard returned early and no navigation happened).
-            //
-            // A focused CELL counts too, and is now the normal case. It is deliberately matched
-            // exactly rather than by walking up from any descendant: a TextBox or ComboBox inside a
-            // template column marks Home/End/arrows Handled for itself, and letting those through
-            // here would take the keys away from the control the user is actually in.
+            // Group headers and exact cells are valid anchors. Do not walk from descendants: hosted
+            // TextBox/ComboBox controls keep the handled keys they claim.
             if (auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::UIElement>())
             {
                 if (focused.try_as<winrt::TableViewRow>() || focused.try_as<winrt::TableViewGroupHeader>())
@@ -858,21 +785,15 @@ void TableView::OnKeyDownForNavigation(
 
     const auto key = args.Key();
 
-    // Escape for cell-interaction mode runs after the handled guard, not in PreviewKeyDown: a
-    // ComboBox hosted in a display cell marks the first Escape handled to close its popup. Seeing
-    // only the unhandled second Escape is what lets the grid restore navigation without stealing
-    // the control's own close gesture. Header resize already had first chance above.
+    // Escape runs after the handled guard: hosted controls such as ComboBox keep their first
+    // Escape, and the unhandled second Escape restores grid navigation. Header resize ran above.
     if (TryHandleCellInteractionEscapeKey(args))
     {
         return;
     }
 
-    // Two-level body navigation. Group headers first: they have no cells, so Left/Right there mean
-    // collapse/expand, and the row-level drill must never claim them. Then the row/cell drill:
-    // Right on a ROW enters its first cell, Left on a row's FIRST cell pops back out to the row.
-    // Both run before the cell cursor, which owns Left/Right everywhere else in the row and would
-    // otherwise clamp at column 0 instead of letting Left escape row-ward. Both run after the
-    // header handlers, so a focused column header keeps its own Left/Right.
+    // Claim group-header expand/collapse before row drill-in, then cell cursor movement; each owns
+    // a different level of the treegrid.
     if (TryHandleGroupHeaderExpandCollapseKey(args))
     {
         return;
@@ -934,20 +855,14 @@ void TableView::OnKeyDownForNavigation(
         return;
     }
 
-    // Anchor on the row focus was on BEFORE this key (captured in PreviewKeyDown). The framework's
-    // built-in navigation may have already advanced focus one row and marked the key Handled;
-    // navigating from the post-move row would skip a row.
+    // Use the pre-key row anchor; live focus may already have advanced.
     int32_t currentRow = m_navAnchorRow;
 
-    // Ctrl+Arrow moves the focus cursor WITHOUT selecting, matching ListViewBase. Without it a
-    // keyboard-only user cannot review other rows and come back, and every row they pass through
-    // raises SelectionChanged plus UIA selection events - a selection storm for a screen reader.
+    // Ctrl+Arrow moves focus without selection/UIA churn, matching ListViewBase.
     const bool isControlDown = IsKeyDown(winrt::VirtualKey::Control);
 
-    // Focus was not on one of our rows (the user clicked a header, tabbed away and back, or closed
-    // a dialog). With selection on, resume relative-navigation from the SELECTED row rather than
-    // restarting at row 0 - otherwise Down after clicking away yanks the selection to the top of
-    // the table. Absolute keys (Home/End/Page*) keep their own entry points below.
+    // If relative navigation re-enters without a row anchor, resume from selection instead of
+    // yanking focus to row 0. Absolute keys keep their own entry points below.
     if (currentRow < 0 &&
         (key == winrt::Windows::System::VirtualKey::Up ||
             key == winrt::Windows::System::VirtualKey::Down))
@@ -1057,10 +972,8 @@ void TableView::OnKeyDownForNavigation(
         const int32_t anchorColumn = hasCellAnchor ? m_navAnchorCellColumn : m_currentCellColumn;
         if (newRow != currentRow)
         {
-            // Vertical navigation keeps the LEVEL it started on, which is what the ARIA `treegrid`
-            // pattern asks for: Up/Down on a row move between rows, Up/Down on a cell move between
-            // cells in the same column. The cell anchor is the authority on which level that is -
-            // it is set only when a cell actually held focus before the key.
+            // Up/Down preserve the starting level per ARIA treegrid: row-to-row or same-column
+            // cell-to-cell.
             const bool moved = hasCellAnchor
                 ? FocusCell(newRow, anchorColumn)
                 : FocusRowContainer(newRow);
@@ -1082,8 +995,7 @@ void TableView::OnKeyDownForNavigation(
 
 bool TableView::FocusRow(int32_t index)
 {
-    // Follows the cursor's current LEVEL: row-level callers (body entry, the first navigation key)
-    // land on the row container, and a cursor already drilled into cells stays on cells.
+    // Follow the current cursor level: row-level callers land on rows; drilled-in callers stay on cells.
     return m_cellCursorActive
         ? FocusCell(index, m_currentCellColumn)
         : FocusRowContainer(index);
@@ -1147,8 +1059,8 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
     return row;
 }
 
-// Switches the two-level cursor. Popping OUT of cell level has to put the row that was drilled in
-// back to row level, or that row is left as the one row in the body that Tab cannot reach.
+// Popping out of cell level must restore the drilled row to row level, or that row disappears from
+// Tab navigation.
 void TableView::SetCellCursorActiveInternal(bool active)
 {
     if (!active)
@@ -1297,10 +1209,7 @@ bool TableView::FocusCell(int32_t rowIndex, int32_t visibleColumnIndex)
     return FocusRowElementInternal(rowIndex, m_currentCellColumn, true /* cellLevel */);
 }
 
-// Single writer for the shared column cursor. Writing it at all means the user (or a caller acting
-// for them) has named a column, which is exactly the condition that lets the header band stop
-// entering at its first header and start honouring the remembered one. Keeping the flag and the
-// value on one setter is what stops the two drifting apart.
+// Single writer for the shared column cursor; setting it also marks that a real column was chosen.
 void TableView::SetColumnCursorInternal(int32_t visibleColumnIndex)
 {
     if (visibleColumnIndex < 0)
@@ -1312,8 +1221,7 @@ void TableView::SetColumnCursorInternal(int32_t visibleColumnIndex)
     m_columnCursorEstablished = true;
 }
 
-// Puts the cursor back to "never moved", so the next band entry starts at the first focusable
-// header again. Called when the data set is replaced, alongside the CurrentItem/CurrentCell reset.
+// Reset to "no column chosen" so the next band entry starts at the first focusable header.
 void TableView::ResetColumnCursorInternal()
 {
     m_currentCellColumn = 0;
@@ -1322,14 +1230,11 @@ void TableView::ResetColumnCursorInternal()
 
 bool TableView::FocusRowContainer(int32_t rowIndex)
 {
-    // Row level keeps the remembered column untouched: it is what the next Right will drill into.
+    // Row level keeps the remembered column untouched for the next drill-in.
     return FocusRowElementInternal(rowIndex, m_currentCellColumn, false /* cellLevel */);
 }
 
-// Shared realization + deferred-focus path for both levels. Realizing a row can require a layout
-// pass before the container is focusable, so the "not laid out yet" case parks a one-shot
-// LayoutUpdated and finishes there; `cellLevel` rides along so the deferred half lands on the same
-// level the caller asked for.
+// Shared realization path; if layout is required, finish on LayoutUpdated at the same requested level.
 bool TableView::FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel)
 {
     auto repeater = m_rowsRepeater.get();
@@ -1385,9 +1290,7 @@ bool TableView::FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, 
                         strongThis->m_pendingFocusLayoutToken = {};
                     }
 
-                    // This runs from a LAYOUT callback. An exception escaping here does not reach
-                    // any app handler - it unwinds through XAML's layout pass and fails the
-                    // process fast - so the realization and focus work is contained.
+                    // Layout callbacks fail-fast on escaping exceptions, so contain realization/focus work.
                     try
                     {
                         if (rowIndex < 0 || rowIndex >= strongThis->GetItemsSourceCount())
@@ -1426,16 +1329,13 @@ bool TableView::FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, 
     return false;
 }
 
-// Focuses an already-realized container AT ROW LEVEL. Group headers are elements of the same
-// repeater; they have no cells and are always a row-level target.
+// Focuses an already-realized container at row level; group headers have no cell level.
 bool TableView::FocusRowContainerInternal(winrt::UIElement const& element)
 {
     auto const row = element.try_as<winrt::TableViewRow>();
     if (row)
     {
-        // Make the row a tab stop BEFORE moving focus, but leave its cells armed for the moment: a
-        // row still drilled in is not focusable at all, and clearing IsTabStop on the cell that is
-        // holding focus right now would be the wrong order.
+        // Make the row focusable before clearing the focused cell from tab order.
         winrt::get_self<TableViewRow>(row)->EnableRowFocusInternal();
     }
 
@@ -1445,8 +1345,7 @@ bool TableView::FocusRowContainerInternal(winrt::UIElement const& element)
         return false;
     }
 
-    // Focus has landed on the row. Now it is safe to take cells out of the tab order - both this
-    // row's and those of whichever other row was still drilled in.
+    // Focus has landed on the row; now cells can leave the tab order.
     if (row)
     {
         winrt::get_self<TableViewRow>(row)->SetCellLevelInternal(false);
@@ -1455,9 +1354,7 @@ bool TableView::FocusRowContainerInternal(winrt::UIElement const& element)
     return true;
 }
 
-// Focuses the cell at `visibleColumnIndex` inside an already-realized container, drilling the
-// cursor to CELL level. Group headers are elements of the same repeater and have no cells, so they
-// stay at row level and keep taking container focus.
+// Focuses a visible cell in an already-realized row; group headers stay at row level.
 bool TableView::FocusRealizedRowCell(winrt::UIElement const& element, int32_t visibleColumnIndex)
 {
     if (auto const row = element.try_as<winrt::TableViewRow>())
@@ -1482,20 +1379,8 @@ bool TableView::FocusRealizedRowCell(winrt::UIElement const& element, int32_t vi
     return FocusRowContainerInternal(element);
 }
 
-// Left / Right on a focused GROUP HEADER expand and collapse it. This is the `treegrid` rule for a
-// parent row, and it is the explicit counterpart to TryHandleRowLevelDrillKey below:
-//
-//   * on a GROUP HEADER, Right means EXPAND and Left means COLLAPSE. A group header has no cells,
-//     so there is no cell level to drill into and the row-level drill must never claim these keys.
-//   * on a DATA ROW, Right means GO TO THE FIRST CELL and Left (at the first cell) means come back.
-//
-// TableViewGroupHeader::OnKeyDown already binds the same two keys. This handler does not replace
-// it, it backstops it: it is registered handledEventsToo, so it still runs when the header's own
-// handler has already marked the key Handled, and it also runs when that handler never got the key
-// at all (something upstream consumed it, or focus was on a child of the header rather than the
-// header itself). Double application is safe by construction - the request carries a DIRECTION,
-// and ApplyGroupExpansionByIdentity documents the directional form as an idempotent set, so two
-// identical "expand" requests expand once.
+// Group headers use treegrid Left/Right expand/collapse, not row drill-in. This handledEventsToo
+// backstop is safe because directional expansion is idempotent.
 bool TableView::TryHandleGroupHeaderExpandCollapseKey(const winrt::KeyRoutedEventArgs& args)
 {
     if (IsKeyDown(winrt::VirtualKey::Menu) || IsKeyDown(winrt::VirtualKey::Control))
@@ -1511,8 +1396,7 @@ bool TableView::TryHandleGroupHeaderExpandCollapseKey(const winrt::KeyRoutedEven
         return false;
     }
 
-    // Pre-key anchor, for the same reason the cell cursor and the header band use one: built-in
-    // directional navigation can move focus off the header before this bubbling handler runs.
+    // Use the pre-key group-header anchor; live focus may already have moved.
     if (m_navAnchorGroupHeader < 0)
     {
         return false;
@@ -1530,8 +1414,7 @@ bool TableView::TryHandleGroupHeaderExpandCollapseKey(const winrt::KeyRoutedEven
         return false;
     }
 
-    // Consumed whether or not the group can actually move: an unconsumed arrow on a header reaches
-    // directional focus navigation, which walks focus sideways out of the body.
+    // Consume even when nothing changes so focus navigation cannot walk sideways out of the body.
     args.Handled(true);
 
     if (!header.IsExpandable())
@@ -1544,9 +1427,7 @@ bool TableView::TryHandleGroupHeaderExpandCollapseKey(const winrt::KeyRoutedEven
     const bool isRtl = FlowDirection() == winrt::FlowDirection::RightToLeft;
     const bool expand = isRight != isRtl;
 
-    // Already in the requested state: nothing to do, but the key stays consumed. Checked here
-    // rather than relying on the provider's no-op so a redundant Right does not queue a reshape
-    // and a focus-restore round trip on every repeat.
+    // Avoid queuing a reshape/focus-restore round trip for repeated no-op arrows.
     if (header.IsExpanded() == expand)
     {
         return true;
@@ -1556,9 +1437,7 @@ bool TableView::TryHandleGroupHeaderExpandCollapseKey(const winrt::KeyRoutedEven
     return true;
 }
 
-// The repeater index of the focused GROUP HEADER, else -1. Deliberately EXACT, mirroring
-// GetFocusedRowContainerIndex: if an app's group-header template hosts its own focusable content,
-// that content keeps the arrow keys it claims rather than having them read as collapse/expand.
+// Exact focused group-header index; hosted focusable content keeps the arrow keys it claims.
 int32_t TableView::GetFocusedGroupHeaderIndex() const
 {
     auto const repeater = m_rowsRepeater.get();
@@ -1609,10 +1488,8 @@ bool TableView::TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs
         return false;
     }
 
-    // Deliberately does NOT open an editor. F2 owns editing; Enter owns stepping into content the
-    // cell DISPLAYS, which is the only way to reach a ComboBox or CheckBox in a template column now
-    // that PART_CellsHost is a single tab stop. An editable text cell shows a non-focusable
-    // TextBlock until F2 swaps in the editor, so it finds no target here and the key falls through.
+    // Enter reaches focusable display content, not the editor: F2 owns editing, while template
+    // columns need Enter to reach controls such as ComboBox/CheckBox inside the single tab stop.
     auto const cell = winrt::get_self<TableViewRow>(row)->GetVisibleCellInternal(columnIndex);
     auto const target = FindFirstFocusableDescendant(cell);
     if (!target || !target.Focus(winrt::FocusState::Keyboard))
@@ -1674,14 +1551,8 @@ bool TableView::TryHandleCellInteractionEscapeKey(const winrt::KeyRoutedEventArg
     return true;
 }
 
-// Right on a focused ROW drills into that row's first cell; Left on the FIRST cell pops back out to
-// the ROW. This is the W3C ARIA APG `treegrid` pattern verbatim, which is the right standard here
-// because the body can contain expandable group rows.
-//
-// Deliberately does NOT touch group headers: they have no cells, and Left/Right there mean
-// collapse/expand. TryHandleGroupHeaderExpandCollapseKey above claims those first, and the anchor
-// this handler reads (m_navAnchorRowContainer) is only ever set for a TableViewRow, so the two can
-// never both fire for one key.
+// In the ARIA treegrid model, Right drills from row to first cell and Left from first cell pops
+// back to row; group headers own expand/collapse above.
 bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
 {
     if (IsKeyDown(winrt::VirtualKey::Menu) || IsKeyDown(winrt::VirtualKey::Control))
@@ -1702,12 +1573,9 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
     const bool isRtl = FlowDirection() == winrt::FlowDirection::RightToLeft;
     const bool drillIn = isRight != isRtl;
 
-    // Anchored on the PRE-KEY focus captured in PreviewKeyDown, not on live focus: XAML's built-in
-    // directional navigation can move focus out of a row before this bubbling handler runs, and
-    // reading live focus would then mistake the move for a cell-level one (or for no row at all).
-    // Same discipline as the cell cursor and the header band.
+    // Use the pre-key row anchor; live focus may already have moved out of the row.
 
-    // Case 1: focus was on a ROW container.
+    // Focus was on a row container.
     if (m_navAnchorRowContainer >= 0)
     {
         if (!drillIn)
@@ -1741,8 +1609,7 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
         return true;
     }
 
-    // Case 2: focus was on a CELL. Only the FIRST cell pops back out; every other cell leaves the
-    // key to the cell cursor, which steps columns and clamps.
+    // Focus was on a cell: only the first cell pops out; other cells leave the key to cell navigation.
     if (drillIn || m_navAnchorCellRow < 0 || m_navAnchorCellColumn != 0)
     {
         return false;
@@ -1758,9 +1625,7 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
     return true;
 }
 
-// The repeater index of the focused element when that element is one of OUR row CONTAINERS, else
-// -1. Deliberately exact and deliberately row-only: a group header is a Control of the same
-// repeater but owns Left/Right for expand/collapse, and a focused cell is the other level.
+// Exact focused row-container index; group headers and cells own different navigation levels.
 int32_t TableView::GetFocusedRowContainerIndex() const
 {
     auto const repeater = m_rowsRepeater.get();
@@ -1786,22 +1651,9 @@ int32_t TableView::GetFocusedRowContainerIndex() const
     return repeater.GetElementIndex(row);
 }
 
-// Left / Right / Home / End (and their Ctrl forms) move the cursor within the grid of cells. This
-// is the CELL level of the two-level model; TryHandleRowLevelDrillKey above has already claimed
-// the two keys that cross between levels (Right on a row, Left on a row's first cell).
-//
-// Modelled on WPF's DataGrid and on ListView/GridView keyboarding: Left/Right step one cell and
-// stop at the row's first/last visible column without wrapping, Home/End jump to the ends of the
-// CURRENT row, and Ctrl+Home/Ctrl+End jump to the first cell of the first row / the last cell of
-// the last row.
-//
-// Moving within a row never touches selection: selection stays row-level, so there is nothing to
-// change and nothing to announce.
-//
-// The horizontal move is an idempotent RE-ASSERT, not a blind step. XAML's built-in directional
-// navigation may already have moved focus one cell before this bubbling handler runs, so the move
-// is computed from the PRE-KEY anchor and applied only when focus is not already on the target -
-// stepping again from live focus skipped a column, and skipped the boundary cell entirely.
+// Cell-level navigation follows WPF/ListView: Left/Right/Home/End do not wrap, Ctrl+Home/End jump
+// grid-wide, and selection stays row-level. Re-assert from the pre-key anchor because XAML focus
+// navigation may already have moved live focus.
 bool TableView::TryHandleCellNavigationKey(const winrt::KeyRoutedEventArgs& args)
 {
     if (IsKeyDown(winrt::VirtualKey::Menu))
@@ -1888,8 +1740,7 @@ bool TableView::TryMoveCellCursorFromAnchor(
     if (isControlDown && (isHome || isEnd))
     {
         const int32_t targetRow = isHome ? 0 : rowCount - 1;
-        // Ctrl moves the cursor without dragging selection/UIA events through every row, and is
-        // consumed on failure for the same reason plain Home/End is.
+        // Ctrl moves the cursor without dragging selection/UIA events through every row.
         FocusCell(targetRow, isHome ? 0 : c_lastColumnSentinel);
         return true;
     }
@@ -1920,9 +1771,8 @@ bool TableView::TryMoveCellCursorFromAnchor(
         winrt::get_self<TableViewRow>(row)->FocusVisibleCellInternal(
             targetColumn, winrt::FocusState::Keyboard);
 
-        // FocusVisibleCellInternal falls back to focusing the ROW when the cell refuses, so its
-        // result means "something took focus", not "the target cell did". Read focus back instead.
-        // Non-exact, because a cell whose content owns focus (an open editor) is still a hit.
+        // FocusVisibleCellInternal can fall back to the row, so read focus back; non-exact keeps
+        // hosted cell content as a hit.
         int32_t movedRow = -1;
         int32_t movedColumn = -1;
         moved =
@@ -1936,14 +1786,8 @@ bool TableView::TryMoveCellCursorFromAnchor(
         return true;
     }
 
-    // Focus refused the target (a collapsed or zero-width column, a disabled subtree, or
-    // TrySetNewFocusedElement refusing mid-focus-operation). Leave m_currentCellColumn on the
-    // column focus is really on, so the next Up/Down still anchors where the user is.
-    //
-    // The key is still consumed in exactly two cases: at a bound (Left on the first column, Right
-    // on the last), where letting it fall through to focus navigation would walk focus out of the
-    // table; and Home/End, which the row-level handler below would otherwise re-read as "jump to
-    // the first/last ROW". A failed relative step that was not at a bound claims nothing.
+    // If focus refuses the target, keep the cursor on real focus. Still consume bounds and Home/End
+    // so focus navigation or row navigation cannot reinterpret them.
     return atBound || isHome || isEnd;
 }
 

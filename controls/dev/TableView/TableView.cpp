@@ -519,21 +519,12 @@ void TableView::OnApplyTemplate()
     // Defer ScrollViewer ancestor lookup until Loaded because template parts are not fully connected here.
     if (auto headerHost = m_headerHost.get())
     {
-        // ONE tab stop for the whole header band, matching Explorer's Details view and WinUI's own
-        // ListView / GridView / ItemsView, and matching the single body tab stop that
-        // TableViewRow::OnApplyTemplate already applies to PART_CellsHost. Two bands, one stop
-        // each, with Tab the only way between them and the arrows confined to the band they start
-        // in. Collapsing the stops costs no reach: every visible column header is one arrow away.
-        //
-        // Applied HERE rather than in the TableViewCellsPanel constructor deliberately. The panel
-        // is a layout primitive shared by both bands and by any app that re-templates the control;
-        // baking a focus policy into its constructor would make it the silent owner of a decision
-        // that belongs to the two hosts, and would leave two sources of truth once TableViewRow
-        // already sets the same property explicitly. Two explicit, commented call sites instead.
+        // One tab stop for the header band, matching Explorer and WinUI list controls: Tab crosses
+        // bands, arrows stay inside. Apply it at PART_HeaderHost, not TableViewCellsPanel; the panel
+        // is shared layout, while the focus policy belongs to the two host bands.
         headerHost.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
 
-        // One tab stop means Tab lands on the band's FIRST focusable header. Redirect it to the
-        // remembered column, the same way TableViewRow redirects row entry to the remembered cell.
+        // Redirect band entry from the first header to the remembered column.
         m_headerHostGettingFocusRevoker = headerHost.GettingFocus(winrt::auto_revoke,
             [weakThis](winrt::IInspectable const& sender,
                 winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs const& args)
@@ -544,8 +535,7 @@ void TableView::OnApplyTemplate()
                 }
             });
 
-        // Keeps the shared column cursor on whatever header actually took focus, including a
-        // pointer press, so Tab onward into the body enters at that column.
+        // Update the shared column cursor whenever a header actually takes focus.
         m_headerHostGotFocusRevoker = headerHost.GotFocus(winrt::auto_revoke,
             [weakThis](winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
             {
@@ -797,10 +787,8 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     // left over from the previous data set can never match an item from the new one.
     SetCurrentCell(nullptr, nullptr);
 
-    // The column cursor described the old column set. Resetting it puts the header band back to
-    // entering on its FIRST focusable header, which is what a table the user has not interacted
-    // with should do - a stale cursor would otherwise make the new band look like it had an
-    // unreachable first column.
+    // The column set changed; reset the shared cursor so first header entry does not skip an
+    // unvisited column.
     ResetColumnCursorInternal();
 
     // New data set: clear the grow-only Auto accumulators so widths recompute from scratch. The next
@@ -1631,11 +1619,9 @@ void TableView::RebuildHeaders()
                 continue;
             }
 
-            // Header cell root. Content and chevron get their own columns so the chevron reserves
-            // its realized width instead of overlaying the text. Column order is explicit because
-            // this subtree, like the grid line and gripper below, does not observe the RTL flip.
-            // Constructed as TableViewHeaderCell so the header automation peer attaches to the
-            // actual focus and hit-test target; the layout below is unchanged.
+            // Header cell root: TableViewHeaderCell is the focus/hit-test target so its automation
+            // peer attaches to the right element. Content and chevron get separate columns so the
+            // chevron reserves width instead of overlaying text.
             auto const headerCell = winrt::make<TableViewHeaderCell>(*this, column).as<winrt::Grid>();
             const int contentColumnIndex = isRightToLeft ? 1 : 0;
             const int indicatorColumnIndex = isRightToLeft ? 0 : 1;
@@ -1656,14 +1642,8 @@ void TableView::RebuildHeaders()
                 }
             }
             headerCell.Visibility(column.Visibility());
-            // The header cell, not the gripper, is the keyboard target: column commands live here,
-            // and a bare focusable Grid is unnamed and Raw to a screen reader.
-            //
-            // IsTabStop no longer buys this header its own Tab press - PART_HeaderHost is a single
-            // tab stop (KeyboardNavigationMode::Once), so the band costs ONE Tab and Left/Right
-            // move within it. Every visible header is focusable even when it has no command, so
-            // keyboard users can reach and read every column instead of having non-actionable
-            // headers disappear from the navigation sequence.
+            // Header cells are the named keyboard/UIA targets; the host is one Tab stop, and arrows
+            // must still reach every visible header.
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             headerCell.IsTabStop(true);
@@ -1707,8 +1687,7 @@ void TableView::RebuildHeaders()
                 content.Content(headerBlock);
             }
             // Consume TableViewHeaderCellPadding from theme resources (cached once per rebuild).
-            // Sortable headers overlay a trailing chevron; reserve its real themed width so content
-            // trims before reaching it while non-sortable headers keep the full padding.
+            // Sortable headers reserve the chevron's themed width so text trims before the overlay.
             auto contentPadding = cachedHeaderCellPadding;
             if (headerIsSortable)
             {

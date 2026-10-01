@@ -162,10 +162,8 @@ void TableViewRow::OnApplyTemplate()
 
     if (host)
     {
-        // Scoped on the row's own cells host. TableView::OnApplyTemplate applies the same scope to
-        // PART_HeaderHost, which is the same type: both bands are one tab stop each, and arrows
-        // move within them. Set at the two hosts rather than in the TableViewCellsPanel
-        // constructor, so the shared layout primitive stays free of focus policy.
+        // Match PART_HeaderHost: scope TabFocusNavigation at the host, not the shared
+        // TableViewCellsPanel primitive.
         host.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
     }
 
@@ -352,25 +350,12 @@ bool TableViewRow::FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::F
 
 // ----- Two-level focus: ROW level vs CELL level -----
 //
-// The body is ONE tab stop, and inside it focus is either on the ROW or on one of its CELLS. Both
-// must be focusable, but they must never BOTH be reachable by Tab at the same time, or the body
-// grows a second stop. The framework leaves no declarative way to express that, so the row owns it
-// as state:
+// Body focus is either the row or one of its cells, never both. XAML tab search enters children
+// before consulting TabFocusNavigation, so a focusable row with focusable cells creates extra
+// forward/reverse tab stops.
 //
-//   CFocusManager::GetNextTabStop step #1 searches the CHILDREN of the focused element before it
-//   looks anywhere else, and it does NOT consult TabFocusNavigation while doing so
-//   (GetFirstFocusableElementInternal ignores the navigation mode entirely). So a focused row with
-//   focusable cells under it hands the next Tab to its own first cell no matter what mode is set
-//   on the row or on PART_CellsHost. The reverse walk has the mirror problem: Shift+Tab out of the
-//   cells host stops on the nearest focusable ancestor, which is the row - that is the phantom
-//   third stop this control had before (forward saw 2, reverse saw 3).
-//
-// Gating both ends removes both: at ROW level the cells are not tab stops, so Tab from the row
-// leaves the body; at CELL level the row is not a tab stop, so Shift+Tab from a cell leaves the
-// body too. Forward and reverse see the same two stops.
-//
-// Cells keep IsTabStop(true) as their own construction default in TableViewCell - the gate is
-// policy and lives here, on the row, not in the cell primitive.
+// Gating IsTabStop at both ends keeps the body one tab stop while still allowing row/cell arrow
+// navigation. Cells default to IsTabStop(true); row policy stamps the current level.
 void TableViewRow::SetCellLevelInternal(bool isCellLevel)
 {
     m_isCellLevel = isCellLevel;
@@ -381,10 +366,8 @@ void TableViewRow::SetCellLevelInternal(bool isCellLevel)
 // wrappers arrive with IsTabStop(true) and would otherwise re-open the row-level Tab leak.
 void TableViewRow::ApplyFocusLevelInternal()
 {
-    // Order by DIRECTION. Focus can still be sitting on whichever element is about to lose its tab
-    // stop, so the incoming target is always made focusable BEFORE the outgoing one is cleared -
-    // never the other way round, which would leave this row with no focusable element at all for
-    // an instant.
+    // Make the incoming level focusable before clearing the outgoing one, or the row has no focus
+    // target during the handoff.
     if (m_isCellLevel)
     {
         SetCellsTabStopInternal(true);
@@ -413,9 +396,7 @@ void TableViewRow::SetCellsTabStopInternal(bool isTabStop)
     }
 }
 
-// Makes the row a tab stop without touching its cells. Used by the pop-out path, which has to give
-// the row a valid focus target BEFORE it moves focus, and only then take the cells out of the tab
-// order - clearing IsTabStop on the cell that currently holds focus first would be the wrong order.
+// Pop-out must make the row focusable before clearing the focused cell from tab order.
 void TableViewRow::EnableRowFocusInternal()
 {
     IsTabStop(true);
@@ -432,9 +413,7 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
-    // GettingFocus bubbles, so this handler sees focus aimed at the row itself and at anything
-    // inside it. Only the row CONTAINER is interesting now: body entry is a row-level landing, and
-    // anything aimed at a descendant already names the exact cell it wants.
+    // GettingFocus bubbles; only redirects aimed at the row container are body-entry landings.
     if (newFocus != selfObject)
     {
         return;
@@ -475,9 +454,7 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
-    // Tab into the body lands on the FIRST row in the repeater, because the body is one tab stop.
-    // Redirect that to the row the user left, mirroring what OnHeaderHostGettingFocus does for the
-    // header band.
+    // Redirect body Tab entry from the first repeater row to the remembered row.
     auto const target = ownerImpl->ResolveFocusEntryRow(*this, oldFocus);
     if (!target || target == *this)
     {
@@ -490,9 +467,7 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
-    // The remembered row may still be parked at cell level from the last visit. Body entry is
-    // always a ROW-level landing, so put it back before handing focus over - otherwise the row is
-    // not a tab stop and TrySetNewFocusedElement has nothing valid to aim at.
+    // Body entry is row-level; reset the remembered row before redirecting or it is not focusable.
     winrt::get_self<TableViewRow>(target)->SetCellLevelInternal(false);
     ownerImpl->SetCellCursorActiveInternal(false);
 
@@ -587,9 +562,7 @@ void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
         // edit, and the stale trackers keep the previous item and column alive.
         ResetPressState();
 
-        // A row recycled while the cursor was drilled into its cells would come back out of the
-        // pool with IsTabStop cleared and its cells still tab stops - i.e. a row that Tab cannot
-        // reach whose cells add a second body stop. Body entry is always row level, so reset it.
+        // Recycled rows return at row level; otherwise a drilled row can reappear unreachable by Tab.
         m_isCellLevel = false;
 
         UpdateVisualState(false);
@@ -685,7 +658,6 @@ void TableViewRow::QueueRebuildCells()
                 catch (...)
                 {
                     // Coalesced cell rebuild is best-effort; never fail-fast the dispatcher.
-                    // Coalesced cell rebuild is best-effort.
                 }
             }
         }))
@@ -719,9 +691,7 @@ void TableViewRow::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
     m_isPressed = true;
     UpdateVisualState(true);
 
-    // Move keyboard focus to the CELL the press landed on, so the next keyboard interaction targets
-    // it and UIA reports that cell as focused. Clicking a cell used to focus the whole row, which
-    // made Narrator read every column of the row for a click on one value.
+    // A cell press enters cell level so keyboard/UIA focus names that cell, not the whole row.
     winrt::UIElement pressedCell{ nullptr };
     if (auto const source = args.OriginalSource().try_as<winrt::DependencyObject>())
     {
@@ -729,9 +699,7 @@ void TableViewRow::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
     }
     if (pressedCell)
     {
-        // A press names a specific CELL, which is an explicit request for cell level - so drill in
-        // before focusing, the way Right does. Without this the cell is not a tab stop and
-        // therefore not focusable at all, and every click would silently demote to the row.
+        // Drill in before focusing; row-level cells are not focusable.
         SetCellLevelInternal(true);
         if (!pressedCell.Focus(winrt::FocusState::Pointer))
         {
@@ -741,9 +709,7 @@ void TableViewRow::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
     }
     else
     {
-        // A press to the right of the last column resolves no cell. PART_CellsHost is
-        // left-aligned, so this is the ordinary "clicked the empty strip" case: land on the ROW,
-        // which is the body's row-level focus target.
+        // Empty strip clicks land on the row, the body's row-level focus target.
         SetCellLevelInternal(false);
         Focus(winrt::FocusState::Pointer);
     }
@@ -1109,8 +1075,6 @@ void TableViewRow::RebuildCells()
             winrt::get_self<TableView>(owningView)->PinFrozenColumnsForRow(*this);
         }
 
-        // Same reason as the rebuild path below: these wrappers came out of the recycle pool and
-        // carry whatever tab-stop state their previous row left on them.
         ApplyFocusLevelInternal();
 
         RefreshGridLines();
@@ -1168,20 +1132,13 @@ void TableViewRow::RebuildCells()
         cellWrapper.Visibility(column.Visibility());
         cellWrapper.MinHeight(rowMinHeight);
 
-        // A cell with a null Background does not hit-test, so without this only the generated
-        // content itself (a TextBlock, which is as wide as its text) would respond to a press. A
-        // click anywhere in the cell's padding resolved no column at all: no current cell, and
-        // double-click-to-edit silently did nothing on most of the cell's area. Transparent keeps
-        // the cell invisible while making the whole cell rectangle pressable.
+        // A null Background does not hit-test; Transparent keeps the full cell pressable so clicks
+        // in padding still set current cell and support double-click-to-edit.
         cellWrapper.Background(TransparentBrush());
 
-        // No local DataContext: the cell inherits the row's DataContext once appended, so recycled
-        // rows update reactively via inheritance instead of a live per-recycle push. This is a
-        // load-bearing invariant: nothing on the cell path (wrapper Grid, PART_CellsHost, or the
-        // built-in cell elements) may set a local DataContext, or it would shadow inheritance and the
-        // cell would show stale data after recycle. Custom columns (overridable GenerateElementCore)
-        // must likewise bind reactively to the inherited DataContext rather than baking in the initial
-        // dataItem, since recycled rows are no longer restamped.
+        // No local DataContext anywhere on the cell path: cells inherit the row item so recycled
+        // rows update reactively. Custom columns must also bind to inherited DataContext, not bake
+        // in the initial dataItem.
         if (auto cellElement = column.GenerateElement(dataItem))
         {
             AttachCellContent(cellWrapper, cellElement);
@@ -1202,10 +1159,8 @@ void TableViewRow::RebuildCells()
         winrt::get_self<TableView>(owningView)->PinFrozenColumnsForRow(*this);
     }
 
-    // Freshly generated cell wrappers arrive as tab stops (TableViewCell sets IsTabStop(true)), so
-    // the two-level gate has to be re-stamped or a row-level rebuild would silently re-open the
-    // "Tab from the row falls into its own first cell" leak. Re-applies the row's CURRENT level
-    // rather than forcing row level: a rebuild can run while the user is drilled into this row.
+    // New wrappers default to IsTabStop(true); restamp the current level so rebuilds do not reopen
+    // the row-to-first-cell Tab leak.
     ApplyFocusLevelInternal();
 
     RefreshGridLines();
@@ -1248,12 +1203,8 @@ void TableViewRow::AttachCellContent(const winrt::Grid& cellWrapper, const winrt
 
     TableViewCell::Child(cellWrapper, cellElement);
 
-    // A ContentPresenter cell (built-in TemplateColumn) needs its Content wired to the row item.
-    // Bind Content to the WRAPPER Grid's inherited DataContext -- which tracks the item across
-    // recycle -- rather than the presenter's own DataContext: ContentPresenter pins its DataContext
-    // to its Content, so a self-referential binding would freeze after the first item and show stale
-    // content on recycled rows. This binding persists across recycles (the restamp fast-path reuses
-    // the cell), so no Content is pushed during the measure pass.
+    // Bind Content to the wrapper's inherited DataContext so recycled template cells track the new
+    // item; binding to the presenter itself would freeze stale content.
     if (auto presenter = cellElement.try_as<winrt::ContentPresenter>())
     {
         if (presenter.ContentTemplate())
@@ -1527,21 +1478,13 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
 
         if (editorHasFocus)
         {
-            // Back to the CELL, not the row: the cell is what keyboard navigation and UIA treat as
-            // the focused element, so returning focus to the container would silently demote the
-            // user from cell focus to row focus every time an edit closed.
-            //
-            // The editor's own FocusState is carried across rather than hard-coding Programmatic:
-            // the framework only draws a focus rectangle for FocusState::Keyboard, so committing a
-            // keyboard-driven edit with Enter has to land the cell back in Keyboard focus or the
-            // ring silently disappears for the rest of the user's navigation.
+            // Restore focus to the cell, not row, and preserve Keyboard focus state so the focus
+            // rectangle survives Enter-commit.
             auto const restoreState = editingElement.FocusState() == winrt::FocusState::Unfocused
                 ? winrt::FocusState::Programmatic
                 : editingElement.FocusState();
 
-            // An edit is opened from cell level and closes back to it, so make sure the cells are
-            // tab stops before aiming at one: an edit that outlived a row-level move would
-            // otherwise try to focus a cell the two-level gate has switched off.
+            // Closing edit returns to cell level, so re-arm cells before restoring focus.
             SetCellLevelInternal(true);
 
             if (!cellWrapper.Focus(restoreState))
@@ -1623,8 +1566,7 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action)
                 auto const newName = winrt::get_self<TableViewCellAutomationPeer>(peer)->ReadNameForEdit();
                 if (oldValue != newValue || oldName != newName)
                 {
-                    // Publish after the table has left its Ending state. Reject recycled cells
-                    // and newer values rather than notifying an earlier item identity.
+                    // Publish after Ending; reject recycled cells and superseded values.
                     if (auto const queue = DispatcherQueue())
                     {
                         auto const weakThis = get_weak();

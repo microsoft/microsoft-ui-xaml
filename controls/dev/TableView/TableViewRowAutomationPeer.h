@@ -42,9 +42,8 @@ public:
     // IVirtualizedItemProvider — available only after the realized row has been recycled out.
     void Realize();
 
-    // Single source of cell-peer identity: GetChildrenCore and TableViewAutomationPeer::GetItem
-    // both route through here. UIA compares providers by identity, so a fresh peer per query makes
-    // grid addressing and tree navigation disagree and drops Narrator focus on every re-query.
+    // Single source of cell-peer identity for GetChildrenCore and Grid.GetItem; UIA compares
+    // providers by identity.
     winrt::AutomationPeer GetOrCreateCellPeer(winrt::FrameworkElement const& cell);
 
 private:

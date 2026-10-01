@@ -12,13 +12,9 @@ struct __declspec(uuid("843c3f59-aab0-4bcb-a8a4-12327286a29f")) __declspec(novta
     virtual HRESULT __stdcall GetExistingPeer(_Outptr_result_maybenull_ ::IInspectable** peer) noexcept = 0;
 };
 
-// Border is sealed. A single-child Grid preserves cell chrome while allowing
-// normal framework peer discovery to return the same peer as Grid.GetItem.
-//
-// The cell is also the keyboard focus target. A TableView is navigated cell by cell (Left/Right
-// within a row, Up/Down across rows preserving the column), so the element UIA reports as focused
-// has to be the cell and not the row - that is what lets Narrator announce a single
-// "{column}, {value}" instead of re-reading every column of the row on each arrow press.
+// Border is sealed; use a single-child Grid so framework peer discovery and Grid.GetItem return
+// the same cell peer. The cell is the keyboard/UIA focus target, letting Narrator announce one
+// "{column}, {value}" instead of the whole row.
 class TableViewCell :
     public ReferenceTracker<TableViewCell, winrt::Microsoft::UI::Xaml::Controls::GridT,
         winrt::composable, ITableViewCellAutomationPeerAccess>
@@ -34,12 +30,8 @@ public:
     {
         auto const wrapper = winrt::make<TableViewCell>(row, column, columnIndex).as<winrt::Grid>();
 
-        // Focusable, so a cell can be the UIA FocusedElement and SetFocus() on its peer succeeds
-        // instead of throwing "Target element cannot receive focus". CUIElement::IsFocusable gates
-        // on IsTabStop, so this is what makes the cell reachable at all.
-        //
-        // PART_CellsHost is the single-tab-stop scope; focus already inside the row is allowed to
-        // leave instead of being redirected back to the first cell.
+        // Cells need IsTabStop for UIA SetFocus to succeed; row policy later gates which cells are
+        // in the tab order.
         wrapper.IsTabStop(true);
 
         // The focus rect manager honours this on any focusable UIElement, not just on a Control.

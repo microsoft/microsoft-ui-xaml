@@ -52,12 +52,9 @@ public:
 
     // ----- Cell-level keyboard focus -----
     //
-    // The row is still the element the framework and ItemsRepeater deal in, but the element that
-    // actually holds focus is a cell, so that UIA reports a cell and Narrator announces one column
-    // rather than the whole row. These are the row's half of that: the control drives navigation.
+    // Cells are the UIA focus targets; these are the row-side helpers the control drives.
 
-    // The number of cells in this row whose column is visible. This is the coordinate space the
-    // control navigates in, and the same one TableViewCellAutomationPeer::Column reports.
+    // Visible-cell coordinates match TableViewCellAutomationPeer::Column.
     int32_t GetVisibleCellCountInternal() const;
 
     winrt::UIElement GetVisibleCellInternal(int32_t visibleColumnIndex) const;
@@ -66,18 +63,14 @@ public:
 
     winrt::UIElement FindOwnCellInternal(const winrt::DependencyObject& element, bool requireExact) const;
 
-    // Moves keyboard focus to the cell at a visible-column index, drilling the row to CELL level
-    // first. Falls back to the ROW when the row has no such cell or the cell refuses focus.
+    // Focuses a visible cell after drilling to cell level; falls back to the row if needed.
     bool FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::FocusState state);
 
-    // Body navigation is two-level (ARIA APG `treegrid`): focus sits either on the ROW or on one of
-    // its CELLS. This switches between them. It is not just bookkeeping - it moves IsTabStop from
-    // the row to the cells and back, which is what keeps the body ONE tab stop in both directions.
-    // See the definition for why the framework's tab walk forces that.
+    // Switches the ARIA treegrid body between row level and cell level; see the definition for why
+    // this has to move IsTabStop.
     void SetCellLevelInternal(bool isCellLevel);
     bool IsCellLevelInternal() const noexcept { return m_isCellLevel; }
-    // Makes the row a tab stop without disarming its cells, so the pop-out path can move focus to
-    // the row before it takes the cells out of the tab order.
+    // Makes the row focusable before the pop-out path disarms cells.
     void EnableRowFocusInternal();
 
     void RefreshFrozenColumnLayout(double horizontalOffset, double leadingFrozenWidth);
@@ -118,14 +111,11 @@ public:
 private:
     void ResetCellAutomationNames();
 
-    // Re-stamps the current focus level onto the live row + cells. Needed after every cell rebuild,
-    // because new and recycled cell wrappers arrive as tab stops.
+    // Restamps the current level after rebuilds because new/recycled cells arrive as tab stops.
     void ApplyFocusLevelInternal();
     void SetCellsTabStopInternal(bool isTabStop);
 
-    // Tab into the body lands on the FIRST row, because the body is one tab stop. This redirects
-    // that entry to the row the user left, the way the header band redirects to its remembered
-    // column. Body entry is always a ROW-level landing.
+    // Redirects body Tab entry from the first row to the remembered row; entry is always row-level.
     void OnRowGettingFocus(
         const winrt::UIElement& sender,
         const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
@@ -186,9 +176,7 @@ private:
     bool m_selectOnPointerRelease{ false };
     uint32_t m_selectPointerId{ 0 };
 
-    // False = focus level is the ROW (the row is a tab stop, its cells are not).
-    // True  = focus is drilled into this row's CELLS (the cells are tab stops, the row is not).
-    // Rows come out of the recycle pool at row level, which is what body entry lands on.
+    // False = row-level focus; true = cell-level focus. Recycled rows return at row level.
     bool m_isCellLevel{ false };
 
     // Prevent DataContextChanged re-entry while RebuildCells updates child DCs.

@@ -289,16 +289,11 @@ hstring TableViewRowAutomationPeer::GetNameCore()
         return {};
     }
 
-    // Visible cells in visual order; empty cells are skipped so the name has no separator runs.
-    // The cheap pass first: GetCellDisplayText does not create peers, because this runs on every
-    // UIA name query across every cell.
+    // First collect cheap visible-cell text without creating peers; this runs on every UIA name query.
     std::wstring composed = ComposeCellTexts(rowImpl, cellsHost, false /* allowPeerCreation */);
     if (composed.empty())
     {
-        // Every visible cell was template content, which the cheap pass cannot read - so the row
-        // would announce as a bare "data item" with nothing in it, the exact case this name exists
-        // to fix. Retry allowing peer creation: bounded to rows that would otherwise be nameless,
-        // and the peers it attaches make the following queries cheap again.
+        // Only nameless rows fall back to bounded peer creation for visible template content.
         composed = ComposeCellTexts(rowImpl, cellsHost, true /* allowPeerCreation */);
     }
 

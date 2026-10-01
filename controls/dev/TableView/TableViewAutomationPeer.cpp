@@ -260,8 +260,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::GetItem(int32_t row, i
 
     if (auto const cellFE = cellElement.try_as<winrt::FrameworkElement>())
     {
-        // Through the row's peer so IGridProvider::GetItem and tree navigation hand back the same
-        // provider; UIA compares providers by identity.
+        // Route through the row peer so Grid.GetItem and tree navigation share provider identity.
         if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement)
                 .try_as<winrt::TableViewRowAutomationPeer>())
         {
@@ -272,8 +271,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::GetItem(int32_t row, i
             }
         }
 
-        // A separate uncached peer would not be the provider observed by editing or
-        // tree navigation. A custom row peer that does not expose cells has no item here.
+        // A fresh peer would not match editing/tree navigation; custom row peers may expose no item.
     }
     return nullptr;
 }
@@ -535,10 +533,8 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
     int32_t startIndex = -1;
     if (startAfter)
     {
-        // Any child of the rows repeater is a valid anchor - a data row or a group-header band.
-        // Matching only TableViewRow left startIndex at -1 for a group header, and the search then
-        // restarted at item 0 - which under grouping IS that header, so a client enumerating the
-        // container never advanced past the first group.
+        // Any repeater child is a valid anchor. Matching only TableViewRow restarted grouping
+        // enumeration at item 0, so clients never advanced past the first group header.
         bool resolved = false;
         if (auto const startPeer = PeerFromProvider(startAfter).try_as<winrt::FrameworkElementAutomationPeer>())
         {

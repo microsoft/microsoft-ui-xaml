@@ -891,24 +891,16 @@ private:
         const winrt::KeyRoutedEventArgs& args);
 
     bool TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args);
-    // Bare Left/Right on a focused column header: steps to the previous/next visible focusable
-    // header, clamping at the band's ends. Arrows stay inside the band; Tab is the only way
-    // between the header band and the body.
+    // Header-band arrows and clamping; Tab is the only cross-band move.
     bool TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& args);
-    // Up/Down on a focused column header: clamped inside the band, never crossing into the body.
     bool TryHandleHeaderVerticalKey(const winrt::KeyRoutedEventArgs& args);
-    // Moves focus to a visible header by visible-column index, stepping by `step` (0 = exact only)
-    // past headers that refuse focus. Returns the index actually focused, or -1.
+    // Moves focus to a visible header by visible-column index; step 0 means exact only.
     int32_t FocusVisibleHeaderFrom(int32_t visibleIndex, int32_t step);
     // Visible-column index of the header that currently has focus, or -1 when focus is elsewhere.
     int32_t GetFocusedVisibleHeaderIndex() const;
-    // Header the band should be entered on: the remembered column (m_currentCellColumn) when it is
-    // focusable, else the nearest focusable header outward from it. -1 when none is focusable.
+    // Header entry resolves to the remembered column, or the nearest focusable header around it.
     int32_t ResolveHeaderEntryIndex(const std::vector<winrt::FrameworkElement>& cells) const;
-    // Tab entry into the header band: redirects focus from the band's first header to the
-    // remembered column, and records the landing column so Tab onward into the body keeps it.
-    // The band is ONE tab stop (KeyboardNavigationMode::Once on PART_HeaderHost), so without the
-    // redirect every entry would land on column 0.
+    // Redirects header Tab entry from the first header to the remembered column.
     void OnHeaderHostGettingFocus(
         const winrt::IInspectable& sender,
         const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
@@ -929,7 +921,8 @@ private:
         const winrt::KeyRoutedEventArgs& args);
     void OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args);
 
-    // PreviewKeyDown snapshots the pre-key focus before XAML's built-in navigation can move it.
+    // Pre-key focus snapshots are needed because XAML directional navigation can move focus before
+    // bubbling handlers run.
     winrt::KeyEventHandler m_previewKeyDownHandler{ nullptr };
 
     winrt::KeyEventHandler m_editingKeyDownHandler{ nullptr };
@@ -938,64 +931,39 @@ private:
     bool m_focusLossCommitQueued{ false };
 
     int32_t m_navAnchorRow{ -1 };
-    // Cell cursor snapshot for keys whose bubbling handler must ignore post-key live focus.
     int32_t m_navAnchorCellRow{ -1 };
     int32_t m_navAnchorCellColumn{ -1 };
-    // Same snapshot for the header band: built-in directional navigation can move header focus
-    // before the bubbling handler runs, so the header move is computed from the PRE-KEY header and
-    // re-asserted idempotently, exactly as the cell move is.
     int32_t m_navAnchorHeaderColumn{ -1 };
-    // The cell the keyboard cursor is on, in visible-column coordinates. Up/Down/PageUp/PageDown
-    // preserve it, Left/Right move it, and entering the table from outside restores it. Kept as an
-    // index rather than an element so it survives row recycling, which destroys cell elements on
-    // every scroll.
+    // Shared body/header visible-column cursor; stored as an index so it survives row recycling.
     int32_t m_currentCellColumn{ 0 };
     int32_t m_currentCellRow{ -1 };
 
-    // Whether m_currentCellColumn means anything yet. It is an int that starts at 0, so "column 0"
-    // and "no column chosen" are the same value - and the header band needs to tell them apart, or
-    // any incidental write before the band is first entered silently relocates its entry point.
-    // False = the band enters on its FIRST focusable header; true = it honours the remembered
-    // column. Set by SetColumnCursorInternal, cleared by ResetColumnCursorInternal.
+    // Distinguishes column 0 from "no column chosen yet" so first header entry does not relocate.
     bool m_columnCursorEstablished{ false };
     void SetColumnCursorInternal(int32_t visibleColumnIndex);
     void ResetColumnCursorInternal();
 
-    // Two-level body navigation (W3C ARIA APG `treegrid`). False = the cursor is on the ROW, true =
-    // it has been drilled into that row's CELLS with Right. Drives which element Up/Down move
-    // between, whether Left steps a column or pops back out to the row, and which of the row / its
-    // cells is the body's single tab stop.
+    // Two-level ARIA treegrid body cursor: row level or cell level.
     bool m_cellCursorActive{ false };
-    // True after Enter has moved focus from a cell into focusable content hosted by that cell.
-    // Escape uses it to restore grid navigation without stealing Escape from controls that handled
-    // it first, such as ComboBox closing its popup.
+    // True while Enter has moved focus into hosted cell content; Escape restores grid navigation
+    // after hosted controls, such as ComboBox, handle their own Escape.
     bool m_cellInteractionActive{ false };
     // The row currently drilled in, so the cursor can pop it back to row level when it moves on.
     // Weak: rows are recycled on every scroll.
     winrt::weak_ref<winrt::TableViewRow> m_cellLevelRow{ nullptr };
 
-    // Right on a focused ROW drills into its first cell; Left on the FIRST cell pops back out to
-    // the row. Never claims a group header - that is the handler below.
+    // Row-level Left/Right drill between row and cells; group headers use Left/Right for expand/collapse.
     bool TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args);
-    // Left / Right on a focused GROUP HEADER collapse / expand it. A group header has no cells, so
-    // this is the explicit alternative to drilling in, not a variant of it.
     bool TryHandleGroupHeaderExpandCollapseKey(const winrt::KeyRoutedEventArgs& args);
     // Enter from a focused cell moves into interactive display content; Escape moves back out.
     bool TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs& args);
     bool TryHandleCellInteractionEscapeKey(const winrt::KeyRoutedEventArgs& args);
-    // Focuses an already-realized container at ROW level.
+    // Focus helpers and pre-key anchors for the row/group-header levels.
     bool FocusRowContainerInternal(winrt::UIElement const& element);
-    // Shared realization + deferred-focus path behind FocusCell / FocusRowContainer.
     bool FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel);
-    // Repeater index of the focused element when it is one of OUR row CONTAINERS, else -1.
     int32_t GetFocusedRowContainerIndex() const;
-    // Repeater index of the focused GROUP HEADER, else -1.
     int32_t GetFocusedGroupHeaderIndex() const;
-    // Pre-key snapshot of the row-level half of the two-level cursor, the counterpart to
-    // m_navAnchorCellRow / m_navAnchorCellColumn. -1 when focus was not on a row container.
     int32_t m_navAnchorRowContainer{ -1 };
-    // Pre-key snapshot of the third possibility: focus on a group header. Mutually exclusive with
-    // both of the above.
     int32_t m_navAnchorGroupHeader{ -1 };
 
     void OnPreviewKeyDownForNavigation(
@@ -1004,12 +972,8 @@ private:
 
     bool TryHandleCellNavigationKey(const winrt::KeyRoutedEventArgs& args);
 
-    // The cell-cursor move itself, free of routed-event args. Returns true when the key belongs to
-    // cell navigation (including at a boundary, where the cursor does not move).
-    //
-    // anchorRow / anchorColumn are the cursor position BEFORE the key was delivered. They must be
-    // passed by the key path, because built-in directional navigation may already have moved focus.
-    // Pass -1, -1 to anchor on live focus instead (no routed event in flight).
+    // Moves the cell cursor from a pre-key anchor; consumes handled cell-navigation keys, including
+    // boundaries. Pass -1, -1 when no routed event is in flight.
     bool TryMoveCellCursorFromAnchor(
         winrt::Windows::System::VirtualKey key, bool isControlDown,
         int32_t anchorRow, int32_t anchorColumn);

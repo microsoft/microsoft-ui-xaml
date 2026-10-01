@@ -433,12 +433,9 @@ void TableView::FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt
         return;
     }
 
-    // TryGetIndexForIdentity answers from a cached identity -> index map built over the METADATA
-    // provider's row list. The repeater's own ItemsSourceView is a separate view of the same
-    // source, and the two are not guaranteed to have absorbed a reshape in the same order, so a
-    // resolved index can still be past the end of what the repeater will accept.
-    // ItemsRepeater::GetOrCreateElement THROWS on an out-of-range index, and this runs from a
-    // deferred layout callback where a throw fails the process rather than surfacing to the app.
+    // The metadata provider and repeater own separate views that can absorb reshapes at different
+    // times, so a resolved index can exceed what the repeater accepts. GetOrCreateElement throws
+    // for that, and this deferred layout callback would fail-fast the process.
     auto const sourceView = repeater.ItemsSourceView();
     if (!sourceView || index >= sourceView.Count())
     {
