@@ -23,7 +23,6 @@
 #include "microsoft.ui.input.h"
 #include "XamlRoot.g.h"
 #include "Value.h"
-#include <OptionalChangeState.h>
 
 using WindowChrome = DirectUI::WindowChrome;
 using VisualTreeHelper = DirectUI::VisualTreeHelper;
@@ -169,14 +168,9 @@ LRESULT CWindowChrome::OnCreate()
 //   and returns it. If the border is disabled, then this method will return 0.
 // Return Value:
 // - the height of the border above the title bar or 0 if it's disabled
-int CWindowChrome::GetTopBorderHeight()
+int CWindowChrome::GetTopBorderHeight() const noexcept
 {
-    if (OptionalChangeState::ShouldAlignTitleBarTopBorderBehavior())
-    {
-        return GetAlignedTopBorderHeight();
-    }
-
-    // The compatibility path uses Window ECITB without checking the presenter.
+    // Preserve the existing Window ECITB geometry without checking the presenter.
     if (!IsTitlebarVisible() || IsMaximized(m_topLevelWindow))
     {
         return 0;
@@ -194,20 +188,6 @@ int CWindowChrome::GetTopBorderHeight()
 bool CWindowChrome::IsTitlebarVisible() const
 {
     return IsChromeActive();
-}
-
-int CWindowChrome::GetAlignedTopBorderHeight()
-{
-    ASSERT(OptionalChangeState::ShouldAlignTitleBarTopBorderBehavior());
-
-    if (IsMaximized(m_topLevelWindow))
-    {
-        return 0;
-    }
-
-    bool shouldReserveTopBorder = false;
-    IFCFAILFAST(GetPeer()->ShouldReserveAppWindowTopBorder(&shouldReserveTopBorder));
-    return shouldReserveTopBorder ? topBorderVisibleHeight : 0;
 }
 
 void CWindowChrome::PaintHighContrastTopBorder()

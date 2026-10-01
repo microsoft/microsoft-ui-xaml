@@ -2213,7 +2213,7 @@ namespace DirectUI
         DefaultStyleOptimizations = 60995620,
         DeferContextFlyoutInit = 61098986,
         GamepadKeyRouting = 63117108,
-        AlignTitleBarTopBorderBehavior = 8948,
+        FixWindowTopBorder = 8948,
     };
     DEFINE_ENUM_FLAG_OPERATORS(XamlChangeId);
 

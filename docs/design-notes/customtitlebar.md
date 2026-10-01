@@ -6,7 +6,7 @@
   - [Table of Contents](#table-of-contents)
   - [Under the hood](#under-the-hood)
     - [Client area and top border](#client-area-and-top-border)
-      - [Optional top-border alignment](#optional-top-border-alignment)
+      - [Optional Window top-border fix](#optional-window-top-border-fix)
       - [Windows 10 frame workaround](#windows-10-frame-workaround)
     - [Min/Max/Close buttons and dragging](#minmaxclose-buttons-and-dragging)
     - [NCHITTEST behavior](#nchittest-behavior)
@@ -52,19 +52,14 @@ Content extended into title bar
 With Window ECITB enabled in a restored, non-fullscreen window, WinUI leaves one physical pixel above that child
 for the native top border. This keeps XAML from covering the border; it does not limit the resize target to one pixel.
 
-#### Optional top-border alignment
+#### Optional Window top-border fix
 
-Historically, setting `AppWindow.TitleBar.ExtendsContentIntoTitleBar` directly did not reserve that row.
-The optional change `AlignTitleBarTopBorderBehavior` makes both ECITB entry points use the same border geometry.
-It also removes the row in fullscreen, where it would otherwise leave a gap above the content.
-
-With the change enabled, both entry points reserve one physical pixel while ECITB is enabled and the window is
-neither maximized nor fullscreen. Otherwise, no row is reserved. These rules apply on Windows 10 and Windows 11.
-The change aligns geometry; it does not synchronize the two ECITB getters.
+The optional change `FixWindowTopBorder` fixes how that existing row is drawn on Windows 10 when the app uses
+`Window.ExtendsContentIntoTitleBar`. It does not move or resize XAML content, align the AppWindow entry point,
+or change fullscreen behavior. Direct `AppWindow.TitleBar.ExtendsContentIntoTitleBar` assignments remain outside its scope.
 
 The optional change is disabled by default and must be enabled before starting the XAML application.
-Opting out preserves the existing behavior, including the Window ECITB fullscreen gap.  The plan is that we
-eventually make this the default behavior and make it opt-out instead.
+The plan is to make it the default behavior with an opt-out in the future.
 
 #### Windows 10 frame workaround
 
@@ -80,8 +75,8 @@ the side borders. This is an observed result and an implementation precedent, no
 working margin. The larger margin does not move XAML farther down.
 
 **Compatibility:** This workaround can change all four border colors, even though only the top margin is nonzero.
-WinUI takes ownership of the DWM margin set and clears it when the reserved row is no longer needed, including
-on maximization or entry to fullscreen. Earlier app-supplied margins are not restored because DWM provides no getter.
+WinUI takes ownership of the DWM margin set and clears it when the reserved row is removed, such as when
+Window ECITB is disabled or the window is maximized. Earlier app-supplied margins are not restored because DWM provides no getter.
 
 ### Min/Max/Close buttons and dragging
 

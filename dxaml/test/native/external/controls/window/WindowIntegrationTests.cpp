@@ -7,6 +7,7 @@
 #include <cmath>
 // Used to subclass the test HWND and inspect its native sizing request.
 #include <commctrl.h>
+#include <dwmapi.h>
 #include <limits>
 #include <XamlTailored.h>
 #include <TestEvent.h>
@@ -19,9 +20,11 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #pragma comment(lib, "comctl32.lib")
+#pragma comment(lib, "dwmapi.lib")
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
@@ -75,6 +78,33 @@ namespace
         RECT bridgeRect{};
         VERIFY_IS_TRUE(!!::GetWindowRect(bridgeWindow, &bridgeRect));
         return bridgeRect.top - clientOrigin.y;
+    }
+
+    std::pair<COLORREF, COLORREF> EraseWindowTopRows(HWND windowHandle)
+    {
+        // Capture WM_ERASEBKGND without depending on screen occlusion or DWM timing.
+        // This checks WinUI's painting, not the final DWM-composited border color.
+        const HDC screenDC = ::GetDC(nullptr);
+        VERIFY_IS_TRUE(screenDC != nullptr);
+        auto releaseScreenDC = wil::scope_exit([&]() { ::ReleaseDC(nullptr, screenDC); });
+        wil::unique_hdc memoryDC(::CreateCompatibleDC(screenDC));
+        wil::unique_hbitmap bitmap(::CreateCompatibleBitmap(screenDC, 1, 2));
+        VERIFY_IS_TRUE(memoryDC != nullptr);
+        VERIFY_IS_TRUE(bitmap != nullptr);
+        const HGDIOBJ previousBitmap = ::SelectObject(memoryDC.get(), bitmap.get());
+        VERIFY_IS_TRUE(previousBitmap != nullptr && previousBitmap != HGDI_ERROR);
+        auto restoreBitmap = wil::scope_exit([&]() { ::SelectObject(memoryDC.get(), previousBitmap); });
+
+        VERIFY_IS_TRUE(!!::SetPixelV(memoryDC.get(), 0, 0, RGB(255, 0, 255)));
+        VERIFY_IS_TRUE(!!::SetPixelV(memoryDC.get(), 0, 1, RGB(255, 0, 255)));
+        VERIFY_ARE_EQUAL(static_cast<LRESULT>(1),
+            ::SendMessageW(windowHandle, WM_ERASEBKGND, reinterpret_cast<WPARAM>(memoryDC.get()), 0));
+
+        const COLORREF top = ::GetPixel(memoryDC.get(), 0, 0);
+        const COLORREF below = ::GetPixel(memoryDC.get(), 0, 1);
+        VERIFY_ARE_NOT_EQUAL(CLR_INVALID, top);
+        VERIFY_ARE_NOT_EQUAL(CLR_INVALID, below);
+        return { top, below };
     }
 }
 
@@ -273,7 +303,16 @@ namespace
             VERIFY_IS_TRUE(Platform::String::CompareOrdinal(window1->Title, "Test Window Title") == 0);
 
             LOG_OUTPUT(L"----- Check the HWND's text -----");
-            const HWND windowHandle = GetWindowHandle(window1.get());
+            IWindowNative* windowNative = nullptr;
+            auto hr = reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(__uuidof(IWindowNative), (void**)&windowNative);
+            VERIFY_SUCCEEDED(hr);
+
+            HWND windowHandle = nullptr;
+            hr = windowNative->get_WindowHandle(&windowHandle);
+            VERIFY_SUCCEEDED(hr);
+
+            windowNative->Release();
+            windowNative = nullptr;
 
             wchar_t buffer[128] = {};
             GetWindowText(windowHandle, buffer, ARRAYSIZE(buffer));
@@ -323,106 +362,75 @@ namespace
         });
     }
 
-    void WindowIntegrationTests::ECITBEntryPointsReserveTopBorder()
+    void WindowIntegrationTests::WindowTopBorderPainting()
     {
-        VerifyECITBEntryPointOffsets(true);
+        VerifyWindowTopBorderPainting(true);
     }
 
-    void WindowIntegrationTests::ECITBEntryPointsPreserveCompatBehavior()
+    void WindowIntegrationTests::WindowTopBorderPaintingPreservesCompatBehavior()
     {
-        VerifyECITBEntryPointOffsets(false);
+        VerifyWindowTopBorderPainting(false);
     }
 
-    void WindowIntegrationTests::VerifyECITBEntryPointOffsets(bool expectedChangeEnabled)
+    void WindowIntegrationTests::VerifyWindowTopBorderPainting(bool expectedChangeEnabled)
     {
         TestCleanupWrapper cleanup;
         const bool isChangeEnabled = xaml_settings::XamlOptionalChanges::IsChangeEnabled(
-            xaml_settings::XamlChangeId::AlignTitleBarTopBorderBehavior);
+            xaml_settings::XamlChangeId::FixWindowTopBorder);
         VERIFY_ARE_EQUAL(expectedChangeEnabled, isChangeEnabled);
 
-        auto createWindow = [&](WindowAutoCloser& window, HWND& windowHandle)
-        {
-            RunOnUIThread([&]()
-            {
-                window.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
-                    L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
-                    L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
-                    L"  <Grid Background='Magenta'/>"
-                    L"</Window>")));
-                window->Activate();
-
-                windowHandle = GetWindowHandle(window.get());
-            });
-            TestServices::WindowHelper->WaitForIdle();
-        };
-        auto verifyTopOffset = [](HWND windowHandle, int expectedOffset, const wchar_t* message)
-        {
-            const int actualOffset = GetDesktopChildSiteBridgeTopOffset(windowHandle);
-            LOG_OUTPUT(L"%s Expected offset=%d, actual offset=%d", message, expectedOffset, actualOffset);
-            VERIFY_ARE_EQUAL(expectedOffset, actualOffset, message);
-        };
-
-        WindowAutoCloser windowEntryPoint;
-        HWND windowEntryPointHandle = nullptr;
-        createWindow(windowEntryPoint, windowEntryPointHandle);
-        verifyTopOffset(windowEntryPointHandle, 0, L"Window ECITB off should place XAML at the client origin.");
-        RunOnUIThread([&]() { windowEntryPoint->ExtendsContentIntoTitleBar = true; });
-        TestServices::WindowHelper->WaitForIdle();
-        verifyTopOffset(windowEntryPointHandle, 1, L"Window ECITB on should reserve the top border.");
-        RunOnUIThread([&]() { windowEntryPoint->ExtendsContentIntoTitleBar = false; });
-        TestServices::WindowHelper->WaitForIdle();
-        verifyTopOffset(windowEntryPointHandle, 0, L"Window ECITB off should remove the top border.");
-
-        WindowAutoCloser appWindowEntryPoint;
-        HWND appWindowEntryPointHandle = nullptr;
-        createWindow(appWindowEntryPoint, appWindowEntryPointHandle);
-        verifyTopOffset(appWindowEntryPointHandle, 0, L"AppWindow ECITB off should place XAML at the client origin.");
-        RunOnUIThread([&]() { appWindowEntryPoint->AppWindow->TitleBar->ExtendsContentIntoTitleBar = true; });
-        TestServices::WindowHelper->WaitForIdle();
-        verifyTopOffset(
-            appWindowEntryPointHandle,
-            isChangeEnabled ? 1 : 0,
-            L"Direct AppWindow ECITB should use the optional-change geometry.");
-        RunOnUIThread([&]() { appWindowEntryPoint->AppWindow->TitleBar->ExtendsContentIntoTitleBar = false; });
-        TestServices::WindowHelper->WaitForIdle();
-        verifyTopOffset(appWindowEntryPointHandle, 0, L"AppWindow ECITB off should remove the top border.");
-    }
-
-    void WindowIntegrationTests::ECITBFullScreenUsesEntireClientArea()
-    {
-        VerifyECITBFullScreenOffsets(true);
-    }
-
-    void WindowIntegrationTests::ECITBFullScreenPreservesCompatBehavior()
-    {
-        VerifyECITBFullScreenOffsets(false);
-    }
-
-    void WindowIntegrationTests::VerifyECITBFullScreenOffsets(bool expectedChangeEnabled)
-    {
-        // FullScreen leaves ECITB enabled without maximizing the HWND, so the legacy
-        // border calculation can leave a one-pixel gap. Exercise both ECITB entry points
-        // with fullscreen selected before and after activation. The opt-in must let
-        // XAML fill the client area, preserve the ECITB getters across presenter changes,
-        // and restore the border when returning to Overlapped. The opt-out test verifies
-        // that legacy offsets remain unchanged.
-        TestCleanupWrapper cleanup;
-        using Microsoft::UI::Windowing::AppWindowPresenterKind;
-
-        const bool isChangeEnabled = xaml_settings::XamlOptionalChanges::IsChangeEnabled(
-            xaml_settings::XamlChangeId::AlignTitleBarTopBorderBehavior);
-        VERIFY_ARE_EQUAL(expectedChangeEnabled, isChangeEnabled);
+        HIGHCONTRASTW highContrast = { sizeof(HIGHCONTRASTW) };
+        VERIFY_IS_TRUE(!!::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, 0));
+        const bool isHighContrast = (highContrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
+        const COLORREF borderColor = isHighContrast ? ::GetSysColor(COLOR_WINDOWFRAME) : RGB(0, 0, 0);
 
         for (const bool useAppWindow : { false, true })
         {
-            for (const bool startFullScreen : { false, true })
+            LOG_OUTPUT(L"ECITB entry point: %s; fix enabled: %d", useAppWindow ? L"AppWindow" : L"Window", isChangeEnabled);
+            WindowAutoCloser window;
+            HWND windowHandle = nullptr;
+            COLORREF backgroundColor = CLR_INVALID;
+            bool needsDwmWorkaround = false;
+            RunOnUIThread([&]()
             {
-                LOG_OUTPUT(L"ECITB entry point: %s; start fullscreen: %d",
-                    useAppWindow ? L"AppWindow" : L"Window", startFullScreen);
+                window.Attach(ref new xaml::Window());
+                auto content = ref new xaml_controls::Grid();
+                content->RequestedTheme = xaml::ElementTheme::Light;
+                window->Content = content;
+                window->Activate();
+                windowHandle = GetWindowHandle(window.get());
 
-                WindowAutoCloser window;
-                HWND windowHandle = nullptr;
-                auto setECITB = [&](bool value)
+                UINT borderThickness = 0;
+                const HRESULT hr = ::DwmGetWindowAttribute(windowHandle, DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
+                    &borderThickness, sizeof(borderThickness));
+                VERIFY_IS_TRUE(SUCCEEDED(hr) || hr == E_INVALIDARG);
+                needsDwmWorkaround = hr == E_INVALIDARG;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                const auto colors = EraseWindowTopRows(windowHandle);
+                backgroundColor = colors.second;
+                VERIFY_ARE_EQUAL(backgroundColor, colors.first);
+                if (!isHighContrast)
+                {
+                    VERIFY_ARE_EQUAL(RGB(255, 255, 255), backgroundColor, L"A light background must expose a missing border fix.");
+                }
+            });
+            auto verifyPainting = [&](int expectedOffset)
+            {
+                RunOnUIThread([&]()
+                {
+                    VERIFY_ARE_EQUAL(expectedOffset, GetDesktopChildSiteBridgeTopOffset(windowHandle));
+                    const auto colors = EraseWindowTopRows(windowHandle);
+                    const bool paintBorder = isChangeEnabled && needsDwmWorkaround && expectedOffset != 0;
+                    VERIFY_ARE_EQUAL(paintBorder ? borderColor : backgroundColor, colors.first, L"Top row");
+                    VERIFY_ARE_EQUAL(backgroundColor, colors.second, L"Background below the top row");
+                });
+            };
+            auto setECITB = [&](bool value)
+            {
+                RunOnUIThread([&]()
                 {
                     if (useAppWindow)
                     {
@@ -432,70 +440,24 @@ namespace
                     {
                         window->ExtendsContentIntoTitleBar = value;
                     }
-                };
-
-                RunOnUIThread([&]()
-                {
-                    window.Attach(ref new xaml::Window());
-                    window->Content = ref new xaml_controls::Grid();
-                    setECITB(true);
-                    if (startFullScreen)
-                    {
-                        window->AppWindow->SetPresenter(AppWindowPresenterKind::FullScreen);
-                    }
-                    window->Activate();
-
-                    windowHandle = GetWindowHandle(window.get());
                 });
                 TestServices::WindowHelper->WaitForIdle();
+            };
 
-                auto verifyGeometry = [&](AppWindowPresenterKind presenterKind, int expectedOffset, bool ecitbEnabled)
-                {
-                    RunOnUIThread([&]()
-                    {
-                        VERIFY_IS_TRUE(window->AppWindow->Presenter->Kind == presenterKind);
-                        VERIFY_ARE_EQUAL(ecitbEnabled, window->AppWindow->TitleBar->ExtendsContentIntoTitleBar);
-                        VERIFY_ARE_EQUAL(!useAppWindow && ecitbEnabled, window->ExtendsContentIntoTitleBar);
-                        VERIFY_ARE_EQUAL(expectedOffset, GetDesktopChildSiteBridgeTopOffset(windowHandle));
-
-                        RECT clientRect{};
-                        RECT bridgeRect{};
-                        VERIFY_IS_TRUE(!!::GetClientRect(windowHandle, &clientRect));
-                        VERIFY_IS_TRUE(!!::GetClientRect(FindDesktopChildSiteBridge(windowHandle), &bridgeRect));
-                        VERIFY_ARE_EQUAL(clientRect.right - clientRect.left, bridgeRect.right - bridgeRect.left);
-                        VERIFY_ARE_EQUAL(clientRect.bottom - clientRect.top - expectedOffset, bridgeRect.bottom - bridgeRect.top);
-                    });
-                };
-
-                const int restoredOffset = isChangeEnabled || !useAppWindow ? 1 : 0;
-                const int fullScreenOffset = isChangeEnabled ? 0 : restoredOffset;
-                verifyGeometry(
-                    startFullScreen ? AppWindowPresenterKind::FullScreen : AppWindowPresenterKind::Overlapped,
-                    startFullScreen ? fullScreenOffset : restoredOffset,
-                    true);
-
-                if (!startFullScreen)
-                {
-                    RunOnUIThread([&]() { window->AppWindow->SetPresenter(AppWindowPresenterKind::FullScreen); });
-                    TestServices::WindowHelper->WaitForIdle();
-                    verifyGeometry(AppWindowPresenterKind::FullScreen, fullScreenOffset, true);
-                }
-
-                if (isChangeEnabled)
-                {
-                    RunOnUIThread([&]() { setECITB(false); });
-                    TestServices::WindowHelper->WaitForIdle();
-                    verifyGeometry(AppWindowPresenterKind::FullScreen, 0, false);
-
-                    RunOnUIThread([&]() { setECITB(true); });
-                    TestServices::WindowHelper->WaitForIdle();
-                    verifyGeometry(AppWindowPresenterKind::FullScreen, fullScreenOffset, true);
-                }
-
-                RunOnUIThread([&]() { window->AppWindow->SetPresenter(AppWindowPresenterKind::Default); });
+            verifyPainting(0);
+            setECITB(true);
+            verifyPainting(useAppWindow ? 0 : 1);
+            if (!useAppWindow)
+            {
+                RunOnUIThread([&]() { ::ShowWindow(windowHandle, SW_MAXIMIZE); });
                 TestServices::WindowHelper->WaitForIdle();
-                verifyGeometry(AppWindowPresenterKind::Overlapped, restoredOffset, true);
+                verifyPainting(0);
+                RunOnUIThread([&]() { ::ShowWindow(windowHandle, SW_RESTORE); });
+                TestServices::WindowHelper->WaitForIdle();
+                verifyPainting(1);
             }
+            setECITB(false);
+            verifyPainting(0);
         }
     }
 
@@ -1691,7 +1653,13 @@ namespace
 
         RunOnUIThread([&]()
         {
-            const HWND windowHandle = GetWindowHandle(window1.get());
+            IWindowNative* windowNative = nullptr;
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(__uuidof(IWindowNative), (void**)&windowNative));
+            VERIFY_IS_NOT_NULL(windowNative);
+            HWND windowHandle = nullptr;
+            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+            windowNative->Release();
+            VERIFY_IS_TRUE(windowHandle != nullptr);
 
             // Minimize, then set Width/Height while minimized. Per WPF parity this must update
             // the *restore* size and leave the window minimized - it must not resize the live
@@ -1753,7 +1721,11 @@ namespace
         HWND windowHandle = nullptr;
         RunOnUIThread([&]()
         {
-            windowHandle = GetWindowHandle(window1.get());
+            IWindowNative* windowNative = nullptr;
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
+                __uuidof(IWindowNative), (void**)&windowNative));
+            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+            windowNative->Release();
         });
 
         // --- Mode 1: ExtendsContentIntoTitleBar OFF (standard Win32 title bar) ---
@@ -1895,7 +1867,11 @@ namespace
         HWND windowHandle = nullptr;
         RunOnUIThread([&]()
         {
-            windowHandle = GetWindowHandle(window1.get());
+            IWindowNative* windowNative = nullptr;
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
+                __uuidof(IWindowNative), (void**)&windowNative));
+            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+            windowNative->Release();
         });
 
         // Test both chrome modes: the caption height changes how the client area
@@ -1983,7 +1959,11 @@ namespace
         HWND windowHandle = nullptr;
         RunOnUIThread([&]()
         {
-            windowHandle = GetWindowHandle(window1.get());
+            IWindowNative* windowNative = nullptr;
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
+                __uuidof(IWindowNative), (void**)&windowNative));
+            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+            windowNative->Release();
         });
 
         auto captureOuterClientOffset = [&](double& widthOffset, double& heightOffset)
@@ -2084,7 +2064,11 @@ namespace
         double normalWidth = 0, normalHeight = 0;
         RunOnUIThread([&]()
         {
-            windowHandle = GetWindowHandle(window1.get());
+            IWindowNative* windowNative = nullptr;
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
+                __uuidof(IWindowNative), (void**)&windowNative));
+            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+            windowNative->Release();
 
             normalWidth = window1->Width;
             normalHeight = window1->Height;
@@ -2196,7 +2180,11 @@ namespace
         // Establish a known restored size, then capture the HWND.
         RunOnUIThread([&]()
         {
-            windowHandle = GetWindowHandle(window1.get());
+            IWindowNative* windowNative = nullptr;
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
+                __uuidof(IWindowNative), (void**)&windowNative));
+            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+            windowNative->Release();
 
             window1->Width = initialWidth;
             window1->Height = initialHeight;
@@ -2583,7 +2571,11 @@ namespace
 
         RunOnUIThread([&]()
         {
-            windowHandle = GetWindowHandle(window1.get());
+            IWindowNative* windowNative = nullptr;
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
+                __uuidof(IWindowNative), (void**)&windowNative));
+            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+            windowNative->Release();
 
             // Start from a known state: standard title bar (ECITB off). We never set Width/Height.
             window1->ExtendsContentIntoTitleBar = false;
@@ -2970,7 +2962,11 @@ namespace
 
             RunOnUIThread([&]()
             {
-                windowHandle = GetWindowHandle(window1.get());
+                IWindowNative* windowNative = nullptr;
+                VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
+                    __uuidof(IWindowNative), (void**)&windowNative));
+                VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+                windowNative->Release();
 
                 // App sets Width/Height (opts in).
                 window1->Width = setWidth;
@@ -3071,7 +3067,11 @@ namespace
         // measures and caches the true (ECITB-aware) chrome from the live window.
         RunOnUIThread([&]()
         {
-            windowHandle = GetWindowHandle(window1.get());
+            IWindowNative* windowNative = nullptr;
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
+                __uuidof(IWindowNative), (void**)&windowNative));
+            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+            windowNative->Release();
 
             window1->ExtendsContentIntoTitleBar = true;
             window1->Width = initialWidth;
@@ -3207,7 +3207,11 @@ namespace
         // Establish a known pre-drag tracked size.
         RunOnUIThread([&]()
         {
-            windowHandle = GetWindowHandle(window1.get());
+            IWindowNative* windowNative = nullptr;
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window1.get())->QueryInterface(
+                __uuidof(IWindowNative), (void**)&windowNative));
+            VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+            windowNative->Release();
 
             window1->Width = preDragWidth;
             window1->Height = preDragHeight;

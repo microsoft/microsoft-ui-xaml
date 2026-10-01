@@ -56,26 +56,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ECITBEntryPointsReserveTopBorder)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates the one-pixel top border reserved by both ECITB entry points.")
+        BEGIN_TEST_METHOD(WindowTopBorderPainting)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the Window ECITB border erase without changing either entry point's geometry.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ECITBEntryPointsPreserveCompatBehavior)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates legacy ECITB geometry when the optional change is disabled.")
+        BEGIN_TEST_METHOD(WindowTopBorderPaintingPreservesCompatBehavior)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates legacy background erase when the Window top-border fix is disabled.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{AlignTitleBarTopBorderBehavior:false}")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ECITBFullScreenUsesEntireClientArea)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates fullscreen startup and transitions through both ECITB entry points without a reserved top border.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(ECITBFullScreenPreservesCompatBehavior)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates legacy fullscreen ECITB geometry when the optional change is disabled.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{AlignTitleBarTopBorderBehavior:false}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{FixWindowTopBorder:false}")
         END_TEST_METHOD()
 
 #ifdef MUX_PRERELEASE
@@ -273,8 +262,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
     private:
-        void VerifyECITBEntryPointOffsets(bool expectedChangeEnabled);
-        void VerifyECITBFullScreenOffsets(bool expectedChangeEnabled);
+        void VerifyWindowTopBorderPainting(bool expectedChangeEnabled);
 
     };
 

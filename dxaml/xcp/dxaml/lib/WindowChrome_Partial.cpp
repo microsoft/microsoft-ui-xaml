@@ -12,7 +12,6 @@
 #include "windows.graphics.h"
 #include "WindowHelpers.h"
 #include "Microsoft.UI.Windowing.h"
-#include <OptionalChangeState.h>
 
 
 using namespace DirectUI;
@@ -90,16 +89,6 @@ void WindowChrome::MoveContainer(WPARAM wParam, LPARAM lParam)
     }
 
 }
-
-void WindowChrome::PaintHighContrastTopBorder()
-{
-    auto coreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
-    if (coreWindowChrome)
-    {
-        coreWindowChrome->PaintHighContrastTopBorder();
-    }
-}
-
 _Check_return_ HRESULT WindowChrome::SetTitleBar(_In_opt_ xaml::IUIElement* titleBar)
 {
     auto pCoreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
@@ -210,45 +199,6 @@ ctl::ComPtr<ixp::IAppWindow> WindowChrome::GetAppWindow() const
         IFCFAILFAST(E_NOTSUPPORTED);
     }
     return appWindow;
-}
-
-_Check_return_ HRESULT WindowChrome::ShouldReserveAppWindowTopBorder(_Out_ bool* value) const
-{
-    ASSERT(OptionalChangeState::ShouldAlignTitleBarTopBorderBehavior());
-
-    *value = false;
-
-    // Window messages can reenter while the Window is being created or torn
-    // down. A missing DesktopWindow or AppWindow means ECITB is not active.
-    if (!m_desktopWindow)
-    {
-        return S_OK;
-    }
-
-    ctl::ComPtr<ixp::IAppWindow> appWindow;
-    IFC_RETURN(m_desktopWindow->get_AppWindowImpl(&appWindow));
-    if (!appWindow)
-    {
-        return S_OK;
-    }
-
-    ctl::ComPtr<ixp::IAppWindowTitleBar> appWindowTitleBar;
-    IFC_RETURN(appWindow->get_TitleBar(&appWindowTitleBar));
-
-    boolean extendsContentIntoTitleBar = false;
-    IFC_RETURN(appWindowTitleBar->get_ExtendsContentIntoTitleBar(&extendsContentIntoTitleBar));
-    if (!extendsContentIntoTitleBar)
-    {
-        return S_OK;
-    }
-
-    // FullScreen keeps ECITB enabled, but has no frame row to reserve.
-    ctl::ComPtr<ixp::IAppWindowPresenter> presenter;
-    IFC_RETURN(appWindow->get_Presenter(&presenter));
-    ixp::AppWindowPresenterKind presenterKind{};
-    IFC_RETURN(presenter->get_Kind(&presenterKind));
-    *value = presenterKind != ixp::AppWindowPresenterKind_FullScreen;
-    return S_OK;
 }
 
 bool WindowChrome::CanDrag() const

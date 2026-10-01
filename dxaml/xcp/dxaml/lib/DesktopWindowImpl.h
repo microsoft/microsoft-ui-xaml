@@ -288,7 +288,7 @@ namespace DirectUI
         // active. With no OverlappedPresenter to push to, we keep the values stored and re-apply them from
         // the shared AppWindow.Changed handler when the presenter changes back to overlapped. We hold the
         // AppWindow so we can unsubscribe in Shutdown; m_appWindowChangedToken (declared above) is shared
-        // with the Width/Height feature and optional top-border geometry.
+        // with the Width/Height feature, which watches the same event.
         ctl::ComPtr<ixp::IAppWindow> m_appWindowForChangedEvent;
 
         // We use ::GetClientRect to report the window bounds, but that returns 0x0 if the window is minimized. In

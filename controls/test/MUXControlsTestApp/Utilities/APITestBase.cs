@@ -65,7 +65,7 @@ namespace MUXControlsTestApp.Utilities
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.DefaultStyleOptimizations));
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.DeferContextFlyoutInit));
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.GamepadKeyRouting));
-            Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.AlignTitleBarTopBorderBehavior));
+            Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.FixWindowTopBorder));
         }
 
         public void UpdateXamlOptionalChanges()
@@ -176,9 +176,9 @@ namespace MUXControlsTestApp.Utilities
                         {
                             changeId = XamlChangeId.GamepadKeyRouting;
                         }
-                        else if (string.Equals(name, "AlignTitleBarTopBorderBehavior", StringComparison.OrdinalIgnoreCase))
+                        else if (string.Equals(name, "FixWindowTopBorder", StringComparison.OrdinalIgnoreCase))
                         {
-                            changeId = XamlChangeId.AlignTitleBarTopBorderBehavior;
+                            changeId = XamlChangeId.FixWindowTopBorder;
                         }
 
                         Verify.AreNotEqual(changeId, XamlChangeId._Reserved, "Unknown XamlChangeId: " + name);
