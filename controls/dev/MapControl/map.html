@@ -644,11 +644,10 @@
                         pinElement.setAttribute('role', 'button');
                         // The native control supplies a per-pin name via addPoint() — the
                         // MapIcon's AutomationProperties.Name, or a localized default when the
-                        // app set none. The literal below is only a defensive last resort.
-                        const pinName = (properties && typeof properties.name === 'string' && properties.name.length > 0)
-                            ? properties.name
-                            : 'Pinned location';
-                        pinElement.setAttribute('aria-label', pinName);
+                        // app set none — so no accessible name is hard-coded here.
+                        if (properties && typeof properties.name === 'string' && properties.name.length > 0) {
+                            pinElement.setAttribute('aria-label', properties.name);
+                        }
                         // role="button" promises keyboard operability, but the Azure Maps
                         // 'click' event only fires for pointer input. Raise the same
                         // pushpin-click path on Enter/Space so keyboard and screen-reader
