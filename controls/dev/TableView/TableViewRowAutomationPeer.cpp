@@ -337,9 +337,32 @@ void TableViewRowAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, wi
     }
 }
 
-void TableViewRowAutomationPeer::RetargetRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView)
+bool TableViewRowAutomationPeer::CanReuseForRowItem(
+    winrt::TableViewRow const& row,
+    winrt::TableView const& tableView)
+{
+    if (!row || !tableView)
+    {
+        return false;
+    }
+
+    if (!m_item.IsTracking())
+    {
+        return true;
+    }
+
+    auto const item = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext());
+    return m_item.SameIdentityAs(item);
+}
+
+void TableViewRowAutomationPeer::TrackCurrentRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView)
 {
     TrackRowItem(row, tableView);
+}
+
+void TableViewRowAutomationPeer::DropCellPeerCache()
+{
+    m_cellPeerCache.clear();
 }
 
 [[noreturn]] void TableViewRowAutomationPeer::ThrowElementNotAvailable()

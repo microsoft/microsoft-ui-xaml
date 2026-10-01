@@ -601,12 +601,27 @@ void TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner)
         return;
     }
 
+    auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
+        .try_as<winrt::TableViewRowAutomationPeer>();
+    auto* const peerImpl = rowPeer ? winrt::get_self<TableViewRowAutomationPeer>(rowPeer) : nullptr;
+    if (peerImpl && !peerImpl->CanReuseForRowItem(*this, owner))
+    {
+        if (auto host = m_cellsHost.get())
+        {
+            ResetCellAutomationNames();
+            host.Children().Clear();
+        }
+        peerImpl->DropCellPeerCache();
+        RebuildCells(false /* updateExistingCellPeerItems */);
+        peerImpl->TrackCurrentRowItem(*this, owner);
+        return;
+    }
+
     RebuildCells();
 
-    if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
-        .try_as<winrt::TableViewRowAutomationPeer>())
+    if (peerImpl)
     {
-        winrt::get_self<TableViewRowAutomationPeer>(peer)->RetargetRowItem(*this, owner);
+        peerImpl->TrackCurrentRowItem(*this, owner);
     }
 }
 
@@ -935,7 +950,7 @@ void TableViewRow::ResetCellAutomationNames()
     }
 }
 
-void TableViewRow::RebuildCells()
+void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
 {
     auto host = m_cellsHost.get();
     if (!host)
@@ -1005,20 +1020,23 @@ void TableViewRow::RebuildCells()
     auto dataContext = DataContext();
     winrt::IInspectable dataItem = dataContext;
     const auto children = host.Children();
-    try
+    if (updateExistingCellPeerItems)
     {
-        for (auto const& cell : children)
+        try
         {
-            if (auto const peer = TableViewCell::TryGetExistingPeer(cell)
-                .try_as<winrt::TableViewCellAutomationPeer>())
+            for (auto const& cell : children)
             {
-                winrt::get_self<TableViewCellAutomationPeer>(peer)->UpdateNameItem(dataItem);
+                if (auto const peer = TableViewCell::TryGetExistingPeer(cell)
+                    .try_as<winrt::TableViewCellAutomationPeer>())
+                {
+                    winrt::get_self<TableViewCellAutomationPeer>(peer)->UpdateNameItem(dataItem);
+                }
             }
         }
-    }
-    catch (...)
-    {
-        TVDiag::LogRetailF(L"[TableView] Optional recycled-cell name state could not be refreshed.");
+        catch (...)
+        {
+            TVDiag::LogRetailF(L"[TableView] Optional recycled-cell name state could not be refreshed.");
+        }
     }
 
     uint32_t nonNullColumnCount = 0;

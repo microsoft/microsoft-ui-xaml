@@ -338,23 +338,45 @@ inline winrt::FrameworkElement GetCellAutomationContent(winrt::FrameworkElement 
     return GetCellContentElement(cell);
 }
 
-inline bool ContainsFocusableElement(winrt::UIElement const& element)
+inline bool IsFocusableCellContent(winrt::UIElement const& element)
 {
     if (!element || element.Visibility() != winrt::Visibility::Visible)
     {
         return false;
     }
 
-    if (auto const control = element.try_as<winrt::Control>(); control && control.IsEnabled() && control.IsTabStop())
+    auto const control = element.try_as<winrt::Control>();
+    return control && control.IsEnabled() && control.IsTabStop();
+}
+
+inline bool ContainsFocusableElement(
+    winrt::UIElement const& element,
+    uint32_t depthBudget = 8,
+    uint32_t* remainingBudget = nullptr)
+{
+    uint32_t localBudget = 64;
+    auto budget = remainingBudget ? remainingBudget : &localBudget;
+    if (!element || element.Visibility() != winrt::Visibility::Visible || depthBudget == 0 || *budget == 0)
+    {
+        return false;
+    }
+
+    --(*budget);
+    if (IsFocusableCellContent(element))
     {
         return true;
     }
 
-    if (auto const target = winrt::FocusManager::FindFirstFocusableElement(element))
+    constexpr int32_t maxChildrenPerLevel = 32;
+    auto const childCount = winrt::VisualTreeHelper::GetChildrenCount(element);
+    for (int32_t i = 0; i < childCount && i < maxChildrenPerLevel && *budget > 0; ++i)
     {
-        if (auto const targetElement = target.try_as<winrt::UIElement>())
+        if (auto const child = winrt::VisualTreeHelper::GetChild(element, i).try_as<winrt::UIElement>())
         {
-            return targetElement.Visibility() == winrt::Visibility::Visible;
+            if (ContainsFocusableElement(child, depthBudget - 1, budget))
+            {
+                return true;
+            }
         }
     }
 
@@ -363,8 +385,17 @@ inline bool ContainsFocusableElement(winrt::UIElement const& element)
 
 inline bool HasInteractiveCellContent(winrt::FrameworkElement const& cell)
 {
-    auto const content = GetCellAutomationContent(cell);
-    return ContainsFocusableElement(content);
+    return ContainsFocusableElement(GetCellAutomationContent(cell));
+}
+
+inline void SetAccessibilityViewIfNeeded(
+    winrt::FrameworkElement const& element,
+    winrt::AccessibilityView const& view)
+{
+    if (element && winrt::AutomationProperties::GetAccessibilityView(element) != view)
+    {
+        winrt::AutomationProperties::SetAccessibilityView(element, view);
+    }
 }
 
 inline bool ShouldPreserveCellContentElement(winrt::FrameworkElement const& element)
@@ -391,12 +422,12 @@ inline bool ShouldPreserveCellContentElement(winrt::FrameworkElement const& elem
 inline void SetCellContentAccessibilityViewRaw(winrt::FrameworkElement const& root, uint32_t depthBudget = 8)
 {
     if (!root || root.Visibility() != winrt::Visibility::Visible || depthBudget == 0 ||
-        ContainsFocusableElement(root) || ShouldPreserveCellContentElement(root))
+        ShouldPreserveCellContentElement(root))
     {
         return;
     }
 
-    winrt::AutomationProperties::SetAccessibilityView(root, winrt::AccessibilityView::Raw);
+    SetAccessibilityViewIfNeeded(root, winrt::AccessibilityView::Raw);
 
     constexpr int32_t maxChildrenPerLevel = 32;
     auto const childCount = winrt::VisualTreeHelper::GetChildrenCount(root);

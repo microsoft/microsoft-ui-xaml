@@ -953,6 +953,8 @@ private:
     // True while Enter has moved focus into hosted cell content; Escape restores grid navigation
     // after hosted controls, such as ComboBox, handle their own Escape.
     bool m_cellInteractionActive{ false };
+    // Weak: cells are recycled on every scroll.
+    winrt::weak_ref<winrt::FrameworkElement> m_cellInteractionCell{ nullptr };
     // The row currently drilled in, so the cursor can pop it back to row level when it moves on.
     // Weak: rows are recycled on every scroll.
     winrt::weak_ref<winrt::TableViewRow> m_cellLevelRow{ nullptr };

@@ -1496,6 +1496,12 @@ bool TableView::TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs
     // Enter reaches focusable display content, not the editor: F2 owns editing, while template
     // columns need Enter to reach controls such as ComboBox/CheckBox inside the single tab stop.
     auto const cell = winrt::get_self<TableViewRow>(row)->GetVisibleCellInternal(columnIndex);
+    auto const cellElement = cell.try_as<winrt::FrameworkElement>();
+    if (!cellElement)
+    {
+        return false;
+    }
+
     auto const target = FindFirstFocusableDescendant(cell);
     if (!target || !target.Focus(winrt::FocusState::Keyboard))
     {
@@ -1505,13 +1511,18 @@ bool TableView::TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs
     SetColumnCursorInternal(columnIndex);
     SetCellCursorActiveInternal(true);
     m_cellInteractionActive = true;
+    m_cellInteractionCell = winrt::make_weak(cellElement);
     args.Handled(true);
     return true;
 }
 
 bool TableView::TryHandleCellInteractionNavigationKey(const winrt::KeyRoutedEventArgs& args)
 {
-    if (args.Handled() || !m_cellInteractionActive || IsEditing())
+    if (args.Handled() ||
+        !m_cellInteractionActive ||
+        IsEditing() ||
+        IsKeyDown(winrt::VirtualKey::Menu) ||
+        IsKeyDown(winrt::VirtualKey::Control))
     {
         return false;
     }
@@ -1531,11 +1542,27 @@ bool TableView::TryHandleCellInteractionNavigationKey(const winrt::KeyRoutedEven
         return false;
     }
 
+    auto const enteredCell = m_cellInteractionCell.get();
+    auto const root = XamlRoot();
+    auto const focused = root ?
+        winrt::FocusManager::GetFocusedElement(root).try_as<winrt::UIElement>() :
+        nullptr;
+    if (!enteredCell ||
+        !focused ||
+        (focused != enteredCell &&
+            !SharedHelpers::IsAncestor(focused, enteredCell, false /* checkVisibility */)))
+    {
+        m_cellInteractionActive = false;
+        m_cellInteractionCell = nullptr;
+        return false;
+    }
+
     int32_t rowIndex = -1;
     int32_t columnIndex = -1;
     if (!TryGetFocusedCell(rowIndex, columnIndex, false /* requireExactCell */))
     {
         m_cellInteractionActive = false;
+        m_cellInteractionCell = nullptr;
         return false;
     }
 
@@ -1544,6 +1571,7 @@ bool TableView::TryHandleCellInteractionNavigationKey(const winrt::KeyRoutedEven
     if (TryGetFocusedCell(exactRow, exactColumn, true /* requireExactCell */))
     {
         m_cellInteractionActive = false;
+        m_cellInteractionCell = nullptr;
         return false;
     }
 
@@ -1567,11 +1595,27 @@ bool TableView::TryHandleCellInteractionEscapeKey(const winrt::KeyRoutedEventArg
         return false;
     }
 
+    auto const enteredCell = m_cellInteractionCell.get();
+    auto const root = XamlRoot();
+    auto const focused = root ?
+        winrt::FocusManager::GetFocusedElement(root).try_as<winrt::UIElement>() :
+        nullptr;
+    if (!enteredCell ||
+        !focused ||
+        (focused != enteredCell &&
+            !SharedHelpers::IsAncestor(focused, enteredCell, false /* checkVisibility */)))
+    {
+        m_cellInteractionActive = false;
+        m_cellInteractionCell = nullptr;
+        return false;
+    }
+
     int32_t rowIndex = -1;
     int32_t columnIndex = -1;
     if (!TryGetFocusedCell(rowIndex, columnIndex, false /* requireExactCell */))
     {
         m_cellInteractionActive = false;
+        m_cellInteractionCell = nullptr;
         return false;
     }
 
@@ -1580,6 +1624,7 @@ bool TableView::TryHandleCellInteractionEscapeKey(const winrt::KeyRoutedEventArg
     if (TryGetFocusedCell(exactRow, exactColumn, true /* requireExactCell */))
     {
         m_cellInteractionActive = false;
+        m_cellInteractionCell = nullptr;
         return false;
     }
 
@@ -1600,6 +1645,7 @@ bool TableView::TryHandleCellInteractionEscapeKey(const winrt::KeyRoutedEventArg
 
     SetCellCursorActiveInternal(true);
     m_cellInteractionActive = false;
+    m_cellInteractionCell = nullptr;
     args.Handled(true);
     return true;
 }

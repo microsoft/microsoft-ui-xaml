@@ -46,7 +46,9 @@ public:
     // Single source of cell-peer identity for GetChildrenCore and Grid.GetItem; UIA compares
     // providers by identity.
     winrt::AutomationPeer GetOrCreateCellPeer(winrt::FrameworkElement const& cell);
-    void RetargetRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
+    bool CanReuseForRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
+    void TrackCurrentRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
+    void DropCellPeerCache();
 
 private:
     // The owning TableView, or null once the row has been recycled out of the tree.

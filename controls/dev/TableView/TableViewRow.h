@@ -154,7 +154,7 @@ private:
         const winrt::Windows::Foundation::IInspectable& sender,
         const winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs& args);
 
-    void RebuildCells();
+    void RebuildCells(bool updateExistingCellPeerItems = true);
     void ClearOwnedCellToolTips(const winrt::Panel& host);
 
     // Coalesces a burst of Columns-collection changes into a single cell rebuild on the next

@@ -186,17 +186,7 @@ winrt::IVector<winrt::AutomationPeer> TableViewCellAutomationPeer::GetChildrenCo
 {
     if (auto const cell = Owner().try_as<winrt::FrameworkElement>())
     {
-        if (auto const content = GetCellAutomationContent(cell))
-        {
-            if (HasInteractiveCellContent(cell))
-            {
-                winrt::AutomationProperties::SetAccessibilityView(content, winrt::AccessibilityView::Content);
-            }
-            else
-            {
-                SetCellContentAccessibilityViewRaw(content);
-            }
-        }
+        PrepareAutomationContentView(cell);
     }
 
     return __super::GetChildrenCore();
@@ -426,6 +416,34 @@ winrt::hstring TableViewCellAutomationPeer::GetCellValueText()
         return editor.Text();
     }
     return GetCellDisplayText(Owner().try_as<winrt::FrameworkElement>());
+}
+
+void TableViewCellAutomationPeer::PrepareAutomationContentView(winrt::FrameworkElement const& cell)
+{
+    auto const content = GetCellAutomationContent(cell);
+    if (!content)
+    {
+        m_preparedAutomationContent = winrt::weak_ref<winrt::FrameworkElement>{ nullptr };
+        m_hasPreparedAutomationContent = false;
+        return;
+    }
+
+    if (m_hasPreparedAutomationContent && m_preparedAutomationContent.get() == content)
+    {
+        return;
+    }
+
+    if (HasInteractiveCellContent(cell))
+    {
+        SetAccessibilityViewIfNeeded(content, winrt::AccessibilityView::Content);
+    }
+    else
+    {
+        SetCellContentAccessibilityViewRaw(content);
+    }
+
+    m_preparedAutomationContent = winrt::make_weak(content);
+    m_hasPreparedAutomationContent = true;
 }
 
 hstring TableViewCellAutomationPeer::GetHelpTextCore()

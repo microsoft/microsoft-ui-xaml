@@ -2055,6 +2055,11 @@ void TableView::OnTableViewUnloaded()
         LayoutUpdated(m_pendingGroupFocusLayoutToken);
         m_pendingGroupFocusLayoutToken = {};
     }
+    if (m_pendingGroupRowRefreshLayoutToken.value)
+    {
+        LayoutUpdated(m_pendingGroupRowRefreshLayoutToken);
+        m_pendingGroupRowRefreshLayoutToken = {};
+    }
     m_pendingGroupFocusIdentity.clear();
     m_pendingGroupFocusState = winrt::FocusState::Unfocused;
 

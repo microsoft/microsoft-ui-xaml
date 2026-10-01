@@ -84,6 +84,7 @@ private:
     // Resolves displayed text from the TextBlock or content peer name.
     winrt::hstring GetCellValueText();
     winrt::hstring ReadDisplayName(winrt::FrameworkElement const& display = nullptr);
+    void PrepareAutomationContentView(winrt::FrameworkElement const& cell);
     void QueueFinalName(uint64_t generation);
 
     winrt::weak_ref<winrt::TableViewRow> m_row{ nullptr };
@@ -98,6 +99,8 @@ private:
     std::optional<winrt::hstring> m_lastName;
     // Holds the pre-edit Name only; read paths must not write it or live cell names freeze.
     std::optional<winrt::hstring> m_editName;
+    winrt::weak_ref<winrt::FrameworkElement> m_preparedAutomationContent{ nullptr };
+    bool m_hasPreparedAutomationContent{ false };
     uint64_t m_nameGeneration{ 0 };
     winrt::FrameworkElement::LayoutUpdated_revoker m_nameLayoutUpdatedRevoker{};
 };
