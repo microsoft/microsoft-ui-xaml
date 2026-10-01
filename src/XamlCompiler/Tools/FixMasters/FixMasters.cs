@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 // Normalizes volatile lines in copied XAML compiler masters for stable codegen comparisons while
-// preserving each file's UTF-8 byte order mark.
+// preserving each file's UTF-8 byte order mark and replacing files safely for mapped readers.
 
 using System;
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ namespace FixMasters
             }
         }
 
-        static void FixMasters(FileInfo file)
+        internal static void FixMasters(FileInfo file)
         {
             // Preserve each generated file's existing UTF-8 BOM so unchanged baselines remain
             // byte-stable.
@@ -50,12 +50,23 @@ namespace FixMasters
             }
 
             Console.WriteLine(file.FullName);
-            using (var writer = new StreamWriter(File.Open(file.FullName, FileMode.Truncate), new UTF8Encoding(hasByteOrderMark)))
+            string temporaryPath = Path.Combine(file.DirectoryName, Guid.NewGuid().ToString("N") + ".tmp");
+            try
             {
-                while (lines.Count > 0)
+                using (var writer = new StreamWriter(temporaryPath, false, new UTF8Encoding(hasByteOrderMark)))
                 {
-                    writer.WriteLine(lines.Dequeue());
+                    while (lines.Count > 0)
+                    {
+                        writer.WriteLine(lines.Dequeue());
+                    }
                 }
+
+                // Replacing the file also works while a diff viewer has its old contents mapped.
+                File.Replace(temporaryPath, file.FullName, null);
+            }
+            finally
+            {
+                File.Delete(temporaryPath);
             }
         }
 
