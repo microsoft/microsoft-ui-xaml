@@ -190,52 +190,6 @@ bool CWindowChrome::IsTitlebarVisible() const
     return IsChromeActive();
 }
 
-void CWindowChrome::PaintHighContrastTopBorder()
-{
-    if (!WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_topLevelWindow))
-    {
-        return;
-    }
-
-    const auto topBorderHeight = WindowHelpers::ClampToShortMax(GetTopBorderHeight(), 0);
-    if (topBorderHeight <= 0)
-    {
-        return;
-    }
-
-    HIGHCONTRASTW highContrast = { sizeof(HIGHCONTRASTW) };
-    if (!::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRASTW), &highContrast, 0) ||
-        (highContrast.dwFlags & HCF_HIGHCONTRASTON) == 0)
-    {
-        return;
-    }
-
-    RECT clientRect = {};
-    if (!::GetClientRect(m_topLevelWindow, &clientRect))
-    {
-        TRACE_HR_NORETURN(HRESULT_FROM_WIN32(::GetLastError()));
-        return;
-    }
-
-    const HDC hdc = ::GetDC(m_topLevelWindow);
-    if (!hdc)
-    {
-        TRACE_HR_NORETURN(E_FAIL);
-        return;
-    }
-
-    auto releaseDC = wil::scope_exit([this, hdc]()
-    {
-        ::ReleaseDC(m_topLevelWindow, hdc);
-    });
-
-    clientRect.bottom = clientRect.top + topBorderHeight;
-    if (!::FillRect(hdc, &clientRect, ::GetSysColorBrush(COLOR_WINDOWFRAME)))
-    {
-        TRACE_HR_NORETURN(E_FAIL);
-    }
-}
-
 _Check_return_ HRESULT CWindowChrome::UpdateDwmFrameMargins(int topBorderHeight)
 {
     ASSERT(WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_topLevelWindow));
@@ -351,10 +305,6 @@ void CWindowChrome::UpdateBridgeWindowSizePosition()
                                                                         HRESULT_FROM_WIN32(::GetLastError()),
                                                                         ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
     }
-
-    // Moving the composition island does not guarantee another
-    // WM_ERASEBKGND. Paint the newly exposed High Contrast frame row.
-    PaintHighContrastTopBorder();
 }
 
 

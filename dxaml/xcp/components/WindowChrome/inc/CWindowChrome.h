@@ -85,7 +85,6 @@ private:
     // as the custom titlebar's glass window would otherwise intercept input to it and make it inoperable
     HRESULT RefreshToolbarOffset();
     
-    void PaintHighContrastTopBorder();
     _Check_return_ HRESULT UpdateDwmFrameMargins(int topBorderHeight);
 
     bool m_bIsActive = false;
