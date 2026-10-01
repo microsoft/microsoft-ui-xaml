@@ -12,6 +12,7 @@
 #include "TVDiag.h"
 
 static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
+static constexpr std::wstring_view s_RootBorderPartName{ L"PART_RootBorder"sv };
 
 namespace
 {
@@ -133,6 +134,7 @@ void TableViewRow::OnApplyTemplate()
     __super::OnApplyTemplate();
 
     m_cellsHost.set(GetTemplateChild(hstring{ s_CellsHostPartName }).try_as<winrt::Panel>());
+    m_rootBorder.set(GetTemplateChild(hstring{ s_RootBorderPartName }).try_as<winrt::Border>());
 
     // Let the panel recognise this row's editing cell so it can keep it out of the Auto-width pass.
     if (auto const cellsPanel = m_cellsHost.get().try_as<winrt::TableViewCellsPanel>())
@@ -143,6 +145,13 @@ void TableViewRow::OnApplyTemplate()
     RebuildCells();
 
     UpdateVisualState(false /* useTransitions */);
+}
+
+void TableViewRow::SetTerminalGridLineSuppression(bool suppressTrailing, bool suppressBottom)
+{
+    m_suppressTrailingGridLine = suppressTrailing;
+    m_suppressBottomGridLine = suppressBottom;
+    RefreshGridLines();
 }
 
 winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
@@ -164,6 +173,24 @@ winrt::TableViewColumn TableViewRow::GetCellOwningColumn(const winrt::UIElement&
         if (auto column = cellFE.Tag().try_as<winrt::TableViewColumn>())
         {
             return column;
+        }
+    }
+
+    return nullptr;
+}
+
+winrt::FrameworkElement TableViewRow::GetLastVisibleCellInternal() const
+{
+    if (auto host = m_cellsHost.get())
+    {
+        const auto children = host.Children();
+        for (uint32_t i = children.Size(); i > 0; --i)
+        {
+            if (auto cell = children.GetAt(i - 1).try_as<winrt::FrameworkElement>();
+                cell && cell.Visibility() == winrt::Visibility::Visible)
+            {
+                return cell;
+            }
         }
     }
 
@@ -880,6 +907,30 @@ void TableViewRow::RefreshGridLines()
         BorderThickness(s_zeroThickness);
     }
 
+    // Move only the suppressed bottom stroke into padding. The total root geometry stays stable,
+    // while custom brushes and any non-bottom border sides remain intact.
+    if (auto rootBorder = m_rootBorder.get())
+    {
+        if (!m_suppressBottomGridLine)
+        {
+            rootBorder.ClearValue(winrt::Border::BorderThicknessProperty());
+            rootBorder.ClearValue(winrt::Border::PaddingProperty());
+        }
+        else
+        {
+            auto thickness = BorderThickness();
+            auto padding = Padding();
+            if (thickness.Bottom > 0.0)
+            {
+                padding.Bottom += thickness.Bottom;
+                thickness.Bottom = 0.0;
+            }
+
+            rootBorder.BorderThickness(thickness);
+            rootBorder.Padding(padding);
+        }
+    }
+
     auto host = m_cellsHost.get();
     if (!host)
     {
@@ -895,6 +946,19 @@ void TableViewRow::RefreshGridLines()
 
     const auto children = host.Children();
     const uint32_t childCount = children.Size();
+    uint32_t lastVisibleCell = childCount;
+    for (uint32_t i = childCount; i > 0; --i)
+    {
+        if (auto cellWrapper = children.GetAt(i - 1).try_as<winrt::Border>())
+        {
+            if (cellWrapper.Visibility() == winrt::Visibility::Visible)
+            {
+                lastVisibleCell = i - 1;
+                break;
+            }
+        }
+    }
+
     for (uint32_t i = 0; i < childCount; ++i)
     {
         if (auto cellWrapper = children.GetAt(i).try_as<winrt::Border>())
@@ -902,7 +966,14 @@ void TableViewRow::RefreshGridLines()
             if (wantVertical)
             {
                 cellWrapper.BorderThickness(s_verticalThickness);
-                cellWrapper.BorderBrush(gridLineBrush);
+                // Keep the separator's layout thickness stable and suppress only its brush when
+                // the terminal cell actually meets the outer border.
+                cellWrapper.BorderBrush(
+                    m_suppressTrailingGridLine &&
+                    cellWrapper.Visibility() == winrt::Visibility::Visible &&
+                    i == lastVisibleCell
+                        ? nullptr
+                        : gridLineBrush);
             }
             else
             {

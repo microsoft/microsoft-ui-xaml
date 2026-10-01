@@ -155,6 +155,51 @@ namespace
             visibility == winrt::TableViewGridLinesVisibility::All;
     }
 
+    double TerminalEdgeTolerance(const winrt::FrameworkElement& element) noexcept
+    {
+        double scale = 1.0;
+        if (element)
+        {
+            if (auto root = element.XamlRoot())
+            {
+                const auto rasterizationScale = root.RasterizationScale();
+                if (std::isfinite(rasterizationScale) && rasterizationScale > 0.0)
+                {
+                    scale = rasterizationScale;
+                }
+            }
+        }
+
+        return (std::max)(0.25, 0.5 / scale);
+    }
+
+    bool TryGetBoundsRelativeTo(
+        const winrt::FrameworkElement& element,
+        const winrt::UIElement& relativeTo,
+        winrt::Rect& bounds) noexcept
+    {
+        if (!element || !relativeTo || !element.IsLoaded() ||
+            element.ActualWidth() <= 0.0 || element.ActualHeight() <= 0.0)
+        {
+            return false;
+        }
+
+        try
+        {
+            bounds = element.TransformToVisual(relativeTo).TransformBounds(
+                { 0.0f, 0.0f, static_cast<float>(element.ActualWidth()), static_cast<float>(element.ActualHeight()) });
+        }
+        catch (...)
+        {
+            return false;
+        }
+
+        return std::isfinite(bounds.X) &&
+            std::isfinite(bounds.Y) &&
+            std::isfinite(bounds.Width) &&
+            std::isfinite(bounds.Height);
+    }
+
     TableViewResourceCache& GetTableViewResourceCache(TableView* owner)
     {
         // Per-instance member (not a process-global map) so multi-UI-thread instances never share state.
@@ -408,6 +453,7 @@ void TableView::OnThemeSettingsChanged(
     {
         RebuildHeaders();
         RefreshGridLinesOnRealizedRows();
+        QueueTerminalGridLineRefresh();
     }
 }
 
@@ -427,6 +473,26 @@ void TableView::OnApplyTemplate()
         LayoutUpdated(m_pendingGroupFocusLayoutToken);
         m_pendingGroupFocusLayoutToken = {};
     }
+    if (m_terminalGridLinesLayoutToken.value)
+    {
+        LayoutUpdated(m_terminalGridLinesLayoutToken);
+        m_terminalGridLinesLayoutToken = {};
+    }
+    if (auto terminalRow = m_terminalGridLineRow.get())
+    {
+        winrt::get_self<TableViewRow>(terminalRow)->SetTerminalGridLineSuppression(false, false);
+    }
+    if (auto terminalHeader = m_terminalGridLineGroupHeader.get())
+    {
+        winrt::get_self<TableViewGroupHeader>(terminalHeader)->SetTerminalBottomGridLineSuppression(false);
+    }
+    m_terminalGridLineRowSizeChangedRevoker.revoke();
+    m_terminalGridLineRow = {};
+    m_terminalGridLineGroupHeader = {};
+    m_suppressTrailingGridLine = false;
+    m_suppressBottomGridLine = false;
+    m_terminalGridLineHorizontalOffset = std::numeric_limits<double>::quiet_NaN();
+    m_terminalGridLineVerticalOffset = std::numeric_limits<double>::quiet_NaN();
     if (auto oldRepeater = m_rowsRepeater.get())
     {
         // Drop per-template Loaded handlers so old elements cannot keep this alive.
@@ -513,6 +579,8 @@ void TableView::OnApplyTemplate()
                     }
                 });
         }
+
+        QueueTerminalGridLineRefresh();
     }
 
     if (auto repeater = m_rowsRepeater.get())
@@ -594,6 +662,7 @@ void TableView::OnApplyTemplate()
                     // Rebuild headers and realized rows so grid-line brushes re-resolve.
                     strongThis->RebuildHeaders();
                     strongThis->RefreshGridLinesOnRealizedRows();
+                    strongThis->QueueTerminalGridLineRefresh();
                 }
                 catch (...)
                 {
@@ -658,12 +727,14 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
                     {
                         strongThis->InvalidateMeasure();
                         strongThis->RefreshFrozenColumns();
+                        strongThis->QueueTerminalGridLineRefresh();
                     }
                 });
 
             // Resolve during the next table measure now that the viewport is known (initial layout).
             InvalidateMeasure();
             RefreshFrozenColumns();
+            QueueTerminalGridLineRefresh();
         }
     }
 }
@@ -684,6 +755,24 @@ void TableView::OnBodyScrollerViewChanged(
     if (ShouldRefreshFrozenColumnsForScroll(this, bodyHOffset))
     {
         RefreshFrozenColumns();
+    }
+
+    const double bodyVOffset = bodyScroller.VerticalOffset();
+    const bool horizontalMoved =
+        !std::isfinite(m_terminalGridLineHorizontalOffset) ||
+        std::abs(m_terminalGridLineHorizontalOffset - bodyHOffset) >= 0.25;
+    const bool verticalMoved =
+        !std::isfinite(m_terminalGridLineVerticalOffset) ||
+        std::abs(m_terminalGridLineVerticalOffset - bodyVOffset) >= 0.25;
+
+    m_terminalGridLineHorizontalOffset = bodyHOffset;
+    m_terminalGridLineVerticalOffset = bodyVOffset;
+
+    if (horizontalMoved || verticalMoved)
+    {
+        // Scrolling does not guarantee a LayoutUpdated event. Evaluate only the terminal header
+        // and row, and rewrite realized cells only if suppression state actually changed.
+        RefreshTerminalGridLines();
     }
 
     auto headerScroller = m_headerScroller.get();
@@ -758,6 +847,7 @@ void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyProper
     }
 
     UpdateHeaderVisibility();
+    QueueTerminalGridLineRefresh();
 }
 
 void TableView::OnGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -769,6 +859,7 @@ void TableView::OnGridLinesVisibilityPropertyChanged(const winrt::DependencyProp
 
     ApplyGridLinesToHeader();
     RefreshGridLinesOnRealizedRows();
+    QueueTerminalGridLineRefresh();
 }
 
 void TableView::OnRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -821,6 +912,19 @@ void TableView::ApplyGridLinesToHeader()
     const auto headerGridLineName = winrt::hstring{ s_HeaderGridLineName };
     const auto headerCells = host.Children();
     const uint32_t headerCellCount = headerCells.Size();
+    uint32_t lastVisibleHeaderCell = headerCellCount;
+    for (uint32_t i = headerCellCount; i > 0; --i)
+    {
+        if (auto headerCell = headerCells.GetAt(i - 1).try_as<winrt::Panel>())
+        {
+            if (headerCell.Visibility() == winrt::Visibility::Visible)
+            {
+                lastVisibleHeaderCell = i - 1;
+                break;
+            }
+        }
+    }
+
     for (uint32_t i = 0; i < headerCellCount; ++i)
     {
         if (auto headerCell = headerCells.GetAt(i).try_as<winrt::Panel>())
@@ -833,7 +937,10 @@ void TableView::ApplyGridLinesToHeader()
                 {
                     if (border.Name() == headerGridLineName)
                     {
-                        border.Visibility(wantVertical ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+                        border.Visibility(
+                            wantVertical && !(m_suppressTrailingGridLine && i == lastVisibleHeaderCell)
+                                ? winrt::Visibility::Visible
+                                : winrt::Visibility::Collapsed);
                     }
                 }
             }
@@ -858,10 +965,206 @@ void TableView::ForEachRealizedRow(std::function<void(winrt::TableViewRow const&
 
 void TableView::RefreshGridLinesOnRealizedRows()
 {
-    ForEachRealizedRow([](winrt::TableViewRow const& row)
+    const auto terminalRow = m_terminalGridLineRow.get();
+    ForEachRealizedRow([&](winrt::TableViewRow const& row)
     {
-        winrt::get_self<TableViewRow>(row)->RefreshGridLines();
+        const bool suppressBottom = terminalRow && IsSameObject(row, terminalRow) && m_suppressBottomGridLine;
+        winrt::get_self<TableViewRow>(row)->SetTerminalGridLineSuppression(
+            m_suppressTrailingGridLine,
+            suppressBottom);
     });
+}
+
+void TableView::QueueTerminalGridLineRefresh()
+{
+    if (m_terminalGridLinesLayoutToken.value)
+    {
+        return;
+    }
+
+    auto weakThis = get_weak();
+    m_terminalGridLinesLayoutToken = LayoutUpdated(
+        [weakThis](winrt::IInspectable const&, winrt::IInspectable const&)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                if (strongThis->m_terminalGridLinesLayoutToken.value)
+                {
+                    strongThis->LayoutUpdated(strongThis->m_terminalGridLinesLayoutToken);
+                    strongThis->m_terminalGridLinesLayoutToken = {};
+                }
+
+                strongThis->RefreshTerminalGridLines();
+            }
+        });
+}
+
+bool TableView::ShouldSuppressTrailingGridLine()
+{
+    if (!WantsVerticalLines(GridLinesVisibility()))
+    {
+        return false;
+    }
+
+    const auto border = BorderThickness();
+    const bool isRtl = FlowDirection() == winrt::FlowDirection::RightToLeft;
+    const double outerThickness = (std::max)(0.0, isRtl ? border.Left : border.Right);
+    if (outerThickness <= 0.0 || ActualWidth() <= 0.0)
+    {
+        return false;
+    }
+
+    winrt::FrameworkElement candidate{ nullptr };
+    ForEachRealizedRow([&](winrt::TableViewRow const& row)
+    {
+        if (!candidate)
+        {
+            candidate = winrt::get_self<TableViewRow>(row)->GetLastVisibleCellInternal();
+        }
+    });
+
+    if (!candidate && ShouldShowColumnHeaders())
+    {
+        if (auto host = m_headerHost.get())
+        {
+            const auto cells = host.Children();
+            for (uint32_t i = cells.Size(); i > 0; --i)
+            {
+                if (auto cell = cells.GetAt(i - 1).try_as<winrt::FrameworkElement>();
+                    cell && cell.Visibility() == winrt::Visibility::Visible)
+                {
+                    candidate = cell;
+                    break;
+                }
+            }
+        }
+    }
+
+    winrt::Rect bounds{};
+    if (!TryGetBoundsRelativeTo(candidate, *this, bounds))
+    {
+        return false;
+    }
+
+    const double candidateEdge = isRtl ? bounds.X : bounds.X + bounds.Width;
+    const double outerEdge = isRtl
+        ? outerThickness
+        : ActualWidth() - outerThickness;
+    return std::abs(candidateEdge - outerEdge) <= TerminalEdgeTolerance(*this);
+}
+
+bool TableView::ShouldSuppressBottomGridLine(
+    const winrt::FrameworkElement& element,
+    bool hasBottomGridLine)
+{
+    if (!element || !hasBottomGridLine)
+    {
+        return false;
+    }
+
+    const double bottomThickness = (std::max)(0.0, BorderThickness().Bottom);
+    if (bottomThickness <= 0.0 || ActualHeight() <= 0.0)
+    {
+        return false;
+    }
+
+    winrt::Rect bounds{};
+    if (!TryGetBoundsRelativeTo(element, *this, bounds))
+    {
+        return false;
+    }
+
+    const double innerBottom = ActualHeight() - bottomThickness;
+    return std::abs(bounds.Y + bounds.Height - innerBottom) <= TerminalEdgeTolerance(*this);
+}
+
+void TableView::RefreshTerminalGridLines()
+{
+    const bool suppressTrailing = ShouldSuppressTrailingGridLine();
+    const bool trailingChanged = suppressTrailing != m_suppressTrailingGridLine;
+    m_suppressTrailingGridLine = suppressTrailing;
+
+    winrt::FrameworkElement terminalElement{ nullptr };
+    winrt::TableViewRow terminalRow{ nullptr };
+    winrt::TableViewGroupHeader terminalGroupHeader{ nullptr };
+    if (auto repeater = m_rowsRepeater.get())
+    {
+        if (auto sourceView = repeater.ItemsSourceView())
+        {
+            const auto count = sourceView.Count();
+            if (count > 0)
+            {
+                terminalElement = repeater.TryGetElement(count - 1).try_as<winrt::FrameworkElement>();
+                terminalRow = terminalElement.try_as<winrt::TableViewRow>();
+                terminalGroupHeader = terminalElement.try_as<winrt::TableViewGroupHeader>();
+            }
+        }
+    }
+
+    const auto previousTerminalRow = m_terminalGridLineRow.get();
+    const auto previousTerminalGroupHeader = m_terminalGridLineGroupHeader.get();
+    const bool terminalChanged =
+        !IsSameObject(previousTerminalRow, terminalRow) ||
+        !IsSameObject(previousTerminalGroupHeader, terminalGroupHeader);
+    if (terminalChanged)
+    {
+        if (previousTerminalRow)
+        {
+            winrt::get_self<TableViewRow>(previousTerminalRow)->SetTerminalGridLineSuppression(
+                m_suppressTrailingGridLine,
+                false);
+        }
+        if (previousTerminalGroupHeader)
+        {
+            winrt::get_self<TableViewGroupHeader>(previousTerminalGroupHeader)
+                ->SetTerminalBottomGridLineSuppression(false);
+        }
+
+        m_terminalGridLineRowSizeChangedRevoker.revoke();
+        m_terminalGridLineRow = terminalRow ? winrt::make_weak(terminalRow) : nullptr;
+        m_terminalGridLineGroupHeader =
+            terminalGroupHeader ? winrt::make_weak(terminalGroupHeader) : nullptr;
+
+        if (terminalElement)
+        {
+            auto weakThis = get_weak();
+            m_terminalGridLineRowSizeChangedRevoker = terminalElement.SizeChanged(
+                winrt::auto_revoke,
+                [weakThis](winrt::IInspectable const&, winrt::SizeChangedEventArgs const&)
+                {
+                    if (auto strongThis = weakThis.get())
+                    {
+                        strongThis->QueueTerminalGridLineRefresh();
+                    }
+                });
+        }
+    }
+
+    const bool hasBottomGridLine =
+        terminalRow
+            ? WantsHorizontalLines(GridLinesVisibility())
+            : terminalGroupHeader && terminalGroupHeader.BorderThickness().Bottom > 0.0;
+    const bool suppressBottom =
+        terminalElement && ShouldSuppressBottomGridLine(terminalElement, hasBottomGridLine);
+    const bool bottomChanged = suppressBottom != m_suppressBottomGridLine;
+    m_suppressBottomGridLine = suppressBottom;
+
+    if (trailingChanged)
+    {
+        ApplyGridLinesToHeader();
+        RefreshGridLinesOnRealizedRows();
+    }
+    else if (terminalRow && (terminalChanged || bottomChanged))
+    {
+        winrt::get_self<TableViewRow>(terminalRow)->SetTerminalGridLineSuppression(
+            m_suppressTrailingGridLine,
+            m_suppressBottomGridLine);
+    }
+    if (terminalGroupHeader)
+    {
+        winrt::get_self<TableViewGroupHeader>(terminalGroupHeader)
+            ->SetTerminalBottomGridLineSuppression(m_suppressBottomGridLine);
+    }
 }
 
 void TableView::RefreshRowBackgroundsOnRealizedRows()
@@ -979,7 +1282,7 @@ void TableView::RefreshRowsPipeline()
             repeater.ItemsSource(rowsSource);
         }
 
-        UpdateEmptyStateCollectionChangedSubscription();
+        UpdateItemsSourceCollectionChangedSubscription();
         UpdateEmptyState();
 
         // Re-point selection at the new source. SelectionModel::Source clears unconditionally, so a
@@ -1049,31 +1352,29 @@ void TableView::OnEmptyTemplatePropertyChanged(const winrt::DependencyPropertyCh
         return;
     }
 
-    UpdateEmptyStateCollectionChangedSubscription();
+    UpdateItemsSourceCollectionChangedSubscription();
     UpdateEmptyState();
 }
 
-void TableView::UpdateEmptyStateCollectionChangedSubscription()
+void TableView::UpdateItemsSourceCollectionChangedSubscription()
 {
-    // Rewire count-change tracking; auto_revoke drops the prior source subscription.
-    m_emptyStateCollectionChangedRevoker = {};
-    if (EmptyTemplate() != nullptr)
+    // Count changes also move the terminal row separator, so keep this subscription even when no
+    // EmptyTemplate is configured.
+    m_itemsSourceCollectionChangedRevoker = {};
+    if (auto repeater = m_rowsRepeater.get())
     {
-        // Count changes matter only when an empty template can be displayed.
-        if (auto repeater = m_rowsRepeater.get())
+        if (auto view = repeater.ItemsSourceView())
         {
-            if (auto view = repeater.ItemsSourceView())
-            {
-                m_emptyStateCollectionChangedRevoker = view.CollectionChanged(
-                    winrt::auto_revoke, { this, &TableView::OnEmptyStateItemsSourceCollectionChanged });
-            }
+            m_itemsSourceCollectionChangedRevoker = view.CollectionChanged(
+                winrt::auto_revoke, { this, &TableView::OnItemsSourceCollectionChanged });
         }
     }
 }
 
-void TableView::OnEmptyStateItemsSourceCollectionChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
+void TableView::OnItemsSourceCollectionChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
 {
     UpdateEmptyState();
+    QueueTerminalGridLineRefresh();
 }
 
 void TableView::UpdateEmptyState()
@@ -1365,15 +1666,17 @@ void TableView::OnRowElementPrepared(
     {
         auto rowImpl = winrt::get_self<TableViewRow>(row);
         rowImpl->SetOwningTableViewInternal(*this);
-        rowImpl->RefreshGridLines();
+        rowImpl->SetTerminalGridLineSuppression(m_suppressTrailingGridLine, false);
         rowImpl->RefreshRowBackground();
         RefreshRowSelectionState(row);
         InvalidateMeasure();
+        QueueTerminalGridLineRefresh();
     }
     else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
     {
         PrepareGroupHeaderElement(header, args.Index());
         InvalidateMeasure();
+        QueueTerminalGridLineRefresh();
     }
 }
 
@@ -1412,13 +1715,30 @@ void TableView::OnRowElementClearing(
         auto const rowImpl = winrt::get_self<TableViewRow>(row);
         // Release app-supplied tooltip content rather than pinning it in the recycle pool.
         rowImpl->ReleaseCellToolTips();
+        rowImpl->SetTerminalGridLineSuppression(false, false);
+        if (auto terminalRow = m_terminalGridLineRow.get(); terminalRow && IsSameObject(row, terminalRow))
+        {
+            m_terminalGridLineRowSizeChangedRevoker.revoke();
+            m_terminalGridLineRow = {};
+            m_suppressBottomGridLine = false;
+        }
         rowImpl->SetOwningTableViewInternal(nullptr);
         InvalidateMeasure();
+        QueueTerminalGridLineRefresh();
     }
     else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
     {
+        winrt::get_self<TableViewGroupHeader>(header)->SetTerminalBottomGridLineSuppression(false);
+        if (auto terminalHeader = m_terminalGridLineGroupHeader.get();
+            terminalHeader && IsSameObject(header, terminalHeader))
+        {
+            m_terminalGridLineRowSizeChangedRevoker.revoke();
+            m_terminalGridLineGroupHeader = {};
+            m_suppressBottomGridLine = false;
+        }
         ClearGroupHeaderElement(header);
         InvalidateMeasure();
+        QueueTerminalGridLineRefresh();
     }
 }
 
@@ -1434,9 +1754,15 @@ void TableView::OnRowElementIndexChanged(
         if (auto const header = args.Element().try_as<winrt::TableViewGroupHeader>())
         {
             PrepareGroupHeaderElement(header, args.NewIndex());
+            QueueTerminalGridLineRefresh();
         }
         return;
     }
+
+    winrt::get_self<TableViewRow>(row)->SetTerminalGridLineSuppression(
+        m_suppressTrailingGridLine,
+        false);
+    QueueTerminalGridLineRefresh();
 
     // Realized rows keep their element but get a new index, so banding parity must refresh.
     if (RowBackground() != nullptr || AlternatingRowBackground() != nullptr)
@@ -1913,6 +2239,26 @@ void TableView::OnTableViewUnloaded()
         LayoutUpdated(m_pendingGroupFocusLayoutToken);
         m_pendingGroupFocusLayoutToken = {};
     }
+    if (m_terminalGridLinesLayoutToken.value)
+    {
+        LayoutUpdated(m_terminalGridLinesLayoutToken);
+        m_terminalGridLinesLayoutToken = {};
+    }
+    if (auto terminalRow = m_terminalGridLineRow.get())
+    {
+        winrt::get_self<TableViewRow>(terminalRow)->SetTerminalGridLineSuppression(false, false);
+    }
+    if (auto terminalHeader = m_terminalGridLineGroupHeader.get())
+    {
+        winrt::get_self<TableViewGroupHeader>(terminalHeader)->SetTerminalBottomGridLineSuppression(false);
+    }
+    m_terminalGridLineRowSizeChangedRevoker.revoke();
+    m_terminalGridLineRow = {};
+    m_terminalGridLineGroupHeader = {};
+    m_suppressTrailingGridLine = false;
+    m_suppressBottomGridLine = false;
+    m_terminalGridLineHorizontalOffset = std::numeric_limits<double>::quiet_NaN();
+    m_terminalGridLineVerticalOffset = std::numeric_limits<double>::quiet_NaN();
     m_pendingGroupFocusIdentity.clear();
     m_pendingGroupFocusState = winrt::FocusState::Unfocused;
 

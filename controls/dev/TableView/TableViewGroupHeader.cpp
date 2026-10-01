@@ -9,6 +9,8 @@
 #include "TableViewGroupInfo.h"
 #include "TableViewGroupHeaderAutomationPeer.h"
 
+static constexpr std::wstring_view s_RootBorderPartName{ L"PART_Root"sv };
+
 TableViewGroupHeader::TableViewGroupHeader()
 {
     SetDefaultStyleKey(this);
@@ -67,6 +69,7 @@ void TableViewGroupHeader::OnApplyTemplate()
     __super::OnApplyTemplate();
 
     m_isEnabledChangedRevoker.revoke();
+    m_rootBorder.set(GetTemplateChild(hstring{ s_RootBorderPartName }).try_as<winrt::Border>());
 
     // Keep CommonStates in sync with IsEnabled so Disabled activates when a consumer toggles it
     // at runtime, not only when it happens to be false at template time.
@@ -81,6 +84,36 @@ void TableViewGroupHeader::OnApplyTemplate()
         });
 
     UpdateVisualStates(false /* useTransitions */);
+    SetTerminalBottomGridLineSuppression(m_suppressBottomGridLine);
+}
+
+void TableViewGroupHeader::SetTerminalBottomGridLineSuppression(bool suppress)
+{
+    m_suppressBottomGridLine = suppress;
+
+    if (auto root = m_rootBorder.get())
+    {
+        if (!suppress)
+        {
+            root.ClearValue(winrt::Border::BorderThicknessProperty());
+            root.ClearValue(winrt::Border::PaddingProperty());
+        }
+        else
+        {
+            auto thickness = BorderThickness();
+            auto padding = Padding();
+            if (thickness.Bottom > 0.0)
+            {
+                padding.Bottom += thickness.Bottom;
+                thickness.Bottom = 0.0;
+            }
+
+            // Move the suppressed bottom stroke into padding so High Contrast group headers keep
+            // identical measure/arrange geometry and retain their top stroke.
+            root.BorderThickness(thickness);
+            root.Padding(padding);
+        }
+    }
 }
 
 void TableViewGroupHeader::OnContentChanged(winrt::IInspectable const& oldContent, winrt::IInspectable const& newContent)
