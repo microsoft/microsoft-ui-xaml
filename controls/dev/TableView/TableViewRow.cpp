@@ -12,6 +12,7 @@
 #include "TVDiag.h"
 
 static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
+static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
 
 namespace
 {
@@ -133,6 +134,7 @@ void TableViewRow::OnApplyTemplate()
     __super::OnApplyTemplate();
 
     m_cellsHost.set(GetTemplateChild(hstring{ s_CellsHostPartName }).try_as<winrt::Panel>());
+    m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
 
     // Let the panel recognise this row's editing cell so it can keep it out of the Auto-width pass.
     if (auto const cellsPanel = m_cellsHost.get().try_as<winrt::TableViewCellsPanel>())
@@ -143,6 +145,13 @@ void TableViewRow::OnApplyTemplate()
     RebuildCells();
 
     UpdateVisualState(false /* useTransitions */);
+}
+
+void TableViewRow::SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state)
+{
+    m_suppressTrailingGridLine = state.suppressTrailing;
+    m_suppressBottomGridLine = state.suppressBottom;
+    RefreshGridLines();
 }
 
 winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
@@ -164,6 +173,26 @@ winrt::TableViewColumn TableViewRow::GetCellOwningColumn(const winrt::UIElement&
         if (auto column = cellFE.Tag().try_as<winrt::TableViewColumn>())
         {
             return column;
+        }
+    }
+
+    return nullptr;
+}
+
+winrt::FrameworkElement TableViewRow::GetLastVisibleCellInternal() const
+{
+    if (auto host = m_cellsHost.get())
+    {
+        const auto children = host.Children();
+        for (uint32_t i = children.Size(); i > 0; --i)
+        {
+            if (auto cell = children.GetAt(i - 1).try_as<winrt::FrameworkElement>();
+                cell &&
+                cell.Visibility() == winrt::Visibility::Visible &&
+                cell.ActualWidth() > 0.0)
+            {
+                return cell;
+            }
         }
     }
 
@@ -880,6 +909,16 @@ void TableViewRow::RefreshGridLines()
         BorderThickness(s_zeroThickness);
     }
 
+    if (auto gridLineBorder = m_gridLineBorder.get())
+    {
+        auto thickness = BorderThickness();
+        if (m_suppressBottomGridLine)
+        {
+            thickness.Bottom = 0.0;
+        }
+        gridLineBorder.BorderThickness(thickness);
+    }
+
     auto host = m_cellsHost.get();
     if (!host)
     {
@@ -895,6 +934,22 @@ void TableViewRow::RefreshGridLines()
 
     const auto children = host.Children();
     const uint32_t childCount = children.Size();
+    uint32_t lastVisibleCell = childCount;
+    for (uint32_t i = childCount; i > 0; --i)
+    {
+        if (auto cellWrapper = children.GetAt(i - 1).try_as<winrt::Border>())
+        {
+            const auto column = cellWrapper.Tag().try_as<winrt::TableViewColumn>();
+            if (cellWrapper.Visibility() == winrt::Visibility::Visible &&
+                column &&
+                column.ActualWidth() > 0.0)
+            {
+                lastVisibleCell = i - 1;
+                break;
+            }
+        }
+    }
+
     for (uint32_t i = 0; i < childCount; ++i)
     {
         if (auto cellWrapper = children.GetAt(i).try_as<winrt::Border>())
@@ -902,7 +957,14 @@ void TableViewRow::RefreshGridLines()
             if (wantVertical)
             {
                 cellWrapper.BorderThickness(s_verticalThickness);
-                cellWrapper.BorderBrush(gridLineBrush);
+                // Keep the separator's layout thickness stable and suppress only its brush when
+                // the terminal cell actually meets the outer border.
+                cellWrapper.BorderBrush(
+                    m_suppressTrailingGridLine &&
+                    cellWrapper.Visibility() == winrt::Visibility::Visible &&
+                    i == lastVisibleCell
+                        ? nullptr
+                        : gridLineBrush);
             }
             else
             {
