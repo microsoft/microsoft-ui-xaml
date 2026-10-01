@@ -134,14 +134,20 @@ relative to the body's. Section-title rows carry none and span the full width.
 > measurement error: the filter used required the line to persist 8px above and below the sample
 > point, which the inset header rule does not. The implementation was corrected to match.
 
-### The header's bottom rule is structural, not a grid line
+### The header's bottom rule
 
-In the **banded** (default, ungridded) variant, sampling y = 96 across the full width returns
-`229` at every x, with `255` immediately above and below. The default table therefore has a
-full-width rule under its header even though it has no grid lines anywhere else.
+In the **banded** (default, ungridded) variant of `Frame.png`, sampling y = 96 across the full
+width returns `229` at every x, with `255` immediately above and below — a full-width rule under
+the header on a table that has no grid lines anywhere else.
 
-The header separator is consequently not driven by `GridLinesVisibility`; the control template
-owns its thickness and nothing toggles it.
+> **Unreconciled.** The `Table / Table` component export sampled later in this document (see
+> "Default table export") reports the header row at alpha `0` across its full height **with no
+> rule beneath it**. Two exports of the same nominal variant disagree, and nothing in the
+> annotations settles which is authoritative. This requirement is therefore **not adopted**: the
+> implementation keeps the header's bottom rule driven by `GridLinesVisibility` (drawn for `All`
+> and `Horizontal`, removed for `Vertical` and `None`), which is the behaviour that existed before
+> this change and the one a caller asking for "no grid lines" expects. Revisit once an owner
+> identifies the authoritative export.
 
 ### Row component properties
 
@@ -172,7 +178,7 @@ state, error state, inline editing, frozen or pinned first column, or horizontal
 The standalone notes explicitly *ask* for loading and error designs rather than supplying
 them. Treat all of these as undesigned, not as designed-and-omitted.
 
-### Banding parity: the first row is shaded
+### Banding parity: the design shades the first row
 
 Measured from the `02 Rows` banded example. Its four rows start at y = 3056, 3096, 3136 and
 3176 (a 40px pitch), and the band fills sit at y0 = 3058 and 3138 — inset 2px by the cell
@@ -180,10 +186,15 @@ padding. The bands therefore fall on the **first and third** rows, i.e. **even 0
 indices**. The `Table / Table` component export shows the same pattern: first body row
 shaded, then alternating.
 
-`TableViewRow::RefreshRowBackground` now applies `AlternatingRowBackground` when
-`(rowIndex % 2) == 0`, so the first row is shaded. This intentionally departs from WPF
-`DataGrid`, which shades odd rows; apps that set both `RowBackground` and
-`AlternatingRowBackground` will see the two brushes swap rows.
+**Not adopted.** `TableViewRow::RefreshRowBackground` keeps `(rowIndex % 2) != 0`, so the first
+row keeps `RowBackground` and banding starts on the second row. `AlternatingRowBackground` is the
+name WPF `DataGrid`, WinForms `AlternatingRowsDefaultCellStyle` and `ItemsControl.AlternationIndex`
+all give to the brush that overrides index 1, and this control already justifies the
+`GridLinesVisibility` default by WPF parity in the same IDL file — inverting parity on the
+neighbouring property would make the control selectively WPF-compatible with no signal in the
+public surface. An app that wants the design's look sets `RowBackground` to the band fill and
+`AlternatingRowBackground` to the base fill, which reproduces it exactly without redefining what
+"alternating" means.
 
 A separate **"Row dividers"** panel (variants `Banded`, `None`, `Lined`, `Grid` — note the
 different labels) shows banded tables containing sections. In its banded example the first
@@ -193,9 +204,13 @@ row count is even, a single global even-index rule produces exactly the same res
 example cannot distinguish global parity from per-section parity.** A section with an odd
 row count would separate them, and none is drawn.
 
-The implementation uses the repeater's global element index, i.e. global parity. If the
-design intends banding to restart at each section, that is a further change and needs a
-case with an odd-length section to confirm.
+The implementation uses `ItemsRepeater::GetElementIndex`, i.e. the **flattened** row index,
+which counts group-header rows as positions. That is neither global data-row parity nor
+per-section parity: each group header shifts the parity of every row after it. Excluding group
+headers needs a data-row ordinal that `ITableViewRowMetadataProvider` does not expose today
+(`TableViewRowInfo` carries `Kind`, `Level`, `IsExpandable`, `IsExpanded`, `ChildCount` and no
+ordinal). Tracked as a follow-up; whether banding should additionally restart per section is a
+separate, still-open design question that a case with an odd-length section would settle.
 
 **Row selection** variants: `Single`, `Multi`.
 
@@ -528,14 +543,15 @@ Addressed in this PR:
 | Requirement | Change |
 | --- | --- |
 | Banded is the default table type | **Not adopted.** `GridLinesVisibility` keeps its `All` default and banding stays opt-in, for parity with WPF `DataGrid`, whose enum this mirrors. Adopting the design default would also mean shipping bands painted on the full row rectangle, because the `Content` capsule below is unimplemented. Set `AlternatingRowBackground` plus `GridLinesVisibility="None"` to get the design's treatment. |
-| Banding must stay distinguishable from hover | Band brushes moved to the weaker Fluent tertiary fill (Light `#06000000`, Dark `#0AFFFFFF`) instead of reusing the hover fill. Contrast-theme system colours unchanged. |
-| Selection accent uses `Fill Color/Accent/Default` | `TabularSurfaceSelectionIndicatorBrush` now resolves `SystemAccentColorDark1` in Light and `SystemAccentColorLight2` in Dark, matching `AccentFillColorDefaultBrush`. It previously used raw `SystemAccentColor`, which is the wrong shade and was identical in both themes. HighContrast keeps `SystemColorHighlightColor`. |
-| Header is shorter than a body row | New `TableViewHeaderMinHeight` resource (32 Standard / 26 Compact / 40 Comfortable), resolved by `GetDensityHeaderMinHeight()`. Headers previously reused the body row min-height. |
-| Banding shades the first row | `RefreshRowBackground` now bands even 0-based indices. Departs from WPF `DataGrid`, which bands odd rows. |
+| Banding must stay distinguishable from hover | Band brushes moved to the weaker Fluent tertiary fill (Light `#06000000`, Dark `#0AFFFFFF`) instead of reusing the hover fill. Contrast-theme system colours unchanged. **Known collision, accepted:** the tertiary fill is also `TabularSurfaceRowBackgroundPressedBrush` and `TabularSurfaceRowBackgroundSelectedPointerOverBrush`. Because the row template *replaces* the root border's fill per visual state rather than compositing over it, pressing an already-banded row produces no change of fill. Choosing a fourth step would mean inventing a value outside the Fluent subtle-fill ramp, so this is recorded rather than fixed; the band is now correctly quieter than hover, which was the stated requirement. |
+| Selection accent uses `Fill Color/Accent/Default` | `TabularSurfaceSelectionIndicatorBrush` now resolves `SystemAccentColorDark1` in Light and `SystemAccentColorLight2` in Dark, matching `AccentFillColorDefaultBrush`. It previously used raw `SystemAccentColor`, which is the wrong shade and was identical in both themes. HighContrast keeps `SystemColorHighlightColor`. This is a selection-colour change in both themes and needs a design acknowledgement; it is not itself a Figma annotation item. |
+| Header is shorter than a body row | New `TableViewHeaderMinHeight` resource (32 Standard / 26 Compact / 40 Comfortable), resolved by `GetDensityHeaderMinHeight()`. Headers previously reused the body row min-height. The pre-existing, unconsumed `TabularSurfaceHeaderMinHeight` was 40 and has been corrected to 32 so the two namespaces do not disagree. |
+| Banding shades the first row | **Not adopted.** `RefreshRowBackground` keeps WPF parity and bands odd 0-based indices. See "Banding parity" above. |
 | Column headers carry vertical rules with the body | The per-header-cell separator tracks `GridLinesVisibility`, so `All` / `Vertical` render a complete grid. The design draws the header's rule lighter and vertically inset; the implementation reuses the body's brush at full height. |
-| Header row carries no fill | `TabularSurfaceHeaderBackgroundBrush` is now `Transparent` in Light and Dark. It previously painted ~15% black/white, which the design does not show. HighContrast keeps `SystemColorWindowColor` so the band stays legible there. |
-| Header separator is always drawn | `ApplyGridLinesToHeader` no longer toggles the header's bottom rule from `GridLinesVisibility`. The design draws that rule even on its ungridded table, so it is structural: the template owns the thickness and nothing switches it off. This also removes a latent bug, since the previous `ClearValue` discarded the template's local `0,0,0,1` and resolved to `0`. |
-| Rules match the design's weights | The single 16.1% `TabularSurfaceGridLineBrush` was roughly twice the design's weight and was used for every rule. It is now the horizontal token at `#1A000000` / `#18FFFFFF`, and a new `TabularSurfaceVerticalGridLineBrush` at `#0D000000` / `#0BFFFFFF` drives column separators and the table's outer border. HighContrast keeps `SystemColorWindowTextColor` for both. |
+| Header row carries no fill | `TabularSurfaceHeaderBackgroundBrush` is now `Transparent` in Light and Dark. It previously painted ~15% black/white, which the design does not show. HighContrast keeps `SystemColorWindowColor` so the band stays legible there. Hit-testing is unaffected: `Transparent` is hit-testable, and each header cell sets its own transparent fill so the padding keeps taking pointer input. |
+| Header separator is always drawn | **Not adopted** — the two exports disagree on whether the ungridded table has a header rule at all (see "The header's bottom rule" above). `ApplyGridLinesToHeader` continues to drive `PART_HeaderRow`'s `BorderThickness` from `GridLinesVisibility`, now by assigning an explicit thickness on both branches instead of relying on `ClearValue` falling back to a style setter. |
+| Rules match the design's weights | The single 16.1% `TabularSurfaceGridLineBrush` was roughly twice the design's weight and was used for every rule. It is now the horizontal token at `#1A000000` / `#18FFFFFF`, and a new `TabularSurfaceVerticalGridLineBrush` at `#0D000000` / `#0BFFFFFF` drives column separators. HighContrast keeps `SystemColorWindowTextColor` for both. |
+| Table frame weight | **Not adopted from the export.** The design measured the frame at the same weight as a column separator, but that measurement is against one known backdrop, whereas the control's frame is its boundary against an arbitrary app surface. A separate `TabularSurfaceBorderBrush` (`ControlStrokeColorDefault`: `#0F000000` / `#12FFFFFF`, `SystemColorWindowTextColor` in HighContrast) now owns it, so retinting column separators no longer retints the control frame and vice versa. |
 
 ### Rule weights measured from `Frame.png`
 
@@ -545,16 +561,21 @@ previously had one:
 | Rule | Light | Dark | Implied alpha |
 | --- | --- | --- | --- |
 | Horizontal (row dividers, header bottom) | `229` | `49` | ~`0x1A` / `0x18` |
-| Vertical (column separators, outer border) | `242` | `38` | ~`0x0D` / `0x0B` |
+| Vertical (column separators) | `242` | `38` | ~`0x0D` / `0x0B` |
 | Header vertical | `245` | `44` | ~`0x0A` / `0x12` |
 
 The header's vertical rule is lighter again than the body's and is inset a few pixels from the
 header band. The implementation folds it into the vertical token rather than adding a third, so
 header separators render at the body's weight and full height.
 
-Verified in the sample after the change: outer border `242`, header rule `229`, row divider
-`229`. Header column separators render at the body's `242` rather than the export's `245`; that
-1-step delta is accepted rather than carrying a third brush key.
+Verified in the sample after the change: header rule `229`, row divider `229`. Header column
+separators render at the body's `242` rather than the export's `245` — a 3-step luminance delta
+(alpha `0x0D` against the measured `0x0A`) — accepted rather than carrying a third brush key.
+
+The export also measured the table's outer frame at the same `242` as a column separator. That
+is **not** adopted: the frame is the control's boundary against an arbitrary app surface, not an
+internal edge over a known row fill, and at ~5% alpha it is effectively invisible on anything but
+the export's backdrop. `TabularSurfaceBorderBrush` (`ControlStrokeColorDefault`) owns it instead.
 
 ### Measured from `Table.png`, the default table export
 

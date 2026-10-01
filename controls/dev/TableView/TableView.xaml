@@ -19,7 +19,7 @@
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceRowForegroundBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceVerticalGridLineBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
@@ -40,12 +40,8 @@
                             <Border x:Name="PART_HeaderRow"
                                     Grid.Row="0"
                                     Background="{ThemeResource TabularSurfaceHeaderBackgroundBrush}"
-                                    BorderBrush="{ThemeResource TabularSurfaceHeaderSeparatorBrush}">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                    </Style>
-                                </Border.Style>
+                                    BorderBrush="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
+                                    BorderThickness="0,0,0,1">
                                 <Grid>
                                     <ScrollViewer x:Name="PART_HeaderScroller"
                                                   HorizontalScrollMode="Disabled"

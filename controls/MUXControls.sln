@@ -436,6 +436,10 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TabView_APITests", "dev\Tab
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NumberBox_APITests", "dev\NumberBox\APITests\NumberBox_APITests.shproj", "{80AF98CA-BC1D-4011-8460-5671799EC419}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TableView", "TableView", "{972D1387-9E40-4F3E-B908-882EE60F908E}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TableView_APITests", "dev\TableView\APITests\TableView_APITests.shproj", "{5B02B400-C82B-4A73-A9F5-42155114D0C7}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "idl", "idl", "{6C8385C7-2898-493F-ADBB-B5896A12F1EB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Microsoft.UI.Xaml.Controls.idl", "idl\Microsoft.UI.Xaml.Controls.idl.vcxproj", "{DE10DFE2-5EA3-452A-B055-FC60E330AFBB}"
@@ -1663,6 +1667,8 @@ Global
 		{74D18B1B-5F6B-4534-945B-131E8E3206FB} = {0115F80C-AB97-412D-85D9-33A5188F8907}
 		{2F4E95E9-F729-481C-B9AA-C9BEC91AE395} = {B3E64837-A5E4-49CB-97FF-A365307B9191}
 		{80AF98CA-BC1D-4011-8460-5671799EC419} = {B45B3F3E-6761-4CFC-9A8F-90F232DD28F2}
+		{972D1387-9E40-4F3E-B908-882EE60F908E} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
+		{5B02B400-C82B-4A73-A9F5-42155114D0C7} = {972D1387-9E40-4F3E-B908-882EE60F908E}
 		{DE10DFE2-5EA3-452A-B055-FC60E330AFBB} = {6C8385C7-2898-493F-ADBB-B5896A12F1EB}
 		{A1EB01C3-AC8B-45A8-97C8-C459B77ED690} = {6C8385C7-2898-493F-ADBB-B5896A12F1EB}
 		{F24B3ECB-BD87-4626-B17C-D8CC3E253F32} = {6C8385C7-2898-493F-ADBB-B5896A12F1EB}
@@ -1928,6 +1934,7 @@ Global
 		dev\InfoBar\TestUI\InfoBar_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\ItemContainer\APITests\ItemContainer_APITests.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\ItemContainer\TestUI\ItemContainer_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
+		dev\TableView\APITests\TableView_APITests.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\ItemsView\APITests\ItemsView_APITests.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\ItemsView\TestUI\ItemsView_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
@@ -2023,6 +2030,7 @@ Global
 		dev\NavigationView\TestUI\NavigationView_TestUI.projitems*{7ee5e585-090a-44bf-a950-80636e242327}*SharedItemsImports = 13
 		dev\Common\Common.vcxitems*{80ad7f51-8997-47b9-bb41-078b81cff9b0}*SharedItemsImports = 9
 		dev\NumberBox\APITests\NumberBox_APITests.projitems*{80af98ca-bc1d-4011-8460-5671799ec419}*SharedItemsImports = 13
+		dev\TableView\APITests\TableView_APITests.projitems*{5b02b400-c82b-4a73-a9f5-42155114d0c7}*SharedItemsImports = 13
 		dev\Interactions\SliderInteraction\TestUI\SliderInteraction_TestUI.projitems*{80f1f883-d49b-407d-9e77-c9b0e62b61a9}*SharedItemsImports = 13
 		dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems*{833a6892-a079-469a-81c7-54d4cd88029b}*SharedItemsImports = 13
 		dev\AnimatedIcon\TestUI\AnimatedIcon_TestUI.projitems*{83fd36c0-189f-4e95-8002-9b73905ca301}*SharedItemsImports = 13

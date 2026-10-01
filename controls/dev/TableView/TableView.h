@@ -783,8 +783,10 @@ private:
     tracker_ref<winrt::ContentControl> m_emptyStatePresenter{ this };
     tracker_ref<winrt::FrameworkElement> m_headerRow{ this };
     tracker_ref<winrt::Panel> m_headerHost{ this };
-    // Captured at creation so toggling does not have to search the header visual tree, and so
-    // frozen-column re-parenting cannot hide a separator from the toggle.
+    // Captured at creation so a GridLinesVisibility toggle does not re-walk the header visual
+    // tree looking for named children. Non-owning: the header host owns the Borders, so weak_ref
+    // (not tracker_ref) keeps this out of the reference-tracker graph. Cleared and repopulated by
+    // RebuildHeaders, which every column/theme/density change routes through.
     std::vector<winrt::weak_ref<winrt::Border>> m_headerGridLines{};
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
     // Keeps the header band locked to the body when focus moves to an off-screen header.

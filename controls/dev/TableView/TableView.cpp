@@ -146,6 +146,15 @@ namespace
             visibility == winrt::TableViewGridLinesVisibility::All;
     }
 
+    bool WantsHorizontalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
+    {
+        return visibility == winrt::TableViewGridLinesVisibility::Horizontal ||
+            visibility == winrt::TableViewGridLinesVisibility::All;
+    }
+
+    constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
+    constexpr winrt::Thickness s_headerBottomThickness{ 0, 0, 0, 1 };
+
     TableViewResourceCache& GetTableViewResourceCache(TableView* owner)
     {
         // Per-instance member (not a process-global map) so multi-UI-thread instances never share state.
@@ -803,9 +812,22 @@ void TableView::OnAlternatingRowBackgroundPropertyChanged(const winrt::Dependenc
 
 void TableView::ApplyGridLinesToHeader()
 {
-    // The header's bottom rule is owned by the template: the design draws it even on the
-    // ungridded default table, so it is structural rather than a grid line.
-    const bool wantVertical = WantsVerticalLines(GridLinesVisibility());
+    const auto visibility = GridLinesVisibility();
+
+    // The rule under the header row is the header's share of the horizontal grid, so it tracks
+    // GridLinesVisibility like every other rule. Both branches assign an explicit thickness
+    // rather than using ClearValue, so the toggle does not depend on whether the template
+    // supplied the "on" value as a style setter or as a local value.
+    if (auto headerFE = m_headerRow.get())
+    {
+        if (auto headerBorder = headerFE.try_as<winrt::Border>())
+        {
+            headerBorder.BorderThickness(
+                WantsHorizontalLines(visibility) ? s_headerBottomThickness : s_zeroThickness);
+        }
+    }
+
+    const bool wantVertical = WantsVerticalLines(visibility);
     for (auto const& weakSeparator : m_headerGridLines)
     {
         if (auto separator = weakSeparator.get())
@@ -1498,6 +1520,10 @@ void TableView::RebuildHeaders()
     auto host = m_headerHost.get();
     if (!host)
     {
+        // The separators the vector points at belong to a header host this control no longer
+        // owns (a template swap nulls m_headerHost). Drop them so a later
+        // GridLinesVisibility toggle cannot mutate an orphaned tree.
+        m_headerGridLines.clear();
         return;
     }
 
