@@ -1016,7 +1016,7 @@ namespace ChartsSample
                 edit();
                 // Brush changes alone can leave the rendered plot at its previous appearance.
                 chart?.InvalidateArrange();
-                status.Text = success;
+                AnnounceStatus(status, success);
                 _lastEditSucceeded = true;
             }
             catch (ArgumentException)
@@ -1036,17 +1036,23 @@ namespace ChartsSample
         // Validation errors are usually raised while focus leaves the edited field, and a Polite
         // live-region update is dropped when it coincides with that focus change. Set the status
         // text and raise an explicit UIA notification so it is announced without moving focus.
+        // Removing a series also disables the focused button (another focus change), so defer the
+        // notification to a low-priority dispatch that runs after focus has settled; otherwise the
+        // focus-change announcement cuts it off.
         private void AnnounceStatus(TextBlock target, string message)
         {
             target.Text = message;
             if (string.IsNullOrEmpty(message)) return;
-            AutomationPeer peer = FrameworkElementAutomationPeer.FromElement(target)
-                ?? FrameworkElementAutomationPeer.CreatePeerForElement(target);
-            peer?.RaiseNotificationEvent(
-                AutomationNotificationKind.Other,
-                AutomationNotificationProcessing.MostRecent,
-                message,
-                "ChartsSampleStatus");
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                AutomationPeer peer = FrameworkElementAutomationPeer.FromElement(target)
+                    ?? FrameworkElementAutomationPeer.CreatePeerForElement(target);
+                peer?.RaiseNotificationEvent(
+                    AutomationNotificationKind.Other,
+                    AutomationNotificationProcessing.MostRecent,
+                    message,
+                    "ChartsSampleStatus");
+            });
         }
 
         private void SyncAxes()
@@ -1187,7 +1193,7 @@ namespace ChartsSample
                     if (_closing) return;
                     if (wasRunning)
                     {
-                        StatusText.Text = "Secondary window closed and its UI thread stopped.";
+                        AnnounceStatus(StatusText, "Secondary window closed and its UI thread stopped.");
                         return;
                     }
                 }
@@ -1201,11 +1207,11 @@ namespace ChartsSample
                 {
                     await secondary.StopAsync();
                     _secondary = null;
-                    StatusText.Text = error;
+                    AnnounceStatus(StatusText, error);
                 }
                 else
                 {
-                    StatusText.Text = "Secondary window updates on its own UI thread. Toggle again to close it.";
+                    AnnounceStatus(StatusText, "Secondary window updates on its own UI thread. Toggle again to close it.");
                 }
             }
             finally

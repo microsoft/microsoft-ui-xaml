@@ -716,16 +716,28 @@ namespace winrt::ChartsSample::implementation
     void MainWindow::AnnounceStatus(hstring const& message)
     {
         if (message.empty()) return;
-        auto peer = Automation::Peers::FrameworkElementAutomationPeer::FromElement(StatusText());
-        if (!peer) peer = Automation::Peers::FrameworkElementAutomationPeer::CreatePeerForElement(StatusText());
-        if (peer)
-        {
-            peer.RaiseNotificationEvent(
-                Automation::Peers::AutomationNotificationKind::Other,
-                Automation::Peers::AutomationNotificationProcessing::MostRecent,
-                message,
-                L"ChartsSampleStatus");
-        }
+        // Removing a series disables the focused button, which moves focus. If the
+        // notification is raised synchronously the focus-change announcement cuts it off,
+        // so defer it to a low-priority dispatch that runs after focus has settled.
+        DispatcherQueue().TryEnqueue(
+            DispatcherQueuePriority::Low,
+            [weak = get_weak(), message]()
+            {
+                auto self = weak.get();
+                if (!self) return;
+                auto target = self->StatusText();
+                if (!target) return;
+                auto peer = Automation::Peers::FrameworkElementAutomationPeer::FromElement(target);
+                if (!peer) peer = Automation::Peers::FrameworkElementAutomationPeer::CreatePeerForElement(target);
+                if (peer)
+                {
+                    peer.RaiseNotificationEvent(
+                        Automation::Peers::AutomationNotificationKind::Other,
+                        Automation::Peers::AutomationNotificationProcessing::MostRecent,
+                        message,
+                        L"ChartsSampleStatus");
+                }
+            });
     }
 
     void MainWindow::ApplyEdit(std::function<void()> const& edit, Chart const& chart, std::function<void()> const& restore)
@@ -772,13 +784,16 @@ namespace winrt::ChartsSample::implementation
             }
             synchronize();
             status.Text(message);
+            AnnounceStatus(message);
         }
         catch (hresult_error const& error)
         {
             synchronize();
-            status.Text(error.code() == E_INVALIDARG
+            auto const text = error.code() == E_INVALIDARG
                 ? hstring{ area ? L"The area option is not valid. Choose an available option." : L"The bar option is not valid. Choose an available option." }
-                : hstring{ area ? L"Area options: " : L"Bar options: " } + ErrorText(error));
+                : hstring{ area ? L"Area options: " : L"Bar options: " } + ErrorText(error);
+            status.Text(text);
+            AnnounceStatus(text);
         }
     }
 
@@ -796,12 +811,18 @@ namespace winrt::ChartsSample::implementation
             SyncAxisAvailability();
             UpdateDataText();
             PresentationKnobStatusText().Text(message);
+            // Removing a series can disable the focused button, and that focus change
+            // suppresses the Polite live region. Raise an explicit notification so the
+            // result is still announced.
+            AnnounceStatus(message);
         }
         catch (hresult_error const& error)
         {
             SyncPresentationKnobs();
             SyncAxisAvailability();
-            PresentationKnobStatusText().Text(ErrorText(error));
+            auto const text = ErrorText(error);
+            PresentationKnobStatusText().Text(text);
+            AnnounceStatus(text);
         }
     }
 
@@ -1244,6 +1265,7 @@ namespace winrt::ChartsSample::implementation
             m_secondaryState->stop.store(true);
             SecondaryButton().IsEnabled(false);
             StatusText().Text(L"Closing the secondary UI thread...");
+            AnnounceStatus(L"Closing the secondary UI thread...");
             return;
         }
         m_secondaryState = std::make_shared<SecondaryChartState>();
@@ -1253,12 +1275,14 @@ namespace winrt::ChartsSample::implementation
             m_secondaryThread = std::thread{ RunSecondaryWindow, m_secondaryState };
             m_secondaryPoll.Start();
             StatusText().Text(L"Opening an independently updating chart on a secondary UI thread.");
+            AnnounceStatus(L"Opening an independently updating chart on a secondary UI thread.");
         }
         catch (std::system_error const&)
         {
             m_secondaryState.reset();
             m_secondaryLifetime = nullptr;
             StatusText().Text(L"Unable to start the secondary UI thread. Close other sample windows and try again.");
+            AnnounceStatus(L"Unable to start the secondary UI thread. Close other sample windows and try again.");
         }
     }
 
@@ -1268,7 +1292,9 @@ namespace winrt::ChartsSample::implementation
         // The completion flag is set after apartment teardown; joining cannot wait on XAML.
         m_secondaryThread.join();
         m_secondaryPoll.Stop();
-        StatusText().Text(m_secondaryState->error.empty() ? L"Secondary UI thread closed. Toggle to open it again." : m_secondaryState->error);
+        auto const secondaryMessage = m_secondaryState->error.empty() ? hstring{ L"Secondary UI thread closed. Toggle to open it again." } : m_secondaryState->error;
+        StatusText().Text(secondaryMessage);
+        AnnounceStatus(secondaryMessage);
         m_secondaryState.reset();
         m_secondaryLifetime = nullptr;
         SecondaryButton().IsEnabled(true);
