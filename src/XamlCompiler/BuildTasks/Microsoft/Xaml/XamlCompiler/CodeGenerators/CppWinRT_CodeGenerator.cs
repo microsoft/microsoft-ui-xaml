@@ -8,6 +8,90 @@ using System.Xaml;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 {
+    internal static class CppWinRTProjectionDependency
+    {
+        public static string GetNamespace(Type type)
+        {
+            Type adjustedType = ((type != null) && type.IsArray) ? type.GetElementType() : type;
+
+            if (adjustedType == null || XamlSchemaCodeInfo.IsProjectedPrimitiveCppType(adjustedType.FullName))
+            {
+                return null;
+            }
+
+            return adjustedType.Namespace;
+        }
+
+        public static IEnumerable<string> GetNamespaces(Type type)
+        {
+            Type adjustedType = ((type != null) && type.IsArray) ? type.GetElementType() : type;
+            string projectionNamespace = GetNamespace(adjustedType);
+
+            if (projectionNamespace == null)
+            {
+                yield break;
+            }
+
+            yield return projectionNamespace;
+
+            if (adjustedType.IsGenericType)
+            {
+                foreach (var genericArgument in adjustedType.GetGenericArguments())
+                {
+                    foreach (var nestedNamespace in GetNamespaces(genericArgument))
+                    {
+                        yield return nestedNamespace;
+                    }
+                }
+            }
+        }
+
+        public static IEnumerable<string> GetNamespaces(Type type, string unresolvedNamespace)
+        {
+            if (type == null)
+            {
+                if (!String.IsNullOrWhiteSpace(unresolvedNamespace))
+                {
+                    yield return unresolvedNamespace;
+                }
+                yield break;
+            }
+
+            foreach (var projectionNamespace in GetNamespaces(type))
+            {
+                yield return projectionNamespace;
+            }
+        }
+
+        public static string GetHeaderFile(string projectionNamespace)
+        {
+            return $"winrt/{projectionNamespace}.h";
+        }
+
+        public static string GetModuleName(string projectionNamespace)
+        {
+            return $"winrt.{projectionNamespace}";
+        }
+
+        public static string GetXamlPrimaryModuleName(string rootNamespace)
+        {
+            return string.IsNullOrWhiteSpace(rootNamespace)
+                ? "Application_Xaml"
+                : $"{rootNamespace}.Application_Xaml";
+        }
+
+        public static string GetXamlPartitionName(string runtimeClassName)
+        {
+            return runtimeClassName.Replace("::", ".");
+        }
+
+        public static string GetXamlPartitionModuleName(string rootNamespace, string partitionName)
+        {
+            return $"{GetXamlPrimaryModuleName(rootNamespace)}:{GetXamlPartitionName(partitionName)}";
+        }
+
+    }
+
     internal class CppWinRT_CodeGenerator<T> : NativeCodeGenerator<T>
     {
         public override string ToStringWithCulture(ICodeGenOutput codegenOutput)
@@ -18,6 +102,40 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         public override string ToStringWithCulture(XamlType type)
         {
             return type.CppWinRTName();
+        }
+
+        public string GetCppWinRTProjectionDependencyDirective(string projectionNamespace, bool optionalHeader = false)
+        {
+            string headerFile = CppWinRTProjectionDependency.GetHeaderFile(projectionNamespace);
+
+            if (ProjectInfo.UseCppWinRTNamedModules)
+            {
+                return $"import {CppWinRTProjectionDependency.GetModuleName(projectionNamespace)};";
+            }
+
+            if (optionalHeader)
+            {
+                return $"#if __has_include(<{headerFile}>)\n#include <{headerFile}>\n#endif";
+            }
+
+            return $"#include <{headerFile}>";
+        }
+
+        public string GetCppWinRTNamedModuleImportDirective(string projectionNamespace)
+        {
+            return ProjectInfo.UseCppWinRTNamedModules
+                ? $"import {CppWinRTProjectionDependency.GetModuleName(projectionNamespace)};"
+                : String.Empty;
+        }
+
+        public string GetCppWinRTModuleCompatibilityDefinition()
+        {
+            if (!ProjectInfo.UseCppWinRTNamedModules)
+            {
+                return String.Empty;
+            }
+
+            return "#ifndef WINRT_IMPORT_MODULE\n#define WINRT_IMPORT_MODULE\n#endif";
         }
 
         public static String Projection(string typeName)
@@ -121,7 +239,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             {
                 foreach (var child in step.TrackingSteps.OfType<DependencyPropertyStep>())
                 {
-                    yield return $"__int64 tokenDPC_{child.CodeName}{{0}};";
+                    yield return $"std::int64_t tokenDPC_{child.CodeName}{{0}};";
                 }
             }
         }

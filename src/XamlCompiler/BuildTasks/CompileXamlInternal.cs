@@ -175,6 +175,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public bool EnableWin32Codegen { get; private set; }
         public bool UsingCSWinRT { get; private set; }
         public bool EnableBindingDiagnostics { get; private set; }
+        public bool UseCppWinRTNamedModules { get; private set; }
 
         // Controls whether or not usage of features (platform API, x:Bind functionality,
         // conditional XAML, etc.) should be validated against TargetPlatformMinVersion
@@ -329,6 +330,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             EnableWin32Codegen = FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableWin32Codegen);
             UsingCSWinRT = FeatureControlFlags.HasFlag(FeatureCtrlFlags.UsingCSWinRT);
             EnableBindingDiagnostics = FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableBindingDiagnostics);
+            UseCppWinRTNamedModules = FeatureControlFlags.HasFlag(FeatureCtrlFlags.CppWinRTNamedModules);
             IgnoreSpecifiedTargetPlatformMinVersion = IgnoreSpecifiedTargetPlatformMinVersion;
 
             XamlApplications = GetFileItems(i.XamlApplications);
@@ -1087,6 +1089,28 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                             return false;
                         }
                     }
+                }
+
+                // The C++/WinRT XAML umbrella module needs the complete project x:Class set,
+                // including files skipped by incremental Pass1. ProjectXamlTaskItems restores
+                // ClassFullName from SaveState and refreshes it when a XAML file changes.
+                if (Language.Name == ProgrammingLanguage.CppWinRT && _projectInfo.UseCppWinRTNamedModules)
+                {
+                    IEnumerable<TaskItemFilename> moduleXamlItems = SourceFileManager.ProjectXamlTaskItems;
+                    if (ShouldSuppressPageCodeGen())
+                    {
+                        // NoPageCodeGen suppresses non-Application pages only. App.xaml still
+                        // generates AppPass1/AppPass2, so its module partition must remain
+                        // reachable from the Application_Xaml primary interface.
+                        moduleXamlItems = moduleXamlItems.Where(item => item.IsApplication);
+                    }
+
+                    _projectInfo.XamlClassNames = moduleXamlItems
+                        .Select(item => item.ClassFullName)
+                        .Where(className => !String.IsNullOrWhiteSpace(className))
+                        .Distinct(StringComparer.Ordinal)
+                        .OrderBy(className => className, StringComparer.Ordinal)
+                        .ToList();
                 }
 
                 // Create Code Generator
@@ -2114,6 +2138,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
             projectInfo.IsWin32App = EnableWin32Codegen;
             projectInfo.UsingCSWinRT = UsingCSWinRT;
+            projectInfo.UseCppWinRTNamedModules = UseCppWinRTNamedModules;
             projectInfo.PrecompiledHeaderFile = PrecompiledHeaderFile;
             projectInfo.EnabledXamlOptionalChanges = ParseCommaSeparatedList(EnabledXamlOptionalChanges);
             projectInfo.DisabledXamlOptionalChanges = ParseCommaSeparatedList(DisabledXamlOptionalChanges);
