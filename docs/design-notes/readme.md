@@ -17,7 +17,9 @@ This is a collection of documentations which provide a high level design oriente
 * [Xaml theming resources](./resources.md) - A writeup on everthing about Xaml theming resources and how they are created and used
 * [Read-Only Text Controls Architecture](./text-controls.md) - This document describes the architecture of XAML’s read-only text controls, and supporting functionality in the XAML platform to make them fully functional in a XAML application.
 * [Custom titlebar](./customtitlebar.md) - Explains the inner working of custom titlebar feature in Desktop WinUI 3 apps, including glass window concept
-* [Window placement persistence](./Window-PlacementPersistence.md) - Proposed storage, serialization, and lifecycle integration
+* [Window placement persistence API proposal](../../specs/window-placement-persistence-spec.md) - Public surface and primary workflows for API review
+* [Window placement persistence feature specification](./Window-PlacementPersistence.md) - Detailed behavior, scenario catalog, architecture, and acceptance requirements
+* [Window placement persistence decisions](./Window-PlacementPersistence-decisions.md) - Rationale, alternatives, and dated implementation history
 * [Unconstrained Popups](./unconstrained-popup.md) - A spec about a new(er) option for ContentDialogPlacement: UnconstrainedPopup
 
 ### Coding resources
