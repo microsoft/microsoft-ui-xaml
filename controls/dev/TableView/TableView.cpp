@@ -923,8 +923,10 @@ void TableView::ApplyGridLinesToHeader()
     {
         if (auto headerCell = headerCells.GetAt(i - 1).try_as<winrt::Panel>())
         {
+            const auto column = headerCell.Tag().try_as<winrt::TableViewColumn>();
             if (headerCell.Visibility() == winrt::Visibility::Visible &&
-                headerCell.ActualWidth() > 0.0)
+                column &&
+                column.ActualWidth() > 0.0)
             {
                 lastVisibleHeaderCell = i - 1;
                 break;

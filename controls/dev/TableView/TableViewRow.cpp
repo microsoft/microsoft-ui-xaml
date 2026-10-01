@@ -951,8 +951,10 @@ void TableViewRow::RefreshGridLines()
     {
         if (auto cellWrapper = children.GetAt(i - 1).try_as<winrt::Border>())
         {
+            const auto column = cellWrapper.Tag().try_as<winrt::TableViewColumn>();
             if (cellWrapper.Visibility() == winrt::Visibility::Visible &&
-                cellWrapper.ActualWidth() > 0.0)
+                column &&
+                column.ActualWidth() > 0.0)
             {
                 lastVisibleCell = i - 1;
                 break;

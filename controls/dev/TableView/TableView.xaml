@@ -116,6 +116,8 @@
                 <ControlTemplate TargetType="controls:TableViewRow">
                     <Grid>
                         <Border x:Name="PART_RootBorder"
+                                Grid.Row="0"
+                                Grid.Column="0"
                                 Background="{TemplateBinding Background}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}">
@@ -251,6 +253,8 @@
                         </Grid>
                         </Border>
                         <Border x:Name="PART_GridLineBorder"
+                                Grid.Row="0"
+                                Grid.Column="0"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 IsHitTestVisible="False" />
@@ -305,6 +309,8 @@
                 <ControlTemplate TargetType="controls:TableViewGroupHeader">
                     <Grid>
                         <Border x:Name="PART_Root"
+                                Grid.Row="0"
+                                Grid.Column="0"
                                 Background="{TemplateBinding Background}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 Padding="{TemplateBinding Padding}"
@@ -390,6 +396,8 @@
                         </Grid>
                         </Border>
                         <Border x:Name="PART_GridLineBorder"
+                                Grid.Row="0"
+                                Grid.Column="0"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 IsHitTestVisible="False" />
