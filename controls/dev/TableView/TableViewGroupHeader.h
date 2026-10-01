@@ -85,13 +85,13 @@ public:
 
 private:
     void UpdateVisualStates(bool useTransitions);
-
+    void UpdateTerminalBottomGridLineSuppression();
 
     // Mirror the authoritative IsExpandable/IsExpanded DPs onto the bound projection.
     void SyncExpansionToContent();
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
-    tracker_ref<winrt::Border> m_rootBorder{ this };
+    tracker_ref<winrt::Border> m_gridLineBorder{ this };
 
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };

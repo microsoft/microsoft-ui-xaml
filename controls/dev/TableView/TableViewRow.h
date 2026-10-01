@@ -14,11 +14,18 @@ class TableViewRow :
     public TableViewRowProperties
 {
 public:
+    struct TerminalGridLineSuppressionState
+    {
+        bool suppressTrailing{ false };
+        bool suppressBottom{ false };
+    };
+
     TableViewRow();
 
     // IFrameworkElement overrides
     void OnApplyTemplate();
     winrt::AutomationPeer OnCreateAutomationPeer();
+    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Use the Control virtual signatures; event-handler overloads break the ABI shim.
     void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
@@ -38,7 +45,7 @@ public:
     winrt::TableView GetOwningTableView();
 
     void RefreshGridLines();
-    void SetTerminalGridLineSuppression(bool suppressTrailing, bool suppressBottom);
+    void SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state);
     void RefreshRowBackground();
 
     // Owner-only writer for the read-only IsSelected DP. Selection is owned by the TableView, so
@@ -143,7 +150,7 @@ private:
     void UpdateVisualState(bool useTransitions);
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
-    tracker_ref<winrt::Border> m_rootBorder{ this };
+    tracker_ref<winrt::Border> m_gridLineBorder{ this };
     // Use auto_revoke for self-event subscriptions instead of manual token cleanup.
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};

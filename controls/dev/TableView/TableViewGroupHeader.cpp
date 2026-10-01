@@ -9,7 +9,7 @@
 #include "TableViewGroupInfo.h"
 #include "TableViewGroupHeaderAutomationPeer.h"
 
-static constexpr std::wstring_view s_RootBorderPartName{ L"PART_Root"sv };
+static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
 
 TableViewGroupHeader::TableViewGroupHeader()
 {
@@ -69,7 +69,7 @@ void TableViewGroupHeader::OnApplyTemplate()
     __super::OnApplyTemplate();
 
     m_isEnabledChangedRevoker.revoke();
-    m_rootBorder.set(GetTemplateChild(hstring{ s_RootBorderPartName }).try_as<winrt::Border>());
+    m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
 
     // Keep CommonStates in sync with IsEnabled so Disabled activates when a consumer toggles it
     // at runtime, not only when it happens to be false at template time.
@@ -84,34 +84,33 @@ void TableViewGroupHeader::OnApplyTemplate()
         });
 
     UpdateVisualStates(false /* useTransitions */);
-    SetTerminalBottomGridLineSuppression(m_suppressBottomGridLine);
+    UpdateTerminalBottomGridLineSuppression();
 }
 
 void TableViewGroupHeader::SetTerminalBottomGridLineSuppression(bool suppress)
 {
-    m_suppressBottomGridLine = suppress;
-
-    if (auto root = m_rootBorder.get())
+    if (m_suppressBottomGridLine == suppress)
     {
-        if (!suppress)
+        return;
+    }
+
+    m_suppressBottomGridLine = suppress;
+    UpdateTerminalBottomGridLineSuppression();
+}
+
+void TableViewGroupHeader::UpdateTerminalBottomGridLineSuppression()
+{
+    if (auto gridLineBorder = m_gridLineBorder.get())
+    {
+        if (!m_suppressBottomGridLine)
         {
-            root.ClearValue(winrt::Border::BorderThicknessProperty());
-            root.ClearValue(winrt::Border::PaddingProperty());
+            gridLineBorder.ClearValue(winrt::Border::BorderThicknessProperty());
         }
         else
         {
             auto thickness = BorderThickness();
-            auto padding = Padding();
-            if (thickness.Bottom > 0.0)
-            {
-                padding.Bottom += thickness.Bottom;
-                thickness.Bottom = 0.0;
-            }
-
-            // Move the suppressed bottom stroke into padding so High Contrast group headers keep
-            // identical measure/arrange geometry and retain their top stroke.
-            root.BorderThickness(thickness);
-            root.Padding(padding);
+            thickness.Bottom = 0.0;
+            gridLineBorder.BorderThickness(thickness);
         }
     }
 }
@@ -143,6 +142,10 @@ void TableViewGroupHeader::OnPropertyChanged(const winrt::DependencyPropertyChan
         // projection here, so there is a single write path for expansion state.
         SyncExpansionToContent();
         UpdateVisualStates(true /* useTransitions */);
+    }
+    else if (property == winrt::Control::BorderThicknessProperty())
+    {
+        UpdateTerminalBottomGridLineSuppression();
     }
 
 }

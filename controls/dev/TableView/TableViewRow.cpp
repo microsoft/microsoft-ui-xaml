@@ -12,7 +12,7 @@
 #include "TVDiag.h"
 
 static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
-static constexpr std::wstring_view s_RootBorderPartName{ L"PART_RootBorder"sv };
+static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
 
 namespace
 {
@@ -134,7 +134,7 @@ void TableViewRow::OnApplyTemplate()
     __super::OnApplyTemplate();
 
     m_cellsHost.set(GetTemplateChild(hstring{ s_CellsHostPartName }).try_as<winrt::Panel>());
-    m_rootBorder.set(GetTemplateChild(hstring{ s_RootBorderPartName }).try_as<winrt::Border>());
+    m_gridLineBorder.set(GetTemplateChild(hstring{ s_GridLineBorderPartName }).try_as<winrt::Border>());
 
     // Let the panel recognise this row's editing cell so it can keep it out of the Auto-width pass.
     if (auto const cellsPanel = m_cellsHost.get().try_as<winrt::TableViewCellsPanel>())
@@ -147,11 +147,19 @@ void TableViewRow::OnApplyTemplate()
     UpdateVisualState(false /* useTransitions */);
 }
 
-void TableViewRow::SetTerminalGridLineSuppression(bool suppressTrailing, bool suppressBottom)
+void TableViewRow::SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state)
 {
-    m_suppressTrailingGridLine = suppressTrailing;
-    m_suppressBottomGridLine = suppressBottom;
+    m_suppressTrailingGridLine = state.suppressTrailing;
+    m_suppressBottomGridLine = state.suppressBottom;
     RefreshGridLines();
+}
+
+void TableViewRow::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (args.Property() == winrt::Control::BorderThicknessProperty() && m_suppressBottomGridLine)
+    {
+        RefreshGridLines();
+    }
 }
 
 winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
@@ -187,7 +195,9 @@ winrt::FrameworkElement TableViewRow::GetLastVisibleCellInternal() const
         for (uint32_t i = children.Size(); i > 0; --i)
         {
             if (auto cell = children.GetAt(i - 1).try_as<winrt::FrameworkElement>();
-                cell && cell.Visibility() == winrt::Visibility::Visible)
+                cell &&
+                cell.Visibility() == winrt::Visibility::Visible &&
+                cell.ActualWidth() > 0.0)
             {
                 return cell;
             }
@@ -907,27 +917,17 @@ void TableViewRow::RefreshGridLines()
         BorderThickness(s_zeroThickness);
     }
 
-    // Move only the suppressed bottom stroke into padding. The total root geometry stays stable,
-    // while custom brushes and any non-bottom border sides remain intact.
-    if (auto rootBorder = m_rootBorder.get())
+    if (auto gridLineBorder = m_gridLineBorder.get())
     {
         if (!m_suppressBottomGridLine)
         {
-            rootBorder.ClearValue(winrt::Border::BorderThicknessProperty());
-            rootBorder.ClearValue(winrt::Border::PaddingProperty());
+            gridLineBorder.ClearValue(winrt::Border::BorderThicknessProperty());
         }
         else
         {
             auto thickness = BorderThickness();
-            auto padding = Padding();
-            if (thickness.Bottom > 0.0)
-            {
-                padding.Bottom += thickness.Bottom;
-                thickness.Bottom = 0.0;
-            }
-
-            rootBorder.BorderThickness(thickness);
-            rootBorder.Padding(padding);
+            thickness.Bottom = 0.0;
+            gridLineBorder.BorderThickness(thickness);
         }
     }
 
@@ -951,7 +951,8 @@ void TableViewRow::RefreshGridLines()
     {
         if (auto cellWrapper = children.GetAt(i - 1).try_as<winrt::Border>())
         {
-            if (cellWrapper.Visibility() == winrt::Visibility::Visible)
+            if (cellWrapper.Visibility() == winrt::Visibility::Visible &&
+                cellWrapper.ActualWidth() > 0.0)
             {
                 lastVisibleCell = i - 1;
                 break;

@@ -635,10 +635,10 @@ private:
     void UpdateHeaderVisibility();
     void ApplyGridLinesToHeader();
     void RefreshGridLinesOnRealizedRows();
-    void QueueTerminalGridLineRefresh();
+    void QueueTerminalGridLineRefresh(bool isGeometryRetry = false);
     void RefreshTerminalGridLines();
-    bool ShouldSuppressTrailingGridLine();
-    bool ShouldSuppressBottomGridLine(
+    std::optional<bool> ShouldSuppressTrailingGridLine();
+    std::optional<bool> ShouldSuppressBottomGridLine(
         const winrt::FrameworkElement& element,
         bool hasBottomGridLine);
     void RefreshRowBackgroundsOnRealizedRows();
@@ -828,6 +828,8 @@ private:
     winrt::FrameworkElement::SizeChanged_revoker m_terminalGridLineRowSizeChangedRevoker{};
     bool m_suppressTrailingGridLine{ false };
     bool m_suppressBottomGridLine{ false };
+    bool m_terminalGridLineGeometryRetryAvailable{ true };
+    int32_t m_terminalGridLineColumnIndex{ -1 };
     double m_terminalGridLineHorizontalOffset{ std::numeric_limits<double>::quiet_NaN() };
     double m_terminalGridLineVerticalOffset{ std::numeric_limits<double>::quiet_NaN() };
     winrt::event_token m_pendingFocusLayoutToken{};
