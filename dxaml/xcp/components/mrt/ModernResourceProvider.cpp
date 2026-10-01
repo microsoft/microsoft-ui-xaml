@@ -30,6 +30,7 @@ constexpr int c_frameworkPackageNamePrefixLength = ARRAY_SIZE(c_frameworkPackage
 constexpr wchar_t c_cbsPackageNamePrefix[] = L"Microsoft.WindowsAppRuntime.CBS";
 constexpr int c_cbsPackageNamePrefixLength = ARRAY_SIZE(c_cbsPackageNamePrefix) - 1;
 constexpr wchar_t c_winuiComponentName[] = L"Microsoft.UI.Xaml/";
+constexpr wchar_t c_winuiTabularComponentName[] = L"Microsoft.UI.Xaml.Controls.Tabular/";
 
 // NTSTATUS code copied from ntstatus.h
 // ntstatus.h and windows.h do not play nicely together; including them both
@@ -80,7 +81,7 @@ namespace
 
     bool IsProjectReunionFrameworkPackageResource(const xstring_ptr& resourceName)
     {
-        return (wcsncmp(resourceName.GetBuffer(), c_winuiComponentName, ARRAY_SIZE(c_winuiComponentName) - 1) == 0);
+        return (wcsncmp(resourceName.GetBuffer(), c_winuiComponentName, ARRAY_SIZE(c_winuiComponentName) - 1) == 0) || (wcsncmp(resourceName.GetBuffer(), c_winuiTabularComponentName, ARRAY_SIZE(c_winuiTabularComponentName) - 1) == 0);
     }
 
     HRESULT GetCurrentPackageGraph(
