@@ -494,12 +494,22 @@ void TableView::OnApplyTemplate()
     m_rowsRepeater.set(GetTemplateChild(hstring{ s_RowsRepeaterPartName }).try_as<winrt::ItemsRepeater>());
     m_headerRow.set(GetTemplateChild(hstring{ s_HeaderRowPartName }).try_as<winrt::FrameworkElement>());
     // Capture the template's own header rule before any toggle overwrites it, so turning grid
-    // lines back on restores what the template asked for rather than a hard-coded 1px. A custom
-    // template may also declare the other three edges; those are never touched.
-    m_headerRowBorderThickness = { 0, 0, 0, 1 };
+    // lines back on restores what the template asked for rather than a hard-coded 1px, and so a
+    // custom template's other three edges survive the toggle. Keyed to the element: if
+    // OnApplyTemplate runs again over the same tree, ApplyGridLinesToHeader may already have
+    // written Bottom=0 there, and re-reading it would latch "off" permanently.
     if (auto headerBorder = m_headerRow.get().try_as<winrt::Border>())
     {
-        m_headerRowBorderThickness = headerBorder.BorderThickness();
+        if (m_headerRowBorderThicknessSource.get() != headerBorder)
+        {
+            m_headerRowBorderThickness = headerBorder.BorderThickness();
+            m_headerRowBorderThicknessSource = winrt::make_weak(headerBorder);
+        }
+    }
+    else
+    {
+        m_headerRowBorderThickness = { 0, 0, 0, 1 };
+        m_headerRowBorderThicknessSource = nullptr;
     }
     m_headerHost.set(GetTemplateChild(hstring{ s_HeaderHostPartName }).try_as<winrt::Panel>());
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
