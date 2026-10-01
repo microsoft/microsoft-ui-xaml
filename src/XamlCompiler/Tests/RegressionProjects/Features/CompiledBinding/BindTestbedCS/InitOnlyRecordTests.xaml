@@ -7,11 +7,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:BindTestbed">
 
-    <ItemsRepeater ItemsSource="{x:Bind BlogPosts}">
-        <ItemsRepeater.ItemTemplate>
-            <DataTemplate x:DataType="local:BlogPost">
-                <TextBlock Text="{x:Bind Title}"/>
-            </DataTemplate>
-        </ItemsRepeater.ItemTemplate>
-    </ItemsRepeater>
+    <StackPanel>
+        <!-- Generated C# bindings are nested in this control and can access its private setter. -->
+        <TextBox Text="{x:Bind PrivateSetText, Mode=TwoWay}"/>
+        <ItemsRepeater ItemsSource="{x:Bind BlogPosts}">
+            <ItemsRepeater.ItemTemplate>
+                <DataTemplate x:DataType="local:BlogPost">
+                    <TextBlock Text="{x:Bind Title}"/>
+                </DataTemplate>
+            </ItemsRepeater.ItemTemplate>
+        </ItemsRepeater>
+    </StackPanel>
 </UserControl>

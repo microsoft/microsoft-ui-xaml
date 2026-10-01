@@ -18,6 +18,14 @@ namespace BindTestbed
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         private static class XamlBindingSetters
         {
+            public static void Set_Microsoft_UI_Xaml_Controls_TextBox_Text(global::Microsoft.UI.Xaml.Controls.TextBox obj, global::System.String value, string targetNullValue)
+            {
+                if (value == null && targetNullValue != null)
+                {
+                    value = targetNullValue;
+                }
+                obj.Text = value ?? global::System.String.Empty;
+            }
             public static void Set_Microsoft_UI_Xaml_Controls_ItemsRepeater_ItemsSource(global::Microsoft.UI.Xaml.Controls.ItemsRepeater obj, global::System.Object value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
@@ -38,7 +46,7 @@ namespace BindTestbed
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private partial class InitOnlyRecordTests_obj4_Bindings :
+        private partial class InitOnlyRecordTests_obj5_Bindings :
             global::Microsoft.UI.Xaml.IDataTemplateExtension,
             global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
             global::Microsoft.UI.Xaml.Markup.IComponentConnector,
@@ -51,9 +59,9 @@ namespace BindTestbed
             private bool removedDataContextHandler = false;
 
             // Fields for each control that has bindings.
-            private global::System.WeakReference obj4;
+            private global::System.WeakReference obj5;
 
-            public InitOnlyRecordTests_obj4_Bindings()
+            public InitOnlyRecordTests_obj5_Bindings()
             {
             }
 
@@ -63,8 +71,8 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 4: // InitOnlyRecordTests.xaml line 13
-                        this.obj4 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target));
+                    case 5: // InitOnlyRecordTests.xaml line 16
+                        this.obj5 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target));
                         break;
                     default:
                         break;
@@ -117,7 +125,7 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            var rootElement = (this.obj4.Target as global::Microsoft.UI.Xaml.Controls.TextBlock);
+                            var rootElement = (this.obj5.Target as global::Microsoft.UI.Xaml.Controls.TextBlock);
                             if (rootElement != null)
                             {
                                 rootElement.DataContextChanged -= this.DataContextChangedHandler;
@@ -183,10 +191,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // InitOnlyRecordTests.xaml line 13
-                    if ((this.obj4.Target as global::Microsoft.UI.Xaml.Controls.TextBlock) != null)
+                    // InitOnlyRecordTests.xaml line 16
+                    if ((this.obj5.Target as global::Microsoft.UI.Xaml.Controls.TextBlock) != null)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text((this.obj4.Target as global::Microsoft.UI.Xaml.Controls.TextBlock), obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text((this.obj5.Target as global::Microsoft.UI.Xaml.Controls.TextBlock), obj, null);
                     }
                 }
             }
@@ -204,10 +212,14 @@ namespace BindTestbed
             private const int DATA_CHANGED = (1 << 30);
 
             // Fields for each control that has bindings.
-            private global::Microsoft.UI.Xaml.Controls.ItemsRepeater obj2;
+            private global::Microsoft.UI.Xaml.Controls.TextBox obj2;
+            private global::Microsoft.UI.Xaml.Controls.ItemsRepeater obj3;
+
+            private InitOnlyRecordTests_obj1_BindingsTracking bindingsTracking;
 
             public InitOnlyRecordTests_obj1_Bindings()
             {
+                this.bindingsTracking = new InitOnlyRecordTests_obj1_BindingsTracking(this);
             }
 
             // IComponentConnector
@@ -216,8 +228,12 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 2: // InitOnlyRecordTests.xaml line 10
-                        this.obj2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ItemsRepeater>(target);
+                    case 2: // InitOnlyRecordTests.xaml line 12
+                        this.obj2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBox>(target);
+                        this.bindingsTracking.RegisterTwoWayListener_2(this.obj2);
+                        break;
+                    case 3: // InitOnlyRecordTests.xaml line 13
+                        this.obj3 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ItemsRepeater>(target);
                         break;
                     default:
                         break;
@@ -248,6 +264,8 @@ namespace BindTestbed
 
             public void StopTracking()
             {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
             }
 
             public void DisconnectUnloadedObject(int connectionId)
@@ -257,6 +275,7 @@ namespace BindTestbed
 
             public bool SetDataRoot(global::System.Object newDataRoot)
             {
+                this.bindingsTracking.ReleaseAllListeners();
                 if (newDataRoot != null)
                 {
                     this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbed.InitOnlyRecordTests>(newDataRoot);
@@ -280,18 +299,83 @@ namespace BindTestbed
             {
                 if (obj != null)
                 {
+                    if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
+                    {
+                        this.Update_PrivateSetText(obj.PrivateSetText, phase);
+                    }
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
                     {
                         this.Update_BlogPosts(obj.BlogPosts, phase);
                     }
                 }
             }
+            private void Update_PrivateSetText(global::System.String obj, int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // InitOnlyRecordTests.xaml line 12
+                    XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBox_Text(this.obj2, obj, null);
+                }
+            }
             private void Update_BlogPosts(global::System.Collections.ObjectModel.ObservableCollection<global::BindTestbed.BlogPost> obj, int phase)
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // InitOnlyRecordTests.xaml line 10
-                    XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsRepeater_ItemsSource(this.obj2, obj, null);
+                    // InitOnlyRecordTests.xaml line 13
+                    XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsRepeater_ItemsSource(this.obj3, obj, null);
+                }
+            }
+            private void UpdateTwoWay_2_Text()
+            {
+                if (this.initialized)
+                {
+                    if (this.dataRoot != null)
+                    {
+                        this.dataRoot.PrivateSetText = this.obj2.Text;
+                    }
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class InitOnlyRecordTests_obj1_BindingsTracking
+            {
+                private global::System.WeakReference<InitOnlyRecordTests_obj1_Bindings> weakRefToBindingObj; 
+
+                public InitOnlyRecordTests_obj1_BindingsTracking(InitOnlyRecordTests_obj1_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<InitOnlyRecordTests_obj1_Bindings>(obj);
+                }
+
+                public InitOnlyRecordTests_obj1_Bindings TryGetBindingObject()
+                {
+                    InitOnlyRecordTests_obj1_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                }
+
+                public void RegisterTwoWayListener_2(global::Microsoft.UI.Xaml.Controls.TextBox sourceObject)
+                {
+                    sourceObject.LostFocus += (sender, e) =>
+                    {
+                        var bindingObj = this.TryGetBindingObject();
+                        if (bindingObj != null)
+                        {
+                            bindingObj.UpdateTwoWay_2_Text();
+                        }
+                    };
                 }
             }
         }
@@ -327,15 +411,15 @@ namespace BindTestbed
                     element1.Loading += bindings.Loading;
                 }
                 break;
-            case 4: // InitOnlyRecordTests.xaml line 13
+            case 5: // InitOnlyRecordTests.xaml line 16
                 {                    
-                    global::Microsoft.UI.Xaml.Controls.TextBlock element4 = (global::Microsoft.UI.Xaml.Controls.TextBlock)target;
-                    InitOnlyRecordTests_obj4_Bindings bindings = new InitOnlyRecordTests_obj4_Bindings();
+                    global::Microsoft.UI.Xaml.Controls.TextBlock element5 = (global::Microsoft.UI.Xaml.Controls.TextBlock)target;
+                    InitOnlyRecordTests_obj5_Bindings bindings = new InitOnlyRecordTests_obj5_Bindings();
                     returnValue = bindings;
-                    bindings.SetDataRoot(element4.DataContext);
-                    element4.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element4, bindings);
-                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element4, bindings);
+                    bindings.SetDataRoot(element5.DataContext);
+                    element5.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element5, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element5, bindings);
                 }
                 break;
             }

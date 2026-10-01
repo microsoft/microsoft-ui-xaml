@@ -562,6 +562,9 @@
   <data name="BindAssignment_RequiresConditionalNamespace" xml:space="preserve">
     <value>Binding requires a conditional namespace because at least one step in the binding path is conditional</value>
   </data>
+  <data name="BindAssignment_TwoWaySourceNotWritable" xml:space="preserve">
+    <value>TwoWay binding path '{0}' cannot write to read-only source member '{1}'</value>
+  </data>
   <data name="BindAssignment_UpdateSourceTrigger_UnrecognizedValue" xml:space="preserve">
     <value>Unrecognized value for 'UpdateSourceTrigger'</value>
   </data>
