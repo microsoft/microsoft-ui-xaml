@@ -118,10 +118,14 @@ bool TableViewRowAutomationPeer::IsVirtualized()
     {
         return false;
     }
-    m_lastKnownRowIndex = rowIndex;
 
     auto const repeater = tableImpl->GetRowsRepeaterInternal();
-    return repeater && !repeater.TryGetElement(rowIndex);
+    const bool isVirtualized = repeater && !repeater.TryGetElement(rowIndex);
+    if (isVirtualized)
+    {
+        m_lastKnownRowIndex = rowIndex;
+    }
+    return isVirtualized;
 }
 
 void TableViewRowAutomationPeer::Realize()
@@ -192,13 +196,12 @@ void TableViewRowAutomationPeer::RealizeCore()
 
 winrt::IInspectable TableViewRowAutomationPeer::GetTrackedItem() const
 {
-    return m_item.get();
+    return m_item.Resolve();
 }
 
 int32_t TableViewRowAutomationPeer::GetTrackedItemIndex(winrt::TableView const& tableView)
 {
-    auto const item = GetTrackedItem();
-    if (!tableView || !item)
+    if (!tableView || !m_item.IsTracking())
     {
         return -1;
     }
@@ -212,12 +215,61 @@ int32_t TableViewRowAutomationPeer::GetTrackedItemIndex(winrt::TableView const& 
     }
 
     const int32_t count = view.Count();
+    if (m_lastKnownRowIndex >= 0 && m_lastKnownRowIndex < count)
+    {
+        if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(m_lastKnownRowIndex));
+            m_item.SameIdentityAs(candidate))
+        {
+            return m_lastKnownRowIndex;
+        }
+    }
+
+    int32_t occurrence = 0;
     for (int32_t index = 0; index < count; ++index)
+    {
+        if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(index));
+            m_item.SameIdentityAs(candidate))
+        {
+            if (m_trackedItemOccurrence < 0 || occurrence == m_trackedItemOccurrence)
+            {
+                return index;
+            }
+            ++occurrence;
+        }
+    }
+
+    return -1;
+}
+
+int32_t TableViewRowAutomationPeer::GetItemOccurrenceAtIndex(
+    winrt::TableView const& tableView,
+    winrt::IInspectable const& item,
+    int32_t targetIndex)
+{
+    if (!tableView || !item || targetIndex < 0)
+    {
+        return -1;
+    }
+
+    auto const tableImpl = winrt::get_self<TableView>(tableView);
+    auto const repeater = tableImpl->GetRowsRepeaterInternal();
+    auto const view = repeater ? repeater.ItemsSourceView() : nullptr;
+    if (!view || targetIndex >= view.Count())
+    {
+        return -1;
+    }
+
+    int32_t occurrence = 0;
+    for (int32_t index = 0; index <= targetIndex; ++index)
     {
         if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(index));
             candidate && TableView::SameInspectableIdentity(candidate, item))
         {
-            return index;
+            if (index == targetIndex)
+            {
+                return occurrence;
+            }
+            ++occurrence;
         }
     }
 
@@ -226,19 +278,43 @@ int32_t TableViewRowAutomationPeer::GetTrackedItemIndex(winrt::TableView const& 
 
 bool TableViewRowAutomationPeer::IsTrackedRow(winrt::TableViewRow const& row, winrt::TableView const& tableView)
 {
-    auto const item = GetTrackedItem();
-    if (!row || !tableView || !item)
+    if (!row || !tableView)
     {
         return false;
     }
 
     auto const rowItem = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext());
-    const bool sameItem = rowItem && TableView::SameInspectableIdentity(rowItem, item);
-    if (sameItem)
+    if (!rowItem)
     {
-        m_item = winrt::make_weak(rowItem);
+        return false;
     }
-    return sameItem;
+
+    if (!m_item.IsTracking())
+    {
+        TrackRowItem(row, tableView);
+        return true;
+    }
+
+    if (!m_item.SameIdentityAs(rowItem))
+    {
+        return false;
+    }
+
+    if (auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal())
+    {
+        if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
+        {
+            const auto occurrence = GetItemOccurrenceAtIndex(tableView, rowItem, rowIndex);
+            if (m_trackedItemOccurrence >= 0 && occurrence != m_trackedItemOccurrence)
+            {
+                return false;
+            }
+
+            TrackRowItem(row, tableView);
+        }
+    }
+
+    return true;
 }
 
 void TableViewRowAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView)
@@ -247,7 +323,16 @@ void TableViewRowAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, wi
     {
         if (auto const item = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext()))
         {
-            m_item = winrt::make_weak(item);
+            m_item.Track(item);
+            m_trackedItemOccurrence = -1;
+            if (auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal())
+            {
+                if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
+                {
+                    m_lastKnownRowIndex = rowIndex;
+                    m_trackedItemOccurrence = GetItemOccurrenceAtIndex(tableView, item, rowIndex);
+                }
+            }
         }
     }
 }
@@ -355,8 +440,12 @@ int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
         return 0;
     }
 
-    // Same flat basis as IGridProvider::RowCount and GetItem.
-    return index + 1;
+    if (auto const tableView = GetOwningTableView())
+    {
+        return winrt::get_self<TableView>(tableView)->GetDataRowPositionInSetInternal(index);
+    }
+
+    return 0;
 }
 
 int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
@@ -366,10 +455,9 @@ int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
         return provided;
     }
 
-    // Same flat basis as TableViewAutomationPeer::RowCount and GetItem.
     if (auto const tableView = GetOwningTableView())
     {
-        if (const auto count = winrt::get_self<TableView>(tableView)->GetRowCountInternal(); count > 0)
+        if (const auto count = winrt::get_self<TableView>(tableView)->GetDataRowSizeOfSetInternal(); count > 0)
         {
             return count;
         }

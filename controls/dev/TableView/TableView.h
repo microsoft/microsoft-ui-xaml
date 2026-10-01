@@ -230,6 +230,8 @@ public:
     winrt::ItemsRepeater GetRowsRepeaterInternal() const { return m_rowsRepeater.get(); }
     winrt::Panel GetHeaderHostInternal() const { return m_headerHost.get(); }
     int32_t GetRowCountInternal() const { return GetItemsSourceCount(); }
+    int32_t GetDataRowPositionInSetInternal(int32_t rowIndex) const;
+    int32_t GetDataRowSizeOfSetInternal() const;
     winrt::ScrollViewer GetBodyScrollerInternal() const { return m_bodyScroller.get(); }
 
     // Test hook for moving keyboard focus into the body at a row index; false for invalid indexes

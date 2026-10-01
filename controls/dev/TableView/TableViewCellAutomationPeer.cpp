@@ -161,6 +161,13 @@ hstring TableViewCellAutomationPeer::GetNameCore()
     {
         return *m_editName;
     }
+    if (auto const cell = Owner().try_as<winrt::FrameworkElement>();
+        HasInteractiveCellContent(cell))
+    {
+        auto const name = GetColumnHeaderText();
+        m_lastName = name;
+        return name;
+    }
     if (row)
     {
         if (auto const display = winrt::get_self<TableViewRow>(row)->GetDisplayElementForAutomation(Owner()))
@@ -173,6 +180,26 @@ hstring TableViewCellAutomationPeer::GetNameCore()
     auto const name = ReadDisplayName();
     m_lastName = name;
     return name;
+}
+
+winrt::IVector<winrt::AutomationPeer> TableViewCellAutomationPeer::GetChildrenCore()
+{
+    if (auto const cell = Owner().try_as<winrt::FrameworkElement>())
+    {
+        if (auto const content = GetCellAutomationContent(cell))
+        {
+            if (HasInteractiveCellContent(cell))
+            {
+                winrt::AutomationProperties::SetAccessibilityView(content, winrt::AccessibilityView::Content);
+            }
+            else
+            {
+                SetCellContentAccessibilityViewRaw(content);
+            }
+        }
+    }
+
+    return __super::GetChildrenCore();
 }
 
 winrt::hstring TableViewCellAutomationPeer::ReadNameForEdit()
@@ -447,9 +474,8 @@ int32_t TableViewCellAutomationPeer::GetRowIndex()
 
         // TableView exposes no public row-index API, so fall back to the hosting ItemsRepeater for
         // a row whose owner is not resolvable yet.
-        auto const item = GetTrackedItem();
         auto const rowItem = row.DataContext();
-        if (!item || !rowItem || !TableView::SameInspectableIdentity(rowItem, item))
+        if (!m_item.SameIdentityAs(rowItem))
         {
             return -1;
         }
@@ -491,10 +517,14 @@ bool TableViewCellAutomationPeer::IsVirtualized()
     {
         return false;
     }
-    m_lastKnownRowIndex = rowIndex;
 
     auto const repeater = tableImpl->GetRowsRepeaterInternal();
-    return repeater && !repeater.TryGetElement(rowIndex);
+    const bool isVirtualized = repeater && !repeater.TryGetElement(rowIndex);
+    if (isVirtualized)
+    {
+        m_lastKnownRowIndex = rowIndex;
+    }
+    return isVirtualized;
 }
 
 void TableViewCellAutomationPeer::Realize()
@@ -587,13 +617,12 @@ winrt::TableView TableViewCellAutomationPeer::GetTrackedTableForRow(winrt::Table
 
 winrt::IInspectable TableViewCellAutomationPeer::GetTrackedItem() const
 {
-    return m_item.get();
+    return m_item.Resolve();
 }
 
 int32_t TableViewCellAutomationPeer::GetTrackedItemIndex(winrt::TableView const& tableView)
 {
-    auto const item = GetTrackedItem();
-    if (!tableView || !item)
+    if (!tableView || !m_item.IsTracking())
     {
         return -1;
     }
@@ -607,12 +636,61 @@ int32_t TableViewCellAutomationPeer::GetTrackedItemIndex(winrt::TableView const&
     }
 
     const int32_t count = view.Count();
+    if (m_lastKnownRowIndex >= 0 && m_lastKnownRowIndex < count)
+    {
+        if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(m_lastKnownRowIndex));
+            m_item.SameIdentityAs(candidate))
+        {
+            return m_lastKnownRowIndex;
+        }
+    }
+
+    int32_t occurrence = 0;
     for (int32_t index = 0; index < count; ++index)
+    {
+        if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(index));
+            m_item.SameIdentityAs(candidate))
+        {
+            if (m_trackedItemOccurrence < 0 || occurrence == m_trackedItemOccurrence)
+            {
+                return index;
+            }
+            ++occurrence;
+        }
+    }
+
+    return -1;
+}
+
+int32_t TableViewCellAutomationPeer::GetItemOccurrenceAtIndex(
+    winrt::TableView const& tableView,
+    winrt::IInspectable const& item,
+    int32_t targetIndex)
+{
+    if (!tableView || !item || targetIndex < 0)
+    {
+        return -1;
+    }
+
+    auto const tableImpl = winrt::get_self<TableView>(tableView);
+    auto const repeater = tableImpl->GetRowsRepeaterInternal();
+    auto const view = repeater ? repeater.ItemsSourceView() : nullptr;
+    if (!view || targetIndex >= view.Count())
+    {
+        return -1;
+    }
+
+    int32_t occurrence = 0;
+    for (int32_t index = 0; index <= targetIndex; ++index)
     {
         if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(index));
             candidate && TableView::SameInspectableIdentity(candidate, item))
         {
-            return index;
+            if (index == targetIndex)
+            {
+                return occurrence;
+            }
+            ++occurrence;
         }
     }
 
@@ -621,19 +699,43 @@ int32_t TableViewCellAutomationPeer::GetTrackedItemIndex(winrt::TableView const&
 
 bool TableViewCellAutomationPeer::IsTrackedRow(winrt::TableViewRow const& row, winrt::TableView const& tableView)
 {
-    auto const item = GetTrackedItem();
-    if (!row || !tableView || !item)
+    if (!row || !tableView)
     {
         return false;
     }
 
     auto const rowItem = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext());
-    const bool sameItem = rowItem && TableView::SameInspectableIdentity(rowItem, item);
-    if (sameItem)
+    if (!rowItem)
     {
-        m_item = winrt::make_weak(rowItem);
+        return false;
     }
-    return sameItem;
+
+    if (!m_item.IsTracking())
+    {
+        TrackRowItem(row, tableView);
+        return true;
+    }
+
+    if (!m_item.SameIdentityAs(rowItem))
+    {
+        return false;
+    }
+
+    if (auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal())
+    {
+        if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
+        {
+            const auto occurrence = GetItemOccurrenceAtIndex(tableView, rowItem, rowIndex);
+            if (m_trackedItemOccurrence >= 0 && occurrence != m_trackedItemOccurrence)
+            {
+                return false;
+            }
+
+            TrackRowItem(row, tableView);
+        }
+    }
+
+    return true;
 }
 
 void TableViewCellAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView)
@@ -642,7 +744,16 @@ void TableViewCellAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, w
     {
         if (auto const item = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext()))
         {
-            m_item = winrt::make_weak(item);
+            m_item.Track(item);
+            m_trackedItemOccurrence = -1;
+            if (auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal())
+            {
+                if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
+                {
+                    m_lastKnownRowIndex = rowIndex;
+                    m_trackedItemOccurrence = GetItemOccurrenceAtIndex(tableView, item, rowIndex);
+                }
+            }
         }
     }
 }

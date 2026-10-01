@@ -18,6 +18,55 @@
 // logic lives in one place instead of being copy-pasted across the peer translation units. Assumes
 // pch.h (winrt type aliases) is included first, per the TableView header convention.
 
+class TableViewTrackedItemIdentity
+{
+public:
+    void Track(winrt::IInspectable const& item)
+    {
+        m_hasItem = static_cast<bool>(item);
+        m_weakItem = winrt::weak_ref<winrt::IInspectable>{ nullptr };
+        m_strongItem = nullptr;
+
+        if (!item)
+        {
+            return;
+        }
+
+        if (item.try_as<::IWeakReferenceSource>())
+        {
+            m_weakItem = winrt::make_weak(item);
+        }
+        else
+        {
+            // Some app data items do not implement IWeakReferenceSource. Hold those narrowly as
+            // strong identity tokens: they are ItemsSource objects, not peers/containers, so this
+            // does not add a reference path back from app data to TableView.
+            m_strongItem = item;
+        }
+    }
+
+    bool IsTracking() const noexcept
+    {
+        return m_hasItem;
+    }
+
+    winrt::IInspectable Resolve() const
+    {
+        return m_strongItem ? m_strongItem : m_weakItem.get();
+    }
+
+    bool SameIdentityAs(winrt::IInspectable const& candidate) const
+    {
+        auto const item = Resolve();
+        return candidate && item && TableView::SameInspectableIdentity(candidate, item);
+    }
+
+private:
+    bool m_hasItem{ false };
+    winrt::weak_ref<winrt::IInspectable> m_weakItem{ nullptr };
+    winrt::IInspectable m_strongItem{ nullptr };
+};
+
 // Resource lookups feeding UIA are supplementary: degrade instead of letting a missing PRI (a host
 // app that does not merge the control's resources) escape into a UIA call.
 inline winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceName)
@@ -282,6 +331,82 @@ inline winrt::FrameworkElement GetCellContentElement(winrt::FrameworkElement con
         return children.Size() ? children.GetAt(0).try_as<winrt::FrameworkElement>() : nullptr;
     }
     return cell;
+}
+
+inline winrt::FrameworkElement GetCellAutomationContent(winrt::FrameworkElement const& cell)
+{
+    return GetCellContentElement(cell);
+}
+
+inline bool ContainsFocusableElement(winrt::UIElement const& element)
+{
+    if (!element || element.Visibility() != winrt::Visibility::Visible)
+    {
+        return false;
+    }
+
+    if (auto const control = element.try_as<winrt::Control>(); control && control.IsEnabled() && control.IsTabStop())
+    {
+        return true;
+    }
+
+    if (auto const target = winrt::FocusManager::FindFirstFocusableElement(element))
+    {
+        if (auto const targetElement = target.try_as<winrt::UIElement>())
+        {
+            return targetElement.Visibility() == winrt::Visibility::Visible;
+        }
+    }
+
+    return false;
+}
+
+inline bool HasInteractiveCellContent(winrt::FrameworkElement const& cell)
+{
+    auto const content = GetCellAutomationContent(cell);
+    return ContainsFocusableElement(content);
+}
+
+inline bool ShouldPreserveCellContentElement(winrt::FrameworkElement const& element)
+{
+    if (!element)
+    {
+        return false;
+    }
+
+    if (element.try_as<winrt::ProgressBar>())
+    {
+        return true;
+    }
+
+    if (element.try_as<winrt::Image>())
+    {
+        return !winrt::AutomationProperties::GetName(element).empty() ||
+            static_cast<bool>(winrt::AutomationProperties::GetLabeledBy(element));
+    }
+
+    return false;
+}
+
+inline void SetCellContentAccessibilityViewRaw(winrt::FrameworkElement const& root, uint32_t depthBudget = 8)
+{
+    if (!root || root.Visibility() != winrt::Visibility::Visible || depthBudget == 0 ||
+        ContainsFocusableElement(root) || ShouldPreserveCellContentElement(root))
+    {
+        return;
+    }
+
+    winrt::AutomationProperties::SetAccessibilityView(root, winrt::AccessibilityView::Raw);
+
+    constexpr int32_t maxChildrenPerLevel = 32;
+    auto const childCount = winrt::VisualTreeHelper::GetChildrenCount(root);
+    for (int32_t i = 0; i < childCount && i < maxChildrenPerLevel; ++i)
+    {
+        if (auto const child = winrt::VisualTreeHelper::GetChild(root, i).try_as<winrt::FrameworkElement>())
+        {
+            SetCellContentAccessibilityViewRaw(child, depthBudget - 1);
+        }
+    }
 }
 
 inline winrt::hstring GetCellDisplayText(winrt::FrameworkElement const& cell, bool allowPeerCreation = true)

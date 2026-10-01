@@ -5,6 +5,7 @@
 
 #include "TableViewRow.h"
 #include "TableViewRowAutomationPeer.g.h"
+#include "TableViewAutomationHelpers.h"
 
 #include <vector>
 
@@ -55,6 +56,7 @@ private:
     void RealizeCore();
     winrt::IInspectable GetTrackedItem() const;
     int32_t GetTrackedItemIndex(winrt::TableView const& tableView);
+    int32_t GetItemOccurrenceAtIndex(winrt::TableView const& tableView, winrt::IInspectable const& item, int32_t targetIndex);
     bool IsTrackedRow(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     void TrackRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     [[noreturn]] static void ThrowElementNotAvailable();
@@ -82,6 +84,7 @@ private:
 
     std::vector<CellPeerCacheEntry> m_cellPeerCache;
     winrt::weak_ref<winrt::TableView> m_lastOwningTable{ nullptr };
-    winrt::weak_ref<winrt::IInspectable> m_item{ nullptr };
+    TableViewTrackedItemIdentity m_item;
     int32_t m_lastKnownRowIndex{ -1 };
+    int32_t m_trackedItemOccurrence{ -1 };
 };

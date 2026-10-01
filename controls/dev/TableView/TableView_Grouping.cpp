@@ -112,6 +112,62 @@ bool TableView::IsGroupHeaderRow(int32_t index) const
     return TryGetTableViewSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::GroupHeader;
 }
 
+int32_t TableView::GetDataRowPositionInSetInternal(int32_t rowIndex) const
+{
+    if (rowIndex < 0)
+    {
+        return 0;
+    }
+
+    if (!IsTableViewSourceGrouped())
+    {
+        return rowIndex + 1;
+    }
+
+    int32_t position = 0;
+    for (int32_t index = 0; index <= rowIndex; ++index)
+    {
+        TableViewRowInfo rowInfo{};
+        if (!TryGetTableViewSourceRowInfo(index, rowInfo))
+        {
+            return rowIndex + 1;
+        }
+
+        if (rowInfo.Kind == TableViewRowKind::Data)
+        {
+            ++position;
+        }
+    }
+
+    return position;
+}
+
+int32_t TableView::GetDataRowSizeOfSetInternal() const
+{
+    const auto rowCount = GetRowCountInternal();
+    if (!IsTableViewSourceGrouped())
+    {
+        return rowCount;
+    }
+
+    int32_t dataRowCount = 0;
+    for (int32_t index = 0; index < rowCount; ++index)
+    {
+        TableViewRowInfo rowInfo{};
+        if (!TryGetTableViewSourceRowInfo(index, rowInfo))
+        {
+            return rowCount;
+        }
+
+        if (rowInfo.Kind == TableViewRowKind::Data)
+        {
+            ++dataRowCount;
+        }
+    }
+
+    return dataRowCount;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Expansion
 // ---------------------------------------------------------------------------------------------

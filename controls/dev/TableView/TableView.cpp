@@ -1473,6 +1473,11 @@ void TableView::OnRowElementClearing(
         // Release app-supplied tooltip content rather than pinning it in the recycle pool.
         rowImpl->ReleaseCellToolTips();
         rowImpl->SetOwningTableViewInternal(nullptr);
+        // Grouped reshapes can rebind a pooled row through DataContext without a fresh
+        // ElementPrepared/ElementIndexChanged callback. Keep the weak owner available so that path
+        // can rebuild cells and publish a live row peer; item-identity tracking still rejects stale
+        // peers after the rebind.
+        rowImpl->SetOwningTableViewInternal(*this);
         InvalidateMeasure();
     }
     else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
@@ -1498,10 +1503,15 @@ void TableView::OnRowElementIndexChanged(
         return;
     }
 
+    auto rowImpl = winrt::get_self<TableViewRow>(row);
+    // Realized rows can be preserved through grouped projection reshapes without a fresh
+    // ElementPrepared callback, so keep the owner/cells invariant true on index changes too.
+    rowImpl->SetOwningTableViewInternal(*this);
+
     // Realized rows keep their element but get a new index, so banding parity must refresh.
     if (RowBackground() != nullptr || AlternatingRowBackground() != nullptr)
     {
-        winrt::get_self<TableViewRow>(row)->RefreshRowBackground();
+        rowImpl->RefreshRowBackground();
     }
 
     // ...and so must selected chrome. The element keeps its item here (only its index moved), so

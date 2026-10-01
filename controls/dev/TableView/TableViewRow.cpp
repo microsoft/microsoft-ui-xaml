@@ -413,12 +413,6 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
-    // GettingFocus bubbles; only redirects aimed at the row container are body-entry landings.
-    if (newFocus != selfObject)
-    {
-        return;
-    }
-
     // Tab / Shift+Tab only. Arrow navigation, an edit-close restore and a pointer press all name
     // the row they mean; redirecting those would move the user somewhere they did not ask for.
     auto const direction = args.Direction();
@@ -451,6 +445,26 @@ void TableViewRow::OnRowGettingFocus(
     if (oldFocus == selfObject ||
         SharedHelpers::IsAncestor(oldFocus, selfObject, false /* checkVisibility */))
     {
+        return;
+    }
+
+    // When returning from another band inside the table, stale cell-level state can make XAML aim
+    // the body's single tab stop at a cell. Body band entry is still row-level; outside re-entry is
+    // left alone so it can resume the previously focused cell.
+    if (newFocus != selfObject)
+    {
+        winrt::DependencyObject const ownerObject = owner;
+        const bool focusCameFromWithinTable =
+            oldFocus == ownerObject ||
+            SharedHelpers::IsAncestor(oldFocus, ownerObject, false /* checkVisibility */);
+        if (!focusCameFromWithinTable || !FindOwnCellInternal(newFocus, false /* requireExact */))
+        {
+            return;
+        }
+
+        SetCellLevelInternal(false);
+        ownerImpl->SetCellCursorActiveInternal(false);
+        args.TrySetNewFocusedElement(selfObject);
         return;
     }
 
