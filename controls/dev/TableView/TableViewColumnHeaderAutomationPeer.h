@@ -9,7 +9,8 @@
 #include <cstdint>
 
 // UIA peer for a TableView column header; reports header name, type, identity, and bounds.
-// The owner is the actual header cell, shared by focus, tree navigation and TablePattern.
+// Cached/public peers are owned by the TableView so headers can be enumerated before the
+// templates realize; realized header cells use the same per-column identity.
 class TableViewColumnHeaderAutomationPeer :
     public ReferenceTracker<TableViewColumnHeaderAutomationPeer, winrt::implementation::TableViewColumnHeaderAutomationPeerT>
 {
@@ -38,6 +39,14 @@ public:
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
 
+    // Prevent TableView-owned header peers from exposing the whole TableView subtree.
+    winrt::Windows::Foundation::Collections::IVector<winrt::AutomationPeer> GetChildrenCore();
+    winrt::Windows::Foundation::Rect GetBoundingRectangleCore();
+    winrt::Windows::Foundation::Point GetClickablePointCore();
+    bool IsOffscreenCore();
+
+    bool IsTableViewOwned();
+
 private:
     winrt::FrameworkElement GetHeaderElement();
     bool IsSortableColumn();
@@ -45,4 +54,5 @@ private:
 
     winrt::weak_ref<winrt::TableViewColumn> m_column{ nullptr };
     winrt::weak_ref<winrt::TableView> m_table{ nullptr };
+    uint32_t m_columnAutomationIdentity{ 0 };
 };

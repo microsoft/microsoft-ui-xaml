@@ -9,10 +9,13 @@
 #include "TVDiag.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 
 namespace
 {
+    std::atomic<uint32_t> s_nextAutomationIdentity{ 1 };
+
     bool TryFocusEditor(winrt::FrameworkElement const& editor)
     {
         if (editor.Focus(winrt::FocusState::Programmatic))
@@ -276,6 +279,15 @@ winrt::TableView TableViewColumn::GetOwningTableView()
 {
     // Keep the owner weak; callers acquire a strong ref only for synchronous work.
     return m_owningTableView.get();
+}
+
+uint32_t TableViewColumn::AutomationIdentity()
+{
+    if (m_automationIdentity == 0)
+    {
+        m_automationIdentity = s_nextAutomationIdentity.fetch_add(1);
+    }
+    return m_automationIdentity;
 }
 
 void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)

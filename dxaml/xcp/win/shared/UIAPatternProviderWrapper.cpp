@@ -2234,18 +2234,21 @@ HRESULT STDMETHODCALLTYPE CUIATableProviderWrapper::GetColumnHeaders(_Out_ SAFEA
     pAPArray = static_cast<CAutomationPeer**>(retCValue.m_pvValue);
     safeArray.reset(SafeArrayCreateVector(VT_UNKNOWN, 0, length));
     IFCOOM(safeArray.get());
+    // Each interface is released through its own pointer. The sibling VT_UNKNOWN wrappers still use
+    // the legacy pattern that stays balanced only via COM identity aliasing; separate change.
     for (LONG i = 0; i < length; i++)
     {
         IFC(GetUIAWindow()->CreateProviderForAP(pAPArray[i], &pWrapper));
         IFC(pWrapper->QueryInterface(__uuidof(IUnknown), reinterpret_cast<void**>(&pFrag)));
-        ReleaseInterfaceNoNULL(pWrapper);
-        IFC(SafeArrayPutElement(safeArray.get(), &i, static_cast<void*>(pFrag)));
         ReleaseInterface(pWrapper);
+        IFC(SafeArrayPutElement(safeArray.get(), &i, static_cast<void*>(pFrag)));
+        ReleaseInterface(pFrag);
     }
     *pRetVal = safeArray.release();
 
 Cleanup:
     delete[] pAPArray;
+    ReleaseInterface(pFrag);
     ReleaseInterface(pWrapper);
     return hr;
 }

@@ -159,7 +159,7 @@ namespace
         }
 
         // Whole pixels: sub-pixel precision is noise in an announcement.
-        auto const width = winrt::to_hstring(static_cast<int32_t>(std::lround(column.ActualWidth())));
+        auto const width = TableViewDetails::FormatIntegerForCurrentCulture(static_cast<int32_t>(std::lround(column.ActualWidth())));
 
         try
         {

@@ -24,7 +24,7 @@ public:
     hstring GetNameCore();
 
     // Rows are virtualized: UIA only ever sees the realized window, so the control has to supply
-    // "row i of n". Group-relative when the source is grouped.
+    // "row i of n" on the same flat basis as IGridProvider.
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
 
@@ -54,16 +54,11 @@ private:
     int32_t GetRowIndex();
     bool IsVirtualized();
     void RealizeCore(int32_t rowIndex);
-    // The cell keyboard focus is on (or inside), or null when focus is outside this row's cells.
-    winrt::UIElement GetFocusedOwnCell(TableViewRow* rowImpl);
-    // 1-based position within the owning group and that group's item count; false when ungrouped.
-    bool TryGetGroupPosition(int32_t rowIndex, int32_t& positionInGroup, int32_t& sizeOfGroup);
-    // Joins the visible cells' display text in visual order, skipping excludedCell when set.
+    // Joins the visible cells' display text in visual order.
     static std::wstring ComposeCellTexts(
         TableViewRow* rowImpl,
         winrt::Panel const& cellsHost,
-        bool allowPeerCreation,
-        winrt::UIElement const& excludedCell);
+        bool allowPeerCreation);
 
     // Dead cell entries stay cached until the next prune during child enumeration or peer lookup.
     struct CellPeerCacheEntry

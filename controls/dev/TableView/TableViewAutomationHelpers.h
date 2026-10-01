@@ -4,11 +4,15 @@
 #pragma once
 
 #include <optional>
+#include <string>
 #include <string_view>
 #include "TableView.h"
+#include "TableViewAutomationPeer.h"
 #include "TableViewCellsPanel.h"
 #include "TableViewColumn.h"
+#include "TableViewGroupingHelpers.h"
 #include "ResourceAccessor.h"
+#include "Utils.h"
 
 // Shared helpers for the TableView automation peers, so the visible-column and column-header-string
 // logic lives in one place instead of being copy-pasted across the peer translation units. Assumes
@@ -28,6 +32,77 @@ inline winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceNam
     }
 }
 
+inline winrt::hstring LocalizedOrFallbackForTableViewAutomation(std::wstring_view resourceName, std::wstring_view fallback) noexcept
+{
+    try
+    {
+        if (auto const resolved = ResourceAccessor::GetLocalizedStringResource(resourceName); !resolved.empty())
+        {
+            return resolved;
+        }
+    }
+    catch (...)
+    {
+    }
+
+    return winrt::hstring{ fallback };
+}
+
+inline winrt::hstring FormatLocalizedOrFallback(
+    std::wstring_view resourceName,
+    std::wstring_view fallback,
+    wchar_t const* first,
+    wchar_t const* second,
+    std::wstring_view finalSeparator) noexcept
+{
+    auto const format = LocalizedOrFallbackForTableViewAutomation(resourceName, fallback);
+    if (auto const formatted = StringUtil::FormatString(format, first, second, L"", L""); !formatted.empty())
+    {
+        return formatted;
+    }
+
+    if (auto const formatted = StringUtil::FormatString(fallback, first, second, L"", L""); !formatted.empty())
+    {
+        return formatted;
+    }
+
+    return winrt::hstring{ std::wstring{ first } + std::wstring{ finalSeparator } + second };
+}
+
+inline winrt::hstring FormatUIntForItemName(uint64_t value) noexcept
+{
+    try
+    {
+        if (auto const formatter = TableViewDetails::CreateCurrentCultureDecimalFormatter())
+        {
+            formatter.FractionDigits(0);
+            return formatter.FormatUInt(value);
+        }
+    }
+    catch (...)
+    {
+    }
+
+    return winrt::to_hstring(value);
+}
+
+inline winrt::hstring FormatDoubleForItemName(double value) noexcept
+{
+    try
+    {
+        if (auto const formatter = TableViewDetails::CreateCurrentCultureDecimalFormatter())
+        {
+            formatter.FractionDigits(0);
+            return formatter.FormatDouble(value);
+        }
+    }
+    catch (...)
+    {
+    }
+
+    return winrt::to_hstring(value);
+}
+
 inline bool IsVisibleColumn(winrt::TableViewColumn const& column)
 {
     return column && column.Visibility() == winrt::Visibility::Visible;
@@ -41,6 +116,16 @@ inline winrt::AutomationPeer GetRealizedColumnHeaderPeer(
         winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table)
     {
         return nullptr;
+    }
+
+    if (auto const tablePeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(table)
+            .try_as<winrt::TableViewAutomationPeer>())
+    {
+        if (auto const headerPeer = winrt::get_self<TableViewAutomationPeer>(tablePeer)
+                ->GetOrCreateColumnHeaderPeer(table, column))
+        {
+            return headerPeer;
+        }
     }
 
     if (auto const host = winrt::get_self<TableView>(table)->GetHeaderHostInternal())
@@ -63,16 +148,16 @@ inline winrt::hstring ItemToName(winrt::IInspectable const& item)
         switch (propValue.Type())
         {
         case winrt::PropertyType::String:  return propValue.GetString();
-        case winrt::PropertyType::Boolean: return propValue.GetBoolean() ? winrt::hstring{ L"True" } : winrt::hstring{ L"False" };
-        case winrt::PropertyType::Int16:   return winrt::to_hstring(static_cast<int32_t>(propValue.GetInt16()));
-        case winrt::PropertyType::Int32:   return winrt::to_hstring(propValue.GetInt32());
-        case winrt::PropertyType::Int64:   return winrt::to_hstring(propValue.GetInt64());
-        case winrt::PropertyType::UInt8:   return winrt::to_hstring(static_cast<uint32_t>(propValue.GetUInt8()));
-        case winrt::PropertyType::UInt16:  return winrt::to_hstring(static_cast<uint32_t>(propValue.GetUInt16()));
-        case winrt::PropertyType::UInt32:  return winrt::to_hstring(propValue.GetUInt32());
-        case winrt::PropertyType::UInt64:  return winrt::to_hstring(propValue.GetUInt64());
-        case winrt::PropertyType::Single:  return winrt::to_hstring(propValue.GetSingle());
-        case winrt::PropertyType::Double:  return winrt::to_hstring(propValue.GetDouble());
+        case winrt::PropertyType::Boolean: return propValue.GetBoolean() ? LocalizedOrFallbackForTableViewAutomation(SR_TableViewBooleanTrue, L"True") : LocalizedOrFallbackForTableViewAutomation(SR_TableViewBooleanFalse, L"False");
+        case winrt::PropertyType::Int16:   return TableViewDetails::FormatIntegerForCurrentCulture(propValue.GetInt16());
+        case winrt::PropertyType::Int32:   return TableViewDetails::FormatIntegerForCurrentCulture(propValue.GetInt32());
+        case winrt::PropertyType::Int64:   return TableViewDetails::FormatIntegerForCurrentCulture(propValue.GetInt64());
+        case winrt::PropertyType::UInt8:   return FormatUIntForItemName(propValue.GetUInt8());
+        case winrt::PropertyType::UInt16:  return FormatUIntForItemName(propValue.GetUInt16());
+        case winrt::PropertyType::UInt32:  return FormatUIntForItemName(propValue.GetUInt32());
+        case winrt::PropertyType::UInt64:  return FormatUIntForItemName(propValue.GetUInt64());
+        case winrt::PropertyType::Single:  return FormatDoubleForItemName(propValue.GetSingle());
+        case winrt::PropertyType::Double:  return FormatDoubleForItemName(propValue.GetDouble());
         default: break;
         }
     }
@@ -91,7 +176,7 @@ inline winrt::hstring GroupInfoToName(winrt::TableViewGroupInfo const& info)
     const auto countText = info.ItemCountText();
     if (!keyText.empty() && !countText.empty())
     {
-        return winrt::hstring{ std::wstring{ keyText } + L" " + std::wstring{ countText } };
+        return FormatLocalizedOrFallback(SR_TableViewGroupHeaderNameFormat, L"%1!s! %2!s!", keyText.c_str(), countText.c_str(), L" ");
     }
     return keyText;
 }

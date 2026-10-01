@@ -194,36 +194,17 @@ hstring TableViewRowAutomationPeer::GetNameCore()
         return {};
     }
 
-    // Focus inside this row's cells makes the row the focus CONTAINER, not the focus destination.
-    // UIA already announces the focused cell's own name, so that one cell's text is left out of the
-    // join rather than repeated inside the row's selection announcement. The rule is about WHERE
-    // FOCUS IS, not who is asking: a row whose cells hold no focus composes the full join.
-    auto const focusedCell = GetFocusedOwnCell(rowImpl);
-
     // Visible cells in visual order; empty cells are skipped so the name has no separator runs.
     // The cheap pass first: GetCellDisplayText does not create peers, because this runs on every
     // UIA name query across every cell.
-    auto const compose = [rowImpl, &cellsHost](winrt::UIElement const& excludedCell)
+    std::wstring composed = ComposeCellTexts(rowImpl, cellsHost, false /* allowPeerCreation */);
+    if (composed.empty())
     {
-        std::wstring text = ComposeCellTexts(rowImpl, cellsHost, false /* allowPeerCreation */, excludedCell);
-        if (text.empty())
-        {
-            // Every visible cell was template content, which the cheap pass cannot read - so the row
-            // would announce as a bare "data item" with nothing in it, the exact case this name exists
-            // to fix. Retry allowing peer creation: bounded to rows that would otherwise be nameless,
-            // and the peers it attaches make the following queries cheap again.
-            text = ComposeCellTexts(rowImpl, cellsHost, true /* allowPeerCreation */, excludedCell);
-        }
-        return text;
-    };
-
-    std::wstring composed = compose(focusedCell);
-
-    if (composed.empty() && focusedCell)
-    {
-        // The focused cell carried the row's only text (a single visible column). Repeating one
-        // word is better than handing UIA a nameless row, so compose without the exclusion.
-        composed = compose(nullptr);
+        // Every visible cell was template content, which the cheap pass cannot read - so the row
+        // would announce as a bare "data item" with nothing in it, the exact case this name exists
+        // to fix. Retry allowing peer creation: bounded to rows that would otherwise be nameless,
+        // and the peers it attaches make the following queries cheap again.
+        composed = ComposeCellTexts(rowImpl, cellsHost, true /* allowPeerCreation */);
     }
 
     if (composed.empty())
@@ -236,55 +217,19 @@ hstring TableViewRowAutomationPeer::GetNameCore()
     return winrt::hstring{ composed };
 }
 
-winrt::UIElement TableViewRowAutomationPeer::GetFocusedOwnCell(TableViewRow* rowImpl)
-{
-    if (!rowImpl)
-    {
-        return nullptr;
-    }
-
-    auto const rowElement = Owner().try_as<winrt::UIElement>();
-    if (!rowElement)
-    {
-        return nullptr;
-    }
-
-    auto const root = rowElement.XamlRoot();
-    if (!root)
-    {
-        return nullptr;
-    }
-
-    // The control always commits focus before it raises the selection automation events (see
-    // TableView::FocusCell preceding SelectRowIndexFromKeyboardFocus), so the live focus already
-    // names the new cell by the time UIA pulls this property.
-    auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
-    if (!focused)
-    {
-        return nullptr;
-    }
-
-    // requireExact = false: focus on content INSIDE a cell (a templated button, the inline editor)
-    // still makes the owning cell the focus destination. FindOwnCellInternal matches only children
-    // of THIS row's cells host, so a cell in any other row correctly does not match, and a cell of
-    // a hidden column resolves to nothing - which leaves the full join.
-    return rowImpl->FindOwnCellInternal(focused, false /* requireExact */);
-}
-
 std::wstring TableViewRowAutomationPeer::ComposeCellTexts(
     TableViewRow* rowImpl,
     winrt::Panel const& cellsHost,
-    bool allowPeerCreation,
-    winrt::UIElement const& excludedCell)
+    bool allowPeerCreation)
 {
     std::wstring composed;
+    auto const separator = LocalizedOrFallbackForTableViewAutomation(SR_TableViewCellTextSeparator, L", ");
     auto const cellChildren = cellsHost.Children();
     const auto count = cellChildren.Size();
     for (uint32_t i = 0; i < count; ++i)
     {
         auto const cellElement = cellChildren.GetAt(i).try_as<winrt::UIElement>();
-        if (!cellElement || cellElement == excludedCell ||
-            !IsVisibleColumn(rowImpl->GetCellOwningColumn(cellElement)))
+        if (!cellElement || !IsVisibleColumn(rowImpl->GetCellOwningColumn(cellElement)))
         {
             continue;
         }
@@ -297,7 +242,7 @@ std::wstring TableViewRowAutomationPeer::ComposeCellTexts(
 
         if (!composed.empty())
         {
-            composed += L", ";
+            composed += separator.c_str();
         }
         composed += text;
     }
@@ -320,14 +265,7 @@ int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
         return 0;
     }
 
-    // Grouped: position within the owning group, excluding the header bands. A global index over a
-    // projection that interleaves headers and rows announces a number matching nothing on screen.
-    // Same basis as ItemsControlAutomationPeer's indexInsideGroup.
-    if (int32_t positionInGroup = 0, sizeOfGroup = 0; TryGetGroupPosition(index, positionInGroup, sizeOfGroup))
-    {
-        return positionInGroup;
-    }
-
+    // Same flat basis as IGridProvider::RowCount and GetItem.
     return index + 1;
 }
 
@@ -338,16 +276,7 @@ int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
         return provided;
     }
 
-    if (const auto index = GetRowIndex(); index >= 0)
-    {
-        if (int32_t positionInGroup = 0, sizeOfGroup = 0; TryGetGroupPosition(index, positionInGroup, sizeOfGroup))
-        {
-            return sizeOfGroup;
-        }
-    }
-
-    // Ungrouped: same basis as TableViewAutomationPeer::RowCount and GetItem, so "i of n" agrees
-    // with grid addressing.
+    // Same flat basis as TableViewAutomationPeer::RowCount and GetItem.
     if (auto const tableView = GetOwningTableView())
     {
         if (const auto count = winrt::get_self<TableView>(tableView)->GetRowCountInternal(); count > 0)
@@ -357,42 +286,6 @@ int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
     }
 
     return 0;
-}
-
-// Resolves a data row's 1-based position within its group and the group's item count. Returns false
-// when the source is not grouped, so callers fall back to the flat basis.
-bool TableViewRowAutomationPeer::TryGetGroupPosition(int32_t rowIndex, int32_t& positionInGroup, int32_t& sizeOfGroup)
-{
-    auto const tableView = GetOwningTableView();
-    if (!tableView)
-    {
-        return false;
-    }
-
-    auto const tableViewImpl = winrt::get_self<TableView>(tableView);
-    if (!tableViewImpl->IsTableViewSourceGrouped())
-    {
-        return false;
-    }
-
-    // Walk back to the owning header; bounded by the group's size, not the row count.
-    for (int32_t i = rowIndex - 1; i >= 0; --i)
-    {
-        TableViewRowInfo info{};
-        if (!tableViewImpl->TryGetTableViewSourceRowInfo(i, info))
-        {
-            return false;
-        }
-
-        if (info.Kind == TableViewRowKind::GroupHeader)
-        {
-            positionInGroup = rowIndex - i;
-            sizeOfGroup = info.ChildCount;
-            return sizeOfGroup > 0;
-        }
-    }
-
-    return false;
 }
 
 winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(

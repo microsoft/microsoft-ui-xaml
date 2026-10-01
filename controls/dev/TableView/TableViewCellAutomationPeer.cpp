@@ -75,7 +75,8 @@ hstring TableViewCellAutomationPeer::GetClassNameCore()
 
 winrt::AutomationControlType TableViewCellAutomationPeer::GetAutomationControlTypeCore()
 {
-    return winrt::AutomationControlType::Custom;
+    // DataItem lets Narrator read the composed cell name instead of a generic container.
+    return winrt::AutomationControlType::DataItem;
 }
 
 hstring TableViewCellAutomationPeer::GetLocalizedControlTypeCore()
@@ -332,8 +333,7 @@ winrt::hstring TableViewCellAutomationPeer::ReadDisplayName(winrt::FrameworkElem
         return headerText;
     }
 
-    std::wstring composed = std::wstring{ headerText.c_str() } + L", " + valueText.c_str();
-    return winrt::hstring{ composed };
+    return FormatLocalizedOrFallback(SR_TableViewCellNameFormat, L"%1!s!, %2!s!", headerText.c_str(), valueText.c_str(), L", ");
 }
 
 winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText()

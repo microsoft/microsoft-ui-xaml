@@ -13,33 +13,23 @@
 #include "Utils.h"
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
+#include <limits>
 
 namespace
 {
-    winrt::FrameworkElement TryResolveHeader(winrt::TableView const& table, winrt::TableViewColumn const& column)
+    uint32_t AutomationIdentityForColumn(winrt::TableViewColumn const& column)
     {
-        if (table && column)
-        {
-            if (auto const host = winrt::get_self<TableView>(table)->GetHeaderHostInternal())
-            {
-                if (auto const header = TableViewCellsPanel::CellForColumn(host, column))
-                {
-                    return header;
-                }
-            }
-        }
-        return nullptr;
+        return column ? winrt::get_self<TableViewColumn>(column)->AutomationIdentity() : 0;
     }
 
-    winrt::FrameworkElement OwnerForPublicConstructor(winrt::TableView const& table, winrt::TableViewColumn const& column)
+    winrt::TableView OwnerForPublicConstructor(winrt::TableView const& table, winrt::TableViewColumn const& column)
     {
-        if (auto const header = TryResolveHeader(table, column))
+        if (table && column &&
+            winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == table)
         {
-            return header;
+            return table;
         }
 
-        // UIA identity, focus and bounds all derive from the peer's owner, so a header peer must
-        // own its own header cell; the TableView would make every column's header the same element.
         throw winrt::hresult_invalid_argument();
     }
 }
@@ -47,7 +37,10 @@ namespace
 TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
     winrt::TableView const& owner,
     winrt::TableViewColumn const& column)
-    : TableViewColumnHeaderAutomationPeer(OwnerForPublicConstructor(owner, column), owner, column)
+    : ReferenceTracker(OwnerForPublicConstructor(owner, column))
+    , m_column(winrt::make_weak(column))
+    , m_table(winrt::make_weak(owner))
+    , m_columnAutomationIdentity(AutomationIdentityForColumn(column))
 {
 }
 
@@ -58,6 +51,7 @@ TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
     : ReferenceTracker(header)
     , m_column(winrt::make_weak(column))
     , m_table(winrt::make_weak(table))
+    , m_columnAutomationIdentity(AutomationIdentityForColumn(column))
 {
 }
 
@@ -122,8 +116,9 @@ hstring TableViewColumnHeaderAutomationPeer::GetAutomationIdCore()
         }
     }
 
-    // No synthetic fallback: authors must supply stable AutomationIds for UI-test targeting.
-    return {};
+    std::wstring automationId{ L"TableViewColumnHeader_" };
+    automationId.append(std::to_wstring(m_columnAutomationIdentity));
+    return hstring{ automationId };
 }
 
 hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
@@ -223,10 +218,6 @@ bool TableViewColumnHeaderAutomationPeer::IsEnabledCore()
 
 void TableViewColumnHeaderAutomationPeer::Invoke()
 {
-    if (auto const header = GetHeaderElement(); !header || !header.IsLoaded())
-    {
-        throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
-    }
     if (!IsEnabled())
     {
         throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
@@ -240,14 +231,57 @@ void TableViewColumnHeaderAutomationPeer::Invoke()
         if (auto const owner = m_table.get())
         {
             winrt::get_self<TableView>(owner)->ToggleSortDirection(column);
+            return;
         }
     }
+
+    throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
+}
+
+winrt::Windows::Foundation::Collections::IVector<winrt::AutomationPeer> TableViewColumnHeaderAutomationPeer::GetChildrenCore()
+{
+    if (!IsTableViewOwned())
+    {
+        return __super::GetChildrenCore();
+    }
+
+    return winrt::single_threaded_vector<winrt::AutomationPeer>();
+}
+
+winrt::Windows::Foundation::Rect TableViewColumnHeaderAutomationPeer::GetBoundingRectangleCore()
+{
+    if (IsTableViewOwned())
+    {
+        return {};
+    }
+
+    return __super::GetBoundingRectangleCore();
+}
+
+winrt::Windows::Foundation::Point TableViewColumnHeaderAutomationPeer::GetClickablePointCore()
+{
+    if (IsTableViewOwned())
+    {
+        return { std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN() };
+    }
+
+    return __super::GetClickablePointCore();
+}
+
+bool TableViewColumnHeaderAutomationPeer::IsOffscreenCore()
+{
+    return IsTableViewOwned() ? true : __super::IsOffscreenCore();
+}
+
+bool TableViewColumnHeaderAutomationPeer::IsTableViewOwned()
+{
+    return Owner().try_as<winrt::TableView>() != nullptr;
 }
 
 bool TableViewColumnHeaderAutomationPeer::IsSortableColumn()
 {
     auto const column = m_column.get();
-    if (!column || !column.CanSort() || !IsVisibleColumn(column) || !GetHeaderElement())
+    if (!column || !column.CanSort() || !IsVisibleColumn(column))
     {
         return false;
     }
@@ -348,5 +382,9 @@ winrt::FrameworkElement TableViewColumnHeaderAutomationPeer::GetHeaderElement()
     }
 
     auto const header = TableViewCellsPanel::CellForColumn(host, col);
-    return header == Owner() ? header : nullptr;
+    if (!Owner().try_as<winrt::TableView>() && header != Owner())
+    {
+        return nullptr;
+    }
+    return header;
 }

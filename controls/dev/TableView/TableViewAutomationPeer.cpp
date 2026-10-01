@@ -346,13 +346,18 @@ bool TableViewAutomationPeer::IsSelectionRequired()
 winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetColumnHeaders()
 {
     std::vector<winrt::IRawElementProviderSimple> headers;
-    // Enumerate the same realized header peers used by focus and tree navigation.
+    std::vector<ColumnHeaderPeerCacheEntry> liveCache;
+
+    // Key off visible logical Columns() so headers enumerate before templates realize.
     if (auto const tableView = Owner().try_as<winrt::TableView>())
     {
         if (auto const columns = tableView.Columns())
         {
             const auto count = columns.Size();
+            std::vector<winrt::TableViewColumn> seenColumns;
             headers.reserve(count);
+            liveCache.reserve(count);
+            seenColumns.reserve(count);
             for (uint32_t i = 0; i < count; i++)
             {
                 auto const column = columns.GetAt(i);
@@ -360,11 +365,23 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetC
                 {
                     continue;
                 }
+                if (std::find(seenColumns.begin(), seenColumns.end(), column) != seenColumns.end())
+                {
+                    continue;
+                }
+                seenColumns.push_back(column);
 
-                auto headerPeer = GetRealizedColumnHeaderPeer(tableView, column);
+                auto headerPeer = GetOrCreateColumnHeaderPeer(tableView, column);
                 if (!headerPeer)
                 {
                     continue;
+                }
+
+                if (auto const headerAutomationPeer = headerPeer.try_as<winrt::TableViewColumnHeaderAutomationPeer>();
+                    headerAutomationPeer &&
+                    winrt::get_self<TableViewColumnHeaderAutomationPeer>(headerAutomationPeer)->IsTableViewOwned())
+                {
+                    liveCache.emplace_back(this, column, headerPeer);
                 }
 
                 // A provider array must not contain nulls - UIA marshals every element.
@@ -376,7 +393,60 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetC
         }
     }
 
+    // Replacing the cache wholesale drops peers for columns that are gone or no longer visible.
+    m_columnHeaderPeerCache = std::move(liveCache);
+
     return winrt::com_array(headers);
+}
+
+winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateColumnHeaderPeer(
+    winrt::TableView const& tableView,
+    winrt::TableViewColumn const& column)
+{
+    if (!tableView || !column ||
+        winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != tableView)
+    {
+        return nullptr;
+    }
+
+    if (auto const host = winrt::get_self<TableView>(tableView)->GetHeaderHostInternal())
+    {
+        if (auto const header = TableViewCellsPanel::CellForColumn(host, column))
+        {
+            m_columnHeaderPeerCache.erase(
+                std::remove_if(
+                    m_columnHeaderPeerCache.begin(),
+                    m_columnHeaderPeerCache.end(),
+                    [column](ColumnHeaderPeerCacheEntry const& entry)
+                    {
+                        return !entry.peer || !entry.column.get() || entry.column.get() == column;
+                    }),
+                m_columnHeaderPeerCache.end());
+
+            return winrt::FrameworkElementAutomationPeer::CreatePeerForElement(header);
+        }
+    }
+
+    for (auto const& entry : m_columnHeaderPeerCache)
+    {
+        if (entry.peer && entry.column.get() == column)
+        {
+            return entry.peer.get();
+        }
+    }
+
+    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(tableView, column);
+    peer.SetParent(*this);
+
+    m_columnHeaderPeerCache.erase(
+        std::remove_if(
+            m_columnHeaderPeerCache.begin(),
+            m_columnHeaderPeerCache.end(),
+            [](ColumnHeaderPeerCacheEntry const& entry) { return !entry.peer || !entry.column.get(); }),
+        m_columnHeaderPeerCache.end());
+
+    m_columnHeaderPeerCache.emplace_back(this, column, peer);
+    return peer;
 }
 
 static winrt::hstring StringPropertyValue(winrt::IInspectable const& value)
