@@ -26,6 +26,8 @@
         <ProjectIncludeDirectories>
             $(ProjectIncludeDirectories);
             $(XamlSourcePath)\test\dcomp\inc;
+            $(XcpPath)\plat\win\desktop;
+            $(XcpPath)\components\graphics\inc;
             $(XcpPath)\components\imaging\inc;
             $(XcpPath)\components\unittests;
             $(XcpPath)\components\offerableheap\inc;
