@@ -25,7 +25,6 @@ static constexpr std::wstring_view s_RowsRepeaterPartName{ L"PART_RowsRepeater"s
 static constexpr std::wstring_view s_HeaderRowPartName{ L"PART_HeaderRow"sv };
 static constexpr std::wstring_view s_HeaderHostPartName{ L"PART_HeaderHost"sv };
 static constexpr std::wstring_view s_EmptyStatePresenterPartName{ L"PART_EmptyStatePresenter"sv };
-static constexpr std::wstring_view s_HeaderGridLineName{ L"TableViewHeaderGridLine"sv };
 static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGripperWidth"sv };
 // Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
 // unusable.
@@ -141,17 +140,15 @@ namespace
         return nullptr;
     }
 
-    constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
+    bool WantsVerticalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
+    {
+        return visibility == winrt::TableViewGridLinesVisibility::Vertical ||
+            visibility == winrt::TableViewGridLinesVisibility::All;
+    }
 
     bool WantsHorizontalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
     {
         return visibility == winrt::TableViewGridLinesVisibility::Horizontal ||
-            visibility == winrt::TableViewGridLinesVisibility::All;
-    }
-
-    bool WantsVerticalLines(winrt::TableViewGridLinesVisibility visibility) noexcept
-    {
-        return visibility == winrt::TableViewGridLinesVisibility::Vertical ||
             visibility == winrt::TableViewGridLinesVisibility::All;
     }
 
@@ -165,11 +162,13 @@ namespace
     {
         auto& cache = owner->GetResourceCacheInternal();
         cache.density.hasRowMinHeight = false;
+        cache.density.hasHeaderMinHeight = false;
         cache.density.hasCellPadding = false;
         cache.density.hasHeaderCellPadding = false;
         cache.font.hasCellFontSize = false;
         cache.font.hasHeaderFontSize = false;
         cache.gridLine.hasBrush = false;
+        cache.verticalGridLine.hasBrush = false;
     }
 
     bool ShouldRefreshFrozenColumnsForScroll(TableView* owner, double horizontalOffset)
@@ -185,33 +184,38 @@ namespace
         return false;
     }
 
-    double DensityRowMinHeightFallback(winrt::TableViewDensity density)
+    // Fallback metrics per density, used only when the matching ThemeResource is missing.
+    // One table so a density's values stay consistent instead of drifting across parallel
+    // switches. Headers are shorter than rows by design; Comfortable is not covered by the
+    // design and keeps Standard's -8 delta.
+    struct DensityMetrics
     {
+        double rowMinHeight;
+        double headerMinHeight;
+        winrt::Thickness cellPadding;
+    };
+
+    DensityMetrics const& DensityMetricsFallback(winrt::TableViewDensity density)
+    {
+        static const DensityMetrics s_compact{ 30.0, 26.0, winrt::ThicknessHelper::FromLengths(8, 2, 8, 2) };
+        static const DensityMetrics s_standard{ 40.0, 32.0, winrt::ThicknessHelper::FromLengths(8, 4, 8, 4) };
+        static const DensityMetrics s_comfortable{ 48.0, 40.0, winrt::ThicknessHelper::FromLengths(8, 8, 8, 8) };
+
         switch (density)
         {
-        case winrt::TableViewDensity::Compact: return 30.0;
-        case winrt::TableViewDensity::Comfortable: return 48.0;
-        default: return 40.0; // Standard
+        case winrt::TableViewDensity::Compact: return s_compact;
+        case winrt::TableViewDensity::Comfortable: return s_comfortable;
+        default: return s_standard;
         }
     }
 
-    winrt::Thickness DensityCellPaddingFallback(winrt::TableViewDensity density)
-    {
-        switch (density)
-        {
-        case winrt::TableViewDensity::Compact: return winrt::ThicknessHelper::FromLengths(8, 2, 8, 2);
-        case winrt::TableViewDensity::Comfortable: return winrt::ThicknessHelper::FromLengths(8, 8, 8, 8);
-        default: return winrt::ThicknessHelper::FromLengths(8, 4, 8, 4); // Standard
-        }
-    }
-
-    winrt::Brush CreateGridLineFallbackBrush(winrt::FrameworkElement const& start, bool highContrast)
+    winrt::Brush CreateGridLineFallbackBrush(winrt::FrameworkElement const& start, bool highContrast, uint8_t alpha)
     {
         auto color = highContrast
             ? winrt::Colors::White()
             : (start.ActualTheme() == winrt::ElementTheme::Light
-                ? winrt::ColorHelper::FromArgb(0x29, 0x00, 0x00, 0x00)
-                : winrt::ColorHelper::FromArgb(0x29, 0xff, 0xff, 0xff));
+                ? winrt::ColorHelper::FromArgb(alpha, 0x00, 0x00, 0x00)
+                : winrt::ColorHelper::FromArgb(alpha, 0xff, 0xff, 0xff));
 
         if (highContrast)
         {
@@ -223,31 +227,42 @@ namespace
         return winrt::SolidColorBrush(color);
     }
 
+    winrt::Brush ResolveGridLineBrush(
+        TableView* owner,
+        TableViewResourceCache::GridLineInfo& cache,
+        std::wstring_view key,
+        uint8_t fallbackAlpha)
+    {
+        const bool highContrast = owner->IsHighContrast();
+        const auto theme = owner->ActualTheme();
+        if (cache.hasBrush && cache.theme == theme && cache.highContrast == highContrast)
+        {
+            return cache.brush;
+        }
+
+        auto brush = LookupElementResource(*owner, key, highContrast).try_as<winrt::Brush>();
+        if (!brush)
+        {
+            brush = CreateGridLineFallbackBrush(*owner, highContrast, fallbackAlpha);
+        }
+
+        cache.hasBrush = true;
+        cache.theme = theme;
+        cache.highContrast = highContrast;
+        cache.brush = brush;
+        return brush;
+    }
+
 }
 
 winrt::Brush TableView::GetGridLineBrush()
 {
-    auto& cache = GetTableViewResourceCache(this);
-    const bool highContrast = IsHighContrast();
-    const auto theme = ActualTheme();
-    if (cache.gridLine.hasBrush &&
-        cache.gridLine.theme == theme &&
-        cache.gridLine.highContrast == highContrast)
-    {
-        return cache.gridLine.brush;
-    }
+    return ResolveGridLineBrush(this, GetResourceCacheInternal().gridLine, L"TabularSurfaceGridLineBrush", 0x1a);
+}
 
-    auto brush = LookupElementResource(*this, L"TabularSurfaceGridLineBrush", highContrast).try_as<winrt::Brush>();
-    if (!brush)
-    {
-        brush = CreateGridLineFallbackBrush(*this, highContrast);
-    }
-
-    cache.gridLine.hasBrush = true;
-    cache.gridLine.theme = theme;
-    cache.gridLine.highContrast = highContrast;
-    cache.gridLine.brush = brush;
-    return brush;
+winrt::Brush TableView::GetVerticalGridLineBrush()
+{
+    return ResolveGridLineBrush(this, GetResourceCacheInternal().verticalGridLine, L"TabularSurfaceVerticalGridLineBrush", 0x0d);
 }
 
 TableView::~TableView()
@@ -478,6 +493,24 @@ void TableView::OnApplyTemplate()
 
     m_rowsRepeater.set(GetTemplateChild(hstring{ s_RowsRepeaterPartName }).try_as<winrt::ItemsRepeater>());
     m_headerRow.set(GetTemplateChild(hstring{ s_HeaderRowPartName }).try_as<winrt::FrameworkElement>());
+    // Capture the template's own header rule before any toggle overwrites it, so turning grid
+    // lines back on restores what the template asked for rather than a hard-coded 1px, and so a
+    // custom template's other three edges survive the toggle. Keyed to the element: if
+    // OnApplyTemplate runs again over the same tree, ApplyGridLinesToHeader may already have
+    // written Bottom=0 there, and re-reading it would latch "off" permanently.
+    if (auto headerBorder = m_headerRow.get().try_as<winrt::Border>())
+    {
+        if (m_headerRowBorderThicknessSource.get() != headerBorder)
+        {
+            m_headerRowBorderThickness = headerBorder.BorderThickness();
+            m_headerRowBorderThicknessSource = winrt::make_weak(headerBorder);
+        }
+    }
+    else
+    {
+        m_headerRowBorderThickness = { 0, 0, 0, 1 };
+        m_headerRowBorderThicknessSource = nullptr;
+    }
     m_headerHost.set(GetTemplateChild(hstring{ s_HeaderHostPartName }).try_as<winrt::Panel>());
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
     auto weakThis = get_weak();
@@ -796,47 +829,29 @@ void TableView::ApplyGridLinesToHeader()
 {
     const auto visibility = GridLinesVisibility();
 
+    // The rule under the header row is the header's share of the horizontal grid, so it tracks
+    // GridLinesVisibility like every other rule. Only Bottom is toggled, against the thickness
+    // the template declared: a custom template's left/top/right edges are left alone, and the
+    // "on" value comes from the template rather than being hard-coded here.
     if (auto headerFE = m_headerRow.get())
     {
         if (auto headerBorder = headerFE.try_as<winrt::Border>())
         {
-            if (WantsHorizontalLines(visibility))
+            auto thickness = m_headerRowBorderThickness;
+            if (!WantsHorizontalLines(visibility))
             {
-                headerBorder.ClearValue(winrt::Border::BorderThicknessProperty());
+                thickness.Bottom = 0;
             }
-            else
-            {
-                headerBorder.BorderThickness(s_zeroThickness);
-            }
+            headerBorder.BorderThickness(thickness);
         }
     }
 
-    auto host = m_headerHost.get();
-    if (!host)
-    {
-        return;
-    }
-
     const bool wantVertical = WantsVerticalLines(visibility);
-    const auto headerGridLineName = winrt::hstring{ s_HeaderGridLineName };
-    const auto headerCells = host.Children();
-    const uint32_t headerCellCount = headerCells.Size();
-    for (uint32_t i = 0; i < headerCellCount; ++i)
+    for (auto const& weakSeparator : m_headerGridLines)
     {
-        if (auto headerCell = headerCells.GetAt(i).try_as<winrt::Panel>())
+        if (auto separator = weakSeparator.get())
         {
-            const auto children = headerCell.Children();
-            const uint32_t childCount = children.Size();
-            for (uint32_t childIndex = 0; childIndex < childCount; ++childIndex)
-            {
-                if (auto border = children.GetAt(childIndex).try_as<winrt::Border>())
-                {
-                    if (border.Name() == headerGridLineName)
-                    {
-                        border.Visibility(wantVertical ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
-                    }
-                }
-            }
+            separator.Visibility(wantVertical ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
         }
     }
 }
@@ -1165,7 +1180,7 @@ double TableView::GetDensityRowMinHeight()
 
     std::wstring key{ L"TableViewRowMinHeight" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityRowMinHeightFallback(Density());
+    const auto fallback = DensityMetricsFallback(Density()).rowMinHeight;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.rowMinHeight = winrt::unbox_value_or<double>(raw, fallback);
@@ -1178,6 +1193,30 @@ double TableView::GetDensityRowMinHeight()
     return cache.density.rowMinHeight;
 }
 
+// Column headers resolve their own min-height: the design makes them shorter than body rows
+// (32 vs 40 at Standard).
+double TableView::GetDensityHeaderMinHeight()
+{
+    auto& cache = GetTableViewResourceCache(this);
+    if (cache.density.hasHeaderMinHeight)
+    {
+        return cache.density.headerMinHeight;
+    }
+
+    std::wstring key{ L"TableViewHeaderMinHeight" };
+    key += DensitySuffix(Density());
+    const auto fallback = DensityMetricsFallback(Density()).headerMinHeight;
+    if (auto raw = LookupElementResource(*this, key))
+    {
+        cache.density.headerMinHeight = winrt::unbox_value_or<double>(raw, fallback);
+        cache.density.hasHeaderMinHeight = true;
+        return cache.density.headerMinHeight;
+    }
+    cache.density.headerMinHeight = fallback;
+    cache.density.hasHeaderMinHeight = true;
+    return cache.density.headerMinHeight;
+}
+
 winrt::Thickness TableView::GetDensityCellPadding()
 {
     auto& cache = GetTableViewResourceCache(this);
@@ -1188,7 +1227,7 @@ winrt::Thickness TableView::GetDensityCellPadding()
 
     std::wstring key{ L"TableViewCellPadding" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityCellPaddingFallback(Density());
+    const auto fallback = DensityMetricsFallback(Density()).cellPadding;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.cellPadding = winrt::unbox_value_or<winrt::Thickness>(raw, fallback);
@@ -1211,7 +1250,7 @@ winrt::Thickness TableView::GetDensityHeaderCellPadding()
 
     std::wstring key{ L"TableViewHeaderCellPadding" };
     key += DensitySuffix(Density());
-    const auto fallback = DensityCellPaddingFallback(Density());
+    const auto fallback = DensityMetricsFallback(Density()).cellPadding;
     if (auto raw = LookupElementResource(*this, key))
     {
         cache.density.headerCellPadding = winrt::unbox_value_or<winrt::Thickness>(raw, fallback);
@@ -1509,6 +1548,10 @@ void TableView::RebuildHeaders()
     auto host = m_headerHost.get();
     if (!host)
     {
+        // The separators the vector points at belong to a header host this control no longer
+        // owns (a template swap nulls m_headerHost). Drop them so a later
+        // GridLinesVisibility toggle cannot mutate an orphaned tree.
+        m_headerGridLines.clear();
         return;
     }
 
@@ -1516,14 +1559,13 @@ void TableView::RebuildHeaders()
     ReleaseHeaderToolTips(host);
 
     host.Children().Clear();
+    m_headerGridLines.clear();
 
     // Cache theme-resource padding once per header rebuild; values are stable for the pass.
     winrt::Thickness cachedHeaderCellPadding = GetDensityHeaderCellPadding();
-    // Always cache the header grid-line brush at rebuild time; visibility toggles do not reassign it later.
+    const double cachedHeaderMinHeight = GetDensityHeaderMinHeight();
     const bool wantVerticalHeaderLines = WantsVerticalLines(GridLinesVisibility());
-    const auto cachedHeaderGridLineBrush = GetGridLineBrush();
-    // Header cells share the density row min-height so the header band matches the body rows.
-    const double cachedRowMinHeight = GetDensityRowMinHeight();
+    const auto cachedHeaderGridLineBrush = GetVerticalGridLineBrush();
     const double cachedHeaderFontSize = GetHeaderFontSize();
     const winrt::Brush cachedHeaderCellFill = winrt::SolidColorBrush{ winrt::Colors::Transparent() };
     // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
@@ -1590,8 +1632,7 @@ void TableView::RebuildHeaders()
                 winrt::AutomationProperties::SetName(headerCell, headerText);
             }
             winrt::AutomationProperties::SetAccessibilityView(headerCell, winrt::AccessibilityView::Content);
-            // Match the body row min-height so the header band and rows render at the same height.
-            headerCell.MinHeight(cachedRowMinHeight);
+            headerCell.MinHeight(cachedHeaderMinHeight);
             // Without a fill the padding takes no pointer input, killing the tooltip and
             // click-to-sort there.
             headerCell.Background(cachedHeaderCellFill);
@@ -1632,17 +1673,17 @@ void TableView::RebuildHeaders()
             winrt::Grid::SetColumn(content, contentColumnIndex);
             headerCell.Children().Append(content);
 
-            // Resolve from TableView so header grid lines track theme.
             {
                 winrt::Border headerGridLine;
-                headerGridLine.Name(winrt::hstring{ s_HeaderGridLineName });
                 headerGridLine.Width(1);
                 headerGridLine.HorizontalAlignment(logicalEndAlignment);
                 headerGridLine.IsHitTestVisible(false);
                 headerGridLine.Visibility(wantVerticalHeaderLines ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
                 headerGridLine.Background(cachedHeaderGridLineBrush);
                 winrt::Grid::SetColumnSpan(headerGridLine, 2);
+                winrt::AutomationProperties::SetAccessibilityView(headerGridLine, winrt::AccessibilityView::Raw);
                 headerCell.Children().Append(headerGridLine);
+                m_headerGridLines.push_back(winrt::make_weak(headerGridLine));
             }
 
             // Tag header cells so frozen-column refresh can map them back to columns.

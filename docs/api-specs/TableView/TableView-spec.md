@@ -1,5 +1,10 @@
 # Background
 
+The source-backed visual requirements and unresolved design decisions are tracked in
+[TableView Figma requirements (draft)](./TableView-figma-requirements.md).
+That draft records partial Figma review coverage; it does not change the API or
+feature scope described here or establish implementation conformance.
+
 TableView is a preview tabular control for WinUI 3. It presents an `ItemsSource` as rows and a developer-defined `Columns` collection as cells, with optional column headers, gridlines, density, alternating row backgrounds, leading-prefix frozen columns, and an empty-state template. It is display-only by default; **opt-in cell editing** is enabled by clearing `IsReadOnly`.
 
 Rows are virtualized: TableView renders rows with `ItemsRepeater`, so large row counts are virtualized (only on-screen rows plus a small cache are realized).
@@ -143,7 +148,25 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `HeadersVisibility` controls column-header visibility (`None` or `Column`). Row headers are out of scope, so there are no `Row`/`All` values.
 
-`GridLinesVisibility` controls gridlines. `Density` controls row and cell spacing. Header height matches row height; built-in header and text-cell content is vertically centered.
+`GridLinesVisibility` controls gridlines and defaults to `All`, matching WPF `DataGrid`, whose
+enum this mirrors. It drives the body's row dividers and column separators, and the rule under
+the column-header row: `None` and `Vertical` remove that rule, `All` and `Horizontal` draw it.
+Row banding is opt-in: set `AlternatingRowBackground` to switch it on.
+`Density` controls row and cell spacing. Column headers are shorter than body rows:
+`TableViewHeaderMinHeight` resolves 32 / 26 / 40 for Standard / Compact / Comfortable, against
+`TableViewRowMinHeight` at 40 / 30 / 48. Both keys are app-overridable. Built-in header and
+text-cell content remains vertically centered.
+
+To get the design's banded treatment, set `GridLinesVisibility="None"` and set
+`AlternatingRowBackground` to `{ThemeResource TabularSurfaceRowBackgroundAlternatingBrush}`,
+which is the theme-aware band fill tuned to stay quieter than the hover state. Set a local
+`RowBackground` as well to provide a uniform custom fill. Custom cell templates continue to
+control their own content alignment.
+
+Banding shades odd rows, so the first row keeps `RowBackground` — the same convention as WPF
+`DataGrid` (`AlternationIndex` 0 is the base) and `ItemsControl.AlternationIndex`. With grouping
+enabled, group-header rows occupy positions in the row sequence, so banding parity does not
+restart at each group.
 
 ```xaml
 <tabular:TableView
@@ -152,7 +175,7 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
     GridLinesVisibility="All"
     Density="Compact"
     RowBackground="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-    AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}">
+    AlternatingRowBackground="{ThemeResource TabularSurfaceRowBackgroundAlternatingBrush}">
     <tabular:TableView.Columns>
         <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
         <tabular:TableViewTextColumn Header="Role" Binding="{Binding Role}" />
@@ -402,10 +425,10 @@ Template parts:
 | `ItemsSource` | `Object` | `null` | Source collection for table rows. |
 | `Columns` | `IVector<TableViewColumn>` | Empty vector | Developer-defined column collection. This is the content property. |
 | `HeadersVisibility` | `TableViewHeadersVisibility` | `Column` | Controls column-header visibility. |
-| `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls horizontal and vertical gridlines. |
+| `GridLinesVisibility` | `TableViewGridLinesVisibility` | `All` | Controls horizontal and vertical gridlines, including the rule under the column-header row. |
 | `Density` | `TableViewDensity` | `Standard` | Controls row/cell spacing. |
 | `RowBackground` | `Brush` | `null` | Background brush for rows. |
-| `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. |
+| `AlternatingRowBackground` | `Brush` | `null` | Optional alternating row background for banding. Banding is off until this is set; when set it shades odd rows, matching WPF `DataGrid`. |
 | `EmptyTemplate` | `DataTemplate` | `null` | Template displayed when there are no rows. |
 | `IsReadOnly` | `Boolean` | `true` | Gates editing for the whole control. Editing is opt-in: while `true`, user gestures do not open an editor regardless of per-column `IsReadOnly`. Setting it to `true` while a cell is open closes that edit. |
 | `IsEditing` | `Boolean` | `false` | `true` while a cell editor is open, through the matching commit/cancel close. Read-only. |

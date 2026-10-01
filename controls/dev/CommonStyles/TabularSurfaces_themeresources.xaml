@@ -45,14 +45,14 @@
 
             <!-- Row backgrounds -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="#00FFFFFF" />                          <!-- SubtleFillColorTransparent -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundAlternatingBrush" Color="#0FFFFFFF" />               <!-- SubtleFillColorSecondary -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundAlternatingBrush" Color="#0AFFFFFF" />               <!-- SubtleFillColorTertiary: banding is quieter than hover -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPointerOverBrush" Color="#0FFFFFFF" />               <!-- SubtleFillColorSecondary -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPressedBrush" Color="#0AFFFFFF" />                   <!-- SubtleFillColorTertiary -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="#0FFFFFFF" />                  <!-- SubtleFillColorSecondary -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="#0AFFFFFF" />       <!-- SubtleFillColorTertiary -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="#0FFFFFFF" />           <!-- SubtleFillColorSecondary -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="#00FFFFFF" />                  <!-- SubtleFillColorTransparent -->
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColorLight2}" />  <!-- AccentFillColorDefault (Dark) -->
             <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" Color="#5DFFFFFF" />
 
             <!-- Row foregrounds -->
@@ -64,11 +64,11 @@
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="#FFFFFF" />                     <!-- TextFillColorPrimary -->
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="#5DFFFFFF" />                  <!-- TextFillColorDisabled -->
 
-            <!-- Header surfaces. Header background bumped from #19 (~10%) to #26 (~15%) during visual tuning for
-                 visible step above row banding and proportional parity with the Light theme. -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="#26FFFFFF" />                       <!-- ~15% white (#26 alpha) -->
+            <!-- Header surfaces. The design's header row is transparent: it is separated from the body by
+                 type weight and by the first row's band, not by a fill. -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="Transparent" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundBrush" Color="#C5FFFFFF" />                       <!-- TextFillColorSecondary -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#12FFFFFF" />                        <!-- ControlStrokeColorDefault -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#18FFFFFF" />                        <!-- Header bottom rule: measured 49 on the Dark design export -->
 
             <!-- Group-header row surfaces (P2.8 grouped rows) -->
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#4C3A3A3A" />                  <!-- LayerFillColorDefault -->
@@ -81,15 +81,22 @@
             <!-- Grid lines. DividerStrokeColorDefault (~16% white on Dark) — visible above row
                  banding without dominating the surface. Earlier ControlStrokeColorDefault (~7%
                  white) was too faint at 1-px width on alternating rows. -->
-            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#29FFFFFF" />                               <!-- DividerStrokeColorDefault (Dark) — bumped 8.2%→16.1% for readability over banding -->
+            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#18FFFFFF" />                               <!-- Horizontal rules: measured 49 on the Dark design export -->
+            <SolidColorBrush x:Key="TabularSurfaceVerticalGridLineBrush" Color="#0BFFFFFF" />                       <!-- Column separators: measured 38 on the Dark design export -->
             <Thickness x:Key="TabularSurfaceGridLineThickness">0,0,0,1</Thickness>
             <Thickness x:Key="TabularSurfaceVerticalGridLineThickness">0,0,1,0</Thickness>
+
+            <!-- Control frame. Deliberately NOT the column-separator brush: the frame is a control
+                 boundary drawn on all four edges over an arbitrary app surface, while the separator
+                 is an internal cell edge over a known row fill. They have independent reasons to
+                 change, and the design measured the separator against one known backdrop only. -->
+            <SolidColorBrush x:Key="TabularSurfaceBorderBrush" Color="#12FFFFFF" />                                 <!-- ControlStrokeColorDefault (Dark) -->
 
             <!-- Cell metrics -->
             <Thickness x:Key="TabularSurfaceCellPadding">12,4,12,4</Thickness>
             <Thickness x:Key="TabularSurfaceHeaderCellPadding">8,4,8,4</Thickness>
             <x:Double x:Key="TabularSurfaceRowMinHeight">28</x:Double>
-            <x:Double x:Key="TabularSurfaceHeaderMinHeight">40</x:Double>
+            <x:Double x:Key="TabularSurfaceHeaderMinHeight">32</x:Double>                                  <!-- Matches TableViewHeaderMinHeight (Standard); headers are shorter than body rows. -->
             <CornerRadius x:Key="TabularSurfaceCornerRadius">4</CornerRadius>
 
             <!-- Focus / selection visuals -->
@@ -123,6 +130,8 @@
             <StaticResource x:Key="MUX_TabularSurfaceGroupHeaderForegroundBrush" ResourceKey="TabularSurfaceGroupHeaderForegroundBrush" />
             <StaticResource x:Key="MUX_TabularSurfaceGroupHeaderCountForegroundBrush" ResourceKey="TabularSurfaceGroupHeaderCountForegroundBrush" />
             <StaticResource x:Key="MUX_TabularSurfaceGridLineBrush" ResourceKey="TabularSurfaceGridLineBrush" />
+            <StaticResource x:Key="MUX_TabularSurfaceVerticalGridLineBrush" ResourceKey="TabularSurfaceVerticalGridLineBrush" />
+            <StaticResource x:Key="MUX_TabularSurfaceBorderBrush" ResourceKey="TabularSurfaceBorderBrush" />
             <StaticResource x:Key="MUX_TabularSurfaceGridLineThickness" ResourceKey="TabularSurfaceGridLineThickness" />
             <StaticResource x:Key="MUX_TabularSurfaceVerticalGridLineThickness" ResourceKey="TabularSurfaceVerticalGridLineThickness" />
             <StaticResource x:Key="MUX_TabularSurfaceCellPadding" ResourceKey="TabularSurfaceCellPadding" />
@@ -144,14 +153,14 @@
 
             <!-- Row backgrounds -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="#00FFFFFF" />                          <!-- SubtleFillColorTransparent -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundAlternatingBrush" Color="#09000000" />               <!-- SubtleFillColorSecondary (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundAlternatingBrush" Color="#06000000" />               <!-- SubtleFillColorTertiary (Light): banding is quieter than hover -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPointerOverBrush" Color="#09000000" />               <!-- SubtleFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPressedBrush" Color="#06000000" />                   <!-- SubtleFillColorTertiary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="#09000000" />                  <!-- SubtleFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="#06000000" />       <!-- SubtleFillColorTertiary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="#09000000" />           <!-- SubtleFillColorSecondary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="#00FFFFFF" />                  <!-- SubtleFillColorTransparent -->
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColorDark1}" />  <!-- AccentFillColorDefault (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" Color="#5C000000" />
 
             <!-- Row foregrounds -->
@@ -163,24 +172,31 @@
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="#E4000000" />                 <!-- TextFillColorPrimary (Light) -->
             <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="#5C000000" />                  <!-- TextFillColorDisabled (Light) -->
 
-            <!-- Header surfaces. Header background bumped from #19 (~10%) to #26 (~15%) during visual tuning for
-                 clearer contrast above row banding (matches WPF DataGrid header strip). -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="#26000000" />                       <!-- ~15% black (#26 alpha) -->
+            <!-- Header surfaces. The design's header row is transparent: it is separated from the body by
+                 type weight and by the first row's band, not by a fill. -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="Transparent" />
             <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundBrush" Color="#9E000000" />                       <!-- TextFillColorSecondary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#0F000000" />                        <!-- ControlStrokeColorDefault (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#1A000000" />                        <!-- Header bottom rule: measured 229 on the Light design export -->
 
             <!-- Grid lines. DividerStrokeColorDefault (~16% black on Light) — visible above row
                  banding without dominating the surface. Earlier ControlStrokeColorDefault (~6%
                  black) was too faint at 1-px width on alternating rows. -->
-            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#29000000" />                               <!-- DividerStrokeColorDefault (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#1A000000" />                               <!-- Horizontal rules: measured 229 on the Light design export -->
+            <SolidColorBrush x:Key="TabularSurfaceVerticalGridLineBrush" Color="#0D000000" />                       <!-- Column separators: measured 242 on the Light design export -->
             <Thickness x:Key="TabularSurfaceGridLineThickness">0,0,0,1</Thickness>
             <Thickness x:Key="TabularSurfaceVerticalGridLineThickness">0,0,1,0</Thickness>
+
+            <!-- Control frame. Deliberately NOT the column-separator brush: the frame is a control
+                 boundary drawn on all four edges over an arbitrary app surface, while the separator
+                 is an internal cell edge over a known row fill. They have independent reasons to
+                 change, and the design measured the separator against one known backdrop only. -->
+            <SolidColorBrush x:Key="TabularSurfaceBorderBrush" Color="#0F000000" />                                 <!-- ControlStrokeColorDefault (Light) -->
 
             <!-- Cell metrics -->
             <Thickness x:Key="TabularSurfaceCellPadding">12,4,12,4</Thickness>
             <Thickness x:Key="TabularSurfaceHeaderCellPadding">8,4,8,4</Thickness>
             <x:Double x:Key="TabularSurfaceRowMinHeight">28</x:Double>
-            <x:Double x:Key="TabularSurfaceHeaderMinHeight">40</x:Double>
+            <x:Double x:Key="TabularSurfaceHeaderMinHeight">32</x:Double>                                  <!-- Matches TableViewHeaderMinHeight (Standard); headers are shorter than body rows. -->
             <CornerRadius x:Key="TabularSurfaceCornerRadius">4</CornerRadius>
 
             <!-- Focus / selection visuals -->
@@ -216,6 +232,8 @@
             <StaticResource x:Key="MUX_TabularSurfaceHeaderForegroundBrush" ResourceKey="TabularSurfaceHeaderForegroundBrush" />
             <StaticResource x:Key="MUX_TabularSurfaceHeaderSeparatorBrush" ResourceKey="TabularSurfaceHeaderSeparatorBrush" />
             <StaticResource x:Key="MUX_TabularSurfaceGridLineBrush" ResourceKey="TabularSurfaceGridLineBrush" />
+            <StaticResource x:Key="MUX_TabularSurfaceVerticalGridLineBrush" ResourceKey="TabularSurfaceVerticalGridLineBrush" />
+            <StaticResource x:Key="MUX_TabularSurfaceBorderBrush" ResourceKey="TabularSurfaceBorderBrush" />
             <StaticResource x:Key="MUX_TabularSurfaceGridLineThickness" ResourceKey="TabularSurfaceGridLineThickness" />
             <StaticResource x:Key="MUX_TabularSurfaceVerticalGridLineThickness" ResourceKey="TabularSurfaceVerticalGridLineThickness" />
             <StaticResource x:Key="MUX_TabularSurfaceCellPadding" ResourceKey="TabularSurfaceCellPadding" />
@@ -270,6 +288,8 @@
 
             <!-- Grid lines -->
             <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceVerticalGridLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="TabularSurfaceBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <Thickness x:Key="TabularSurfaceGridLineThickness">0,0,0,1</Thickness>
             <Thickness x:Key="TabularSurfaceVerticalGridLineThickness">0,0,1,0</Thickness>
 
@@ -277,7 +297,7 @@
             <Thickness x:Key="TabularSurfaceCellPadding">12,4,12,4</Thickness>
             <Thickness x:Key="TabularSurfaceHeaderCellPadding">8,4,8,4</Thickness>
             <x:Double x:Key="TabularSurfaceRowMinHeight">28</x:Double>
-            <x:Double x:Key="TabularSurfaceHeaderMinHeight">40</x:Double>
+            <x:Double x:Key="TabularSurfaceHeaderMinHeight">32</x:Double>                                  <!-- Matches TableViewHeaderMinHeight (Standard); headers are shorter than body rows. -->
             <CornerRadius x:Key="TabularSurfaceCornerRadius">4</CornerRadius>
 
             <!-- Focus / selection visuals -->
@@ -307,6 +327,8 @@
             <StaticResource x:Key="MUX_TabularSurfaceGroupHeaderForegroundBrush" ResourceKey="TabularSurfaceGroupHeaderForegroundBrush" />
             <StaticResource x:Key="MUX_TabularSurfaceGroupHeaderCountForegroundBrush" ResourceKey="TabularSurfaceGroupHeaderCountForegroundBrush" />
             <StaticResource x:Key="MUX_TabularSurfaceGridLineBrush" ResourceKey="TabularSurfaceGridLineBrush" />
+            <StaticResource x:Key="MUX_TabularSurfaceVerticalGridLineBrush" ResourceKey="TabularSurfaceVerticalGridLineBrush" />
+            <StaticResource x:Key="MUX_TabularSurfaceBorderBrush" ResourceKey="TabularSurfaceBorderBrush" />
             <StaticResource x:Key="MUX_TabularSurfaceGridLineThickness" ResourceKey="TabularSurfaceGridLineThickness" />
             <StaticResource x:Key="MUX_TabularSurfaceVerticalGridLineThickness" ResourceKey="TabularSurfaceVerticalGridLineThickness" />
             <StaticResource x:Key="MUX_TabularSurfaceCellPadding" ResourceKey="TabularSurfaceCellPadding" />

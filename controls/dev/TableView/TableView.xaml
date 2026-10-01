@@ -5,6 +5,7 @@
     xmlns:controls="using:Microsoft.UI.Xaml.Controls">
 
     <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
+    <x:Double x:Key="TableViewHeaderMinHeight">32</x:Double>
     <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
     <!-- Metric defaults remain available alongside the default styles. -->
     <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
@@ -18,7 +19,7 @@
         <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Background" Value="{ThemeResource TabularSurfaceRowBackgroundBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TabularSurfaceRowForegroundBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceGridLineBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource TabularSurfaceBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
@@ -39,12 +40,8 @@
                             <Border x:Name="PART_HeaderRow"
                                     Grid.Row="0"
                                     Background="{ThemeResource TabularSurfaceHeaderBackgroundBrush}"
-                                    BorderBrush="{ThemeResource TabularSurfaceGridLineBrush}">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="BorderThickness" Value="0,0,0,1" />
-                                    </Style>
-                                </Border.Style>
+                                    BorderBrush="{ThemeResource TabularSurfaceHeaderSeparatorBrush}"
+                                    BorderThickness="0,0,0,1">
                                 <Grid>
                                     <ScrollViewer x:Name="PART_HeaderScroller"
                                                   HorizontalScrollMode="Disabled"

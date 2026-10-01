@@ -890,7 +890,7 @@ void TableViewRow::RefreshGridLines()
     winrt::Brush gridLineBrush{ nullptr };
     if (wantVertical)
     {
-        gridLineBrush = winrt::get_self<TableView>(owner)->GetGridLineBrush();
+        gridLineBrush = winrt::get_self<TableView>(owner)->GetVerticalGridLineBrush();
     }
 
     const auto children = host.Children();
@@ -935,8 +935,13 @@ void TableViewRow::RefreshRowBackground()
         if (rowIndex >= 0)
         {
             // RowBackground is the base for every row; AlternatingRowBackground overrides
-            // odd rows only when set (WPF DataGrid parity). Setting RowBackground alone
-            // must fill all rows uniformly, not stripe odd rows transparent.
+            // odd rows only when set (WPF DataGrid parity: AlternationIndex 0 keeps the base
+            // brush). Setting RowBackground alone must fill all rows uniformly, not stripe
+            // odd rows transparent.
+            //
+            // Group headers occupy repeater indices, so with grouping the parity does not
+            // restart per group. Excluding them needs a data-row ordinal the metadata provider
+            // does not expose; tracked separately rather than fixed here.
             auto background = owner.RowBackground();
             if ((rowIndex % 2) != 0 && owner.AlternatingRowBackground() != nullptr)
             {

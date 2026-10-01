@@ -25,6 +25,9 @@
             <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
             <x:Double x:Key="TableViewRowMinHeightCompact">30</x:Double>
             <x:Double x:Key="TableViewRowMinHeightComfortable">48</x:Double>
+            <x:Double x:Key="TableViewHeaderMinHeight">32</x:Double>
+            <x:Double x:Key="TableViewHeaderMinHeightCompact">26</x:Double>
+            <x:Double x:Key="TableViewHeaderMinHeightComfortable">40</x:Double>
             <Thickness x:Key="TableViewCellPadding">8,4,8,4</Thickness>
             <Thickness x:Key="TableViewCellPaddingCompact">8,2,8,2</Thickness>
             <Thickness x:Key="TableViewCellPaddingComfortable">8,8,8,8</Thickness>
@@ -41,6 +44,9 @@
             <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
             <x:Double x:Key="TableViewRowMinHeightCompact">30</x:Double>
             <x:Double x:Key="TableViewRowMinHeightComfortable">48</x:Double>
+            <x:Double x:Key="TableViewHeaderMinHeight">32</x:Double>
+            <x:Double x:Key="TableViewHeaderMinHeightCompact">26</x:Double>
+            <x:Double x:Key="TableViewHeaderMinHeightComfortable">40</x:Double>
             <Thickness x:Key="TableViewCellPadding">8,4,8,4</Thickness>
             <Thickness x:Key="TableViewCellPaddingCompact">8,2,8,2</Thickness>
             <Thickness x:Key="TableViewCellPaddingComfortable">8,8,8,8</Thickness>
@@ -58,6 +64,9 @@
             <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
             <x:Double x:Key="TableViewRowMinHeightCompact">30</x:Double>
             <x:Double x:Key="TableViewRowMinHeightComfortable">48</x:Double>
+            <x:Double x:Key="TableViewHeaderMinHeight">32</x:Double>
+            <x:Double x:Key="TableViewHeaderMinHeightCompact">26</x:Double>
+            <x:Double x:Key="TableViewHeaderMinHeightComfortable">40</x:Double>
             <Thickness x:Key="TableViewCellPadding">8,4,8,4</Thickness>
             <Thickness x:Key="TableViewCellPaddingCompact">8,2,8,2</Thickness>
             <Thickness x:Key="TableViewCellPaddingComfortable">8,8,8,8</Thickness>
