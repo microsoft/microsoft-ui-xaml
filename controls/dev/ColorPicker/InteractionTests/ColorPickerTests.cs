@@ -1010,6 +1010,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void VerifyColorNameToolTipClosesWhenPointerInteractionEnds()
+        {
+            using (var setup = SetupColorPickerTest(TestOptions.DisableColorSpectrumLoadWait))
+            {
+                ColorSpectrum colorSpectrum = new ColorSpectrum(FindElement.ById(ColorSpectrumAutomationId));
+
+                Log.Comment("Pressing on the ColorSpectrum should open the color-name tooltip.");
+                InputHelper.LeftMouseButtonDown(colorSpectrum);
+                Wait.ForIdle();
+
+                ElementCache.Clear();
+                Verify.IsNotNull(
+                    TryFindElement.ByClassName("ToolTip"),
+                    "The color-name tooltip should be open while the pointer is pressed.");
+
+                Log.Comment("Releasing the pointer should close the color-name tooltip.");
+                InputHelper.LeftMouseButtonUp(colorSpectrum);
+                Wait.ForIdle();
+
+                ElementCache.Clear();
+                Verify.IsNull(
+                    TryFindElement.ByClassName("ToolTip"),
+                    "The color-name tooltip should be closed after the pointer interaction ends.");
+            }
+        }
+
+        [TestMethod]
         public void VerifySpectrumTakesFocusOnPointerPress()
         {
             using (var setup = SetupColorPickerTest())
