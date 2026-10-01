@@ -8,9 +8,8 @@ A mismatch fails verification and preserves the available comparison files for r
 ## Where baselines are stored
 
 - Source masters live in [test/resources/masters](../../dxaml/test/resources/masters):
-  - XML: `*.master.xml`, optionally with a `.clientcore` or `.onecore` platform suffix
-  - Surfaces: `*.master.png`, with the same test, variation, and surface identifier as the output; platform suffixes
-    apply only to master selection
+  - XML: `*.master.xml`
+  - Surfaces: `*.master.png`, with the same test, variation, and surface identifier as the output
 - Failed comparisons copy available masters and `*.out.xml` / `*.out.png` files to `XamlTAEFOutput` under the
   Pictures library, typically `%USERPROFILE%\Pictures\XamlTAEFOutput`.
 - Packaged tests read masters embedded in `Private.Infrastructure.Resources.dll`. Copying loose master files into an
