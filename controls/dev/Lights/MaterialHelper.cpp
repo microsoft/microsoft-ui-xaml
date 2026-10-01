@@ -245,7 +245,7 @@ winrt::event_token MaterialHelper::PolicyChanged(const std::function<void(const 
 /* static */
 void MaterialHelper::PolicyChanged(winrt::event_token removeToken)
 {
-    if (auto instance = LifetimeHandler::TryGetMaterialHelperInstance())
+    if (auto instance = LifetimeHandler::TryGetMaterialHelperInstanceForListenerRemoval())
     {
         instance->m_policyChangedListeners.remove(removeToken);
     }
@@ -262,7 +262,7 @@ winrt::event_token MaterialHelper::NoiseChanged(const std::function<void(const c
 /* static */
 void MaterialHelper::NoiseChanged(winrt::event_token removeToken)
 {
-    if (auto instance = LifetimeHandler::TryGetMaterialHelperInstance())
+    if (auto instance = LifetimeHandler::TryGetMaterialHelperInstanceForListenerRemoval())
     {
         instance->m_noiseChangedListeners.remove(removeToken);
     }
