@@ -53,7 +53,12 @@ private:
     // This row's index in the owner's ItemsSource index space, or -1 when unrealized.
     int32_t GetRowIndex();
     bool IsVirtualized();
-    void RealizeCore(int32_t rowIndex);
+    void RealizeCore();
+    winrt::IInspectable GetTrackedItem() const;
+    int32_t GetTrackedItemIndex(winrt::TableView const& tableView);
+    bool IsTrackedRow(winrt::TableViewRow const& row, winrt::TableView const& tableView);
+    void TrackRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
+    [[noreturn]] static void ThrowElementNotAvailable();
     // Joins the visible cells' display text in visual order.
     static std::wstring ComposeCellTexts(
         TableViewRow* rowImpl,
@@ -78,5 +83,6 @@ private:
 
     std::vector<CellPeerCacheEntry> m_cellPeerCache;
     winrt::weak_ref<winrt::TableView> m_lastOwningTable{ nullptr };
+    winrt::weak_ref<winrt::IInspectable> m_item{ nullptr };
     int32_t m_lastKnownRowIndex{ -1 };
 };

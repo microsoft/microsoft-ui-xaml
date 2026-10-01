@@ -1157,6 +1157,8 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
         if (rowIndex >= 0)
         {
             m_currentCellRow = rowIndex;
+            winrt::IInspectable item{ nullptr };
+            SetCurrentItem(TryGetItemAtRowIndex(rowIndex, item) ? item : nullptr);
         }
         SetCellCursorActiveInternal(false);
         return;

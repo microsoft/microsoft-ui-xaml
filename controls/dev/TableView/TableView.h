@@ -444,7 +444,11 @@ private:
 
     void PushSelectionProperties();
     void RaiseSelectionChanged(winrt::IInspectable const& addedItem);
-    void RaiseSelectionAutomationEvents(winrt::TableViewRow const& deselectedRow, winrt::TableViewRow const& selectedRow);
+    void RaiseSelectionAutomationEvents(
+        winrt::TableViewRow const& deselectedRow,
+        winrt::IInspectable const& deselectedItem,
+        winrt::TableViewRow const& selectedRow,
+        winrt::IInspectable const& selectedItem);
     // Re-derives IsSelected on every realized row. Needed after a collection change, where the
     // repeater has already re-indexed its containers.
     void RestampAllRealizedRowSelection();

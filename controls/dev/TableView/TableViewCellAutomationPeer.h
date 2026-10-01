@@ -71,8 +71,14 @@ private:
     // Resolves the row index from the owning ItemsRepeater.
     int32_t GetRowIndex();
     bool IsVirtualized();
-    void RealizeCore(int32_t rowIndex);
+    void RealizeCore();
     winrt::UIElement GetRealizedCellFromRow(winrt::TableViewRow const& row);
+    winrt::TableView GetTrackedTableForRow(winrt::TableViewRow const& row);
+    winrt::IInspectable GetTrackedItem() const;
+    int32_t GetTrackedItemIndex(winrt::TableView const& tableView);
+    bool IsTrackedRow(winrt::TableViewRow const& row, winrt::TableView const& tableView);
+    void TrackRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
+    [[noreturn]] static void ThrowElementNotAvailable();
 
     // Resolves the column's stringified Header.
     winrt::hstring GetColumnHeaderText();
@@ -85,6 +91,7 @@ private:
     winrt::weak_ref<winrt::TableViewRow> m_row{ nullptr };
     winrt::weak_ref<winrt::TableViewColumn> m_column{ nullptr };
     winrt::weak_ref<winrt::TableView> m_lastOwningTable{ nullptr };
+    winrt::weak_ref<winrt::IInspectable> m_item{ nullptr };
     // Construction-time fallback only; Column() recomputes from the live cell host.
     int32_t m_columnIndex{ -1 };
     int32_t m_lastKnownRowIndex{ -1 };

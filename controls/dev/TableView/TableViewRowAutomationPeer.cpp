@@ -10,12 +10,21 @@
 #include "TableViewAutomationHelpers.h"
 #include "TableViewRowAutomationPeer.properties.cpp"
 
+#include <UIAutomationCore.h>
+#include <UIAutomationCoreApi.h>
 #include <algorithm>
 #include <string>
 
 TableViewRowAutomationPeer::TableViewRowAutomationPeer(winrt::TableViewRow const& owner)
     : ReferenceTracker(owner)
 {
+    if (owner)
+    {
+        if (auto const tableView = winrt::get_self<TableViewRow>(owner)->GetOwningTableView())
+        {
+            TrackRowItem(owner, tableView);
+        }
+    }
     GetRowIndex();
 }
 
@@ -58,11 +67,11 @@ winrt::TableView TableViewRowAutomationPeer::GetOwningTableView()
     if (auto const row = Owner().try_as<winrt::TableViewRow>())
     {
         auto const tableView = winrt::get_self<TableViewRow>(row)->GetOwningTableView();
-        if (tableView)
+        if (tableView && IsTrackedRow(row, tableView))
         {
             m_lastOwningTable = winrt::make_weak(tableView);
+            return tableView;
         }
-        return tableView;
     }
 
     return nullptr;
@@ -104,13 +113,15 @@ bool TableViewRowAutomationPeer::IsVirtualized()
     }
 
     auto const tableImpl = winrt::get_self<TableView>(tableView);
-    if (m_lastKnownRowIndex >= tableImpl->GetRowCountInternal())
+    const auto rowIndex = GetTrackedItemIndex(tableView);
+    if (rowIndex < 0 || rowIndex >= tableImpl->GetRowCountInternal())
     {
         return false;
     }
+    m_lastKnownRowIndex = rowIndex;
 
     auto const repeater = tableImpl->GetRowsRepeaterInternal();
-    return repeater && !repeater.TryGetElement(m_lastKnownRowIndex);
+    return repeater && !repeater.TryGetElement(rowIndex);
 }
 
 void TableViewRowAutomationPeer::Realize()
@@ -123,27 +134,28 @@ void TableViewRowAutomationPeer::Realize()
     // IVirtualizedItemProvider::Realize is synchronous: on return the client immediately re-queries
     // this provider and expects the element realized, with VirtualizedItem no longer supported.
     // Deferring to the dispatcher hands the client a still-virtualized provider.
-    RealizeCore(m_lastKnownRowIndex);
+    RealizeCore();
 }
 
-void TableViewRowAutomationPeer::RealizeCore(int32_t rowIndex)
+void TableViewRowAutomationPeer::RealizeCore()
 {
     auto const tableView = m_lastOwningTable.get();
+    const auto rowIndex = tableView ? GetTrackedItemIndex(tableView) : -1;
     if (!tableView || rowIndex < 0)
     {
-        return;
+        ThrowElementNotAvailable();
     }
 
     auto const tableImpl = winrt::get_self<TableView>(tableView);
     if (rowIndex >= tableImpl->GetRowCountInternal())
     {
-        return;
+        ThrowElementNotAvailable();
     }
 
     auto const repeater = tableImpl->GetRowsRepeaterInternal();
     if (!repeater)
     {
-        return;
+        ThrowElementNotAvailable();
     }
 
     winrt::UIElement element{ nullptr };
@@ -157,7 +169,19 @@ void TableViewRowAutomationPeer::RealizeCore(int32_t rowIndex)
     }
     catch (...)
     {
-        return;
+        ThrowElementNotAvailable();
+    }
+
+    if (auto const row = element.try_as<winrt::TableViewRow>())
+    {
+        if (!IsTrackedRow(row, tableView))
+        {
+            ThrowElementNotAvailable();
+        }
+    }
+    else
+    {
+        ThrowElementNotAvailable();
     }
 
     if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
@@ -166,8 +190,85 @@ void TableViewRowAutomationPeer::RealizeCore(int32_t rowIndex)
     }
 }
 
+winrt::IInspectable TableViewRowAutomationPeer::GetTrackedItem() const
+{
+    return m_item.get();
+}
+
+int32_t TableViewRowAutomationPeer::GetTrackedItemIndex(winrt::TableView const& tableView)
+{
+    auto const item = GetTrackedItem();
+    if (!tableView || !item)
+    {
+        return -1;
+    }
+
+    auto const tableImpl = winrt::get_self<TableView>(tableView);
+    auto const repeater = tableImpl->GetRowsRepeaterInternal();
+    auto const view = repeater ? repeater.ItemsSourceView() : nullptr;
+    if (!view)
+    {
+        return -1;
+    }
+
+    const int32_t count = view.Count();
+    for (int32_t index = 0; index < count; ++index)
+    {
+        if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(index));
+            candidate && TableView::SameInspectableIdentity(candidate, item))
+        {
+            return index;
+        }
+    }
+
+    return -1;
+}
+
+bool TableViewRowAutomationPeer::IsTrackedRow(winrt::TableViewRow const& row, winrt::TableView const& tableView)
+{
+    auto const item = GetTrackedItem();
+    if (!row || !tableView || !item)
+    {
+        return false;
+    }
+
+    auto const rowItem = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext());
+    const bool sameItem = rowItem && TableView::SameInspectableIdentity(rowItem, item);
+    if (sameItem)
+    {
+        m_item = winrt::make_weak(rowItem);
+    }
+    return sameItem;
+}
+
+void TableViewRowAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView)
+{
+    if (row && tableView)
+    {
+        if (auto const item = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext()))
+        {
+            m_item = winrt::make_weak(item);
+        }
+    }
+}
+
+[[noreturn]] void TableViewRowAutomationPeer::ThrowElementNotAvailable()
+{
+    throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
+}
+
 hstring TableViewRowAutomationPeer::GetNameCore()
 {
+    auto const row = Owner().try_as<winrt::TableViewRow>();
+    if (!row)
+    {
+        return {};
+    }
+    if (!GetOwningTableView())
+    {
+        ThrowElementNotAvailable();
+    }
+
     // Preserve explicit app metadata, not a base peer's Content/DataContext stringification.
     if (auto const name = winrt::AutomationProperties::GetName(Owner()); !name.empty())
     {
@@ -179,12 +280,6 @@ hstring TableViewRowAutomationPeer::GetNameCore()
         {
             return name;
         }
-    }
-
-    auto const row = Owner().try_as<winrt::TableViewRow>();
-    if (!row)
-    {
-        return {};
     }
 
     auto const rowImpl = winrt::get_self<TableViewRow>(row);
@@ -305,7 +400,7 @@ winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
     }
 
     auto const row = Owner().try_as<winrt::TableViewRow>();
-    if (!row)
+    if (!row || !GetOwningTableView())
     {
         return nullptr;
     }
@@ -337,6 +432,10 @@ bool TableViewRowAutomationPeer::IsSelected()
 {
     if (auto const row = Owner().try_as<winrt::TableViewRow>())
     {
+        if (!GetOwningTableView())
+        {
+            return false;
+        }
         return row.IsSelected();
     }
 
@@ -398,6 +497,10 @@ winrt::IVector<winrt::AutomationPeer> TableViewRowAutomationPeer::GetChildrenCor
     if (!row)
     {
         return children;
+    }
+    if (!GetOwningTableView())
+    {
+        ThrowElementNotAvailable();
     }
 
     auto const rowImpl = winrt::get_self<TableViewRow>(row);
