@@ -642,7 +642,10 @@
                         // "<name>, button" instead of the raw "graphic, group" that the
                         // underlying SVG marker element reports by default.
                         pinElement.setAttribute('role', 'button');
-                        const pinName = (properties && typeof properties.name === 'string' && properties.name !== 'MapElement')
+                        // The native control supplies a per-pin name via addPoint() — the
+                        // MapIcon's AutomationProperties.Name, or a localized default when the
+                        // app set none. The literal below is only a defensive last resort.
+                        const pinName = (properties && typeof properties.name === 'string' && properties.name.length > 0)
                             ? properties.name
                             : 'Pinned location';
                         pinElement.setAttribute('aria-label', pinName);
@@ -677,8 +680,8 @@
             return newLayer.getId();
         }
 
-        function addPoint(longitude, latitude, layerId) {
-            var point = new atlas.data.Feature(new atlas.data.Point([longitude, latitude]), {name: 'MapElement'}, id);
+        function addPoint(longitude, latitude, layerId, name) {
+            var point = new atlas.data.Feature(new atlas.data.Point([longitude, latitude]), {name: name}, id);
             id++;
             try {
                 map.events.add('ready', function () {

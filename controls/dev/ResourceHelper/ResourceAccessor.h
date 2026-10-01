@@ -80,6 +80,7 @@ public:
 #define SR_AutomationNameBlueTextBox L"AutomationNameBlueTextBox"
 #define SR_AutomationNameColorModelComboBox L"AutomationNameColorModelComboBox"
 #define SR_AutomationNameColorSpectrum L"AutomationNameColorSpectrum"
+#define SR_AutomationNameMapIcon L"AutomationNameMapIcon"
 #define SR_TextGreenLabel L"TextGreenLabel"
 #define SR_AutomationNameGreenTextBox L"AutomationNameGreenTextBox"
 #define SR_HelpTextColorSpectrum L"HelpTextColorSpectrum"
