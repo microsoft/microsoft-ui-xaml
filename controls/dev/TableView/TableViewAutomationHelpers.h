@@ -440,6 +440,30 @@ inline void SetCellContentAccessibilityViewRaw(winrt::FrameworkElement const& ro
     }
 }
 
+inline void SetInteractiveCellContentAccessibilityViewContent(winrt::FrameworkElement const& root, uint32_t depthBudget = 8)
+{
+    if (!root || root.Visibility() != winrt::Visibility::Visible || depthBudget == 0)
+    {
+        return;
+    }
+
+    if (IsFocusableCellContent(root))
+    {
+        SetAccessibilityViewIfNeeded(root, winrt::AccessibilityView::Content);
+        return;
+    }
+
+    constexpr int32_t maxChildrenPerLevel = 32;
+    auto const childCount = winrt::VisualTreeHelper::GetChildrenCount(root);
+    for (int32_t i = 0; i < childCount && i < maxChildrenPerLevel; ++i)
+    {
+        if (auto const child = winrt::VisualTreeHelper::GetChild(root, i).try_as<winrt::FrameworkElement>())
+        {
+            SetInteractiveCellContentAccessibilityViewContent(child, depthBudget - 1);
+        }
+    }
+}
+
 inline winrt::hstring GetCellDisplayText(winrt::FrameworkElement const& cell, bool allowPeerCreation = true)
 {
     auto const content = GetCellContentElement(cell);

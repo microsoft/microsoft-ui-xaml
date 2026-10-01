@@ -52,6 +52,11 @@ TableViewCellAutomationPeer::TableViewCellAutomationPeer(
     std::ignore = GetRowIndex();
 }
 
+TableViewCellAutomationPeer::~TableViewCellAutomationPeer()
+{
+    ResetAutomationContentViewCache();
+}
+
 winrt::IInspectable TableViewCellAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
     // GridItem + TableItem are structural and always meaningful for realized cells.
@@ -162,7 +167,7 @@ hstring TableViewCellAutomationPeer::GetNameCore()
         return *m_editName;
     }
     if (auto const cell = Owner().try_as<winrt::FrameworkElement>();
-        HasInteractiveCellContent(cell))
+        GetCachedHasInteractiveCellContent(cell))
     {
         auto const name = GetColumnHeaderText();
         m_lastName = name;
@@ -217,6 +222,7 @@ void TableViewCellAutomationPeer::UpdateNameItem(winrt::IInspectable const& item
         m_item.Track(item);
         m_lastKnownRowIndex = -1;
         m_trackedItemOccurrence = -1;
+        ResetAutomationContentViewCache();
     }
 }
 
@@ -423,27 +429,159 @@ void TableViewCellAutomationPeer::PrepareAutomationContentView(winrt::FrameworkE
     auto const content = GetCellAutomationContent(cell);
     if (!content)
     {
-        m_preparedAutomationContent = winrt::weak_ref<winrt::FrameworkElement>{ nullptr };
-        m_hasPreparedAutomationContent = false;
+        ResetAutomationContentViewCache();
         return;
     }
 
-    if (m_hasPreparedAutomationContent && m_preparedAutomationContent.get() == content)
-    {
-        return;
-    }
-
-    if (HasInteractiveCellContent(cell))
+    if (GetCachedHasInteractiveCellContent(cell))
     {
         SetAccessibilityViewIfNeeded(content, winrt::AccessibilityView::Content);
+        SetInteractiveCellContentAccessibilityViewContent(content);
     }
     else
     {
         SetCellContentAccessibilityViewRaw(content);
     }
+}
 
-    m_preparedAutomationContent = winrt::make_weak(content);
-    m_hasPreparedAutomationContent = true;
+bool TableViewCellAutomationPeer::GetCachedHasInteractiveCellContent(winrt::FrameworkElement const& cell)
+{
+    auto const content = GetCellAutomationContent(cell);
+    if (!content)
+    {
+        ResetAutomationContentViewCache();
+        return false;
+    }
+
+    auto const item = GetCurrentAutomationContentItem();
+    if (IsAutomationContentCacheValid(content, item))
+    {
+        return *m_hasInteractiveAutomationContent;
+    }
+
+    ResetAutomationContentViewCache();
+    m_automationContent = winrt::make_weak(content);
+    m_automationContentItem.Track(item);
+
+    uint32_t remaining = 64;
+    m_hasInteractiveAutomationContent =
+        HasInteractiveCellContentAndRegisterCallbacks(content, 8, &remaining);
+    return *m_hasInteractiveAutomationContent;
+}
+
+winrt::IInspectable TableViewCellAutomationPeer::GetCurrentAutomationContentItem()
+{
+    auto const row = m_row.get();
+    if (!row)
+    {
+        return nullptr;
+    }
+
+    if (auto const tableView = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
+    {
+        return winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext());
+    }
+
+    return row.DataContext();
+}
+
+bool TableViewCellAutomationPeer::IsAutomationContentCacheValid(
+    winrt::FrameworkElement const& content,
+    winrt::IInspectable const& item) const
+{
+    auto const cachedContent = m_automationContent.get();
+    return m_hasInteractiveAutomationContent.has_value() &&
+        cachedContent &&
+        TableView::SameInspectableIdentity(cachedContent, content) &&
+        CachedAutomationContentItemMatches(item);
+}
+
+bool TableViewCellAutomationPeer::CachedAutomationContentItemMatches(winrt::IInspectable const& item) const
+{
+    return item ? m_automationContentItem.SameIdentityAs(item) : !m_automationContentItem.IsTracking();
+}
+
+bool TableViewCellAutomationPeer::HasInteractiveCellContentAndRegisterCallbacks(
+    winrt::UIElement const& element,
+    uint32_t depthBudget,
+    uint32_t* remainingBudget)
+{
+    uint32_t localBudget = 64;
+    auto budget = remainingBudget ? remainingBudget : &localBudget;
+    if (!element || depthBudget == 0 || *budget == 0)
+    {
+        return false;
+    }
+
+    RegisterAutomationContentPropertyCallbacks(element);
+    if (element.Visibility() != winrt::Visibility::Visible)
+    {
+        return false;
+    }
+
+    --(*budget);
+    if (IsFocusableCellContent(element))
+    {
+        return true;
+    }
+
+    constexpr int32_t maxChildrenPerLevel = 32;
+    auto const childCount = winrt::VisualTreeHelper::GetChildrenCount(element);
+    for (int32_t i = 0; i < childCount && i < maxChildrenPerLevel && *budget > 0; ++i)
+    {
+        if (auto const child = winrt::VisualTreeHelper::GetChild(element, i).try_as<winrt::UIElement>())
+        {
+            if (HasInteractiveCellContentAndRegisterCallbacks(child, depthBudget - 1, budget))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+void TableViewCellAutomationPeer::RegisterAutomationContentPropertyCallbacks(winrt::UIElement const& element)
+{
+    auto const weakThis = get_weak();
+    auto const callback =
+        [weakThis](winrt::DependencyObject const&, winrt::DependencyProperty const&)
+        {
+            if (auto const peer = weakThis.get())
+            {
+                peer->InvalidateAutomationContentViewCache();
+            }
+        };
+
+    m_automationContentPropertyChangedRevokers.emplace_back(
+        element,
+        winrt::UIElement::VisibilityProperty(),
+        element.RegisterPropertyChangedCallback(winrt::UIElement::VisibilityProperty(), callback));
+
+    if (auto const control = element.try_as<winrt::Control>())
+    {
+        m_automationContentPropertyChangedRevokers.emplace_back(
+            control,
+            winrt::Control::IsEnabledProperty(),
+            control.RegisterPropertyChangedCallback(winrt::Control::IsEnabledProperty(), callback));
+        m_automationContentPropertyChangedRevokers.emplace_back(
+            control,
+            winrt::UIElement::IsTabStopProperty(),
+            control.RegisterPropertyChangedCallback(winrt::UIElement::IsTabStopProperty(), callback));
+    }
+}
+
+void TableViewCellAutomationPeer::InvalidateAutomationContentViewCache()
+{
+    m_hasInteractiveAutomationContent.reset();
+}
+
+void TableViewCellAutomationPeer::ResetAutomationContentViewCache() noexcept
+{
+    m_hasInteractiveAutomationContent.reset();
+    m_automationContent = nullptr;
+    m_automationContentItem.Track(nullptr);
+    m_automationContentPropertyChangedRevokers.clear();
 }
 
 hstring TableViewCellAutomationPeer::GetHelpTextCore()
@@ -765,16 +903,23 @@ void TableViewCellAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, w
     {
         if (auto const item = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext()))
         {
-            m_item.Track(item);
-            m_trackedItemOccurrence = -1;
+            auto const previousOccurrence = m_trackedItemOccurrence;
+            auto const sameItem = m_item.SameIdentityAs(item);
+            auto trackedItemOccurrence = -1;
             if (auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal())
             {
                 if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
                 {
                     m_lastKnownRowIndex = rowIndex;
-                    m_trackedItemOccurrence = GetItemOccurrenceAtIndex(tableView, item, rowIndex);
+                    trackedItemOccurrence = GetItemOccurrenceAtIndex(tableView, item, rowIndex);
                 }
             }
+            if (!sameItem || previousOccurrence != trackedItemOccurrence)
+            {
+                ResetAutomationContentViewCache();
+            }
+            m_item.Track(item);
+            m_trackedItemOccurrence = trackedItemOccurrence;
         }
     }
 }
