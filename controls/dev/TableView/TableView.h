@@ -108,17 +108,13 @@ struct TableViewResourceCache
 };
 
 namespace ShapingHelpers { class CustomSortRankAdapter; }
+class GroupedEntry;
 
-// The control's half of the TableViewSource sort axis. The projection is addressed by an opaque
-// axis token, so re-sorting the same column replaces its axis rather than stacking a second one.
 struct TableViewSourceSortBinding
 {
     winrt::hstring MemberPath;
     winrt::hstring AxisToken;
     winrt::TableViewKeySelector KeySelector{ nullptr };
-    // The rank adapter for a CustomSortComparer column. Owned by the control but implemented in the
-    // shaping engine: the control feeds it the column's comparer, the engine turns that into the
-    // integer sort keys the projection consumes.
     std::shared_ptr<ShapingHelpers::CustomSortRankAdapter> CustomSortState;
 
     // Drops any comparer and its ranks without discarding the selector: the selector closes over
@@ -234,20 +230,48 @@ public:
     winrt::ItemsRepeater GetRowsRepeaterInternal() const { return m_rowsRepeater.get(); }
     winrt::Panel GetHeaderHostInternal() const { return m_headerHost.get(); }
     int32_t GetRowCountInternal() const { return GetItemsSourceCount(); }
+    int32_t GetDataRowPositionInSetInternal(int32_t rowIndex) const;
+    int32_t GetDataRowSizeOfSetInternal() const;
     winrt::ScrollViewer GetBodyScrollerInternal() const { return m_bodyScroller.get(); }
 
-    // Test hook for moving keyboard focus to a row; false for invalid indexes or before rows exist.
+    // Test hook for moving keyboard focus into the body at a row index; false for invalid indexes
+    // or before rows exist. Focus lands at whichever LEVEL the cursor is on - the ROW container by
+    // default, or that row's current cell once the user has drilled in with Right.
     bool FocusRow(int32_t index);
 
-    // IFrameworkElement override. Must be PUBLIC: C++/WinRT dispatches overrides through a base
-    // subobject that can only reach public members; a protected override is silently never called.
+
+    // Moves keyboard focus to a cell by row index and VISIBLE column index, realizing and scrolling
+    // the row into view first. A negative column means "keep the current one". Group-header rows
+    // have no cells and fall back to focusing the header container. Drills the cursor to CELL level.
+    bool FocusCell(int32_t rowIndex, int32_t visibleColumnIndex);
+
+    // Moves keyboard focus to the row CONTAINER at a flat row index, realizing and scrolling it
+    // into view first, and leaves the cursor at ROW level. This is the body's entry level and what
+    // Up/Down move between while the user has not drilled into cells.
+    bool FocusRowContainer(int32_t rowIndex);
+
+    // The row that body entry should land on when focus is aimed at a row CONTAINER from outside
+    // the table. Used by TableViewRow's GettingFocus redirect: entering the table returns to the
+    // row the user left, while a move that started inside the table keeps the row it names.
+    winrt::TableViewRow ResolveFocusEntryRow(
+        winrt::TableViewRow const& row, winrt::DependencyObject const& oldFocusedElement);
+
+    // Two-level cursor state. False = ROW level, true = CELL level. Owned here rather than on the
+    // row because it has to survive row recycling and follow the cursor from row to row.
+    bool IsCellCursorActiveInternal() const noexcept { return m_cellCursorActive; }
+    void SetCellCursorActiveInternal(bool active);
+
+    void OnRowCellFocusChanged(winrt::TableViewRow const& row);
+
+    bool TryGetFocusedCell(int32_t& rowIndex, int32_t& columnIndex, bool requireExactCell) const;
+
+    // Focuses the cell at a visible-column index inside an ALREADY realized container. Group
+    // headers share the repeater and have no cells, so they keep taking container focus.
+    bool FocusRealizedRowCell(winrt::UIElement const& element, int32_t visibleColumnIndex);
+
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 
-    // ----- Editing (TableView_Editing.cpp) -----
 
-    // Scope of an edit close. Internal only: the public surface is cell-scoped in this release, but
-    // the row scope is real - moving to a different item must end that item's transaction - and the
-    // plumbing is kept so row editing can be added without re-threading every signature.
     enum class EditingUnit
     {
         Cell,
@@ -342,22 +366,18 @@ public:
     // Select() means "make this the selection", never "clear it".
     void SelectRowIndexFromInteraction(int32_t index);
     void SelectRowIndexFromInteraction(int32_t index, bool toggle);
+    void SelectRowIndexFromKeyboardFocus(int32_t index);
 
-    // The row sees the press first (it owns its cells); selection state lives on the control.
     void OnRowPointerSelect(winrt::TableViewRow const& row);
 
-    // Re-derives IsSelected for a realized or re-indexed row; it never survives recycling.
     void RefreshRowSelectionState(winrt::TableViewRow const& row);
     void RefreshRowSelectionState(winrt::TableViewRow const& row, int32_t selectedIndex);
 
     // For the automation peers, which cannot reach the private members. Both read the model.
     int32_t SelectedIndexInternal() const;
     winrt::IInspectable SelectedItemInternal() const;
-    // --- Grouped projections (TableView_Grouping.cpp) ---
-    //
-    // Which container type a row-source item realizes as. Item-based rather than index-based
-    // because the element factory is only ever handed the item.
     TableViewRowKind GetRowKindForItem(winrt::IInspectable const& item) const;
+    winrt::hstring GetGroupHeaderNameCandidate(GroupedEntry const& entry);
     bool TryGetTableViewSourceRowInfo(int32_t rowIndex, TableViewRowInfo& rowInfo) const;
     bool IsTableViewSourceGrouped() const;
     // True when the flat row at `index` is a group header rather than a data row. Group headers
@@ -426,7 +446,11 @@ private:
 
     void PushSelectionProperties();
     void RaiseSelectionChanged(winrt::IInspectable const& addedItem);
-    void RaiseSelectionAutomationEvents(winrt::TableViewRow const& deselectedRow, winrt::TableViewRow const& selectedRow);
+    void RaiseSelectionAutomationEvents(
+        winrt::TableViewRow const& deselectedRow,
+        winrt::IInspectable const& deselectedItem,
+        winrt::TableViewRow const& selectedRow,
+        winrt::IInspectable const& selectedItem);
     // Re-derives IsSelected on every realized row. Needed after a collection change, where the
     // repeater has already re-indexed its containers.
     void RestampAllRealizedRowSelection();
@@ -636,6 +660,8 @@ private:
     void ApplyGridLinesToHeader();
     void RefreshGridLinesOnRealizedRows();
     void RefreshRowBackgroundsOnRealizedRows();
+    void QueueGroupExpansionRowRefresh();
+    void RefreshRealizedRowsAfterGroupExpansion();
 
     // Invoke fn for each realized row in PART_RowsRepeater. Centralizes the "enumerate realized
     // rows" walk shared by the density / gridline / frozen-column / column-change update paths
@@ -821,6 +847,7 @@ private:
     winrt::event_token m_pendingGroupFocusLayoutToken{};
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
+    winrt::event_token m_pendingGroupRowRefreshLayoutToken{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_emptyStateCollectionChangedRevoker{};
     // ActualThemeChanged refreshes imperatively-resolved brushes that ItemsRepeater rows do not re-pump.
     winrt::event_token m_actualThemeChangedToken{};
@@ -836,27 +863,15 @@ private:
     bool m_isHighContrast{ false };
     winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
 
-    // Unloaded drains repeater and body-scroller state before deferred callbacks hit a detached subtree.
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     void OnTableViewUnloaded();
     bool m_rowsSourceDrained{ false };
 
-    // Leading-frozen columns are offset against horizontal scroll and clipped out of non-frozen cells.
     double ComputeLeadingFrozenWidth();
     void RefreshFrozenColumns();
 
-    // Column-width layout engine internals (TableView_Layout.cpp).
-    // GetHeaderMeasuredWidthForColumn encapsulates the header host's concrete panel type so the
-    // layout engine pulls the header's measured width through a TableView seam (symmetric with
-    // TableViewRow::MeasuredWidthForColumn) instead of casting to TableViewCellsPanel itself.
     double GetHeaderMeasuredWidthForColumn(const winrt::TableViewColumn& column) const;
-    // ResolveColumnWidths runs the Pixel/Auto/Star pass (invoked from MeasureOverride once the
-    // template subtree has measured), pulling cached measured widths from the header host and realized
-    // rows before writing ActualWidth to each column.
     void ResolveColumnWidths();
-    // ResetColumnDesiredWidths clears the grow-only Auto desired-width accumulators on data-set
-    // boundaries (ItemsSource / Columns replaced / CellTemplate / Header) and invalidates measure so
-    // the next table-level pass re-pulls fresh measured widths.
     void ResetColumnDesiredWidths();
     // Limits a resize gesture to the width the other columns can absorb. Unbounded when nothing
     // constrains it.
@@ -866,51 +881,117 @@ private:
     // Re-invalidate the header + realized row cells panels so they re-measure/arrange after a resolve.
     void InvalidateCellPanels();
 
-    // Latches frozen-column state so transforms and clips clear exactly once when disabled.
     bool m_frozenColumnsActive{ false };
 
-    // Set while a coalesced RebuildHeaders is pending on the dispatcher; collapses a burst of column
-    // changes into one rebuild. UI-thread only (all column callbacks arrive on the UI thread).
     bool m_rebuildHeadersQueued{ false };
 
     // Per-instance resource cache; replaces the former process-global map keyed by `this`.
     TableViewResourceCache m_resourceCache{};
 
-    // Mirrors Columns so removals can clear a column's OwningTableView back-pointer.
     std::vector<tracker_ref<winrt::TableViewColumn>> m_trackedColumns;
 
-    // Bubbling KeyDown lets focused descendants handle input before row navigation.
     winrt::KeyEventHandler m_keyDownHandler{ nullptr };  // Root KeyDown (handledEventsToo); registration is released with the element, no explicit RemoveHandler needed.
     void OnKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
 
-    // Left/Right resize for the column whose header has focus; the gripper is a pointer
-    // affordance here, not a tab stop.
     bool TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args);
-    // Redirects a header's bring-into-view onto the body scroller, so the header cannot scroll
-    // independently of the columns it labels.
+    // Header-band arrows and clamping; Tab is the only cross-band move.
+    bool TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& args);
+    bool TryHandleHeaderVerticalKey(const winrt::KeyRoutedEventArgs& args);
+    // Moves focus to a visible header by visible-column index; step 0 means exact only.
+    int32_t FocusVisibleHeaderFrom(int32_t visibleIndex, int32_t step);
+    // Visible-column index of the header that currently has focus, or -1 when focus is elsewhere.
+    int32_t GetFocusedVisibleHeaderIndex() const;
+    // Header entry resolves to the remembered column, or the nearest focusable header around it.
+    int32_t ResolveHeaderEntryIndex(const std::vector<winrt::FrameworkElement>& cells) const;
+    // Redirects header Tab entry from the first header to the remembered column.
+    void OnHeaderHostGettingFocus(
+        const winrt::IInspectable& sender,
+        const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
+    void OnHeaderHostGotFocus(
+        const winrt::IInspectable& sender,
+        const winrt::RoutedEventArgs& args);
+    winrt::UIElement::GettingFocus_revoker m_headerHostGettingFocusRevoker{};
+    winrt::UIElement::GotFocus_revoker m_headerHostGotFocusRevoker{};
+    // Enter / Space on a focused, sortable column header: the keyboard path to sorting.
+    bool TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args);
+    bool TryHandleHeaderSortKeyUp(const winrt::KeyRoutedEventArgs& args);
+    winrt::TableViewColumn ResolveHeaderSortKeyTarget(const winrt::KeyRoutedEventArgs& args);
+    winrt::weak_ref<winrt::TableViewColumn> m_headerSortSpaceArmedColumn{ nullptr };
+    winrt::UIElement::LostFocus_revoker m_headerSortLostFocusRevoker{};
+    winrt::KeyEventHandler m_keyUpHandler{ nullptr };
+    void OnKeyUpForHeaderSort(
+        const winrt::IInspectable& sender,
+        const winrt::KeyRoutedEventArgs& args);
     void OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args);
 
-    // Tunneling PreviewKeyDown captures the focused row BEFORE the framework's built-in focus
-    // navigation moves it (and marks the key Handled), so OnKeyDownForNavigation can anchor on the
-    // pre-move row and advance exactly one row instead of doubling up with the built-in move.
+    // Pre-key focus snapshots are needed because XAML directional navigation can move focus before
+    // bubbling handlers run.
     winrt::KeyEventHandler m_previewKeyDownHandler{ nullptr };
 
-    // Editing gesture handlers; the registration is released with the element, so no RemoveHandler.
     winrt::KeyEventHandler m_editingKeyDownHandler{ nullptr };
     winrt::UIElement::LosingFocus_revoker m_editingLosingFocusRevoker{};
 
-    // Set while a focus-loss commit check is queued, so a burst of focus changes produces one
-    // re-evaluation rather than one commit attempt each.
     bool m_focusLossCommitQueued{ false };
 
     int32_t m_navAnchorRow{ -1 };
+    int32_t m_navAnchorCellRow{ -1 };
+    int32_t m_navAnchorCellColumn{ -1 };
+    int32_t m_navAnchorHeaderColumn{ -1 };
+    // Shared body/header visible-column cursor; stored as an index so it survives row recycling.
+    int32_t m_currentCellColumn{ 0 };
+    int32_t m_currentCellRow{ -1 };
+
+    // Distinguishes column 0 from "no column chosen yet" so first header entry does not relocate.
+    bool m_columnCursorEstablished{ false };
+    void SetColumnCursorInternal(int32_t visibleColumnIndex);
+    void ResetColumnCursorInternal();
+
+    // Two-level ARIA treegrid body cursor: row level or cell level.
+    bool m_cellCursorActive{ false };
+    // True while Enter has moved focus into hosted cell content; Escape restores grid navigation
+    // after hosted controls, such as ComboBox, handle their own Escape.
+    bool m_cellInteractionActive{ false };
+    // Weak: cells are recycled on every scroll.
+    winrt::weak_ref<winrt::FrameworkElement> m_cellInteractionCell{ nullptr };
+    // The row currently drilled in, so the cursor can pop it back to row level when it moves on.
+    // Weak: rows are recycled on every scroll.
+    winrt::weak_ref<winrt::TableViewRow> m_cellLevelRow{ nullptr };
+
+    // Row-level Left/Right drill between row and cells; group headers use Left/Right for expand/collapse.
+    bool TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args);
+    bool TryHandleGroupHeaderExpandCollapseKey(const winrt::KeyRoutedEventArgs& args);
+    // Enter from a focused cell moves into interactive display content; Escape moves back out.
+    bool TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs& args);
+    bool TryHandleCellInteractionEscapeKey(const winrt::KeyRoutedEventArgs& args);
+    // Swallows navigation keys the hosted control did not want, so XAML's directional navigation
+    // cannot wander out of the cell while interaction mode is active.
+    bool TryHandleCellInteractionNavigationKey(const winrt::KeyRoutedEventArgs& args);
+    // Focus helpers and pre-key anchors for the row/group-header levels.
+    bool FocusRowContainerInternal(winrt::UIElement const& element);
+    bool FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel);
+    int32_t GetFocusedRowContainerIndex() const;
+    int32_t GetFocusedGroupHeaderIndex() const;
+    int32_t m_navAnchorRowContainer{ -1 };
+    int32_t m_navAnchorGroupHeader{ -1 };
+
     void OnPreviewKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
 
-    // Keyboard navigation helpers.
+    bool TryHandleCellNavigationKey(const winrt::KeyRoutedEventArgs& args);
+
+    // Moves the cell cursor from a pre-key anchor; consumes handled cell-navigation keys, including
+    // boundaries. Pass -1, -1 when no routed event is in flight.
+    bool TryMoveCellCursorFromAnchor(
+        winrt::Windows::System::VirtualKey key, bool isControlDown,
+        int32_t anchorRow, int32_t anchorColumn);
+
+    static constexpr int32_t c_lastColumnSentinel{ 0x7ffffffe };
+
+    winrt::TableViewRow GetRealizedRowAt(int32_t rowIndex) const;
+
     int32_t GetFocusedRowIndex() const;
     int32_t GetEstimatedRowsPerPage(); // Non-const — GetDensityRowMinHeight() mutates the resource cache.
 };

@@ -8,6 +8,7 @@
 #include "TableViewSource.h"
 #include "TableViewRow.h"
 #include "TableViewAutomationPeer.h"
+#include "TableViewAutomationHelpers.h"
 #include "RowMetadataProvider.h"
 #include "TableViewGroupHeader.h"
 #include "TableViewGroupInfo.h"
@@ -18,6 +19,15 @@
 
 namespace
 {
+    winrt::IInspectable GetGroupHeaderKey(GroupedEntry const& entry)
+    {
+        auto const groupObject = entry.Group();
+        if (auto const group = groupObject.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>())
+        {
+            return group.Group();
+        }
+        return groupObject;
+    }
     // Every step can fail on a locale-starved or self-contained host, and this runs during
     // measure, so nothing is allowed to escape.
     winrt::hstring LocalizedOrFallback(std::wstring_view resourceName, std::wstring_view fallback) noexcept
@@ -100,6 +110,62 @@ bool TableView::IsGroupHeaderRow(int32_t index) const
 {
     TableViewRowInfo rowInfo{};
     return TryGetTableViewSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::GroupHeader;
+}
+
+int32_t TableView::GetDataRowPositionInSetInternal(int32_t rowIndex) const
+{
+    if (rowIndex < 0)
+    {
+        return 0;
+    }
+
+    if (!IsTableViewSourceGrouped())
+    {
+        return rowIndex + 1;
+    }
+
+    int32_t position = 0;
+    for (int32_t index = 0; index <= rowIndex; ++index)
+    {
+        TableViewRowInfo rowInfo{};
+        if (!TryGetTableViewSourceRowInfo(index, rowInfo))
+        {
+            return rowIndex + 1;
+        }
+
+        if (rowInfo.Kind == TableViewRowKind::Data)
+        {
+            ++position;
+        }
+    }
+
+    return position;
+}
+
+int32_t TableView::GetDataRowSizeOfSetInternal() const
+{
+    const auto rowCount = GetRowCountInternal();
+    if (!IsTableViewSourceGrouped())
+    {
+        return rowCount;
+    }
+
+    int32_t dataRowCount = 0;
+    for (int32_t index = 0; index < rowCount; ++index)
+    {
+        TableViewRowInfo rowInfo{};
+        if (!TryGetTableViewSourceRowInfo(index, rowInfo))
+        {
+            return rowCount;
+        }
+
+        if (rowInfo.Kind == TableViewRowKind::Data)
+        {
+            ++dataRowCount;
+        }
+    }
+
+    return dataRowCount;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -342,6 +408,7 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     // told clients to re-read a structure that had not changed yet.
     if (changed)
     {
+        QueueGroupExpansionRowRefresh();
         RaiseGroupStructureChanged();
     }
 
@@ -389,7 +456,18 @@ void TableView::RestoreGroupHeaderFocusIfPending(winrt::hstring const& identity)
                 strongThis->m_pendingGroupFocusLayoutToken = {};
             }
 
-            strongThis->FocusGroupHeaderByIdentity(identity, focusState);
+            // This runs from a LAYOUT callback, where an escaping exception reaches no app handler
+            // and fails the process fast instead. FocusGroupHeaderByIdentity realizes a container
+            // and moves focus, both of which can throw when the projection has moved underneath a
+            // deferred restore.
+            try
+            {
+                strongThis->FocusGroupHeaderByIdentity(identity, focusState);
+            }
+            catch (...)
+            {
+                // Best-effort focus restore: the group can be gone by the time layout settles.
+            }
         });
 }
 
@@ -408,6 +486,15 @@ void TableView::FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt
 
     auto repeater = m_rowsRepeater.get();
     if (!repeater)
+    {
+        return;
+    }
+
+    // The metadata provider and repeater own separate views that can absorb reshapes at different
+    // times, so a resolved index can exceed what the repeater accepts. GetOrCreateElement throws
+    // for that, and this deferred layout callback would fail-fast the process.
+    auto const sourceView = repeater.ItemsSourceView();
+    if (!sourceView || index >= sourceView.Count())
     {
         return;
     }
@@ -492,6 +579,7 @@ void TableView::SetAllGroupsExpansion(bool expand)
 
     if (changed)
     {
+        QueueGroupExpansionRowRefresh();
         RaiseGroupStructureChanged();
     }
 
@@ -605,6 +693,13 @@ winrt::hstring TableView::StringifyGroupKey(winrt::IInspectable const& key)
 // Group-header containers
 // ---------------------------------------------------------------------------------------------
 
+winrt::hstring TableView::GetGroupHeaderNameCandidate(GroupedEntry const& entry)
+{
+    auto const key = GetGroupHeaderKey(entry);
+    return GroupInfoToName(winrt::make<::TableViewGroupInfo>(
+        key, entry.GroupItemCount(), 0, false, false, StringifyGroupKey(key)));
+}
+
 void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& header, int32_t index)
 {
     if (!header)
@@ -654,15 +749,7 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         // internal group object. entry->Group() is the ShapedGroup (an ICollectionViewGroup);
         // unwrap it to the key it carries so an app template binding {Binding Key} sees the key
         // value, not the projection wrapper. KeyText / display is unaffected either way.
-        auto const groupObject = entry->Group();
-        if (auto const collectionViewGroup = groupObject.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>())
-        {
-            groupKey = collectionViewGroup.Group();
-        }
-        else
-        {
-            groupKey = groupObject;
-        }
+        groupKey = GetGroupHeaderKey(*entry);
         itemCount = entry->GroupItemCount();
         isExpanded = hasRowInfo ? rowInfo.IsExpanded : entry->IsExpanded();
         isExpandable = hasRowInfo ? rowInfo.IsExpandable : (entry->GroupItemCount() > 0);
