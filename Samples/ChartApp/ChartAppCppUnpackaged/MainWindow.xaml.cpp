@@ -278,7 +278,7 @@ namespace
 
 }
 
-namespace winrt::ChartAppCppUnpackaged::implementation
+namespace winrt::ChartsSample::implementation
 {
     struct SecondaryChartState
     {
@@ -450,9 +450,10 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         }
     }
 
-    MainWindow::MainWindow()
+    MainWindow::MainWindow(hstring const& variant)
     {
         InitializeComponent();
+        VariantText().Text(variant);
         Month().ItemsSource(single_threaded_observable_vector<hstring>({ L"Jan", L"Feb", L"Mar", L"Apr", L"May", L"Jun" }));
         m_markupProfitValues = single_threaded_observable_vector<double>({ 18, 27, 22, 41, 36, 52 });
         m_markupExpenseValues = single_threaded_observable_vector<double>({ 31, 25, 29, 24, 32, 28 });

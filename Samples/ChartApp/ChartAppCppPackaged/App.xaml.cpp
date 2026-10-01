@@ -5,7 +5,7 @@
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
 
-namespace winrt::ChartAppCppPackaged::implementation
+namespace winrt::ChartsSample::implementation
 {
     App::App()
     {
@@ -27,7 +27,7 @@ namespace winrt::ChartAppCppPackaged::implementation
     {
         // Initializing XAML on another STA must not create or replace the primary window.
         if (GetCurrentThreadId() != m_primaryThreadId) return;
-        if (!window) window = make<MainWindow>();
+        if (!window) window = make<MainWindow>(L"C++/WinRT | Packaged | Synthetic data");
         window.Activate();
     }
 }

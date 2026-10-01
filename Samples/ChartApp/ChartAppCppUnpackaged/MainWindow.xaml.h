@@ -7,13 +7,13 @@
 #include <memory>
 #include <thread>
 
-namespace winrt::ChartAppCppUnpackaged::implementation
+namespace winrt::ChartsSample::implementation
 {
     struct SecondaryChartState;
 
     struct MainWindow : MainWindowT<MainWindow>
     {
-        MainWindow();
+        MainWindow(winrt::hstring const& variant);
 
         void OnLayoutSizeChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::SizeChangedEventArgs const&);
         void OnWorkspaceSizeChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::SizeChangedEventArgs const&);
@@ -153,7 +153,7 @@ namespace winrt::ChartAppCppUnpackaged::implementation
     };
 }
 
-namespace winrt::ChartAppCppUnpackaged::factory_implementation
+namespace winrt::ChartsSample::factory_implementation
 {
     struct MainWindow : MainWindowT<MainWindow, implementation::MainWindow>
     {

@@ -2,7 +2,7 @@
 
 #include "App.xaml.g.h"
 
-namespace winrt::ChartAppCppPackaged::implementation
+namespace winrt::ChartsSample::implementation
 {
     struct App : AppT<App>
     {
