@@ -6,7 +6,7 @@
     <MinimalCoreWin>true</MinimalCoreWin>
     <ProjectGuid>{85d07e77-18f8-45f8-989c-26fb15ee8f0d}</ProjectGuid>
     <ProjectName>ChartAppCppUnpackaged</ProjectName>
-    <RootNamespace>ChartAppCppUnpackaged</RootNamespace>
+    <RootNamespace>ChartsSample</RootNamespace>
     <!--
       $(TargetName) should be same as $(RootNamespace) so that the produced binaries (.exe/.pri/etc.)
       have a name that matches the .winmd
