@@ -9,7 +9,7 @@
   <PropertyGroup>
     <WinUISnoopWinAppSdkVersion>2.0.1</WinUISnoopWinAppSdkVersion>
     <WinUISnoopWindowsSdkBuildToolsVersion>10.0.26100.4654</WinUISnoopWindowsSdkBuildToolsVersion>
-    <WinUISnoopCppWinRTVersion>2.0.250303.1</WinUISnoopCppWinRTVersion>
+    <WinUISnoopCppWinRTVersion>3.0.260818.1</WinUISnoopCppWinRTVersion>
     <WinUISnoopWilVersion>1.0.240803.1</WinUISnoopWilVersion>
   </PropertyGroup>
 </Project>
