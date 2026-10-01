@@ -156,7 +156,7 @@ void TableViewRow::SetTerminalGridLineSuppression(TerminalGridLineSuppressionSta
 
 void TableViewRow::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    if (args.Property() == winrt::Control::BorderThicknessProperty() && m_suppressBottomGridLine)
+    if (args.Property() == winrt::Control::BorderThicknessProperty())
     {
         RefreshGridLines();
     }
@@ -919,16 +919,12 @@ void TableViewRow::RefreshGridLines()
 
     if (auto gridLineBorder = m_gridLineBorder.get())
     {
-        if (!m_suppressBottomGridLine)
+        auto thickness = BorderThickness();
+        if (m_suppressBottomGridLine)
         {
-            gridLineBorder.ClearValue(winrt::Border::BorderThicknessProperty());
-        }
-        else
-        {
-            auto thickness = BorderThickness();
             thickness.Bottom = 0.0;
-            gridLineBorder.BorderThickness(thickness);
         }
+        gridLineBorder.BorderThickness(thickness);
     }
 
     auto host = m_cellsHost.get();

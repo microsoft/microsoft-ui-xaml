@@ -176,7 +176,10 @@ namespace
         {
         }
 
-        return (std::max)(0.25, 0.5 / scale);
+        // Transformed bounds are float-backed and can land microscopically beyond the half-pixel
+        // boundary after layout rounding.
+        constexpr double layoutEpsilon = 1.0 / 1024.0;
+        return (std::max)(0.25, 0.5 / scale) + layoutEpsilon;
     }
 
     bool TryGetBoundsRelativeTo(
@@ -358,6 +361,7 @@ TableView::TableView()
             if (auto strongThis = weakThis.get())
             {
                 strongThis->QueueRebuildHeaders();
+                strongThis->QueueTerminalGridLineRefresh();
             }
         });
 
@@ -1030,8 +1034,10 @@ std::optional<bool> TableView::ShouldSuppressTrailingGridLine()
     }
 
     const auto border = BorderThickness();
-    const bool isRtl = FlowDirection() == winrt::FlowDirection::RightToLeft;
-    const double outerThickness = (std::max)(0.0, isRtl ? border.Left : border.Right);
+    // Both the candidate edge below and this edge are read in the panel's logical coordinate
+    // space, which XAML mirrors wholesale under RTL. The logical trailing edge therefore always
+    // meets BorderThickness.Right, regardless of flow direction.
+    const double outerThickness = (std::max)(0.0, border.Right);
     if (outerThickness <= 0.0 || ActualWidth() <= 0.0)
     {
         return false;
@@ -1076,10 +1082,10 @@ std::optional<bool> TableView::ShouldSuppressTrailingGridLine()
         return std::nullopt;
     }
 
-    const double candidateEdge = isRtl ? bounds.X : bounds.X + bounds.Width;
-    const double outerEdge = isRtl
-        ? outerThickness
-        : ActualWidth() - outerThickness;
+    // TransformToVisual reports the panel's logical coordinate space. In RTL, XAML mirrors that
+    // space at render time, so the logical right edge maps to the physical left edge.
+    const double candidateEdge = bounds.X + bounds.Width;
+    const double outerEdge = ActualWidth() - outerThickness;
     return std::abs(candidateEdge - outerEdge) <= TerminalEdgeTolerance(*this);
 }
 
@@ -1197,7 +1203,6 @@ void TableView::RefreshTerminalGridLines()
         ? ShouldSuppressBottomGridLine(terminalElement, hasBottomGridLine)
         : std::optional<bool>{ false };
     const bool suppressBottom = bottomResult.value_or(m_suppressBottomGridLine);
-    const bool bottomChanged = suppressBottom != m_suppressBottomGridLine;
     m_suppressBottomGridLine = suppressBottom;
 
     if (trailingChanged || terminalColumnChanged)
@@ -1205,13 +1210,31 @@ void TableView::RefreshTerminalGridLines()
         ApplyGridLinesToHeader();
         RefreshGridLinesOnRealizedRows();
     }
-    else if (terminalRow && (terminalChanged || bottomChanged))
+
+    // Push unconditionally rather than only on a detected change. A container can be recycled or
+    // re-prepared while this state is applied, so its own copy can disagree with the table's; a
+    // change-gated push would leave that disagreement permanent. The setters ignore no-ops.
+    if (auto repeater = m_rowsRepeater.get())
+    {
+        const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
+        for (int32_t i = 0; i < childCount; ++i)
+        {
+            if (auto header = winrt::VisualTreeHelper::GetChild(repeater, i)
+                    .try_as<winrt::TableViewGroupHeader>();
+                header && !IsSameObject(header, terminalGroupHeader))
+            {
+                winrt::get_self<TableViewGroupHeader>(header)
+                    ->SetTerminalBottomGridLineSuppression(false);
+            }
+        }
+    }
+    if (terminalRow)
     {
         winrt::get_self<TableViewRow>(terminalRow)->SetTerminalGridLineSuppression({
             .suppressTrailing = m_suppressTrailingGridLine,
             .suppressBottom = m_suppressBottomGridLine });
     }
-    if (terminalGroupHeader && (terminalChanged || bottomChanged))
+    if (terminalGroupHeader)
     {
         winrt::get_self<TableViewGroupHeader>(terminalGroupHeader)
             ->SetTerminalBottomGridLineSuppression(m_suppressBottomGridLine);

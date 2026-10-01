@@ -89,11 +89,9 @@ void TableViewGroupHeader::OnApplyTemplate()
 
 void TableViewGroupHeader::SetTerminalBottomGridLineSuppression(bool suppress)
 {
-    if (m_suppressBottomGridLine == suppress)
-    {
-        return;
-    }
-
+    // Always re-apply rather than returning early when the flag is unchanged: the overlay is
+    // also derived from BorderThickness, so a same-value push is the caller's way of asserting
+    // the overlay still matches the current thickness. Mirrors TableViewRow.
     m_suppressBottomGridLine = suppress;
     UpdateTerminalBottomGridLineSuppression();
 }
@@ -102,16 +100,12 @@ void TableViewGroupHeader::UpdateTerminalBottomGridLineSuppression()
 {
     if (auto gridLineBorder = m_gridLineBorder.get())
     {
-        if (!m_suppressBottomGridLine)
+        auto thickness = BorderThickness();
+        if (m_suppressBottomGridLine)
         {
-            gridLineBorder.ClearValue(winrt::Border::BorderThicknessProperty());
-        }
-        else
-        {
-            auto thickness = BorderThickness();
             thickness.Bottom = 0.0;
-            gridLineBorder.BorderThickness(thickness);
         }
+        gridLineBorder.BorderThickness(thickness);
     }
 }
 
@@ -147,7 +141,6 @@ void TableViewGroupHeader::OnPropertyChanged(const winrt::DependencyPropertyChan
     {
         UpdateTerminalBottomGridLineSuppression();
     }
-
 }
 
 void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState)
