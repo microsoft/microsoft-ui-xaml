@@ -2,11 +2,115 @@
 // Licensed under the MIT License.
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Win8Xaml.CompilerProxies;
 
 namespace UnitTests
 {
+    [TestClass]
+    public class XbfOutputStreamTests
+    {
+        private string _directory;
+
+        [TestInitialize]
+        public void Initialize()
+        {
+            _directory = Path.Combine(Path.GetTempPath(), "XamlCompilerXbfOutputTests", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(_directory);
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            Directory.Delete(_directory, true);
+        }
+
+        [TestMethod]
+        public void UnchangedXbfUpdatesTimestamp()
+        {
+            AssertUnchangedOutputIsCurrent(new byte[] { 1, 2, 3 });
+        }
+
+        [TestMethod]
+        public void UnchangedEmptyXbfUpdatesTimestamp()
+        {
+            AssertUnchangedOutputIsCurrent(new byte[0]);
+        }
+
+        [TestMethod]
+        public void MissingXbfIsCreated()
+        {
+            string path = Path.Combine(_directory, "new.xbf");
+            byte[] contents = { 1, 2, 3 };
+            using (CreateOutput(path, contents)) { }
+            CollectionAssert.AreEqual(contents, File.ReadAllBytes(path));
+        }
+
+        [TestMethod]
+        public void ChangedXbfIsWritten()
+        {
+            byte[] original = { 1, 2, 3 };
+            foreach (byte[] contents in new[] { new byte[] { 1, 2, 4 }, new byte[] { 1, 2, 3, 4 } })
+            {
+                string path = Path.Combine(_directory, "changed.xbf");
+                File.WriteAllBytes(path, original);
+                File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddDays(-2));
+                DateTime sourceTimestamp = DateTime.UtcNow.AddMinutes(-1);
+                using (CreateOutput(path, contents)) { }
+                CollectionAssert.AreEqual(contents, File.ReadAllBytes(path));
+                Assert.IsTrue(File.GetLastWriteTimeUtc(path) >= sourceTimestamp);
+            }
+        }
+
+        [TestMethod]
+        public void RepeatedDisposeDoesNotUpdateTimestamp()
+        {
+            string path = Path.Combine(_directory, "disposed.xbf");
+            byte[] contents = { 1, 2, 3 };
+            File.WriteAllBytes(path, contents);
+            using (IDisposable output = CreateOutput(path, contents))
+            {
+                output.Dispose();
+                File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddDays(-2));
+                DateTime timestamp = File.GetLastWriteTimeUtc(path);
+                output.Dispose();
+                Assert.AreEqual(timestamp, File.GetLastWriteTimeUtc(path));
+            }
+        }
+
+        private void AssertUnchangedOutputIsCurrent(byte[] contents)
+        {
+            string path = Path.Combine(_directory, "unchanged.xbf");
+            File.WriteAllBytes(path, contents);
+            File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddDays(-2));
+            DateTime sourceTimestamp = DateTime.UtcNow.AddMinutes(-1);
+            using (CreateOutput(path, contents)) { }
+            CollectionAssert.AreEqual(contents, File.ReadAllBytes(path));
+            Assert.IsTrue(File.GetLastWriteTimeUtc(path) >= sourceTimestamp,
+                "Successful byte-identical generation must advance the XBF timestamp beyond the source.");
+        }
+
+        private static IDisposable CreateOutput(string path, byte[] contents)
+        {
+            object output = new ProxyHelper("Microsoft.UI.Xaml.Markup.Compiler.FileIO.StreamXbfOutput")
+                .CreateInstance(new object[] { path });
+            IntPtr written = Marshal.AllocHGlobal(sizeof(int));
+            try
+            {
+                ((IStream)output).Write(contents, contents.Length, written);
+                Assert.AreEqual(contents.Length, Marshal.ReadInt32(written));
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(written);
+            }
+            return (IDisposable)output;
+        }
+    }
+
     [TestClass]
     public class XbfGeneratorTests
     {

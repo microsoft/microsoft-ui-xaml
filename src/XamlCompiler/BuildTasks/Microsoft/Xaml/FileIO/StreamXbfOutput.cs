@@ -35,14 +35,18 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.FileIO
             // If already disposed, do nothing
             if (_underlyingStream != null)
             {
-                // Conditionally write output file only if content has changed,
-                // to avoid unnecessary downstream build ripples.
+                // Avoid rewriting identical bytes, but mark successful generation as current
+                // so Pass2's source/output timestamp check does not keep rebuilding this file.
                 if (ContentChanged())
                 {
                     using (var fileStream = new FileStream(_filePath, FileMode.Create, FileAccess.Write))
                     {
                         _memoryStream.WriteTo(fileStream);
                     }
+                }
+                else
+                {
+                    File.SetLastWriteTimeUtc(_filePath, DateTime.UtcNow);
                 }
             }
 
