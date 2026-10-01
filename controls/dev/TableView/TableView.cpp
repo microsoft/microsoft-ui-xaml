@@ -176,10 +176,27 @@ namespace
         {
         }
 
-        // Transformed bounds are float-backed and can land microscopically beyond the half-pixel
-        // boundary after layout rounding.
-        constexpr double layoutEpsilon = 1.0 / 1024.0;
-        return (std::max)(0.25, 0.5 / scale) + layoutEpsilon;
+        // Half a physical pixel, widened slightly because transformed bounds are float-backed and
+        // can land microscopically beyond that boundary after layout rounding.
+        constexpr double layoutEpsilonPixels = 1.0 / 64.0;
+        return (0.5 + layoutEpsilonPixels) / scale;
+    }
+
+    // A thickness that paints nothing reserves space without drawing an edge, so an internal
+    // separator meeting it is not a duplicate.
+    bool PaintsEdge(const winrt::Brush& brush) noexcept
+    {
+        if (!brush)
+        {
+            return false;
+        }
+
+        if (const auto solid = brush.try_as<winrt::SolidColorBrush>())
+        {
+            return solid.Color().A != 0;
+        }
+
+        return true;
     }
 
     bool TryGetBoundsRelativeTo(
@@ -1034,11 +1051,10 @@ std::optional<bool> TableView::ShouldSuppressTrailingGridLine()
     }
 
     const auto border = BorderThickness();
-    // Both the candidate edge below and this edge are read in the panel's logical coordinate
-    // space, which XAML mirrors wholesale under RTL. The logical trailing edge therefore always
-    // meets BorderThickness.Right, regardless of flow direction.
+    // Both edges are read in the panel's logical coordinate space, which XAML mirrors wholesale
+    // under RTL, so the logical trailing edge meets BorderThickness.Right in either direction.
     const double outerThickness = (std::max)(0.0, border.Right);
-    if (outerThickness <= 0.0 || ActualWidth() <= 0.0)
+    if (outerThickness <= 0.0 || ActualWidth() <= 0.0 || !PaintsEdge(BorderBrush()))
     {
         return false;
     }
@@ -1082,8 +1098,7 @@ std::optional<bool> TableView::ShouldSuppressTrailingGridLine()
         return std::nullopt;
     }
 
-    // TransformToVisual reports the panel's logical coordinate space. In RTL, XAML mirrors that
-    // space at render time, so the logical right edge maps to the physical left edge.
+    // TransformToVisual reports the panel's logical coordinate space.
     const double candidateEdge = bounds.X + bounds.Width;
     const double outerEdge = ActualWidth() - outerThickness;
     return std::abs(candidateEdge - outerEdge) <= TerminalEdgeTolerance(*this);
@@ -1099,7 +1114,7 @@ std::optional<bool> TableView::ShouldSuppressBottomGridLine(
     }
 
     const double bottomThickness = (std::max)(0.0, BorderThickness().Bottom);
-    if (bottomThickness <= 0.0 || ActualHeight() <= 0.0)
+    if (bottomThickness <= 0.0 || ActualHeight() <= 0.0 || !PaintsEdge(BorderBrush()))
     {
         return false;
     }
@@ -1142,18 +1157,40 @@ void TableView::RefreshTerminalGridLines()
     winrt::FrameworkElement terminalElement{ nullptr };
     winrt::TableViewRow terminalRow{ nullptr };
     winrt::TableViewGroupHeader terminalGroupHeader{ nullptr };
+    bool terminalGeometryUnavailable = false;
     if (auto repeater = m_rowsRepeater.get())
     {
-        if (auto sourceView = repeater.ItemsSourceView())
+        // Select by geometry rather than by item index: once content overflows and scrolls, the
+        // container meeting the inner bottom edge is not the last item.
+        const double innerBottom = ActualHeight() - (std::max)(0.0, BorderThickness().Bottom);
+        double closestDistance = std::numeric_limits<double>::infinity();
+        const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
+        for (int32_t i = 0; i < childCount; ++i)
         {
-            const auto count = sourceView.Count();
-            if (count > 0)
+            const auto child =
+                winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::FrameworkElement>();
+            if (!child)
             {
-                terminalElement = repeater.TryGetElement(count - 1).try_as<winrt::FrameworkElement>();
-                terminalRow = terminalElement.try_as<winrt::TableViewRow>();
-                terminalGroupHeader = terminalElement.try_as<winrt::TableViewGroupHeader>();
+                continue;
+            }
+
+            winrt::Rect bounds{};
+            if (!TryGetBoundsRelativeTo(child, *this, bounds))
+            {
+                terminalGeometryUnavailable = true;
+                continue;
+            }
+
+            if (const double distance = std::abs(bounds.Y + bounds.Height - innerBottom);
+                distance < closestDistance)
+            {
+                closestDistance = distance;
+                terminalElement = child;
             }
         }
+
+        terminalRow = terminalElement.try_as<winrt::TableViewRow>();
+        terminalGroupHeader = terminalElement.try_as<winrt::TableViewGroupHeader>();
     }
 
     const auto previousTerminalRow = m_terminalGridLineRow.get();
@@ -1201,7 +1238,7 @@ void TableView::RefreshTerminalGridLines()
             : terminalGroupHeader && terminalGroupHeader.BorderThickness().Bottom > 0.0;
     const auto bottomResult = terminalElement
         ? ShouldSuppressBottomGridLine(terminalElement, hasBottomGridLine)
-        : std::optional<bool>{ false };
+        : (terminalGeometryUnavailable ? std::optional<bool>{} : std::optional<bool>{ false });
     const bool suppressBottom = bottomResult.value_or(m_suppressBottomGridLine);
     m_suppressBottomGridLine = suppressBottom;
 
@@ -1213,7 +1250,8 @@ void TableView::RefreshTerminalGridLines()
 
     // Push unconditionally rather than only on a detected change. A container can be recycled or
     // re-prepared while this state is applied, so its own copy can disagree with the table's; a
-    // change-gated push would leave that disagreement permanent. The setters ignore no-ops.
+    // change-gated push would leave that disagreement permanent. This is also the only thing that
+    // re-derives the overlay from the container's current BorderThickness.
     if (auto repeater = m_rowsRepeater.get())
     {
         const int32_t childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);

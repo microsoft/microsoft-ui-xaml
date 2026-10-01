@@ -154,14 +154,6 @@ void TableViewRow::SetTerminalGridLineSuppression(TerminalGridLineSuppressionSta
     RefreshGridLines();
 }
 
-void TableViewRow::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    if (args.Property() == winrt::Control::BorderThicknessProperty())
-    {
-        RefreshGridLines();
-    }
-}
-
 winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
 {
     return winrt::make<TableViewRowAutomationPeer>(*this);

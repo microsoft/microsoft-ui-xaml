@@ -25,7 +25,6 @@ public:
     // IFrameworkElement overrides
     void OnApplyTemplate();
     winrt::AutomationPeer OnCreateAutomationPeer();
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Use the Control virtual signatures; event-handler overloads break the ABI shim.
     void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);

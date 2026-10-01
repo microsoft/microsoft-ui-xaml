@@ -89,9 +89,9 @@ void TableViewGroupHeader::OnApplyTemplate()
 
 void TableViewGroupHeader::SetTerminalBottomGridLineSuppression(bool suppress)
 {
-    // Always re-apply rather than returning early when the flag is unchanged: the overlay is
-    // also derived from BorderThickness, so a same-value push is the caller's way of asserting
-    // the overlay still matches the current thickness. Mirrors TableViewRow.
+    // Re-applies on every call rather than returning early on an unchanged flag: the overlay is
+    // also derived from BorderThickness, so a same-value push re-asserts it against the current
+    // thickness.
     m_suppressBottomGridLine = suppress;
     UpdateTerminalBottomGridLineSuppression();
 }
@@ -136,10 +136,6 @@ void TableViewGroupHeader::OnPropertyChanged(const winrt::DependencyPropertyChan
         // projection here, so there is a single write path for expansion state.
         SyncExpansionToContent();
         UpdateVisualStates(true /* useTransitions */);
-    }
-    else if (property == winrt::Control::BorderThicknessProperty())
-    {
-        UpdateTerminalBottomGridLineSuppression();
     }
 }
 
