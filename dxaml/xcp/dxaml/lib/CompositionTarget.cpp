@@ -225,7 +225,7 @@ namespace DirectUI
     _Check_return_ HRESULT CompositionTarget::GetCompositorForCurrentThread(_Outptr_ WUComp::ICompositor** compositor)
     {
         IFC_RETURN(CheckActivationAllowed());
-
+        
         IFCPTR_RETURN(compositor);
         *compositor = DXamlCore::GetCurrent()->GetHandle()->GetCompositor();
         AddRefInterface(*compositor);
