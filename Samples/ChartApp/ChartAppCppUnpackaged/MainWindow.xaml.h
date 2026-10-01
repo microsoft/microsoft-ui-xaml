@@ -27,12 +27,27 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         void OnSystemClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
         void OnToggleUpdatesClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
         void OnToggleSecondaryClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void OnLineChoiceChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&);
+        void OnLineVisibleClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void OnLineAddSeriesClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void OnLineRemoveSeriesClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void OnLineResetClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void OnAreaSeriesChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&);
+        void OnAreaAddSeriesClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void OnAreaRemoveSeriesClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void OnAreaMarkerChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&);
         void OnAreaChoiceChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&);
         void OnAreaVisibleClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
         void OnAreaValuesClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
         void OnAreaMarkersClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
         void OnAreaLegendClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
         void OnAreaResetClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void OnBarSeriesChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&);
+        void OnBarAddSeriesClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void OnBarRemoveSeriesClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void OnBarMarkerChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&);
+        void OnBarMarkersClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
+        void OnBarOrientationChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&);
         void OnBarColorChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&);
         void OnBarVisibleClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
         void OnBarValuesClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
@@ -74,9 +89,18 @@ namespace winrt::ChartAppCppUnpackaged::implementation
 
     private:
         void UpdateWorkspaceLayout(Microsoft::UI::Xaml::Controls::Grid const& workspace);
+        winrt::hstring SeriesDataText(Microsoft::UI::Xaml::Controls::Charts::CartesianSeries const& series);
         void ApplyEdit(std::function<void()> const& edit,
             Microsoft::UI::Xaml::Controls::Charts::Chart const& chart = nullptr);
         void ApplyExampleEdit(bool area, std::function<void()> const& edit, winrt::hstring const& message);
+        void ApplyLineEdit(std::function<void()> const& edit, winrt::hstring const& message);
+        void RebuildSeriesSelector(Microsoft::UI::Xaml::Controls::Charts::Chart const& chart,
+            Microsoft::UI::Xaml::Controls::ComboBox const& selector, int32_t selectedIndex);
+        void AddExampleSeries(int32_t example);
+        void RemoveSelectedSeries(Microsoft::UI::Xaml::Controls::Charts::Chart const& chart,
+            Microsoft::UI::Xaml::Controls::ComboBox const& selector);
+        bool HasProfitSeries();
+        void SyncAxisAvailability();
         void SyncAreaOptions();
         void SyncBarOptions();
         void SetAreaAppearance(int32_t colorIndex, int32_t fillIndex);
@@ -84,10 +108,12 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         void SetBarColor(int32_t colorIndex);
         void ReportError(winrt::hresult_error const& error);
         void SyncPresentationKnobs();
-        void SyncAxisControls();
+        void SyncAxisControls(bool includeDateTime = true);
         void QueueLinearAxisEdit(Microsoft::UI::Xaml::Controls::NumberBox const& box, int property);
         void QueueOverrideIndexEdit(double previousValue, bool synchronize);
         Microsoft::UI::Xaml::Controls::Charts::LineSeries SelectedPresentationSeries();
+        Microsoft::UI::Xaml::Controls::Charts::AreaSeries SelectedAreaSeries();
+        Microsoft::UI::Xaml::Controls::Charts::BarSeries SelectedBarSeries();
         uint32_t SelectedOverrideIndex();
         void CreateCodeChart();
         void CreateDateTimeCharts();
@@ -101,6 +127,8 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         Microsoft::UI::Xaml::Controls::Charts::Chart m_codeChart{ nullptr };
         Microsoft::UI::Xaml::Controls::Charts::LinearAxis m_yAxis{ nullptr };
         Microsoft::UI::Xaml::Controls::Charts::CategoryAxis m_xAxis{ nullptr };
+        Microsoft::UI::Xaml::Controls::Charts::CategoryAxis m_barXAxis{ nullptr };
+        Microsoft::UI::Xaml::Controls::Charts::LinearAxis m_barYAxis{ nullptr };
         Microsoft::UI::Xaml::Controls::Charts::DateTimeAxis m_dtAxisA{ nullptr };
         Microsoft::UI::Xaml::Controls::Charts::DateTimeAxis m_dtAxisB{ nullptr };
         Windows::Foundation::Collections::IObservableVector<double> m_codeChartValues{ nullptr };
@@ -111,6 +139,9 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         winrt::event_token m_codeTick{};
         winrt::event_token m_pollTick{};
         uint32_t m_codeChartUpdateIndex{};
+        uint32_t m_nextLineSeries{ 3 };
+        uint32_t m_nextAreaSeries{ 2 };
+        uint32_t m_nextBarSeries{ 2 };
         bool m_ready{};
         bool m_syncing{};
         bool m_closing{};

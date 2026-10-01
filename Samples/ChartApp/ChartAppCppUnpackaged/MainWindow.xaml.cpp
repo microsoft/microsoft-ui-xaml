@@ -55,10 +55,24 @@ namespace
     constexpr Windows::UI::Color BarOriginalStroke{ 0xFF, 0x07, 0x3B, 0x66 };
     constexpr std::array SeriesColors{
         Windows::UI::Color{ 0xFF, 0x0F, 0x6C, 0xBD },
+        Windows::UI::Color{ 0xFF, 0x00, 0x82, 0x72 },
+        Windows::UI::Color{ 0xFF, 0xFF, 0xB9, 0x00 },
+        Windows::UI::Color{ 0xFF, 0x87, 0x64, 0xB8 },
+        Windows::UI::Color{ 0xFF, 0xE3, 0x00, 0x8C },
+        Windows::UI::Color{ 0xFF, 0x69, 0x79, 0x7E },
         Windows::UI::Color{ 0xFF, 0x10, 0x7C, 0x10 },
         Windows::UI::Color{ 0xFF, 0xD8, 0x3B, 0x01 }
     };
     constexpr std::array<uint8_t, 3> AreaFillAlphas{ 0x60, 0xFF, 0x00 };
+    constexpr std::array<double, 4> LineWeights{ 1, 2, 3, 5 };
+    constexpr std::array LineStyles{
+        StrokeDashStyle::Solid, StrokeDashStyle::Dash, StrokeDashStyle::Dot,
+        StrokeDashStyle::DashDot, StrokeDashStyle::DashDotDot
+    };
+    constexpr std::array<double, 6> ProfitSeed{ 18, 27, 22, 41, 36, 52 };
+    constexpr std::array<double, 6> ExpensesSeed{ 31, 25, 29, 24, 32, 28 };
+    constexpr std::array<double, 6> AreaSeed{ 8, 18, 14, 29, 24, 37 };
+    constexpr std::array<double, 6> BarSeed{ 12, 20, 17, 31, 26, 39 };
 
     struct SyncGuard
     {
@@ -104,6 +118,52 @@ namespace
             }
         }
         return -1;
+    }
+
+    int32_t LineColorIndex(Brush const& stroke)
+    {
+        if (!stroke) return 0;
+        if (auto solid = stroke.try_as<SolidColorBrush>())
+        {
+            for (size_t i = 0; i < SeriesColors.size(); ++i)
+                if (solid.Color().A == 0xFF && SameRgb(solid.Color(), SeriesColors[i]))
+                    return static_cast<int32_t>(i + 1);
+        }
+        return -1;
+    }
+
+    template<typename Collection, typename Value>
+    void RemoveItem(Collection const& collection, Value const& value)
+    {
+        uint32_t index{};
+        if (value && collection.IndexOf(value, index)) collection.RemoveAt(index);
+    }
+
+    void ResetSeriesDefaults(CartesianSeries const& series, double thickness, bool markers, bool labels)
+    {
+        series.IsVisible(true);
+        series.Stroke(nullptr);
+        series.StrokeThickness(thickness);
+        series.StrokeDashStyle(StrokeDashStyle::Solid);
+        series.MarkerShape(MarkerShape::Circle);
+        series.ShowDataMarkers(markers);
+        series.ShowDataLabels(labels);
+        series.DataMarkerBrush(nullptr);
+        series.DataLabelBrush(nullptr);
+        series.DataMarkerOverrides().Clear();
+        series.DataLabelOverrides().Clear();
+    }
+
+    void ResetAxisAppearance(CartesianAxis const& axis, CartesianAxis const& defaults)
+    {
+        axis.IsVisible(defaults.IsVisible());
+        axis.ShowTickLabels(defaults.ShowTickLabels());
+        axis.ShowTickMarks(defaults.ShowTickMarks());
+        axis.GridLines(defaults.GridLines());
+        axis.GridLineMajorBrush(defaults.GridLineMajorBrush());
+        axis.TickBrush(defaults.TickBrush());
+        axis.TickLabelBrush(defaults.TickLabelBrush());
+        axis.AxisLineBrush(defaults.AxisLineBrush());
     }
 
     bool Checked(CheckBox const& box)
@@ -205,7 +265,7 @@ namespace
         return clock::from_file_time(fileTime);
     }
 
-    hstring DataRows(IObservableVector<double> const& values)
+    hstring DataRows(IVector<double> const& values)
     {
         std::wostringstream text;
         for (uint32_t i = 0; i < values.Size(); ++i)
@@ -215,6 +275,7 @@ namespace
         }
         return hstring{ text.str() };
     }
+
 }
 
 namespace winrt::ChartAppCppUnpackaged::implementation
@@ -408,14 +469,17 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         MarkupChart().Axes().Append(m_yAxis);
         ProfitSeries().XAxis(m_xAxis);
         ProfitSeries().YAxis(m_yAxis);
-        auto barX = CategoryAxis{};
-        auto barY = LinearAxis{};
-        BarMarkupChart().Axes().Append(barX);
-        BarMarkupChart().Axes().Append(barY);
-        MarkupBarSeries().XAxis(barX);
-        MarkupBarSeries().YAxis(barY);
+        m_barXAxis = CategoryAxis{};
+        m_barYAxis = LinearAxis{};
+        BarMarkupChart().Axes().Append(m_barXAxis);
+        BarMarkupChart().Axes().Append(m_barYAxis);
+        MarkupBarSeries().XAxis(m_barXAxis);
+        MarkupBarSeries().YAxis(m_barYAxis);
         CreateCodeChart();
         CreateDateTimeCharts();
+        RebuildSeriesSelector(MarkupChart(), PresentationSeriesComboBox(), 0);
+        RebuildSeriesSelector(AreaMarkupChart(), AreaSeriesChoice(), 0);
+        RebuildSeriesSelector(BarMarkupChart(), BarSeriesChoice(), 0);
         m_ready = true;
         SyncPresentationKnobs();
         SyncAxisControls();
@@ -610,16 +674,30 @@ namespace winrt::ChartAppCppUnpackaged::implementation
 
     void MainWindow::UpdateDataText()
     {
-        constexpr wchar_t const* months[]{ L"Jan", L"Feb", L"Mar", L"Apr", L"May", L"Jun" };
         std::wostringstream text;
-        text << L"Month   Profit   Expenses";
-        for (uint32_t i = 0; i < 6; ++i)
+        text << L"Current line series (" << MarkupChart().Series().Size() << L")";
+        for (auto const& series : MarkupChart().Series())
         {
-            text << L'\n' << months[i] << std::setw(9) << m_markupProfitValues.GetAt(i)
-                 << std::setw(11) << m_markupExpenseValues.GetAt(i);
+            text << L"\n\n" << SeriesDataText(series).c_str();
         }
         text << L"\n\nCode line (Alpha, Beta, Gamma, Delta, Epsilon):\n" << DataRows(m_codeChartValues).c_str();
         DataText().Text(text.str());
+        AutomationProperties::SetName(MarkupChart(), L"Monthly line chart");
+        AutomationProperties::SetHelpText(MarkupChart(), L"Current plotted series and visibility are listed under Current data.");
+    }
+
+    hstring MainWindow::SeriesDataText(CartesianSeries const& series)
+    {
+        // Named sources are available before the markup's one-time bindings connect.
+        auto samples = series.YValues();
+        if (series == ProfitSeries()) samples = Profit();
+        else if (series == ExpensesSeries()) samples = Expenses();
+        else if (series == MarkupAreaSeries()) samples = AreaValues();
+        else if (series == MarkupBarSeries()) samples = BarValues();
+        if (!samples) throw hresult_illegal_method_call(L"The series needs a values source.");
+        return series.Title() + (series.IsVisible() ? L" (visible)" : L" (hidden)") +
+            L"\nJan, Feb, Mar, Apr, May, Jun:\n" +
+            DataRows(samples.ItemsSource().as<IVector<double>>());
     }
 
     void MainWindow::ReportError(hresult_error const& error)
@@ -673,60 +751,195 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         }
     }
 
+    void MainWindow::ApplyLineEdit(std::function<void()> const& edit, hstring const& message)
+    {
+        if (!m_ready || m_syncing || m_closing) return;
+        try
+        {
+            {
+                SyncGuard guard{ m_syncing };
+                edit();
+                MarkupChart().InvalidateArrange();
+            }
+            SyncPresentationKnobs();
+            SyncAxisAvailability();
+            UpdateDataText();
+            PresentationKnobStatusText().Text(message);
+        }
+        catch (hresult_error const& error)
+        {
+            SyncPresentationKnobs();
+            SyncAxisAvailability();
+            PresentationKnobStatusText().Text(ErrorText(error));
+        }
+    }
+
+    void MainWindow::RebuildSeriesSelector(Chart const& chart, ComboBox const& selector, int32_t selectedIndex)
+    {
+        SyncGuard guard{ m_syncing };
+        selector.Items().Clear();
+        for (auto const& series : chart.Series()) selector.Items().Append(box_value(series.Title()));
+        selector.SelectedIndex((std::max)(0, (std::min)(selectedIndex, static_cast<int32_t>(chart.Series().Size()) - 1)));
+    }
+
+    void MainWindow::AddExampleSeries(int32_t example)
+    {
+        auto chart = example == 0 ? MarkupChart() : example == 1 ? AreaMarkupChart() : BarMarkupChart();
+        auto selector = example == 0 ? PresentationSeriesComboBox() : example == 1 ? AreaSeriesChoice() : BarSeriesChoice();
+        auto& next = example == 0 ? m_nextLineSeries : example == 1 ? m_nextAreaSeries : m_nextBarSeries;
+        auto number = next++;
+        auto const& seed = example == 0 ? ProfitSeed : example == 1 ? AreaSeed : BarSeed;
+        std::vector<double> values;
+        for (auto value : seed) values.push_back(value * (0.65 + 0.05 * (number % 4)) + number * 3);
+        auto samples = Samples{};
+        samples.ItemsSource(single_threaded_observable_vector<double>(std::move(values)));
+        auto color = SeriesColors[(number - 1) % 6];
+        CartesianSeries series{ nullptr };
+        if (example == 0)
+        {
+            series = LineSeries{};
+            ResetSeriesDefaults(series, 3, true, false);
+        }
+        else if (example == 1)
+        {
+            auto area = AreaSeries{};
+            ResetSeriesDefaults(area, 2, false, false);
+            auto fill = color;
+            fill.A = AreaFillAlphas[0];
+            area.Fill(SolidColorBrush{ fill });
+            series = area;
+        }
+        else
+        {
+            auto bar = BarSeries{};
+            ResetSeriesDefaults(bar, 1.5, false, false);
+            bar.Fill(SolidColorBrush{ color });
+            bar.Orientation(SelectedBarSeries().Orientation());
+            auto xAxis = CategoryAxis{};
+            auto yAxis = LinearAxis{};
+            chart.Axes().Append(xAxis);
+            chart.Axes().Append(yAxis);
+            bar.XAxis(xAxis);
+            bar.YAxis(yAxis);
+            series = bar;
+        }
+        series.Title(L"Series " + to_hstring(number));
+        series.XValues(example == 0 ? Month() : example == 1 ? AreaMonth() : BarMonth());
+        series.YValues(samples);
+        series.Stroke(SolidColorBrush{ color });
+        chart.Data().Append(samples);
+        chart.Series().Append(series);
+        chart.ShowLegend(true);
+        RebuildSeriesSelector(chart, selector, static_cast<int32_t>(chart.Series().Size()) - 1);
+    }
+
+    void MainWindow::RemoveSelectedSeries(Chart const& chart, ComboBox const& selector)
+    {
+        if (chart.Series().Size() <= 1) return;
+        auto index = Selection(selector, static_cast<int32_t>(chart.Series().Size()));
+        auto series = chart.Series().GetAt(index);
+        chart.Series().RemoveAt(index);
+        RemoveItem(chart.Data(), series.YValues());
+        for (auto const& axis : { series.XAxis(), series.YAxis() })
+        {
+            if (!axis) continue;
+            bool used = false;
+            for (auto const& remaining : chart.Series())
+                if (remaining.XAxis() == axis || remaining.YAxis() == axis) used = true;
+            if (!used) RemoveItem(chart.Axes(), axis);
+        }
+        RebuildSeriesSelector(chart, selector, index);
+    }
+
+    bool MainWindow::HasProfitSeries()
+    {
+        uint32_t index{};
+        return MarkupChart().Series().IndexOf(ProfitSeries(), index);
+    }
+
+    void MainWindow::SyncAxisAvailability()
+    {
+        bool present = HasProfitSeries();
+        AxisControls().IsEnabled(present);
+        AxisSeriesWarning().Visibility(!present && AxesEditorPanel().Visibility() == Visibility::Visible
+            ? Visibility::Visible : Visibility::Collapsed);
+    }
+
     void MainWindow::SyncAreaOptions()
     {
         SyncGuard guard{ m_syncing };
-        auto series = MarkupAreaSeries();
+        auto series = SelectedAreaSeries();
         AreaColorChoice().SelectedIndex(SeriesColorIndex(series.Fill(), series.Stroke(), true));
         AreaFillChoice().SelectedIndex(AreaFillIndex(series.Fill()));
+        AreaMarkerChoice().SelectedIndex(static_cast<int32_t>(series.MarkerShape()));
         AreaVisibleCheckBox().IsChecked(series.IsVisible());
+        AreaVisibleCheckBox().Content(box_value(series.IsVisible() ? L"Visible" : L"Hidden"));
         AreaValuesCheckBox().IsChecked(series.ShowDataLabels());
         AreaMarkersCheckBox().IsChecked(series.ShowDataMarkers());
         AreaLegendCheckBox().IsChecked(AreaMarkupChart().ShowLegend());
+        AreaRemoveSeriesButton().IsEnabled(AreaMarkupChart().Series().Size() > 1);
+        AreaDataText().Text(SeriesDataText(series));
+        AutomationProperties::SetHelpText(AreaMarkupChart(), L"Selected series:\n" + AreaDataText().Text());
     }
 
     void MainWindow::SyncBarOptions()
     {
         SyncGuard guard{ m_syncing };
-        auto series = MarkupBarSeries();
+        auto series = SelectedBarSeries();
         BarColorChoice().SelectedIndex(SeriesColorIndex(series.Fill(), series.Stroke(), false));
+        BarMarkerChoice().SelectedIndex(static_cast<int32_t>(series.MarkerShape()));
         BarVisibleCheckBox().IsChecked(series.IsVisible());
+        BarVisibleCheckBox().Content(box_value(series.IsVisible() ? L"Visible" : L"Hidden"));
         BarValuesCheckBox().IsChecked(series.ShowDataLabels());
+        BarMarkersCheckBox().IsChecked(series.ShowDataMarkers());
         BarLegendCheckBox().IsChecked(BarMarkupChart().ShowLegend());
+        BarOrientationChoice().SelectedIndex(series.Orientation() == BarOrientation::Horizontal ? 0 : 1);
         BarOrientationText().Text(series.Orientation() == BarOrientation::Horizontal
             ? L"Orientation: Horizontal" : L"Orientation: Vertical");
+        BarRemoveSeriesButton().IsEnabled(BarMarkupChart().Series().Size() > 1);
+        BarDataText().Text(SeriesDataText(series));
+        AutomationProperties::SetHelpText(BarMarkupChart(), L"Selected series:\n" + BarDataText().Text());
     }
 
     void MainWindow::SetAreaAppearance(int32_t colorIndex, int32_t fillIndex)
     {
-        auto series = MarkupAreaSeries();
+        auto series = SelectedAreaSeries();
         auto fill = colorIndex == 0 ? AreaOriginalFill : SeriesColors[colorIndex - 1];
         auto stroke = colorIndex == 0 ? AreaOriginalStroke : SeriesColors[colorIndex - 1];
         fill.A = AreaFillAlphas[fillIndex];
         // A transparent brush preserves outline-only mode; null would restore a palette fill.
         series.Fill(SolidColorBrush{ fill });
         series.Stroke(SolidColorBrush{ stroke });
-        if (series.ShowDataMarkers()) SetAreaMarkers(true);
     }
 
     void MainWindow::SetAreaMarkers(bool visible)
     {
-        auto series = MarkupAreaSeries();
-        series.ShowDataMarkers(visible);
-        series.MarkerShape(Charts::MarkerShape::Circle);
-        series.DataMarkerBrush(visible ? series.Stroke() : nullptr);
+        SelectedAreaSeries().ShowDataMarkers(visible);
     }
 
     void MainWindow::SetBarColor(int32_t colorIndex)
     {
-        auto series = MarkupBarSeries();
+        auto series = SelectedBarSeries();
         series.Fill(SolidColorBrush{ colorIndex == 0 ? BarOriginalFill : SeriesColors[colorIndex - 1] });
         series.Stroke(SolidColorBrush{ colorIndex == 0 ? BarOriginalStroke : SeriesColors[colorIndex - 1] });
     }
 
     LineSeries MainWindow::SelectedPresentationSeries()
     {
-        return Selection(PresentationSeriesComboBox(), 2) == 1 ? ExpensesSeries() : ProfitSeries();
+        return MarkupChart().Series().GetAt(Selection(PresentationSeriesComboBox(),
+            static_cast<int32_t>(MarkupChart().Series().Size()))).as<LineSeries>();
+    }
+
+    AreaSeries MainWindow::SelectedAreaSeries()
+    {
+        return AreaMarkupChart().Series().GetAt(Selection(AreaSeriesChoice(),
+            static_cast<int32_t>(AreaMarkupChart().Series().Size()))).as<AreaSeries>();
+    }
+
+    BarSeries MainWindow::SelectedBarSeries()
+    {
+        return BarMarkupChart().Series().GetAt(Selection(BarSeriesChoice(),
+            static_cast<int32_t>(BarMarkupChart().Series().Size()))).as<BarSeries>();
     }
 
     uint32_t MainWindow::SelectedOverrideIndex()
@@ -750,8 +963,16 @@ namespace winrt::ChartAppCppUnpackaged::implementation
 
     void MainWindow::SyncPresentationKnobs()
     {
-        m_syncing = true;
+        SyncGuard guard{ m_syncing };
         auto series = SelectedPresentationSeries();
+        auto weight = std::find(LineWeights.begin(), LineWeights.end(), series.StrokeThickness());
+        LineWeightChoice().SelectedIndex(weight == LineWeights.end() ? -1 : static_cast<int32_t>(weight - LineWeights.begin()));
+        LineStyleChoice().SelectedIndex(static_cast<int32_t>(series.StrokeDashStyle()));
+        LineColorChoice().SelectedIndex(LineColorIndex(series.Stroke()));
+        LineMarkerChoice().SelectedIndex(static_cast<int32_t>(series.MarkerShape()));
+        LineVisibleCheckBox().IsChecked(series.IsVisible());
+        LineVisibleCheckBox().Content(box_value(series.IsVisible() ? L"Visible" : L"Hidden"));
+        LineRemoveSeriesButton().IsEnabled(MarkupChart().Series().Size() > 1);
         LegendVisibilityCheckBox().IsChecked(MarkupChart().ShowLegend());
         ShowDataLabelsCheckBox().IsChecked(series.ShowDataLabels());
         ShowDataMarkersCheckBox().IsChecked(series.ShowDataMarkers());
@@ -780,12 +1001,12 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         auto marker = markers.HasKey(index) ? markers.Lookup(index) : nullptr;
         MarkerShapeComboBox().SelectedIndex(marker ? static_cast<int32_t>(marker.Shape()) : 8);
         MarkerOverrideBrushCheckBox().IsChecked(marker && marker.Brush() != nullptr);
-        m_syncing = false;
     }
 
-    void MainWindow::SyncAxisControls()
+    void MainWindow::SyncAxisControls(bool includeDateTime)
     {
-        m_syncing = true;
+        SyncGuard guard{ m_syncing };
+        SyncAxisAvailability();
         SyncNumber(LinearMinBox(), m_yAxis.Minimum());
         SyncNumber(LinearMaxBox(), m_yAxis.Maximum());
         SyncNumber(LinearSpacingBox(), m_yAxis.Spacing());
@@ -799,11 +1020,13 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         TickBrushBox().SelectedIndex(BrushIndex(m_yAxis.TickBrush()));
         TickLabelBrushBox().SelectedIndex(BrushIndex(m_yAxis.TickLabelBrush()));
         AxisLineBrushBox().SelectedIndex(BrushIndex(m_yAxis.AxisLineBrush()));
-        DtIntervalTypeBoxA().SelectedIndex(static_cast<int32_t>(m_dtAxisA.IntervalType()));
-        DtIntervalTypeBoxB().SelectedIndex(static_cast<int32_t>(m_dtAxisB.IntervalType()));
-        DtLabelFormatBoxA().Text(m_dtAxisA.LabelFormat());
-        DtLabelFormatBoxB().Text(m_dtAxisB.LabelFormat());
-        m_syncing = false;
+        if (includeDateTime)
+        {
+            DtIntervalTypeBoxA().SelectedIndex(static_cast<int32_t>(m_dtAxisA.IntervalType()));
+            DtIntervalTypeBoxB().SelectedIndex(static_cast<int32_t>(m_dtAxisB.IntervalType()));
+            DtLabelFormatBoxA().Text(m_dtAxisA.LabelFormat());
+            DtLabelFormatBoxB().Text(m_dtAxisB.LabelFormat());
+        }
     }
 
     void MainWindow::OnLayoutSizeChanged(IInspectable const&, SizeChangedEventArgs const& args)
@@ -895,7 +1118,12 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         auto visible = [](bool selected) { return selected ? Visibility::Visible : Visibility::Collapsed; };
         LineScenario().Visibility(visible(tag == L"line" || tag == L"axes" || tag == L"presentation"));
         SeriesEditorPanel().Visibility(visible(tag == L"line" || tag == L"presentation"));
+        LineSeriesActions().Visibility(visible(tag == L"line"));
+        LineStyleEditors().Visibility(visible(tag == L"line"));
+        LineVisibleCheckBox().Visibility(visible(tag == L"line"));
+        LineResetButton().Visibility(visible(tag == L"line"));
         AxesEditorPanel().Visibility(visible(tag == L"axes"));
+        SyncAxisAvailability();
         PresentationEditorPanel().Visibility(visible(tag == L"presentation"));
         AreaScenario().Visibility(visible(tag == L"area"));
         BarScenario().Visibility(visible(tag == L"bar"));
@@ -974,7 +1202,6 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         if (m_codeChartTimer.IsEnabled()) m_codeChartTimer.Stop();
         else m_codeChartTimer.Start();
         UpdatesButton().Content(box_value(m_codeChartTimer.IsEnabled() ? L"Pause updates" : L"Resume updates"));
-        StatusText().Text(m_codeChartTimer.IsEnabled() ? L"Primary data updates once per second." : L"Primary updates paused. The secondary chart is independent.");
     }
 
     void MainWindow::OnToggleSecondaryClick(IInspectable const&, RoutedEventArgs const&)
@@ -1016,11 +1243,140 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         if (m_closing) Close();
     }
 
+    void MainWindow::OnLineChoiceChanged(IInspectable const& sender, SelectionChangedEventArgs const&)
+    {
+        ApplyLineEdit([&]
+        {
+            auto series = SelectedPresentationSeries();
+            auto choice = sender.as<ComboBox>();
+            if (choice == LineWeightChoice()) series.StrokeThickness(LineWeights[Selection(choice, 4)]);
+            else if (choice == LineStyleChoice()) series.StrokeDashStyle(LineStyles[Selection(choice, 5)]);
+            else if (choice == LineMarkerChoice()) series.MarkerShape(MarkerShapes[Selection(choice, 10)]);
+            else if (choice == LineColorChoice())
+            {
+                auto index = Selection(choice, 9);
+                series.Stroke(index == 0 ? nullptr : SolidColorBrush{ SeriesColors[index - 1] }.as<Brush>());
+            }
+        }, L"Selected line style updated.");
+    }
+
+    void MainWindow::OnLineVisibleClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyLineEdit([&] { SelectedPresentationSeries().IsVisible(Checked(LineVisibleCheckBox())); }, L"Line series visibility updated.");
+    }
+
+    void MainWindow::OnLineAddSeriesClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyLineEdit([&] { AddExampleSeries(0); }, L"Added and selected a line series.");
+    }
+
+    void MainWindow::OnLineRemoveSeriesClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyLineEdit([&] { RemoveSelectedSeries(MarkupChart(), PresentationSeriesComboBox()); }, L"Removed the selected line series.");
+    }
+
+    void MainWindow::OnLineResetClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyLineEdit([&]
+        {
+            auto chart = MarkupChart();
+            chart.Series().Clear();
+            chart.Data().Clear();
+            chart.Axes().Clear();
+            m_markupProfitValues.ReplaceAll(ProfitSeed);
+            m_markupExpenseValues.ReplaceAll(ExpensesSeed);
+            Profit().ItemsSource(m_markupProfitValues);
+            Expenses().ItemsSource(m_markupExpenseValues);
+            chart.Data().Append(Month());
+            chart.Data().Append(Profit());
+            chart.Data().Append(Expenses());
+            m_yAxis.Minimum(nullptr);
+            m_yAxis.Maximum(nullptr);
+            m_yAxis.Spacing(nullptr);
+            m_xAxis.SortKey(CategorySortKey::Index);
+            m_xAxis.SortOrder(Charts::SortOrder::Ascending);
+            ResetAxisAppearance(m_xAxis, CategoryAxis{});
+            ResetAxisAppearance(m_yAxis, LinearAxis{});
+            chart.Axes().Append(m_xAxis);
+            chart.Axes().Append(m_yAxis);
+            auto profit = ProfitSeries();
+            auto expenses = ExpensesSeries();
+            ResetSeriesDefaults(profit, 3, true, false);
+            ResetSeriesDefaults(expenses, 2, false, true);
+            profit.Title(L"Monthly profit");
+            expenses.Title(L"Monthly expenses");
+            profit.XValues(Month());
+            profit.YValues(Profit());
+            profit.XAxis(m_xAxis);
+            profit.YAxis(m_yAxis);
+            expenses.XValues(Month());
+            expenses.YValues(Expenses());
+            expenses.XAxis(nullptr);
+            expenses.YAxis(nullptr);
+            expenses.StrokeDashStyle(StrokeDashStyle::Dash);
+            chart.Series().Append(profit);
+            chart.Series().Append(expenses);
+            chart.ShowLegend(true);
+            chart.LegendTitle(L"Monthly totals");
+            LegendTitleTextBox().Text(chart.LegendTitle());
+            m_nextLineSeries = 3;
+            RebuildSeriesSelector(chart, PresentationSeriesComboBox(), 0);
+            SyncNumber(OverrideIndexNumberBox(), IReference<double>{ 0.0 });
+            SyncAxisControls(false);
+        }, L"Line example reset.");
+    }
+
+    void MainWindow::OnAreaSeriesChanged(IInspectable const&, SelectionChangedEventArgs const&)
+    {
+        ApplyExampleEdit(true, [] {}, L"Editing the selected area series.");
+    }
+    void MainWindow::OnAreaAddSeriesClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(true, [&] { AddExampleSeries(1); }, L"Added and selected an area series.");
+    }
+    void MainWindow::OnAreaRemoveSeriesClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(true, [&] { RemoveSelectedSeries(AreaMarkupChart(), AreaSeriesChoice()); }, L"Removed the selected area series.");
+    }
+    void MainWindow::OnAreaMarkerChanged(IInspectable const&, SelectionChangedEventArgs const&)
+    {
+        ApplyExampleEdit(true, [&] { SelectedAreaSeries().MarkerShape(MarkerShapes[Selection(AreaMarkerChoice(), 10)]); }, L"Area marker shape updated.");
+    }
+
+    void MainWindow::OnBarSeriesChanged(IInspectable const&, SelectionChangedEventArgs const&)
+    {
+        ApplyExampleEdit(false, [] {}, L"Editing the selected bar series.");
+    }
+    void MainWindow::OnBarAddSeriesClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(false, [&] { AddExampleSeries(2); }, L"Added and selected a bar series.");
+    }
+    void MainWindow::OnBarRemoveSeriesClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(false, [&] { RemoveSelectedSeries(BarMarkupChart(), BarSeriesChoice()); }, L"Removed the selected bar series.");
+    }
+    void MainWindow::OnBarMarkerChanged(IInspectable const&, SelectionChangedEventArgs const&)
+    {
+        ApplyExampleEdit(false, [&] { SelectedBarSeries().MarkerShape(MarkerShapes[Selection(BarMarkerChoice(), 10)]); }, L"Bar marker shape updated.");
+    }
+    void MainWindow::OnBarMarkersClick(IInspectable const&, RoutedEventArgs const&)
+    {
+        ApplyExampleEdit(false, [&] { SelectedBarSeries().ShowDataMarkers(Checked(BarMarkersCheckBox())); }, L"Bar point markers updated.");
+    }
+    void MainWindow::OnBarOrientationChanged(IInspectable const&, SelectionChangedEventArgs const&)
+    {
+        ApplyExampleEdit(false, [&]
+        {
+            SelectedBarSeries().Orientation(Selection(BarOrientationChoice(), 2) == 0
+                ? BarOrientation::Horizontal : BarOrientation::Vertical);
+        }, L"Bar orientation updated.");
+    }
+
     void MainWindow::OnToggleBarOrientationClick(IInspectable const&, RoutedEventArgs const&)
     {
         ApplyExampleEdit(false, [&]
         {
-            auto series = MarkupBarSeries();
+            auto series = SelectedBarSeries();
             series.Orientation(series.Orientation() == BarOrientation::Horizontal ? BarOrientation::Vertical : BarOrientation::Horizontal);
         }, L"Bar orientation updated.");
     }
@@ -1029,16 +1385,16 @@ namespace winrt::ChartAppCppUnpackaged::implementation
     {
         ApplyExampleEdit(true, [&]
         {
-            SetAreaAppearance(Selection(AreaColorChoice(), 4), Selection(AreaFillChoice(), 3));
+            SetAreaAppearance(Selection(AreaColorChoice(), 9), Selection(AreaFillChoice(), 3));
         }, L"Area color and fill updated.");
     }
     void MainWindow::OnAreaVisibleClick(IInspectable const&, RoutedEventArgs const&)
     {
-        ApplyExampleEdit(true, [&] { MarkupAreaSeries().IsVisible(Checked(AreaVisibleCheckBox())); }, L"Area series visibility updated.");
+        ApplyExampleEdit(true, [&] { SelectedAreaSeries().IsVisible(Checked(AreaVisibleCheckBox())); }, L"Area series visibility updated.");
     }
     void MainWindow::OnAreaValuesClick(IInspectable const&, RoutedEventArgs const&)
     {
-        ApplyExampleEdit(true, [&] { MarkupAreaSeries().ShowDataLabels(Checked(AreaValuesCheckBox())); }, L"Area value labels updated.");
+        ApplyExampleEdit(true, [&] { SelectedAreaSeries().ShowDataLabels(Checked(AreaValuesCheckBox())); }, L"Area value labels updated.");
     }
     void MainWindow::OnAreaMarkersClick(IInspectable const&, RoutedEventArgs const&)
     {
@@ -1052,25 +1408,38 @@ namespace winrt::ChartAppCppUnpackaged::implementation
     {
         ApplyExampleEdit(true, [&]
         {
+            auto chart = AreaMarkupChart();
+            chart.Series().Clear();
+            chart.Data().Clear();
+            chart.Axes().Clear();
+            AreaValues().ItemsSource().as<IVector<double>>().ReplaceAll(AreaSeed);
+            chart.Data().Append(AreaMonth());
+            chart.Data().Append(AreaValues());
             auto series = MarkupAreaSeries();
-            SetAreaMarkers(false);
+            ResetSeriesDefaults(series, 2, false, false);
+            series.Title(L"Monthly area");
+            series.XValues(AreaMonth());
+            series.YValues(AreaValues());
+            series.XAxis(nullptr);
+            series.YAxis(nullptr);
+            chart.Series().Append(series);
+            RebuildSeriesSelector(chart, AreaSeriesChoice(), 0);
             SetAreaAppearance(0, 0);
-            series.IsVisible(true);
-            series.ShowDataLabels(false);
-            AreaMarkupChart().ShowLegend(true);
+            chart.ShowLegend(true);
+            m_nextAreaSeries = 2;
         }, L"Area example reset.");
     }
     void MainWindow::OnBarColorChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
-        ApplyExampleEdit(false, [&] { SetBarColor(Selection(BarColorChoice(), 4)); }, L"Bar color updated.");
+        ApplyExampleEdit(false, [&] { SetBarColor(Selection(BarColorChoice(), 9)); }, L"Bar color updated.");
     }
     void MainWindow::OnBarVisibleClick(IInspectable const&, RoutedEventArgs const&)
     {
-        ApplyExampleEdit(false, [&] { MarkupBarSeries().IsVisible(Checked(BarVisibleCheckBox())); }, L"Bar series visibility updated.");
+        ApplyExampleEdit(false, [&] { SelectedBarSeries().IsVisible(Checked(BarVisibleCheckBox())); }, L"Bar series visibility updated.");
     }
     void MainWindow::OnBarValuesClick(IInspectable const&, RoutedEventArgs const&)
     {
-        ApplyExampleEdit(false, [&] { MarkupBarSeries().ShowDataLabels(Checked(BarValuesCheckBox())); }, L"Bar value labels updated.");
+        ApplyExampleEdit(false, [&] { SelectedBarSeries().ShowDataLabels(Checked(BarValuesCheckBox())); }, L"Bar value labels updated.");
     }
     void MainWindow::OnBarLegendClick(IInspectable const&, RoutedEventArgs const&)
     {
@@ -1080,34 +1449,50 @@ namespace winrt::ChartAppCppUnpackaged::implementation
     {
         ApplyExampleEdit(false, [&]
         {
+            auto chart = BarMarkupChart();
+            chart.Series().Clear();
+            chart.Data().Clear();
+            chart.Axes().Clear();
+            BarValues().ItemsSource().as<IVector<double>>().ReplaceAll(BarSeed);
+            chart.Data().Append(BarMonth());
+            chart.Data().Append(BarValues());
+            chart.Axes().Append(m_barXAxis);
+            chart.Axes().Append(m_barYAxis);
             auto series = MarkupBarSeries();
-            SetBarColor(0);
-            series.IsVisible(true);
-            series.ShowDataLabels(false);
-            BarMarkupChart().ShowLegend(true);
+            ResetSeriesDefaults(series, 1.5, false, false);
+            series.Title(L"Monthly bars");
+            series.XValues(BarMonth());
+            series.YValues(BarValues());
+            series.XAxis(m_barXAxis);
+            series.YAxis(m_barYAxis);
             series.Orientation(BarOrientation::Horizontal);
+            chart.Series().Append(series);
+            RebuildSeriesSelector(chart, BarSeriesChoice(), 0);
+            SetBarColor(0);
+            chart.ShowLegend(true);
+            m_nextBarSeries = 2;
         }, L"Bar example reset.");
     }
 
     void MainWindow::OnLegendVisibilityClick(IInspectable const&, RoutedEventArgs const&)
     {
-        ApplyEdit([&] { MarkupChart().ShowLegend(Checked(LegendVisibilityCheckBox())); });
+        ApplyLineEdit([&] { MarkupChart().ShowLegend(Checked(LegendVisibilityCheckBox())); }, L"Line legend updated.");
     }
     void MainWindow::OnApplyLegendTitleClick(IInspectable const&, RoutedEventArgs const&)
     {
-        ApplyEdit([&] { MarkupChart().LegendTitle(LegendTitleTextBox().Text()); });
+        ApplyLineEdit([&] { MarkupChart().LegendTitle(LegendTitleTextBox().Text()); }, L"Line legend title updated.");
     }
     void MainWindow::OnPresentationSeriesChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
-        ApplyEdit([&] { SyncPresentationKnobs(); });
+        ApplyLineEdit([] {}, L"Editing the selected line series.");
     }
     void MainWindow::OnShowDataLabelsClick(IInspectable const&, RoutedEventArgs const&)
     {
-        ApplyEdit([&] { SelectedPresentationSeries().ShowDataLabels(Checked(ShowDataLabelsCheckBox())); });
+        ApplyLineEdit([&] { SelectedPresentationSeries().ShowDataLabels(Checked(ShowDataLabelsCheckBox())); }, L"Line value labels updated.");
     }
     void MainWindow::OnShowDataMarkersClick(IInspectable const&, RoutedEventArgs const&)
     {
-        ApplyEdit([&] { SelectedPresentationSeries().ShowDataMarkers(Checked(ShowDataMarkersCheckBox())); });
+        ApplyLineEdit([&] { SelectedPresentationSeries().ShowDataMarkers(Checked(ShowDataMarkersCheckBox())); }, L"Line point markers updated.");
     }
     void MainWindow::OnDataLabelBrushClick(IInspectable const&, RoutedEventArgs const&)
     {
@@ -1144,9 +1529,10 @@ namespace winrt::ChartAppCppUnpackaged::implementation
                 {
                     auto previous = std::isfinite(previousValue) && previousValue >= 0 && previousValue <= 5 &&
                         std::trunc(previousValue) == previousValue ? previousValue : 0.0;
-                    self->m_syncing = true;
-                    SyncNumber(self->OverrideIndexNumberBox(), IReference<double>{ previous });
-                    self->m_syncing = false;
+                    {
+                        SyncGuard guard{ self->m_syncing };
+                        SyncNumber(self->OverrideIndexNumberBox(), IReference<double>{ previous });
+                    }
                     self->SyncPresentationKnobs();
                     self->ReportError(error);
                 }
@@ -1226,11 +1612,11 @@ namespace winrt::ChartAppCppUnpackaged::implementation
 
     void MainWindow::QueueLinearAxisEdit(NumberBox const& box, int property)
     {
-        if (!m_ready || m_syncing || m_closing) return;
+        if (!m_ready || m_syncing || m_closing || !HasProfitSeries()) return;
         // Let NumberBox finish committing its text before validating or restoring the editor.
         if (!DispatcherQueue().TryEnqueue([weak = get_weak(), box, property]
         {
-            if (auto self = weak.get(); self && !self->m_closing)
+            if (auto self = weak.get(); self && !self->m_closing && self->HasProfitSeries())
             {
                 try
                 {
@@ -1273,26 +1659,32 @@ namespace winrt::ChartAppCppUnpackaged::implementation
     }
     void MainWindow::OnSortKeyChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
+        if (!m_ready || !HasProfitSeries()) return;
         ApplyEdit([&] { m_xAxis.SortKey(static_cast<CategorySortKey>(Selection(SortKeyBox(), 2))); });
     }
     void MainWindow::OnSortOrderChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
+        if (!m_ready || !HasProfitSeries()) return;
         ApplyEdit([&] { m_xAxis.SortOrder(static_cast<Charts::SortOrder>(Selection(SortOrderBox(), 2))); });
     }
     void MainWindow::OnTickLabelsChanged(IInspectable const&, RoutedEventArgs const&)
     {
+        if (!m_ready || !HasProfitSeries()) return;
         ApplyEdit([&] { m_yAxis.ShowTickLabels(Checked(TickLabelsCheck())); m_xAxis.ShowTickLabels(Checked(TickLabelsCheck())); });
     }
     void MainWindow::OnTickMarksChanged(IInspectable const&, RoutedEventArgs const&)
     {
+        if (!m_ready || !HasProfitSeries()) return;
         ApplyEdit([&] { m_yAxis.ShowTickMarks(Checked(TickMarksCheck())); m_xAxis.ShowTickMarks(Checked(TickMarksCheck())); });
     }
     void MainWindow::OnAxisVisibleChanged(IInspectable const&, RoutedEventArgs const&)
     {
+        if (!m_ready || !HasProfitSeries()) return;
         ApplyEdit([&] { m_yAxis.IsVisible(Checked(AxisVisibleCheck())); m_xAxis.IsVisible(Checked(AxisVisibleCheck())); });
     }
     void MainWindow::OnGridLinesChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
+        if (!m_ready || !HasProfitSeries()) return;
         ApplyEdit([&]
         {
             auto value = static_cast<Charts::GridLines>(Selection(GridLinesBox(), 3));
@@ -1302,18 +1694,22 @@ namespace winrt::ChartAppCppUnpackaged::implementation
     }
     void MainWindow::OnGridLineBrushChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
+        if (!m_ready || !HasProfitSeries()) return;
         ApplyEdit([&] { auto brush = AxisBrush(GridLineBrushBox()); m_yAxis.GridLineMajorBrush(brush); m_xAxis.GridLineMajorBrush(brush); }, MarkupChart());
     }
     void MainWindow::OnTickBrushChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
+        if (!m_ready || !HasProfitSeries()) return;
         ApplyEdit([&] { auto brush = AxisBrush(TickBrushBox()); m_yAxis.TickBrush(brush); m_xAxis.TickBrush(brush); }, MarkupChart());
     }
     void MainWindow::OnTickLabelBrushChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
+        if (!m_ready || !HasProfitSeries()) return;
         ApplyEdit([&] { auto brush = AxisBrush(TickLabelBrushBox()); m_yAxis.TickLabelBrush(brush); m_xAxis.TickLabelBrush(brush); }, MarkupChart());
     }
     void MainWindow::OnAxisLineBrushChanged(IInspectable const&, SelectionChangedEventArgs const&)
     {
+        if (!m_ready || !HasProfitSeries()) return;
         ApplyEdit([&] { auto brush = AxisBrush(AxisLineBrushBox()); m_yAxis.AxisLineBrush(brush); m_xAxis.AxisLineBrush(brush); }, MarkupChart());
     }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -23,15 +24,26 @@ namespace ChartsSample
         private static readonly Color[] ExampleColors =
         {
             Color.FromArgb(0xFF, 0x0F, 0x6C, 0xBD),
+            Color.FromArgb(0xFF, 0x00, 0x82, 0x72),
+            Color.FromArgb(0xFF, 0xFF, 0xB9, 0x00),
+            Color.FromArgb(0xFF, 0x87, 0x64, 0xB8),
+            Color.FromArgb(0xFF, 0xE3, 0x00, 0x8C),
+            Color.FromArgb(0xFF, 0x69, 0x79, 0x7E),
             Color.FromArgb(0xFF, 0x10, 0x7C, 0x10),
             Color.FromArgb(0xFF, 0xD8, 0x3B, 0x01)
         };
+        private static readonly double[] ProfitSeed = { 18, 27, 22, 41, 36, 52 };
+        private static readonly double[] ExpensesSeed = { 31, 25, 29, 24, 32, 28 };
+        private static readonly double[] AreaSeed = { 8, 18, 14, 29, 24, 37 };
+        private static readonly double[] BarSeed = { 12, 20, 17, 31, 26, 39 };
+        private static readonly double[] LineWeights = { 1, 2, 3, 5 };
 
         private readonly ObservableCollection<string> _months = new() { "Jan", "Feb", "Mar", "Apr", "May", "Jun" };
-        private readonly ObservableVector<double> _profit = new() { 18, 27, 22, 41, 36, 52 };
-        private readonly ObservableVector<double> _expenses = new() { 31, 25, 29, 24, 32, 28 };
-        private readonly ObservableCollection<double> _area = new() { 8, 18, 14, 29, 24, 37 };
-        private readonly ObservableCollection<double> _bars = new() { 12, 20, 17, 31, 26, 39 };
+        private readonly ObservableVector<double> _profit = new(ProfitSeed);
+        private readonly ObservableVector<double> _expenses = new(ExpensesSeed);
+        private readonly ObservableVector<double> _area = new(AreaSeed);
+        private readonly ObservableVector<double> _bars = new(BarSeed);
+        private readonly Dictionary<CartesianSeries, ObservableCollection<double>> _seriesValues = new();
         private readonly ObservableCollection<string> _codeCategories = new() { "Alpha", "Beta", "Gamma", "Delta", "Epsilon" };
         private readonly ObservableVector<double> _codeValues = new() { 12, 38, 21, 47, 34 };
         private readonly CategoryAxis _xAxis = new() { Label = "Month" };
@@ -42,6 +54,9 @@ namespace ChartsSample
         private readonly AppWindow _appWindow;
         private SecondaryChartWindow _secondary;
         private int _updateIndex;
+        private int _nextLineSeries = 3;
+        private int _nextAreaSeries = 2;
+        private int _nextBarSeries = 2;
         private bool _ready;
         private bool _syncing;
         private bool _closing;
@@ -61,18 +76,20 @@ namespace ChartsSample
             AreaValues.ItemsSource = _area;
             BarMonth.ItemsSource = new ObservableCollection<string>(_months);
             BarValues.ItemsSource = _bars;
+            _seriesValues.Add(ProfitSeries, _profit);
+            _seriesValues.Add(ExpensesSeries, _expenses);
+            _seriesValues.Add(MarkupAreaSeries, _area);
+            _seriesValues.Add(MarkupBarSeries, _bars);
 
             MarkupChart.Axes.Add(_xAxis);
             MarkupChart.Axes.Add(_yAxis);
             ProfitSeries.XAxis = _xAxis;
             ProfitSeries.YAxis = _yAxis;
 
-            var barXAxis = new CategoryAxis { Label = "Month" };
-            var barYAxis = new LinearAxis { Label = "Value" };
-            BarMarkupChart.Axes.Add(barXAxis);
-            BarMarkupChart.Axes.Add(barYAxis);
-            MarkupBarSeries.XAxis = barXAxis;
-            MarkupBarSeries.YAxis = barYAxis;
+            ConnectBarAxes(MarkupBarSeries);
+            RebuildSeriesChoice(MarkupChart, PresentationSeriesComboBox, 0);
+            RebuildSeriesChoice(AreaMarkupChart, AreaSeriesChoice, 0);
+            RebuildSeriesChoice(BarMarkupChart, BarSeriesChoice, 0);
 
             CreateCodeChart();
             CreateDateTimeCharts();
@@ -199,13 +216,9 @@ namespace ChartsSample
         private void UpdateDataText()
         {
             var text = new StringBuilder();
-            var areaText = new StringBuilder();
-            var barText = new StringBuilder();
-            for (int i = 0; i < _months.Count; i++)
+            foreach (var series in MarkupChart.Series)
             {
-                text.AppendLine($"{_months[i]}: profit {_profit[i]:0}, expenses {_expenses[i]:0}, area {_area[i]:0}, bars {_bars[i]:0}");
-                areaText.AppendLine($"{_months[i]}: {_area[i]:0}");
-                barText.AppendLine($"{_months[i]}: {_bars[i]:0}");
+                text.AppendLine(SeriesDataText(series));
             }
             text.AppendLine("Code-created line:");
             for (int i = 0; i < _codeValues.Count; i++)
@@ -213,8 +226,18 @@ namespace ChartsSample
                 text.AppendLine($"{_codeCategories[i]}: {_codeValues[i]:0}");
             }
             DataText.Text = text.ToString();
-            AreaDataText.Text = areaText.ToString().TrimEnd();
-            BarDataText.Text = barText.ToString().TrimEnd();
+            AreaDataText.Text = SeriesDataText(SelectedAreaSeries());
+            BarDataText.Text = SeriesDataText(SelectedBarSeries());
+        }
+
+        private string SeriesDataText(CartesianSeries series)
+        {
+            var values = _seriesValues[series];
+            var text = new StringBuilder();
+            text.AppendLine(series.Title + (series.IsVisible ? ":" : " (hidden):"));
+            for (int i = 0; i < values.Count; i++)
+                text.AppendLine($"{_months[i]}: {values[i]:0.##}");
+            return text.ToString().TrimEnd();
         }
 
         private void OnThemeChoiceChanged(object sender, SelectionChangedEventArgs e)
@@ -239,9 +262,13 @@ namespace ChartsSample
             DateTimeScenario.Visibility = scenario == "datetime" ? Visibility.Visible : Visibility.Collapsed;
             LiveScenario.Visibility = scenario == "live" ? Visibility.Visible : Visibility.Collapsed;
             SeriesEditors.Visibility = scenario is "line" or "presentation" ? Visibility.Visible : Visibility.Collapsed;
+            LineSeriesActions.Visibility = scenario == "line" ? Visibility.Visible : Visibility.Collapsed;
+            LineStyleEditors.Visibility = scenario == "line" ? Visibility.Visible : Visibility.Collapsed;
+            LineResetButton.Visibility = scenario == "line" ? Visibility.Visible : Visibility.Collapsed;
             PointOverrideEditors.Visibility = scenario == "presentation" ? Visibility.Visible : Visibility.Collapsed;
             PresentationKnobStatusText.Visibility = scenario is "line" or "presentation" ? Visibility.Visible : Visibility.Collapsed;
             AxisEditors.Visibility = scenario == "axes" ? Visibility.Visible : Visibility.Collapsed;
+            SyncAxisAvailability();
             (ScenarioHeading.Text, ScenarioDescription.Text) = scenario switch
             {
                 "area" => ("Area charts", "Explore fill styles, colors, labels and markers using six monthly values."),
@@ -340,13 +367,11 @@ namespace ChartsSample
             {
                 _updates.Stop();
                 UpdatesButton.Content = "Resume updates";
-                StatusText.Text = "Primary chart updates paused. The secondary window updates independently.";
             }
             else
             {
                 _updates.Start();
                 UpdatesButton.Content = "Pause updates";
-                StatusText.Text = "Primary chart updates resumed, once a second.";
             }
         }
 
@@ -354,11 +379,162 @@ namespace ChartsSample
         {
             EditBar(() =>
             {
-                MarkupBarSeries.Orientation = MarkupBarSeries.Orientation == BarOrientation.Horizontal
+                var series = SelectedBarSeries();
+                series.Orientation = series.Orientation == BarOrientation.Horizontal
                     ? BarOrientation.Vertical : BarOrientation.Horizontal;
-                StatusText.Text = $"Bar orientation: {MarkupBarSeries.Orientation}. The same explicit axes remain connected.";
             }, "Bar orientation changed. X remains categories; Y remains values.");
         }
+
+        private LineSeries SelectedPresentationSeries() =>
+            (LineSeries)MarkupChart.Series[PresentationSeriesComboBox.SelectedIndex];
+        private AreaSeries SelectedAreaSeries() =>
+            (AreaSeries)AreaMarkupChart.Series[AreaSeriesChoice.SelectedIndex];
+        private BarSeries SelectedBarSeries() =>
+            (BarSeries)BarMarkupChart.Series[BarSeriesChoice.SelectedIndex];
+
+        private void RebuildSeriesChoice(Chart chart, ComboBox choice, int selectedIndex)
+        {
+            Synchronize(() =>
+            {
+                choice.Items.Clear();
+                foreach (var series in chart.Series)
+                    choice.Items.Add(series.Title);
+                choice.SelectedIndex = Math.Clamp(selectedIndex, 0, chart.Series.Count - 1);
+            });
+        }
+
+        private void ConnectBarAxes(BarSeries series)
+        {
+            var xAxis = series.XAxis ?? new CategoryAxis { Label = "Month" };
+            var yAxis = series.YAxis ?? new LinearAxis { Label = "Value" };
+            if (!BarMarkupChart.Axes.Contains(xAxis)) BarMarkupChart.Axes.Add(xAxis);
+            if (!BarMarkupChart.Axes.Contains(yAxis)) BarMarkupChart.Axes.Add(yAxis);
+            series.XAxis = xAxis;
+            series.YAxis = yAxis;
+        }
+
+        private void AddExampleSeries(Chart chart, ComboBox choice, CartesianSeries series,
+            Samples categories, double[] seed, int number)
+        {
+            var values = new ObservableVector<double>();
+            foreach (double value in seed)
+                values.Add(value * (0.65 + 0.05 * (number % 4)) + number * 3);
+            var samples = new Samples { ItemsSource = values };
+            series.Title = $"Series {number}";
+            series.XValues = categories;
+            series.YValues = samples;
+            chart.Data.Add(samples);
+            chart.Series.Add(series);
+            _seriesValues.Add(series, values);
+            chart.ShowLegend = true;
+            RebuildSeriesChoice(chart, choice, chart.Series.Count - 1);
+        }
+
+        private void RemoveSelectedSeries(Chart chart, ComboBox choice, Action sync, TextBlock status)
+        {
+            if (!_ready || _syncing || _closing || chart.Series.Count <= 1) return;
+            int index = choice.SelectedIndex;
+            var series = chart.Series[index];
+            ApplyEdit(() =>
+            {
+                chart.Series.RemoveAt(index);
+                chart.Data.Remove(series.YValues);
+                if (series.XAxis != null) chart.Axes.Remove(series.XAxis);
+                if (series.YAxis != null) chart.Axes.Remove(series.YAxis);
+                _seriesValues.Remove(series);
+                RebuildSeriesChoice(chart, choice, Math.Min(index, chart.Series.Count - 1));
+            }, sync, status, $"Removed {series.Title}.", chart: chart);
+        }
+
+        private void ClearExample(Chart chart)
+        {
+            foreach (var series in chart.Series)
+                _seriesValues.Remove(series);
+            chart.Series.Clear();
+            chart.Data.Clear();
+            chart.Axes.Clear();
+        }
+
+        private static void RestoreValues(ObservableCollection<double> values, double[] seed)
+        {
+            for (int i = 0; i < seed.Length; i++)
+                values[i] = seed[i];
+        }
+
+        private static void ResetSeriesPresentation(CartesianSeries series)
+        {
+            series.IsVisible = true;
+            series.ShowDataLabels = false;
+            series.ShowDataMarkers = false;
+            series.ClearValue(CartesianSeries.MarkerShapeProperty);
+            series.StrokeDashStyle = StrokeDashStyle.Solid;
+            series.Stroke = null;
+            series.DataLabelBrush = null;
+            series.DataMarkerBrush = null;
+            series.DataLabelOverrides.Clear();
+            series.DataMarkerOverrides.Clear();
+        }
+
+        private void OnLineAddSeriesClick(object sender, RoutedEventArgs e)
+        {
+            int number = _nextLineSeries;
+            EditLine(() =>
+            {
+                var series = new LineSeries
+                {
+                    IsVisible = true, StrokeThickness = 3, StrokeDashStyle = StrokeDashStyle.Solid,
+                    Stroke = new SolidColorBrush(ExampleColors[(number - 1) % 6]),
+                    MarkerShape = MarkerShape.Circle, ShowDataMarkers = true, ShowDataLabels = false
+                };
+                AddExampleSeries(MarkupChart, PresentationSeriesComboBox, series, Month, ProfitSeed, number);
+                _nextLineSeries++;
+            }, $"Added Series {number}.");
+        }
+
+        private void OnAreaAddSeriesClick(object sender, RoutedEventArgs e)
+        {
+            int number = _nextAreaSeries;
+            EditArea(() =>
+            {
+                Color color = ExampleColors[(number - 1) % 6];
+                Color fill = color;
+                fill.A = 0x60;
+                var series = new AreaSeries
+                {
+                    IsVisible = true, StrokeThickness = 2, Stroke = new SolidColorBrush(color),
+                    Fill = new SolidColorBrush(fill), MarkerShape = MarkerShape.Circle,
+                    ShowDataMarkers = false, ShowDataLabels = false
+                };
+                AddExampleSeries(AreaMarkupChart, AreaSeriesChoice, series, AreaMonth, AreaSeed, number);
+                _nextAreaSeries++;
+            }, $"Added Series {number}.");
+        }
+
+        private void OnBarAddSeriesClick(object sender, RoutedEventArgs e)
+        {
+            int number = _nextBarSeries;
+            EditBar(() =>
+            {
+                Color color = ExampleColors[(number - 1) % 6];
+                var series = new BarSeries
+                {
+                    IsVisible = true, StrokeThickness = 1.5, Stroke = new SolidColorBrush(color),
+                    Fill = new SolidColorBrush(color), MarkerShape = MarkerShape.Circle,
+                    ShowDataMarkers = false, ShowDataLabels = false,
+                    Orientation = SelectedBarSeries().Orientation
+                };
+                ConnectBarAxes(series);
+                AddExampleSeries(BarMarkupChart, BarSeriesChoice, series, BarMonth, BarSeed, number);
+                _nextBarSeries++;
+            }, $"Added Series {number}.");
+        }
+
+        private void OnLineRemoveSeriesClick(object sender, RoutedEventArgs e) =>
+            RemoveSelectedSeries(MarkupChart, PresentationSeriesComboBox, SyncPresentationKnobs, PresentationKnobStatusText);
+        private void OnAreaRemoveSeriesClick(object sender, RoutedEventArgs e) =>
+            RemoveSelectedSeries(AreaMarkupChart, AreaSeriesChoice, SyncAreaOptions, AreaStatusText);
+        private void OnBarRemoveSeriesClick(object sender, RoutedEventArgs e) =>
+            RemoveSelectedSeries(BarMarkupChart, BarSeriesChoice, SyncBarOptions, BarStatusText);
 
         private static Color SelectedExampleColor(ComboBox choice, Color original)
         {
@@ -376,26 +552,67 @@ namespace ChartsSample
             return index < 0 ? -1 : index + 1;
         }
 
+        private static MarkerShape SelectedMarkerShape(ComboBox choice)
+        {
+            int index = choice.SelectedIndex;
+            if (index < 0 || index > (int)MarkerShape.Plus)
+                throw new ArgumentException("Choose an available marker shape.");
+            return (MarkerShape)index;
+        }
+
+        private static void SyncVisibility(CheckBox checkBox, CartesianSeries series)
+        {
+            checkBox.IsChecked = series.IsVisible;
+            checkBox.Content = series.IsVisible ? "Visible" : "Hidden";
+        }
+
         private void SyncAreaOptions()
         {
-            AreaColorChoice.SelectedIndex = ExampleColorIndex(MarkupAreaSeries.Stroke, OriginalAreaStroke);
-            AreaFillChoice.SelectedIndex = MarkupAreaSeries.Fill is SolidColorBrush fill
+            var series = SelectedAreaSeries();
+            AreaColorChoice.SelectedIndex = ExampleColorIndex(series.Stroke, OriginalAreaStroke);
+            AreaFillChoice.SelectedIndex = series.Fill is SolidColorBrush fill
                 ? fill.Color.A switch { 0x60 => 0, 0xFF => 1, 0 => 2, _ => -1 }
                 : -1;
-            AreaVisibleCheckBox.IsChecked = MarkupAreaSeries.IsVisible;
-            AreaValuesCheckBox.IsChecked = MarkupAreaSeries.ShowDataLabels;
-            AreaMarkersCheckBox.IsChecked = MarkupAreaSeries.ShowDataMarkers;
+            AreaMarkerChoice.SelectedIndex = (int)series.MarkerShape;
+            SyncVisibility(AreaVisibleCheckBox, series);
+            AreaValuesCheckBox.IsChecked = series.ShowDataLabels;
+            AreaMarkersCheckBox.IsChecked = series.ShowDataMarkers;
             AreaLegendCheckBox.IsChecked = AreaMarkupChart.ShowLegend;
+            AreaRemoveSeriesButton.IsEnabled = AreaMarkupChart.Series.Count > 1;
+            UpdateDataText();
         }
 
         private void SyncBarOptions()
         {
-            BarColorChoice.SelectedIndex = ExampleColorIndex(MarkupBarSeries.Stroke, OriginalBarStroke);
-            BarVisibleCheckBox.IsChecked = MarkupBarSeries.IsVisible;
-            BarValuesCheckBox.IsChecked = MarkupBarSeries.ShowDataLabels;
+            var series = SelectedBarSeries();
+            BarColorChoice.SelectedIndex = ExampleColorIndex(series.Stroke, OriginalBarStroke);
+            BarMarkerChoice.SelectedIndex = (int)series.MarkerShape;
+            SyncVisibility(BarVisibleCheckBox, series);
+            BarValuesCheckBox.IsChecked = series.ShowDataLabels;
+            BarMarkersCheckBox.IsChecked = series.ShowDataMarkers;
             BarLegendCheckBox.IsChecked = BarMarkupChart.ShowLegend;
-            BarOrientationText.Text = $"Orientation: {MarkupBarSeries.Orientation}";
+            BarOrientationChoice.SelectedIndex = (int)series.Orientation;
+            BarOrientationText.Text = $"Orientation: {series.Orientation}";
+            BarRemoveSeriesButton.IsEnabled = BarMarkupChart.Series.Count > 1;
+            UpdateDataText();
         }
+
+        private void OnAreaSeriesChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_ready || _syncing || _closing || AreaSeriesChoice.SelectedIndex < 0) return;
+            Synchronize(SyncAreaOptions);
+            AreaStatusText.Text = $"Editing {SelectedAreaSeries().Title}.";
+        }
+
+        private void OnBarSeriesChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_ready || _syncing || _closing || BarSeriesChoice.SelectedIndex < 0) return;
+            Synchronize(SyncBarOptions);
+            BarStatusText.Text = $"Editing {SelectedBarSeries().Title}.";
+        }
+
+        private void EditLine(Action edit, string message) =>
+            EditPresentation(edit, SyncPresentationKnobs, message);
 
         private void EditArea(Action edit, string message)
         {
@@ -413,6 +630,7 @@ namespace ChartsSample
         {
             EditArea(() =>
             {
+                var series = SelectedAreaSeries();
                 Color fill = SelectedExampleColor(AreaColorChoice, OriginalAreaFill);
                 Color stroke = SelectedExampleColor(AreaColorChoice, OriginalAreaStroke);
                 fill.A = AreaFillChoice.SelectedIndex switch
@@ -423,28 +641,22 @@ namespace ChartsSample
                     _ => throw new ArgumentException("Choose an available area fill.")
                 };
                 // Null selects the palette; an explicit transparent color keeps outline-only mode.
-                MarkupAreaSeries.Fill = new SolidColorBrush(fill);
-                MarkupAreaSeries.Stroke = new SolidColorBrush(stroke);
-                if (MarkupAreaSeries.ShowDataMarkers)
-                    MarkupAreaSeries.DataMarkerBrush = MarkupAreaSeries.Stroke;
+                series.Fill = new SolidColorBrush(fill);
+                series.Stroke = new SolidColorBrush(stroke);
             }, "Area color and fill updated. The source data is unchanged.");
         }
 
         private void OnAreaVisibilityClick(object sender, RoutedEventArgs e) =>
-            EditArea(() => MarkupAreaSeries.IsVisible = AreaVisibleCheckBox.IsChecked == true, "Area series visibility updated.");
+            EditArea(() => SelectedAreaSeries().IsVisible = AreaVisibleCheckBox.IsChecked == true, "Area series visibility updated.");
 
         private void OnAreaValuesClick(object sender, RoutedEventArgs e) =>
-            EditArea(() => MarkupAreaSeries.ShowDataLabels = AreaValuesCheckBox.IsChecked == true, "Area value labels updated.");
+            EditArea(() => SelectedAreaSeries().ShowDataLabels = AreaValuesCheckBox.IsChecked == true, "Area value labels updated.");
 
-        private void OnAreaMarkersClick(object sender, RoutedEventArgs e)
-        {
-            EditArea(() =>
-            {
-                MarkupAreaSeries.ShowDataMarkers = AreaMarkersCheckBox.IsChecked == true;
-                MarkupAreaSeries.MarkerShape = MarkerShape.Circle;
-                MarkupAreaSeries.DataMarkerBrush = MarkupAreaSeries.ShowDataMarkers ? MarkupAreaSeries.Stroke : null;
-            }, "Area point markers updated.");
-        }
+        private void OnAreaMarkersClick(object sender, RoutedEventArgs e) =>
+            EditArea(() => SelectedAreaSeries().ShowDataMarkers = AreaMarkersCheckBox.IsChecked == true, "Area point markers updated.");
+
+        private void OnAreaMarkerChanged(object sender, SelectionChangedEventArgs e) =>
+            EditArea(() => SelectedAreaSeries().MarkerShape = SelectedMarkerShape(AreaMarkerChoice), "Area marker shape updated.");
 
         private void OnAreaLegendClick(object sender, RoutedEventArgs e) =>
             EditArea(() => AreaMarkupChart.ShowLegend = AreaLegendCheckBox.IsChecked == true, "Area legend updated.");
@@ -453,14 +665,22 @@ namespace ChartsSample
         {
             EditArea(() =>
             {
+                ClearExample(AreaMarkupChart);
+                RestoreValues(_area, AreaSeed);
+                ResetSeriesPresentation(MarkupAreaSeries);
+                MarkupAreaSeries.Title = "Monthly area";
+                MarkupAreaSeries.XValues = AreaMonth;
+                MarkupAreaSeries.YValues = AreaValues;
                 MarkupAreaSeries.Fill = new SolidColorBrush(OriginalAreaFill);
                 MarkupAreaSeries.Stroke = new SolidColorBrush(OriginalAreaStroke);
-                MarkupAreaSeries.IsVisible = true;
-                MarkupAreaSeries.ShowDataLabels = false;
-                MarkupAreaSeries.ShowDataMarkers = false;
-                MarkupAreaSeries.MarkerShape = MarkerShape.Circle;
-                MarkupAreaSeries.DataMarkerBrush = null;
+                MarkupAreaSeries.StrokeThickness = 2;
+                AreaMarkupChart.Data.Add(AreaMonth);
+                AreaMarkupChart.Data.Add(AreaValues);
+                AreaMarkupChart.Series.Add(MarkupAreaSeries);
+                _seriesValues.Add(MarkupAreaSeries, _area);
                 AreaMarkupChart.ShowLegend = true;
+                _nextAreaSeries = 2;
+                RebuildSeriesChoice(AreaMarkupChart, AreaSeriesChoice, 0);
             }, "Area example reset. Other charts and the application theme are unchanged.");
         }
 
@@ -470,16 +690,30 @@ namespace ChartsSample
             {
                 Color fill = SelectedExampleColor(BarColorChoice, OriginalBarFill);
                 Color stroke = SelectedExampleColor(BarColorChoice, OriginalBarStroke);
-                MarkupBarSeries.Fill = new SolidColorBrush(fill);
-                MarkupBarSeries.Stroke = new SolidColorBrush(stroke);
+                SelectedBarSeries().Fill = new SolidColorBrush(fill);
+                SelectedBarSeries().Stroke = new SolidColorBrush(stroke);
             }, "Bar color updated. The source data is unchanged.");
         }
 
         private void OnBarVisibilityClick(object sender, RoutedEventArgs e) =>
-            EditBar(() => MarkupBarSeries.IsVisible = BarVisibleCheckBox.IsChecked == true, "Bar series visibility updated.");
+            EditBar(() => SelectedBarSeries().IsVisible = BarVisibleCheckBox.IsChecked == true, "Bar series visibility updated.");
 
         private void OnBarValuesClick(object sender, RoutedEventArgs e) =>
-            EditBar(() => MarkupBarSeries.ShowDataLabels = BarValuesCheckBox.IsChecked == true, "Bar value labels updated.");
+            EditBar(() => SelectedBarSeries().ShowDataLabels = BarValuesCheckBox.IsChecked == true, "Bar value labels updated.");
+
+        private void OnBarMarkersClick(object sender, RoutedEventArgs e) =>
+            EditBar(() => SelectedBarSeries().ShowDataMarkers = BarMarkersCheckBox.IsChecked == true, "Bar point markers updated.");
+
+        private void OnBarMarkerChanged(object sender, SelectionChangedEventArgs e) =>
+            EditBar(() => SelectedBarSeries().MarkerShape = SelectedMarkerShape(BarMarkerChoice), "Bar marker shape updated.");
+
+        private void OnBarOrientationChanged(object sender, SelectionChangedEventArgs e) =>
+            EditBar(() =>
+            {
+                if (BarOrientationChoice.SelectedIndex is < 0 or > 1)
+                    throw new ArgumentException("Choose an available bar orientation.");
+                SelectedBarSeries().Orientation = (BarOrientation)BarOrientationChoice.SelectedIndex;
+            }, "Bar orientation changed. The selected series keeps its own explicit axes.");
 
         private void OnBarLegendClick(object sender, RoutedEventArgs e) =>
             EditBar(() => BarMarkupChart.ShowLegend = BarLegendCheckBox.IsChecked == true, "Bar legend updated.");
@@ -488,16 +722,133 @@ namespace ChartsSample
         {
             EditBar(() =>
             {
+                ClearExample(BarMarkupChart);
+                RestoreValues(_bars, BarSeed);
+                ResetSeriesPresentation(MarkupBarSeries);
+                MarkupBarSeries.Title = "Monthly bars";
+                MarkupBarSeries.XValues = BarMonth;
+                MarkupBarSeries.YValues = BarValues;
                 MarkupBarSeries.Fill = new SolidColorBrush(OriginalBarFill);
                 MarkupBarSeries.Stroke = new SolidColorBrush(OriginalBarStroke);
-                MarkupBarSeries.IsVisible = true;
-                MarkupBarSeries.ShowDataLabels = false;
-                BarMarkupChart.ShowLegend = true;
+                MarkupBarSeries.StrokeThickness = 1.5;
                 MarkupBarSeries.Orientation = BarOrientation.Horizontal;
+                ConnectBarAxes(MarkupBarSeries);
+                BarMarkupChart.Data.Add(BarMonth);
+                BarMarkupChart.Data.Add(BarValues);
+                BarMarkupChart.Series.Add(MarkupBarSeries);
+                _seriesValues.Add(MarkupBarSeries, _bars);
+                BarMarkupChart.ShowLegend = true;
+                _nextBarSeries = 2;
+                RebuildSeriesChoice(BarMarkupChart, BarSeriesChoice, 0);
             }, "Bar example reset to horizontal. Other charts and the application theme are unchanged.");
         }
 
-        private LineSeries SelectedPresentationSeries() => PresentationSeriesComboBox.SelectedIndex == 1 ? ExpensesSeries : ProfitSeries;
+        private void OnLineVisibilityClick(object sender, RoutedEventArgs e) =>
+            EditPresentation(() => SelectedPresentationSeries().IsVisible = LineVisibleCheckBox.IsChecked == true,
+                SyncLineOptions, "Line series visibility updated.");
+
+        private void OnLineWeightChanged(object sender, SelectionChangedEventArgs e) =>
+            EditPresentation(() =>
+            {
+                int index = LineWeightChoice.SelectedIndex;
+                if (index < 0 || index >= LineWeights.Length)
+                    throw new ArgumentException("Choose an available line weight.");
+                SelectedPresentationSeries().StrokeThickness = LineWeights[index];
+            }, SyncLineOptions, "Line weight updated.");
+
+        private void OnLineStyleChanged(object sender, SelectionChangedEventArgs e) =>
+            EditPresentation(() =>
+            {
+                int index = LineStyleChoice.SelectedIndex;
+                if (index < 0 || index > (int)StrokeDashStyle.DashDotDot)
+                    throw new ArgumentException("Choose an available line style.");
+                SelectedPresentationSeries().StrokeDashStyle = (StrokeDashStyle)index;
+            }, SyncLineOptions, "Line style updated.");
+
+        private void OnLineColorChanged(object sender, SelectionChangedEventArgs e) =>
+            EditPresentation(() => SelectedPresentationSeries().Stroke = LineColorChoice.SelectedIndex == 0
+                ? null : new SolidColorBrush(SelectedExampleColor(LineColorChoice, default)), SyncLineOptions, "Line color updated.");
+
+        private void OnLineMarkerChanged(object sender, SelectionChangedEventArgs e) =>
+            EditPresentation(() => SelectedPresentationSeries().MarkerShape = SelectedMarkerShape(LineMarkerChoice),
+                SyncLineOptions, "Line marker shape updated.");
+
+        private void OnResetLineClick(object sender, RoutedEventArgs e)
+        {
+            EditLine(() =>
+            {
+                ClearExample(MarkupChart);
+                RestoreValues(_profit, ProfitSeed);
+                RestoreValues(_expenses, ExpensesSeed);
+                ResetSeriesPresentation(ProfitSeries);
+                ResetSeriesPresentation(ExpensesSeries);
+                ProfitSeries.Title = "Monthly profit";
+                ProfitSeries.XValues = Month;
+                ProfitSeries.YValues = Profit;
+                ProfitSeries.StrokeThickness = 3;
+                ProfitSeries.MarkerShape = MarkerShape.Circle;
+                ProfitSeries.ShowDataMarkers = true;
+                ExpensesSeries.Title = "Monthly expenses";
+                ExpensesSeries.XValues = Month;
+                ExpensesSeries.YValues = Expenses;
+                ExpensesSeries.StrokeThickness = 2;
+                ExpensesSeries.StrokeDashStyle = StrokeDashStyle.Dash;
+                ExpensesSeries.ShowDataLabels = true;
+                ExpensesSeries.XAxis = null;
+                ExpensesSeries.YAxis = null;
+                ResetProfitAxes();
+                ProfitSeries.XAxis = _xAxis;
+                ProfitSeries.YAxis = _yAxis;
+                MarkupChart.Axes.Add(_xAxis);
+                MarkupChart.Axes.Add(_yAxis);
+                MarkupChart.Data.Add(Month);
+                MarkupChart.Data.Add(Profit);
+                MarkupChart.Data.Add(Expenses);
+                MarkupChart.Series.Add(ProfitSeries);
+                MarkupChart.Series.Add(ExpensesSeries);
+                _seriesValues.Add(ProfitSeries, _profit);
+                _seriesValues.Add(ExpensesSeries, _expenses);
+                MarkupChart.ShowLegend = true;
+                MarkupChart.LegendTitle = "Monthly totals";
+                _nextLineSeries = 3;
+                RebuildSeriesChoice(MarkupChart, PresentationSeriesComboBox, 0);
+                Synchronize(() =>
+                {
+                    LegendTitleTextBox.Text = MarkupChart.LegendTitle;
+                    OverrideIndexNumberBox.Value = 0;
+                    AxisStatusText.Text = "";
+                    SyncAxes();
+                });
+            }, "Line example reset. Other charts, updates and the application theme are unchanged.");
+        }
+
+        private void ResetProfitAxes()
+        {
+            _yAxis.Minimum = null;
+            _yAxis.Maximum = null;
+            _yAxis.Spacing = null;
+            _xAxis.SortKey = CategorySortKey.Index;
+            _xAxis.SortOrder = SortOrder.Ascending;
+            foreach (CartesianAxis axis in new CartesianAxis[] { _xAxis, _yAxis })
+            {
+                axis.IsVisible = true;
+                axis.ShowTickLabels = true;
+                axis.ShowTickMarks = false;
+                axis.GridLines = GridLines.None;
+                axis.GridLineMajorBrush = null;
+                axis.TickBrush = null;
+                axis.TickLabelBrush = null;
+                axis.AxisLineBrush = null;
+            }
+        }
+
+        private void SyncAxisAvailability()
+        {
+            bool available = MarkupChart.Series.Contains(ProfitSeries);
+            AxisControls.IsEnabled = available;
+            AxisSeriesWarning.Visibility = !available && AxisEditors.Visibility == Visibility.Visible
+                ? Visibility.Visible : Visibility.Collapsed;
+        }
 
         private uint? SelectedOverrideIndex()
         {
@@ -512,12 +863,26 @@ namespace ChartsSample
 
         private void SyncPresentationKnobs()
         {
+            SyncLineOptions();
+            SyncPresentationOverrideEditors();
+        }
+
+        private void SyncLineOptions()
+        {
             var series = SelectedPresentationSeries();
+            SyncVisibility(LineVisibleCheckBox, series);
+            LineWeightChoice.SelectedIndex = Array.IndexOf(LineWeights, series.StrokeThickness);
+            LineStyleChoice.SelectedIndex = (int)series.StrokeDashStyle;
+            LineColorChoice.SelectedIndex = series.Stroke == null ? 0 : ExampleColorIndex(series.Stroke, default);
+            LineMarkerChoice.SelectedIndex = (int)series.MarkerShape;
             ShowDataLabelsCheckBox.IsChecked = series.ShowDataLabels;
             ShowDataMarkersCheckBox.IsChecked = series.ShowDataMarkers;
             DataLabelBrushCheckBox.IsChecked = series.DataLabelBrush != null;
             DataMarkerBrushCheckBox.IsChecked = series.DataMarkerBrush != null;
-            SyncPresentationOverrideEditors();
+            LegendVisibilityCheckBox.IsChecked = MarkupChart.ShowLegend;
+            LineRemoveSeriesButton.IsEnabled = MarkupChart.Series.Count > 1;
+            SyncAxisAvailability();
+            UpdateDataText();
         }
 
         private void SyncPresentationOverrideEditors()
@@ -551,7 +916,7 @@ namespace ChartsSample
 
         private void OnPresentationSeriesChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!_ready || _syncing) return;
+            if (!_ready || _syncing || _closing || PresentationSeriesComboBox.SelectedIndex < 0) return;
             Synchronize(SyncPresentationKnobs);
             if (SelectedOverrideIndex().HasValue)
                 PresentationKnobStatusText.Text = $"Editing {SelectedPresentationSeries().Title}.";
@@ -566,7 +931,7 @@ namespace ChartsSample
         }
 
         private void EditPresentation(Action edit, Action sync, string message) =>
-            ApplyEdit(edit, sync, PresentationKnobStatusText, message);
+            ApplyEdit(edit, sync, PresentationKnobStatusText, message, chart: MarkupChart);
 
         private void OnLegendVisibilityClick(object sender, RoutedEventArgs e) =>
             EditPresentation(() => MarkupChart.ShowLegend = LegendVisibilityCheckBox.IsChecked == true,
@@ -633,15 +998,16 @@ namespace ChartsSample
 
         private void Synchronize(Action sync)
         {
+            bool wasSyncing = _syncing;
             _syncing = true;
             try { sync(); }
-            finally { _syncing = false; }
+            finally { _syncing = wasSyncing; }
         }
 
         private void ApplyEdit(Action edit, Action sync, TextBlock status, string success,
             string invalid = "That value is not supported. The current setting has been restored.", Chart chart = null)
         {
-            if (!_ready || _syncing) return;
+            if (!_ready || _syncing || _closing) return;
             try
             {
                 edit();
@@ -665,6 +1031,7 @@ namespace ChartsSample
 
         private void SyncAxes()
         {
+            SyncAxisAvailability();
             LinearMinBox.Value = _yAxis.Minimum ?? double.NaN;
             LinearMaxBox.Value = _yAxis.Maximum ?? double.NaN;
             LinearSpacingBox.Value = _yAxis.Spacing ?? double.NaN;
@@ -680,9 +1047,13 @@ namespace ChartsSample
             AxisLineBrushBox.SelectedIndex = BrushIndex(_yAxis.AxisLineBrush);
         }
 
-        private void EditAxis(Action edit, Action sync) => ApplyEdit(edit, sync, AxisStatusText, "Profit axes updated.",
-            "Invalid axis value. Use finite bounds with minimum below maximum, and positive spacing, or leave blank for Auto. Current settings restored.",
-            MarkupChart);
+        private void EditAxis(Action edit, Action sync)
+        {
+            if (!_ready || _syncing || _closing || !MarkupChart.Series.Contains(ProfitSeries)) return;
+            ApplyEdit(edit, sync, AxisStatusText, "Profit axes updated.",
+                "Invalid axis value. Use finite bounds with minimum below maximum, and positive spacing, or leave blank for Auto. Current settings restored.",
+                MarkupChart);
+        }
         private static double? OptionalNumber(NumberBox box) => double.IsNaN(box.Value) ? null : box.Value;
         private void OnLinearMinChanged(NumberBox sender, NumberBoxValueChangedEventArgs e) =>
             EditAxis(() => _yAxis.Minimum = OptionalNumber(sender), () => sender.Value = _yAxis.Minimum ?? double.NaN);

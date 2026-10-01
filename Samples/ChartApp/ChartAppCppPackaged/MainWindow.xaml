@@ -122,20 +122,38 @@
                                         <Border x:Name="SeriesEditorPanel">
                                             <StackPanel Spacing="8">
                                                 <TextBlock Text="Legend and series" Style="{StaticResource SectionHeading}" />
+                                                <Grid Style="{StaticResource EditorRow}" SizeChanged="OnEditorSizeChanged">
+                                                    <ComboBox x:Name="PresentationSeriesComboBox" Header="Series" SelectionChanged="OnPresentationSeriesChanged" Style="{StaticResource EditorChoice}" />
+                                                    <CheckBox x:Name="LineVisibleCheckBox" Content="Visible" IsChecked="True" VerticalAlignment="Bottom" Click="OnLineVisibleClick" />
+                                                </Grid>
+                                                <Grid x:Name="LineSeriesActions" Style="{StaticResource EditorRow}" SizeChanged="OnEditorSizeChanged">
+                                                    <Button x:Name="LineAddSeriesButton" Content="Add series" Click="OnLineAddSeriesClick" />
+                                                    <Button x:Name="LineRemoveSeriesButton" Content="Remove selected" Click="OnLineRemoveSeriesClick" />
+                                                </Grid>
+                                                <Grid x:Name="LineStyleEditors" Style="{StaticResource EditorRow}" SizeChanged="OnEditorSizeChanged">
+                                                    <ComboBox x:Name="LineWeightChoice" Header="Line weight" SelectionChanged="OnLineChoiceChanged" Style="{StaticResource EditorChoice}">
+                                                        <ComboBoxItem Content="Fine" /><ComboBoxItem Content="Thin" /><ComboBoxItem Content="Standard" /><ComboBoxItem Content="Bold" />
+                                                    </ComboBox>
+                                                    <ComboBox x:Name="LineStyleChoice" Header="Line style" SelectionChanged="OnLineChoiceChanged" Style="{StaticResource EditorChoice}">
+                                                        <ComboBoxItem Content="Solid" /><ComboBoxItem Content="Dash" /><ComboBoxItem Content="Dot" /><ComboBoxItem Content="Dash / dot" /><ComboBoxItem Content="Dash / dot / dot" />
+                                                    </ComboBox>
+                                                    <ComboBox x:Name="LineColorChoice" Header="Stroke color" SelectionChanged="OnLineChoiceChanged" Style="{StaticResource EditorChoice}">
+                                                        <ComboBoxItem Content="Original" /><ComboBoxItem Content="Blue" /><ComboBoxItem Content="Teal" /><ComboBoxItem Content="Amber" /><ComboBoxItem Content="Purple" /><ComboBoxItem Content="Rose" /><ComboBoxItem Content="Slate" /><ComboBoxItem Content="Green" /><ComboBoxItem Content="Orange" />
+                                                    </ComboBox>
+                                                    <ComboBox x:Name="LineMarkerChoice" Header="Marker shape" SelectionChanged="OnLineChoiceChanged" Style="{StaticResource EditorChoice}">
+                                                        <ComboBoxItem Content="None" /><ComboBoxItem Content="Square" /><ComboBoxItem Content="Diamond" /><ComboBoxItem Content="Triangle" /><ComboBoxItem Content="X" /><ComboBoxItem Content="Asterisk" /><ComboBoxItem Content="Short dash" /><ComboBoxItem Content="Long dash" /><ComboBoxItem Content="Circle" /><ComboBoxItem Content="Plus" />
+                                                    </ComboBox>
+                                                </Grid>
                                                 <Grid ColumnSpacing="8">
                                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                                     <TextBox x:Name="LegendTitleTextBox" Header="Legend title" Text="Monthly totals" Style="{StaticResource EditorText}" />
                                                     <Button x:Name="ApplyLegendTitleButton" Grid.Column="1" Content="Apply title" VerticalAlignment="Bottom" Click="OnApplyLegendTitleClick" />
                                                 </Grid>
-                                                <Grid Style="{StaticResource EditorRow}" SizeChanged="OnEditorSizeChanged">
-                                                    <ComboBox x:Name="PresentationSeriesComboBox" Header="Series" SelectedIndex="0" SelectionChanged="OnPresentationSeriesChanged" Style="{StaticResource EditorChoice}">
-                                                        <ComboBoxItem Content="Monthly profit" /><ComboBoxItem Content="Monthly expenses" />
-                                                    </ComboBox>
-                                                    <CheckBox x:Name="LegendVisibilityCheckBox" Content="Show legend" IsChecked="True" VerticalAlignment="Bottom" Click="OnLegendVisibilityClick" />
-                                                </Grid>
                                                 <Grid Style="{StaticResource EditorRow}" Tag="Choices" SizeChanged="OnEditorSizeChanged">
                                                     <CheckBox x:Name="ShowDataLabelsCheckBox" Content="Default labels" Click="OnShowDataLabelsClick" />
                                                     <CheckBox x:Name="ShowDataMarkersCheckBox" Content="Default markers" IsChecked="True" Click="OnShowDataMarkersClick" />
+                                                    <CheckBox x:Name="LegendVisibilityCheckBox" Content="Show legend" IsChecked="True" Click="OnLegendVisibilityClick" />
+                                                    <Button x:Name="LineResetButton" Content="Reset line example" Click="OnLineResetClick" />
                                                 </Grid>
                                             </StackPanel>
                                         </Border>
@@ -189,7 +207,9 @@
                                                 </Grid>
                                             </StackPanel>
                                         </Border>
+                                        <TextBlock x:Name="AxisSeriesWarning" Visibility="Collapsed" Text="Monthly profit was removed. Return to Line and choose Reset line example to restore the axes demo." Style="{StaticResource SecondaryText}" AutomationProperties.LiveSetting="Polite" />
                                         <Border x:Name="AxesEditorPanel" Visibility="Collapsed">
+                                            <ContentControl x:Name="AxisControls" IsTabStop="False" HorizontalContentAlignment="Stretch">
                                             <StackPanel Spacing="8">
                                                 <TextBlock Text="Axes of Monthly profit" Style="{StaticResource SectionHeading}" />
                                                 <TextBlock Text="Clear any number for Auto. Spacing must be positive; minimum must be less than maximum. Expenses keeps automatic axes." Style="{StaticResource SecondaryText}" />
@@ -231,6 +251,7 @@
                                                     </ComboBox>
                                                 </Grid>
                                             </StackPanel>
+                                            </ContentControl>
                                         </Border>
                                         <TextBlock x:Name="PresentationKnobStatusText" Text="Choose settings and apply an override." Style="{StaticResource SecondaryText}" AutomationProperties.LiveSetting="Polite" />
                                         <Expander Header="Current data" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
@@ -244,7 +265,7 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="440" /></Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                                 <Border Style="{StaticResource ScenarioCard}" VerticalAlignment="Top">
-                                    <charts:Chart x:Name="AreaMarkupChart" Height="240" FontSize="14" ShowLegend="True" AutomationProperties.Name="Monthly area, January through June: 8, 18, 14, 29, 24, 37">
+                                    <charts:Chart x:Name="AreaMarkupChart" Height="240" FontSize="14" ShowLegend="True" AutomationProperties.Name="Monthly area chart">
                                         <charts:Chart.Data><charts:Samples x:Name="AreaMonth" /><charts:Samples x:Name="AreaValues" /></charts:Chart.Data>
                                         <charts:AreaSeries x:Name="MarkupAreaSeries" Title="Monthly area" Fill="#604F6BED" Stroke="#FF3047B8" StrokeThickness="2"
                                                            XValues="{x:Bind AreaMonth, Mode=OneTime}" YValues="{x:Bind AreaValues, Mode=OneTime}" />
@@ -256,15 +277,25 @@
                                     <StackPanel Spacing="8">
                                         <TextBlock Text="Area options" Style="{StaticResource SectionHeading}" />
                                         <Grid Style="{StaticResource EditorRow}" SizeChanged="OnEditorSizeChanged">
+                                            <ComboBox x:Name="AreaSeriesChoice" Header="Series" SelectionChanged="OnAreaSeriesChanged" Style="{StaticResource EditorChoice}" />
+                                            <CheckBox x:Name="AreaVisibleCheckBox" Content="Visible" IsChecked="True" VerticalAlignment="Bottom" Click="OnAreaVisibleClick" />
+                                        </Grid>
+                                        <Grid Style="{StaticResource EditorRow}" SizeChanged="OnEditorSizeChanged">
+                                            <Button x:Name="AreaAddSeriesButton" Content="Add series" Click="OnAreaAddSeriesClick" />
+                                            <Button x:Name="AreaRemoveSeriesButton" Content="Remove selected" Click="OnAreaRemoveSeriesClick" />
+                                        </Grid>
+                                        <Grid Style="{StaticResource EditorRow}" SizeChanged="OnEditorSizeChanged">
                                             <ComboBox x:Name="AreaColorChoice" Header="Series color" SelectedIndex="0" SelectionChanged="OnAreaChoiceChanged" Style="{StaticResource EditorChoice}">
-                                                <ComboBoxItem Content="Original" /><ComboBoxItem Content="Blue" /><ComboBoxItem Content="Green" /><ComboBoxItem Content="Orange" />
+                                                <ComboBoxItem Content="Original" /><ComboBoxItem Content="Blue" /><ComboBoxItem Content="Teal" /><ComboBoxItem Content="Amber" /><ComboBoxItem Content="Purple" /><ComboBoxItem Content="Rose" /><ComboBoxItem Content="Slate" /><ComboBoxItem Content="Green" /><ComboBoxItem Content="Orange" />
                                             </ComboBox>
                                             <ComboBox x:Name="AreaFillChoice" Header="Area fill" SelectedIndex="0" SelectionChanged="OnAreaChoiceChanged" Style="{StaticResource EditorChoice}">
-                                                <ComboBoxItem Content="Translucent" /><ComboBoxItem Content="Solid" /><ComboBoxItem Content="Outline only" />
+                                                <ComboBoxItem Content="Soft fill" /><ComboBoxItem Content="Strong fill" /><ComboBoxItem Content="Outline only" />
+                                            </ComboBox>
+                                            <ComboBox x:Name="AreaMarkerChoice" Header="Marker shape" SelectionChanged="OnAreaMarkerChanged" Style="{StaticResource EditorChoice}">
+                                                <ComboBoxItem Content="None" /><ComboBoxItem Content="Square" /><ComboBoxItem Content="Diamond" /><ComboBoxItem Content="Triangle" /><ComboBoxItem Content="X" /><ComboBoxItem Content="Asterisk" /><ComboBoxItem Content="Short dash" /><ComboBoxItem Content="Long dash" /><ComboBoxItem Content="Circle" /><ComboBoxItem Content="Plus" />
                                             </ComboBox>
                                         </Grid>
                                         <Grid Style="{StaticResource EditorRow}" Tag="Choices" SizeChanged="OnEditorSizeChanged">
-                                            <CheckBox x:Name="AreaVisibleCheckBox" Content="Show series" IsChecked="True" Click="OnAreaVisibleClick" />
                                             <CheckBox x:Name="AreaValuesCheckBox" Content="Value labels" IsChecked="False" Click="OnAreaValuesClick" />
                                             <CheckBox x:Name="AreaMarkersCheckBox" Content="Point markers" IsChecked="False" Click="OnAreaMarkersClick" />
                                             <CheckBox x:Name="AreaLegendCheckBox" Content="Legend" IsChecked="True" Click="OnAreaLegendClick" />
@@ -272,7 +303,7 @@
                                         <Button x:Name="AreaResetButton" Content="Reset area example" Click="OnAreaResetClick" />
                                         <TextBlock x:Name="AreaStatusText" Text="Choose options for the area example." Style="{StaticResource SecondaryText}" AutomationProperties.LiveSetting="Polite" />
                                         <Expander x:Name="AreaDataExpander" Header="Current data" IsExpanded="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                            <TextBlock Text="Jan: 8, Feb: 18, Mar: 14, Apr: 29, May: 24, Jun: 37." IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                            <TextBlock x:Name="AreaDataText" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
                                         </Expander>
                                     </StackPanel>
                                 </ScrollViewer>
@@ -282,7 +313,7 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="440" /></Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                                 <Border Style="{StaticResource ScenarioCard}" VerticalAlignment="Top">
-                                    <charts:Chart x:Name="BarMarkupChart" Height="240" FontSize="14" ShowLegend="True" AutomationProperties.Name="Monthly bars, January through June: 12, 20, 17, 31, 26, 39">
+                                    <charts:Chart x:Name="BarMarkupChart" Height="240" FontSize="14" ShowLegend="True" AutomationProperties.Name="Monthly bar chart">
                                         <charts:Chart.Data><charts:Samples x:Name="BarMonth" /><charts:Samples x:Name="BarValues" /></charts:Chart.Data>
                                         <charts:BarSeries x:Name="MarkupBarSeries" Title="Monthly bars" Orientation="Horizontal" Fill="#FF0F6CBD" Stroke="#FF073B66" StrokeThickness="1.5"
                                                           XValues="{x:Bind BarMonth, Mode=OneTime}" YValues="{x:Bind BarValues, Mode=OneTime}" />
@@ -294,8 +325,22 @@
                                     <StackPanel Spacing="8">
                                         <TextBlock Text="Bar options" Style="{StaticResource SectionHeading}" />
                                         <Grid Style="{StaticResource EditorRow}" SizeChanged="OnEditorSizeChanged">
+                                            <ComboBox x:Name="BarSeriesChoice" Header="Series" SelectionChanged="OnBarSeriesChanged" Style="{StaticResource EditorChoice}" />
+                                            <CheckBox x:Name="BarVisibleCheckBox" Content="Visible" IsChecked="True" VerticalAlignment="Bottom" Click="OnBarVisibleClick" />
+                                        </Grid>
+                                        <Grid Style="{StaticResource EditorRow}" SizeChanged="OnEditorSizeChanged">
+                                            <Button x:Name="BarAddSeriesButton" Content="Add series" Click="OnBarAddSeriesClick" />
+                                            <Button x:Name="BarRemoveSeriesButton" Content="Remove selected" Click="OnBarRemoveSeriesClick" />
+                                        </Grid>
+                                        <Grid Style="{StaticResource EditorRow}" SizeChanged="OnEditorSizeChanged">
                                             <ComboBox x:Name="BarColorChoice" Header="Series color" SelectedIndex="0" SelectionChanged="OnBarColorChanged" Style="{StaticResource EditorChoice}">
-                                                <ComboBoxItem Content="Original" /><ComboBoxItem Content="Blue" /><ComboBoxItem Content="Green" /><ComboBoxItem Content="Orange" />
+                                                <ComboBoxItem Content="Original" /><ComboBoxItem Content="Blue" /><ComboBoxItem Content="Teal" /><ComboBoxItem Content="Amber" /><ComboBoxItem Content="Purple" /><ComboBoxItem Content="Rose" /><ComboBoxItem Content="Slate" /><ComboBoxItem Content="Green" /><ComboBoxItem Content="Orange" />
+                                            </ComboBox>
+                                            <ComboBox x:Name="BarOrientationChoice" Header="Orientation" SelectionChanged="OnBarOrientationChanged" Style="{StaticResource EditorChoice}">
+                                                <ComboBoxItem Content="Horizontal bars" /><ComboBoxItem Content="Vertical columns" />
+                                            </ComboBox>
+                                            <ComboBox x:Name="BarMarkerChoice" Header="Marker shape" SelectionChanged="OnBarMarkerChanged" Style="{StaticResource EditorChoice}">
+                                                <ComboBoxItem Content="None" /><ComboBoxItem Content="Square" /><ComboBoxItem Content="Diamond" /><ComboBoxItem Content="Triangle" /><ComboBoxItem Content="X" /><ComboBoxItem Content="Asterisk" /><ComboBoxItem Content="Short dash" /><ComboBoxItem Content="Long dash" /><ComboBoxItem Content="Circle" /><ComboBoxItem Content="Plus" />
                                             </ComboBox>
                                             <Button x:Name="BarOrientationButton" Content="Toggle orientation" VerticalAlignment="Bottom"
                                                     AutomationProperties.Name="Toggle connected bar orientation"
@@ -304,14 +349,14 @@
                                         </Grid>
                                         <TextBlock x:Name="BarOrientationText" Text="Orientation: Horizontal" Style="{StaticResource SecondaryText}" />
                                         <Grid Style="{StaticResource EditorRow}" Tag="Choices" SizeChanged="OnEditorSizeChanged">
-                                            <CheckBox x:Name="BarVisibleCheckBox" Content="Show series" IsChecked="True" Click="OnBarVisibleClick" />
                                             <CheckBox x:Name="BarValuesCheckBox" Content="Value labels" IsChecked="False" Click="OnBarValuesClick" />
+                                            <CheckBox x:Name="BarMarkersCheckBox" Content="Point markers" IsChecked="False" Click="OnBarMarkersClick" />
                                             <CheckBox x:Name="BarLegendCheckBox" Content="Legend" IsChecked="True" Click="OnBarLegendClick" />
                                         </Grid>
                                         <Button x:Name="BarResetButton" Content="Reset bar example" Click="OnBarResetClick" />
                                         <TextBlock x:Name="BarStatusText" Text="Choose options for the bar example." Style="{StaticResource SecondaryText}" AutomationProperties.LiveSetting="Polite" />
                                         <Expander x:Name="BarDataExpander" Header="Current data" IsExpanded="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                            <TextBlock Text="Jan: 12, Feb: 20, Mar: 17, Apr: 31, May: 26, Jun: 39." IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                            <TextBlock x:Name="BarDataText" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
                                         </Expander>
                                     </StackPanel>
                                 </ScrollViewer>
@@ -391,7 +436,7 @@
                         </StackPanel>
                     </ScrollViewer>
                     <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" Padding="16,8">
-                        <TextBlock x:Name="StatusText" Text="Primary data updates once per second." Style="{StaticResource SecondaryText}" AutomationProperties.LiveSetting="Polite" />
+                        <TextBlock x:Name="StatusText" Style="{StaticResource SecondaryText}" AutomationProperties.LiveSetting="Polite" />
                     </Border>
                 </Grid>
             </NavigationView>

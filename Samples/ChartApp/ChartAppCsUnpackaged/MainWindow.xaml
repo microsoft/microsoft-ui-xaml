@@ -113,12 +113,30 @@
                                             <StackPanel Spacing="8">
                                                 <TextBlock Text="Series &amp; legend" Style="{StaticResource ControlHeadingStyle}" />
                                                 <Grid ColumnSpacing="12" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
-                                                    <ComboBox x:Name="PresentationSeriesComboBox" Header="Selected series" SelectedIndex="0" SelectionChanged="OnPresentationSeriesChanged">
-                                                        <ComboBoxItem Content="Monthly profit" />
-                                                        <ComboBoxItem Content="Monthly expenses" />
-                                                    </ComboBox>
+                                                    <ComboBox x:Name="PresentationSeriesComboBox" Header="Selected series" SelectionChanged="OnPresentationSeriesChanged" />
                                                     <CheckBox x:Name="LegendVisibilityCheckBox" Content="Show legend" IsChecked="True" VerticalAlignment="Bottom" Click="OnLegendVisibilityClick" />
                                                 </Grid>
+                                                <Grid x:Name="LineSeriesActions" Tag="Actions" ColumnSpacing="8" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
+                                                    <Button x:Name="LineAddSeriesButton" Content="Add series" Click="OnLineAddSeriesClick" />
+                                                    <Button x:Name="LineRemoveSeriesButton" Content="Remove selected" Click="OnLineRemoveSeriesClick" />
+                                                </Grid>
+                                                <StackPanel x:Name="LineStyleEditors" Spacing="8">
+                                                    <CheckBox x:Name="LineVisibleCheckBox" Content="Visible" IsChecked="True" Click="OnLineVisibilityClick" />
+                                                    <Grid ColumnSpacing="12" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
+                                                        <ComboBox x:Name="LineWeightChoice" Header="Line weight" SelectionChanged="OnLineWeightChanged">
+                                                            <x:String>Fine</x:String><x:String>Thin</x:String><x:String>Standard</x:String><x:String>Bold</x:String>
+                                                        </ComboBox>
+                                                        <ComboBox x:Name="LineStyleChoice" Header="Line style" SelectionChanged="OnLineStyleChanged">
+                                                            <x:String>Solid</x:String><x:String>Dash</x:String><x:String>Dot</x:String><x:String>Dash / dot</x:String><x:String>Dash / dot / dot</x:String>
+                                                        </ComboBox>
+                                                        <ComboBox x:Name="LineColorChoice" Header="Series color" SelectionChanged="OnLineColorChanged">
+                                                            <x:String>Original</x:String><x:String>Blue</x:String><x:String>Teal</x:String><x:String>Amber</x:String><x:String>Purple</x:String><x:String>Rose</x:String><x:String>Slate</x:String><x:String>Green</x:String><x:String>Orange</x:String>
+                                                        </ComboBox>
+                                                        <ComboBox x:Name="LineMarkerChoice" Header="Marker shape" SelectionChanged="OnLineMarkerChanged">
+                                                            <x:String>None</x:String><x:String>Square</x:String><x:String>Diamond</x:String><x:String>Triangle</x:String><x:String>X</x:String><x:String>Asterisk</x:String><x:String>Short dash</x:String><x:String>Long dash</x:String><x:String>Circle</x:String><x:String>Plus</x:String>
+                                                        </ComboBox>
+                                                    </Grid>
+                                                </StackPanel>
                                                 <Grid Tag="Choices" ColumnSpacing="12" RowSpacing="4" SizeChanged="OnEditorSizeChanged">
                                                     <CheckBox x:Name="ShowDataLabelsCheckBox" Content="Default labels" Click="OnShowDataLabelsClick" />
                                                     <CheckBox x:Name="ShowDataMarkersCheckBox" Content="Default markers" IsChecked="True" Click="OnShowDataMarkersClick" />
@@ -128,6 +146,7 @@
                                                     <TextBox x:Name="LegendTitleTextBox" Header="Legend title" Text="Monthly totals" />
                                                     <Button x:Name="ApplyLegendTitleButton" Grid.Column="1" VerticalAlignment="Bottom" Content="Apply title" Click="OnApplyLegendTitleClick" />
                                                 </Grid>
+                                                <Button x:Name="LineResetButton" Content="Reset line example" Click="OnResetLineClick" />
                                             </StackPanel>
                                         </Border>
                                         <Border x:Name="PointOverrideEditors" Style="{StaticResource CardStyle}" Visibility="Collapsed">
@@ -174,7 +193,10 @@
                                             </StackPanel>
                                         </Border>
                                         <TextBlock x:Name="PresentationKnobStatusText" Style="{StaticResource DescriptionStyle}" AutomationProperties.LiveSetting="Polite" />
+                                        <TextBlock x:Name="AxisSeriesWarning" Text="Monthly profit was removed. Reset the Line example to edit its axes."
+                                                   Style="{StaticResource DescriptionStyle}" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite" />
                                         <Border x:Name="AxisEditors" Style="{StaticResource CardStyle}" Visibility="Collapsed">
+                                            <ContentControl x:Name="AxisControls" IsTabStop="False" HorizontalContentAlignment="Stretch">
                                             <StackPanel Spacing="8">
                                                 <TextBlock Text="Profit axes" Style="{StaticResource ControlHeadingStyle}" />
                                                 <TextBlock Text="Explicit X and Y axes belong to monthly profit. Expenses keeps automatic axes. Leave numeric fields blank for Auto."
@@ -220,6 +242,7 @@
                                                 </Grid>
                                                 <TextBlock x:Name="AxisStatusText" AutomationProperties.LiveSetting="Polite" />
                                             </StackPanel>
+                                            </ContentControl>
                                         </Border>
                                     </StackPanel>
                                 </ScrollViewer>
@@ -241,23 +264,36 @@
                                         <StackPanel Spacing="8">
                                             <TextBlock Text="Fill and presentation" Style="{StaticResource ControlHeadingStyle}" />
                                             <TextBlock Text="Compare translucent, solid and outline-only fills without changing the data." Style="{StaticResource DescriptionStyle}" />
+                                            <ComboBox x:Name="AreaSeriesChoice" Header="Selected series" SelectionChanged="OnAreaSeriesChanged" />
+                                            <Grid Tag="Actions" ColumnSpacing="8" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
+                                                <Button x:Name="AreaAddSeriesButton" Content="Add series" Click="OnAreaAddSeriesClick" />
+                                                <Button x:Name="AreaRemoveSeriesButton" Content="Remove selected" IsEnabled="False" Click="OnAreaRemoveSeriesClick" />
+                                            </Grid>
+                                            <CheckBox x:Name="AreaVisibleCheckBox" Content="Visible" IsChecked="True" Click="OnAreaVisibilityClick" />
                                             <Grid ColumnSpacing="12" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
                                                 <ComboBox x:Name="AreaColorChoice" Header="Series color" SelectedIndex="0" SelectionChanged="OnAreaStyleChanged">
                                                     <ComboBoxItem Content="Original" />
                                                     <ComboBoxItem Content="Blue" />
+                                                    <ComboBoxItem Content="Teal" />
+                                                    <ComboBoxItem Content="Amber" />
+                                                    <ComboBoxItem Content="Purple" />
+                                                    <ComboBoxItem Content="Rose" />
+                                                    <ComboBoxItem Content="Slate" />
                                                     <ComboBoxItem Content="Green" />
                                                     <ComboBoxItem Content="Orange" />
                                                 </ComboBox>
                                                 <ComboBox x:Name="AreaFillChoice" Header="Area fill" SelectedIndex="0" SelectionChanged="OnAreaStyleChanged">
-                                                    <ComboBoxItem Content="Translucent" />
-                                                    <ComboBoxItem Content="Solid" />
+                                                    <ComboBoxItem Content="Soft fill" />
+                                                    <ComboBoxItem Content="Strong fill" />
                                                     <ComboBoxItem Content="Outline only" />
                                                 </ComboBox>
+                                                <ComboBox x:Name="AreaMarkerChoice" Header="Marker shape" SelectionChanged="OnAreaMarkerChanged">
+                                                    <x:String>None</x:String><x:String>Square</x:String><x:String>Diamond</x:String><x:String>Triangle</x:String><x:String>X</x:String><x:String>Asterisk</x:String><x:String>Short dash</x:String><x:String>Long dash</x:String><x:String>Circle</x:String><x:String>Plus</x:String>
+                                                </ComboBox>
+                                                <CheckBox x:Name="AreaMarkersCheckBox" Content="Point markers" VerticalAlignment="Bottom" Click="OnAreaMarkersClick" />
                                             </Grid>
                                             <Grid Tag="Choices" ColumnSpacing="12" RowSpacing="4" SizeChanged="OnEditorSizeChanged">
-                                                <CheckBox x:Name="AreaVisibleCheckBox" Content="Show series" IsChecked="True" Click="OnAreaVisibilityClick" />
                                                 <CheckBox x:Name="AreaValuesCheckBox" Content="Value labels" Click="OnAreaValuesClick" />
-                                                <CheckBox x:Name="AreaMarkersCheckBox" Content="Point markers" Click="OnAreaMarkersClick" />
                                                 <CheckBox x:Name="AreaLegendCheckBox" Content="Legend" IsChecked="True" Click="OnAreaLegendClick" />
                                             </Grid>
                                             <Button x:Name="AreaResetButton" Content="Reset area example" Click="OnResetAreaClick" />
@@ -287,14 +323,33 @@
                                         <StackPanel Spacing="8">
                                             <TextBlock Text="Orientation and presentation" Style="{StaticResource ControlHeadingStyle}" />
                                             <TextBlock Text="Change colors, labels and orientation while keeping the same data and explicit axes." Style="{StaticResource DescriptionStyle}" />
-                                            <ComboBox x:Name="BarColorChoice" Header="Series color" SelectedIndex="0" SelectionChanged="OnBarColorChanged">
-                                                <ComboBoxItem Content="Original" />
-                                                <ComboBoxItem Content="Blue" />
-                                                <ComboBoxItem Content="Green" />
-                                                <ComboBoxItem Content="Orange" />
-                                            </ComboBox>
+                                            <ComboBox x:Name="BarSeriesChoice" Header="Selected series" SelectionChanged="OnBarSeriesChanged" />
+                                            <Grid Tag="Actions" ColumnSpacing="8" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
+                                                <Button x:Name="BarAddSeriesButton" Content="Add series" Click="OnBarAddSeriesClick" />
+                                                <Button x:Name="BarRemoveSeriesButton" Content="Remove selected" IsEnabled="False" Click="OnBarRemoveSeriesClick" />
+                                            </Grid>
+                                            <CheckBox x:Name="BarVisibleCheckBox" Content="Visible" IsChecked="True" Click="OnBarVisibilityClick" />
+                                            <Grid ColumnSpacing="12" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
+                                                <ComboBox x:Name="BarOrientationChoice" Header="Orientation" SelectionChanged="OnBarOrientationChanged">
+                                                    <x:String>Horizontal bars</x:String><x:String>Vertical columns</x:String>
+                                                </ComboBox>
+                                                <ComboBox x:Name="BarColorChoice" Header="Series color" SelectedIndex="0" SelectionChanged="OnBarColorChanged">
+                                                    <ComboBoxItem Content="Original" />
+                                                    <ComboBoxItem Content="Blue" />
+                                                    <ComboBoxItem Content="Teal" />
+                                                    <ComboBoxItem Content="Amber" />
+                                                    <ComboBoxItem Content="Purple" />
+                                                    <ComboBoxItem Content="Rose" />
+                                                    <ComboBoxItem Content="Slate" />
+                                                    <ComboBoxItem Content="Green" />
+                                                    <ComboBoxItem Content="Orange" />
+                                                </ComboBox>
+                                                <ComboBox x:Name="BarMarkerChoice" Header="Marker shape" SelectionChanged="OnBarMarkerChanged">
+                                                    <x:String>None</x:String><x:String>Square</x:String><x:String>Diamond</x:String><x:String>Triangle</x:String><x:String>X</x:String><x:String>Asterisk</x:String><x:String>Short dash</x:String><x:String>Long dash</x:String><x:String>Circle</x:String><x:String>Plus</x:String>
+                                                </ComboBox>
+                                                <CheckBox x:Name="BarMarkersCheckBox" Content="Point markers" VerticalAlignment="Bottom" Click="OnBarMarkersClick" />
+                                            </Grid>
                                             <Grid Tag="Choices" ColumnSpacing="12" RowSpacing="4" SizeChanged="OnEditorSizeChanged">
-                                                <CheckBox x:Name="BarVisibleCheckBox" Content="Show series" IsChecked="True" Click="OnBarVisibilityClick" />
                                                 <CheckBox x:Name="BarValuesCheckBox" Content="Value labels" Click="OnBarValuesClick" />
                                                 <CheckBox x:Name="BarLegendCheckBox" Content="Legend" IsChecked="True" Click="OnBarLegendClick" />
                                             </Grid>
@@ -388,8 +443,7 @@
                     </ScrollViewer>
                     <Grid Grid.Row="2" Margin="16,8,16,12" ColumnSpacing="16">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                        <TextBlock x:Name="StatusText" Style="{StaticResource DescriptionStyle}" AutomationProperties.LiveSetting="Polite"
-                                   Text="Synthetic data. Profit and expenses update once a second; pause in Live data to explore individual points." />
+                        <TextBlock x:Name="StatusText" Style="{StaticResource DescriptionStyle}" AutomationProperties.LiveSetting="Polite" />
                         <TextBlock x:Name="VariantText" Grid.Column="1" Style="{StaticResource DescriptionStyle}" />
                     </Grid>
                 </Grid>
