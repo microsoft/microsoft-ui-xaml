@@ -230,6 +230,12 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
         property == s_MinWidthProperty ||
         property == s_MaxWidthProperty)
     {
+        // Only an app-driven assignment replaces the authored width; a user resize does not.
+        if (property == s_WidthProperty && !m_inUserResize)
+        {
+            m_authoredWidth = ValueHelper<winrt::GridLength>::CastOrUnbox(args.NewValue());
+        }
+
         UpdateActualWidth();
         if (auto owner = GetOwningTableView())
         {
