@@ -334,14 +334,10 @@ _Check_return_ HRESULT CTextBoxHelpers::SnapRectToPixel(
     switch (rectKind)
     {
     case SelectionRectangle:
-        if (fabsf(screenOrigin.x - screenFarCorner.x) < 0.05f)
-        {
-            // Keep near-zero selections empty rather than expanding them to one pixel.
-            pRect->Width = 0;
-            screenOrigin.x = floor(screenOrigin.x);
-            screenFarCorner.x = screenOrigin.x;
-        }
-        else
+        if (!TextBoxHelpers::Details::TryCollapseNearZeroSelectionDimension(
+            screenOrigin.x,
+            screenFarCorner.x,
+            pRect->Width))
         {
             // Snap outwards, allowing for axis inversion.
             if (screenOrigin.x < screenFarCorner.x)
@@ -356,14 +352,10 @@ _Check_return_ HRESULT CTextBoxHelpers::SnapRectToPixel(
             }
         }
 
-        if (fabsf(screenOrigin.y - screenFarCorner.y) < 0.05f)
-        {
-            // Keep near-zero selections empty rather than expanding them to one pixel.
-            pRect->Height = 0;
-            screenOrigin.y = floor(screenOrigin.y);
-            screenFarCorner.y = screenOrigin.y;
-        }
-        else
+        if (!TextBoxHelpers::Details::TryCollapseNearZeroSelectionDimension(
+            screenOrigin.y,
+            screenFarCorner.y,
+            pRect->Height))
         {
             // Snap outwards, allowing for axis inversion.
             if (screenOrigin.y < screenFarCorner.y)
