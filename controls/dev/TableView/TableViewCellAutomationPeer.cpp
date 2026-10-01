@@ -553,21 +553,44 @@ void TableViewCellAutomationPeer::RegisterAutomationContentPropertyCallbacks(win
             }
         };
 
-    m_automationContentPropertyChangedRevokers.emplace_back(
-        element,
-        winrt::UIElement::VisibilityProperty(),
-        element.RegisterPropertyChangedCallback(winrt::UIElement::VisibilityProperty(), callback));
+    auto const observe =
+        [&](winrt::DependencyObject const& target, winrt::DependencyProperty const& property)
+        {
+            m_automationContentPropertyChangedRevokers.emplace_back(
+                target,
+                property,
+                target.RegisterPropertyChangedCallback(property, callback));
+        };
+
+    observe(element, winrt::UIElement::VisibilityProperty());
 
     if (auto const control = element.try_as<winrt::Control>())
     {
-        m_automationContentPropertyChangedRevokers.emplace_back(
-            control,
-            winrt::Control::IsEnabledProperty(),
-            control.RegisterPropertyChangedCallback(winrt::Control::IsEnabledProperty(), callback));
-        m_automationContentPropertyChangedRevokers.emplace_back(
-            control,
-            winrt::UIElement::IsTabStopProperty(),
-            control.RegisterPropertyChangedCallback(winrt::UIElement::IsTabStopProperty(), callback));
+        observe(control, winrt::Control::IsEnabledProperty());
+        observe(control, winrt::UIElement::IsTabStopProperty());
+    }
+
+    // The three properties above describe elements that already exist. They say nothing
+    // about the subtree gaining or losing elements, which a TableViewTemplateColumn does
+    // whenever an app-supplied CellTemplate swaps what sits inside an otherwise stable
+    // presenter. Without this, a stale "not interactive" verdict would survive the arrival
+    // of a focusable control and SetCellContentAccessibilityViewRaw would then hide it.
+    // XAML raises no subtree-changed event, so observe the properties that drive the swap.
+    if (auto const presenter = element.try_as<winrt::ContentPresenter>())
+    {
+        observe(presenter, winrt::ContentPresenter::ContentProperty());
+        observe(presenter, winrt::ContentPresenter::ContentTemplateProperty());
+    }
+
+    if (auto const contentControl = element.try_as<winrt::ContentControl>())
+    {
+        observe(contentControl, winrt::ContentControl::ContentProperty());
+        observe(contentControl, winrt::ContentControl::ContentTemplateProperty());
+    }
+
+    if (auto const itemsControl = element.try_as<winrt::ItemsControl>())
+    {
+        observe(itemsControl, winrt::ItemsControl::ItemsSourceProperty());
     }
 }
 
