@@ -23,7 +23,8 @@ aggressively settles and collects so a dangling peer faults promptly rather than
 - **Targeted torture paths.** In addition to a broad create/load/unload sweep across many controls, we exercise the
   paths that have historically produced lifetime crashes: ItemsRepeater realization/recycling (currently
   quarantined — see below), element reparenting (enter/leave), window open/close, ListView container recycling,
-  Popup open/close, NavigationView menu churn, and TabView add/remove.
+  Popup open/close, NavigationView menu churn, TabView add/remove, and text Line Services teardown
+  (`StressTextLineServicesChurnNative` and `StressLineBreakCacheDeferredReleaseNative`).
 - **Isolation.** The tests are tagged into their own TAEF test suite (`LifetimeStressTestSuite`). The Helix
   work-item generator emits a dedicated work item for that suite, so a lifetime crash does not cascade into
   unrelated tests and the soak can be scheduled independently.
@@ -65,6 +66,29 @@ Run modes (all optional; the default needs no configuration):
 - **Explicit local/manual run** — set `WINUI_LIFETIME_STRESS_ITERATIONS > 0` to run a heavier fixed cycle count.
 
 To make leak detection fail locally while iterating, flip a scenario's `failOnLeak` argument to `true`.
+
+### Line Services break-cache subtree teardown
+
+`StressLineBreakCacheDeferredReleaseNative` ports the workload from commit
+`3d290cb70921f45f006fa393f600ab18990077c9`. It builds wrapping, mixed-inline TextBlocks
+inside a `UserControl -> StackPanel -> Button` tree, lays them out, detaches the populated
+subtree, and churns additional text before collection and finalizer/UI draining.
+
+The motivating crash stack includes `UIAffinityReleaseQueue::DoCleanup`, followed by
+`CTextBlock` destruction, `ParagraphNode::DeleteLineCache`, and `LsDestroyBreakRecord`.
+The target branch now contains the [owner-carrying resource fix](owner-carrying-native-resources.md):
+cached breaks retain their originating formatter until record cleanup finishes.
+
+This is stress coverage, not a deterministic reproduction of that crash. `UpdateLayout`
+does not itself guarantee a render tick, and this scenario does not explicitly trim the
+formatter pool or establish when the UI-affinity release queue runs. It does not replace
+the real-LS trim-order and shutdown acceptance checks for the ownership fix.
+
+The new scenario uses `RunNativeStress` and warning-only leak reporting, as in the source
+commit. The extracted `SettleAndReport` / `FinalizeAndReport` helpers take an explicit
+`failOnLeak` argument: existing scenarios keep this branch's prior true/false settings.
+The five-pass `SettleAndCollect` drain and existing native/report log markers are unchanged.
+Managed warnings do not prevent a native crash from terminating the test host.
 
 > **Note:** the `StressItemsRepeaterRealizationAndRecycling` scenario is currently **quarantined**
 > (`[TestProperty("Ignore", "True")]`) because it reproduces a deterministic native crash. Re-enable it once that
