@@ -31,6 +31,7 @@
             $(XcpPath)\components\theming\inc\;
             $(XcpPath)\components\theminginterop\inc\;
             $(XcpPath)\components\metadata\mocks\;
+            $(XcpPath)\components\mrt\inc\;
             $(XcpPath)\core\inc\;
             $(XcpPath)\core\Parser\;
             $(XcpPath)\pal\inc\;
@@ -44,6 +45,7 @@
         <ClInclude Include="MockParserCoreServices.h"/>
         <ClInclude Include="MockResourceManager.h"/>
         <ClInclude Include="MockUri.h"/>
+        <ClInclude Include="MRTResourceUnitTests.h"/>
         <ClInclude Include="ObjectWriterFrameUnitTests.h"/>
         <ClInclude Include="ObjectWriterStackUnitTests.h"/>
         <ClInclude Include="ParserUnitTestIncludes.h"/>
@@ -64,6 +66,7 @@
         <ClCompile Include="MockUri.cpp"/>
         <ClCompile Include="MockResourceManager.cpp"/>
         <ClCompile Include="MockParserCoreServices.cpp"/>
+        <ClCompile Include="MRTResourceUnitTests.cpp"/>
         <ClCompile Include="ParserUtilities.cpp"/>
         <ClCompile Include="XamlSchemaContextUnitTests.cpp"/>
         <ClCompile Include="XamlOptimizedNodeListUnitTests.cpp"/>
