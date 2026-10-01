@@ -4,11 +4,25 @@
 #pragma once
 
 #include "TextLineBreak.h"
+#include "TextFormatter.h"
+#include <DependentResource.h>
 
 namespace RichTextServices
 {
     namespace Internal
     {
+        class LsTextFormatter;
+
+        struct LsBreakRecordTraits
+        {
+            using Handle = DependentResource<TextFormatter, Ptls6::PLSBREAKRECLINE, LsBreakRecordTraits>;
+            static void Destroy(TextFormatter& owner, Ptls6::PLSBREAKRECLINE record) noexcept;
+
+        private:
+            friend class LsTextLine;
+            static Handle Adopt(LsTextFormatter& origin, Ptls6::PLSBREAKRECLINE& producerSlot) noexcept;
+        };
+
         //---------------------------------------------------------------------------
         //
         //  LsTextLineBreak
@@ -22,10 +36,7 @@ namespace RichTextServices
         public:
 
             // Constructor.
-            LsTextLineBreak(
-                _In_ Ptls6::PLSC pLineServicesContext,
-                _In_ Ptls6::PLSBREAKRECLINE pBreakRecord
-                );
+            explicit LsTextLineBreak(LsBreakRecordTraits::Handle&& record) noexcept;
 
             // Parameterless constructor, if no LS break record exists
             LsTextLineBreak();
@@ -40,11 +51,7 @@ namespace RichTextServices
 
         private:
 
-            Ptls6::PLSBREAKRECLINE m_pBreakRecord;
-                // Pointer to wrapped LineServices BreakRecord.
-
-            Ptls6::PLSC m_pLineServicesContext;
-                // Line services contenxt.
+            LsBreakRecordTraits::Handle m_breakRecord;
         };
 
         //---------------------------------------------------------------------------
@@ -58,7 +65,7 @@ namespace RichTextServices
         //---------------------------------------------------------------------------
         inline Ptls6::PLSBREAKRECLINE LsTextLineBreak::GetLsBreakRecord() const
         {
-            return m_pBreakRecord;
+            return m_breakRecord.Get();
         }
     }
 }

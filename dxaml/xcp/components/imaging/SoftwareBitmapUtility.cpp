@@ -90,6 +90,16 @@ _Check_return_ HRESULT SoftwareBitmapUtility::ValidateSoftwareBitmap(
     return S_OK;
 }
 
+SoftwareBitmapLock::BufferTraits::Handle SoftwareBitmapLock::BufferTraits::Acquire(
+    const wrl::ComPtr<wf::IMemoryBufferReference>& reference, uint32_t& size)
+{
+    wrl::ComPtr<wf_::IMemoryBufferByteAccess> byteAccess;
+    IFCFAILFAST(reference.As(&byteAccess));
+    uint8_t* buffer = nullptr;
+    IFCFAILFAST(byteAccess->GetBuffer(&buffer, &size));
+    return Handle::Adopt(*reference.Get(), buffer);
+}
+
 SoftwareBitmapLock::SoftwareBitmapLock(
     _In_ const wrl::ComPtr<wgri::ISoftwareBitmap>& spSoftwareBitmap,
     wgri::BitmapBufferAccessMode accessMode
@@ -110,11 +120,7 @@ SoftwareBitmapLock::SoftwareBitmapLock(
     wrl::ComPtr<wf::IMemoryBuffer> spMemoryBuffer;
     IFCFAILFAST(spBitmapBuffer.As(&spMemoryBuffer));
 
-    // This holds onto the buffer reference so its lifetime survives this object.
-    IFCFAILFAST(spMemoryBuffer->CreateReference(&m_spMemoryBufferReference));
-
-    wrl::ComPtr<wf_::IMemoryBufferByteAccess> spMemoryBufferByteAccess;
-    IFCFAILFAST(m_spMemoryBufferReference.As(&spMemoryBufferByteAccess));
-
-    IFCFAILFAST(spMemoryBufferByteAccess->GetBuffer(&m_pBuffer, &m_bufferSize));
+    wrl::ComPtr<wf::IMemoryBufferReference> reference;
+    IFCFAILFAST(spMemoryBuffer->CreateReference(&reference));
+    m_buffer = BufferTraits::Acquire(reference, m_bufferSize);
 }

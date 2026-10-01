@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <DependentResource.h>
+
 // TODO: Use this class for SoftwareBitmapSource and delete
 //                 any unneeded methods since OfferableSoftwareBitmap
 //                 is the bitmap receiver now.
@@ -47,13 +49,13 @@ public:
         wgri::BitmapBufferAccessMode accessMode
         );
 
-    uint8_t* GetBuffer() { return m_pBuffer; }
-    const uint8_t* GetBuffer() const { return m_pBuffer; }
+    uint8_t* GetBuffer() { return m_buffer.Get(); }
+    const uint8_t* GetBuffer() const { return m_buffer.Get(); }
 
     uint32_t GetBufferSize() const { return m_bufferSize; }
 
-    uint8_t* GetStartPtr() { return m_pBuffer + m_bitmapPlaneDescription.StartIndex; }
-    const uint8_t* GetStartPtr() const { return m_pBuffer + m_bitmapPlaneDescription.StartIndex; }
+    uint8_t* GetStartPtr() { return m_buffer.Get() + m_bitmapPlaneDescription.StartIndex; }
+    const uint8_t* GetStartPtr() const { return m_buffer.Get() + m_bitmapPlaneDescription.StartIndex; }
 
     uint32_t GetWidth() const { return m_bitmapPlaneDescription.Width; }
     uint32_t GetHeight() const { return m_bitmapPlaneDescription.Height; }
@@ -63,8 +65,15 @@ public:
     uint32_t GetWidthInBytes() const { return m_bitmapPlaneDescription.Width << 2; }
 
 private:
-    wrl::ComPtr<wf::IMemoryBufferReference> m_spMemoryBufferReference;
-    uint8_t* m_pBuffer = nullptr;
+    struct BufferTraits
+    {
+        using Handle = DependentResource<wf::IMemoryBufferReference, uint8_t*, BufferTraits>;
+        static Handle Acquire(const wrl::ComPtr<wf::IMemoryBufferReference>& reference, uint32_t& size);
+        // The reference owns the pixel storage; the view has no separate free.
+        static void Destroy(wf::IMemoryBufferReference&, uint8_t*) noexcept {}
+    };
+
+    BufferTraits::Handle m_buffer;
     uint32_t m_bufferSize = 0;
     wgri::BitmapPlaneDescription m_bitmapPlaneDescription = {};
 };

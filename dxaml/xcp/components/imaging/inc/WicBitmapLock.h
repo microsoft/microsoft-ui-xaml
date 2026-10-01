@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <DependentResource.h>
+
 struct WICRect;
 struct IWICBitmap;
 struct IWICBitmapLock;
@@ -19,10 +21,10 @@ public:
         );
 
     // After calling Unlock, all other members are invalid and should not be called.
-    void Unlock() { m_spWicBitmapLock = nullptr; }
+    void Unlock() { m_buffer.Reset(); }
 
-    uint8_t* GetBuffer(){ return m_pBuffer; }
-    const uint8_t* GetBuffer() const { return m_pBuffer; }
+    uint8_t* GetBuffer(){ return m_buffer.Get(); }
+    const uint8_t* GetBuffer() const { return m_buffer.Get(); }
 
     uint32_t GetBufferSize() const { return m_bufferSize; }
 
@@ -34,8 +36,15 @@ public:
     uint32_t GetWidthInBytes() const { return m_width << 2; }
 
 private:
-    wrl::ComPtr<IWICBitmapLock> m_spWicBitmapLock;
-    uint8_t* m_pBuffer = nullptr;
+    struct BufferTraits
+    {
+        using Handle = DependentResource<IWICBitmapLock, uint8_t*, BufferTraits>;
+        static Handle Acquire(IWICBitmapLock& bitmapLock, uint32_t& size);
+        // The pixels are borrowed; releasing their lock is the cleanup operation.
+        static void Destroy(IWICBitmapLock&, uint8_t*) noexcept {}
+    };
+
+    BufferTraits::Handle m_buffer;
     uint32_t m_bufferSize = 0;
     uint32_t m_width = 0;
     uint32_t m_height = 0;

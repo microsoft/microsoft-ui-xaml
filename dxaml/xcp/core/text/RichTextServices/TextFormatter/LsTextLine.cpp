@@ -1059,7 +1059,7 @@ Result::Enum LsTextLine::Format(
 {
     Result::Enum txhr = Result::Success;
     PLSBREAKRECLINE pLsPreviousLineBreak = NULL;
-    PLSBREAKRECLINE pLsLineBreak;
+    PLSBREAKRECLINE pLsLineBreak = NULL;
     LSPAP lspap;
 
     SetFlags(Flags::Collapsed, FALSE);
@@ -1402,11 +1402,12 @@ Cleanup:
 //
 //---------------------------------------------------------------------------
 Result::Enum LsTextLine::CreateLineBreak(
-    _In_opt_ PLSBREAKRECLINE pLsLineBreak
+    _Inout_ PLSBREAKRECLINE& pLsLineBreak
         // LS line break
     )
 {
     Result::Enum txhr = Result::Success;
+    auto record = LsBreakRecordTraits::Adopt(*m_pTextFormatter, pLsLineBreak);
 
     switch (m_lsLineInfo.endr)
     {
@@ -1417,9 +1418,9 @@ Result::Enum LsTextLine::CreateLineBreak(
 
         default:
             ASSERT(m_pTextLineBreak == NULL);
-            if (pLsLineBreak)
+            if (record.Get())
             {
-                IFC_OOM_RTS(m_pTextLineBreak = new LsTextLineBreak(m_pTextFormatter->m_pLsContext, pLsLineBreak));
+                IFC_OOM_RTS(m_pTextLineBreak = new LsTextLineBreak(std::move(record)));
             }
             else
             {

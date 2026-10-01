@@ -19,6 +19,10 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(AllocateWrite)
                 TEST_METHOD_PROPERTY(L"Description", L"Tests allocating an OfferableSoftwareBitmap and writing to the whole surface.")
             END_TEST_METHOD()
+
+            TEST_METHOD(WicLockMovesWithBuffer)
+            TEST_METHOD(WicEmptyLock)
+            TEST_METHOD(SoftwareBitmapLockMovesWithBuffer)
         };
     }}
 } } } }

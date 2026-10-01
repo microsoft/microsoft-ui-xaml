@@ -170,7 +170,7 @@ namespace RichTextServices
 
             // Creates line break if necessary depending on LS line ending data.
             Result::Enum CreateLineBreak(
-                _In_opt_ Ptls6::PLSBREAKRECLINE pLsLineBreak
+                _Inout_ Ptls6::PLSBREAKRECLINE& pLsLineBreak
                 );
 
             // Calculates distance in ls text cell from cp relative to cell start.
