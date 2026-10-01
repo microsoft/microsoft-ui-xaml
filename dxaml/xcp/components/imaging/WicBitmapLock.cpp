@@ -5,6 +5,14 @@
 #include <wincodec.h>
 #include "WicBitmapLock.h"
 
+WicBitmapLock::BufferTraits::Handle WicBitmapLock::BufferTraits::Acquire(
+    IWICBitmapLock& bitmapLock, uint32_t& size)
+{
+    uint8_t* buffer = nullptr;
+    IFCFAILFAST(bitmapLock.GetDataPointer(&size, &buffer));
+    return Handle::Adopt(bitmapLock, buffer);
+}
+
 WicBitmapLock::WicBitmapLock(
     _In_opt_ const WICRect* lockRect,
     WICBitmapLockFlags wicBitmapLockFlags,
@@ -13,9 +21,10 @@ WicBitmapLock::WicBitmapLock(
 {
     if (lockRect == nullptr || (lockRect->Width != 0 && lockRect->Height != 0))
     {
-        IFCFAILFAST(wicBitmap->Lock(lockRect, wicBitmapLockFlags, &m_spWicBitmapLock));
-        IFCFAILFAST(m_spWicBitmapLock->GetDataPointer(&m_bufferSize, &m_pBuffer));
-        IFCFAILFAST(m_spWicBitmapLock->GetSize(&m_width, &m_height));
-        IFCFAILFAST(m_spWicBitmapLock->GetStride(&m_stride));
+        wrl::ComPtr<IWICBitmapLock> bitmapLock;
+        IFCFAILFAST(wicBitmap->Lock(lockRect, wicBitmapLockFlags, &bitmapLock));
+        m_buffer = BufferTraits::Acquire(*bitmapLock.Get(), m_bufferSize);
+        IFCFAILFAST(bitmapLock->GetSize(&m_width, &m_height));
+        IFCFAILFAST(bitmapLock->GetStride(&m_stride));
     }
 }

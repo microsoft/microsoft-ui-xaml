@@ -83,6 +83,7 @@ namespace RichTextServices
         private:
 
             friend class LsTextLine;
+            friend struct LsBreakRecordTraits;
 
             Ptls6::PLSC m_pLsContext;
                 // Context created by LS. It must be provided as explicit input parameter to all Line Services APIs.
@@ -95,4 +96,3 @@ namespace RichTextServices
         };
     }
 }
-
