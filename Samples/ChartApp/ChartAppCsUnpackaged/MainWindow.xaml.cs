@@ -1144,9 +1144,9 @@ namespace ChartsSample
                 if (isAuto)
                 {
                     // Known open issue: switching back to Auto can keep the previously plotted
-                    // positions until another interval is selected. Surface it instead of
-                    // silently reporting success. See the "Known open issue" note in the PR.
-                    warning.Text = "Known issue: switching back to Auto can keep the previous plotted positions until another interval is selected. Tracked in the Charts control (see the PR's known-issue note).";
+                    // positions. Surface the limitation and the documented workaround instead of
+                    // silently reporting success.
+                    warning.Text = "Known issue: switching back to Auto can keep the previous plotted positions. Select a specific interval (for example Day) and then Auto again to restore the curve. This is an open Charts control integration issue.";
                     warning.Visibility = Visibility.Visible;
                 }
                 else

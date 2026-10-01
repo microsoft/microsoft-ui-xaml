@@ -1784,7 +1784,7 @@ namespace winrt::ChartsSample::implementation
             bool dense = monthly && (type == DateTimeIntervalType::Day || type == DateTimeIntervalType::Week);
             bool sparse = !monthly && type == DateTimeIntervalType::Year;
             // Surface the known Auto-interval limitation instead of silently reporting success.
-            warning.Text(isAuto ? L"Known issue: switching back to Auto can keep the previous plotted positions until another interval is selected. Tracked in the Charts control (see the PR's known-issue note)."
+            warning.Text(isAuto ? L"Known issue: switching back to Auto can keep the previous plotted positions. Select a specific interval (for example Day) and then Auto again to restore the curve. This is an open Charts control integration issue."
                 : dense ? L"Day/Week intervals are too dense for this three-year monthly range."
                 : sparse ? L"Year intervals are not useful for a 75-day range." : L"");
             warning.Visibility((isAuto || dense || sparse) ? Visibility::Visible : Visibility::Collapsed);
