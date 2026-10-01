@@ -10,6 +10,8 @@ namespace BindTestbed
 
     internal sealed partial class InitOnlyRecordTests : UserControl
     {
+        public string PrivateSetText { get; private set; } = string.Empty;
+
         public ObservableCollection<BlogPost> BlogPosts { get; } = new ObservableCollection<BlogPost>
         {
             new BlogPost("Test1", "Testing", null, DateTime.Now),
