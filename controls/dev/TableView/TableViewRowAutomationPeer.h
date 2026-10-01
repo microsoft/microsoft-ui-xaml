@@ -46,6 +46,14 @@ public:
     // TableViewGroupHeaderAutomationPeer::RaiseExpandCollapseAutomationEvent.
     void RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
 
+    // Returns this row's peer for one cell, reusing the instance handed out before for the same
+    // cell element, column and visible column index. Shared by GetChildrenCore and
+    // TableViewAutomationPeer::GetItem so tree navigation and the Grid pattern yield one provider.
+    winrt::AutomationPeer GetOrCreateCellPeer(
+        winrt::FrameworkElement const& cell,
+        winrt::TableViewColumn const& column,
+        int32_t visibleColumnIndex);
+
 private:
     // The owning TableView, or null once the row has been recycled out of the tree.
     winrt::TableView GetOwningTableView();
@@ -60,4 +68,24 @@ private:
     // Position and size within this row's sibling set, read from the row's hierarchy descriptor.
     // False when the row is not a realized tree row, in which case UIA gets 0 ("unknown").
     bool TryGetSiblingPosition(int32_t& positionInSet, int32_t& sizeOfSet);
+
+    // Cell peers are not owned by their cell elements (cells are arbitrary app content), so the
+    // row peer owns them. A peer minted per call and then dropped loses its managed half as soon
+    // as the returned vector is released, and UIA is left holding a provider that answers
+    // ELEMENTNOTAVAILABLE - a screen reader that walks into the row then falls back to the
+    // element it was on before.
+    struct CellPeerCacheEntry
+    {
+        winrt::weak_ref<winrt::FrameworkElement> cell{ nullptr };
+        winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
+        int32_t visibleColumnIndex{ -1 };
+        winrt::AutomationPeer peer{ nullptr };
+    };
+
+    winrt::AutomationPeer FindCachedCellPeer(
+        winrt::FrameworkElement const& cell,
+        winrt::TableViewColumn const& column,
+        int32_t visibleColumnIndex) const;
+
+    std::vector<CellPeerCacheEntry> m_cellPeerCache;
 };
