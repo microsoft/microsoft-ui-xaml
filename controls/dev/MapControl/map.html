@@ -646,6 +646,16 @@
                             ? properties.name
                             : 'Pinned location';
                         pinElement.setAttribute('aria-label', pinName);
+                        // role="button" promises keyboard operability, but the Azure Maps
+                        // 'click' event only fires for pointer input. Raise the same
+                        // pushpin-click path on Enter/Space so keyboard and screen-reader
+                        // users can activate a pin and MapElementClick is raised for them too.
+                        pinElement.addEventListener('keydown', (keyEvent) => {
+                            if (keyEvent.key === 'Enter' || keyEvent.key === ' ' || keyEvent.key === 'Spacebar') {
+                                keyEvent.preventDefault();
+                                sendPushpinClickInfo({ target: pin });
+                            }
+                        });
                         return pin;
                     }
                 });
