@@ -319,6 +319,8 @@ winrt::IVector<winrt::AutomationPeer> TableViewRowAutomationPeer::GetChildrenCor
 
     const auto cellChildren = cellsHost.Children();
     const auto count = cellChildren.Size();
+    std::vector<CellPeerCacheEntry> liveCache;
+    liveCache.reserve(count);
     int32_t visibleColumnIndex = 0;
     for (uint32_t i = 0; i < count; ++i)
     {
@@ -333,13 +335,75 @@ winrt::IVector<winrt::AutomationPeer> TableViewRowAutomationPeer::GetChildrenCor
             if (auto const cellFE = cellElement.try_as<winrt::FrameworkElement>())
             {
                 // Dedicated cell peers provide names, coordinates, and header references.
-                winrt::AutomationPeer const cellPeer =
-                    winrt::make<TableViewCellAutomationPeer>(cellFE, row, column, visibleColumnIndex);
+                auto cellPeer = FindCachedCellPeer(cellFE, column, visibleColumnIndex);
+                if (!cellPeer)
+                {
+                    cellPeer = winrt::make<TableViewCellAutomationPeer>(cellFE, row, column, visibleColumnIndex);
+                }
+
                 children.Append(cellPeer);
+                liveCache.push_back({ winrt::make_weak(cellFE), winrt::make_weak(column), visibleColumnIndex, cellPeer });
             }
             ++visibleColumnIndex;
         }
     }
 
+    // Replacing the cache wholesale drops peers for cells that were removed, hidden or moved.
+    m_cellPeerCache = std::move(liveCache);
+
     return children;
+}
+
+winrt::AutomationPeer TableViewRowAutomationPeer::FindCachedCellPeer(
+    winrt::FrameworkElement const& cell,
+    winrt::TableViewColumn const& column,
+    int32_t visibleColumnIndex) const
+{
+    for (auto const& entry : m_cellPeerCache)
+    {
+        if (entry.peer &&
+            entry.visibleColumnIndex == visibleColumnIndex &&
+            entry.cell.get() == cell &&
+            entry.column.get() == column)
+        {
+            return entry.peer;
+        }
+    }
+
+    return nullptr;
+}
+
+winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
+    winrt::FrameworkElement const& cell,
+    winrt::TableViewColumn const& column,
+    int32_t visibleColumnIndex)
+{
+    auto const row = GetRow();
+    if (!row || !cell || !column)
+    {
+        return nullptr;
+    }
+
+    if (auto const cached = FindCachedCellPeer(cell, column, visibleColumnIndex))
+    {
+        return cached;
+    }
+
+    winrt::AutomationPeer const cellPeer =
+        winrt::make<TableViewCellAutomationPeer>(cell, row, column, visibleColumnIndex);
+
+    // One entry per cell element: a cell whose column or index changed replaces its stale entry
+    // instead of accumulating next to it until the next GetChildrenCore rebuild.
+    auto const existing = std::find_if(m_cellPeerCache.begin(), m_cellPeerCache.end(),
+        [&cell](CellPeerCacheEntry const& entry) { return entry.cell.get() == cell; });
+    if (existing != m_cellPeerCache.end())
+    {
+        *existing = { winrt::make_weak(cell), winrt::make_weak(column), visibleColumnIndex, cellPeer };
+    }
+    else
+    {
+        m_cellPeerCache.push_back({ winrt::make_weak(cell), winrt::make_weak(column), visibleColumnIndex, cellPeer });
+    }
+
+    return cellPeer;
 }

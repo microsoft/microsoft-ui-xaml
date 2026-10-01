@@ -7,6 +7,7 @@
 #include "TableViewTextColumn.h"
 #include "TableViewRow.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
+#include "TableViewAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewToolTipHelpers.h"
@@ -228,11 +229,17 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewCellAutomationPeer::
         {
             if (auto const owner = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
             {
-                auto const headerPeer = winrt::make<TableViewColumnHeaderAutomationPeer>(owner, column);
+                // The TableView peer's cached header peer, so the provider survives this call and
+                // matches the one Table.GetColumnHeaders returns for the same column.
+                auto const tablePeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(owner)
+                    .try_as<winrt::TableViewAutomationPeer>();
+                auto const headerPeer = tablePeer
+                    ? winrt::get_self<TableViewAutomationPeer>(tablePeer)->GetOrCreateColumnHeaderPeer(owner, column)
+                    : nullptr;
 
                 // A provider array must not contain nulls - UIA marshals every element. An empty
                 // array correctly reports "this cell has no reachable column header".
-                if (auto const provider = ProviderFromPeer(headerPeer))
+                if (auto const provider = headerPeer ? ProviderFromPeer(headerPeer) : nullptr)
                 {
                     headers.push_back(provider);
                 }
