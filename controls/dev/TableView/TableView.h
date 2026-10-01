@@ -958,6 +958,9 @@ private:
     // Enter from a focused cell moves into interactive display content; Escape moves back out.
     bool TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs& args);
     bool TryHandleCellInteractionEscapeKey(const winrt::KeyRoutedEventArgs& args);
+    // Swallows navigation keys the hosted control did not want, so XAML's directional navigation
+    // cannot wander out of the cell while interaction mode is active.
+    bool TryHandleCellInteractionNavigationKey(const winrt::KeyRoutedEventArgs& args);
     // Focus helpers and pre-key anchors for the row/group-header levels.
     bool FocusRowContainerInternal(winrt::UIElement const& element);
     bool FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel);

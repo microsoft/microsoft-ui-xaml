@@ -792,6 +792,11 @@ void TableView::OnKeyDownForNavigation(
         return;
     }
 
+    if (TryHandleCellInteractionNavigationKey(args))
+    {
+        return;
+    }
+
     // Claim group-header expand/collapse before row drill-in, then cell cursor movement; each owns
     // a different level of the treegrid.
     if (TryHandleGroupHeaderExpandCollapseKey(args))
@@ -1504,6 +1509,54 @@ bool TableView::TryHandleCellInteractionEnterKey(const winrt::KeyRoutedEventArgs
     return true;
 }
 
+bool TableView::TryHandleCellInteractionNavigationKey(const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Handled() || !m_cellInteractionActive || IsEditing())
+    {
+        return false;
+    }
+
+    switch (args.Key())
+    {
+    case winrt::Windows::System::VirtualKey::Left:
+    case winrt::Windows::System::VirtualKey::Right:
+    case winrt::Windows::System::VirtualKey::Up:
+    case winrt::Windows::System::VirtualKey::Down:
+    case winrt::Windows::System::VirtualKey::Home:
+    case winrt::Windows::System::VirtualKey::End:
+    case winrt::Windows::System::VirtualKey::PageUp:
+    case winrt::Windows::System::VirtualKey::PageDown:
+        break;
+    default:
+        return false;
+    }
+
+    int32_t rowIndex = -1;
+    int32_t columnIndex = -1;
+    if (!TryGetFocusedCell(rowIndex, columnIndex, false /* requireExactCell */))
+    {
+        m_cellInteractionActive = false;
+        return false;
+    }
+
+    int32_t exactRow = -1;
+    int32_t exactColumn = -1;
+    if (TryGetFocusedCell(exactRow, exactColumn, true /* requireExactCell */))
+    {
+        m_cellInteractionActive = false;
+        return false;
+    }
+
+    // The hosted control did not claim this key - args.Handled() is still false - so without this
+    // XAML's directional navigation takes it and moves focus to whatever is geometrically nearest.
+    // That walks OUT of the cell and lands unpredictably: from a CheckBox in column 7, Right
+    // skipped the ComboBox in column 8 entirely and landed on the date editor in column 9, because
+    // the search is by position, not by column. Interaction mode means the cell's content owns the
+    // arrows; Escape is the way back to grid navigation, exactly as the ARIA grid pattern requires.
+    args.Handled(true);
+    return true;
+}
+
 bool TableView::TryHandleCellInteractionEscapeKey(const winrt::KeyRoutedEventArgs& args)
 {
     if (args.Handled() ||
@@ -1601,10 +1654,13 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
             return true;
         }
 
-        // Enter at the remembered column, clamped - the same cursor the header band shares, so
-        // drilling in lands where the user last was rather than resetting to column 0.
-        rowImpl->FocusVisibleCellInternal(
-            std::clamp(m_currentCellColumn, 0, cellCount - 1), winrt::FocusState::Keyboard);
+        // Enter at the FIRST cell, not the remembered column. Right and Left must be inverses: Left
+        // on the first cell pops back to the row, so Right on the row has to land where that Left
+        // came from. Drilling into a remembered column instead made the pair asymmetric - Right
+        // from the row reached column 4, but Left from column 4 went to column 3, never back to the
+        // row - and put focus mid-row when the user pressed the key at the row's leading edge. The
+        // shared column cursor still serves TAB entry, which is where resuming a column belongs.
+        rowImpl->FocusVisibleCellInternal(0, winrt::FocusState::Keyboard);
         args.Handled(true);
         return true;
     }
