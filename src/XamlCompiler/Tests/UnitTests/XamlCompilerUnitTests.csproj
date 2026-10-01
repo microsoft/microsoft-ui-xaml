@@ -60,6 +60,7 @@
     <Compile Include="HarvesterTests.cs" />
     <Compile Include="KnownBugs.cs" />
     <Compile Include="MetadataCacheTests.cs" />
+    <Compile Include="MemberCacheTests.cs" />
     <Compile Include="MultipleViewTests.cs" />
     <Compile Include="StaticResourceTests.cs" />
     <Compile Include="TestHelper.cs" />
