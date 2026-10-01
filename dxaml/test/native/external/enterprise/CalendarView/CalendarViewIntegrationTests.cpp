@@ -2846,6 +2846,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         xaml_controls::Grid^ rootPanel = nullptr;
         xaml_controls::CalendarView^ cv = helper.GetCalendarView();
+        xaml::XamlRoot^ xamlRoot = nullptr;
 
         CalendarHelper::CreateTestResources(rootPanel);
 
@@ -2896,6 +2897,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             L"UmAlQuraCalendar"
         } };
 
+        RunOnUIThread([&]()
+        {
+            xamlRoot = rootPanel->XamlRoot;
+        });
+        TestServices::WindowHelper->SetLastInputMethod(test_infra::LastInputDeviceType::Touch, xamlRoot);
         RunOnUIThread([&]()
         {
             cv->DisplayMode = xaml_controls::CalendarViewDisplayMode::Month;
@@ -6124,7 +6130,6 @@ VerifyAllTimeZonesPartImpl(19, 20)
         return GetPackageFolder() + L"resources\\native\\enterprise\\calendarview\\";
     }
 } } } } } } // Microsoft::UI::Xaml::Tests::Enterprise::CalendarView
-
 
 
 

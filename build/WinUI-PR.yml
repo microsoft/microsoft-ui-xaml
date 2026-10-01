@@ -21,7 +21,7 @@ parameters: # parameters are shown up in ADO UI in a build queue time
   default: false
 
 variables:
-- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
+- template: AzurePipelinesTemplates\WinUI-Versions.yml
 - template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
 - group: WinUI-Variable-Library
 
@@ -31,14 +31,10 @@ resources:
       type: git
       name: OneBranch.Pipelines/GovernedTemplates
       ref: refs/heads/main
-    - repository: WindowsAppSDKConfig
+    - repository: WinAppSDK
       type: git
-      name: ProjectReunion/WindowsAppSDKConfig
-      ref: refs/heads/main
-    - repository: WindowsAppSDKVersionConfig
-      type: git
-      name: ProjectReunion/WindowsAppSDKConfig
-      ref: refs/heads/main
+      name: OS/WinAppSDK
+      ref: refs/heads/release/dev/monobuild
 
 extends:
   template: v2/Microsoft.NonOfficial.yml@templates

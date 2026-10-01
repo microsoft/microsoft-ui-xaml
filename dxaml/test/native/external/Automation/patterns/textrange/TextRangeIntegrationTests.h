@@ -29,17 +29,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyFindAttribute)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the availibility of text attribute ids with a textrange provider method FindAttribute.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                // WPF_HOSTING_MODE_FAILURE: In WPF-hosting mode, we crash in the dtor of an AutoVariant:                
-                // 04 ntdll!LdrpDispatchUserCallTarget
-                // 05 oleaut32!ReleaseResources
-                // 06 oleaut32!_SafeArrayDestroy
-                // 07 oleaut32!SafeArrayDestroy
-                // 08 oleaut32!VariantClearWorker
-                // 09 oleaut32!VariantClear
-                // 0a Microsoft_UI_Xaml_Tests_External_Automation!Microsoft::UI::Xaml::Tests::Common::AutoVariant::~AutoVariant
-                // 0b Microsoft_UI_Xaml_Tests_External_Automation!Microsoft::UI::Xaml::Tests::Automation::TextRange::VerifyFindAttributeAPArray
-                // 0c Microsoft_UI_Xaml_Tests_External_Automation!<lambda_25388ab5f2fcefd7bdd77bf989d8cd8e>::operator()
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") 
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(TestCompare)

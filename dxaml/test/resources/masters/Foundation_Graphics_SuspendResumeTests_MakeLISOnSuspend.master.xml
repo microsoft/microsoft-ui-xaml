@@ -7,7 +7,7 @@
       <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
         <Visual Tag="ContentVisual">
           <Visual Tag="PrependVisual">
-            <Visual Tag="PrimaryVisual">
+            <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
               <Visual Tag="ContentVisual">
                 <Visual Tag="PrependVisual">
                   <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">

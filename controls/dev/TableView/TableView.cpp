@@ -1470,6 +1470,15 @@ static winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
     return {};
 }
 
+// GetColumnHeaderText renders any IStringable for automation purposes, but only a genuine string
+// may be swapped for a TextBlock -- a UIElement or a type with an implicit DataTemplate must keep
+// the ContentPresenter's content model.
+static bool IsPlainStringHeader(const winrt::TableViewColumn& column)
+{
+    const auto propValue = column.Header().try_as<winrt::IPropertyValue>();
+    return propValue && propValue.Type() == winrt::PropertyType::String;
+}
+
 void TableView::ReleaseHeaderToolTips(const winrt::Panel& host)
 {
     if (!host)
@@ -1545,8 +1554,28 @@ void TableView::RebuildHeaders()
                 continue;
             }
 
-            // Header cell root.
+            // Header cell root. Content and chevron get their own columns so the chevron reserves
+            // its realized width instead of overlaying the text. Column order is explicit because
+            // this subtree, like the grid line and gripper below, does not observe the RTL flip.
             winrt::Grid headerCell;
+            const int contentColumnIndex = isRightToLeft ? 1 : 0;
+            const int indicatorColumnIndex = isRightToLeft ? 0 : 1;
+            {
+                winrt::ColumnDefinition starColumn;
+                starColumn.Width(winrt::GridLengthHelper::FromValueAndType(1, winrt::GridUnitType::Star));
+                winrt::ColumnDefinition autoColumn;
+                autoColumn.Width(winrt::GridLengthHelper::FromValueAndType(0, winrt::GridUnitType::Auto));
+                if (isRightToLeft)
+                {
+                    headerCell.ColumnDefinitions().Append(autoColumn);
+                    headerCell.ColumnDefinitions().Append(starColumn);
+                }
+                else
+                {
+                    headerCell.ColumnDefinitions().Append(starColumn);
+                    headerCell.ColumnDefinitions().Append(autoColumn);
+                }
+            }
             headerCell.Visibility(column.Visibility());
             // The header cell, not the gripper, is the keyboard target: column commands live here,
             // and a bare focusable Grid is unnamed and Raw to a screen reader. Only a tab stop when
@@ -1572,6 +1601,7 @@ void TableView::RebuildHeaders()
 
             winrt::ContentPresenter content;
             content.Content(column.Header());
+            const bool headerIsSortable = canUserSortColumns && column.CanSort();
             if (auto headerTemplateSelector = column.HeaderTemplateSelector())
             {
                 content.ContentTemplateSelector(headerTemplateSelector);
@@ -1580,6 +1610,18 @@ void TableView::RebuildHeaders()
             {
                 content.ContentTemplate(headerTemplate);
             }
+            else if (!headerText.empty() && IsPlainStringHeader(column))
+            {
+                // A ContentPresenter renders a bare string through an implicit TextBlock carrying no
+                // TextTrimming, so a too-wide header hard-clips mid-glyph while its cells ellipsize.
+                winrt::TextBlock headerBlock;
+                headerBlock.Text(headerText);
+                headerBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
+                headerBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
+                // The header cell's peer already announces this text.
+                winrt::AutomationProperties::SetAccessibilityView(headerBlock, winrt::AccessibilityView::Raw);
+                content.Content(headerBlock);
+            }
             // Consume TableViewHeaderCellPadding from theme resources (cached once per rebuild).
             content.Padding(cachedHeaderCellPadding);
             content.HorizontalAlignment(winrt::HorizontalAlignment::Stretch);
@@ -1587,6 +1629,7 @@ void TableView::RebuildHeaders()
             // Column-header text: theme font size, SemiBold to stand out from cells (templates override).
             content.FontSize(cachedHeaderFontSize);
             content.FontWeight(winrt::FontWeights::SemiBold());
+            winrt::Grid::SetColumn(content, contentColumnIndex);
             headerCell.Children().Append(content);
 
             // Resolve from TableView so header grid lines track theme.
@@ -1598,6 +1641,7 @@ void TableView::RebuildHeaders()
                 headerGridLine.IsHitTestVisible(false);
                 headerGridLine.Visibility(wantVerticalHeaderLines ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
                 headerGridLine.Background(cachedHeaderGridLineBrush);
+                winrt::Grid::SetColumnSpan(headerGridLine, 2);
                 headerCell.Children().Append(headerGridLine);
             }
 
@@ -1609,7 +1653,7 @@ void TableView::RebuildHeaders()
 
             // Sort affordance. Gated on both the control-wide and the per-column opt-in, so an
             // opted-out column carries no chevron and no click handler at all.
-            if (canUserSortColumns && column.CanSort())
+            if (headerIsSortable)
             {
                 // The header cell is a Grid, and a Grid with a null Background is not hit-test
                 // visible in its empty regions. The header content presenter and the chevron host
@@ -1628,7 +1672,12 @@ void TableView::RebuildHeaders()
                 // The chevron is decoration on top of a clickable header: letting it take the hit
                 // would create a dead spot in the middle of the click target.
                 indicatorHost.IsHitTestVisible(false);
+                // SortIndicator has a fixed themed Width and only fades via Opacity, so an always-
+                // visible host would cost that width on every sortable column.
+                indicatorHost.Visibility(column.SortDirection() == winrt::SortDirection::None
+                    ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
                 AppendSortIndicatorVisual(indicatorHost, column);
+                winrt::Grid::SetColumn(indicatorHost, indicatorColumnIndex);
                 headerCell.Children().Append(indicatorHost);
 
                 // Weak: the handler is owned by a visual the control also owns, so a strong
@@ -1752,7 +1801,14 @@ void TableView::RefreshSortIndicators()
         // which left a programmatic sort (no header rebuild) with a stale chevron.
         if (auto const indicator = FindSortIndicator(headerCell))
         {
-            indicator.Direction(ToSortIndicatorDirection(column.SortDirection()));
+            const auto direction = column.SortDirection();
+            indicator.Direction(ToSortIndicatorDirection(direction));
+            // Keep the reserved column in step with the chevron.
+            if (auto const indicatorHost = indicator.Parent().try_as<winrt::UIElement>())
+            {
+                indicatorHost.Visibility(direction == winrt::SortDirection::None
+                    ? winrt::Visibility::Collapsed : winrt::Visibility::Visible);
+            }
         }
     }
 }
@@ -2011,6 +2067,7 @@ void TableView::AppendResizeGripperVisual(
         // Before the guard below: a stale didWrite would revert to the previous drag's start width.
         state->didWrite = false;
         state->didDelta = false;
+        state->frozen.clear();
 
         // One resize at a time. Manipulation arbitrates per element, so a second contact on a
         // DIFFERENT gripper would otherwise run a concurrent drag that Escape could not reach.
@@ -2032,7 +2089,11 @@ void TableView::AppendResizeGripperVisual(
         if (auto const col = weakColumn.get())
         {
             state->startValue = col.ActualWidth();
-            state->startWidth = col.Width();
+            state->startWidth = col.ReadLocalValue(winrt::TableViewColumn::WidthProperty());
+            if (strongThis)
+            {
+                state->bounds = strongThis->ResizeBoundsForColumn(col);
+            }
         }
 
         // Published so Escape can find the gesture in flight; the gripper owns everything else
@@ -2045,7 +2106,7 @@ void TableView::AppendResizeGripperVisual(
     });
 
     gripperVisual.DragDelta(
-        [weakColumn, state](winrt::ResizeGripper const&, winrt::ResizeGripperDragDeltaEventArgs const& vargs)
+        [weakColumn, weakThis, state](winrt::ResizeGripper const&, winrt::ResizeGripperDragDeltaEventArgs const& vargs)
     {
         auto const col = weakColumn.get();
         if (!col)
@@ -2054,24 +2115,39 @@ void TableView::AppendResizeGripperVisual(
         }
 
         state->didDelta = true;
-
         // std::max mirrors TableViewColumn::UpdateActualWidth, so a column whose MaxWidth is below
         // its MinWidth cannot make Width and ActualWidth disagree.
-        const double lo = (std::isfinite(col.MinWidth()) && col.MinWidth() >= 0.0) ? col.MinWidth() : 0.0;
-        const double hi = (std::isfinite(col.MaxWidth()) && col.MaxWidth() >= 0.0)
+        double lo = (std::isfinite(col.MinWidth()) && col.MinWidth() >= 0.0) ? col.MinWidth() : 0.0;
+        double hi = (std::isfinite(col.MaxWidth()) && col.MaxWidth() >= 0.0)
             ? std::max(lo, col.MaxWidth())
             : std::numeric_limits<double>::infinity();
 
+        // The upper bound never falls below the width the drag started from, so a table that
+        // already overflows can still shrink.
+        lo = std::max(lo, state->bounds.Min);
+        hi = std::max(lo, std::min(hi, std::max(state->startValue, state->bounds.Max)));
+
         const double next = std::clamp(state->startValue + vargs.TotalDelta(), lo, hi);
 
-        // Pinned at a bound the pointer keeps moving but the width does not: writing anyway would
-        // re-run measure and every cell panel on each move.
-        if (auto const current = col.Width();
-            current.GridUnitType == winrt::GridUnitType::Pixel && std::abs(current.Value - next) < 0.0001)
+        // Pinned at a bound the pointer keeps moving but the width does not. Writing anyway would
+        // re-run measure, and on a Star column it would also latch the width to pixels.
+        auto const current = col.Width();
+        const double currentValue =
+            current.GridUnitType == winrt::GridUnitType::Pixel ? current.Value : col.ActualWidth();
+        if (std::abs(currentValue - next) < 0.0001)
         {
             return;
         }
 
+        auto const columnImpl = winrt::get_self<TableViewColumn>(col);
+        if (!state->didWrite)
+        {
+            if (auto const strongThis = weakThis.get())
+            {
+                strongThis->FreezeColumnsBeforeResize(col, state->frozen);
+            }
+        }
+        auto const resizeScope = columnImpl->BeginUserResizeScope();
         col.Width(winrt::GridLengthHelper::FromPixels(next));
         state->didWrite = true;
     });
@@ -2098,9 +2174,19 @@ void TableView::AppendResizeGripperVisual(
         {
             // Only when a write actually happened, so a press that never moved cannot pin an
             // Auto/Star column.
+            // Non-empty only when a freeze actually ran, so this needs no didWrite gate: a write
+            // that threw after freezing would otherwise strand the predecessors as pixels.
+            for (auto const& entry : state->frozen)
+            {
+                if (auto const frozenCol = entry.column.get())
+                {
+                    TableView::RestoreColumnWidth(frozenCol, entry.width);
+                }
+            }
+
             if (state->didWrite && col)
             {
-                col.Width(state->startWidth);
+                TableView::RestoreColumnWidth(col, state->startWidth);
             }
             return;
         }
@@ -2112,6 +2198,7 @@ void TableView::AppendResizeGripperVisual(
             strongThis->AnnounceColumnWidth(weakHeaderCell.get(), col);
         }
     });
+    winrt::Grid::SetColumnSpan(gripperVisual, 2);
     headerCell.Children().Append(gripperVisual);
 }
 

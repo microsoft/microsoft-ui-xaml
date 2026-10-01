@@ -1,0 +1,21 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+//
+// BlankPage.With.Dots.xaml exercises code generation for XAML file names that contain
+// multiple periods; the class it declares is simply Simple.BlankPage.
+//
+namespace Simple
+{
+    unsealed runtimeclass BlankPageBase : Microsoft.UI.Xaml.Controls.Page
+    {
+        BlankPageBase();
+        String Foo{ get; };
+        void OnLoaded(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+    };
+
+    [default_interface]
+    runtimeclass BlankPage : BlankPageBase
+    {
+        BlankPage();
+    };
+}
