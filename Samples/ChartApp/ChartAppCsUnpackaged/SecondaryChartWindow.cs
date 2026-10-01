@@ -21,6 +21,7 @@ namespace ChartsSample
         private readonly TaskCompletionSource<bool> _stopped = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private DispatcherQueue _dispatcher;
         private bool _stopRequested;
+        private string _stage = "starting the secondary UI thread";
 
         internal SecondaryChartWindow()
         {
@@ -52,17 +53,18 @@ namespace ChartsSample
             bool apartmentInitialized = false;
             try
             {
+                _stage = "initializing the secondary apartment";
                 Marshal.ThrowExceptionForHR(RoInitialize(0));
                 apartmentInitialized = true;
                 RunWindow();
             }
-            catch (COMException)
+            catch (COMException ex)
             {
-                _ready.TrySetResult("The secondary chart window could not be opened on this system.");
+                _ready.TrySetResult($"The secondary chart window failed while {_stage} (HRESULT 0x{ex.HResult:X8}): {ex.Message}");
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException ex)
             {
-                _ready.TrySetResult("The secondary chart window is unavailable. Close it and try again.");
+                _ready.TrySetResult($"The secondary chart window failed while {_stage}: {ex.Message}");
             }
             finally
             {
@@ -79,6 +81,7 @@ namespace ChartsSample
             try
             {
                 var dispatcher = controller.DispatcherQueue;
+                _stage = "starting XAML on the secondary thread";
                 using var xaml = WindowsXamlManager.InitializeForCurrentThread();
                 var values = new ObservableVector<double> { 14, 28, 19, 43, 31 };
                 var samples = new Samples { ItemsSource = values };
@@ -124,6 +127,7 @@ namespace ChartsSample
                 timer.Tick += OnTick;
                 try
                 {
+                    _stage = "activating the secondary window";
                     window.Activate();
                     timer.Start();
                     lock (_gate)
@@ -132,6 +136,7 @@ namespace ChartsSample
                         if (_stopRequested) dispatcher.EnqueueEventLoopExit();
                     }
                     dispatcher.TryEnqueue(() => _ready.TrySetResult(null));
+                    _stage = "running the secondary window";
                     dispatcher.RunEventLoop();
                 }
                 finally
@@ -145,6 +150,7 @@ namespace ChartsSample
             }
             finally
             {
+                _stage = "shutting down the secondary window";
                 controller.ShutdownQueue();
             }
         }

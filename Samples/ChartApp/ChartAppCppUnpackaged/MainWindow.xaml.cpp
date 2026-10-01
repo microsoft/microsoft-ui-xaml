@@ -707,7 +707,7 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         PresentationKnobStatusText().Text(text);
     }
 
-    void MainWindow::ApplyEdit(std::function<void()> const& edit, Chart const& chart)
+    void MainWindow::ApplyEdit(std::function<void()> const& edit, Chart const& chart, std::function<void()> const& restore)
     {
         if (!m_ready || m_syncing || m_closing) return;
         try
@@ -720,8 +720,18 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         }
         catch (hresult_error const& error)
         {
-            SyncAxisControls();
-            SyncPresentationKnobs();
+            if (restore)
+            {
+                // Restore only the editor that failed so unrelated drafts are left alone.
+                SyncGuard guard{ m_syncing };
+                restore();
+            }
+            else
+            {
+                // Leave the date-time label drafts intact; only resync the shared axis controls.
+                SyncAxisControls(false);
+                SyncPresentationKnobs();
+            }
             ReportError(error);
         }
     }
@@ -958,6 +968,7 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         {
             throw hresult_invalid_argument(L"Point index must be an integer from 0 through 5.");
         }
+        m_lastValidOverrideIndex = value;
         return static_cast<uint32_t>(value);
     }
 
@@ -990,7 +1001,7 @@ namespace winrt::ChartAppCppUnpackaged::implementation
         }
         catch (hresult_error const& error)
         {
-            SyncNumber(OverrideIndexNumberBox(), IReference<double>{ 0.0 });
+            SyncNumber(OverrideIndexNumberBox(), IReference<double>{ m_lastValidOverrideIndex });
             ReportError(error);
         }
         auto labels = series.DataLabelOverrides();
@@ -1510,7 +1521,7 @@ namespace winrt::ChartAppCppUnpackaged::implementation
 
     void MainWindow::OnOverrideIndexLostFocus(IInspectable const&, RoutedEventArgs const&)
     {
-        QueueOverrideIndexEdit(0, false);
+        QueueOverrideIndexEdit(m_lastValidOverrideIndex, false);
     }
 
     void MainWindow::QueueOverrideIndexEdit(double previousValue, bool synchronize)
@@ -1528,7 +1539,7 @@ namespace winrt::ChartAppCppUnpackaged::implementation
                 catch (hresult_error const& error)
                 {
                     auto previous = std::isfinite(previousValue) && previousValue >= 0 && previousValue <= 5 &&
-                        std::trunc(previousValue) == previousValue ? previousValue : 0.0;
+                        std::trunc(previousValue) == previousValue ? previousValue : self->m_lastValidOverrideIndex;
                     {
                         SyncGuard guard{ self->m_syncing };
                         SyncNumber(self->OverrideIndexNumberBox(), IReference<double>{ previous });
@@ -1715,27 +1726,30 @@ namespace winrt::ChartAppCppUnpackaged::implementation
 
     void MainWindow::ApplyDateInterval(bool monthly)
     {
+        auto box = monthly ? DtIntervalTypeBoxB() : DtIntervalTypeBoxA();
+        auto axis = monthly ? m_dtAxisB : m_dtAxisA;
         ApplyEdit([&]
         {
-            auto box = monthly ? DtIntervalTypeBoxB() : DtIntervalTypeBoxA();
-            auto axis = monthly ? m_dtAxisB : m_dtAxisA;
             auto type = IntervalTypes[Selection(box, 5)];
             axis.IntervalType(type);
             auto warning = monthly ? DtWarningB() : DtWarningA();
+            bool isAuto = type == DateTimeIntervalType::Auto;
             bool dense = monthly && (type == DateTimeIntervalType::Day || type == DateTimeIntervalType::Week);
             bool sparse = !monthly && type == DateTimeIntervalType::Year;
-            warning.Text(dense ? L"Day/Week intervals are too dense for this three-year monthly range."
+            // Surface the known Auto-interval limitation instead of silently reporting success.
+            warning.Text(isAuto ? L"Known issue: switching back to Auto can keep the previous plotted positions until another interval is selected. Tracked in the Charts control (see the PR's known-issue note)."
+                : dense ? L"Day/Week intervals are too dense for this three-year monthly range."
                 : sparse ? L"Year intervals are not useful for a 75-day range." : L"");
-            warning.Visibility(dense || sparse ? Visibility::Visible : Visibility::Collapsed);
-        });
+            warning.Visibility((isAuto || dense || sparse) ? Visibility::Visible : Visibility::Collapsed);
+        }, nullptr, [&] { box.SelectedIndex(static_cast<int32_t>(axis.IntervalType())); });
     }
 
     void MainWindow::ApplyDateFormat(bool monthly)
     {
+        auto box = monthly ? DtLabelFormatBoxB() : DtLabelFormatBoxA();
+        auto axis = monthly ? m_dtAxisB : m_dtAxisA;
         ApplyEdit([&]
         {
-            auto box = monthly ? DtLabelFormatBoxB() : DtLabelFormatBoxA();
-            auto axis = monthly ? m_dtAxisB : m_dtAxisA;
             auto format = box.Text();
             // Validate with the same public formatter before applying the template.
             if (!format.empty())
@@ -1744,7 +1758,7 @@ namespace winrt::ChartAppCppUnpackaged::implementation
                 formatter.Format(CalendarDate(2024, 1, 1));
             }
             axis.LabelFormat(format);
-        });
+        }, nullptr, [&] { box.Text(axis.LabelFormat()); });
     }
     void MainWindow::OnDtIntervalTypeAChanged(IInspectable const&, SelectionChangedEventArgs const&) { ApplyDateInterval(false); }
     void MainWindow::OnDtLabelFormatAApply(IInspectable const&, RoutedEventArgs const&) { ApplyDateFormat(false); }

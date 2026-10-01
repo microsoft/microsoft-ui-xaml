@@ -197,51 +197,51 @@
                                                    Style="{StaticResource DescriptionStyle}" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite" />
                                         <Border x:Name="AxisEditors" Style="{StaticResource CardStyle}" Visibility="Collapsed">
                                             <ContentControl x:Name="AxisControls" IsTabStop="False" HorizontalContentAlignment="Stretch">
-                                            <StackPanel Spacing="8">
-                                                <TextBlock Text="Profit axes" Style="{StaticResource ControlHeadingStyle}" />
-                                                <TextBlock Text="Explicit X and Y axes belong to monthly profit. Expenses keeps automatic axes. Leave numeric fields blank for Auto."
-                                                           Style="{StaticResource DescriptionStyle}" />
-                                                <Grid Tag="Bounds" ColumnSpacing="12" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
-                                                    <NumberBox x:Name="LinearMinBox" Header="Y minimum" PlaceholderText="Auto"
-                                                               SpinButtonPlacementMode="Compact" ValueChanged="OnLinearMinChanged" />
-                                                    <NumberBox x:Name="LinearMaxBox" Header="Y maximum" PlaceholderText="Auto"
-                                                               SpinButtonPlacementMode="Compact" ValueChanged="OnLinearMaxChanged" />
-                                                    <NumberBox x:Name="LinearSpacingBox" Header="Y spacing" PlaceholderText="Auto"
-                                                               SpinButtonPlacementMode="Compact" ValueChanged="OnLinearSpacingChanged" />
-                                                </Grid>
-                                                <Grid ColumnSpacing="12" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
-                                                    <ComboBox x:Name="SortKeyBox" Header="X sort key" SelectedIndex="0" SelectionChanged="OnSortKeyChanged">
-                                                        <x:String>Index</x:String><x:String>Value</x:String>
-                                                    </ComboBox>
-                                                    <ComboBox x:Name="SortOrderBox" Header="Sort order" SelectedIndex="0" SelectionChanged="OnSortOrderChanged">
-                                                        <x:String>Ascending</x:String><x:String>Descending</x:String>
-                                                    </ComboBox>
-                                                </Grid>
-                                                <TextBlock Text="Presentation for both profit axes" Style="{StaticResource ControlHeadingStyle}" />
-                                                <Grid Tag="Choices" ColumnSpacing="12" RowSpacing="4" SizeChanged="OnEditorSizeChanged">
-                                                    <CheckBox x:Name="AxisVisibleCheck" Content="Visible" IsChecked="True" Checked="OnAxisVisibleChanged" Unchecked="OnAxisVisibleChanged" />
-                                                    <CheckBox x:Name="TickLabelsCheck" Content="Tick labels" IsChecked="True" Checked="OnTickLabelsChanged" Unchecked="OnTickLabelsChanged" />
-                                                    <CheckBox x:Name="TickMarksCheck" Content="Tick marks" IsChecked="False" Checked="OnTickMarksChanged" Unchecked="OnTickMarksChanged" />
-                                                </Grid>
-                                                <Grid ColumnSpacing="12" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
-                                                    <ComboBox x:Name="GridLinesBox" Header="Grid lines" SelectedIndex="0" SelectionChanged="OnGridLinesChanged">
-                                                        <x:String>None</x:String><x:String>Major</x:String><x:String>Minor</x:String>
-                                                    </ComboBox>
-                                                    <ComboBox x:Name="GridLineBrushBox" Header="Major grid-line brush" SelectedIndex="0" SelectionChanged="OnGridLineBrushChanged">
-                                                        <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
-                                                    </ComboBox>
-                                                    <ComboBox x:Name="TickBrushBox" Header="Tick brush" SelectedIndex="0" SelectionChanged="OnTickBrushChanged">
-                                                        <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
-                                                    </ComboBox>
-                                                    <ComboBox x:Name="TickLabelBrushBox" Header="Tick-label brush" SelectedIndex="0" SelectionChanged="OnTickLabelBrushChanged">
-                                                        <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
-                                                    </ComboBox>
-                                                    <ComboBox x:Name="AxisLineBrushBox" Header="Axis-line brush" SelectedIndex="0" SelectionChanged="OnAxisLineBrushChanged">
-                                                        <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
-                                                    </ComboBox>
-                                                </Grid>
-                                                <TextBlock x:Name="AxisStatusText" AutomationProperties.LiveSetting="Polite" />
-                                            </StackPanel>
+                                                <StackPanel Spacing="8">
+                                                    <TextBlock Text="Profit axes" Style="{StaticResource ControlHeadingStyle}" />
+                                                    <TextBlock Text="Explicit X and Y axes belong to monthly profit. Expenses keeps automatic axes. Leave numeric fields blank for Auto."
+                                                               Style="{StaticResource DescriptionStyle}" />
+                                                    <Grid Tag="Bounds" ColumnSpacing="12" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
+                                                        <NumberBox x:Name="LinearMinBox" Header="Y minimum" PlaceholderText="Auto"
+                                                                   SpinButtonPlacementMode="Compact" ValueChanged="OnLinearMinChanged" />
+                                                        <NumberBox x:Name="LinearMaxBox" Header="Y maximum" PlaceholderText="Auto"
+                                                                   SpinButtonPlacementMode="Compact" ValueChanged="OnLinearMaxChanged" />
+                                                        <NumberBox x:Name="LinearSpacingBox" Header="Y spacing" PlaceholderText="Auto"
+                                                                   SpinButtonPlacementMode="Compact" ValueChanged="OnLinearSpacingChanged" />
+                                                    </Grid>
+                                                    <Grid ColumnSpacing="12" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
+                                                        <ComboBox x:Name="SortKeyBox" Header="X sort key" SelectedIndex="0" SelectionChanged="OnSortKeyChanged">
+                                                            <x:String>Index</x:String><x:String>Value</x:String>
+                                                        </ComboBox>
+                                                        <ComboBox x:Name="SortOrderBox" Header="Sort order" SelectedIndex="0" SelectionChanged="OnSortOrderChanged">
+                                                            <x:String>Ascending</x:String><x:String>Descending</x:String>
+                                                        </ComboBox>
+                                                    </Grid>
+                                                    <TextBlock Text="Presentation for both profit axes" Style="{StaticResource ControlHeadingStyle}" />
+                                                    <Grid Tag="Choices" ColumnSpacing="12" RowSpacing="4" SizeChanged="OnEditorSizeChanged">
+                                                        <CheckBox x:Name="AxisVisibleCheck" Content="Visible" IsChecked="True" Checked="OnAxisVisibleChanged" Unchecked="OnAxisVisibleChanged" />
+                                                        <CheckBox x:Name="TickLabelsCheck" Content="Tick labels" IsChecked="True" Checked="OnTickLabelsChanged" Unchecked="OnTickLabelsChanged" />
+                                                        <CheckBox x:Name="TickMarksCheck" Content="Tick marks" IsChecked="False" Checked="OnTickMarksChanged" Unchecked="OnTickMarksChanged" />
+                                                    </Grid>
+                                                    <Grid ColumnSpacing="12" RowSpacing="8" SizeChanged="OnEditorSizeChanged">
+                                                        <ComboBox x:Name="GridLinesBox" Header="Grid lines" SelectedIndex="0" SelectionChanged="OnGridLinesChanged">
+                                                            <x:String>None</x:String><x:String>Major</x:String><x:String>Minor</x:String>
+                                                        </ComboBox>
+                                                        <ComboBox x:Name="GridLineBrushBox" Header="Major grid-line brush" SelectedIndex="0" SelectionChanged="OnGridLineBrushChanged">
+                                                            <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
+                                                        </ComboBox>
+                                                        <ComboBox x:Name="TickBrushBox" Header="Tick brush" SelectedIndex="0" SelectionChanged="OnTickBrushChanged">
+                                                            <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
+                                                        </ComboBox>
+                                                        <ComboBox x:Name="TickLabelBrushBox" Header="Tick-label brush" SelectedIndex="0" SelectionChanged="OnTickLabelBrushChanged">
+                                                            <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
+                                                        </ComboBox>
+                                                        <ComboBox x:Name="AxisLineBrushBox" Header="Axis-line brush" SelectedIndex="0" SelectionChanged="OnAxisLineBrushChanged">
+                                                            <x:String>Theme</x:String><x:String>Red</x:String><x:String>Blue</x:String><x:String>Green</x:String>
+                                                        </ComboBox>
+                                                    </Grid>
+                                                    <TextBlock x:Name="AxisStatusText" AutomationProperties.LiveSetting="Polite" />
+                                                </StackPanel>
                                             </ContentControl>
                                         </Border>
                                     </StackPanel>

@@ -91,7 +91,8 @@ namespace winrt::ChartAppCppPackaged::implementation
         void UpdateWorkspaceLayout(Microsoft::UI::Xaml::Controls::Grid const& workspace);
         winrt::hstring SeriesDataText(Microsoft::UI::Xaml::Controls::Charts::CartesianSeries const& series);
         void ApplyEdit(std::function<void()> const& edit,
-            Microsoft::UI::Xaml::Controls::Charts::Chart const& chart = nullptr);
+            Microsoft::UI::Xaml::Controls::Charts::Chart const& chart = nullptr,
+            std::function<void()> const& restore = nullptr);
         void ApplyExampleEdit(bool area, std::function<void()> const& edit, winrt::hstring const& message);
         void ApplyLineEdit(std::function<void()> const& edit, winrt::hstring const& message);
         void RebuildSeriesSelector(Microsoft::UI::Xaml::Controls::Charts::Chart const& chart,
@@ -145,6 +146,7 @@ namespace winrt::ChartAppCppPackaged::implementation
         bool m_ready{};
         bool m_syncing{};
         bool m_closing{};
+        double m_lastValidOverrideIndex{};
         std::shared_ptr<SecondaryChartState> m_secondaryState;
         winrt::com_ptr<MainWindow> m_secondaryLifetime;
         std::thread m_secondaryThread;

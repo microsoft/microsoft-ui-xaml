@@ -60,6 +60,7 @@ namespace ChartsSample
         private bool _ready;
         private bool _syncing;
         private bool _closing;
+        private bool _lastEditSucceeded;
         private bool _allowClose;
 
         public MainWindow(string variant)
@@ -1008,12 +1009,14 @@ namespace ChartsSample
             string invalid = "That value is not supported. The current setting has been restored.", Chart chart = null)
         {
             if (!_ready || _syncing || _closing) return;
+            _lastEditSucceeded = false;
             try
             {
                 edit();
                 // Brush changes alone can leave the rendered plot at its previous appearance.
                 chart?.InvalidateArrange();
                 status.Text = success;
+                _lastEditSucceeded = true;
             }
             catch (ArgumentException)
             {
@@ -1112,11 +1115,23 @@ namespace ChartsSample
             ApplyEdit(() => axis.IntervalType = (DateTimeIntervalType)box.SelectedIndex, () =>
             {
                 box.SelectedIndex = (int)axis.IntervalType;
+                bool isAuto = axis.IntervalType == DateTimeIntervalType.Auto;
                 bool incompatible = daily ? axis.IntervalType == DateTimeIntervalType.Year :
                     axis.IntervalType == DateTimeIntervalType.Day || axis.IntervalType == DateTimeIntervalType.Week;
-                warning.Text = daily ? "Warning: Year is not meaningful for a 75-day range." :
-                    "Warning: Day/Week ticks are too dense for a three-year range.";
-                warning.Visibility = incompatible ? Visibility.Visible : Visibility.Collapsed;
+                if (isAuto)
+                {
+                    // Known open issue: switching back to Auto can keep the previously plotted
+                    // positions until another interval is selected. Surface it instead of
+                    // silently reporting success. See the "Known open issue" note in the PR.
+                    warning.Text = "Known issue: switching back to Auto can keep the previous plotted positions until another interval is selected. Tracked in the Charts control (see the PR's known-issue note).";
+                    warning.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    warning.Text = daily ? "Warning: Year is not meaningful for a 75-day range." :
+                        "Warning: Day/Week ticks are too dense for a three-year range.";
+                    warning.Visibility = incompatible ? Visibility.Visible : Visibility.Collapsed;
+                }
             }, status, "Date interval updated.");
         }
 
@@ -1136,7 +1151,7 @@ namespace ChartsSample
             }, () =>
             {
                 box.Text = axis.LabelFormat ?? "";
-                if (preview.Length > 0 && status.Text == "Label format applied.")
+                if (preview.Length > 0 && _lastEditSucceeded)
                     status.Text += $" Example: {preview}";
             }, status, "Label format applied.",
                 "Invalid date template. Try shortdate or month day year; blank uses the default. Current format restored.");

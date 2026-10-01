@@ -6,7 +6,9 @@ using Windows.Foundation.Collections;
 namespace ChartsSample
 {
     // Expose VectorChanged as well as .NET collection notifications to WinRT consumers.
-    internal sealed class ObservableVector<T> : ObservableCollection<T>, IObservableVector<T>
+    // Marked partial so the C#/WinRT source generator can emit the exposed-type marshalling
+    // (CsWinRT1028) and keep the helper usable in trimmed or AOT apps.
+    internal sealed partial class ObservableVector<T> : ObservableCollection<T>, IObservableVector<T>
     {
         internal ObservableVector() { }
         internal ObservableVector(IEnumerable<T> values) : base(values) { }
@@ -27,7 +29,7 @@ namespace ChartsSample
             VectorChanged?.Invoke(this, new VectorChange(change, index < 0 ? 0 : (uint)index));
         }
 
-        private sealed class VectorChange : IVectorChangedEventArgs
+        private sealed partial class VectorChange : IVectorChangedEventArgs
         {
             internal VectorChange(CollectionChange change, uint index)
             {
