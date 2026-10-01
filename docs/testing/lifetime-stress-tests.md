@@ -40,6 +40,11 @@ Each test carries `[TestProperty("TestSuite", "LifetimeStressTestSuite")]` and t
 (`Helix/common/pipeline/GenerateHelixWorkItems.ps1`) produces an **isolated** work item for the suite on every
 DevTestSuite test pass. Isolation means a lifetime crash cannot cascade into unrelated tests.
 
+Within the lifetime work item, `RunHelixWorkItem.ps1` adds `/isolationlevel:test` so each
+scenario runs in a separate TAEF test-host process. This isolates subsequent scenarios
+from UI/process state left by earlier tests. Other suites and the five-second setup
+`Loaded` wait are unchanged; setup failures remain visible in the original TAEF log.
+
 **Reports in the PR run, but never gates it.** The suite runs its create/teardown/GC workload on **every** test
 pass — including the per-PR gate and Nightly — so a lifetime **report** is produced right there in the pipeline run.
 It is engineered so it can never fail the pipeline: every catchable failure is downgraded to a non-gating warning,

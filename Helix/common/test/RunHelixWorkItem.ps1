@@ -156,6 +156,11 @@ function Run-Taef
     }
 
     $teCommand = "te.exe $testBinaries /enablewttlogging /enableEtwLogging /unicodeOutput:false /testtimeout:$testTimeout /p:DisableErrorHandling /screenCaptureOnError $taefParameters $taefAdditionalParams"
+    if ($isLifetimeStress)
+    {
+        # Keep a scenario's UI/process state from affecting the next scenario's setup.
+        $teCommand += " /isolationlevel:test"
+    }
     Write-Host $teCommand
 
     # Ideally, we would just use '&' or 'Invoke-Expression' here to execute taef. However, powershell unhelpfully modifies the string to add 
