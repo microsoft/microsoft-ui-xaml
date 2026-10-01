@@ -53,6 +53,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         private Dictionary<ParameterHandle, MethodDefinitionHandle> m_paramToMethod;
 
         private Dictionary<Tuple<string, string>, TypeDefinitionHandle> m_topLevelTypeNames;
+        private Dictionary<string, ExportedTypeHandle> m_typeForwardersByName;
 
 
         public MetadataOnlyModule(ITypeUniverse universe, PEReader peReader, MetadataReader reader, string modulePath)
@@ -741,6 +742,32 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             {
                 yield return result;
             }
+        }
+
+        internal ExportedTypeHandle FindTypeForwarder(string fullName)
+        {
+            if (m_typeForwardersByName == null)
+            {
+                var index = new Dictionary<string, ExportedTypeHandle>(StringComparer.Ordinal);
+                foreach (var handle in m_reader.ExportedTypes)
+                {
+                    var exportedType = m_reader.GetExportedType(handle);
+                    if (exportedType.Implementation.Kind != HandleKind.AssemblyReference)
+                    {
+                        continue;
+                    }
+                    string name = m_reader.GetString(exportedType.Name);
+                    string ns = m_reader.GetString(exportedType.Namespace);
+                    string key = string.IsNullOrEmpty(ns) ? name : ns + "." + name;
+                    if (!index.ContainsKey(key))
+                    {
+                        index.Add(key, handle);
+                    }
+                }
+                m_typeForwardersByName = index;
+            }
+            m_typeForwardersByName.TryGetValue(fullName, out var result);
+            return result;
         }
 
         #endregion // Resolution
