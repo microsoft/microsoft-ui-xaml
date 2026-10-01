@@ -485,8 +485,26 @@ bool TabViewItem::ShouldStartDrag(winrt::PointerRoutedEventArgs const& args)
         m_dragPointerId == args.Pointer().PointerId();
 }
 
+// Mirrors the conditions under which ListViewBaseItem captures the pointer to detect a drag gesture.
+// Without that capture this item stops receiving pointer events once the pointer leaves its bounds, so it
+// would never see the PointerReleased that takes it back out of the drag visual state.
+bool TabViewItem::IsDraggingAllowed()
+{
+    if (const auto tabView = GetParentTabView())
+    {
+        return tabView.CanDragTabs() || tabView.CanReorderTabs() || CanDrag();
+    }
+
+    return true;
+}
+
 void TabViewItem::BeginCheckingForDrag(uint32_t const& pointerId)
 {
+    if (!IsDraggingAllowed())
+    {
+        return;
+    }
+
     m_dragPointerId = pointerId;
     m_isCheckingforDrag = true;
 }
