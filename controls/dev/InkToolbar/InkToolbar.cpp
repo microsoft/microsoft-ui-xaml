@@ -33,6 +33,7 @@
 #include "InkCanvas.h"
 #include "InkPresenter.h"
 #include "InkToolbarIsStencilButtonCheckedChangedEventArgs.h"
+#include "SharedHelpers.h"
 
 namespace mux = winrt::Microsoft::UI::Xaml;
 namespace muxc = winrt::Microsoft::UI::Xaml::Controls;
@@ -52,6 +53,33 @@ InkToolbar::InkToolbar()
 
     // ButtonManager owns the button model; lifetime tied to this container.
     m_buttonManager = std::make_unique<ButtonManager>(get_weak());
+
+    // Closing the window ends the process without destructing the tree, so ~InkToolbar is not a
+    // reliable emit point for the session roll-up. Unloaded is.
+    m_unloadedRevoker = Unloaded(winrt::auto_revoke,
+        [this](auto const&, auto const&)
+        {
+            try
+            {
+                InkTelemetry::ReportToolbarSessionSummary(m_telemetryState);
+            }
+            catch (...)
+            {
+            }
+        });
+}
+
+InkToolbar::~InkToolbar()
+{
+    // Backstop for the Unloaded flush; summaryReported keeps it to one event. A throw from a
+    // destructor during teardown would terminate, so contain it.
+    try
+    {
+        InkTelemetry::ReportToolbarSessionSummary(m_telemetryState);
+    }
+    catch (...)
+    {
+    }
 }
 
 // ---- Auto-population + ordering (faithful port of UWP @1943 / OrderChildren) ----------------
@@ -426,10 +454,12 @@ void InkToolbar::ExecuteToolAction(winrt::InkToolbarToolButton const& toolButton
     {
     case winrt::InkToolbarButtonFlyoutPlacement::Auto:
     case winrt::InkToolbarButtonFlyoutPlacement::Bottom:
-        flyoutPlacement = winrt::FlyoutPlacementMode::Bottom;
+        // Edge-aligned (not centred) so a button near the window's left edge doesn't push the wide
+        // pen-config flyout off-screen and clip it; it opens directly under the button instead.
+        flyoutPlacement = winrt::FlyoutPlacementMode::BottomEdgeAlignedLeft;
         break;
     case winrt::InkToolbarButtonFlyoutPlacement::Top:
-        flyoutPlacement = winrt::FlyoutPlacementMode::Top;
+        flyoutPlacement = winrt::FlyoutPlacementMode::TopEdgeAlignedLeft;
         break;
     case winrt::InkToolbarButtonFlyoutPlacement::Left:
         flyoutPlacement = winrt::FlyoutPlacementMode::Left;
@@ -698,7 +728,12 @@ void InkToolbar::OnFlyoutClosed(winrt::IInspectable const& sender, winrt::IInspe
         }
     }
 
+    auto button = found->m_toolButton
+        ? found->m_toolButton.as<winrt::UIElement>()
+        : found->m_menuButton.as<winrt::UIElement>();
     m_openFlyouts.erase(found);
+    SharedHelpers::RaiseAutomationPropertyChangedEvent(
+        button, winrt::ExpandCollapseState::Expanded, winrt::ExpandCollapseState::Collapsed);
 }
 
 // When an L3 opens, move focus into the relevant control (pen color / eraser / stencil selection).
@@ -730,6 +765,38 @@ void InkToolbar::OnFlyoutOpened(winrt::IInspectable const& sender, winrt::IInspe
             winrt::get_self<InkToolbarEraserButton>(eraserButton)->SetFocusToSelectedEraser(winrt::FocusState::Programmatic);
         }
     }
+
+    // The flyout name is set on the flyout content, but ShouldConstrainToRootBounds(false) hosts it in
+    // a separate popup window that Narrator reads as "Popup". Copy the name onto that popup so the
+    // flyout is announced by name instead of "popup".
+    auto flyoutName = winrt::AutomationProperties::GetName(flyout);
+    if (!flyoutName.empty())
+    {
+        winrt::UIElement contentRoot{ nullptr };
+        if (found->m_penL3)
+        {
+            contentRoot = found->m_penL3.try_as<winrt::UIElement>();
+        }
+        else if (auto asFlyout = flyout.try_as<winrt::Flyout>())
+        {
+            contentRoot = asFlyout.Content().try_as<winrt::UIElement>();
+        }
+
+        for (winrt::DependencyObject node = contentRoot; node; node = winrt::VisualTreeHelper::GetParent(node))
+        {
+            if (node.try_as<winrt::Microsoft::UI::Xaml::Controls::FlyoutPresenter>() ||
+                node.try_as<winrt::Microsoft::UI::Xaml::Controls::Primitives::Popup>())
+            {
+                winrt::AutomationProperties::SetName(node, flyoutName);
+            }
+        }
+    }
+
+    auto button = found->m_toolButton
+        ? found->m_toolButton.as<winrt::UIElement>()
+        : found->m_menuButton.as<winrt::UIElement>();
+    SharedHelpers::RaiseAutomationPropertyChangedEvent(
+        button, winrt::ExpandCollapseState::Collapsed, winrt::ExpandCollapseState::Expanded);
 }
 
 // ---- Visual / flyout helpers ---------------------------------------------------------------
@@ -820,9 +887,29 @@ void InkToolbar::OnActiveToolChanged(winrt::DependencyPropertyChangedEventArgs c
         return;
     }
 
+    // Only a real switch counts; the initial auto-population assignment has no old tool.
+    if (oldTool && newTool)
+    {
+        // Telemetry-only work on a live control path, so it must not disturb the tool change.
+        try
+        {
+            InkTelemetry::RecordToolSwitch(m_telemetryState, static_cast<uint32_t>(newTool.ToolKind()));
+        }
+        catch (...)
+        {
+        }
+    }
+
     if (oldTool)
     {
         UpdateToolButtonVisuals(oldTool, newTool);
+
+        // The tool name carries its selected state, so refresh it for the tool that just lost selection.
+        if (auto oldPeer = winrt::FrameworkElementAutomationPeer::FromElement(oldTool))
+        {
+            oldPeer.RaisePropertyChangedEvent(
+                winrt::AutomationElementIdentifiers::NameProperty(), winrt::box_value(L""), winrt::box_value(oldPeer.GetName()));
+        }
     }
 
     winrt::InkToolbarPenButton penButton{ nullptr };
@@ -830,6 +917,25 @@ void InkToolbar::OnActiveToolChanged(winrt::DependencyPropertyChangedEventArgs c
     {
         UpdateToolButtonVisuals(newTool, newTool);
         penButton = newTool.try_as<winrt::InkToolbarPenButton>();
+
+        // Announce the new tool to Narrator; without an ElementSelected event, picking a tool is silent.
+        if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::SelectionItemPatternOnElementSelected))
+        {
+            auto peer = winrt::FrameworkElementAutomationPeer::FromElement(newTool);
+            if (!peer)
+            {
+                peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(newTool);
+            }
+            if (peer)
+            {
+                peer.RaiseAutomationEvent(winrt::AutomationEvents::SelectionItemPatternOnElementSelected);
+
+                // "selected" is folded into the name, so re-raise Name; without this Narrator only reads
+                // the selected state the first time and stays silent on later tool changes.
+                peer.RaisePropertyChangedEvent(
+                    winrt::AutomationElementIdentifiers::NameProperty(), winrt::box_value(L""), winrt::box_value(peer.GetName()));
+            }
+        }
     }
 
     if (penButton)
@@ -1184,6 +1290,8 @@ winrt::Size InkToolbar::MeasureOverride(winrt::Size const& availableSize)
 
         UpdateToolButtonVisuals();
         m_childrenDirty = false;
+
+        ReportUsageTelemetry();
     }
 
     // Measure the applied template root (standard templated-Control behavior).
@@ -1199,6 +1307,31 @@ winrt::Size InkToolbar::MeasureOverride(winrt::Size const& availableSize)
 winrt::AutomationPeer InkToolbar::OnCreateAutomationPeer()
 {
     return winrt::make<InkToolbarAutomationPeer>(*this);
+}
+
+// Reported once per toolbar, after auto-population has settled on an active tool.
+void InkToolbar::ReportUsageTelemetry() noexcept
+{
+    // Reading the dependency properties below can throw, and this is noexcept; telemetry must never
+    // be the reason the toolbar stops working.
+    try
+    {
+        auto const activeTool = ActiveTool();
+        auto const toolKind = activeTool
+            ? static_cast<uint32_t>(activeTool.ToolKind())
+            : static_cast<uint32_t>(winrt::InkToolbarTool::CustomTool) + 1;   // sentinel: no active tool
+
+        InkTelemetry::ReportToolbarUsage(
+            m_telemetryState,
+            static_cast<uint32_t>(InitialControls()),
+            static_cast<uint32_t>(Orientation()),
+            toolKind,
+            TargetInkCanvas() != nullptr,
+            TargetInkPresenter() != nullptr);
+    }
+    catch (...)
+    {
+    }
 }
 
 // ---- Ruler / stencil checked handlers (faithful ports; dial + ruler-event dropped) ----------

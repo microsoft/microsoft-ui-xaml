@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 #include "pch.h"
@@ -13,6 +13,7 @@
 #include <iostream>
 #include <sstream>
 #include "ShutdownOrderValidation.h"
+#include "GamepadKeyRoutingState.h"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
@@ -35,6 +36,8 @@ namespace winrt::WinUICppDesktopSampleApp::implementation
     MainWindow::MainWindow()
     {
         InitializeComponent();
+
+        textBlockGamepadKeyRouting().Text(::WinUICppDesktopSampleApp::GetGamepadKeyRoutingState());
 
         SetBackground(m_currentBackground);
 

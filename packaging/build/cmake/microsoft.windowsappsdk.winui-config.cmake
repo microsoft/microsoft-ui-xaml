@@ -36,7 +36,7 @@ if(NOT TARGET Microsoft.Web.WebView2)
     if(NOT _WEBVIEW2_LOCATION)
         message(FATAL_ERROR "Microsoft.Web.WebView2 package location not found. "
             "Ensure Microsoft.Web.WebView2 is listed in add_nuget_packages(). "
-            "Please see https://github.com/mschofie/NuGetCMakePackage/blob/develop/.github/copilot-instructions.md")
+            "Please see https://github.com/ssparach/NuGetCMakePackage/blob/develop/.github/copilot-instructions.md")
     endif()
     add_library(Microsoft.Web.WebView2 INTERFACE)
     set_target_properties(Microsoft.Web.WebView2 PROPERTIES

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Only the fre flavour of the product is built here, so a Debug sample (amd64chk) must still
+         stage from amd64fre rather than silently launching on the stale package binaries. -->
+    <InkDemoBinDir Condition="Exists('$(ArtifactsBinDir)Product\')">$(ArtifactsBinDir)</InkDemoBinDir>
+    <InkDemoBinDir Condition="'$(InkDemoBinDir)' == ''">$([System.String]::Copy('$(ArtifactsBinDir)').Replace('chk\','fre\'))</InkDemoBinDir>
+    <InkDemoProductDir>$(InkDemoBinDir)Product\</InkDemoProductDir>
+    <InkDemoSymbolsDir>$(InkDemoBinDir)Symbols\Product\</InkDemoSymbolsDir>
+  </PropertyGroup>
+
+  <!--
+    The sample restores WinUI from the locally produced package, which lags the working tree. Restage
+    the current product build so every binary in the output folder comes from one build - a mismatch
+    surfaces as an InvalidCastException during startup.
+  -->
+  <Target Name="StageLocalWinUIProduct" AfterTargets="Build">
+    <Error Condition="!Exists('$(InkDemoProductDir)')"
+           Text="InkParityLab: no local product build at '$(InkDemoProductDir)'. Build the product first." />
+    <ItemGroup>
+      <InkDemoProductFile Include="$(InkDemoProductDir)*.dll;$(InkDemoProductDir)*.winmd;$(InkDemoProductDir)*.pri" />
+      <InkDemoProductFile Include="$(InkDemoSymbolsDir)Microsoft.UI.Xaml.Controls.pdb"
+                          Condition="Exists('$(InkDemoSymbolsDir)Microsoft.UI.Xaml.Controls.pdb')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(InkDemoProductFile)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+    <Message Importance="high" Text="InkParityLab: staged local product binaries from $(InkDemoProductDir)" />
+  </Target>
+
+  <!-- Publish output is what gets zipped and handed round, so it needs the same restaging. -->
+  <Target Name="StageLocalWinUIProductForPublish" AfterTargets="Publish">
+    <ItemGroup>
+      <InkDemoPublishFile Include="$(InkDemoProductDir)*.dll;$(InkDemoProductDir)*.winmd;$(InkDemoProductDir)*.pri" />
+    </ItemGroup>
+    <Copy SourceFiles="@(InkDemoPublishFile)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
+    <Message Importance="high" Text="InkParityLab: staged local product binaries into $(PublishDir)" />
+  </Target>
+
+</Project>

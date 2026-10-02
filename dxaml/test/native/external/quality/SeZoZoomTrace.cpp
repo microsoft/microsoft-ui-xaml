@@ -279,7 +279,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                             LOG_OUTPUT(L"Initializing elements");
 
                             grid = ref new Grid();
-                            Window::Current->Content = grid;
+                            TestServices::WindowHelper->WindowContent = grid;
 
                             seZo = ref new SemanticZoom();
                             grid->Children->Append(seZo);

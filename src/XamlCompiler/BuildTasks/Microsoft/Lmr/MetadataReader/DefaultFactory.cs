@@ -6,7 +6,7 @@
 using System;
 using System.Reflection.Adds;
 using System.Reflection.Metadata;
-using Debug=Microsoft.UI.Xaml.Markup.Compiler.Lmr.Internal.Debug;
+using Debug = System.Diagnostics.Debug;
 using BindingFlags = System.Reflection.BindingFlags;
 
 using System.Reflection;  

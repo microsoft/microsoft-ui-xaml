@@ -75,11 +75,11 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // No Shell in onecore for drag visuals.
-        [TestProperty("Hosting:Mode", "UAP")] // Investigate test failures from IXP 9/10 drop: VerifySingleSelectionWithReorder, VerifyMultipleSelectionWithReorder
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifySingleSelectionWithReorder()
         {
-            Queue<string> expectedPrimaryStates = new Queue<string>(new[] { "NotDragging", "Reordering", "NotDragging", "Reordering", "Reordering", "ReorderedPlaceholder" });
-            Queue<string> expectedTargetStates = new Queue<string>(new[] { "NotDragging", "ReorderingTarget", "NotDragging", "ReorderingTarget", "ReorderingTarget" });
+            Queue<string> expectedPrimaryStates = new Queue<string>(new[] { "NotDragging", "Reordering", "NotDragging", "Reordering", "ReorderedPlaceholder" });
+            Queue<string> expectedTargetStates = new Queue<string>(new[] { "NotDragging", "ReorderingTarget", "NotDragging", "ReorderingTarget" });
             this.RunTest(
                 false, /* canDrag */
                 true, /* canReorder */
@@ -119,12 +119,12 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // No Shell in onecore for drag visuals.
-        [TestProperty("Hosting:Mode", "UAP")] // Investigate test failures from IXP 9/10 drop: VerifySingleSelectionWithReorder, VerifyMultipleSelectionWithReorder
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyMultipleSelectionWithReorder()
         {
             Queue<string> expectedPrimaryStates = new Queue<string>(new[] { "NotDragging", "Reordering", "NotDragging", "Reordering", "MultipleReorderingPrimary", "ReorderedPlaceholder" });
-            Queue<string> expectedSecondaryStates = new Queue<string>(new[] { "NotDragging", "ReorderingTarget", "NotDragging", "ReorderingTarget", "ReorderingTarget" });
-            Queue<string> expectedTargetStates = new Queue<string>(new[] { "NotDragging", "ReorderingTarget", "NotDragging", "ReorderingTarget", "ReorderingTarget" });
+            Queue<string> expectedSecondaryStates = new Queue<string>(new[] { "NotDragging", "ReorderingTarget", "NotDragging", "ReorderingTarget" });
+            Queue<string> expectedTargetStates = new Queue<string>(new[] { "NotDragging", "ReorderingTarget", "NotDragging", "ReorderingTarget" });
             this.RunTest(
                 true, /* canDrag */
                 true, /* canReorder */

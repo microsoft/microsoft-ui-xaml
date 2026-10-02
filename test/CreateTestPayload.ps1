@@ -20,6 +20,8 @@ param(
 
     [switch]$SkipWinUIGallery,
 
+    [switch]$IncludeWebView2RuntimeInstaller,
+
     [switch]$Clean,
 
     [switch]$Quiet
@@ -174,6 +176,24 @@ if ($Mode -eq "DevTestSuite" -or $Mode -eq "ScenarioTestSuite")
     Publish-Item "$repoRoot\controls\tools\EnableMUXControlsTestAppManagedDebugging.*" "$outpath"
     
     Publish-Item "$binpath\TestDependencies\dotnet-windowsdesktop-runtime-installer.exe" "$outpath"
+
+    if ($IncludeWebView2RuntimeInstaller)
+    {
+        $webView2RuntimeInstaller = "$binpath\TestDependencies\tools\x64\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"
+        if (-not (Test-Path -LiteralPath $webView2RuntimeInstaller -PathType Leaf))
+        {
+            throw "The x64 Evergreen WebView2 Standalone Installer was not found at '$webView2RuntimeInstaller'."
+        }
+
+        $signature = Get-AuthenticodeSignature -FilePath $webView2RuntimeInstaller
+        $signerSubject = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { "<none>" }
+        if ($signature.Status -ne "Valid" -or $signerSubject -notmatch "(^|,\s*)O=Microsoft Corporation(,|$)")
+        {
+            throw "Evergreen WebView2 Standalone Installer signature validation failed. Status: $($signature.Status); signer: $signerSubject"
+        }
+
+        Publish-Item $webView2RuntimeInstaller "$outpath\tools\x64"
+    }
 }
 
 if ($Mode -eq "DevTestSuite")

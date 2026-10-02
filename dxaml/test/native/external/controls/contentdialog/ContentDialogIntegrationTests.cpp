@@ -37,6 +37,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     const float g_heightComparisonErrorMargin = 0.1f;
 
+    static void SetLastInputMethodToTouch()
+    {
+        xaml::XamlRoot^ xamlRoot = nullptr;
+        RunOnUIThread([&]()
+        {
+            xamlRoot = safe_cast<xaml::FrameworkElement^>(TestServices::WindowHelper->WindowContent)->XamlRoot;
+        });
+        TestServices::WindowHelper->SetLastInputMethod(test_infra::LastInputDeviceType::Touch, xamlRoot);
+    }
+
     ref class CustomCommand : public Microsoft::UI::Xaml::Input::ICommand {
     public:
         virtual event wf::EventHandler<Object^>^ CanExecuteChanged;
@@ -124,6 +134,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TestServices::WindowHelper->WaitForIdle();
         }
 
+        SetLastInputMethodToTouch();
         OpenContentDialog(contentDialog, placement);
 
         if (validateDCompTree)
@@ -1031,7 +1042,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         RunOnUIThread([&] ()
         {
-            windowHeight = xaml::Window::Current->Bounds.Height;
+            windowHeight = TestServices::WindowHelper->VisibleBounds.Height;
 
             // Test the MaxHeight < WindowHeight behavior first.
             contentDialog->MaxHeight = floor(windowHeight * 0.75);
@@ -1666,7 +1677,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_NOT_NULL(backgroundElement);
 
             auto dialogWidth = backgroundElement->ActualWidth;
-            auto windowWidth = xaml::Window::Current->Bounds.Width;
+            auto windowWidth = TestServices::WindowHelper->VisibleBounds.Width;
 
             VERIFY_IS_TRUE(dialogWidth <= windowWidth);
         });
@@ -2374,13 +2385,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             CommonInputHelper::Cancel(InputDevice::Gamepad);
             doValidation(showTask);
 
-            LOG_OUTPUT(L"Validate the Close button using the BACK button.");
-            showTask = create_task(OpenContentDialog(contentDialog, placement));
-
-            bool backButtonPressHandled = false;
-            TestServices::Utilities->InjectBackButtonPress(&backButtonPressHandled);
-            VERIFY_IS_TRUE(backButtonPressHandled);
-            doValidation(showTask);
+            // Note: Not testing the BACK button, which isn't supported in Islands
+            //       hosting. See BackButtonSupported().
         };
 
         LOG_OUTPUT(L"==== Validate with ContentDialogPlacement.Popup (default) ====");
@@ -3550,10 +3556,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             LOG_OUTPUT(L"BackgroundElement Bounds=(%f, %f, %f, %f)", backgroundElementOffset.X, backgroundElementOffset.Y, backgroundElement->ActualWidth, backgroundElement->ActualHeight);
 
             // Validate that the dialog stretches to  window width.
-            VERIFY_ARE_EQUAL(xaml::Window::Current->Bounds.Width, backgroundElement->ActualWidth);
+            VERIFY_ARE_EQUAL(TestServices::WindowHelper->VisibleBounds.Width, backgroundElement->ActualWidth);
 
             // Validate that the dialog is centered.
-            VERIFY_ARE_EQUAL((xaml::Window::Current->Bounds.Height - backgroundElement->ActualHeight) * 0.5, backgroundElementOffset.Y);
+            VERIFY_ARE_EQUAL((TestServices::WindowHelper->VisibleBounds.Height - backgroundElement->ActualHeight) * 0.5, backgroundElementOffset.Y);
         });
 
         CloseContentDialog(contentDialog);
@@ -3852,6 +3858,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             }
         });
 
+        SetLastInputMethodToTouch();
         auto task = create_task(OpenContentDialog(contentDialog, placement));
 
         TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);

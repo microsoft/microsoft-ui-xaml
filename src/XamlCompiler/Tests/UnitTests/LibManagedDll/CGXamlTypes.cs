@@ -48,8 +48,24 @@ namespace LibManagedDll
     public class MyFieldClass
     {
         public String MyProperty { get; set; }
+    }
+
+    [Obsolete]
+    [Windows.Foundation.Metadata.CreateFromString(MethodName = "LibManagedDll.ObsoleteClass.FromString")]
+    public class ObsoleteClass : FrameworkElement
+    {
+        [Obsolete]
+        public string ObsoleteProperty { get; set; }
+
+        public static ObsoleteClass FromString(string value) => new ObsoleteClass();
 
         public String MyStringField;
+    }
+
+    public class ObsoleteClassHolder : FrameworkElement
+    {
+        [Obsolete]
+        public ObsoleteClass ObsoleteProperty { get; set; }
     }
 
     public class MyEventClass
