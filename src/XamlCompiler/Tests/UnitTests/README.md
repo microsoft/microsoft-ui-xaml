@@ -87,3 +87,28 @@ contains the complete dependency set next to `UnitTests.dll`; MSTest deployment
 would otherwise run from a partial copied payload.
 
 The script returns VSTest's exit code unchanged.
+
+## Array metadata regressions
+
+`Schema_CppWinRTArray*` and `Schema_ArrayTypeNamesPreserveOtherLanguages` cover
+array type projection. `Codegen_MetadataTestbedCppWinRT*` compares the generated
+metadata for both ordinary and incremental C++/WinRT code generation.
+Array element tests include the exact `guid` and `char16_t` projections, which
+cannot use the compiler's legacy scalar `GUID` and `wchar_t` aliases.
+
+`Codegen_EventHandlingCppWinRT` covers XAML-attached delegates with `UInt32`,
+`Guid`, and `Char` pass, fill, and receive arrays, plus a scalar out string.
+The native fixture verifies that generated parameter declarations agree with
+the C++/WinRT projection as well as with the codegen masters.
+
+`Metadata_ArrayPropertiesCppWinRT*` launches each metadata testbed with
+`--test-array-metadata`. This mode runs without creating a XAML application or
+window. It exercises the generated `IXamlMetadataProvider` and `IXamlMember`
+getters/setters on a plain WinRT model, including empty arrays, invalid boxed
+values, read-only properties, and attached properties. Both testbed projects
+must be built for the test assembly's flavor; they are included in
+`XamlCompilerTests.sln`.
+
+The round trips use C++/WinRT's existing array boxing support. This projection
+fix does not add generalized boxing for enum, custom-struct, or runtime-class
+element types.

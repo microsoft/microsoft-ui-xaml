@@ -10,6 +10,9 @@ namespace EventHandling_968976
     delegate void MySecondEvent(ref UInt32[] args);
     delegate void MyThirdEvent(out UInt32[] args);
     delegate void MyFourthEvent(out String args);
+    delegate void GuidCharPassEvent(Guid[] guidArgs, Char[] charArgs);
+    delegate void GuidCharFillEvent(ref Guid[] guidArgs, ref Char[] charArgs);
+    delegate void GuidCharReceiveEvent(out Guid[] guidArgs, out Char[] charArgs);
 
     [Windows.Foundation.Metadata.WebHostHidden]
     runtimeclass MyUserControl : Microsoft.UI.Xaml.Controls.UserControl
@@ -20,5 +23,8 @@ namespace EventHandling_968976
         event MySecondEvent TheSecondEvent;
         event MyThirdEvent TheThirdEvent;
         event MyFourthEvent TheFourthEvent;
+        event GuidCharPassEvent GuidCharPass;
+        event GuidCharFillEvent GuidCharFill;
+        event GuidCharReceiveEvent GuidCharReceive;
     }
 }

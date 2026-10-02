@@ -57,6 +57,7 @@ Features\MarkupExtensions\MarkupExtensionsCS\generated|CompilerTests\Features\Ma
 # Metadata
 Features\Metadata\MetadataTestbedCS\generated|CompilerTests\Features\Metadata\MetadataTestbedCS\generated
 Features\Metadata\MetadataTestbedCppWinRT\generated|CompilerTests\Features\Metadata\MetadataTestbedCppWinRT\generated
+Features\Metadata\MetadataTestbedCppWinRT\Incremental\generated|CompilerTests\Features\Metadata\MetadataTestbedCppWinRT\MetadataTestbedCppWinRTIncremental\generated
 
 # Multiple XAML files
 Features\MultiXamlFiles\MultipleViewsTestbedCppWinRT\generated|CompilerTests\Features\MultiXamlFiles\MultipleViewsTestbedCppWinRT\generated
