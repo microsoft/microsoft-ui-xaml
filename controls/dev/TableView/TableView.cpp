@@ -254,7 +254,11 @@ TableView::~TableView()
 {
     // Must run while this control still holds the selector: once anything has been recycled the
     // pools hang off the cached templates and close a cycle the reference tracker cannot walk.
-    if (auto const selector = m_rowTemplateSelector.get())
+    // Destructor runs off the reference tracker's teardown path (e.g. UIAffinityReleaseQueue),
+    // not necessarily via a direct Release() call, so plain get() can observe the tracker handle
+    // already invalidated and assert/fail-fast in chk builds. safe_get() is the documented-safe
+    // accessor for tracker_ref from a destructor (see tracker_ref.h and ItemsView/ScrollView).
+    if (auto const selector = m_rowTemplateSelector.safe_get())
     {
         winrt::get_self<::TableViewRowTemplateSelector>(selector)->Detach();
     }
@@ -482,10 +486,6 @@ void TableView::OnApplyTemplate()
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
     auto weakThis = get_weak();
 
-    // Drive the repeater from the active source once the template is alive. The source itself is
-    // unchanged, so this only pushes its view into the freshly built repeater.
-    RefreshRowsPipeline();
-
     // Defer ScrollViewer ancestor lookup until Loaded because template parts are not fully connected here.
     if (auto headerHost = m_headerHost.get())
     {
@@ -561,6 +561,11 @@ void TableView::OnApplyTemplate()
                 });
         }
     }
+
+    // Drive the repeater from the active source only after its item template and lifecycle hooks
+    // are wired. ItemsRepeater may react to ItemsSource immediately; doing this earlier leaves it
+    // briefly sourced without the selector/ElementPrepared owner hookup TableView rows require.
+    RefreshRowsPipeline();
 
     // Body horizontal scrolling drives the header ScrollViewer; vertical stickiness is structural.
 
