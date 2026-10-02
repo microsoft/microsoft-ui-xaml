@@ -73,6 +73,13 @@ App::~App()
 void App::OnLaunched(LaunchActivatedEventArgs const&)
 {
     window = make<MainWindow>();
+    window.Closed([this](IInspectable const&, WindowEventArgs const& args)
+    {
+        if (!args.Handled())
+        {
+            window = nullptr;
+        }
+    });
     window.Activate();
     window.Title(L"WinUICppDesktopSampleApp");
     window.as<MainWindow>()->RootFrame().Navigate(xaml_typename<Page1>());

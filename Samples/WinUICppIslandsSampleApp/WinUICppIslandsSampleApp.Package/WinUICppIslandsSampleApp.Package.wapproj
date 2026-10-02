@@ -83,4 +83,53 @@
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="$(WinUIVersion)" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
+  <!-- Register the WinUI binaries shipped in this self-contained package instead of
+       relying on activatable-class registrations from an installed runtime package. -->
+  <PropertyGroup>
+    <WinUIClassRegistrationsFile>$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\buildTransitive\native\LiftedWinRTClassRegistrations.xml</WinUIClassRegistrationsFile>
+    <WinUIAppxFragment>$(IntermediateOutputPath)WinUIClassRegistrations.appxfragment</WinUIAppxFragment>
+  </PropertyGroup>
+  <Target Name="InsertWinUIActivatableClassEntries"
+          AfterTargets="WinAppSdkInsertActivatableClassEntries"
+          BeforeTargets="_GenerateAppxPackageRecipeFile;_WireUpCoreRuntime"
+          Condition="Exists('$(WinUIClassRegistrationsFile)')"
+          Inputs="$(MSBuildProjectFullPath);$(WinUIClassRegistrationsFile);$(FinalAppxManifestName)"
+          Outputs="$(FinalAppxManifestName).winui.incremental">
+    <PropertyGroup>
+      <AppxManifestNamespaces>
+        <Namespace Prefix="ns" Uri="http://schemas.microsoft.com/appx/manifest/foundation/windows10" />
+      </AppxManifestNamespaces>
+    </PropertyGroup>
+    <XmlPeek XmlInputPath="$(FinalAppxManifestName)"
+             Query="/ns:Package/ns:Extensions/ns:Extension/ns:InProcessServer/ns:ActivatableClass[@ActivatableClassId='Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider']"
+             Namespaces="$(AppxManifestNamespaces)">
+      <Output TaskParameter="Result" ItemName="ExistingWinUIClassRegistration" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(WinUIClassRegistrationsFile)"
+             Query="/ns:Data/ns:Extension[ns:InProcessServer/ns:Path='Microsoft.UI.Xaml.dll' or ns:InProcessServer/ns:Path='Microsoft.UI.Xaml.Controls.dll' or ns:InProcessServer/ns:Path='Microsoft.UI.Xaml.Controls.Tabular.dll']"
+             Namespaces="$(AppxManifestNamespaces)"
+             Condition="'@(ExistingWinUIClassRegistration)' == ''">
+      <Output TaskParameter="Result" ItemName="WinUIClassRegistration" />
+    </XmlPeek>
+    <PropertyGroup Condition="'@(ExistingWinUIClassRegistration)' == ''">
+      <WinUIClassRegistrationFragment>
+        %3C?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?%3E
+        %3CFragment xmlns=&quot;http://schemas.microsoft.com/appx/manifest/foundation/windows10&quot;%3E
+        %3CExtensions%3E
+        @(WinUIClassRegistration->'%(Identity)','&#x0d;&#x0a;')
+        %3C/Extensions%3E
+        %3C/Fragment%3E
+      </WinUIClassRegistrationFragment>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(WinUIAppxFragment)"
+                      Lines="$(WinUIClassRegistrationFragment)"
+                      Overwrite="true"
+                      Condition="'@(ExistingWinUIClassRegistration)' == ''" />
+    <WinAppSdkInsertActivatableClassEntries
+        FullPathToAppxManifest="$(FinalAppxManifestName)"
+        FullPathToAppxFragment="$(WinUIAppxFragment)"
+        ExcludeWebView2ActivatableClassEntries="false"
+        Condition="'@(ExistingWinUIClassRegistration)' == ''" />
+    <Touch Files="$(FinalAppxManifestName).winui.incremental" AlwaysCreate="true" />
+  </Target>
 </Project>

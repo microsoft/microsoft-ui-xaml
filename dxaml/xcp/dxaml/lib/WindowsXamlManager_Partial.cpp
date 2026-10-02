@@ -133,10 +133,18 @@ public:
     {
         auto managerStrongRef = m_manager;
 
-        // WARNING: "this" will be invalid after Close() returns!
+        // XamlCore keeps WindowsXamlManager alive, and WindowsXamlManager keeps XamlCore alive through m_xamlCore.
+        // Keep the manager alive locally while closing the core, then break that cycle after raising its final event.
+        FAIL_FAST_ASSERT(m_manager);
         this->Close();
 
         managerStrongRef->RaiseXamlShutdownCompletedOnThreadEvent(args);
+
+        // The core is now closed, so mark the manager closed while still on its owning thread. External references
+        // may be released from another thread after shutdown, and its destructor must not try to close it there.
+        IFCFAILFAST(managerStrongRef->CloseImpl(true /* synchronous */));
+
+        m_manager.Reset();
 
         return S_OK;
     }
@@ -526,7 +534,6 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Close()
 
         if (lastInstanceInProcess)
         {
-            // MetadataAPI::Reset() is called in FrameworkApplication::ReleaseCurrent when m_metadataRef is reset
             FrameworkApplication::ReleaseCurrent();
 
             // ActivationFactoryCache is a process-wide singleton (DependencyLocator StoragePolicyFlags::None). It caches

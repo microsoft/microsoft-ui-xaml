@@ -203,6 +203,11 @@ public:
     TEST_METHOD(ValidateDispatcherShutdownModeInIslandsApp)
     TEST_METHOD(ValidateDispatcherShutdownModeInDesktopApp)
 
+    BEGIN_TEST_METHOD(ApplicationBehaviorAtCoreShutdown)
+        TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+        TEST_METHOD_PROPERTY(L"Description", L"Validate Application behavior before shutdown, after shutdown, and after restart.")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(ValidateCallbackErrorPropagatesInDesktopApp)
         TEST_METHOD_PROPERTY(L"Description", L"Verify that an app callback failure in Application.Start propagates as an error return instead of fail-fasting inside WinUI.")
     END_TEST_METHOD()
