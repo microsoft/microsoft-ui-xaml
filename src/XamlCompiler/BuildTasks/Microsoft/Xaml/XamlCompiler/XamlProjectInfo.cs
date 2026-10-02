@@ -30,6 +30,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         EnableWin32Codegen = 0x08,
         UsingCSWinRT = 0x10,
         EnableBindingDiagnostics = 0x20,
+        CppWinRTNamedModules = 0x40,
     }
 
     internal class XamlProjectInfo
@@ -63,6 +64,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public bool GenerateIncrementalTypeInfo
         {
             get { return HasCodeGenFlag(CodeGenCtrlFlags.IncrementalTypeInfoCodeGen); }
+        }
+
+        public bool ShouldGenerateTypeInfoCode
+        {
+            get { return !HasCodeGenFlag(CodeGenCtrlFlags.NoTypeInfoCodeGen); }
         }
 
         public bool GenerateProviderCode
@@ -118,6 +124,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public bool IsWin32App { get; set; }
 
         public bool UsingCSWinRT { get; set; }
+        public bool UseCppWinRTNamedModules { get; set; }
+
+        // Complete set of x:Class names participating in native Pass1 code generation.
+        // This is populated from ProjectXamlTaskItems rather than the current harvest workset,
+        // so incremental Pass1 builds keep module partitions for unchanged XAML files.
+        public IReadOnlyList<string> XamlClassNames { get; set; } = Array.Empty<string>();
         
         public string PrecompiledHeaderFile { get; set; }
 

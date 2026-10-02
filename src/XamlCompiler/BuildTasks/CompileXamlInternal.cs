@@ -175,6 +175,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public bool EnableWin32Codegen { get; private set; }
         public bool UsingCSWinRT { get; private set; }
         public bool EnableBindingDiagnostics { get; private set; }
+        public bool UseCppWinRTNamedModules { get; private set; }
 
         // Controls whether or not usage of features (platform API, x:Bind functionality,
         // conditional XAML, etc.) should be validated against TargetPlatformMinVersion
@@ -329,6 +330,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             EnableWin32Codegen = FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableWin32Codegen);
             UsingCSWinRT = FeatureControlFlags.HasFlag(FeatureCtrlFlags.UsingCSWinRT);
             EnableBindingDiagnostics = FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableBindingDiagnostics);
+            UseCppWinRTNamedModules = FeatureControlFlags.HasFlag(FeatureCtrlFlags.CppWinRTNamedModules);
             IgnoreSpecifiedTargetPlatformMinVersion = IgnoreSpecifiedTargetPlatformMinVersion;
 
             XamlApplications = GetFileItems(i.XamlApplications);
@@ -423,18 +425,20 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         }
         #endregion
 
-        void CleanUpSavedState()
+        bool CleanUpSavedState()
         {
             // The SaveState contains a list of files that were compiled last time.
-            // It is possible that the project has changes and files have gone away.
-            // We need to check and cull for the removed files.
+            // It is possible that the project has changed and files have gone away.
+            // Removing only the saved-state entry is not sufficient: an old generated
+            // C++ header can still be found by cppwinrt's __has_include bridge, and a
+            // removed XAML file must invalidate shared BindingInfo/TypeInfo generation.
             List<string> removeFiles = new List<string>();
             foreach (String oldXamlFile in SaveState.XamlPerFileInfo.Keys)
             {
                 bool foundIt = false;
                 foreach (TaskItemFilename taskItem in SourceFileManager.ProjectXamlTaskItems)
                 {
-                    if (oldXamlFile == taskItem.XamlGivenPath)
+                    if (String.Equals(oldXamlFile, taskItem.XamlGivenPath, StringComparison.InvariantCultureIgnoreCase))
                     {
                         foundIt = true;
                         break;
@@ -445,9 +449,49 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     removeFiles.Add(oldXamlFile);
                 }
             }
+
+            if (removeFiles.Count == 0)
+            {
+                return false;
+            }
+
+            HashSet<string> currentGeneratedCodePrefixes = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+            foreach (ClassCodeGenFile codeGenFile in SourceFileManager.CodeGenFiles)
+            {
+                currentGeneratedCodePrefixes.Add(Path.Combine(codeGenFile.TargetFolderFullPath, codeGenFile.BaseFileName));
+            }
+
             foreach (string badFile in removeFiles)
             {
+                SaveStatePerXamlFile removedState = SaveState.XamlPerFileInfo[badFile];
+                string generatedCodePrefix = removedState.GeneratedCodeFilePathPrefix;
+
+                // Multiple XAML files can contribute to the same generated class file.
+                // Keep that file when the current project still owns the same prefix;
+                // the item-set invalidation below will force it to be regenerated.
+                if (!String.IsNullOrEmpty(generatedCodePrefix) && !currentGeneratedCodePrefixes.Contains(generatedCodePrefix))
+                {
+                    DeleteGeneratedCodeFileAndBackup(generatedCodePrefix + Language.Pass1Extension);
+                    DeleteGeneratedCodeFileAndBackup(generatedCodePrefix + Language.Pass2Extension);
+                }
+
                 SaveState.XamlPerFileInfo.Remove(badFile);
+            }
+
+            return true;
+        }
+
+        private static void DeleteGeneratedCodeFileAndBackup(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                File.Delete(fileName);
+            }
+
+            string backupFileName = fileName + KnownStrings.BackupSuffix;
+            if (File.Exists(backupFileName))
+            {
+                File.Delete(backupFileName);
             }
         }
 
@@ -523,6 +567,18 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             if (string.Compare(SaveState.XamlFeatureControlFlags, featureCtrlFlags, StringComparison.OrdinalIgnoreCase) != 0)
             {
                 SaveState.XamlFeatureControlFlags = featureCtrlFlags;
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool DidCodeGenerationControlFlagsChange()
+        {
+            string codeGenerationCtrlFlags = CodeGenerationControlFlags.ToString();
+            if (string.Compare(SaveState.XamlCodeGenerationControlFlags, codeGenerationCtrlFlags, StringComparison.OrdinalIgnoreCase) != 0)
+            {
+                SaveState.XamlCodeGenerationControlFlags = codeGenerationCtrlFlags;
                 return true;
             }
 
@@ -721,6 +777,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         {
             foreach (ClassCodeGenFile codeGenFile in SourceFileManager.CodeGenFiles)
             {
+                if (ShouldSuppressPageCodeGen() && !codeGenFile.XamlTaskItems.Any(item => item.IsApplication))
+                {
+                    continue;
+                }
+
                 ReportExistingGeneratedCodeFile(codeGenFile.TargetFolderFullPath, codeGenFile.BaseFileName);
             }
 
@@ -748,6 +809,21 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     extraFilePaths.Add(Path.Combine(SourceFileManager.OutputFolderFullpath, "XamlMetaDataProvider.h"));
                     extraFilePaths.Add(Path.Combine(SourceFileManager.OutputFolderFullpath, "XamlLibMetadataProvider.g.cpp"));
                     extraFilePaths.Add(Path.Combine(SourceFileManager.OutputFolderFullpath, "XamlTypeInfo.Impl.g.cpp"));
+
+                    // Native Pass1 normally regenerates these shared headers after per-class
+                    // code generation. The no-change shortcut returns before those generators
+                    // run, so report the existing files explicitly. Named-module builds depend
+                    // on XamlBindingInfo.xaml.g.h as the Application_Xaml primary interface and
+                    // on XamlTypeInfo.xaml.g.h as its optional TypeInfo partition.
+                    extraFilePaths.Add(Path.Combine(
+                        SourceFileManager.OutputFolderFullpath,
+                        KnownStrings.XamlBindingInfo + Language.Pass1Extension));
+                    if (!ShouldSuppressTypeInfoCodeGen())
+                    {
+                        extraFilePaths.Add(Path.Combine(
+                            SourceFileManager.OutputFolderFullpath,
+                            KnownStrings.XamlTypeInfo + Language.Pass1Extension));
+                    }
                 }
                 else
                 {
@@ -829,16 +905,23 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 return false;
             }
 
+            // Validate the current item set before mutating saved state or deleting generated
+            // outputs. An invalid project (for example multiple App.xaml items) should fail
+            // without first performing destructive incremental cleanup.
+            if (!CheckTaskArgumentsValid())
+            {
+                return false;
+            }
+
+            // Clean removed items before the no-XAML early exit. Otherwise removing the final
+            // XAML item leaves both its saved state and generated C++ headers behind.
+            bool didProjectXamlItemsChange = CleanUpSavedState();
+
             // if there are no XAML files then issue a warning and exit (successfully), because we have nothing to do.
             if ((XamlApplications == null || !XamlApplications.Any()) && (XamlPages == null || XamlPages.Count == 0))
             {
                 LogWarning(new XamlValidationWarningNoXaml());
                 return true;        // exit the compiler but not as a failure, just "done"
-            }
-
-            if (!CheckTaskArgumentsValid())
-            {
-                return false;
             }
 
             if (this.CodeGenerationControlFlags != CodeGenCtrlFlags.Nothing)
@@ -852,8 +935,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 LogWarning(new XamlValidationWarningPreview(ErrorCode.WMC1502, Language.Name));
             }
 
-            CleanUpSavedState();
-
             bool areGeneratedFilesListsUpdated = false;
 
             // Checking this always keeps us up-to-date, e.g. the first build after a solution load
@@ -863,6 +944,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             // If the feature ctrl flags change, then skip checking every xaml file - we'll assume that since the user
             // edited the project file that something needs to be done.
             bool didFeatureCtrlFlagsChange = DidFeatureControlFlagsChange();
+            bool didCodeGenerationCtrlFlagsChange = DidCodeGenerationControlFlagsChange();
             bool didXamlOptionalChangesChange = DidXamlOptionalChangesChange();
             if (didXamlOptionalChangesChange)
             {
@@ -872,7 +954,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             // During Pass 2, we can skip most type info collection if type info reflection is enabled since we don't need our type tables.
             bool skipPass2TypeInfo = EnableTypeInfoReflection;
 
-            if ((xamlTypeInfoNeeded == false) && (didAssembliesChange == false) && (didFeatureCtrlFlagsChange == false) && (didXamlOptionalChangesChange == false))
+            if ((xamlTypeInfoNeeded == false) && (didAssembliesChange == false) && (didFeatureCtrlFlagsChange == false) && (didCodeGenerationCtrlFlagsChange == false) && (didXamlOptionalChangesChange == false) && (didProjectXamlItemsChange == false))
             {
                 bool haveGeneratedPass2CodeFiles = ShortcutBackupRestoreGeneratedPass2Files_WhenNothingExternalHasChanged();
                 bool xamlFilesChanged = DidXAMLFilesChange();
@@ -934,7 +1016,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     // the file itself is different. Some of the feature ctrl flags will cause different code to be generated
                     // on a per page basis (i.e. EnableXBindDiagnostics), while others will only affect app.xaml (i.e. EnableWin32CodeGen).
                     // But we'll be conservative and just assume that all files need to regenerate if the flags have changed
-                    bool forceRegenerate = didAssembliesChange || didFeatureCtrlFlagsChange;
+                    bool forceRegenerate = didAssembliesChange || didFeatureCtrlFlagsChange || didCodeGenerationCtrlFlagsChange || didProjectXamlItemsChange;
                     if (IsPass1 && !tif.OutOfDate() && !forceRegenerate)
                     {
                         // If the file is up to date then report the existing "on disk" generated
@@ -1009,6 +1091,28 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     }
                 }
 
+                // The C++/WinRT XAML umbrella module needs the complete project x:Class set,
+                // including files skipped by incremental Pass1. ProjectXamlTaskItems restores
+                // ClassFullName from SaveState and refreshes it when a XAML file changes.
+                if (Language.Name == ProgrammingLanguage.CppWinRT && _projectInfo.UseCppWinRTNamedModules)
+                {
+                    IEnumerable<TaskItemFilename> moduleXamlItems = SourceFileManager.ProjectXamlTaskItems;
+                    if (ShouldSuppressPageCodeGen())
+                    {
+                        // NoPageCodeGen suppresses non-Application pages only. App.xaml still
+                        // generates AppPass1/AppPass2, so its module partition must remain
+                        // reachable from the Application_Xaml primary interface.
+                        moduleXamlItems = moduleXamlItems.Where(item => item.IsApplication);
+                    }
+
+                    _projectInfo.XamlClassNames = moduleXamlItems
+                        .Select(item => item.ClassFullName)
+                        .Where(className => !String.IsNullOrWhiteSpace(className))
+                        .Distinct(StringComparer.Ordinal)
+                        .OrderBy(className => className, StringComparer.Ordinal)
+                        .ToList();
+                }
+
                 // Create Code Generator
                 _codeGenerator = new XamlCodeGenerator(Language, IsPass1, _projectInfo, _typeInfoCollector.SchemaInfo);
                 if (IsPass1 && Language.Name == ProgrammingLanguage.CSharp)
@@ -1062,6 +1166,22 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 if (!GenerateTypeInfo())
                 {
                     return false;
+                }
+
+                // UpdateGeneratedFilesLists runs before GenerateTypeInfo on the normal path.
+                // In native Pass1, XamlTypeInfo.xaml.g.h therefore does not exist yet when
+                // that list is populated on a clean build. Report the newly materialized
+                // TypeInfo partition explicitly so the MSBuild module-registration target
+                // can compile it with the other Application_Xaml interfaces.
+                if (IsPass1 && Language.IsNative && !ShouldSuppressTypeInfoCodeGen())
+                {
+                    string xamlTypeInfoPass1 = Path.Combine(
+                        OutputFolderFullpath,
+                        KnownStrings.XamlTypeInfo + Language.Pass1Extension);
+                    if (File.Exists(xamlTypeInfoPass1) && !_generatedCodeFiles.Contains(xamlTypeInfoPass1))
+                    {
+                        _generatedCodeFiles.Add(xamlTypeInfoPass1);
+                    }
                 }
 
                 try
@@ -2018,6 +2138,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
             projectInfo.IsWin32App = EnableWin32Codegen;
             projectInfo.UsingCSWinRT = UsingCSWinRT;
+            projectInfo.UseCppWinRTNamedModules = UseCppWinRTNamedModules;
             projectInfo.PrecompiledHeaderFile = PrecompiledHeaderFile;
             projectInfo.EnabledXamlOptionalChanges = ParseCommaSeparatedList(EnabledXamlOptionalChanges);
             projectInfo.DisabledXamlOptionalChanges = ParseCommaSeparatedList(DisabledXamlOptionalChanges);
@@ -2301,9 +2422,20 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             // Create the Generated code strings
             IEnumerable<FileNameAndChecksumPair> xamlFilesChecksumPairs;
             generatedCodeFiles = _codeGenerator.GenerateCodeBehind(classCodeInfo, out xamlFilesChecksumPairs);
-            if (!classCodeInfo.IsApplication && ShouldSuppressPageCodeGen())
+            bool suppressPageCodeGen = !classCodeInfo.IsApplication && ShouldSuppressPageCodeGen();
+            if (suppressPageCodeGen)
             {
                 generatedCodeFiles = null;
+
+                // A real NoPageCodeGen build must not leave code from an earlier normal
+                // build discoverable through _GeneratedCodeFiles or cppwinrt's
+                // __has_include("<Type>.xaml.g.h") bridge. Design-time builds keep the
+                // existing on-disk outputs, matching the established Pass2 protection.
+                if (!IsDesignTimeBuild)
+                {
+                    DeleteGeneratedCodeFileAndBackup(Path.Combine(classCodeInfo.TargetFolder, classCodeInfo.BaseFileName + Language.Pass1Extension));
+                    DeleteGeneratedCodeFileAndBackup(Path.Combine(classCodeInfo.TargetFolder, classCodeInfo.BaseFileName + Language.Pass2Extension));
+                }
             }
             PerformanceUtility.FireCodeMarker(CodeMarkerEvent.perfXC_PageCodeGenEnd, classCodeInfo.BaseFileName);
 
@@ -2311,7 +2443,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             // of the local assembly.   But we don't need to do this if Pass1 is just a Design Time Build from VS.
             // There was an issue with C++ where if the VS buffer was dirty, Design Type Build would run immediatly after
             // normal build and can delete the pass2 (.hpp) file, if we don't check what *kind* of Pass1 we are running.
-            if (IsPass1 && !IsDesignTimeBuild)
+            if (IsPass1 && !IsDesignTimeBuild && !suppressPageCodeGen)
             {
                 Debug.Assert(!String.IsNullOrEmpty(classCodeInfo.BaseFileName));
                 string srcOutputFileName2 = Path.Combine(classCodeInfo.TargetFolder, classCodeInfo.BaseFileName + Language.Pass2Extension);
@@ -2342,7 +2474,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
             //During Pass2, if there was a Pass2 code file from a previous build, restore it before writing to disk.  That way if this build's Pass2 file
             //is the same as the one previously on disk, we won't write to disk and cause a recompile due to the newer timestamp.
-            if (!IsPass1)
+            if (!IsPass1 && !suppressPageCodeGen)
             {
                 string srcOutputFileName2 = Path.Combine(classCodeInfo.TargetFolder, classCodeInfo.BaseFileName + Language.Pass2Extension);
 
@@ -2919,6 +3051,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 return className2headerMap;  // empty
             }
 
+            var projectXamlPaths = new HashSet<string>(
+                SourceFileManager.ProjectXamlTaskItems.Select(item => Path.GetFullPath(item.SourceXamlFullPath)),
+                StringComparer.OrdinalIgnoreCase);
+
             // ClInclude is the '.h' files.  (the '.cpp' files are in ClCompile)
             foreach (var item in ClIncludeFiles)
             {
@@ -2941,6 +3077,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 if (!Path.IsPathRooted(dependentFilePath))
                 {
                     dependentFilePath = Path.Combine(this.ProjectFolderFullpath, dependentFilePath);
+                }
+
+                // DependentUpon can survive removal of the Page item while the file remains on disk.
+                if (!projectXamlPaths.Contains(Path.GetFullPath(dependentFilePath)))
+                {
+                    continue;
                 }
 
                 try

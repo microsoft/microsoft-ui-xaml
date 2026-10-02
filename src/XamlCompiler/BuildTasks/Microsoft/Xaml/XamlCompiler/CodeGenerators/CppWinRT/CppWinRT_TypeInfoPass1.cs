@@ -30,33 +30,73 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#pragma once
+
+");
+  if (ProjectInfo.UseCppWinRTNamedModules) { 
+            this.Write("#ifdef WINRT_XAML_MODULE_INTERFACE\r\nmodule;\r\n#include <unknwn.h>\r\n\r\nexport module" +
+                    " ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPartitionModuleName(ProjectInfo.RootNamespace, "XamlTypeInfo")));
+            this.Write(";\r\n\r\n#define WINRT_IMPORT_MODULE\r\nimport std;\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsFoundation)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsFoundationCollections)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.Xaml)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlData)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlMarkup)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlInterop)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsXamlInterop)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlXamlTypeInfo)));
+            this.Write(";\r\n");
+  foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { 
+            this.Write("export import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(projectionNamespace)));
+            this.Write(";\r\n");
+  }
+            this.Write("\r\n#undef WINRT_XAML_MODULE_INTERFACE\r\n#define WINRT_XAML_EXPORT export extern \"C+" +
+                    "+\"\r\n#else\r\n#pragma once\r\n#ifndef WINRT_IMPORT_MODULE\r\n#define WINRT_IMPORT_MODUL" +
+                    "E\r\n#endif\r\nimport ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)));
+            this.Write(";\r\n#define WINRT_XAML_SKIP_BODY\r\n#endif\r\n");
+  } else { 
+            this.Write(@"#pragma once
+#include <unknwn.h>
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <vector>
-#include <unknwn.h>
 #include <mutex>
+#include <cstdint>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include ""winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.Xaml));
-            this.Write(".h\"\r\n#include \"winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlData));
-            this.Write(".h\"\r\n#include \"winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlMarkup));
-            this.Write(".h\"\r\n#include \"winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlInterop));
-            this.Write(".h\"\r\n#include \"winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.WindowsXamlInterop));
-            this.Write(".h\"\r\n#include \"winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlXamlTypeInfo));
-            this.Write(".h\"\r\n\r\nnamespace winrt::");
+");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundation)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundationCollections)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.Xaml)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlData)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlMarkup)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlInterop)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsXamlInterop)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlXamlTypeInfo)));
+            this.Write("\r\n\r\n#define WINRT_XAML_EXPORT\r\n");
+  } 
+            this.Write("\r\n#ifndef WINRT_XAML_SKIP_BODY\r\nWINRT_XAML_EXPORT namespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(ProjectInfo.RootNamespace)));
             this.Write("::implementation\r\n{\r\n    using IInspectable = ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundation)));
@@ -209,7 +249,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         void SetBoxedType(IXamlType boxedType);
         void AddMemberName(::winrt::hstring const& shortName);
         void AddEnumValue(::winrt::hstring const& name, IInspectable value);
-        uint32_t CreateEnumUIntFromString(::winrt::hstring const& input) const;
+        std::uint32_t CreateEnumUIntFromString(::winrt::hstring const& input) const;
 
     private:
         std::shared_ptr<XamlTypeInfoProvider> _provider;
@@ -231,46 +271,26 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 
     struct XamlMember : public ::winrt::implements<XamlMember, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlMarkup)));
-            this.Write(@"::IXamlMember>
-    {
-        explicit XamlMember(
-            std::shared_ptr<XamlTypeInfoProvider> const& provider, 
-            ::winrt::hstring const& name, 
-            ::winrt::hstring const& typeName);
-
-        typedef IInspectable(*PropertyGetterFn)(IInspectable const& instance);
-        typedef void(*PropertySetterFn)(IInspectable const& instance, IInspectable const& value);
-
-        PropertyGetterFn _getter{};
-        PropertySetterFn _setter{};
-
-        // IXamlMember
-        bool IsAttachable() const;
-        bool IsDependencyProperty() const;
-        bool IsReadOnly() const;
-        ::winrt::hstring Name() const;
-        IXamlType TargetType() const;
-        IXamlType Type() const;
-        IInspectable GetValue(IInspectable const& instance) const;
-        void SetValue(IInspectable const& instance, IInspectable const& value);
-
-        // Additional Setters
-        void TargetTypeName(::winrt::hstring const& value);
-        void IsAttachable(bool value);
-        void IsDependencyProperty(bool value);
-        void IsReadOnly(bool value);
-
-    private:
-        bool _isAttachable{ false };
-        bool _isDependencyProperty{ false };
-        bool _isReadOnly{ false };
-        ::winrt::hstring _name;
-        ::winrt::hstring _targetTypeName;
-        ::winrt::hstring _typeName;
-        std::shared_ptr<XamlTypeInfoProvider> _provider;
-    };
-}
-");
+            this.Write("::IXamlMember>\r\n    {\r\n        explicit XamlMember(\r\n            std::shared_ptr<" +
+                    "XamlTypeInfoProvider> const& provider, \r\n            ::winrt::hstring const& nam" +
+                    "e, \r\n            ::winrt::hstring const& typeName);\r\n\r\n        typedef IInspecta" +
+                    "ble(*PropertyGetterFn)(IInspectable const& instance);\r\n        typedef void(*Pro" +
+                    "pertySetterFn)(IInspectable const& instance, IInspectable const& value);\r\n\r\n    " +
+                    "    PropertyGetterFn _getter{};\r\n        PropertySetterFn _setter{};\r\n\r\n        " +
+                    "// IXamlMember\r\n        bool IsAttachable() const;\r\n        bool IsDependencyPro" +
+                    "perty() const;\r\n        bool IsReadOnly() const;\r\n        ::winrt::hstring Name(" +
+                    ") const;\r\n        IXamlType TargetType() const;\r\n        IXamlType Type() const;" +
+                    "\r\n        IInspectable GetValue(IInspectable const& instance) const;\r\n        vo" +
+                    "id SetValue(IInspectable const& instance, IInspectable const& value);\r\n\r\n       " +
+                    " // Additional Setters\r\n        void TargetTypeName(::winrt::hstring const& valu" +
+                    "e);\r\n        void IsAttachable(bool value);\r\n        void IsDependencyProperty(b" +
+                    "ool value);\r\n        void IsReadOnly(bool value);\r\n\r\n    private:\r\n        bool " +
+                    "_isAttachable{ false };\r\n        bool _isDependencyProperty{ false };\r\n        b" +
+                    "ool _isReadOnly{ false };\r\n        ::winrt::hstring _name;\r\n        ::winrt::hst" +
+                    "ring _targetTypeName;\r\n        ::winrt::hstring _typeName;\r\n        std::shared_" +
+                    "ptr<XamlTypeInfoProvider> _provider;\r\n    };\r\n}\r\n#endif // WINRT_XAML_SKIP_BODY\r" +
+                    "\n\r\n#ifdef WINRT_XAML_EXPORT\r\n#undef WINRT_XAML_EXPORT\r\n#endif\r\n#ifdef WINRT_XAML" +
+                    "_SKIP_BODY\r\n#undef WINRT_XAML_SKIP_BODY\r\n#endif\r\n\r\n");
             return this.GenerationEnvironment.ToString();
         }
     }

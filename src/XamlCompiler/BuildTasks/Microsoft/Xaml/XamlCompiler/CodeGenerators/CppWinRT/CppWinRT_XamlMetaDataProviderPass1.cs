@@ -32,23 +32,25 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 //------------------------------------------------------------------------------
 #pragma once
 
-#include <functional>
-#include <map>
-#include <vector>
-#include <unknwn.h>
-
-// Undefine GetCurrentTime macro to prevent
-// conflict with Storyboard::GetCurrentTime
-#undef GetCurrentTime
-
-#include ""XamlTypeInfo.xaml.g.h""
-#include ""XamlMetaDataProvider.g.h""
-
-/*
-    If the file above was not generated, you may be missing a declaration
-    for the XamlMetaDataProvider runtimeclass in your IDL.
-
-    namespace ");
+");
+  if (ProjectInfo.UseCppWinRTNamedModules) { 
+            this.Write("import std;\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTNamedModuleImportDirective(ProjectInfo.RootNamespace)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTNamedModuleImportDirective(KnownNamespaces.XamlMarkup)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTNamedModuleImportDirective(KnownNamespaces.WindowsXamlInterop)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTModuleCompatibilityDefinition()));
+            this.Write("\r\n");
+  } else { 
+            this.Write("#include <functional>\r\n#include <map>\r\n#include <memory>\r\n#include <vector>\r\n#inc" +
+                    "lude <unknwn.h>\r\n\r\n// Undefine GetCurrentTime macro to prevent\r\n// conflict with" +
+                    " Storyboard::GetCurrentTime\r\n#undef GetCurrentTime\r\n");
+  } 
+            this.Write("#include \"XamlTypeInfo.xaml.g.h\"\r\n#include \"XamlMetaDataProvider.g.h\"\r\n\r\n/*\r\n    " +
+                    "If the file above was not generated, you may be missing a declaration\r\n    for t" +
+                    "he XamlMetaDataProvider runtimeclass in your IDL.\r\n\r\n    namespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(ProjectInfo.RootNamespace));
             this.Write("\r\n    {\r\n        runtimeclass XamlMetaDataProvider : ");
             this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlMarkup));
