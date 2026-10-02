@@ -394,6 +394,65 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         [TestMethod]
         [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
+        public void CollectionMovePreservesInsertionFailureAndRecovers()
+        {
+            WithCollectionMoveChange(true, () =>
+            {
+                UIExecutor.Execute(() =>
+                {
+                    const int callbackHResult = unchecked((int)0x8004A508);
+                    const string callbackMessage = "CollectionMove insertion callback failure";
+                    var source = new MoveReadTrackingSource(4);
+                    var viewSource = new CollectionViewSource { Source = source };
+                    var view = viewSource.View;
+                    view.MoveCurrentToPosition(-1);
+                    object[] finalItems;
+                    var initialItems = Enumerable.Range(0, 4).Select(i => (object)("Item " + i)).ToArray();
+                    var moveNotifications = CreateMoveNotifications(initialItems, 0, 2, 2, out finalItems);
+                    var expected = moveNotifications.Take(3).Concat(new[]
+                    {
+                        new MoveNotification(CollectionChange.Reset, 0, finalItems)
+                    }).ToArray();
+                    int failingCallbacks = 0;
+                    VectorChangedEventHandler<object> handler = (sender, args) =>
+                    {
+                        if (args.CollectionChange == CollectionChange.ItemInserted)
+                        {
+                            failingCallbacks++;
+                            throw new COMException(callbackMessage, callbackHResult);
+                        }
+                    };
+
+                    using (var observer = new MoveNotificationObserver(view, () => viewSource.View, source, expected, finalItems, false))
+                    {
+                        view.VectorChanged += handler;
+                        try
+                        {
+                            Exception failure = VerifyMoveFailure(() => source.MoveRange(0, 2, 2), callbackHResult);
+                            Verify.IsTrue(failure.Message.Contains(callbackMessage));
+                            Verify.AreEqual(1, failingCallbacks);
+                            observer.VerifyComplete();
+                        }
+                        finally
+                        {
+                            view.VectorChanged -= handler;
+                        }
+                    }
+
+                    object[] restoredItems;
+                    var subsequentNotifications = CreateMoveNotifications(finalItems, 2, 0, 2, out restoredItems);
+                    using (var observer = new MoveNotificationObserver(view, () => viewSource.View, source, subsequentNotifications, restoredItems, true))
+                    {
+                        source.MoveRange(2, 0, 2);
+                        observer.VerifyComplete();
+                    }
+                });
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
         public void CollectionMoveRejectsInvalidArgumentsAndRecovers()
         {
             WithCollectionMoveChange(true, () =>
@@ -846,6 +905,55 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
                     {
                         source.MoveRange(2, 0, 1);
                         observer.VerifyComplete();
+                    }
+                });
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Data:XamlOptionalChanges", "{CollectionMoveNotifications:true}")]
+        public void CollectionMovePropagatesRecoveryResetFailureWithoutPriorError()
+        {
+            WithCollectionMoveChange(true, () =>
+            {
+                UIExecutor.Execute(() =>
+                {
+                    const int resetHResult = unchecked((int)0x8004A507);
+                    const string resetMessage = "CollectionMove recovery Reset failure";
+                    var source = new MoveReadTrackingSource(3);
+                    var viewSource = new CollectionViewSource { Source = source };
+                    var view = viewSource.View;
+                    view.MoveCurrentToPosition(-1);
+                    var finalItems = new object[] { "Item 2", "Item 1", "Item 0" };
+                    var expected = new[] { new MoveNotification(CollectionChange.Reset, 0, finalItems) };
+                    int resetCallbacks = 0;
+                    VectorChangedEventHandler<object> handler = (sender, args) =>
+                    {
+                        Verify.AreEqual(CollectionChange.Reset, args.CollectionChange);
+                        resetCallbacks++;
+                        throw new COMException(resetMessage, resetHResult);
+                    };
+                    using (var observer = new MoveNotificationObserver(view, () => viewSource.View, source, expected, finalItems, false))
+                    {
+                        view.VectorChanged += handler;
+                        try
+                        {
+                            source.OnCountRead = () =>
+                            {
+                                source.OnCountRead = null;
+                                source.MoveRange(0, 1, 1);
+                            };
+                            Exception failure = VerifyMoveFailure(() => source.MoveRange(0, 2, 1), resetHResult);
+                            Verify.IsTrue(failure.Message.Contains(resetMessage));
+                            Verify.AreEqual(1, resetCallbacks);
+                            observer.VerifyComplete();
+                        }
+                        finally
+                        {
+                            source.OnCountRead = null;
+                            view.VectorChanged -= handler;
+                        }
                     }
                 });
             });
