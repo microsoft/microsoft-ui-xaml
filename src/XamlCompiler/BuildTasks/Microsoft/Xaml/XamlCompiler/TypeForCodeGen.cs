@@ -212,14 +212,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             if (parameterType.IsByRef)
             {
                 Type target = parameterType.GetElementType();
-                return target.IsArray
-                    ? $"::winrt::com_array<{cppName(target.GetElementType())}>& {parameter.Name}"
-                    : $"{cppName(target)}& {parameter.Name}";
+                return $"{cppName(target)}& {parameter.Name}";
             }
 
             if (parameterType.IsArray)
             {
-                string element = cppName(parameterType.GetElementType());
+                string element = XamlSchemaCodeInfo.GetCppWinRTArrayElementName(parameterType.GetElementType(), true);
                 return parameter.IsOut
                     ? $"::winrt::array_view<{element}> {parameter.Name}"
                     : $"::winrt::array_view<{element} const> {parameter.Name}";

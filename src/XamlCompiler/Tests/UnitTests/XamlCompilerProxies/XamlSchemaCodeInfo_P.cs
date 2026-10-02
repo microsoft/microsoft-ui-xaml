@@ -44,9 +44,9 @@ namespace Win8Xaml.CompilerProxies
 
         public object Instance { get { return _instance; } }
 
-        public static string GetFullGenericNestedName(Type type, string programmingLanguage)
+        public static string GetFullGenericNestedName(Type type, string programmingLanguage, bool globalized = false)
         {
-            object[] args = new object[] { type, programmingLanguage, false };
+            object[] args = new object[] { type, programmingLanguage, globalized };
             string result = (String)_getFullGenericNestedName.Invoke(null, args);
             return result;
         }

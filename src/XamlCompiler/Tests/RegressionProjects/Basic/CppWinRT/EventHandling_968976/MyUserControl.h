@@ -22,12 +22,21 @@ namespace winrt::EventHandling_968976::implementation
         void TheThirdEvent(winrt::event_token const& token) noexcept;
         winrt::event_token TheFourthEvent(EventHandling_968976::MyFourthEvent const& handler);
         void TheFourthEvent(winrt::event_token const& token) noexcept;
+        winrt::event_token GuidCharPass(EventHandling_968976::GuidCharPassEvent const& handler);
+        void GuidCharPass(winrt::event_token const& token) noexcept;
+        winrt::event_token GuidCharFill(EventHandling_968976::GuidCharFillEvent const& handler);
+        void GuidCharFill(winrt::event_token const& token) noexcept;
+        winrt::event_token GuidCharReceive(EventHandling_968976::GuidCharReceiveEvent const& handler);
+        void GuidCharReceive(winrt::event_token const& token) noexcept;
 
     private:
         winrt::event<EventHandling_968976::MyFirstEvent> m_firstEvent;
         winrt::event<EventHandling_968976::MySecondEvent> m_secondEvent;
         winrt::event<EventHandling_968976::MyThirdEvent> m_thirdEvent;
         winrt::event<EventHandling_968976::MyFourthEvent> m_fourthEvent;
+        winrt::event<EventHandling_968976::GuidCharPassEvent> m_guidCharPassEvent;
+        winrt::event<EventHandling_968976::GuidCharFillEvent> m_guidCharFillEvent;
+        winrt::event<EventHandling_968976::GuidCharReceiveEvent> m_guidCharReceiveEvent;
     };
 }
 

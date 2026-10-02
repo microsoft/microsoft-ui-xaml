@@ -10,7 +10,7 @@
 
     A consuming project supplies its identity (ProjectGuid / ProjectName / RootNamespace)
     and its desktop app-model properties, imports Microsoft.Cpp.Default.props, then imports
-    this file and, at the end, RuntimeComponentPostamble.cpp.props. The app-model properties
+    this file and, at the end, AppPostamble.cpp.props. The app-model properties
     have to live in the consuming project because they must be set before
     Microsoft.Cpp.Default.props, which is also what first makes $(CommonFilesPath) - and
     therefore this file - reachable.

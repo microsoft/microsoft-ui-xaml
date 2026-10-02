@@ -9,5 +9,23 @@ namespace MetadataTestbedCppWinRT
         // Looked up by name through the generated IXamlMetadataProvider, so it has to be
         // part of the projected surface the XAML compiler emits type info for.
         Object TestProperty{ get; };
+        Int32[] MyProperty;
+    }
+
+    [bindable]
+    runtimeclass ArrayProperties
+    {
+        ArrayProperties();
+        Int32[] Int32Values;
+        UInt16[] UInt16Values;
+        String[] StringValues;
+        Guid[] GuidValues;
+        Char[] CharValues;
+        Object[] ObjectValues;
+        Windows.Foundation.Point[] PointValues;
+        Int32[] ReadOnlyValues{ get; };
+
+        static Int32[] GetAttachedValues(Object target);
+        static void SetAttachedValues(Object target, Int32[] value);
     }
 }

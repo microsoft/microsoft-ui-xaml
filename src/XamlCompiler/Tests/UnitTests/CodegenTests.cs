@@ -3,6 +3,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -451,6 +452,52 @@ namespace UnitTests
         public void Codegen_MetadataTestbedCppWinRT()
         {
             DiffCodegen(@"Features\Metadata\MetadataTestbedCppWinRT\generated");
+        }
+
+        [TestMethod]
+        public void Codegen_MetadataTestbedCppWinRTIncremental()
+        {
+            DiffCodegen(@"Features\Metadata\MetadataTestbedCppWinRT\Incremental\generated");
+        }
+
+        [TestMethod]
+        public void Metadata_ArrayPropertiesCppWinRT()
+        {
+            RunArrayMetadataTests("MetadataTestbedCppWinRT");
+        }
+
+        [TestMethod]
+        public void Metadata_ArrayPropertiesCppWinRTIncremental()
+        {
+            RunArrayMetadataTests("MetadataTestbedCppWinRTIncremental");
+        }
+
+        private static void RunArrayMetadataTests(string projectName)
+        {
+            string executable = Path.Combine(CodegenRoot.Value,
+                @"CompilerTests\Features\Metadata\MetadataTestbedCppWinRT", projectName, "MetadataTestbedCppWinRT.exe");
+            Assert.IsTrue(File.Exists(executable), $"Build {projectName} before running this test: {executable}");
+
+            using (var process = Process.Start(new ProcessStartInfo(executable, "--test-array-metadata")
+            {
+                WorkingDirectory = Path.GetDirectoryName(executable),
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            }))
+            {
+                var output = process.StandardOutput.ReadToEndAsync();
+                var error = process.StandardError.ReadToEndAsync();
+                if (!process.WaitForExit(60000))
+                {
+                    process.Kill();
+                    process.WaitForExit();
+                    Assert.Fail($"{projectName} array metadata tests timed out.\n{output.Result}\n{error.Result}");
+                }
+                Assert.AreEqual(0, process.ExitCode, $"{projectName}\n{output.Result}\n{error.Result}");
+                StringAssert.Contains(output.Result, "Array metadata tests passed.");
+            }
         }
 
         [TestMethod]

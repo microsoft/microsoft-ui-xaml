@@ -408,8 +408,31 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             return true;
         }
 
+        public static String GetCppWinRTArrayElementName(Type elementType, bool globalized, bool setAirity = true)
+        {
+            // The legacy scalar aliases cannot be converted element-wise by array_view.
+            switch (elementType.FullName)
+            {
+                case "System.Guid":
+                    return "::winrt::guid";
+                case "System.Char":
+                case "System.Char16":
+                    return "char16_t";
+                default:
+                    return GetFullGenericNestedName(elementType, ProgrammingLanguage.CppWinRT, globalized, setAirity);
+            }
+        }
+
         public static String GetFullGenericNestedName(Type type, string programmingLanguage, bool globalized, bool setAirity)
         {
+            if (programmingLanguage == ProgrammingLanguage.CppWinRT &&
+                type.IsArray && type.GetArrayRank() == 1 && !type.GetElementType().IsArray)
+            {
+                // Array values own their storage. Parameter direction is handled by CppWinRTDeclaration.
+                string elementName = GetCppWinRTArrayElementName(type.GetElementType(), globalized, setAirity);
+                return $"::winrt::com_array<{elementName}>";
+            }
+
             string arraySuffix;
             // if it isn't an array this does nothing.
             type = GetArrayElementType(type, out arraySuffix, programmingLanguage);

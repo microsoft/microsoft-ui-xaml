@@ -21,6 +21,89 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void Schema_CppWinRTArrayTypeNames()
+        {
+            var elementNames = new Dictionary<Type, string>
+            {
+                { typeof(int), "int32_t" },
+                { typeof(ushort), "uint16_t" },
+                { typeof(string), "::winrt::hstring" },
+                { typeof(object), "::winrt::Windows::Foundation::IInspectable" },
+                { typeof(TimeSpan), "::winrt::Windows::Foundation::TimeSpan" },
+            };
+
+            foreach (bool globalized in new[] { false, true })
+            {
+                foreach (var entry in elementNames)
+                {
+                    Assert.AreEqual(entry.Value,
+                        XamlSchemaCodeInfo.GetFullGenericNestedName(entry.Key, "CppWinRT", globalized));
+                    Assert.AreEqual($"::winrt::com_array<{entry.Value}>",
+                        XamlSchemaCodeInfo.GetFullGenericNestedName(entry.Key.MakeArrayType(), "CppWinRT", globalized));
+                }
+            }
+        }
+
+        [TestMethod]
+        public void Schema_CppWinRTArrayScalarAliases()
+        {
+            foreach (bool globalized in new[] { false, true })
+            {
+                Assert.AreEqual("GUID",
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(Guid), "CppWinRT", globalized));
+                Assert.AreEqual("::winrt::com_array<::winrt::guid>",
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(Guid[]), "CppWinRT", globalized));
+                Assert.AreEqual("wchar_t",
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(char), "CppWinRT", globalized));
+                Assert.AreEqual("::winrt::com_array<char16_t>",
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(char[]), "CppWinRT", globalized));
+            }
+        }
+
+        [TestMethod]
+        public void Schema_CppWinRTArrayElementQualification()
+        {
+            foreach (bool globalized in new[] { false, true })
+            {
+                string prefix = globalized ? "::winrt::" : "";
+                string elementName = prefix + "System::Collections::Generic::List<int32_t>";
+                Assert.AreEqual(elementName,
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(List<int>), "CppWinRT", globalized));
+                Assert.AreEqual($"::winrt::com_array<{elementName}>",
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(List<int>[]), "CppWinRT", globalized));
+            }
+        }
+
+        [TestMethod]
+        public void Schema_ArrayTypeNamesPreserveOtherLanguages()
+        {
+            var expectedNames = new[]
+            {
+                new { Language = "WinRT", Int32 = "Int32[]", String = "String[]" },
+                new { Language = "C#", Int32 = "global::System.Int32[]", String = "global::System.String[]" },
+                new { Language = "VB", Int32 = "Global.System.Int32()", String = "Global.System.String()" },
+                new { Language = "C++", Int32 = "::default::int32[]", String = "::Platform::String[]" },
+            };
+
+            foreach (var entry in expectedNames)
+            {
+                Assert.AreEqual(entry.Int32,
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(int[]), entry.Language, true));
+                Assert.AreEqual(entry.String,
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(string[]), entry.Language, true));
+            }
+        }
+
+        [TestMethod]
+        public void Schema_CppWinRTArrayTypeNamesDoNotFlattenUnsupportedShapes()
+        {
+            Assert.AreEqual("int32_t[,]",
+                XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(int[,]), "CppWinRT", true));
+            Assert.AreEqual("int32_t[][]",
+                XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(int[][]), "CppWinRT", true));
+        }
+
+        [TestMethod]
         public void Thrown_XamlSchemaError_AmbiguousCollectionAdd()
         {
             string xaml = @"
