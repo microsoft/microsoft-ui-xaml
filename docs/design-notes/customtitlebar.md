@@ -5,6 +5,9 @@
 - [Under the hood](#under-the-hood)
   - [Glass window: concept](#glass-window-concept)
   - [Glass window: implementation](#glass-window-implementation)
+  - [Client area and top border](#client-area-and-top-border)
+    - [Optional Window top-border fix](#optional-window-top-border-fix)
+    - [Windows 10 frame workaround](#windows-10-frame-workaround)
   - [Min/Max/Close buttons and dragging](#minmaxclose-buttons-and-dragging)
   - [NCHITTEST behavior](#nchittest-behavior)
   - [Files](#files)
@@ -56,6 +59,60 @@ User code can create any number of glass windows for multiple drag regions. The 
 and uses [`SetWindowRgn`](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowrgn) to cut holes
 and allow interactive controls like buttons to be placed in them. See `Microsoft.UI.Input.InputNonClientPointerSource` implementation
 for details.
+
+### Client area and top border
+
+`DesktopWindowImpl`, the implementation of `Window`, hosts XAML in a child `DesktopChildSiteBridge` HWND.
+With `Window.ExtendsContentIntoTitleBar` enabled and the HWND not maximized, WinUI leaves one physical pixel above that child.
+This one-pixel offset can remain in fullscreen and borderless presenters. In a restored window with a native frame,
+it keeps XAML from covering the top border; it does not limit the resize target to one pixel.
+On Windows 10 1809, disabling `Window.ExtendsContentIntoTitleBar` while fullscreen or borderless can also leave the child at its
+previous offset until a later frame or size change.
+The fullscreen gap is tracked separately in [#12138](https://github.com/microsoft/microsoft-ui-xaml/issues/12138).
+
+#### Optional Window top-border fix
+
+The optional change `FixWindowTopBorder` fixes how that existing row is drawn on Windows 10 when the app uses
+`Window.ExtendsContentIntoTitleBar`. It preserves the existing geometry: it does not move or resize XAML content,
+align the AppWindow entry point, or change fullscreen behavior.
+Direct `AppWindow.TitleBar.ExtendsContentIntoTitleBar` assignments remain outside its scope.
+
+The optional change is disabled by default and must be enabled before starting the XAML application.
+The plan is to make it the default behavior with an opt-out in the future.
+Test-only optional-change resets clear the process flags, not existing HWND margins. Tests must close their
+custom-titlebar windows before resetting the flags. The production initialization restriction is unchanged.
+
+#### Windows 10 frame workaround
+
+On Windows 10, leaving a row above XAML is not enough: the existing background erase can cover it,
+and the top border can differ in color from the side borders. The same opt-in enables a DWM frame workaround
+and paints the row separately from the normal background. High Contrast uses the system window-frame color instead.
+
+The workaround calls `DwmExtendFrameIntoClientArea` with a top margin based on the caption/resize-frame height,
+following Windows Terminal's
+[`_UpdateFrameMargins` workaround](https://github.com/microsoft/terminal/blob/0b94a7ea041a0b67f13ac281a645a82e077e4578/src/cascadia/WindowsTerminal/NonClientIslandWindow.cpp#L884-L943).
+On Windows 10 1809, extending only one pixel left the inactive top row untinted; the larger margin made it match
+the side borders. This is an observed result and an implementation precedent, not a claim about the minimum
+working margin. The larger margin does not move XAML farther down.
+
+**Compatibility:** This workaround can change all four border colors, even though only the top margin is nonzero.
+WinUI takes ownership of the DWM margin set and clears it when the reserved row is removed, such as when
+`Window.ExtendsContentIntoTitleBar` is disabled or the window is maximized. WinUI also clears its margins and uses the normal
+background erase when a fullscreen or borderless presenter removes the HWND's native frame, even if the
+XAML offset remains one pixel. A style change updates these margins without requiring a size change.
+The eligibility check also excludes the FullScreen presenter and an OverlappedPresenter with `HasBorder` false.
+A presenter-change notification rechecks the settled presenter state. Restoring the native frame reapplies
+the workaround. Earlier app-supplied margins are not restored because DWM provides no getter.
+
+The eligibility query is best-effort. If an AppWindow or presenter query fails, WinUI logs the HRESULT
+and uses the normal background erase. A margin refresh then requests clearing any WinUI-owned margins.
+If the DWM update fails, WinUI traces that failure and retains its last successfully applied margin value.
+
+Closing detaches WindowChrome from its DesktopWindow before raising `VisibilityChanged(false)`, while the
+HWND is still alive. Detached chrome is not eligible for the native top-border treatment. A synchronous
+background erase during that notification fills the complete client area with the ordinary background;
+a margin update clears any WinUI-owned margins without querying AppWindow.
+
 ### Min/Max/Close buttons and dragging
 
 The glass window captures the input to perform the drag operation when mouse drag happens. When a drag operation 
@@ -107,3 +164,5 @@ heavy lifting of creating glass windows, caption button windows and handling and
   * Dxaml layer: [`dxaml/xcp/dxaml/lib/WindowChrome_Partial.cpp`](../../dxaml/xcp/dxaml/lib/WindowChrome_Partial.cpp)
   * Core layer: [`dxaml/xcp/components/WindowChrome/CWindowChrome.cpp`](../../dxaml/xcp/components/WindowChrome/CWindowChrome.cpp)
 * InputNonClientPointerSource: See the Windows App SDK documentation for this API.
+* Top-level HWND and window messages:
+  [`dxaml/xcp/dxaml/lib/DesktopWindowImpl.cpp`](../../dxaml/xcp/dxaml/lib/DesktopWindowImpl.cpp)

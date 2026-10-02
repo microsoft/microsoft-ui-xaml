@@ -29,6 +29,7 @@ namespace OptionalChangeState
     constexpr int BitIndex_DefaultStyleOptimizations = 2;
     constexpr int BitIndex_DeferContextFlyoutInit = 3;
     constexpr int BitIndex_GamepadKeyRouting = 4;
+    constexpr int BitIndex_FixWindowTopBorder = 5;
 
     inline bool IsOptionalChangeEnabled(int bitIndex)
     {
@@ -59,5 +60,10 @@ namespace OptionalChangeState
     inline bool IsGamepadKeyRoutingEnabled()
     {
         return IsOptionalChangeEnabled(BitIndex_GamepadKeyRouting);
+    }
+
+    inline bool IsWindowTopBorderFixEnabled()
+    {
+        return IsOptionalChangeEnabled(BitIndex_FixWindowTopBorder);
     }
 }

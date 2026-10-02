@@ -7,6 +7,7 @@
 #include <cmath>
 // Used to subclass the test HWND and inspect its native sizing request.
 #include <commctrl.h>
+#include <dwmapi.h>
 #include <limits>
 #include <XamlTailored.h>
 #include <TestEvent.h>
@@ -15,17 +16,107 @@
 #include <ControlHelper.h>
 #include <WindowAutoCloser.h>
 #include <microsoft.ui.xaml.window.h> // for IWindowNative
+#include <wrl.h>
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #pragma comment(lib, "comctl32.lib")
+#pragma comment(lib, "dwmapi.lib")
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace Window {
+
+namespace
+{
+    HWND GetWindowHandle(xaml::Window^ window)
+    {
+        Microsoft::WRL::ComPtr<IWindowNative> windowNative;
+        VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(window)->QueryInterface(IID_PPV_ARGS(&windowNative)));
+        VERIFY_IS_NOT_NULL(windowNative.Get());
+
+        HWND windowHandle = nullptr;
+        VERIFY_SUCCEEDED(windowNative->get_WindowHandle(&windowHandle));
+        VERIFY_IS_TRUE(windowHandle != nullptr);
+        return windowHandle;
+    }
+
+    HWND FindDesktopChildSiteBridge(HWND parentWindow)
+    {
+        HWND bridgeWindow = nullptr;
+        ::EnumChildWindows(
+            parentWindow,
+            [](HWND childWindow, LPARAM result) -> BOOL
+            {
+                wchar_t className[128]{};
+                if (::GetClassNameW(childWindow, className, ARRAYSIZE(className)) > 0 &&
+                    wcscmp(className, L"Microsoft.UI.Content.DesktopChildSiteBridge") == 0)
+                {
+                    *reinterpret_cast<HWND*>(result) = childWindow;
+                    return FALSE;
+                }
+
+                return TRUE;
+            },
+            reinterpret_cast<LPARAM>(&bridgeWindow));
+
+        return bridgeWindow;
+    }
+
+    int GetDesktopChildSiteBridgeTopOffset(HWND parentWindow)
+    {
+        const HWND bridgeWindow = FindDesktopChildSiteBridge(parentWindow);
+        VERIFY_IS_TRUE(bridgeWindow != nullptr, L"The Window should host XAML in a DesktopChildSiteBridge.");
+
+        POINT clientOrigin{};
+        VERIFY_IS_TRUE(!!::ClientToScreen(parentWindow, &clientOrigin));
+
+        RECT bridgeRect{};
+        VERIFY_IS_TRUE(!!::GetWindowRect(bridgeWindow, &bridgeRect));
+        return bridgeRect.top - clientOrigin.y;
+    }
+
+    std::pair<COLORREF, COLORREF> EraseWindowTopRows(HWND windowHandle)
+    {
+        // Capture WM_ERASEBKGND without depending on screen occlusion or DWM timing.
+        // This checks WinUI's painting, not the final DWM-composited border color.
+        const HDC screenDC = ::GetDC(nullptr);
+        VERIFY_IS_TRUE(screenDC != nullptr);
+        auto releaseScreenDC = wil::scope_exit([&]() { ::ReleaseDC(nullptr, screenDC); });
+        wil::unique_hdc memoryDC(::CreateCompatibleDC(screenDC));
+        VERIFY_IS_TRUE(memoryDC != nullptr);
+
+        BITMAPINFO bitmapInfo{};
+        bitmapInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        bitmapInfo.bmiHeader.biWidth = 1;
+        bitmapInfo.bmiHeader.biHeight = -2;
+        bitmapInfo.bmiHeader.biPlanes = 1;
+        bitmapInfo.bmiHeader.biBitCount = 32;
+        bitmapInfo.bmiHeader.biCompression = BI_RGB;
+        void* pixels = nullptr;
+        wil::unique_hbitmap bitmap(::CreateDIBSection(screenDC, &bitmapInfo, DIB_RGB_COLORS, &pixels, nullptr, 0));
+        VERIFY_IS_TRUE(bitmap != nullptr);
+        VERIFY_IS_TRUE(pixels != nullptr);
+        const HGDIOBJ previousBitmap = ::SelectObject(memoryDC.get(), bitmap.get());
+        VERIFY_IS_TRUE(previousBitmap != nullptr && previousBitmap != HGDI_ERROR);
+        auto restoreBitmap = wil::scope_exit([&]() { ::SelectObject(memoryDC.get(), previousBitmap); });
+
+        VERIFY_IS_TRUE(!!::SetPixelV(memoryDC.get(), 0, 0, RGB(255, 0, 255)));
+        VERIFY_IS_TRUE(!!::SetPixelV(memoryDC.get(), 0, 1, RGB(255, 0, 255)));
+        VERIFY_ARE_EQUAL(static_cast<LRESULT>(1),
+            ::SendMessageW(windowHandle, WM_ERASEBKGND, reinterpret_cast<WPARAM>(memoryDC.get()), 0));
+
+        const COLORREF top = ::GetPixel(memoryDC.get(), 0, 0);
+        const COLORREF below = ::GetPixel(memoryDC.get(), 0, 1);
+        VERIFY_ARE_NOT_EQUAL(CLR_INVALID, top);
+        VERIFY_ARE_NOT_EQUAL(CLR_INVALID, below);
+        return { top, below };
+    }
+}
 
     void LogWindowGeometry(const wchar_t* label, HWND windowHandle, xaml::Window^ window)
     {
@@ -279,6 +370,238 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             auto systemBackdropBrush = compositionSupportsSystemBackdrop->SystemBackdrop;
             VERIFY_IS_NOT_NULL(systemBackdropBrush);
         });
+    }
+
+    void WindowIntegrationTests::WindowTopBorderPainting()
+    {
+        VerifyWindowTopBorderPainting(true);
+    }
+
+    void WindowIntegrationTests::WindowTopBorderPaintingPreservesCompatBehavior()
+    {
+        VerifyWindowTopBorderPainting(false);
+    }
+
+    void WindowIntegrationTests::WindowTopBorderEraseDuringClose()
+    {
+        TestCleanupWrapper cleanup;
+        WEX::Common::String optionalChangesValue;
+        VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"XamlOptionalChanges", optionalChangesValue));
+        const bool isChangeEnabled = optionalChangesValue.CompareNoCase(L"FixWindowTopBorder:true") == 0;
+        VERIFY_ARE_EQUAL(isChangeEnabled,
+            xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::FixWindowTopBorder));
+
+        HIGHCONTRASTW highContrast = { sizeof(HIGHCONTRASTW) };
+        VERIFY_IS_TRUE(!!::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, 0));
+        const bool isHighContrast = (highContrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
+
+        for (const bool useAppWindow : { false, true })
+        {
+            LOG_OUTPUT(L"Close-time erase: ECITB via %s; fix enabled: %d",
+                useAppWindow ? L"AppWindow" : L"Window", isChangeEnabled);
+            HWND windowHandle = nullptr;
+            COLORREF backgroundColor = CLR_INVALID;
+            bool closeInProgress = false;
+            int closingVisibilityNotifications = 0;
+            WindowAutoCloser window;
+            auto visibilityChangedRegistration = CreateSafeEventRegistration(xaml::Window, VisibilityChanged);
+
+            RunOnUIThread([&]()
+            {
+                window.Attach(ref new xaml::Window());
+                window->Content = ref new xaml_controls::Grid();
+                if (useAppWindow)
+                {
+                    window->AppWindow->TitleBar->ExtendsContentIntoTitleBar = true;
+                }
+                else
+                {
+                    window->ExtendsContentIntoTitleBar = true;
+                }
+                window->Activate();
+                windowHandle = GetWindowHandle(window.get());
+                // Close clears Content before erasing, so the application theme determines the background.
+                backgroundColor = isHighContrast ? ::GetSysColor(COLOR_WINDOW) :
+                    (xaml::Application::Current->RequestedTheme == xaml::ApplicationTheme::Light ?
+                        RGB(255, 255, 255) : RGB(0, 0, 0));
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(!!::IsWindowVisible(windowHandle));
+                VERIFY_IS_FALSE(!!::IsZoomed(windowHandle));
+                VERIFY_IS_FALSE(!!::IsIconic(windowHandle));
+                VERIFY_ARE_EQUAL(useAppWindow ? 0 : 1, GetDesktopChildSiteBridgeTopOffset(windowHandle));
+                visibilityChangedRegistration.Attach(window.get(),
+                    ref new wf::TypedEventHandler<Platform::Object^, xaml::WindowVisibilityChangedEventArgs^>(
+                        [&](Platform::Object^, xaml::WindowVisibilityChangedEventArgs^ e)
+                        {
+                            VERIFY_IS_FALSE(e->Visible);
+                            VERIFY_IS_TRUE(closeInProgress);
+                            ++closingVisibilityNotifications;
+                            VERIFY_IS_TRUE(!!::IsWindow(windowHandle), L"The HWND is still alive during the notification.");
+                            const auto colors = EraseWindowTopRows(windowHandle);
+                            VERIFY_ARE_EQUAL(backgroundColor, colors.first, L"Closing uses ordinary background erase, including the top row.");
+                            VERIFY_ARE_EQUAL(backgroundColor, colors.second, L"Closing erases the background below the top row.");
+
+                            // Exercise the other native-eligibility caller without changing window styles.
+                            const DWORD style = static_cast<DWORD>(::GetWindowLongPtrW(windowHandle, GWL_STYLE));
+                            STYLESTRUCT styles = { style, style };
+                            ::SendMessageW(windowHandle, WM_STYLECHANGED, static_cast<WPARAM>(GWL_STYLE),
+                                reinterpret_cast<LPARAM>(&styles));
+                        }));
+
+                closeInProgress = true;
+                window.Close();
+                closeInProgress = false;
+                VERIFY_ARE_EQUAL(1, closingVisibilityNotifications);
+                VERIFY_IS_FALSE(!!::IsWindow(windowHandle), L"Close must destroy the HWND after the notification.");
+                visibilityChangedRegistration.Detach();
+            });
+        }
+    }
+
+    void WindowIntegrationTests::VerifyWindowTopBorderPainting(bool expectedChangeEnabled)
+    {
+        TestCleanupWrapper cleanup;
+        const bool isChangeEnabled = xaml_settings::XamlOptionalChanges::IsChangeEnabled(
+            xaml_settings::XamlChangeId::FixWindowTopBorder);
+        VERIFY_ARE_EQUAL(expectedChangeEnabled, isChangeEnabled);
+        WEX::Common::String beforeActivationValue;
+        VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"ECITBBeforeActivation", beforeActivationValue));
+        const bool ecitbBeforeActivation = beforeActivationValue.CompareNoCase(L"true") == 0;
+
+        HIGHCONTRASTW highContrast = { sizeof(HIGHCONTRASTW) };
+        VERIFY_IS_TRUE(!!::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, 0));
+        const bool isHighContrast = (highContrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
+        const COLORREF borderColor = isHighContrast ? ::GetSysColor(COLOR_WINDOWFRAME) : RGB(0, 0, 0);
+
+        for (const bool useAppWindow : { false, true })
+        {
+            LOG_OUTPUT(L"ECITB entry point: %s; fix enabled: %d", useAppWindow ? L"AppWindow" : L"Window", isChangeEnabled);
+            WindowAutoCloser window;
+            HWND windowHandle = nullptr;
+            const COLORREF backgroundColor = isHighContrast ? ::GetSysColor(COLOR_WINDOW) : RGB(255, 255, 255);
+            bool needsDwmWorkaround = false;
+            auto setECITBOnUIThread = [&](bool value)
+            {
+                if (useAppWindow)
+                {
+                    window->AppWindow->TitleBar->ExtendsContentIntoTitleBar = value;
+                }
+                else
+                {
+                    window->ExtendsContentIntoTitleBar = value;
+                }
+            };
+            RunOnUIThread([&]()
+            {
+                window.Attach(ref new xaml::Window());
+                auto content = ref new xaml_controls::Grid();
+                content->RequestedTheme = xaml::ElementTheme::Light;
+                window->Content = content;
+                if (ecitbBeforeActivation)
+                {
+                    setECITBOnUIThread(true);
+                }
+                window->Activate();
+                windowHandle = GetWindowHandle(window.get());
+
+                // Windows 11 supports this getter; older DWM returns E_INVALIDARG.
+                // Match the product's capability probe rather than a specific OS build.
+                UINT borderThickness = 0;
+                const HRESULT hr = ::DwmGetWindowAttribute(windowHandle, DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
+                    &borderThickness, sizeof(borderThickness));
+                VERIFY_IS_TRUE(SUCCEEDED(hr) || hr == E_INVALIDARG);
+                needsDwmWorkaround = hr == E_INVALIDARG;
+                LOG_OUTPUT(L"DWM top-border workaround required: %d", needsDwmWorkaround);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            auto verifyPainting = [&](int expectedOffset, bool hasNativeBorder)
+            {
+                RunOnUIThread([&]()
+                {
+                    const int actualOffset = GetDesktopChildSiteBridgeTopOffset(windowHandle);
+                    LOG_OUTPUT(L"Top-border state: Window ECITB=%d AppWindow ECITB=%d presenter=%d nativeBorder=%d expectedOffset=%d actualOffset=%d",
+                        window->ExtendsContentIntoTitleBar, window->AppWindow->TitleBar->ExtendsContentIntoTitleBar,
+                        static_cast<int>(window->AppWindow->Presenter->Kind), hasNativeBorder, expectedOffset, actualOffset);
+                    VERIFY_ARE_EQUAL(expectedOffset, actualOffset);
+                    const auto colors = EraseWindowTopRows(windowHandle);
+                    const bool paintBorder = isChangeEnabled && needsDwmWorkaround && hasNativeBorder && expectedOffset != 0;
+                    VERIFY_ARE_EQUAL(paintBorder ? borderColor : backgroundColor, colors.first, L"Top row");
+                    VERIFY_ARE_EQUAL(backgroundColor, colors.second, L"Background below the top row");
+                });
+            };
+            auto setECITB = [&](bool value)
+            {
+                RunOnUIThread([&]()
+                {
+                    setECITBOnUIThread(value);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+            };
+
+            const int extendedOffset = useAppWindow ? 0 : 1;
+            verifyPainting(ecitbBeforeActivation ? extendedOffset : 0, true);
+            setECITB(true);
+            verifyPainting(extendedOffset, true);
+            // Exercise the no-change path as well as the initial margin update.
+            setECITB(true);
+            verifyPainting(extendedOffset, true);
+            if (!useAppWindow)
+            {
+                RunOnUIThread([&]() { ::ShowWindow(windowHandle, SW_MAXIMIZE); });
+                TestServices::WindowHelper->WaitForIdle();
+                verifyPainting(0, true);
+                RunOnUIThread([&]() { ::ShowWindow(windowHandle, SW_RESTORE); });
+                TestServices::WindowHelper->WaitForIdle();
+                verifyPainting(1, true);
+            }
+
+            RunOnUIThread([&]()
+            {
+                window->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            verifyPainting(extendedOffset, false);
+            setECITB(false);
+            // Frameless transitions can leave the bridge at its last position
+            // until a subsequent frame/size change, even with ECITB disabled.
+            verifyPainting(extendedOffset, false);
+            setECITB(true);
+            verifyPainting(extendedOffset, false);
+            RunOnUIThread([&]()
+            {
+                window->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::Overlapped);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            verifyPainting(extendedOffset, true);
+
+            for (const bool hasBorder : { false, true })
+            {
+                RunOnUIThread([&]()
+                {
+                    auto presenter = safe_cast<Microsoft::UI::Windowing::OverlappedPresenter^>(window->AppWindow->Presenter);
+                    presenter->SetBorderAndTitleBar(hasBorder, false);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                verifyPainting(extendedOffset, hasBorder);
+                setECITB(false);
+                verifyPainting(hasBorder ? 0 : extendedOffset, hasBorder);
+                setECITB(true);
+                verifyPainting(extendedOffset, hasBorder);
+                RunOnUIThread([&]()
+                {
+                    auto presenter = safe_cast<Microsoft::UI::Windowing::OverlappedPresenter^>(window->AppWindow->Presenter);
+                    presenter->SetBorderAndTitleBar(true, true);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                verifyPainting(extendedOffset, true);
+            }
+            setECITB(false);
+            verifyPainting(0, true);
+        }
     }
 
 #ifdef MUX_PRERELEASE

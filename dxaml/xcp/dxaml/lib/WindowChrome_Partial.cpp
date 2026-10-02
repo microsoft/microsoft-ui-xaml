@@ -79,7 +79,7 @@ void WindowChrome::ResizeContainer(WPARAM wParam, LPARAM lParam)
     }
 }
 
-void WindowChrome::MoveContainer(WPARAM wParam, LPARAM lParam)
+void WindowChrome::RefreshContainerSizeAndPosition()
 {
     auto coreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
     if (coreWindowChrome)
@@ -193,12 +193,18 @@ _Check_return_ HRESULT WindowChrome::OnContentChanged(_In_ IInspectable* oldCont
 ctl::ComPtr<ixp::IAppWindow> WindowChrome::GetAppWindow() const
 {
     ctl::ComPtr<ixp::IAppWindow> appWindow;
-    IFCFAILFAST(m_desktopWindow->get_AppWindowImpl(&appWindow));
+    IFCFAILFAST(GetAppWindow(&appWindow));
     if(!appWindow)
     {
         IFCFAILFAST(E_NOTSUPPORTED);
     }
     return appWindow;
+}
+
+_Check_return_ HRESULT WindowChrome::GetAppWindow(_Outptr_result_maybenull_ ixp::IAppWindow** appWindow) const
+{
+    *appWindow = nullptr;
+    return m_desktopWindow ? m_desktopWindow->get_AppWindowImpl(appWindow) : S_OK;
 }
 
 bool WindowChrome::CanDrag() const
@@ -209,6 +215,12 @@ bool WindowChrome::CanDrag() const
         return coreWindowChrome->CanDrag();
     }
     return false;
+}
+
+bool WindowChrome::ShouldPaintTopRowOfClientArea()
+{
+    const auto chrome = static_cast<CWindowChrome*>(GetHandle());
+    return chrome && chrome->ShouldPaintTopRowOfClientArea();
 }
 
 void WindowChrome::UpdateCanDragStatus(bool enabled)

@@ -56,6 +56,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(WindowTopBorderPainting)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the Window ECITB border erase without changing either entry point's geometry.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Data:ECITBBeforeActivation", L"{false,true}")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowTopBorderPaintingPreservesCompatBehavior)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates normal background erase when the Window top-border fix is disabled.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{FixWindowTopBorder:false}")
+            TEST_METHOD_PROPERTY(L"Data:ECITBBeforeActivation", L"{false,true}")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowTopBorderEraseDuringClose)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates synchronous background erase during the closing visibility notification.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{FixWindowTopBorder:true,FixWindowTopBorder:false}")
+        END_TEST_METHOD()
+
 #ifdef MUX_PRERELEASE
         // Experimental Width/Height properties on Window are only present in prerelease builds.
         BEGIN_TEST_METHOD(CanGetSetWindowWidthHeight)
@@ -249,6 +268,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the markup-loaded Window content tree is released (not held for the Window's lifetime) once Window.Content is cleared.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
+
+    private:
+        void VerifyWindowTopBorderPainting(bool expectedChangeEnabled);
 
     };
 

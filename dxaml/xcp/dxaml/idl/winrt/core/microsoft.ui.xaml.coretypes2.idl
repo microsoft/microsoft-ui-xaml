@@ -523,6 +523,9 @@ namespace Microsoft.UI.Xaml.Settings
         [feature(Feature_ExperimentalApi)]
         [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         GamepadKeyRouting = 63117108,
+        [feature(Feature_ExperimentalApi)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        FixWindowTopBorder = 8948,
     };
 }
 
