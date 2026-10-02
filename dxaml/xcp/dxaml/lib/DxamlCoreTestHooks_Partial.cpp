@@ -917,6 +917,15 @@ IFACEMETHODIMP_(void) DxamlCoreTestHooks::TriggerLowMemory()
     m_pDXamlCoreNoRef->TriggerLowMemory();
 }
 
+_Check_return_ HRESULT DxamlCoreTestHooks::TriggerLowMemoryForTestImpl()
+{
+    if (m_pDXamlCoreNoRef != nullptr)
+    {
+        m_pDXamlCoreNoRef->TriggerLowMemory();
+    }
+    return S_OK;
+}
+
 IFACEMETHODIMP DxamlCoreTestHooks::TestGetGlobalBoundsForUIElement(_In_ xaml::IUIElement* element, _In_ BOOLEAN ignoreClipping, _Out_ wf::Rect* bounds)
 {
     XRECTF_RB pBounds = { };

@@ -300,6 +300,8 @@ namespace DirectUI
         IFACEMETHOD_(void, ResetOptionalChanges)() override;
         _Check_return_ HRESULT ResetOptionalChangesImpl();
 
+        _Check_return_ HRESULT TriggerLowMemoryForTestImpl();
+
         IFACEMETHOD(PauseNewDispatchForTest)() override;
         IFACEMETHOD(ResumeNewDispatchForTest)() override;
 
