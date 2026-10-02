@@ -1,7 +1,5 @@
 # FrameworkElement.SetCompiledBinding
 
-===
-
 # Background
 
 WinUI supports binding a dependency property to an object's data through
@@ -383,6 +381,8 @@ namespace Microsoft.UI.Xaml.Data
     /// @return The value to assign to the target dependency property.
     delegate Object CompiledBindingGetter(Object source);
 
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
     /// Represents the method that writes a target value to a programmatic compiled binding's source.
     /// @param source The target element's effective DataContext.
     /// @param value The current value of the target dependency property.
