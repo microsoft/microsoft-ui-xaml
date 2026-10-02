@@ -10,3 +10,5 @@
 *proj text eol=crlf
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
+
+.github/workflows/*.lock.yml linguist-generated=true
