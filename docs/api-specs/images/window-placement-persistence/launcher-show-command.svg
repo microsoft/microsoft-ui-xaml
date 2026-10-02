@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="630" viewBox="0 0 1120 630" role="img" aria-labelledby="title desc">
+  <title id="title">Request a minimized or maximized window</title>
+  <desc id="desc">At close, the app has a normal window. Two reopen branches illustrate the requested behavior: open minimized as a taskbar item, or open maximized. A prominent warning states that this requested behavior is not yet specified.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="630" fill="white"/>
+  <text x="32" y="40" class="heading">Request a minimized or maximized window</text>
+  <text x="32" y="85" class="panel">When the app closes</text>
+  <text x="610" y="85" class="panel">When the app opens again</text>
+  <rect x="44" y="220" width="440" height="250" class="monitor"/>
+  <rect x="45" y="440" width="438" height="29" fill="#697681"/>
+  <rect x="148" y="275" width="240" height="145" class="app"/>
+  <rect x="150" y="277" width="236" height="28" class="bar"/>
+  <text x="162" y="298">App: normal</text>
+  <path d="M523 345 H561 V238 H588" class="arrow"/>
+  <path d="M561 345 V486 H588" class="arrow"/>
+  <text x="620" y="130">Open minimized</text>
+  <rect x="620" y="147" width="440" height="180" class="monitor"/>
+  <text x="644" y="213">No visible App window</text>
+  <rect x="621" y="290" width="438" height="36" fill="#697681"/>
+  <rect x="637" y="295" width="171" height="27" fill="#34495e"/>
+  <text x="647" y="315" style="fill:white">App (minimized)</text>
+  <text x="620" y="404">Open maximized</text>
+  <rect x="620" y="421" width="440" height="180" class="monitor"/>
+  <rect x="621" y="565" width="438" height="35" fill="#697681"/>
+  <rect x="624" y="425" width="432" height="135" class="app"/>
+  <rect x="626" y="427" width="428" height="28" class="bar"/>
+  <text x="638" y="448">App: maximized</text>
+  <text x="32" y="547" class="panel">Requested behavior -</text>
+  <text x="32" y="578" class="panel">not yet specified</text>
+</svg>

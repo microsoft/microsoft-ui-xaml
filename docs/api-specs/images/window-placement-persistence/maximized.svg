@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="450" viewBox="0 0 1120 450" role="img" aria-labelledby="title desc">
+  <title id="title">Restore maximized state while remembering normal bounds</title>
+  <desc id="desc">The app closes maximized on display B and reopens maximized on the same display. Dashed outlines show its remembered window size and position, not additional live windows. Restoring the window returns it to those remembered bounds.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.saved{fill:none;stroke:#8b4500;stroke-width:3;stroke-dasharray:8 6}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="450" fill="white"/>
+  <text x="32" y="40" class="heading">Reopen the maximized app on the same display</text>
+  <text x="32" y="85" class="panel">When the app closes</text>
+  <text x="610" y="85" class="panel">When the app opens again</text>
+  <text x="44" y="119">Display B</text>
+  <text x="620" y="119">Display B (same display)</text>
+  <rect x="44" y="136" width="440" height="252" class="monitor"/>
+  <rect x="45" y="354" width="438" height="33" fill="#697681"/>
+  <rect x="49" y="141" width="430" height="208" class="app"/>
+  <rect x="51" y="143" width="426" height="28" class="bar"/>
+  <text x="63" y="164">App: maximized</text>
+  <rect x="135" y="200" width="255" height="116" class="saved"/>
+  <text x="152" y="237">Remembered window</text>
+  <text x="152" y="270">size and position</text>
+  <path d="M530 252 H581" class="arrow"/>
+  <rect x="620" y="136" width="440" height="252" class="monitor"/>
+  <rect x="621" y="354" width="438" height="33" fill="#697681"/>
+  <rect x="625" y="141" width="430" height="208" class="app"/>
+  <rect x="627" y="143" width="426" height="28" class="bar"/>
+  <text x="639" y="164">App: maximized</text>
+  <rect x="711" y="200" width="255" height="116" class="saved"/>
+  <text x="728" y="237">Remembered window</text>
+  <text x="728" y="270">size and position</text>
+  <text x="44" y="425">Dashed: remembered bounds</text>
+  <text x="620" y="425">Restore the remembered window</text>
+</svg>

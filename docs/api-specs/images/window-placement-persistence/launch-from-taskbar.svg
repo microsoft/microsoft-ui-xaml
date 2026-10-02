@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="490" viewBox="0 0 1120 490" role="img" aria-labelledby="title desc">
+  <title id="title">Open the app from a taskbar on another display</title>
+  <desc id="desc">At close, the app is on display B. When launch information is available, opening the app from display A's taskbar reopens it on A. Both displays have taskbars.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="490" fill="white"/>
+  <text x="32" y="40" class="heading">Open the app from a taskbar on another display</text>
+  <text x="32" y="85" class="panel">When the app closes</text>
+  <text x="610" y="85" class="panel">When the app opens again</text>
+  <text x="44" y="134">Display A</text>
+  <text x="280" y="134">Display B</text>
+  <rect x="44" y="152" width="205" height="208" class="monitor"/>
+  <rect x="280" y="152" width="205" height="208" class="monitor"/>
+  <rect x="45" y="330" width="203" height="29" fill="#697681"/>
+  <rect x="281" y="330" width="203" height="29" fill="#697681"/>
+  <text x="58" y="351" style="fill:white">Taskbar A</text>
+  <text x="294" y="351" style="fill:white">Taskbar B</text>
+  <rect x="300" y="204" width="163" height="110" class="app"/>
+  <rect x="302" y="206" width="159" height="28" class="bar"/>
+  <text x="314" y="227">App on B</text>
+  <path d="M530 252 H581" class="arrow"/>
+  <text x="620" y="134">Display A</text>
+  <text x="856" y="134">Display B</text>
+  <rect x="620" y="152" width="205" height="208" class="monitor"/>
+  <rect x="856" y="152" width="205" height="208" class="monitor"/>
+  <rect x="621" y="330" width="203" height="29" fill="#697681"/>
+  <rect x="857" y="330" width="203" height="29" fill="#697681"/>
+  <rect x="631" y="333" width="115" height="23" fill="#34495e"/>
+  <text x="637" y="351" style="fill:white">Launch App</text>
+  <text x="870" y="351" style="fill:white">Taskbar B</text>
+  <rect x="640" y="204" width="163" height="110" class="app"/>
+  <rect x="642" y="206" width="159" height="28" class="bar"/>
+  <text x="654" y="227">App on A</text>
+  <text x="44" y="410">App closes on B.</text>
+  <text x="620" y="410">Launch from A's taskbar</text>
+  <text x="620" y="460" class="note">When launch information is available</text>
+</svg>

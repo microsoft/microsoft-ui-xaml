@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="440" viewBox="0 0 1120 440" role="img" aria-labelledby="title desc">
+  <title id="title">Move the app to a current display when its old display is removed</title>
+  <desc id="desc">At close, displays A and B are connected and the app is on B. On reopen, only A remains and the app moves to A. A dashed outline marks disconnected display B.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.disconnected{fill:none;stroke:#58616b;stroke-width:3;stroke-dasharray:8 6}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="440" fill="white"/>
+  <text x="32" y="40" class="heading">A display disconnects; the app moves to the remaining display</text>
+  <text x="32" y="85" class="panel">When the app closes</text>
+  <text x="610" y="85" class="panel">When the app opens again</text>
+  <text x="44" y="134">Display A</text>
+  <text x="280" y="134">Display B</text>
+  <rect x="44" y="152" width="205" height="208" class="monitor"/>
+  <rect x="280" y="152" width="205" height="208" class="monitor"/>
+  <rect x="45" y="334" width="203" height="25" fill="#697681"/>
+  <rect x="281" y="334" width="203" height="25" fill="#697681"/>
+  <rect x="300" y="204" width="163" height="110" class="app"/>
+  <rect x="302" y="206" width="159" height="28" class="bar"/>
+  <text x="314" y="227">App on B</text>
+  <path d="M530 252 H581" class="arrow"/>
+  <text x="620" y="134">Display A</text>
+  <text x="856" y="134">B: disconnected</text>
+  <rect x="620" y="152" width="205" height="208" class="monitor"/>
+  <rect x="621" y="334" width="203" height="25" fill="#697681"/>
+  <rect x="856" y="152" width="205" height="208" class="disconnected"/>
+  <text x="870" y="250">Dashed outline:</text>
+  <text x="870" y="280">not connected</text>
+  <rect x="640" y="204" width="163" height="110" class="app"/>
+  <rect x="642" y="206" width="159" height="28" class="bar"/>
+  <text x="654" y="227">App on A</text>
+  <text x="44" y="410">Both displays connected</text>
+  <text x="620" y="410">Only A remains in this example</text>
+</svg>
