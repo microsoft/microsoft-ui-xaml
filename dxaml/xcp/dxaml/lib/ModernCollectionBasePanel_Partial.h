@@ -2541,7 +2541,8 @@ public:
         UINT m_containerCreatedCount;
 
         // Provides information about the data source for the layout strategies.
-        TrackerPtr<xaml_controls::ILayoutDataInfoProvider> m_spLayoutDataInfoProvider;
+        // The native ComBase provider has no reference-tracker interfaces.
+        ctl::ComPtr<xaml_controls::ILayoutDataInfoProvider> m_spLayoutDataInfoProvider;
 
         // Iterator used for CCC's incremental visualization.
         ctl::ComPtr<ContainerContentChangingIterator> m_spContainerContentChangingIterator;

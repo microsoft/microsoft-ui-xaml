@@ -121,7 +121,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Initialize()
     {
         ctl::ComPtr<LayoutDataInfoProvider> spLayoutDataInfoProvider;
         IFC_RETURN(ctl::make(static_cast<IModernCollectionBasePanel*>(this), &spLayoutDataInfoProvider));
-        SetPtrValue(m_spLayoutDataInfoProvider, spLayoutDataInfoProvider);
+        m_spLayoutDataInfoProvider = spLayoutDataInfoProvider;
     }
 
     return S_OK;
