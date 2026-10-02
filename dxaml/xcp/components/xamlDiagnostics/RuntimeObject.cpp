@@ -141,7 +141,69 @@ namespace Diagnostics
 
     Microsoft::WRL::ComPtr<IInspectable> RuntimeObject::GetBackingObject() const
     {
-        return m_backingObject;
+        wrl::ComPtr<IWeakReference> weakReference;
+        {
+            auto lock = m_backingObjectLock.lock_shared();
+            if (m_backingObject)
+            {
+                return m_backingObject;
+            }
+            weakReference = m_backingWeak;
+        }
+
+        if (weakReference)
+        {
+            // Resolve returns S_OK with a null out-param when the object is already gone, so the
+            // null check at the call sites covers both the failure and the expired case.
+            wrl::ComPtr<IInspectable> resolved;
+            IGNOREHR(weakReference->Resolve(__uuidof(IInspectable), &resolved));
+            return resolved;
+        }
+
+        return nullptr;
+    }
+
+    bool RuntimeObject::TryMakeBackingReferenceWeak()
+    {
+        wrl::ComPtr<IInspectable> backingObject;
+        {
+            auto lock = m_backingObjectLock.lock_shared();
+            if (m_backingWeak)
+            {
+                return true;
+            }
+            backingObject = m_backingObject;
+        }
+
+        if (!backingObject)
+        {
+            return false;
+        }
+
+        wrl::ComPtr<IWeakReferenceSource> weakSource;
+        if (FAILED(backingObject.As(&weakSource)))
+        {
+            return false;
+        }
+
+        wrl::ComPtr<IWeakReference> weakReference;
+        if (FAILED(weakSource->GetWeakReference(&weakReference)) || !weakReference)
+        {
+            return false;
+        }
+
+        wrl::ComPtr<IInspectable> releasedBackingObject;
+        {
+            // Handle lookup is callable from other threads. Publish the transition atomically,
+            // but release the old reference after unlocking because teardown can reenter diagnostics.
+            auto lock = m_backingObjectLock.lock_exclusive();
+            if (!m_backingWeak)
+            {
+                m_backingWeak = std::move(weakReference);
+                releasedBackingObject.Swap(m_backingObject);
+            }
+        }
+        return true;
     }
 
     void RuntimeObject::StoreValue(const RuntimeProperty& prop, std::shared_ptr<RuntimeObject> value)
@@ -212,17 +274,22 @@ namespace Diagnostics
     {
         if (!prop.IsFakeProperty())
         {
+            const auto backingObject = GetBackingObject();
+            if (!backingObject)
+            {
+                return E_NOTFOUND;
+            }
             auto baseProp = DirectUI::MetadataAPI::GetPropertyBaseByIndex(static_cast<KnownPropertyIndex>(prop.GetIndex()));
 
             ctl::ComPtr<IInspectable> value;
             // Handling dependency objects (including non-DPs)
-            if (auto coreObj = DiagnosticsInterop::ConvertToCore(GetBackingObject().Get()))
+            if (auto coreObj = DiagnosticsInterop::ConvertToCore(backingObject.Get()))
             {
                 IFC_RETURN(Diagnostics::PropertyChainEvaluator::GetEffectiveValue(coreObj, baseProp, value));
             }
             else
             {
-                IFC_RETURN(DiagnosticsInterop::GetValueOfCustomProperty(baseProp, GetBackingObject().Get(), &value));
+                IFC_RETURN(DiagnosticsInterop::GetValueOfCustomProperty(baseProp, backingObject.Get(), &value));
             }
 
             result = GetRuntimeObject(value.Get());
@@ -246,7 +313,8 @@ namespace Diagnostics
         bool succeeded = true;
         if (!prop.IsFakeProperty())
         {
-            succeeded = SUCCEEDED(DiagnosticsInterop::ClearPropertyValue(GetBackingObject().Get(), prop.GetIndex()));
+            const auto backingObject = GetBackingObject();
+            succeeded = backingObject && SUCCEEDED(DiagnosticsInterop::ClearPropertyValue(backingObject.Get(), prop.GetIndex()));
         }
 
         if (succeeded)
@@ -269,7 +337,8 @@ namespace Diagnostics
                 valueObject = value->GetBackingObject();
             }
 
-            succeeded = SUCCEEDED(GetInterop()->SetPropertyValue(GetBackingObject().Get(), prop.GetIndex(), valueObject.Get()));
+            const auto backingObject = GetBackingObject();
+            succeeded = backingObject && SUCCEEDED(GetInterop()->SetPropertyValue(backingObject.Get(), prop.GetIndex(), valueObject.Get()));
         }
 
         if (succeeded)
@@ -288,31 +357,38 @@ namespace Diagnostics
     bool RuntimeObject::IsDependencyObject() const
     {
         wrl::ComPtr<xaml::IDependencyObject> depObj;
-        return !IsNull() && !IsWindow() && SUCCEEDED(GetBackingObject().As(&depObj));
+        // GetBackingObject() resolves a weak reference for tree roots and can return empty, and
+        // ComPtr::As dereferences the held pointer, so resolve once and check before querying.
+        const auto backingObject = GetBackingObject();
+        return backingObject && !IsWindow() && SUCCEEDED(backingObject.As(&depObj));
     }
 
     bool RuntimeObject::IsWindow() const
     {
         wrl::ComPtr<xaml::IWindow> window;
-        return !IsNull() && SUCCEEDED(GetBackingObject().As(&window));
+        const auto backingObject = GetBackingObject();
+        return backingObject && SUCCEEDED(backingObject.As(&window));
     }
 
     bool RuntimeObject::IsDesktopWindowXamlSource() const
     {
         wrl::ComPtr<xaml::Hosting::IDesktopWindowXamlSource> xamlSource;
-        return !IsNull() && SUCCEEDED(GetBackingObject().As(&xamlSource));
+        const auto backingObject = GetBackingObject();
+        return backingObject && SUCCEEDED(backingObject.As(&xamlSource));
     }
 
     bool RuntimeObject::IsXamlIsland() const
     {
         wrl::ComPtr<xaml::IXamlIsland> xamlSource;
-        return !IsNull() && SUCCEEDED(GetBackingObject().As(&xamlSource));
+        const auto backingObject = GetBackingObject();
+        return backingObject && SUCCEEDED(backingObject.As(&xamlSource));
     }
 
     bool RuntimeObject::IsValueType() const
     {
         wrl::ComPtr<wf::IPropertyValue> propValue;
-        return !IsNull() && SUCCEEDED(GetBackingObject().As(&propValue));
+        const auto backingObject = GetBackingObject();
+        return backingObject && SUCCEEDED(backingObject.As(&propValue));
     }
 
     bool RuntimeObject::IsNull() const
@@ -349,10 +425,19 @@ namespace Diagnostics
     xstring_ptr RuntimeObject::ToString() const
     {
         xstring_ptr value;
-        if (FAILED(XamlDiagnosticsHelpers::ValueToString(GetBackingObject().Get(), &value)))
+
+        // Resolve once: the backing object is held weakly for tree roots, so it can already be
+        // gone, and every use below dereferences it.
+        const auto backingObject = GetBackingObject();
+        if (!backingObject)
+        {
+            return value;
+        }
+
+        if (FAILED(XamlDiagnosticsHelpers::ValueToString(backingObject.Get(), &value)))
         {
             wil::unique_hstring runtimeClassName;
-            if (SUCCEEDED(GetBackingObject()->GetRuntimeClassName(&runtimeClassName)))
+            if (SUCCEEDED(backingObject->GetRuntimeClassName(&runtimeClassName)))
             {
                 IFCFAILFAST(xstring_ptr::CloneRuntimeStringHandle(runtimeClassName.get(), &value));
             }
