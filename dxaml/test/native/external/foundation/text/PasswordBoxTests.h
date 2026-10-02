@@ -96,7 +96,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(CheckFiresManipulationEvents)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox can fire manipulation events")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") //not stable on WPF
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidatePasswordCharValidation)
@@ -150,7 +150,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(ValidatePasswordBoxPlaceholderVisibility)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates PasswordBox's placeholder text visibility.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 

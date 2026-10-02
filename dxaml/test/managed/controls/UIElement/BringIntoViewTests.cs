@@ -142,7 +142,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.BringIntoViewTests
 
         [TestMethod]
         [TestProperty("Description", "Validates that OriginalSource is not null.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyBringIntoViewRequestedOriginialSourceIsNotNull()
         {
             StackPanel root = null;

@@ -82,7 +82,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("Description", "Validates that we do not leak our view model when used to bind to an AppBarButton's Command property.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void DoesNotLeakViewModelWithCommandBinding()
         {
             var memoryBefore = GC.GetTotalMemory(true) / (1024 * 1024);
@@ -123,7 +123,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("Description", "Validates that we can click on primary buttons when secondary pane is open")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateClickOnPrimaryButtonWhenSecondaryIsOpen()
         {
             CommandBar commandBar = null;

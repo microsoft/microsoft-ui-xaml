@@ -28,24 +28,24 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(CanSelectTime)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the TimePickerFlyout can be used to select a Time.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanSelectTimeWithShowAtAsync)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the ShowAtAsync method can be used to select a Time.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DismissWithCancelButton)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the TimePickerFlyout can be dismissed with the Cancel button.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
         
         BEGIN_TEST_METHOD(DoesFlyoutOnTimePickerClicked)
             TEST_METHOD_PROPERTY(L"Description", L"Verify the launching flyout on the TimePicker.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyBackButtonClosesFlyout)
@@ -69,12 +69,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(CanMoveBetweenColumnsWithHorizontalArrowKeys)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that using the left and right arrow keys can shift focus between the columns.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanMoveBetweenColumnsWithHorizontalArrowKeysNoPeriodPicker)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that using the left and right arrow keys can shift focus between the columns when PeriodPicker is not visible.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateAcceptDismissButtonsAreHiddenWithGamepad)
@@ -85,12 +85,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateOverlayBrush)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the brush used for the Overlay matches the 'TimePickerLightDismissOverlayBackground' resource.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(MinuteIncrementZero)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that setting MinuteIncrement to 0 results in the expected behavior.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
     private:
