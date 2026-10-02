@@ -52,7 +52,7 @@
                       <Row4 M41="0" M42="0" M43="0" M44="1" />
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="70" SizeY="42" BorderMode="Hard" ScaleX="0.253" ScaleY="0.253" OffsetX="0.1831" OffsetY="5.342" OffsetZ="0">
+                      <wucSpriteVisual SizeX="72" SizeY="44" BorderMode="Hard" ScaleX="0.253" ScaleY="0.253" OffsetX="-0.06992" OffsetY="5.089" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
@@ -77,7 +77,7 @@
                       <Row4 M41="21.6" M42="119.2" M43="0" M44="1" />
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="155" SizeY="84" BorderMode="Hard" ScaleX="0.9487" ScaleY="0.9487" OffsetX="1.373" OffsetY="40.07" OffsetZ="0">
+                      <wucSpriteVisual SizeX="157" SizeY="86" BorderMode="Hard" ScaleX="0.9487" ScaleY="0.9487" OffsetX="0.4243" OffsetY="39.12" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="rgb {1, 0, 0}" />

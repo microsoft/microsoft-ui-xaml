@@ -76,7 +76,7 @@
                                 <wucSpriteVisual SizeX="202" SizeY="34" BorderMode="Soft" OffsetX="1" OffsetY="1" OffsetZ="0">
                                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                                 </wucSpriteVisual>
-                                <wucSpriteVisual SizeX="32" SizeY="10" BorderMode="Hard" OffsetX="9" OffsetY="13" OffsetZ="0">
+                                <wucSpriteVisual SizeX="34" SizeY="12" BorderMode="Hard" OffsetX="8" OffsetY="12" OffsetZ="0">
                                   <MaskBrush>
                                     <Source>
                                       <ColorBrush Color="#ffffffff" />
@@ -108,7 +108,7 @@
                                 <wucSpriteVisual SizeX="32" SizeY="34" BorderMode="Soft" TransparentForInput="True" OffsetX="1" OffsetY="1" OffsetZ="0">
                                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                                 </wucSpriteVisual>
-                                <wucSpriteVisual SizeX="4" SizeY="4" BorderMode="Hard" TransparentForInput="True" OffsetX="15" OffsetY="16" OffsetZ="0">
+                                <wucSpriteVisual SizeX="6" SizeY="6" BorderMode="Hard" TransparentForInput="True" OffsetX="14" OffsetY="15" OffsetZ="0">
                                   <MaskBrush>
                                     <Source>
                                       <ColorBrush Color="Argb {0.2471, 1, 1, 1}" />
@@ -140,7 +140,7 @@
                                 <wucSpriteVisual SizeX="32" SizeY="34" BorderMode="Soft" OffsetX="1" OffsetY="1" OffsetZ="0">
                                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                                 </wucSpriteVisual>
-                                <wucSpriteVisual SizeX="4" SizeY="4" BorderMode="Hard" OffsetX="15" OffsetY="16" OffsetZ="0">
+                                <wucSpriteVisual SizeX="6" SizeY="6" BorderMode="Hard" OffsetX="14" OffsetY="15" OffsetZ="0">
                                   <MaskBrush>
                                     <Source>
                                       <ColorBrush Color="#ffffffff" />
@@ -206,7 +206,7 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="50" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="2" OffsetY="17" OffsetZ="0">
+                                      <wucSpriteVisual SizeX="52" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="1" OffsetY="16" OffsetZ="0">
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -225,8 +225,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="54" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="1.5" OffsetY="16" OffsetZ="0">
-                                        <Clip ClipLeft="-0.5" ClipTop="-15" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="56" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="15" OffsetZ="0">
+                                        <Clip ClipLeft="0.5" ClipTop="-14" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -245,8 +245,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="60" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="-1" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="2" ClipTop="-16" ClipRight="4.5" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="62" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-2" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="3" ClipTop="-15" ClipRight="5.5" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -265,8 +265,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="57" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="1.5" ClipTop="-16" ClipRight="2" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="59" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-1.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="2.5" ClipTop="-15" ClipRight="3" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -285,8 +285,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="65" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-3" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="4" ClipTop="-16" ClipRight="7.5" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="67" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-4" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="5" ClipTop="-15" ClipRight="8.5" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -305,8 +305,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="52" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="-2" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="54" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="-1" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -325,7 +325,7 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="39" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="7" OffsetY="16" OffsetZ="0">
+                                      <wucSpriteVisual SizeX="41" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="6" OffsetY="15" OffsetZ="0">
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -344,8 +344,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="62" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-4.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="5.5" ClipTop="-16" ClipRight="3" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="64" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-5.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="6.5" ClipTop="-15" ClipRight="4" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -364,8 +364,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="56" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="0" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="1" ClipTop="-16" ClipRight="1.5" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="58" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-1" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="2" ClipTop="-15" ClipRight="2.5" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -384,8 +384,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="54" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="1.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="-0.5" ClipTop="-16" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="56" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="0.5" ClipTop="-15" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -404,8 +404,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="63" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="-2" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="3" ClipTop="-16" ClipRight="6.5" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="65" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-3" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="4" ClipTop="-15" ClipRight="7.5" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -424,8 +424,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="57" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="3" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="59" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="4" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -444,7 +444,7 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="50" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="2" OffsetY="17" OffsetZ="0">
+                                      <wucSpriteVisual SizeX="52" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="1" OffsetY="16" OffsetZ="0">
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="Argb {0.7725, 1, 1, 1}" />
@@ -463,8 +463,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="54" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="1.5" OffsetY="16" OffsetZ="0">
-                                        <Clip ClipLeft="-0.5" ClipTop="-15" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="56" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="15" OffsetZ="0">
+                                        <Clip ClipLeft="0.5" ClipTop="-14" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="Argb {0.7725, 1, 1, 1}" />
@@ -483,8 +483,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="60" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="-1" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="2" ClipTop="-16" ClipRight="4.5" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="62" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-2" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="3" ClipTop="-15" ClipRight="5.5" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="Argb {0.7725, 1, 1, 1}" />
@@ -503,8 +503,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="57" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="1.5" ClipTop="-16" ClipRight="2" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="59" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-1.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="2.5" ClipTop="-15" ClipRight="3" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="Argb {0.7725, 1, 1, 1}" />
@@ -523,8 +523,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="65" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-3" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="4" ClipTop="-16" ClipRight="7.5" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="67" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-4" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="5" ClipTop="-15" ClipRight="8.5" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -543,8 +543,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="52" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="-2" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="54" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="-1" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -563,7 +563,7 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="39" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="7" OffsetY="16" OffsetZ="0">
+                                      <wucSpriteVisual SizeX="41" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="6" OffsetY="15" OffsetZ="0">
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -582,8 +582,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="62" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-4.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="5.5" ClipTop="-16" ClipRight="3" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="64" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-5.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="6.5" ClipTop="-15" ClipRight="4" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -602,8 +602,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="56" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="0" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="1" ClipTop="-16" ClipRight="1.5" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="58" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-1" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="2" ClipTop="-15" ClipRight="2.5" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -622,8 +622,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="54" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="1.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="-0.5" ClipTop="-16" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="56" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="0.5" ClipTop="-15" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -642,8 +642,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="63" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="-2" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="3" ClipTop="-16" ClipRight="6.5" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="65" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-3" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="4" ClipTop="-15" ClipRight="7.5" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -662,8 +662,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="57" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="3" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="59" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="4" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -682,7 +682,7 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="50" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="2" OffsetY="17" OffsetZ="0">
+                                      <wucSpriteVisual SizeX="52" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="1" OffsetY="16" OffsetZ="0">
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -701,8 +701,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="54" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="1.5" OffsetY="16" OffsetZ="0">
-                                        <Clip ClipLeft="-0.5" ClipTop="-15" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="56" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="15" OffsetZ="0">
+                                        <Clip ClipLeft="0.5" ClipTop="-14" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -721,8 +721,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="60" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="-1" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="2" ClipTop="-16" ClipRight="4.5" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="62" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-2" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="3" ClipTop="-15" ClipRight="5.5" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -741,8 +741,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="57" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="1.5" ClipTop="-16" ClipRight="2" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="59" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-1.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="2.5" ClipTop="-15" ClipRight="3" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -761,8 +761,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="65" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-3" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="4" ClipTop="-16" ClipRight="7.5" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="67" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-4" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="5" ClipTop="-15" ClipRight="8.5" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -781,8 +781,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="52" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="-2" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="54" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="-1" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -801,7 +801,7 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="39" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="7" OffsetY="16" OffsetZ="0">
+                                      <wucSpriteVisual SizeX="41" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="6" OffsetY="15" OffsetZ="0">
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -820,8 +820,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="62" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-4.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="5.5" ClipTop="-16" ClipRight="3" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="64" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-5.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="6.5" ClipTop="-15" ClipRight="4" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -840,8 +840,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="56" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="0" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="1" ClipTop="-16" ClipRight="1.5" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="58" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-1" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="2" ClipTop="-15" ClipRight="2.5" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -860,8 +860,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="54" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="1.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="-0.5" ClipTop="-16" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="56" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="0.5" ClipTop="-15" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -880,8 +880,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="63" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="-2" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="3" ClipTop="-16" ClipRight="6.5" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="65" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-3" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="4" ClipTop="-15" ClipRight="7.5" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -900,8 +900,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="57" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="3" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="59" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="4" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -920,7 +920,7 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="50" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="2" OffsetY="17" OffsetZ="0">
+                                      <wucSpriteVisual SizeX="52" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="1" OffsetY="16" OffsetZ="0">
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -939,8 +939,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="54" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="1.5" OffsetY="16" OffsetZ="0">
-                                        <Clip ClipLeft="-0.5" ClipTop="-15" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="56" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="15" OffsetZ="0">
+                                        <Clip ClipLeft="0.5" ClipTop="-14" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -959,8 +959,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="60" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="-1" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="2" ClipTop="-16" ClipRight="4.5" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="62" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-2" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="3" ClipTop="-15" ClipRight="5.5" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -979,8 +979,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="57" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="1.5" ClipTop="-16" ClipRight="2" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="59" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-1.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="2.5" ClipTop="-15" ClipRight="3" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -999,8 +999,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="65" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-3" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="4" ClipTop="-16" ClipRight="7.5" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="67" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-4" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="5" ClipTop="-15" ClipRight="8.5" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1019,8 +1019,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="52" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="-2" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="54" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="-1" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1039,7 +1039,7 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="39" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="7" OffsetY="16" OffsetZ="0">
+                                      <wucSpriteVisual SizeX="41" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="6" OffsetY="15" OffsetZ="0">
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1058,8 +1058,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="62" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-4.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="5.5" ClipTop="-16" ClipRight="3" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="64" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-5.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="6.5" ClipTop="-15" ClipRight="4" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1078,8 +1078,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="56" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="0" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="1" ClipTop="-16" ClipRight="1.5" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="58" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-1" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="2" ClipTop="-15" ClipRight="2.5" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1098,8 +1098,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="54" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="1.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="-0.5" ClipTop="-16" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="56" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="0.5" ClipTop="-15" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1118,8 +1118,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="63" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="-2" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="3" ClipTop="-16" ClipRight="6.5" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="65" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-3" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="4" ClipTop="-15" ClipRight="7.5" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1138,8 +1138,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="57" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="3" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="59" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="4" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1158,7 +1158,7 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="50" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="2" OffsetY="17" OffsetZ="0">
+                                      <wucSpriteVisual SizeX="52" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="1" OffsetY="16" OffsetZ="0">
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1177,8 +1177,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="54" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="1.5" OffsetY="16" OffsetZ="0">
-                                        <Clip ClipLeft="-0.5" ClipTop="-15" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="56" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="15" OffsetZ="0">
+                                        <Clip ClipLeft="0.5" ClipTop="-14" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1197,8 +1197,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="60" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="-1" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="2" ClipTop="-16" ClipRight="4.5" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="62" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-2" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="3" ClipTop="-15" ClipRight="5.5" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1217,8 +1217,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="57" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="1.5" ClipTop="-16" ClipRight="2" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="59" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-1.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="2.5" ClipTop="-15" ClipRight="3" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1237,8 +1237,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="65" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-3" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="4" ClipTop="-16" ClipRight="7.5" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="67" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-4" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="5" ClipTop="-15" ClipRight="8.5" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1257,8 +1257,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="52" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="-2" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="54" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="-1" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1277,7 +1277,7 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="39" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="7" OffsetY="16" OffsetZ="0">
+                                      <wucSpriteVisual SizeX="41" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="6" OffsetY="15" OffsetZ="0">
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1296,8 +1296,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="62" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="-4.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="5.5" ClipTop="-16" ClipRight="3" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="64" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-5.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="6.5" ClipTop="-15" ClipRight="4" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1316,8 +1316,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="56" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="0" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="1" ClipTop="-16" ClipRight="1.5" ClipBottom="-4" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="58" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="-1" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="2" ClipTop="-15" ClipRight="2.5" ClipBottom="-3" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1336,8 +1336,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="54" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="1.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="-0.5" ClipTop="-16" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="56" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="0.5" ClipTop="-15" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1356,8 +1356,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="63" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="-2" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="3" ClipTop="-16" ClipRight="6.5" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="65" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-3" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="4" ClipTop="-15" ClipRight="7.5" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1376,8 +1376,8 @@
                                   <Visual Tag="RoundedCornerClipVisual">
                                     <Clip ClipLeft="0" ClipTop="0" ClipRight="55.5" ClipBottom="56" ClipTopLeftRadiusX="27.75" ClipTopLeftRadiusY="27.75" ClipTopRightRadiusX="27.75" ClipTopRightRadiusY="27.75" ClipBottomLeftRadiusX="27.75" ClipBottomLeftRadiusY="27.75" ClipBottomRightRadiusX="27.75" ClipBottomRightRadiusY="27.75" TransformMatrix="Identity" />
                                     <Visual Tag="ContentVisual">
-                                      <wucSpriteVisual SizeX="57" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="0.5" OffsetY="17" OffsetZ="0">
-                                        <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="3" ClipBottom="-12" TransformMatrix="Identity" />
+                                      <wucSpriteVisual SizeX="59" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="-0.5" OffsetY="16" OffsetZ="0">
+                                        <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="4" ClipBottom="-11" TransformMatrix="Identity" />
                                         <MaskBrush>
                                           <Source>
                                             <ColorBrush Color="#ffffffff" />
@@ -1391,7 +1391,7 @@
                                   </Visual>
                                 </Visual>
                               </Visual>
-                              <wucSpriteVisual SizeX="50" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="11" OffsetY="1136" OffsetZ="0">
+                              <wucSpriteVisual SizeX="52" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="10" OffsetY="1135" OffsetZ="0">
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1401,8 +1401,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="54" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="84" OffsetY="1135" OffsetZ="0">
-                                <Clip ClipLeft="-0.5" ClipTop="-15" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="56" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="83" OffsetY="1134" OffsetZ="0">
+                                <Clip ClipLeft="0.5" ClipTop="-14" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1412,8 +1412,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="60" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="155" OffsetY="1136" OffsetZ="0">
-                                <Clip ClipLeft="2" ClipTop="-16" ClipRight="4.5" ClipBottom="-12" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="62" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="154" OffsetY="1135" OffsetZ="0">
+                                <Clip ClipLeft="3" ClipTop="-15" ClipRight="5.5" ClipBottom="-11" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1423,8 +1423,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="57" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="229" OffsetY="1136" OffsetZ="0">
-                                <Clip ClipLeft="1.5" ClipTop="-16" ClipRight="2" ClipBottom="-4" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="59" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="228" OffsetY="1135" OffsetZ="0">
+                                <Clip ClipLeft="2.5" ClipTop="-15" ClipRight="3" ClipBottom="-3" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1434,8 +1434,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="65" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="6" OffsetY="1210" OffsetZ="0">
-                                <Clip ClipLeft="4" ClipTop="-16" ClipRight="7.5" ClipBottom="-4" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="67" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="5" OffsetY="1209" OffsetZ="0">
+                                <Clip ClipLeft="5" ClipTop="-15" ClipRight="8.5" ClipBottom="-3" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1445,8 +1445,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="52" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="83" OffsetY="1210" OffsetZ="0">
-                                <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="-2" ClipBottom="-12" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="54" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="82" OffsetY="1209" OffsetZ="0">
+                                <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="-1" ClipBottom="-11" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1456,7 +1456,7 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="39" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="163" OffsetY="1209" OffsetZ="0">
+                              <wucSpriteVisual SizeX="41" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="162" OffsetY="1208" OffsetZ="0">
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1466,8 +1466,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="62" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="225" OffsetY="1210" OffsetZ="0">
-                                <Clip ClipLeft="5.5" ClipTop="-16" ClipRight="3" ClipBottom="-4" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="64" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="224" OffsetY="1209" OffsetZ="0">
+                                <Clip ClipLeft="6.5" ClipTop="-15" ClipRight="4" ClipBottom="-3" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1477,8 +1477,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="56" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="9" OffsetY="1284" OffsetZ="0">
-                                <Clip ClipLeft="1" ClipTop="-16" ClipRight="1.5" ClipBottom="-4" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="58" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="8" OffsetY="1283" OffsetZ="0">
+                                <Clip ClipLeft="2" ClipTop="-15" ClipRight="2.5" ClipBottom="-3" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1488,8 +1488,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="54" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="84" OffsetY="1284" OffsetZ="0">
-                                <Clip ClipLeft="-0.5" ClipTop="-16" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="56" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="83" OffsetY="1283" OffsetZ="0">
+                                <Clip ClipLeft="0.5" ClipTop="-15" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1499,8 +1499,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="63" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="154" OffsetY="1284" OffsetZ="0">
-                                <Clip ClipLeft="3" ClipTop="-16" ClipRight="6.5" ClipBottom="-12" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="65" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="153" OffsetY="1283" OffsetZ="0">
+                                <Clip ClipLeft="4" ClipTop="-15" ClipRight="7.5" ClipBottom="-11" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1510,8 +1510,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="57" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="230" OffsetY="1284" OffsetZ="0">
-                                <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="3" ClipBottom="-12" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="59" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="229" OffsetY="1283" OffsetZ="0">
+                                <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="4" ClipBottom="-11" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1521,7 +1521,7 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="50" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="11" OffsetY="1358" OffsetZ="0">
+                              <wucSpriteVisual SizeX="52" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="10" OffsetY="1357" OffsetZ="0">
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1531,8 +1531,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="54" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="84" OffsetY="1357" OffsetZ="0">
-                                <Clip ClipLeft="-0.5" ClipTop="-15" ClipRight="1" ClipBottom="-12" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="56" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="83" OffsetY="1356" OffsetZ="0">
+                                <Clip ClipLeft="0.5" ClipTop="-14" ClipRight="2" ClipBottom="-11" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1542,8 +1542,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="60" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="155" OffsetY="1358" OffsetZ="0">
-                                <Clip ClipLeft="2" ClipTop="-16" ClipRight="4.5" ClipBottom="-12" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="62" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="154" OffsetY="1357" OffsetZ="0">
+                                <Clip ClipLeft="3" ClipTop="-15" ClipRight="5.5" ClipBottom="-11" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1553,8 +1553,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="57" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="229" OffsetY="1358" OffsetZ="0">
-                                <Clip ClipLeft="1.5" ClipTop="-16" ClipRight="2" ClipBottom="-4" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="59" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="228" OffsetY="1357" OffsetZ="0">
+                                <Clip ClipLeft="2.5" ClipTop="-15" ClipRight="3" ClipBottom="-3" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1564,8 +1564,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="65" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="6" OffsetY="1432" OffsetZ="0">
-                                <Clip ClipLeft="4" ClipTop="-16" ClipRight="7.5" ClipBottom="-4" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="67" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="5" OffsetY="1431" OffsetZ="0">
+                                <Clip ClipLeft="5" ClipTop="-15" ClipRight="8.5" ClipBottom="-3" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1575,8 +1575,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="52" SizeY="26" BorderMode="Hard" TransparentForInput="True" OffsetX="83" OffsetY="1432" OffsetZ="0">
-                                <Clip ClipLeft="0.5" ClipTop="-16" ClipRight="-2" ClipBottom="-12" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="54" SizeY="28" BorderMode="Hard" TransparentForInput="True" OffsetX="82" OffsetY="1431" OffsetZ="0">
+                                <Clip ClipLeft="1.5" ClipTop="-15" ClipRight="-1" ClipBottom="-11" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1586,7 +1586,7 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="39" SizeY="27" BorderMode="Hard" TransparentForInput="True" OffsetX="163" OffsetY="1431" OffsetZ="0">
+                              <wucSpriteVisual SizeX="41" SizeY="29" BorderMode="Hard" TransparentForInput="True" OffsetX="162" OffsetY="1430" OffsetZ="0">
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
@@ -1596,8 +1596,8 @@
                                   </Mask>
                                 </MaskBrush>
                               </wucSpriteVisual>
-                              <wucSpriteVisual SizeX="62" SizeY="34" BorderMode="Hard" TransparentForInput="True" OffsetX="225" OffsetY="1432" OffsetZ="0">
-                                <Clip ClipLeft="5.5" ClipTop="-16" ClipRight="3" ClipBottom="-4" TransformMatrix="Identity" />
+                              <wucSpriteVisual SizeX="64" SizeY="36" BorderMode="Hard" TransparentForInput="True" OffsetX="224" OffsetY="1431" OffsetZ="0">
+                                <Clip ClipLeft="6.5" ClipTop="-15" ClipRight="4" ClipBottom="-3" TransformMatrix="Identity" />
                                 <MaskBrush>
                                   <Source>
                                     <ColorBrush Color="#ffffffff" />
