@@ -16,6 +16,7 @@
 #include "Duration.h"
 #include <FrameworkTheming.h>
 #include "RichEditGripperChild.h"
+#include "XamlProfilerTracing.h"
 
 // Sentinel values to trigger the create initialization of the pole parameters
 static const XFLOAT POLE_HEIGHT_INITIALIZATION_NEEDED = -1.0f;
@@ -463,10 +464,18 @@ Cleanup:
     xref_ptr<CTextSelectionGripper> thisTextSelectionGripper(static_sp_cast<CTextSelectionGripper>(storyboard->GetTargetObject()));
     IFCPTR_RETURN(thisTextSelectionGripper);
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::TouchSelectionGripperShowEnd(
+        reinterpret_cast<uint64_t>(thisTextSelectionGripper.get()),
+        !!thisTextSelectionGripper->m_isStartGripper,
+        static_cast<int32_t>(thisTextSelectionGripper->m_centerWorldCoordinate.x),
+        static_cast<int32_t>(thisTextSelectionGripper->m_centerWorldCoordinate.y));
+#else
     TraceTouchSelectionGripperShowEndInfo(
         thisTextSelectionGripper->m_isStartGripper,
         static_cast<XINT32>(thisTextSelectionGripper->m_centerWorldCoordinate.x),
         static_cast<XINT32>(thisTextSelectionGripper->m_centerWorldCoordinate.y));
+#endif
 
     return S_OK;
 }
@@ -858,10 +867,18 @@ void CTextSelectionGripper::UpdateCenterLocalCoordinate(
         SetContentDirty(DirtyFlags::Bounds);
         CUIElement::NWSetContentDirty(this, DirtyFlags::Bounds);
 
+#ifdef XAMLPROFILER_ENABLED
+        XamlProfilerTracing::TouchSelectionGripperReposition(
+            reinterpret_cast<uint64_t>(this),
+            !!m_isStartGripper,
+            static_cast<int32_t>(m_centerWorldCoordinate.x),
+            static_cast<int32_t>(m_centerWorldCoordinate.y));
+#else
         TraceTouchSelectionGripperRepositionInfo(
             m_isStartGripper,
             static_cast<XINT32>(m_centerWorldCoordinate.x),
             static_cast<XINT32>(m_centerWorldCoordinate.y));
+#endif
     }
     SetContentDirty(DirtyFlags::Render);
 }
@@ -980,10 +997,18 @@ _Check_return_ HRESULT CTextSelectionGripper::Show(bool fAnimate)
     // "Show" only if hidden or in process of hiding
     if (m_hideGripper || m_isHideAnimation)
     {
+#ifdef XAMLPROFILER_ENABLED
+        XamlProfilerTracing::TouchSelectionGripperShowBegin(
+            reinterpret_cast<uint64_t>(this),
+            !!m_isStartGripper,
+            static_cast<int32_t>(m_centerWorldCoordinate.x),
+            static_cast<int32_t>(m_centerWorldCoordinate.y));
+#else
         TraceTouchSelectionGripperShowBeginInfo(
             m_isStartGripper,
             static_cast<XINT32>(m_centerWorldCoordinate.x),
             static_cast<XINT32>(m_centerWorldCoordinate.y));
+#endif
 
         if (m_isHideAnimation)
         {
@@ -1008,10 +1033,18 @@ _Check_return_ HRESULT CTextSelectionGripper::Show(bool fAnimate)
         }
         else
         {
+#ifdef XAMLPROFILER_ENABLED
+             XamlProfilerTracing::TouchSelectionGripperShowEnd(
+                 reinterpret_cast<uint64_t>(this),
+                 !!m_isStartGripper,
+                 static_cast<int32_t>(m_centerWorldCoordinate.x),
+                 static_cast<int32_t>(m_centerWorldCoordinate.y));
+#else
              TraceTouchSelectionGripperShowEndInfo(
                  m_isStartGripper,
                  static_cast<XINT32>(m_centerWorldCoordinate.x),
                  static_cast<XINT32>(m_centerWorldCoordinate.y));
+#endif
         }
     }
 
@@ -1030,10 +1063,18 @@ _Check_return_ HRESULT CTextSelectionGripper::Hide(bool fAnimate)
     HRESULT hr = S_OK;
     if (!m_hideGripper) // Not fully hidden yet
     {
+#ifdef XAMLPROFILER_ENABLED
+        XamlProfilerTracing::TouchSelectionGripperHideBegin(
+            reinterpret_cast<uint64_t>(this),
+            !!m_isStartGripper,
+            static_cast<int32_t>(m_centerWorldCoordinate.x),
+            static_cast<int32_t>(m_centerWorldCoordinate.y));
+#else
         TraceTouchSelectionGripperHideBeginInfo(
                 m_isStartGripper,
                 static_cast<XINT32>(m_centerWorldCoordinate.x),
                 static_cast<XINT32>(m_centerWorldCoordinate.y));
+#endif
 
         if (fAnimate)
         {
@@ -1077,10 +1118,18 @@ _Check_return_ HRESULT CTextSelectionGripper::HideImmediately()
     // Make sure the pointer capture is released
     ReleaseGripperPointerCapture();
 
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::TouchSelectionGripperHideEnd(
+        reinterpret_cast<uint64_t>(this),
+        !!m_isStartGripper,
+        static_cast<int32_t>(m_centerWorldCoordinate.x),
+        static_cast<int32_t>(m_centerWorldCoordinate.y));
+#else
     TraceTouchSelectionGripperHideEndInfo(
         m_isStartGripper,
         static_cast<XINT32>(m_centerWorldCoordinate.x),
         static_cast<XINT32>(m_centerWorldCoordinate.y));
+#endif
 
     return S_OK;
 }

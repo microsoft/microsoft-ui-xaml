@@ -2,6 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif
 #include "ModernCollectionBasePanel.g.h"
 #include "ScrollViewer.g.h"
 #include "GroupStyle.g.h"
@@ -1006,11 +1009,19 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Generate(
     _In_ xaml_controls::LayoutReference referenceInformation,
     _In_ BOOLEAN goForward)
 {
+#ifdef XAMLPROFILER_ENABLED
+    XamlProfilerTracing::GenerateItemsStart(reinterpret_cast<uint64_t>(GetHandle()));
+#else
     TraceGenerateItemsBegin();
+#endif
 
     auto guard = wil::scope_exit([]()
     {
+#ifdef XAMLPROFILER_ENABLED
+        XamlProfilerTracing::GenerateItemsStop();
+#else
         TraceGenerateItemsEnd();
+#endif
     });
 
     // needed for Sticky Headers

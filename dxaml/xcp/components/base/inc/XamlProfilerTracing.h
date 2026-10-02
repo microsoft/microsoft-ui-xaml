@@ -333,6 +333,196 @@ public:
         uint64_t, NonLocalBudget,
         bool,     NonLocalAvailable,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // =====================================================================
+    // Element-Scoped Activity Events
+    //
+    // Each of these mirrors a retail Microsoft-Windows-XAML operation (layout,
+    // transition, focus, selection, virtualization, ...) that previously emitted
+    // no element identity, so an out-of-process consumer could only attribute it
+    // to an element by scope-nesting inference. The profiler copy carries the
+    // owning element's core pointer (CUIElement*/CDependencyObject*) directly as
+    // ElementId, so the consumer can attribute the operation to that element
+    // deterministically. ElementId is the same id space stitched across all other
+    // profiler events (reinterpret_cast<uint64_t> of the live core object); it is
+    // 0 only when the producing site legitimately has no element in scope.
+    //
+    // Routing model (see XAMLPROFILER_ENABLED): the two providers are mutually exclusive at
+    // each call site. A retail (shipping) build never defines XAMLPROFILER_ENABLED and emits
+    // only the retail Microsoft-Windows-XAML operation, exactly as before — existing xperf/WPA
+    // consumers are byte-for-byte unaffected. A profiler-enabled (chk/debug) build emits only
+    // the profiler copy on Microsoft-Windows-XAML-Profiler IN PLACE OF the retail marker, so a
+    // profiler build never double-logs the same operation on both providers. Each call site
+    // selects one branch with #ifdef XAMLPROFILER_ENABLED (profiler) / #else (retail). The
+    // consumer keys a scope by (provider + task) and pairs Start/Stop by opcode, so each activity
+    // below reuses the retail operation's name as its ETW task and preserves the Begin/End timing
+    // while adding ElementId.
+    //
+    // Exceptions (stay additive): a few sites keep the pre-existing retail Begin/End AND also emit
+    // the profiler marker, because the retail marker is not a same-location duplicate — its
+    // Begin/End brackets a whole pass/loop while the profiler marker is a per-iteration point event
+    // at a different line (RealizeTransition, GenerateMCContainer). Gating the pre-existing retail
+    // bracket there would change retail behavior, so it is left intact.
+    //
+    // Payload parity: where the retail marker carried extra payload (style name, focus
+    // direction, gripper coordinates, virtualization state, container index), the profiler
+    // copy carries the same payload PLUS ElementId, so a profiler build — which emits in place
+    // of the retail marker — loses no information the retail provider would have supplied.
+    //
+    // Two shapes are used:
+    //   * Activity events  (DEFINE_ELEMENT_ACTIVITY): a Start/Stop pair mirroring the
+    //     retail Begin/End so per-operation duration is preserved. ElementId may ride
+    //     the Start (element known on entry) or the Stop (element known only on exit,
+    //     e.g. container generation); the consumer back-fills a scope from either edge.
+    //     An operation whose retail marker carried extra payload adds a matching overload
+    //     on the edge that carried it (e.g. GetBuiltInStyleStop with the style name).
+    //   * Point events     (DEFINE_TRACELOGGING_EVENT_PARAMn): a single marker for
+    //     operations whose retail form is win:Info, or whose element identity is
+    //     per-iteration inside a pass-level Begin/End (RealizeTransition). The field
+    //     count mirrors the retail payload (ElementId plus any extra fields it carried).
+    // =====================================================================
+
+    // Emits a Start/Stop activity pair on this provider under one ETW task (== OpName),
+    // so the consumer pairs them into a duration exactly like the retail Begin/End.
+    // Overloads let ElementId ride whichever edge knows the element; the empty edge
+    // carries opcode + level only.
+#define DEFINE_ELEMENT_ACTIVITY(OpName) \
+    static void OpName##Start(uint64_t ElementId) \
+    { \
+        TraceLoggingWrite(TraceLoggingType::Provider(), #OpName, \
+            TraceLoggingOpcode(WINEVENT_OPCODE_START), \
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE), \
+            TraceLoggingValue(ElementId, "ElementId")); \
+    } \
+    static void OpName##Start() \
+    { \
+        TraceLoggingWrite(TraceLoggingType::Provider(), #OpName, \
+            TraceLoggingOpcode(WINEVENT_OPCODE_START), \
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE)); \
+    } \
+    static void OpName##Stop(uint64_t ElementId) \
+    { \
+        TraceLoggingWrite(TraceLoggingType::Provider(), #OpName, \
+            TraceLoggingOpcode(WINEVENT_OPCODE_STOP), \
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE), \
+            TraceLoggingValue(ElementId, "ElementId")); \
+    } \
+    static void OpName##Stop() \
+    { \
+        TraceLoggingWrite(TraceLoggingType::Provider(), #OpName, \
+            TraceLoggingOpcode(WINEVENT_OPCODE_STOP), \
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE)); \
+    }
+
+    // Layout-manager passes (CLayoutManager) — ElementId is the layout root the pass ran for.
+    DEFINE_ELEMENT_ACTIVITY(FireLayoutUpdated);
+    DEFINE_ELEMENT_ACTIVITY(FireSizeChanged);
+    // Per-element size-changed notification — ElementId is the element whose size changed.
+    DEFINE_ELEMENT_ACTIVITY(IndividualSizeChanged);
+    // Root visual set on a visual tree — ElementId is the root element.
+    DEFINE_ELEMENT_ACTIVITY(PutRootVisual);
+
+    // Top-level layout passes (CLayoutManager::UpdateLayout) — ElementId is the layout root.
+    DEFINE_ELEMENT_ACTIVITY(Layout);
+    DEFINE_ELEMENT_ACTIVITY(Measure);
+    DEFINE_ELEMENT_ACTIVITY(Arrange);
+
+    // Layout transitions — ElementId is the element the transition targets.
+    // RealizeTransition stays a point event: its retail Begin/End brackets a whole
+    // pass while the element identity is per-iteration inside the loop.
+    DEFINE_TRACELOGGING_EVENT_PARAM1(RealizeTransition,
+        uint64_t, ElementId, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_ELEMENT_ACTIVITY(CancelTransitions);
+    DEFINE_ELEMENT_ACTIVITY(ProcessLayoutForTransition);
+
+    // Focus (CFocusManager) — ElementId is the element gaining/holding focus.
+    // UpdateFocus already carries the focused element on its Stop (matching the retail End's
+    // pNewFocus payload), so no extra overload is needed there.
+    DEFINE_ELEMENT_ACTIVITY(UpdateFocus);
+    DEFINE_ELEMENT_ACTIVITY(XYFocusEntered);
+    // XYFocusEntered adds the retail Begin's focus-direction string on the Start edge.
+    static void XYFocusEnteredStart(uint64_t ElementId, PCWSTR Direction)
+    {
+        TraceLoggingWrite(TraceLoggingType::Provider(), "XYFocusEntered",
+            TraceLoggingOpcode(WINEVENT_OPCODE_START),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+            TraceLoggingValue(ElementId, "ElementId"),
+            TraceLoggingValue(Direction, "Direction"));
+    }
+
+    // Text selection (TextSelectionManager) — ElementId is the owning text control.
+    DEFINE_ELEMENT_ACTIVITY(ChangeSelection);
+    DEFINE_ELEMENT_ACTIVITY(ExtendSelectionRange);
+
+    // Touch-selection grippers (CTextSelectionGripper) — ElementId is the gripper element.
+    // IsStartGripper/X/Y mirror the retail *Info markers (the gripper's start-vs-end role and its
+    // center world coordinate) so a profiler-only session keeps the gripper's placement.
+    DEFINE_TRACELOGGING_EVENT_PARAM4(TouchSelectionGripperShowBegin,
+        uint64_t, ElementId, bool, IsStartGripper, int32_t, X, int32_t, Y,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM4(TouchSelectionGripperShowEnd,
+        uint64_t, ElementId, bool, IsStartGripper, int32_t, X, int32_t, Y,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM4(TouchSelectionGripperHideBegin,
+        uint64_t, ElementId, bool, IsStartGripper, int32_t, X, int32_t, Y,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM4(TouchSelectionGripperHideEnd,
+        uint64_t, ElementId, bool, IsStartGripper, int32_t, X, int32_t, Y,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM4(TouchSelectionGripperReposition,
+        uint64_t, ElementId, bool, IsStartGripper, int32_t, X, int32_t, Y,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM4(TouchSelectionGripperTetherBegin,
+        uint64_t, ElementId, bool, IsStartGripper, int32_t, X, int32_t, Y,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_TRACELOGGING_EVENT_PARAM4(TouchSelectionGripperTetherEnd,
+        uint64_t, ElementId, bool, IsStartGripper, int32_t, X, int32_t, Y,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Items virtualization (dxaml projection layer) — ElementId is the container/panel.
+    // GenerateContainer carries ElementId on its Stop: the container is only realized near the
+    // end of the generate call (inverted Start/Stop pair; CopyTo keeps it live through Cleanup).
+    DEFINE_ELEMENT_ACTIVITY(GenerateContainer);
+    DEFINE_ELEMENT_ACTIVITY(GenerateItems);
+    // GenerateMCContainer is a point event: its container is moved out (MoveTo) before Cleanup,
+    // so it emits a single marker at realization instead of an inverted Start/Stop pair. Index is
+    // the retail Begin's item-collection index.
+    DEFINE_TRACELOGGING_EVENT_PARAM2(GenerateMCContainer,
+        uint64_t, ElementId, int32_t, Index, TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_ELEMENT_ACTIVITY(PlaceElement);
+    // PlaceElement adds the retail Begin's data index on the Start edge.
+    static void PlaceElementStart(uint64_t ElementId, int32_t DataIndex)
+    {
+        TraceLoggingWrite(TraceLoggingType::Provider(), "PlaceElement",
+            TraceLoggingOpcode(WINEVENT_OPCODE_START),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+            TraceLoggingValue(ElementId, "ElementId"),
+            TraceLoggingValue(DataIndex, "DataIndex"));
+    }
+    DEFINE_ELEMENT_ACTIVITY(PrepareContainer);
+    DEFINE_ELEMENT_ACTIVITY(MeasureChild);
+    DEFINE_ELEMENT_ACTIVITY(VirtualizationMeasure);
+    // VirtualizationIsEnabledByLayout stays a point event (retail form is win:Info).
+    // IsVirtualizationActive/ElementName/ClassName/ParentClassName mirror the retail Info1 payload.
+    DEFINE_TRACELOGGING_EVENT_PARAM5(VirtualizationIsEnabledByLayout,
+        uint64_t, ElementId, bool, IsVirtualizationActive, PCWSTR, ElementName, PCWSTR, ClassName, PCWSTR, ParentClassName,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    DEFINE_ELEMENT_ACTIVITY(GetElementCount);
+
+    // Control template/style operations (CControl) — ElementId is the control.
+    DEFINE_ELEMENT_ACTIVITY(RefreshTemplateBindings);
+    DEFINE_ELEMENT_ACTIVITY(GetBuiltInStyle);
+    // GetBuiltInStyle adds the retail End's resolved style target-type name on the Stop edge.
+    static void GetBuiltInStyleStop(uint64_t ElementId, PCWSTR StyleName)
+    {
+        TraceLoggingWrite(TraceLoggingType::Provider(), "GetBuiltInStyle",
+            TraceLoggingOpcode(WINEVENT_OPCODE_STOP),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+            TraceLoggingValue(ElementId, "ElementId"),
+            TraceLoggingValue(StyleName, "StyleName"));
+    }
+
+#undef DEFINE_ELEMENT_ACTIVITY
 };
 
 #endif // XAMLPROFILER_ENABLED
