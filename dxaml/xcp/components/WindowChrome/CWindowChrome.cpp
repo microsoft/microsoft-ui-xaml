@@ -171,7 +171,7 @@ LRESULT CWindowChrome::OnCreate()
 }
 
 // Method Description:
-// - Computes the legacy spacing above XAML within the client area.
+// - Computes the existing spacing above XAML within the client area.
 //   This is not a measurement of the native border or current XAML position.
 // - Uses only cached Window.ExtendsContentIntoTitleBar and maximization state;
 //   fullscreen and borderless presenters are not checked.
@@ -194,6 +194,8 @@ int CWindowChrome::GetTopBorderHeight() const noexcept
 // Query failures are logged and also return false.
 bool CWindowChrome::ShouldPaintTopRowOfClientArea()
 {
+    ASSERT(WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_topLevelWindow));
+
     const int topBorderHeight = GetTopBorderHeight();
     const auto style = ::GetWindowLongPtrW(m_topLevelWindow, GWL_STYLE);
     // Fullscreen and borderless windows can still leave a one-pixel gap above XAML.

@@ -1312,7 +1312,7 @@ bool DesktopWindowImpl::TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF b
 {
     ASSERT(WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_hwnd.get()));
 
-    // The legacy XAML offset can remain in fullscreen/borderless windows.
+    // The one-pixel XAML offset can remain in fullscreen/borderless windows.
     // Only treat it as a border when the HWND still has a native frame.
     const bool shouldPaintTopRow = m_windowChrome && m_windowChrome->ShouldPaintTopRowOfClientArea();
     const RECT rc = WindowHelpers::GetClientWindowCoordinates(m_hwnd.get());
@@ -1331,9 +1331,9 @@ bool DesktopWindowImpl::TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF b
 
     // We're going to draw two rectangles: one for the gap between the top of the client area and the WinUI
     // content, and one behind the WinUI content itself (to match behavior of WM_ERASEBKGND).
-    // In practice, the borderRect is 1px high because we leave a 1px gap between the top of the client area and the island.
-    const RECT borderRect = { rc.left, rc.top, rc.right, rc.top + topRowHeight };
-    const RECT backgroundRect = { rc.left, borderRect.bottom, rc.right, rc.bottom };
+    // In practice, the topRowRect is 1px high because we leave a 1px gap between the top of the client area and the island.
+    const RECT topRowRect = { rc.left, rc.top, rc.right, rc.top + topRowHeight };
+    const RECT backgroundRect = { rc.left, topRowRect.bottom, rc.right, rc.bottom };
 
     if (backgroundRect.top < backgroundRect.bottom)
     {
@@ -1372,7 +1372,7 @@ bool DesktopWindowImpl::TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF b
     const HBRUSH borderBrush = isHighContrast
         ? ::GetSysColorBrush(COLOR_WINDOWFRAME)
         : static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
-    if (!::FillRect(hdc, &borderRect, borderBrush))
+    if (!::FillRect(hdc, &topRowRect, borderBrush))
     {
         TRACE_HR_NORETURN(E_FAIL);
         return false;
