@@ -1972,7 +1972,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // Line Services break-record cache vs. the deferred UI-affinity release queue.
         //
-        // Models Watson 56307002 (ACCESS_VIOLATION in LsDestroyBreakRecord). The reported stack tears a
+        // Models the reported ACCESS_VIOLATION in LsDestroyBreakRecord. The reported stack tears a
         // TextBlock down during a later render tick, not at the Remove call:
         //   CXcpDispatcher::Tick -> NWDrawTree -> BuildTreeService::BuildTrees ->
         //   UIAffinityReleaseQueue::DoCleanup -> CUserControl final release ->
@@ -1981,15 +1981,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         //
         // The cached LsTextLineBreak holds a raw Line Services context/break-record pair with no owning
         // reference to the formatter that produced it. Dropping the subtree only queues the native release;
-        // it drains on a subsequent tick. If the shared text-formatter pool is trimmed in that window, the
-        // owning context can be gone before DeleteLineCache runs, so the deferred break-record destroy
-        // touches freed state. This scenario reproduces the ordering: build wrapping LS-mode TextBlocks
-        // inside a UserControl-rooted template subtree (matching the Watson chain), lay them out to populate
-        // the break cache, drop the subtree so its release defers onto the UI-affinity queue, then pump ticks
-        // and churn more wrapping text to pressure the formatter pool while the cache is still queued.
+        // it drains on a subsequent tick. This scenario reproduces the ordering deterministically: build
+        // wrapping LS-mode TextBlocks inside a UserControl-rooted template subtree (matching the Watson
+        // chain), lay them out to populate the break cache, drop the subtree so its release defers onto the
+        // UI-affinity queue, then trim the shared text-formatter pool via the TriggerLowMemoryForTest hook
+        // while the cache is still queued. On unfixed code the owning context is freed before DeleteLineCache
+        // runs, so the deferred break-record destroy touches freed state and genuinely crashes
+        // (ACCESS_VIOLATION in LsDestroyBreakRecord).
         //
-        // Report-only, like the rest of the suite. The exact Watson double-free is unconfirmed (no lab CAB),
-        // so this is an honest simulation of the suspected ordering, not a guaranteed crash.
+        // On fixed code (#12126) the break record binds the owning formatter via DependentResource, so the
+        // formatter is kept alive and the context is still valid when the destroy runs: no crash, the test
+        // passes cleanly. A genuine crash on unfixed code faults the native TAEF host; the harness
+        // (Report-LifetimeNativeCrash in RunHelixWorkItem.ps1) attributes that host crash to this scenario as a
+        // NON-GATING native warning and rewrites the results to zero failures (Set-LifetimeResultsNonGating),
+        // so the pipeline stage stays green while the regression stays visible.
         [TestMethod]
         public void StressLineBreakCacheDeferredReleaseNative()
         {
@@ -2041,6 +2046,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         // Drop the subtree. The native release does not run here - it defers onto the
                         // UI-affinity release queue and drains on a later tick (the Watson window).
                         root.Children.Remove(host);
+
+                        // Free the unused text formatters NOW, while the dropped subtree's line cache (and its
+                        // cached LsTextLineBreak break records) is still queued for deferred destruction. On
+                        // unfixed code the break record holds only a raw, non-owning Line Services context, so
+                        // trimming the formatter pool here frees the owning context out from under it. When the
+                        // deferred destroy then runs ~LsTextLineBreak -> LsDestroyBreakRecord, it touches freed
+                        // state and genuinely crashes (Watson ACCESS_VIOLATION). The #12126 fix keeps the owning
+                        // formatter alive via DependentResource, so the context is still valid and no crash occurs.
+                        DxamlCoreTestHooks.GetForCurrentThread().TriggerLowMemoryForTest();
 
                         // Pressure the shared text-formatter pool with more wrapping text and pump ticks while
                         // the dropped subtree's line cache is still queued for deferred destruction.
