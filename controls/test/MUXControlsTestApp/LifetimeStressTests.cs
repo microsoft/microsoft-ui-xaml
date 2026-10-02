@@ -2097,19 +2097,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     //    -> ~LsTextLineBreak -> LsDestroyBreakRecord. On unfixed code the destroy touches the freed
                     //    context and genuinely crashes (Watson ACCESS_VIOLATION), faulting the native TAEF host;
                     //    the #12126 fix keeps the owning formatter alive via DependentResource, so the context is
-                    //    still valid and the destroy is safe.
-                    //
-                    //    Drive several render ticks here so the two-phase drain (unreachable-cleanup then
-                    //    final-release) completes *within this scenario body*, before the "completed" marker.
-                    //    IdleSynchronizer forces a render tick but does not wait for BuildTree completion
-                    //    (TODO 27870237), and DoCleanup can time-slice the final-release phase across ticks,
-                    //    so a single pump is not enough. Pumping a few makes the dangling destroy fault here -
-                    //    where the harness attributes it to StressLineBreakCacheDeferredReleaseNative - instead
-                    //    of slipping to host teardown, where a late deferred destroy is logged as 'unknown'.
-                    for (int drain = 0; drain < 6; drain++)
-                    {
-                        PumpUI();
-                    }
+                    //    still valid and the destroy is safe. Two passes cover the two-phase (unreachable-cleanup
+                    //    then final-release) drain.
+                    PumpUI();
+                    PumpUI();
                 }
 
                 SafeUI(() => Content = null);

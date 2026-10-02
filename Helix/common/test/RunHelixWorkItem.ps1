@@ -235,30 +235,10 @@ function Report-LifetimeNativeCrash
     $crashDetected = ($teExitCode -ne 0) -or ($newDumps.Count -gt 0) -or ($inFlight.Count -gt 0)
 
     $scenarioLabel = "none"
-    $attributionBasis = "none"
     $dumpNames = @()
     if ($crashDetected)
     {
-        # Attribute the crash. A scenario that started but never completed was mid-flight when the host
-        # died (strongest signal). Otherwise the host died during end-of-test teardown - a deferred native
-        # release running after the last scenario's 'completed' marker - so attribute to the most recently
-        # started scenario rather than discarding the signal as 'unknown'. Only fall back to 'unknown' when
-        # no scenario markers were captured at all (e.g. the console log was never flushed).
-        if ($inFlight.Count -gt 0)
-        {
-            $scenarioLabel = $inFlight -join ", "
-            $attributionBasis = "in-flight"
-        }
-        elseif ($startedScenarios.Count -gt 0)
-        {
-            $scenarioLabel = $startedScenarios[$startedScenarios.Count - 1]
-            $attributionBasis = "post-completion teardown (suspected)"
-        }
-        else
-        {
-            $scenarioLabel = "unknown"
-            $attributionBasis = "no scenario markers captured"
-        }
+        $scenarioLabel = if ($inFlight.Count -gt 0) { $inFlight -join ", " } else { "unknown" }
 
         # Name each dump after the scenario so it carries attribution and gets upload priority.
         $safeScenario = ($scenarioLabel -replace '[^A-Za-z0-9._-]', '_')
@@ -279,8 +259,8 @@ function Report-LifetimeNativeCrash
         $dumpLabel = if ($dumpNames.Count -gt 0) { $dumpNames -join ", " } else { "none captured" }
 
         # Non-gating warning: visible in the pipeline UI but doesn't fail the stage.
-        Write-Host "##vso[task.logissue type=warning]Native lifetime crash in scenario '$scenarioLabel' [$attributionBasis] (dump: $dumpLabel)"
-        Write-Host "Lifetime stress: native host crash detected (te.exe exit code=$teExitCode, new dumps=$($newDumps.Count), scenario='$scenarioLabel', basis='$attributionBasis'). Emitted a non-gating warning; the stage stays green."
+        Write-Host "##vso[task.logissue type=warning]Native lifetime crash in scenario '$scenarioLabel' (dump: $dumpLabel)"
+        Write-Host "Lifetime stress: native host crash detected (te.exe exit code=$teExitCode, new dumps=$($newDumps.Count), in-flight scenario(s)='$scenarioLabel'). Emitted a non-gating warning; the stage stays green."
     }
 
     # Per-work-item record for the PostTestRun aggregation step
@@ -296,7 +276,6 @@ function Report-LifetimeNativeCrash
             newDumpCount         = $newDumps.Count
             inFlightScenarios    = @($inFlight)
             crashScenario        = $scenarioLabel
-            attributionBasis     = $attributionBasis
             dumps                = @($dumpNames)
             warningScenarios     = @($warningScenarios)
             managedWarningObjects = @($managedWarningObjects)
