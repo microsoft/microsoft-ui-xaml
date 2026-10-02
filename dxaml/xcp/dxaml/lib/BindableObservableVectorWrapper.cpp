@@ -474,18 +474,19 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
         m_moveView.emplace(sourceSize, oldIndex, newIndex, oldCount);
         auto clearMoveView = wil::scope_exit([this]()
         {
+            // IFC also leaves this scope before Cleanup raises a Reset.
             m_moveView.reset();
         });
 
-        for (UINT removed = 0; removed < oldCount && SUCCEEDED(hr) && !m_sourceChangedDuringMove; ++removed)
+        for (UINT removed = 0; removed < oldCount && !m_sourceChangedDuringMove; ++removed)
         {
             m_moveView->RemoveNext();
-            hr = RaiseVectorChanged(wfc::CollectionChange_ItemRemoved, oldIndex);
+            IFC(RaiseVectorChanged(wfc::CollectionChange_ItemRemoved, oldIndex));
         }
-        for (UINT inserted = 0; inserted < oldCount && SUCCEEDED(hr) && !m_sourceChangedDuringMove; ++inserted)
+        for (UINT inserted = 0; inserted < oldCount && !m_sourceChangedDuringMove; ++inserted)
         {
             m_moveView->InsertNext();
-            hr = RaiseVectorChanged(wfc::CollectionChange_ItemInserted, newIndex + inserted);
+            IFC(RaiseVectorChanged(wfc::CollectionChange_ItemInserted, newIndex + inserted));
         }
 
         resetRequired = m_sourceChangedDuringMove;
@@ -494,22 +495,22 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
 Cleanup:
     m_preparingMove = false;
     m_sourceChangedDuringMove = false;
-    if (FAILED(hr) || resetRequired)
+    if (FAILED(hr))
     {
-        // The source has already changed, even if preparation failed before creating a view.
-        // Notify consumers against the real source, never the intermediate projection.
-        // Preserve the original language exception if the recovery notification also fails.
+        // Reset is best effort after a failure. Its handlers may replace error info
+        // even when they succeed, so always restore the original error info.
         ErrorInfo errorInfo;
-        const bool restoreErrorInfo = FAILED(hr) && SUCCEEDED(errorInfo.GetFromThread());
-        const HRESULT resetResult = RaiseVectorChanged(wfc::CollectionChange_Reset, 0);
-        if (SUCCEEDED(hr))
-        {
-            hr = resetResult;
-        }
-        else if (restoreErrorInfo)
+        const bool restoreErrorInfo = SUCCEEDED(errorInfo.GetFromThread());
+        IGNOREHR(RaiseVectorChanged(wfc::CollectionChange_Reset, 0));
+        if (restoreErrorInfo)
         {
             IGNOREHR(errorInfo.SetOnThread());
         }
+    }
+    else if (resetRequired)
+    {
+        // No prior error: a failed recovery Reset is the failure to return.
+        hr = RaiseVectorChanged(wfc::CollectionChange_Reset, 0);
     }
 
     RRETURN(hr);
