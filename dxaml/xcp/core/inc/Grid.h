@@ -154,6 +154,13 @@ private:
 
     void EnsureTempDefinitionsStorage(unsigned int minCount);
 
+    void AdjustRectForChildLayoutRounding(
+        _In_ CUIElement* pChild,
+        _Inout_ XRECTF& rect,
+        bool adjustX,
+        bool adjustY
+        );
+
     void DistributeStarSpace(
         _In_reads_(cStarDefinitions) CDefinitionBase** ppStarDefinitions,
         XUINT32 cStarDefinitions,
