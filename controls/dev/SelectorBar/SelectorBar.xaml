@@ -45,6 +45,7 @@
     <Style TargetType="controls:SelectorBarItem" BasedOn="{StaticResource DefaultSelectorBarItemStyle}"/>
 
     <Style x:Key="DefaultSelectorBarItemStyle" TargetType="controls:SelectorBarItem">
+        <Setter Property="Background" Value="{ThemeResource SelectorBarItemBackground}"/>
         <Setter Property="BackgroundSizing" Value="OuterBorderEdge"/>
         <Setter Property="Foreground" Value="{ThemeResource SelectorBarItemForeground}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource SelectorBarItemBorderBrush}"/>
@@ -115,6 +116,9 @@
                                 </VisualState>
                                 <VisualState x:Name="SelectedPointerOver">
                                     <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemBackgroundSelected}"/>
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_TextVisual" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemForegroundPointerOver}"/>
                                         </ObjectAnimationUsingKeyFrames>
@@ -132,6 +136,9 @@
                                 </VisualState>
                                 <VisualState x:Name="SelectedPressed">
                                     <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="Background">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemBackgroundSelected}"/>
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_TextVisual" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SelectorBarItemForegroundPointerOver}"/>
                                         </ObjectAnimationUsingKeyFrames>
