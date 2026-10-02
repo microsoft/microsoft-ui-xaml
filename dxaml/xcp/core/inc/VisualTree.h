@@ -135,8 +135,7 @@ public:
     xref::details::control_block* EnsureControlBlock();
 
     void SetShouldConstrainPopupsToWorkArea(bool value) { m_shouldConstrainPopupsToWorkArea = value; }
-    bool ShouldConstrainPopupsToWorkArea() const { return m_shouldConstrainPopupsToWorkArea; }
-
+    bool ShouldConstrainPopupsToWorkArea() const;
 private:
     static VisualTree* GetVisualTreeViaTreeWalkNoRef(_In_ CDependencyObject* element, LookupOptions options = LookupOptions::WarningIfNotFound);
 
