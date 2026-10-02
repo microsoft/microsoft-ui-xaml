@@ -62,6 +62,23 @@ Cleanup:
     }
     RRETURN(hr);
 }
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DxamlCoreTestHooksGenerated::TriggerLowMemoryForTest()
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "DxamlCoreTestHooks_TriggerLowMemoryForTest", 0);
+    }
+
+    IFC(CheckThread());
+    IFC(static_cast<DxamlCoreTestHooks*>(this)->TriggerLowMemoryForTestImpl());
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "DxamlCoreTestHooks_TriggerLowMemoryForTest", hr);
+    }
+    RRETURN(hr);
+}
 
 HRESULT DirectUI::DxamlCoreTestHooksFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {

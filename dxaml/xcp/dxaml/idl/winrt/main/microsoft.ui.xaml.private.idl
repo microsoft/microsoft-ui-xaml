@@ -348,6 +348,7 @@ namespace Microsoft.UI.Xaml
     {
         DxamlCoreTestHooks();
         void ResetOptionalChanges();
+        void TriggerLowMemoryForTest();
         static Microsoft.UI.Xaml.DxamlCoreTestHooks GetForCurrentThread();
         static void PerformProcessWideLeakDetection(Int32 threshold);
     };
