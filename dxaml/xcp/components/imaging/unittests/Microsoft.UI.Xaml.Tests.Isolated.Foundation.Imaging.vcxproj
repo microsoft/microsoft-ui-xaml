@@ -49,6 +49,7 @@
         <ClInclude Include="AnimatedGifUnitTests.h"/>
         <ClInclude Include="AsyncImageDecoderTests.h"/>
         <ClInclude Include="DecodingUnitTests.h"/>
+        <ClInclude Include="HardwareTileCopyTests.h"/>
         <ClInclude Include="ImageCacheTests.h"/>
         <ClInclude Include="ImageMetadataTests.h"/>
         <ClInclude Include="ImageTaskDispatcherTests.h"/>
@@ -59,6 +60,7 @@
         <ClCompile Include="AsyncImageDecoderTests.cpp"/>
         <ClCompile Include="AnimatedGifUnitTests.cpp"/>
         <ClCompile Include="DecodingUnitTests.cpp"/>
+        <ClCompile Include="HardwareTileCopyTests.cpp"/>
         <ClCompile Include="ImageCacheTests.cpp"/>
         <ClCompile Include="ImageMetadataTests.cpp"/>
         <ClCompile Include="ImageTaskDispatcherTests.cpp"/>
