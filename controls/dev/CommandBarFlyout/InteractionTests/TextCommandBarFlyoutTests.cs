@@ -524,18 +524,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "C")]
         public void ValidateRightClickOnEmptyTextBoxDoesNotShowFlyout()
         {
-            using (var setup = new TestSetupHelper(new[] { "CommandBarFlyout Tests", "Extra CommandBarFlyout Tests" }))
+            // The test app disables the CommandBarFlyout open/close animations by default, but the flicker
+            // this test guards against only used to be visible while the close animation played.
+            Log.Comment("Re-enable animations for this test.");
+            new CheckBox(FindElement.ById("LongAnimationsDisabled")).Uncheck();
+
+            try
             {
-                Log.Comment("Clear the clipboard.");
-                FindElement.ById<Button>("ClearClipboardContentsButton").InvokeAndWait();
+                using (var setup = new TestSetupHelper(new[] { "CommandBarFlyout Tests", "Extra CommandBarFlyout Tests" }))
+                {
+                    Log.Comment("Clear the clipboard.");
+                    FindElement.ById<Button>("ClearClipboardContentsButton").InvokeAndWait();
 
-                Log.Comment("Right-click on the text box.");
-                InputHelper.RightClick(FindElement.ById("TextBox"));
+                    Log.Comment("Right-click inside the text box - a right-click on its very corner never reaches the text.");
+                    var textBox = FindElement.ById("TextBox");
+                    InputHelper.RightClick(textBox, 10, textBox.BoundingRectangle.Height / 2);
 
-                Log.Comment("Count the number of open popups.");
-                FindElement.ById<Button>("CountPopupsButton").InvokeAndWait();
+                    Log.Comment("Count the number of open popups.");
+                    FindElement.ById<Button>("CountPopupsButton").InvokeAndWait();
 
-                Verify.AreEqual("0", FindElement.ById<Edit>("PopupCountTextBox").Value);
+                    Verify.AreEqual("0", FindElement.ById<Edit>("PopupCountTextBox").Value);
+
+                    Log.Comment("The flyout should never have been rendered either - it used to flicker on screen before closing itself.");
+                    Verify.AreEqual("0", FindElement.ById<Edit>("FlyoutVisibleFrameCountTextBox").Value);
+                }
+            }
+            finally
+            {
+                var animationsDisabledCheckBox = TryFindElement.ById("LongAnimationsDisabled");
+
+                if (animationsDisabledCheckBox != null)
+                {
+                    new CheckBox(animationsDisabledCheckBox).Check();
+                }
             }
         }
 
