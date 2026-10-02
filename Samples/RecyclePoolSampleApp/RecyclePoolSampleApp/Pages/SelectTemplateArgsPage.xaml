@@ -1,0 +1,96 @@
+<Page
+    x:Class="RecyclePoolSampleApp.Pages.SelectTemplateArgsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:common="using:RecyclePoolSampleApp.Common"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <Page.Resources>
+        <DataTemplate x:Key="HeaderTemplate">
+            <Border Background="#2F5D8C" CornerRadius="4" Padding="10" Margin="0,0,0,4">
+                <TextBlock Text="{Binding Label}" Foreground="White"
+                           Style="{StaticResource BodyStrongTextBlockStyle}" />
+            </Border>
+        </DataTemplate>
+        <DataTemplate x:Key="ItemTemplate">
+            <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1" CornerRadius="4" Padding="10" Margin="16,0,0,4">
+                <TextBlock Text="{Binding Label}" />
+            </Border>
+        </DataTemplate>
+        <DataTemplate x:Key="FooterTemplate">
+            <Border Background="#2F7D5A" CornerRadius="4" Padding="6" Margin="0,0,0,10">
+                <TextBlock Text="{Binding Label}" Foreground="White" FontSize="12" />
+            </Border>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid Padding="16" ColumnSpacing="16" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="460" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.ColumnSpan="2" Spacing="4">
+            <TextBlock Text="SelectTemplateEventArgs" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="The args object passed to SelectTemplateKey. DataContext and Owner are read-only inputs; TemplateKey is the output the handler must fill in. The same instance is reused for every call, so it must not be cached." />
+        </StackPanel>
+
+        <Border Grid.Row="1" BorderThickness="1" CornerRadius="4"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+            <ScrollViewer x:Name="Scroller" Padding="8">
+                <muxc:ItemsRepeater x:Name="Repeater">
+                    <muxc:ItemsRepeater.Layout>
+                        <muxc:StackLayout />
+                    </muxc:ItemsRepeater.Layout>
+                </muxc:ItemsRepeater>
+            </ScrollViewer>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" Grid.Column="1">
+            <StackPanel Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Content="Scroll down" Click="OnScrollDown" />
+                    <Button Content="Clear log" Click="OnClearLog" />
+                </StackPanel>
+
+                <TextBlock x:Name="ResultText" TextWrapping="Wrap"
+                           FontFamily="Consolas"
+                           Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="4" Padding="10">
+                    <StackPanel>
+                        <TextBlock Text="Last SelectTemplateEventArgs" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock x:Name="ArgsText" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="4" Padding="10">
+                    <StackPanel>
+                        <TextBlock Text="Factory state" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock x:Name="StateText" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="4" Padding="10">
+                    <StackPanel>
+                        <TextBlock Text="Args log" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock x:Name="LogText" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
