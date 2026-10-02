@@ -2946,7 +2946,7 @@ namespace Microsoft.UI.Xaml.Controls
     [NativeName("CUIElementCollection")]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 1)]
     [Guids(ClassGuid = "afdb2a69-86a2-4fac-8be7-2daa120c090d")]
-    public sealed class UIElementCollection
+    public class UIElementCollection
      : Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection<UIElement>
     {
         [NativeStorageType(ValueType.valueObject)]
@@ -2958,7 +2958,7 @@ namespace Microsoft.UI.Xaml.Controls
             set;
         }
 
-        internal UIElementCollection() { }
+        public UIElementCollection() { }
 
         [PInvoke]
         [Version(2)]
