@@ -23,12 +23,13 @@ namespace DirectUI
 
         bool HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, _Out_ LRESULT* pResult);
         void ResizeContainer(WPARAM wParam, LPARAM lParam);
-        void MoveContainer(WPARAM wParam, LPARAM lParam);
+        void RefreshContainerSizeAndPosition();
         DesktopWindowImpl* GetDesktopWindowNoRef() const { return m_desktopWindow; }
         HWND GetPositioningBridgeWindowHandle() const;
         ctl::ComPtr<ixp::IAppWindow> GetAppWindow() const;
+        _Check_return_ HRESULT GetAppWindow(_Outptr_result_maybenull_ ixp::IAppWindow** appWindow) const;
         bool CanDrag() const;
-        int GetTopBorderHeight();
+        bool ShouldPaintTopRowOfClientArea();
         void UpdateCanDragStatus(bool enabled);
 
         template <typename T>

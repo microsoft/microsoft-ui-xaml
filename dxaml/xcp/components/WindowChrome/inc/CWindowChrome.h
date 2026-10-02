@@ -66,6 +66,7 @@ public:
 
     bool IsTitlebarVisible() const;
     int GetTopBorderHeight() const noexcept;
+    bool ShouldPaintTopRowOfClientArea();
     _Check_return_ HRESULT ConfigureWindowChrome();
     _Check_return_ HRESULT ApplyStyling();
     _Check_return_ HRESULT SetFocusIfNeeded();
@@ -85,7 +86,7 @@ private:
     // as the custom titlebar's glass window would otherwise intercept input to it and make it inoperable
     HRESULT RefreshToolbarOffset();
     
-    _Check_return_ HRESULT UpdateDwmFrameMargins(int topBorderHeight);
+    _Check_return_ HRESULT UpdateDwmFrameMargins();
 
     bool m_bIsActive = false;
     HWND m_topLevelWindow = NULL;

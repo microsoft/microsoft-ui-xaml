@@ -372,12 +372,295 @@ namespace
         VerifyWindowTopBorderPainting(false);
     }
 
+    void WindowIntegrationTests::WindowTopBorderEraseDuringClose()
+    {
+        TestCleanupWrapper cleanup;
+        WEX::Common::String optionalChangesValue;
+        VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"XamlOptionalChanges", optionalChangesValue));
+        const bool isChangeEnabled = optionalChangesValue.CompareNoCase(L"FixWindowTopBorder:true") == 0;
+        VERIFY_ARE_EQUAL(isChangeEnabled,
+            xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::FixWindowTopBorder));
+
+        HIGHCONTRASTW highContrast = { sizeof(HIGHCONTRASTW) };
+        VERIFY_IS_TRUE(!!::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, 0));
+        const bool isHighContrast = (highContrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
+
+        for (const bool useAppWindow : { false, true })
+        {
+            LOG_OUTPUT(L"Close-time erase: ECITB via %s; fix enabled: %d",
+                useAppWindow ? L"AppWindow" : L"Window", isChangeEnabled);
+            HWND windowHandle = nullptr;
+            COLORREF backgroundColor = CLR_INVALID;
+            bool closeInProgress = false;
+            int closingVisibilityNotifications = 0;
+            WindowAutoCloser window;
+            auto visibilityChangedRegistration = CreateSafeEventRegistration(xaml::Window, VisibilityChanged);
+
+            RunOnUIThread([&]()
+            {
+                window.Attach(ref new xaml::Window());
+                window->Content = ref new xaml_controls::Grid();
+                if (useAppWindow)
+                {
+                    window->AppWindow->TitleBar->ExtendsContentIntoTitleBar = true;
+                }
+                else
+                {
+                    window->ExtendsContentIntoTitleBar = true;
+                }
+                window->Activate();
+                windowHandle = GetWindowHandle(window.get());
+                // Close clears Content before erasing, so the application theme determines the background.
+                backgroundColor = isHighContrast ? ::GetSysColor(COLOR_WINDOW) :
+                    (xaml::Application::Current->RequestedTheme == xaml::ApplicationTheme::Light ?
+                        RGB(255, 255, 255) : RGB(0, 0, 0));
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(!!::IsWindowVisible(windowHandle));
+                VERIFY_IS_FALSE(!!::IsZoomed(windowHandle));
+                VERIFY_IS_FALSE(!!::IsIconic(windowHandle));
+                VERIFY_ARE_EQUAL(useAppWindow ? 0 : 1, GetDesktopChildSiteBridgeTopOffset(windowHandle));
+                visibilityChangedRegistration.Attach(window.get(),
+                    ref new wf::TypedEventHandler<Platform::Object^, xaml::WindowVisibilityChangedEventArgs^>(
+                        [&](Platform::Object^, xaml::WindowVisibilityChangedEventArgs^ e)
+                        {
+                            VERIFY_IS_FALSE(e->Visible);
+                            VERIFY_IS_TRUE(closeInProgress);
+                            ++closingVisibilityNotifications;
+                            VERIFY_IS_TRUE(!!::IsWindow(windowHandle), L"The HWND is still alive during the notification.");
+                            const auto colors = EraseWindowTopRows(windowHandle);
+                            VERIFY_ARE_EQUAL(backgroundColor, colors.first, L"Closing uses ordinary background erase, including the top row.");
+                            VERIFY_ARE_EQUAL(backgroundColor, colors.second, L"Closing erases the background below the top row.");
+
+                            // Exercise the other native-eligibility caller without changing window styles.
+                            const DWORD style = static_cast<DWORD>(::GetWindowLongPtrW(windowHandle, GWL_STYLE));
+                            STYLESTRUCT styles = { style, style };
+                            ::SendMessageW(windowHandle, WM_STYLECHANGED, static_cast<WPARAM>(GWL_STYLE),
+                                reinterpret_cast<LPARAM>(&styles));
+                        }));
+
+                closeInProgress = true;
+                window.Close();
+                closeInProgress = false;
+                VERIFY_ARE_EQUAL(1, closingVisibilityNotifications);
+                VERIFY_IS_FALSE(!!::IsWindow(windowHandle), L"Close must destroy the HWND after the notification.");
+                visibilityChangedRegistration.Detach();
+            });
+        }
+    }
+
+    void WindowIntegrationTests::WindowTopBorderMatchesSideBorders()
+    {
+        TestCleanupWrapper cleanup;
+        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::FixWindowTopBorder));
+        WEX::Common::String themeValue;
+        VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"Theme", themeValue));
+        const bool isDark = themeValue.CompareNoCase(L"Dark") == 0;
+        VERIFY_IS_TRUE(isDark || themeValue.CompareNoCase(L"Light") == 0);
+        const COLORREF backgroundColor = isDark ? RGB(0, 0, 0) : RGB(255, 255, 255);
+        HWND backdrop = nullptr;
+        auto closeBackdrop = wil::scope_exit([&]()
+        {
+            RunOnUIThread([&]() { if (backdrop) { ::DestroyWindow(backdrop); } });
+        });
+        WindowAutoCloser window;
+        WindowAutoCloser activationWindow;
+        HWND windowHandle = nullptr;
+        HWND activationWindowHandle = nullptr;
+        bool needsDwmWorkaround = false;
+        RunOnUIThread([&]()
+        {
+            window.Attach(ref new xaml::Window());
+            windowHandle = GetWindowHandle(window.get());
+            UINT borderThickness = 0;
+            const HRESULT hr = ::DwmGetWindowAttribute(windowHandle, DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
+                &borderThickness, sizeof(borderThickness));
+            VERIFY_IS_TRUE(SUCCEEDED(hr) || hr == E_INVALIDARG);
+            needsDwmWorkaround = hr == E_INVALIDARG;
+        });
+        if (!needsDwmWorkaround)
+        {
+            WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped, L"The DWM workaround only applies to Windows 10.");
+            return;
+        }
+
+        BOOL compositionEnabled = FALSE;
+        VERIFY_SUCCEEDED(::DwmIsCompositionEnabled(&compositionEnabled));
+        if (!compositionEnabled)
+        {
+            WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped, L"The composed border test requires DWM composition.");
+            return;
+        }
+
+        HIGHCONTRASTW highContrast = { sizeof(HIGHCONTRASTW) };
+        VERIFY_IS_TRUE(!!::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, 0));
+        if ((highContrast.dwFlags & HCF_HIGHCONTRASTON) != 0)
+        {
+            WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped,
+                L"High Contrast paints COLOR_WINDOWFRAME directly; the erase tests cover that path without changing machine settings.");
+            return;
+        }
+
+        RECT workArea{};
+        VERIFY_IS_TRUE(!!::SystemParametersInfoW(SPI_GETWORKAREA, 0, &workArea, 0));
+        VERIFY_IS_TRUE(workArea.right - workArea.left >= 740 && workArea.bottom - workArea.top >= 380,
+            L"The composed border test needs room for two non-overlapping windows.");
+        RunOnUIThread([&]()
+        {
+            // DWM blends inactive borders with what is behind the window. Keep
+            // that backdrop uniform without changing the desktop or its theme.
+            backdrop = ::CreateWindowExW(WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW, L"STATIC", L"",
+                WS_POPUP | SS_WHITERECT, workArea.left, workArea.top,
+                workArea.right - workArea.left, workArea.bottom - workArea.top,
+                nullptr, nullptr, ::GetModuleHandleW(nullptr), nullptr);
+            VERIFY_IS_TRUE(backdrop != nullptr);
+            VERIFY_IS_TRUE(!!::SetWindowPos(backdrop, HWND_TOP, 0, 0, 0, 0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW));
+            auto content = ref new xaml_controls::Grid();
+            content->RequestedTheme = isDark ? xaml::ElementTheme::Dark : xaml::ElementTheme::Light;
+            content->Background = ref new xaml_media::SolidColorBrush(isDark ? mu::Colors::Black : mu::Colors::White);
+            window->Content = content;
+            window->ExtendsContentIntoTitleBar = true;
+            VERIFY_IS_TRUE(!!::SetWindowPos(windowHandle, nullptr, workArea.left + 40, workArea.top + 40, 400, 300, SWP_NOZORDER));
+            window->Activate();
+
+            activationWindow.Attach(ref new xaml::Window());
+            activationWindowHandle = GetWindowHandle(activationWindow.get());
+            VERIFY_IS_TRUE(!!::SetWindowPos(activationWindowHandle, nullptr,
+                workArea.left + 480, workArea.top + 40, 220, 200, SWP_NOZORDER));
+        });
+
+        for (const bool active : { true, false })
+        {
+            RunOnUIThread([&]()
+            {
+                if (active)
+                {
+                    window->Activate();
+                }
+                else
+                {
+                    activationWindow->Activate();
+                }
+                VERIFY_IS_TRUE(!!::RedrawWindow(windowHandle, nullptr, nullptr, RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW));
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            VERIFY_SUCCEEDED(::DwmFlush());
+            VERIFY_ARE_EQUAL(active ? windowHandle : activationWindowHandle, ::GetForegroundWindow());
+            int leftInset = 0;
+            int rightInset = 0;
+            RunOnUIThread([&]()
+            {
+                VERIFY_ARE_EQUAL(active ? windowHandle : activationWindowHandle, ::GetActiveWindow());
+                VERIFY_IS_FALSE(!!::IsZoomed(windowHandle));
+                VERIFY_IS_FALSE(!!::IsIconic(windowHandle));
+                VERIFY_ARE_EQUAL(1, GetDesktopChildSiteBridgeTopOffset(windowHandle));
+                leftInset = window->AppWindow->TitleBar->LeftInset;
+                rightInset = window->AppWindow->TitleBar->RightInset;
+            });
+            RECT frameBounds{};
+            VERIFY_SUCCEEDED(::DwmGetWindowAttribute(windowHandle, DWMWA_EXTENDED_FRAME_BOUNDS, &frameBounds, sizeof(frameBounds)));
+            POINT clientOrigin{};
+            VERIFY_IS_TRUE(!!::ClientToScreen(windowHandle, &clientOrigin));
+            RECT clientRect{};
+            VERIFY_IS_TRUE(!!::GetClientRect(windowHandle, &clientRect));
+            // Avoid the system caption controls, including when their physical width grows with DPI.
+            const LONG contentLeft = clientOrigin.x + leftInset;
+            const LONG contentRight = clientOrigin.x + clientRect.right - rightInset;
+            VERIFY_IS_TRUE(contentRight - contentLeft >= 4);
+            VERIFY_IS_TRUE(contentLeft >= frameBounds.left && contentRight <= frameBounds.right);
+            VERIFY_IS_TRUE(clientOrigin.y >= frameBounds.top && clientOrigin.y + 1 < frameBounds.bottom);
+            const POINT left = { frameBounds.left, (frameBounds.top + frameBounds.bottom) / 2 };
+            const POINT right = { frameBounds.right - 1, left.y };
+            const HDC screenDC = ::GetDC(nullptr);
+            VERIFY_IS_TRUE(screenDC != nullptr);
+            auto releaseScreenDC = wil::scope_exit([&]() { ::ReleaseDC(nullptr, screenDC); });
+            const LONG width = frameBounds.right - frameBounds.left;
+            const LONG height = frameBounds.bottom - frameBounds.top;
+            wil::unique_hdc snapshotDC(::CreateCompatibleDC(screenDC));
+            wil::unique_hbitmap snapshot(::CreateCompatibleBitmap(screenDC, width, height));
+            VERIFY_IS_TRUE(snapshotDC != nullptr && snapshot != nullptr);
+            const HGDIOBJ previousBitmap = ::SelectObject(snapshotDC.get(), snapshot.get());
+            VERIFY_IS_TRUE(previousBitmap != nullptr && previousBitmap != HGDI_ERROR);
+            auto restoreBitmap = wil::scope_exit([&]() { ::SelectObject(snapshotDC.get(), previousBitmap); });
+            std::vector<POINT> points{ left, right };
+            for (const LONG fraction : { 1, 2, 3 })
+            {
+                const LONG topX = contentLeft + (contentRight - contentLeft) * fraction / 4;
+                const LONG sideY = frameBounds.top + height * fraction / 4;
+                points.push_back({ topX, clientOrigin.y });
+                points.push_back({ topX, clientOrigin.y + 1 });
+                points.push_back({ left.x, sideY });
+                points.push_back({ right.x, sideY });
+            }
+            // DwmFlush waits for a frame, not the end of activation animations.
+            // Sample one snapshot at a time and require settled pixels, rather
+            // than comparing screen pixels from different animation frames.
+            std::vector<COLORREF> previousColors;
+            int stableFrames = 0;
+            const ULONGLONG deadline = ::GetTickCount64() + 5000;
+            while (stableFrames < 5 && ::GetTickCount64() < deadline)
+            {
+                VERIFY_SUCCEEDED(::DwmFlush());
+                VERIFY_IS_TRUE(!!::BitBlt(snapshotDC.get(), 0, 0, width, height,
+                    screenDC, frameBounds.left, frameBounds.top, SRCCOPY));
+                std::vector<COLORREF> colors;
+                for (const auto& point : points)
+                {
+                    const COLORREF color = ::GetPixel(snapshotDC.get(),
+                        point.x - frameBounds.left, point.y - frameBounds.top);
+                    VERIFY_ARE_NOT_EQUAL(CLR_INVALID, color);
+                    colors.push_back(color);
+                }
+                stableFrames = colors == previousColors ? stableFrames + 1 : 0;
+                previousColors = std::move(colors);
+                if (stableFrames < 5)
+                {
+                    ::Sleep(50);
+                }
+            }
+            VERIFY_ARE_EQUAL(5, stableFrames, L"Composed border pixels must settle after activation.");
+            auto samplePixel = [&](POINT point)
+            {
+                VERIFY_ARE_EQUAL(windowHandle, ::GetAncestor(::WindowFromPoint(point), GA_ROOT),
+                    L"Sampled pixels must not be occluded.");
+                const COLORREF color = ::GetPixel(snapshotDC.get(),
+                    point.x - frameBounds.left, point.y - frameBounds.top);
+                VERIFY_ARE_NOT_EQUAL(CLR_INVALID, color);
+                LOG_OUTPUT(L"Composed pixel, dark=%d active=%d (%ld,%ld)=%06x", isDark, active, point.x, point.y, color);
+                return color;
+            };
+            const COLORREF leftColor = samplePixel(left);
+            const COLORREF rightColor = samplePixel(right);
+            VERIFY_ARE_EQUAL(leftColor, rightColor);
+            for (const LONG fraction : { 1, 2, 3 })
+            {
+                const LONG topX = contentLeft + (contentRight - contentLeft) * fraction / 4;
+                VERIFY_ARE_EQUAL(leftColor, samplePixel({ topX, clientOrigin.y }),
+                    L"The composed top row must match the native side borders across the XAML span.");
+                VERIFY_ARE_EQUAL(backgroundColor, samplePixel({ topX, clientOrigin.y + 1 }),
+                    L"The row immediately below the border must show the XAML background.");
+                const LONG sideY = frameBounds.top + (frameBounds.bottom - frameBounds.top) * fraction / 4;
+                VERIFY_ARE_EQUAL(leftColor, samplePixel({ left.x, sideY }));
+                VERIFY_ARE_EQUAL(leftColor, samplePixel({ right.x, sideY }));
+            }
+            TestServices::Utilities->CaptureScreen(active ? L"WindowTopBorderActive" : L"WindowTopBorderInactive");
+            VERIFY_ARE_EQUAL(active ? windowHandle : activationWindowHandle, ::GetForegroundWindow());
+        }
+    }
+
     void WindowIntegrationTests::VerifyWindowTopBorderPainting(bool expectedChangeEnabled)
     {
         TestCleanupWrapper cleanup;
         const bool isChangeEnabled = xaml_settings::XamlOptionalChanges::IsChangeEnabled(
             xaml_settings::XamlChangeId::FixWindowTopBorder);
         VERIFY_ARE_EQUAL(expectedChangeEnabled, isChangeEnabled);
+        WEX::Common::String beforeActivationValue;
+        VERIFY_SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"ECITBBeforeActivation", beforeActivationValue));
+        const bool ecitbBeforeActivation = beforeActivationValue.CompareNoCase(L"true") == 0;
 
         HIGHCONTRASTW highContrast = { sizeof(HIGHCONTRASTW) };
         VERIFY_IS_TRUE(!!::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(highContrast), &highContrast, 0));
@@ -389,14 +672,29 @@ namespace
             LOG_OUTPUT(L"ECITB entry point: %s; fix enabled: %d", useAppWindow ? L"AppWindow" : L"Window", isChangeEnabled);
             WindowAutoCloser window;
             HWND windowHandle = nullptr;
-            COLORREF backgroundColor = CLR_INVALID;
+            const COLORREF backgroundColor = isHighContrast ? ::GetSysColor(COLOR_WINDOW) : RGB(255, 255, 255);
             bool needsDwmWorkaround = false;
+            auto setECITBOnUIThread = [&](bool value)
+            {
+                if (useAppWindow)
+                {
+                    window->AppWindow->TitleBar->ExtendsContentIntoTitleBar = value;
+                }
+                else
+                {
+                    window->ExtendsContentIntoTitleBar = value;
+                }
+            };
             RunOnUIThread([&]()
             {
                 window.Attach(ref new xaml::Window());
                 auto content = ref new xaml_controls::Grid();
                 content->RequestedTheme = xaml::ElementTheme::Light;
                 window->Content = content;
+                if (ecitbBeforeActivation)
+                {
+                    setECITBOnUIThread(true);
+                }
                 window->Activate();
                 windowHandle = GetWindowHandle(window.get());
 
@@ -407,23 +705,17 @@ namespace
                 needsDwmWorkaround = hr == E_INVALIDARG;
             });
             TestServices::WindowHelper->WaitForIdle();
-            RunOnUIThread([&]()
-            {
-                const auto colors = EraseWindowTopRows(windowHandle);
-                backgroundColor = colors.second;
-                VERIFY_ARE_EQUAL(backgroundColor, colors.first);
-                if (!isHighContrast)
-                {
-                    VERIFY_ARE_EQUAL(RGB(255, 255, 255), backgroundColor, L"A light background must expose a missing border fix.");
-                }
-            });
-            auto verifyPainting = [&](int expectedOffset)
+            auto verifyPainting = [&](int expectedOffset, bool hasNativeBorder)
             {
                 RunOnUIThread([&]()
                 {
-                    VERIFY_ARE_EQUAL(expectedOffset, GetDesktopChildSiteBridgeTopOffset(windowHandle));
+                    const int actualOffset = GetDesktopChildSiteBridgeTopOffset(windowHandle);
+                    LOG_OUTPUT(L"Top-border state: Window ECITB=%d AppWindow ECITB=%d presenter=%d nativeBorder=%d expectedOffset=%d actualOffset=%d",
+                        window->ExtendsContentIntoTitleBar, window->AppWindow->TitleBar->ExtendsContentIntoTitleBar,
+                        static_cast<int>(window->AppWindow->Presenter->Kind), hasNativeBorder, expectedOffset, actualOffset);
+                    VERIFY_ARE_EQUAL(expectedOffset, actualOffset);
                     const auto colors = EraseWindowTopRows(windowHandle);
-                    const bool paintBorder = isChangeEnabled && needsDwmWorkaround && expectedOffset != 0;
+                    const bool paintBorder = isChangeEnabled && needsDwmWorkaround && hasNativeBorder && expectedOffset != 0;
                     VERIFY_ARE_EQUAL(paintBorder ? borderColor : backgroundColor, colors.first, L"Top row");
                     VERIFY_ARE_EQUAL(backgroundColor, colors.second, L"Background below the top row");
                 });
@@ -432,32 +724,70 @@ namespace
             {
                 RunOnUIThread([&]()
                 {
-                    if (useAppWindow)
-                    {
-                        window->AppWindow->TitleBar->ExtendsContentIntoTitleBar = value;
-                    }
-                    else
-                    {
-                        window->ExtendsContentIntoTitleBar = value;
-                    }
+                    setECITBOnUIThread(value);
                 });
                 TestServices::WindowHelper->WaitForIdle();
             };
 
-            verifyPainting(0);
+            const int extendedOffset = useAppWindow ? 0 : 1;
+            verifyPainting(ecitbBeforeActivation ? extendedOffset : 0, true);
             setECITB(true);
-            verifyPainting(useAppWindow ? 0 : 1);
+            verifyPainting(extendedOffset, true);
+            // Exercise the no-change path as well as the initial margin update.
+            setECITB(true);
+            verifyPainting(extendedOffset, true);
             if (!useAppWindow)
             {
                 RunOnUIThread([&]() { ::ShowWindow(windowHandle, SW_MAXIMIZE); });
                 TestServices::WindowHelper->WaitForIdle();
-                verifyPainting(0);
+                verifyPainting(0, true);
                 RunOnUIThread([&]() { ::ShowWindow(windowHandle, SW_RESTORE); });
                 TestServices::WindowHelper->WaitForIdle();
-                verifyPainting(1);
+                verifyPainting(1, true);
+            }
+
+            RunOnUIThread([&]()
+            {
+                window->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            verifyPainting(extendedOffset, false);
+            setECITB(false);
+            // Frameless transitions can leave the bridge at its last position
+            // until a subsequent frame/size change, even with ECITB disabled.
+            verifyPainting(extendedOffset, false);
+            setECITB(true);
+            verifyPainting(extendedOffset, false);
+            RunOnUIThread([&]()
+            {
+                window->AppWindow->SetPresenter(Microsoft::UI::Windowing::AppWindowPresenterKind::Overlapped);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            verifyPainting(extendedOffset, true);
+
+            for (const bool hasBorder : { false, true })
+            {
+                RunOnUIThread([&]()
+                {
+                    auto presenter = safe_cast<Microsoft::UI::Windowing::OverlappedPresenter^>(window->AppWindow->Presenter);
+                    presenter->SetBorderAndTitleBar(hasBorder, false);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                verifyPainting(extendedOffset, hasBorder);
+                setECITB(false);
+                verifyPainting(hasBorder ? 0 : extendedOffset, hasBorder);
+                setECITB(true);
+                verifyPainting(extendedOffset, hasBorder);
+                RunOnUIThread([&]()
+                {
+                    auto presenter = safe_cast<Microsoft::UI::Windowing::OverlappedPresenter^>(window->AppWindow->Presenter);
+                    presenter->SetBorderAndTitleBar(true, true);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                verifyPainting(extendedOffset, true);
             }
             setECITB(false);
-            verifyPainting(0);
+            verifyPainting(0, true);
         }
     }
 

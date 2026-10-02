@@ -136,6 +136,13 @@ _Check_return_ HRESULT CWindowChrome::SetIsChromeActive(bool isActive)
 
 bool CWindowChrome::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, _Out_ LRESULT* pResult)
 {
+    if (uMsg == WM_STYLECHANGED && wParam == static_cast<WPARAM>(GWL_STYLE) &&
+        WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_topLevelWindow))
+    {
+        // A presenter can remove the frame without changing the client size.
+        TRACE_HR_NORETURN(UpdateDwmFrameMargins());
+    }
+
     if (!IsChromeActive())
     {
         return false;
@@ -164,13 +171,15 @@ LRESULT CWindowChrome::OnCreate()
 }
 
 // Method Description:
-// - This method computes the height of the little border above the title bar
-//   and returns it. If the border is disabled, then this method will return 0.
+// - Computes the legacy spacing above XAML within the client area.
+//   This is not a measurement of the native border or current XAML position.
+// - Uses only cached Window.ExtendsContentIntoTitleBar and maximization state;
+//   fullscreen and borderless presenters are not checked.
 // Return Value:
-// - the height of the border above the title bar or 0 if it's disabled
+// - 1 physical pixel when Window.ExtendsContentIntoTitleBar is enabled and the
+//   window is not maximized; 0 otherwise.
 int CWindowChrome::GetTopBorderHeight() const noexcept
 {
-    // Preserve the existing Window ECITB geometry without checking the presenter.
     if (!IsTitlebarVisible() || IsMaximized(m_topLevelWindow))
     {
         return 0;
@@ -179,23 +188,101 @@ int CWindowChrome::GetTopBorderHeight() const noexcept
     return topBorderVisibleHeight;
 }
 
+// True when the client area's top row needs special painting.  This can happen when ExtendsContentIntoTitleBar
+// is enabled, in this case the WinUI content starts at y=1 because the DWM border is at y=0.
+// False means the normal background erase handles that row.
+// Query failures are logged and also return false.
+bool CWindowChrome::ShouldPaintTopRowOfClientArea()
+{
+    const int topBorderHeight = GetTopBorderHeight();
+    const auto style = ::GetWindowLongPtrW(m_topLevelWindow, GWL_STYLE);
+    // Fullscreen and borderless windows can still leave a one-pixel gap above XAML.
+    // That gap alone does not mean Windows has a native border to show through it.
+    // WS_BORDER requests a simple border; WS_THICKFRAME requests a resizable frame.
+    // If neither bit is set, use normal background painting and clear any WinUI-owned DWM margins.
+    // HWND styles can change before AppWindow reports the new presenter, so check them now.
+    // We also check OverlappedPresenter.HasBorder below: a resize style alone is not enough.
+    if (topBorderHeight == 0 || (style & (WS_BORDER | WS_THICKFRAME)) == 0)
+    {
+        return false;
+    }
+
+    const auto windowChrome = GetPeer();
+    // Close detaches the DesktopWindow before VisibilityChanged(false). Reentrant
+    // HWND messages must not query AppWindow through the detached chrome.
+    if (!windowChrome->GetDesktopWindowNoRef())
+    {
+        return false;
+    }
+
+    ctl::ComPtr<ixp::IAppWindow> appWindow;
+    ctl::ComPtr<ixp::IAppWindowPresenter> presenter;
+    ixp::AppWindowPresenterKind kind;
+    if (FAILED_LOG(windowChrome->GetAppWindow(&appWindow)) || !appWindow)
+    {
+        return false;
+    }
+    if (FAILED_LOG(appWindow->get_Presenter(&presenter)))
+    {
+        return false;
+    }
+    if (!presenter)
+    {
+        LOG_HR(E_UNEXPECTED);
+        return false;
+    }
+    if (FAILED_LOG(presenter->get_Kind(&kind)))
+    {
+        return false;
+    }
+    if (kind == ixp::AppWindowPresenterKind_FullScreen)
+    {
+        return false;
+    }
+    if (kind == ixp::AppWindowPresenterKind_Overlapped)
+    {
+        ctl::ComPtr<ixp::IOverlappedPresenter> overlappedPresenter;
+        if (FAILED_LOG(presenter.As(&overlappedPresenter)))
+        {
+            return false;
+        }
+        boolean hasBorder = false;
+        if (FAILED_LOG(overlappedPresenter->get_HasBorder(&hasBorder)))
+        {
+            return false;
+        }
+        if (!hasBorder)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // Method Description:
-// - Returns the cached Window ECITB state, not the presenter's title-bar visibility.
+// - Returns whether custom-title-bar mode is enabled by the cached
+//   Window.ExtendsContentIntoTitleBar state (chrome active).
+// - Does not check whether an app-supplied title-bar element is set or visible,
+//   or whether the current presenter displays a title bar.
+// - Setting only AppWindow.TitleBar.ExtendsContentIntoTitleBar does not enable it.
 // Arguments:
 // - <none>
 // Return Value:
-// - true iff Window.ExtendsContentIntoTitleBar is enabled
+// - true when Window.ExtendsContentIntoTitleBar is enabled; false otherwise.
 bool CWindowChrome::IsTitlebarVisible() const
 {
     return IsChromeActive();
 }
 
-_Check_return_ HRESULT CWindowChrome::UpdateDwmFrameMargins(int topBorderHeight)
+// Work around the missing Windows 10 top border by calling DwmExtendFrameIntoClientArea.
+// Clear WinUI-owned margins when the native frame or reserved top row is removed.
+_Check_return_ HRESULT CWindowChrome::UpdateDwmFrameMargins()
 {
     ASSERT(WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_topLevelWindow));
 
     int topFrameMargin = 0;
-    if (topBorderHeight > 0)
+    if (ShouldPaintTopRowOfClientArea())
     {
         RECT frame = {};
         const UINT dpi = ::GetDpiForWindow(m_topLevelWindow);
@@ -277,7 +364,7 @@ void CWindowChrome::UpdateBridgeWindowSizePosition()
 
     if (WindowHelpers::ShouldApplyDwmTopBorderWorkaround(m_topLevelWindow))
     {
-        TRACE_HR_NORETURN(UpdateDwmFrameMargins(topBorderHeight));
+        TRACE_HR_NORETURN(UpdateDwmFrameMargins());
     }
 
     const COORD newIslandPos = { 0, topBorderHeight };
@@ -285,21 +372,21 @@ void CWindowChrome::UpdateBridgeWindowSizePosition()
 
     const RECT newBridgeWindowRect = {newIslandPos.X, newIslandPos.Y, newIslandPos.X + windowWidth, newIslandPos.Y + windowHeight - topBorderHeight };
     // if top-level window is getting minimized then no need to resize composition window
+    // if there is no change between old and new values, don't update comp window
     if( ::IsIconic(m_topLevelWindow) ||
-        (windowHeight - topBorderHeight) == 0)
+        (windowHeight - topBorderHeight) == 0 ||
+        ::EqualRect(&bridgeWindowRect, &newBridgeWindowRect))
     {
         return;
     }
 
-    // If there is no change between old and new values, don't update comp window.
-    if (!::EqualRect(&bridgeWindowRect, &newBridgeWindowRect) &&
-        ::SetWindowPos(bridgeWindow,
-                HWND_BOTTOM,
-                newIslandPos.X,
-                newIslandPos.Y,
-                windowWidth,
-                windowHeight - topBorderHeight,
-                SWP_SHOWWINDOW) == 0)
+    if (::SetWindowPos(bridgeWindow,
+            HWND_BOTTOM,
+            newIslandPos.X,
+            newIslandPos.Y,
+            windowWidth,
+            windowHeight - topBorderHeight,
+            SWP_SHOWWINDOW) == 0)
     {
         IFCFAILFAST(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(
                                                                         HRESULT_FROM_WIN32(::GetLastError()),
