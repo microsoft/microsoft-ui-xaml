@@ -1170,8 +1170,9 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass ItemContainerGenerator
+    unsealed runtimeclass ItemContainerGenerator
     {
+        [method_name("CreateInstance")] ItemContainerGenerator();
         event Microsoft.UI.Xaml.Controls.Primitives.ItemsChangedEventHandler ItemsChanged;
         [deprecated("ItemFromContainer may be altered or unavailable for releases after Windows 8.1. Instead, use ItemsControl.ItemFromContainer.", deprecate, Microsoft.UI.Xaml.WinUIContract, 1)]
         Object ItemFromContainer(Microsoft.UI.Xaml.DependencyObject container);
