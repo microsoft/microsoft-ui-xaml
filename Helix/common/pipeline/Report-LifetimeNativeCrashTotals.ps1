@@ -62,6 +62,7 @@ foreach ($file in $reportFiles)
         nativeWarningCount    = $w
         managedWarningCount   = $m
         crashScenario         = $r.crashScenario
+        attributionBasis      = $r.attributionBasis
         dumps                 = $r.dumps
         warningScenarios      = $r.warningScenarios
         managedWarningObjects = $r.managedWarningObjects
@@ -82,7 +83,7 @@ Write-Host " Total native signals     : $totalNativeSignals"
 Write-Host " Total signals (all)      : $totalSignals"
 foreach ($wi in $perWorkItem)
 {
-    $crashNote = if ($wi.crashScenario -and $wi.crashScenario -ne 'none') { " (host crash in '$($wi.crashScenario)')" } else { "" }
+    $crashNote = if ($wi.crashScenario -and $wi.crashScenario -ne 'none') { " (host crash in '$($wi.crashScenario)'$(if ($wi.attributionBasis) { " [$($wi.attributionBasis)]" }))" } else { "" }
     Write-Host ("   - {0}: crashes={1}, nativeWarnings={2}, managedWarnings={3}{4}" -f $wi.workItem, $wi.nativeCrashCount, $wi.nativeWarningCount, $wi.managedWarningCount, $crashNote)
     if ($wi.warningScenarios -and @($wi.warningScenarios).Count -gt 0)
     {
