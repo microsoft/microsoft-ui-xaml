@@ -84,6 +84,38 @@ winrt::TableViewSource TableViewSource::ClearGroupBy()
     return *this;
 }
 
+winrt::TableViewSource TableViewSource::WithChildren(winrt::TableViewChildrenSelector const& childrenSelector)
+{
+    return WithChildren(childrenSelector, nullptr);
+}
+
+winrt::TableViewSource TableViewSource::WithChildren(
+    winrt::TableViewChildrenSelector const& childrenSelector,
+    winrt::TableViewHasChildrenPredicate const& hasChildrenSelector)
+{
+    if (!childrenSelector)
+    {
+        throw winrt::hresult_invalid_argument(L"childrenSelector cannot be null.");
+    }
+
+    ShapingHelpers::HasChildrenFn hasChildren{ nullptr };
+    if (hasChildrenSelector)
+    {
+        hasChildren = [hasChildrenSelector](winrt::IInspectable const& item) { return hasChildrenSelector(item); };
+    }
+
+    m_engine->SetChildren(
+        [childrenSelector](winrt::IInspectable const& item) { return childrenSelector(item); },
+        hasChildren);
+    return *this;
+}
+
+winrt::TableViewSource TableViewSource::ClearChildren()
+{
+    m_engine->ClearChildren();
+    return *this;
+}
+
 winrt::TableViewSource TableViewSource::ClearSort()
 {
     m_engine->ClearSorts();
@@ -211,6 +243,26 @@ void TableViewSource::OnProjectionRebuilt()
         // No wrap: the grouped view IS an ItemsSourceView, so ItemsRepeater consumes it directly.
         m_itemsSourceView.set(adapter->Entries());
         m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForGroupedRows(adapter, MakeIdentitySelector());
+        break;
+    }
+    case ::ShapedItemsSource::ProjectionKind::Hierarchical:
+    {
+        auto const adapter = m_engine->HierarchicalAdapter();
+        // Same as grouped: the adapter's view IS an ItemsSourceView, consumed directly.
+        m_itemsSourceView.set(adapter->Entries());
+        m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForHierarchicalRows(adapter, MakeIdentitySelector());
+        break;
+    }
+    case ::ShapedItemsSource::ProjectionKind::GroupedHierarchical:
+    {
+        // The presented axis is the GROUPED adapter's: it carries the header rows. The hierarchy
+        // adapter is handed over too, because level and node expansion are only knowable there.
+        auto const groupedAdapter = m_engine->GroupedAdapter();
+        m_itemsSourceView.set(groupedAdapter->Entries());
+        m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForGroupedHierarchicalRows(
+            groupedAdapter,
+            m_engine->HierarchicalAdapter(),
+            MakeIdentitySelector());
         break;
     }
     case ::ShapedItemsSource::ProjectionKind::Flat:

@@ -342,6 +342,11 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     // told clients to re-read a structure that had not changed yet.
     if (changed)
     {
+        // The toggled row keeps its index, so the repeater never re-prepares it and never raises
+        // ElementIndexChanged for it -- only the rows BELOW shift. Without this, the row that was
+        // just expanded keeps IsExpanded=false, which is what both ExpandCollapsePattern and the
+        // chevron read off the DP.
+        RefreshRealizedRowHierarchyState();
         RaiseGroupStructureChanged();
     }
 
@@ -438,18 +443,28 @@ void TableView::FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt
 
 void TableView::ExpandAllGroups()
 {
-    SetAllGroupsExpansion(true);
+    SetBulkExpansion(true, BulkExpansionAxis::Groups);
 }
 
 void TableView::CollapseAllGroups()
 {
-    SetAllGroupsExpansion(false);
+    SetBulkExpansion(false, BulkExpansionAxis::Groups);
 }
 
-// Bulk counterpart of ApplyGroupExpansionByIdentity. No UIA callout to unwind here - the caller is
-// the app - so this runs inline, but it still has to coalesce behind an in-flight edit for the same
-// reason: the edit sits over a row that the reshape is about to move.
-void TableView::SetAllGroupsExpansion(bool expand)
+void TableView::ExpandAllRows()
+{
+    SetBulkExpansion(true, BulkExpansionAxis::Rows);
+}
+
+void TableView::CollapseAllRows()
+{
+    SetBulkExpansion(false, BulkExpansionAxis::Rows);
+}
+
+// Bulk counterpart of ApplyGroupExpansionByIdentity, for either axis. No UIA callout to unwind here
+// - the caller is the app - so this runs inline, but it still has to coalesce behind an in-flight
+// edit for the same reason: the edit sits over a row that the reshape is about to move.
+void TableView::SetBulkExpansion(bool expand, BulkExpansionAxis axis)
 {
     if (!m_tableViewSourceRowMetadata)
     {
@@ -460,27 +475,36 @@ void TableView::SetAllGroupsExpansion(bool expand)
     {
         if (m_editState == EditState::Ending)
         {
-            QueueCoalescedEditReshape([this, expand]()
+            QueueCoalescedEditReshape([this, expand, axis]()
             {
-                SetAllGroupsExpansion(expand);
+                SetBulkExpansion(expand, axis);
             });
         }
         return;
     }
 
+    // Captured for both axes: expanding the rows of a grouped tree reshapes the row stream under
+    // the headers, which recycles the focused header container just as a group toggle does.
     auto const focusedGroupIdentity = CaptureFocusedGroupHeaderForRestore();
 
     bool changed = false;
     try
     {
-        if (expand)
+        switch (axis)
         {
-            m_tableViewSourceRowMetadata->ExpandAllGroups();
+        case BulkExpansionAxis::Groups:
+            expand
+                ? m_tableViewSourceRowMetadata->ExpandAllGroups()
+                : m_tableViewSourceRowMetadata->CollapseAllGroups();
+            break;
+
+        case BulkExpansionAxis::Rows:
+            expand
+                ? m_tableViewSourceRowMetadata->ExpandAllRows()
+                : m_tableViewSourceRowMetadata->CollapseAllRows();
+            break;
         }
-        else
-        {
-            m_tableViewSourceRowMetadata->CollapseAllGroups();
-        }
+
         changed = true;
     }
     catch (...)
@@ -492,10 +516,35 @@ void TableView::SetAllGroupsExpansion(bool expand)
 
     if (changed)
     {
+        RefreshRealizedRowHierarchyState();
+
+        // Raised for both axes: a UIA client's view of the table changed shape either way, and
+        // under a grouped tree a row-axis expansion changes what each group contains.
         RaiseGroupStructureChanged();
     }
 
     RestoreGroupHeaderFocusIfPending(focusedGroupIdentity);
+}
+
+// Re-derives Level/IsExpandable/IsExpanded for every row the repeater still holds. Needed after a
+// reshape, where a row that kept its index kept its stale state with it.
+void TableView::RefreshRealizedRowHierarchyState()
+{
+    auto const repeater = m_rowsRepeater.get();
+    if (!repeater)
+    {
+        return;
+    }
+
+    ForEachRealizedRow([this, repeater](winrt::TableViewRow const& row)
+    {
+        // A container awaiting recycle reports -1; its state is about to be re-derived on prepare.
+        const auto index = repeater.GetElementIndex(row);
+        if (index >= 0)
+        {
+            RefreshRowHierarchyState(row, index);
+        }
+    });
 }
 
 void TableView::RaiseGroupStructureChanged()
@@ -663,7 +712,11 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         {
             groupKey = groupObject;
         }
-        itemCount = entry->GroupItemCount();
+        // Row metadata wins when it describes this header: under a hierarchy the entry's count is
+        // the rows the group spans (roots plus visible descendants) while the metadata reports the
+        // roots the header actually owns. The entry stays the fallback for the reshape window
+        // where the metadata describes a different row.
+        itemCount = hasRowInfo ? rowInfo.ChildCount : entry->GroupItemCount();
         isExpanded = hasRowInfo ? rowInfo.IsExpanded : entry->IsExpanded();
         isExpandable = hasRowInfo ? rowInfo.IsExpandable : (entry->GroupItemCount() > 0);
         level = hasRowInfo ? std::max(0, rowInfo.Level) : 0;

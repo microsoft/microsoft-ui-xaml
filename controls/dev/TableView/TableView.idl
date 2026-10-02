@@ -400,8 +400,8 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
 [webhosthidden]
 //
 // Template contract (MIDL3 does not surface [TemplatePart], so this block is it).
-// All parts are REQUIRED: the Selected* states target them by name, and an unresolved Storyboard
-// target fails when the state is applied, not when the template is parsed.
+// The first four parts are REQUIRED: the Selected* states target them by name, and an unresolved
+// Storyboard target fails when the state is applied, not when the template is parsed.
 //
 //   PART_RootBorder              — Border. Row chrome; Background driven by CommonStates.
 //   PART_CellsHost               — Panel. One cell wrapper per column, in Columns order.
@@ -411,8 +411,39 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
 //                                  0 -> 1; SelectedDisabled also animates Fill. Custom templates
 //                                  using other indicator types must adapt the state targets.
 //
-//   CommonStates: Normal, PointerOver, Pressed, Disabled,
-//                 Selected, SelectedPointerOver, SelectedPressed, SelectedDisabled
+// The two hierarchy parts are OPTIONAL, but as a PAIR with the three hierarchy state groups
+// below: a template either declares the parts and the groups, or neither.
+//
+//   PART_RowExpanderGutter       — FrameworkElement. Reserves the chevron column and is the
+//                                  toggle target; its Margin is set in code to the row's indent.
+//                                  Code null-checks it, so omitting it costs the pointer gesture
+//                                  and the visible chevron, not correctness -- the keyboard and
+//                                  the ExpandCollapse automation pattern still work. The leading
+//                                  cell's chevron reservation is NOT tied to this part, so a
+//                                  template that drops it leaves that space blank rather than
+//                                  reclaiming it. In the default template it sits INSIDE
+//                                  PART_CellForegroundPresenter, after the cells host so it stays
+//                                  on top for hit-testing, so the chevron picks up the selected
+//                                  foreground the same way cell text does.
+//   PART_RowExpanderIcon         — FontIcon. Glyph and Visibility driven entirely by the state
+//                                  groups below, never by code. It deliberately sets no Foreground
+//                                  of its own: it inherits from PART_CellForegroundPresenter, which
+//                                  is what keeps the chevron legible in High Contrast on a selected
+//                                  row. Recolouring it from the Selected* states instead would put
+//                                  a by-name reference to this part inside CommonStates -- a
+//                                  REQUIRED group -- and silently make this optional part required.
+//
+//   CommonStates:        Normal, PointerOver, Pressed, Disabled,
+//                        Selected, SelectedPointerOver, SelectedPressed, SelectedDisabled
+//   HierarchyStates:     Hierarchical, NotHierarchical
+//   ExpandabilityStates: Expandable, NotExpandable
+//   ExpansionStates:     Expanded, Collapsed
+//
+// The three hierarchy groups are entered unconditionally on every row, including in a flat or
+// grouped table, so a template that declares them must be able to apply them. In the default
+// template they resolve PART_RowExpanderIcon by name, which is why declaring the groups without
+// the part fails at state-application time. Declaring neither is fine: GoToState simply reports
+// that the state was not found.
 //
 // Selected states share this one group so nothing depends on GoToState call order.
 // Multiple/Extended selection will add a separate MultiSelectStates group (and a checkbox part)
@@ -427,7 +458,30 @@ unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsSelected { get; };
 
+    // ----- Hierarchy -----
+    // Written only by the owning TableView, from the row metadata for this row's index. All three
+    // are 0/false for a flat or grouped source, which is what makes the hierarchy affordance
+    // vanish without a separate "is this a tree" switch.
+
+    // 1-based depth: a root row reports 1, its children 2. Zero means "not a hierarchical row".
+    // 1-based to match AutomationProperties.Level and the group-header Level, so a peer can hand
+    // it to UIA unmodified; the indent math subtracts one.
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 Level { get; };
+
+    // True when this row has children it could show. Drives ExpandabilityStates. Distinct from
+    // IsExpanded: a node can be expandable and collapsed, and a leaf is neither.
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsExpandable { get; };
+
+    // True when this row's children are currently projected as rows beneath it.
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsExpanded { get; };
+
     static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty LevelProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
 };
 
 [MUX_PREVIEW]
@@ -555,12 +609,28 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
 
     event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TableView, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs> SelectionChanged;
 
-    // ----- Grouping commands -----
+    // ----- Bulk expansion commands -----
     // Expands or collapses every group in one batch. Individual groups are expanded and collapsed
     // through the group header's ExpandCollapse pattern or by clicking the header itself; these
     // are the programmatic bulk counterparts. Both are no-ops when the source is not grouped.
+    //
+    // GROUPS ONLY. A source CAN be both grouped and hierarchical (TableViewSource.GroupBy composed
+    // with WithChildren), and under that projection these open and close the headers while leaving
+    // every tree node's expansion alone.
     void ExpandAllGroups();
     void CollapseAllGroups();
+
+    // The hierarchy counterpart: expands or collapses every NODE of a hierarchical source
+    // (TableViewSource.WithChildren). No-ops when the source is not hierarchical.
+    //
+    // Separate verbs rather than one "expand everything", because the two axes cost different
+    // things. A group header opens a bucket whose rows already exist; a node's expansion calls the
+    // app's children selector and materializes that subtree. ExpandAllRows therefore realizes every
+    // node the selector can reach -- unavoidable for "expand every node" over a materialized row
+    // axis, and the reason it is not folded into ExpandAllGroups.
+    void ExpandAllRows();
+    void CollapseAllRows();
+
 
     // ----- Sorting -----
     // Single-column sort. The control reshapes the rows itself: an ItemsSource that is not already
@@ -626,11 +696,15 @@ unsealed runtimeclass TableViewAutomationPeer
     TableViewAutomationPeer(MU_XC_NAMESPACE.TableView owner);
 }
 
+// ExpandCollapse is advertised only by rows of a HIERARCHICAL source, unlike the group header's
+// unconditional pattern: a flat or grouped data row is not a tree node, and reporting LeafNode on
+// every row of an ordinary table would tell a screen reader the grid is a collapsed tree.
 [MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass TableViewRowAutomationPeer
     : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-      Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider
+      Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider,
+      Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
 {
     TableViewRowAutomationPeer(MU_XC_NAMESPACE.TableViewRow owner);
 }

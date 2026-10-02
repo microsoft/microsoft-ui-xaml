@@ -91,6 +91,17 @@ struct TableViewResourceCache
     };
     FontInfo font{};
 
+    // Per-level hierarchy indent, resolved from the fixed TableViewRowIndentSize key. Cached and
+    // cleared alongside the rest: a resource an app swaps at runtime arrives with no change
+    // notification, so a swap only takes effect once the cache is invalidated (density, theme or
+    // high-contrast change, or re-templating) AND the affected rows are re-prepared.
+    struct HierarchyInfo
+    {
+        bool hasRowIndentSize{ false };
+        double rowIndentSize{ 0.0 };
+    };
+    HierarchyInfo hierarchy{};
+
     // Resolved gridline brush; re-resolved when the theme or high-contrast state changes.
     struct GridLineInfo
     {
@@ -160,6 +171,12 @@ public:
     winrt::Thickness GetDensityHeaderCellPadding();
     double GetCellFontSize();
     double GetHeaderFontSize();
+
+    // Per-level hierarchy indent, from the TableViewRowIndentSize resource. A resource rather than
+    // a property for the same reason the metrics above are: it is chrome geometry, themeable per
+    // app or per element subtree, and rows resolve it through the owner's cache instead of
+    // walking the tree themselves once per row.
+    double GetRowIndentSize();
 
     // Resolved grid-line brush (theme/HC-aware, cached); rows call this via get_self, like the
     // density/font accessors above.
@@ -349,10 +366,28 @@ public:
     // Re-derives IsSelected for a realized or re-indexed row; it never survives recycling.
     void RefreshRowSelectionState(winrt::TableViewRow const& row);
     void RefreshRowSelectionState(winrt::TableViewRow const& row, int32_t selectedIndex);
+    void RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t index);
+
+    // Re-derives the hierarchy state of every realized row after a reshape. A row that kept its
+    // index is never re-prepared, so it would otherwise keep the state it had before the toggle.
+    void RefreshRealizedRowHierarchyState();
+
+    // Deferred form, for the edges where the notification arrives while the repeater has not yet
+    // reconciled: element indices are only trustworthy once it has, and a stale index would stamp
+    // one row's level onto another. Coalesced, so a burst of notifications costs one pass.
+    void QueueRefreshRealizedRowHierarchyState();
+
+    // Watches the projected row view for the wholesale-change notification. Rewired whenever the
+    // pipeline re-reads the view, on the same identity-guard pattern as the selection detectors.
+    void UpdateRowHierarchyResetSubscription();
+    void OnRowsSourceResetForHierarchy(
+        const winrt::IInspectable& sender,
+        const winrt::NotifyCollectionChangedEventArgs& args);
 
     // For the automation peers, which cannot reach the private members. Both read the model.
     int32_t SelectedIndexInternal() const;
     winrt::IInspectable SelectedItemInternal() const;
+
     // --- Grouped projections (TableView_Grouping.cpp) ---
     //
     // Which container type a row-source item realizes as. Item-based rather than index-based
@@ -370,9 +405,11 @@ public:
     void ToggleGroupExpansion(winrt::UIElement const& container);
     void SetGroupExpansion(winrt::UIElement const& container, bool expand);
 
-    // Public grouping commands (from TableView IDL).
+    // Public bulk expansion commands (from TableView IDL), one pair per axis.
     void ExpandAllGroups();
     void CollapseAllGroups();
+    void ExpandAllRows();
+    void CollapseAllRows();
 
     // The peer resolves the row index of its header through the repeater rather than a tree walk.
     winrt::ItemsRepeater GetRowsRepeaterForPeer() const { return m_rowsRepeater.get(); }
@@ -723,7 +760,16 @@ private:
     void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired);    void QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired);
     void ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation);
     void RaiseGroupStructureChanged();
-    void SetAllGroupsExpansion(bool expand);
+
+    // Which expandable axis a bulk command drives. Both axes share the edit-coalescing, focus
+    // restore and restamping machinery; only the verb they hand the metadata provider differs.
+    enum class BulkExpansionAxis
+    {
+        Groups,
+        Rows,
+    };
+
+    void SetBulkExpansion(bool expand, BulkExpansionAxis axis);
 
     // Keyboard-driven group toggle loses focus without this: the Enter/Space toggle defers a
     // structural reshape that recycles the focused header container, dropping focus (and its
@@ -822,6 +868,12 @@ private:
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
     winrt::ItemsSourceView::CollectionChanged_revoker m_emptyStateCollectionChangedRevoker{};
+    // Hierarchy metadata can be rewritten without the row set changing (a node losing its last
+    // child, a hierarchy declared or retracted over the same items). Nothing re-prepares a row in
+    // that case, so this subscription is the only edge that tells realized rows to re-read.
+    winrt::ItemsSourceView::CollectionChanged_revoker m_rowHierarchyResetRevoker{};
+    winrt::ItemsSourceView m_rowHierarchyResetView{ nullptr };
+    bool m_rowHierarchyRefreshQueued{ false };
     // ActualThemeChanged refreshes imperatively-resolved brushes that ItemsRepeater rows do not re-pump.
     winrt::event_token m_actualThemeChangedToken{};
 
@@ -906,6 +958,7 @@ private:
     bool m_focusLossCommitQueued{ false };
 
     int32_t m_navAnchorRow{ -1 };
+
     void OnPreviewKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
@@ -914,3 +967,4 @@ private:
     int32_t GetFocusedRowIndex() const;
     int32_t GetEstimatedRowsPerPage(); // Non-const — GetDensityRowMinHeight() mutates the resource cache.
 };
+

@@ -34,6 +34,7 @@ public sealed partial class MainWindow : Window
             "selection" => typeof(SelectionPage),
             "tooltips" => typeof(ToolTipsPage),
             "shaping" => typeof(ShapingPage),
+            "hierarchy" => typeof(HierarchyPage),
             _ => typeof(PlaygroundPage),
         };
 
