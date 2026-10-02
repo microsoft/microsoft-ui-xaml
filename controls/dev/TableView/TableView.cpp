@@ -1608,7 +1608,6 @@ void TableView::RebuildHeaders()
 
             winrt::ContentPresenter content;
             content.Content(column.Header());
-            const bool headerIsSortable = canUserSortColumns && column.CanSort();
             if (auto headerTemplateSelector = column.HeaderTemplateSelector())
             {
                 content.ContentTemplateSelector(headerTemplateSelector);
