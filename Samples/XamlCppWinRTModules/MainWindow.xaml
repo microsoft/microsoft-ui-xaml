@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="XamlCppWinRTModulesSample.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="XamlC + C++/WinRT named modules">
+
+    <Grid Padding="32">
+        <StackPanel Spacing="12">
+            <TextBlock
+                FontSize="28"
+                FontWeight="SemiBold"
+                Text="XamlC + C++/WinRT named modules" />
+            <TextBlock
+                TextWrapping="Wrap"
+                Text="This source file does not manually import XamlCppWinRTModulesSample.Application_Xaml. The generated component-header bridge does it." />
+            <Border
+                Padding="16"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <TextBlock
+                    FontSize="18"
+                    Text="{x:Bind Model.Message, Mode=OneWay}" />
+            </Border>
+        </StackPanel>
+    </Grid>
+</Window>

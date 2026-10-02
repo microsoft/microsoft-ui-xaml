@@ -8,21 +8,65 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#pragma once
 
+<#  if (ProjectInfo.UseCppWinRTNamedModules) { #>
+#ifdef WINRT_XAML_MODULE_INTERFACE
+module;
+#include <unknwn.h>
+
+export module <#=CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)#>;
+
+#define WINRT_IMPORT_MODULE
+import std;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsFoundation)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsFoundationCollections)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.Xaml)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlControls)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlData)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlMarkup)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlInterop)#>;
+
+<#  foreach (var xamlClassName in ProjectInfo.XamlClassNames) { #>
+export import :<#=CppWinRTProjectionDependency.GetXamlPartitionName(xamlClassName)#>;
+<#  } #>
+<#  if (ProjectInfo.ShouldGenerateTypeInfoCode) { #>
+export import :XamlTypeInfo;
+<#  } #>
+
+#undef WINRT_XAML_MODULE_INTERFACE
+#define WINRT_XAML_EXPORT export extern "C++"
+#else
+#pragma once
+#ifndef WINRT_IMPORT_MODULE
+#define WINRT_IMPORT_MODULE
+#endif
+import <#=CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)#>;
+#define WINRT_XAML_SKIP_BODY
+#endif
+<#  } else { #>
+#pragma once
 #include <unknwn.h>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
-#include "winrt/windows.foundation.h"
-#include "winrt/windows.ui.xaml.interop.h"
-#include "winrt/microsoft.ui.xaml.controls.h"
-#include "winrt/microsoft.ui.xaml.data.h"
-#include "winrt/microsoft.ui.xaml.markup.h"
+#include <cstdint>
+#include <memory>
 
-namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundation)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundationCollections)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.Xaml)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlControls)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlData)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlMarkup)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlInterop)#>
+
+#define WINRT_XAML_EXPORT
+<#  } #>
+
+#ifndef WINRT_XAML_SKIP_BODY
+WINRT_XAML_EXPORT namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 {
     using DataContextChangedEventArgs = <#=Projection(KnownNamespaces.Xaml)#>::DataContextChangedEventArgs;
     using DependencyObject = <#=Projection(KnownNamespaces.Xaml)#>::DependencyObject;
@@ -52,7 +96,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         virtual void StopTracking() = 0;
         virtual void Connect(int connectionId, IInspectable const& target) = 0;
         virtual void Recycle() = 0;
-        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase) = 0;
+        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase) = 0;
         virtual void SubscribeForDataContextChanged(FrameworkElement const& object, XamlBindings& handler) = 0;
         virtual void DisconnectUnloadedObject(int connectionId) = 0;
     };
@@ -78,14 +122,14 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 
         // IComponentConnector
         void Connect(int connectionId, IInspectable const& target);
-        IComponentConnector GetBindingConnector(int32_t, IInspectable const&);
+        IComponentConnector GetBindingConnector(std::int32_t, IInspectable const&);
 
         // IDataTemplateComponent
-        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase);
+        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase);
         virtual void Recycle();
 
         // IDataTemplateExtension
-        bool ProcessBinding(uint32_t phase);
+        bool ProcessBinding(std::uint32_t phase);
         int ProcessBindings(ContainerContentChangingEventArgs const& args);
         void ResetTemplate();
 
@@ -157,7 +201,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
             // Overridden in the binding class as needed.
         }
 
-        virtual void ProcessBindings(IInspectable const&, int, int, int32_t& nextPhase) override
+        virtual void ProcessBindings(IInspectable const&, int, int, std::int32_t& nextPhase) override
         {
             // Overridden in the binding class as needed.
             nextPhase = -1;
@@ -183,8 +227,8 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         void UpdatePropertyChangedListener(INotifyPropertyChanged const& obj, INotifyPropertyChanged& cache, ::winrt::event_token& token);
         void UpdatePropertyChangedListener(INotifyPropertyChanged const& obj, ::winrt::weak_ref<<#=Projection(KnownNamespaces.XamlData)#>::INotifyPropertyChanged>& cache, ::winrt::event_token& token);
         void UpdateCollectionChangedListener(INotifyCollectionChanged const& obj, INotifyCollectionChanged& cache, ::winrt::event_token& token);
-        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, DependencyObject&  cache, int64_t& token);
-        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, ::winrt::weak_ref<<#=Projection(KnownNamespaces.Xaml)#>::DependencyObject>& cache, int64_t& token);
+        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, DependencyObject&  cache, std::int64_t& token);
+        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, ::winrt::weak_ref<<#=Projection(KnownNamespaces.Xaml)#>::DependencyObject>& cache, std::int64_t& token);
 <# if (ProjectInfo.IsInputValidationEnabled) {#>
         void UpdateErrorsChangedListener(INotifyDataErrorInfo const& obj, INotifyDataErrorInfo& cache, ::winrt::event_token& token);
         void UpdateErrorsChangedListener(INotifyDataErrorInfo const& obj, ::winrt::weak_ref<<#=Projection(KnownNamespaces.XamlData)#>::INotifyDataErrorInfo>& cache, ::winrt::event_token& token);
@@ -287,3 +331,11 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         T _dataRoot;
     };
 }
+#endif // WINRT_XAML_SKIP_BODY
+
+#ifdef WINRT_XAML_EXPORT
+#undef WINRT_XAML_EXPORT
+#endif
+#ifdef WINRT_XAML_SKIP_BODY
+#undef WINRT_XAML_SKIP_BODY
+#endif

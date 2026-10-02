@@ -13,7 +13,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
         private List<ConnectionIdElement> _allConnectionIdElements;
         private List<ForwardDeclaringNamespace> _forwardDeclarations;
         private HashSet<string> _neededLocalXamlHeaderFiles = new HashSet<string>();
-        private List<string> _neededCppWinRTProjectionHeaderFiles = new List<string>();
+        private List<string> _neededCppWinRTProjectionNamespaces = new List<string>();
         private bool _neededXamlHeaderFilesCalculated = false;
         private string _checksumAlgorithmGuid;
         private IEnumerable<ApiInformation> _allApiInformations;
@@ -85,14 +85,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             }
         }
 
-        public IEnumerable<string> NeededCppWinRTProjectionHeaderFiles
+        public IEnumerable<string> NeededCppWinRTProjectionNamespaces
         {
             get
             {
                 EnsureNeededXamlHeaderFilesCalculated();
-                return _neededCppWinRTProjectionHeaderFiles;
+                return _neededCppWinRTProjectionNamespaces;
             }
         }
+
 
         public IEnumerable<ForwardDeclaringNamespace> ForwardDeclarations
         {
@@ -191,36 +192,30 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 
         private void EnsureNeededXamlHeaderFilesCalculated()
         {
-            HashSet<string> neededCppWinRTProjectionHeaderFiles;
+            HashSet<string> neededCppWinRTProjectionNamespaces;
 
-            void addCppWinRTHeaderForTypeIfNecessary(Type type)
+            void addCppWinRTProjectionForTypeIfNecessary(Type type, string unresolvedNamespace = null)
             {
-                // If the input type is an array type then we need to use its element type instead
-                //
-                // MSDN recommends using `typeof(Array).IsAssignableFrom(type)` instead of `IsArray` to check
-                // if a given type is an array type but the recommended approach doesn't work with LMR. We will
-                // want to switch once we switch to System.Reflection.
-                Type adjustedType = ((type != null) && type.IsArray) ? type.GetElementType() : type;
-
-                // Primitive WinRT types are not defined in headers that follow the standard naming
-                // convention as they are part of the C++/WinRT project system itself (e.g. base.h)
-                if (adjustedType != null && !XamlSchemaCodeInfo.IsProjectedPrimitiveCppType(adjustedType.FullName))
+                foreach (var projectionNamespace in CppWinRTProjectionDependency.GetNamespaces(type, unresolvedNamespace))
                 {
-                    neededCppWinRTProjectionHeaderFiles.Add($"winrt/{adjustedType.Namespace}.h");
-
-                    if (adjustedType.IsGenericType)
-                    {
-                        foreach (var nestedType in adjustedType.GetGenericArguments())
-                        {
-                            addCppWinRTHeaderForTypeIfNecessary(nestedType);
-                        }
-                    }
+                    neededCppWinRTProjectionNamespaces.Add(projectionNamespace);
                 }
             }
 
             if (!_neededXamlHeaderFilesCalculated)
             {
-                neededCppWinRTProjectionHeaderFiles = new HashSet<string>();
+                // These projections are referenced by the generated Page Pass1/Pass2
+                // scaffolding even when the XAML contains no named elements, events or bindings.
+                // Keep them as unconditional semantic dependencies; relying on transitive
+                // projection headers happens to work in header mode but is not valid for named
+                // modules where every directly referenced namespace must be reachable.
+                neededCppWinRTProjectionNamespaces = new HashSet<string>
+                {
+                    KnownNamespaces.WindowsFoundation,
+                    KnownNamespaces.Xaml,
+                    KnownNamespaces.XamlControlsPrimitives,
+                    KnownNamespaces.XamlMarkup,
+                };
 
                 string headerFile;
                 if (ProjectInfo.ClassToHeaderFileMap.TryGetValue(CodeInfo.ClassName.FullName, out headerFile))
@@ -230,10 +225,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 
                 foreach (XamlFileCodeInfo fileCodeInfo in CodeInfo.PerXamlFileInfo)
                 {
-                    if (fileCodeInfo.ConnectionIdElements.Any())
+                    // Connection-id targets are cast to their concrete XAML type in Pass2 even
+                    // when the element has no x:Name and therefore no generated field.
+                    foreach (ConnectionIdElement connectionIdElement in fileCodeInfo.ConnectionIdElements)
                     {
-                        // Need Microsoft.UI.Xaml.Markup.h for IComponentConnector
-                        neededCppWinRTProjectionHeaderFiles.Add("winrt/Microsoft.UI.Xaml.Markup.h");
+                        addCppWinRTProjectionForTypeIfNecessary(connectionIdElement.Type?.UnderlyingType);
                     }
 
                     // iterate over all the fields
@@ -241,14 +237,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                                                           where c.FieldDefinition != null
                                                           select c.FieldDefinition)
                     {
+                        // Local using: types are intentionally unresolved during Pass1. In that
+                        // case FieldDefinition retains the namespace in FieldTypePath even though
+                        // FieldXamlType.UnderlyingType is unavailable. The generated Pass1
+                        // interface still spells the projected field type, so preserve that
+                        // semantic dependency for named-module reachability.
+                        addCppWinRTProjectionForTypeIfNecessary(fieldData.FieldXamlType?.UnderlyingType, fieldData.FieldTypePath);
                         if (ProjectInfo.ClassToHeaderFileMap.TryGetValue(fieldData.FieldTypeName, out headerFile))
                         {
                             _neededLocalXamlHeaderFiles.Add(headerFile);
-                        }
-                        else
-                        {
-                            // Not a local type so header is produced by C++/WinRT
-                            addCppWinRTHeaderForTypeIfNecessary(fieldData.FieldXamlType?.UnderlyingType);
                         }
                     }
 
@@ -260,23 +257,17 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                         foreach (EventAssignment xamlEvent in events)
                         {
                             // Event handler type (e.g. RoutedEventHandler)
+                            addCppWinRTProjectionForTypeIfNecessary(xamlEvent.EventType?.UnderlyingType);
                             if (ProjectInfo.ClassToHeaderFileMap.TryGetValue(xamlEvent.EventType.StandardName, out headerFile))
                             {
                                 _neededLocalXamlHeaderFiles.Add(headerFile);
                             }
-                            else
-                            {
-                                addCppWinRTHeaderForTypeIfNecessary(xamlEvent.EventType?.UnderlyingType);
-                            }
 
                             // Event's declaring type (e.g. MUXC.Primitives.ButtonBase)
+                            addCppWinRTProjectionForTypeIfNecessary(xamlEvent.DeclaringType?.UnderlyingType);
                             if (ProjectInfo.ClassToHeaderFileMap.TryGetValue(xamlEvent.DeclaringType.StandardName, out headerFile))
                             {
                                 _neededLocalXamlHeaderFiles.Add(headerFile);
-                            }
-                            else
-                            {
-                                addCppWinRTHeaderForTypeIfNecessary(xamlEvent.DeclaringType?.UnderlyingType);
                             }
                         }
                     }
@@ -289,25 +280,52 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     {
                         foreach (BindAssignment bindAssignment in bindAssignments)
                         {
-                            addCppWinRTHeaderForTypeIfNecessary(bindAssignment.MemberType?.UnderlyingType);
-                            addCppWinRTHeaderForTypeIfNecessary(bindAssignment.MemberDeclaringType?.UnderlyingType);
+                            addCppWinRTProjectionForTypeIfNecessary(bindAssignment.MemberType?.UnderlyingType);
+                            addCppWinRTProjectionForTypeIfNecessary(bindAssignment.MemberDeclaringType?.UnderlyingType);
+                            addCppWinRTProjectionForTypeIfNecessary(bindAssignment.MemberTargetType?.UnderlyingType);
                         }
                     }
                 }
 
-                // Sort the projection headers by namespace
-                _neededCppWinRTProjectionHeaderFiles = neededCppWinRTProjectionHeaderFiles.OrderBy(
-                    value => 
+                // Binding Pass2 code is generated from the complete bind-path graph, not only
+                // from the final target assignment. Intermediate steps are materialized in
+                // casts, observable-vector/map tracking caches and function calls, so every
+                // type that can be spelled by that generated C++ must be part of the semantic
+                // dependency closure. Pass2 lowers this closure directly to imports/includes;
+                // Pass1 may know only the subset available before the intermediate WinMD exists.
+                foreach (BindUniverse bindUniverse in CodeInfo.BindUniverses)
+                {
+                    addCppWinRTProjectionForTypeIfNecessary(bindUniverse.DataRootType?.UnderlyingType);
+
+                    foreach (BindPathStep bindPathStep in bindUniverse.BindPathSteps.Values)
                     {
-                        if (value.EndsWith(".h"))
+                        var valueType = bindPathStep.ValueType;
+                        addCppWinRTProjectionForTypeIfNecessary(valueType?.UnderlyingType);
+                        if (valueType != null && (bindPathStep.ImplementsIObservableVector || bindPathStep.ImplementsIObservableMap))
                         {
-                            return value.Substring(0, value.Length - 2);
+                            addCppWinRTProjectionForTypeIfNecessary(valueType.ItemType?.UnderlyingType);
                         }
-                        else
+
+                        if (bindPathStep is DependencyPropertyStep dependencyPropertyStep)
                         {
-                            return value;
+                            addCppWinRTProjectionForTypeIfNecessary(dependencyPropertyStep.OwnerType?.UnderlyingType);
                         }
-                    }).ToList();
+
+                        if (bindPathStep is FunctionStep functionStep)
+                        {
+                            addCppWinRTProjectionForTypeIfNecessary(functionStep.Method?.OwnerType?.UnderlyingType);
+
+                            foreach (FunctionParam parameter in functionStep.Parameters)
+                            {
+                                addCppWinRTProjectionForTypeIfNecessary(parameter.ParameterType);
+                                addCppWinRTProjectionForTypeIfNecessary(parameter.ValueType?.UnderlyingType);
+                                addCppWinRTProjectionForTypeIfNecessary(parameter.AssignmentType?.UnderlyingType);
+                            }
+                        }
+                    }
+                }
+
+                _neededCppWinRTProjectionNamespaces = neededCppWinRTProjectionNamespaces.OrderBy(value => value).ToList();
 
                 _neededXamlHeaderFilesCalculated = true;
             }
