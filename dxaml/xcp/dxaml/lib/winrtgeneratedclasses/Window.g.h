@@ -32,6 +32,21 @@ namespace ctl
         IFACEMETHOD(put_SystemBackdrop)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue) override { return This()->put_SystemBackdrop(pValue); }
     };
     template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::IWindow12, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IWindow12, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_PersistPlacementId)(_Out_ HSTRING* pValue) override { return This()->get_PersistPlacementId(pValue); }
+        IFACEMETHOD(put_PersistPlacementId)(_In_opt_ HSTRING value) override { return This()->put_PersistPlacementId(value); }
+        IFACEMETHOD(get_UseAutomaticPlacementPersistence)(_Out_ BOOLEAN* pValue) override { return This()->get_UseAutomaticPlacementPersistence(pValue); }
+        IFACEMETHOD(put_UseAutomaticPlacementPersistence)(BOOLEAN value) override { return This()->put_UseAutomaticPlacementPersistence(value); }
+        IFACEMETHOD(Hide)() override { return This()->HidePublic(); }
+        IFACEMETHOD(Show)() override { return This()->ShowPublic(); }
+        IFACEMETHOD(ShowWithOptions)(_In_ ABI::Microsoft::UI::Xaml::IWindowShowOptions* pOptions) override { return This()->ShowWithOptions(pOptions); }
+        IFACEMETHOD(TryApplyInitialPlacement)(_In_ ABI::Microsoft::UI::Xaml::IWindowShowOptions* pOptions, _Out_ BOOLEAN* pReturnValue) override { return This()->TryApplyInitialPlacement(pOptions, pReturnValue); }
+        IFACEMETHOD(TryGetPlacement)(_Outptr_ ABI::Microsoft::UI::Xaml::IWindowPlacement** ppPlacement, _Out_ BOOLEAN* pReturnValue) override { return This()->TryGetPlacement(ppPlacement, pReturnValue); }
+    };
+    template<typename impl_type>
     class interface_forwarder< ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi, impl_type> final
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi, impl_type>
     {
@@ -57,6 +72,8 @@ namespace DirectUI
     class Window;
     class SystemBackdrop;
     class UIElement;
+    class WindowPlacement;
+    class WindowShowOptions;
 
     class __declspec(novtable) WindowGenerated:
         public DirectUI::DependencyObject
@@ -64,6 +81,7 @@ namespace DirectUI
         , public ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop
         , public ABI::Microsoft::UI::Xaml::IWindowPrivate
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IWindow2, WindowGenerated >
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IWindow12, WindowGenerated >
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi, WindowGenerated >
 #endif
@@ -77,6 +95,7 @@ namespace DirectUI
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindowPrivate)
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindow2)
+            INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindow12)
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi)
 #endif
@@ -119,12 +138,16 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE put_MinHeight(DOUBLE value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_MinWidth(_Out_ DOUBLE* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_MinWidth(DOUBLE value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_PersistPlacementId(_Out_ HSTRING* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_PersistPlacementId(_In_opt_ HSTRING value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue);
         IFACEMETHOD(get_Title)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_Title)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_TransparentBackground)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(put_TransparentBackground)(BOOLEAN value) override;
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_UseAutomaticPlacementPersistence(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_UseAutomaticPlacementPersistence(BOOLEAN value);
         IFACEMETHOD(get_Visible)(_Out_ BOOLEAN* pValue) override;
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Width(_Out_ DOUBLE* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_Width(DOUBLE value);
@@ -144,12 +167,17 @@ namespace DirectUI
         IFACEMETHOD(Close)() override;
         IFACEMETHOD(GetWindowContentBoundsForElement)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _Out_ ABI::Windows::Foundation::Rect* pResult) override;
         IFACEMETHOD(Hide)() override;
+        _Check_return_ HRESULT STDMETHODCALLTYPE HidePublic();
         IFACEMETHOD(MoveWindow)(INT x, INT y, INT width, INT height) override;
         IFACEMETHOD(ReleaseGraphicsDeviceOnSuspend)(BOOLEAN enable) override;
         IFACEMETHOD(SetAtlasRequestCallback)(_In_opt_ ABI::Microsoft::UI::Xaml::IAtlasRequestCallback* pCallback) override;
         IFACEMETHOD(SetAtlasSizeHint)(UINT width, UINT height) override;
         IFACEMETHOD(SetTitleBar)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pTitleBar) override;
         IFACEMETHOD(Show)() override;
+        _Check_return_ HRESULT STDMETHODCALLTYPE ShowPublic();
+        _Check_return_ HRESULT STDMETHODCALLTYPE ShowWithOptions(_In_ ABI::Microsoft::UI::Xaml::IWindowShowOptions* pOptions);
+        _Check_return_ HRESULT STDMETHODCALLTYPE TryApplyInitialPlacement(_In_ ABI::Microsoft::UI::Xaml::IWindowShowOptions* pOptions, _Out_ BOOLEAN* pReturnValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE TryGetPlacement(_Outptr_ ABI::Microsoft::UI::Xaml::IWindowPlacement** ppPlacement, _Out_ BOOLEAN* pReturnValue);
 
 
     protected:

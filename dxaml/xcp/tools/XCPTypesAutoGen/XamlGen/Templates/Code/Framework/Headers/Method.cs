@@ -32,13 +32,13 @@ if (Model.IsImplVirtual) {
             this.Write("virtual ");
  } 
             this.Write("_Check_return_ HRESULT STDMETHODCALLTYPE ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Model.IdlMethodInfo.Name));
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.CppName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetParameterListAsString(Model.Parameters, Model.ReturnType)));
             this.Write(");\r\n");
      } else { 
             this.Write("IFACEMETHOD(");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Model.IdlMethodInfo.Name));
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.CppName));
             this.Write(")(");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetParameterListAsString(Model.Parameters, Model.ReturnType)));
             this.Write(")");
@@ -86,7 +86,7 @@ if (Model.IsImplVirtual) {
             this.Write("virtual ");
  } 
             this.Write("_Check_return_ HRESULT ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Model.IdlMethodInfo.Name));
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.CppName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetParameterListAsString(Model.Parameters, Model.ReturnType)));
             this.Write(")");

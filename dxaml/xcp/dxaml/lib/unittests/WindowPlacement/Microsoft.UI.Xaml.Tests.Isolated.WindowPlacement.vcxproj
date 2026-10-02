@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ProjectGuid>{B61EB673-6B4A-4778-926E-C9C508A82431}</ProjectGuid>
+    <TestCode>true</TestCode>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(XamlSourcePath)\xcp\projectbase.props" />
+  <PropertyGroup>
+    <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
+    <ProjectIncludeDirectories>$(ProjectIncludeDirectories);$(MSBuildThisFileDirectory)..\..;$(ProjectRoot)external\inc\PlacementEx;</ProjectIncludeDirectories>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\WindowPlacementRecord.cpp" />
+    <ClCompile Include="..\..\WindowPlacementStorageFormat.cpp" />
+    <ClCompile Include="..\..\WindowPlacementPolicy.cpp" />
+    <ClCompile Include="..\..\WindowPlacementAdapter.cpp" />
+    <ClCompile Include="..\..\WindowPlacementApplication.cpp" />
+    <ClCompile Include="..\..\WindowPlacementCoordinator.cpp" />
+    <ClCompile Include="..\..\WindowPlacementCapture.cpp" />
+    <ClCompile Include="..\..\WindowPlacementStore.cpp" />
+    <ClCompile Include="..\..\WindowPlacementPublic.cpp" />
+    <ClCompile Include="..\..\WindowPlacementDiagnostics.cpp" />
+    <ClCompile Include="WindowPlacementDiagnosticsTests.cpp" />
+    <ClCompile Include="WindowPlacementRecordTests.cpp" />
+    <ClCompile Include="WindowPlacementStorageFormatTests.cpp" />
+    <ClCompile Include="WindowPlacementPolicyTests.cpp" />
+    <ClCompile Include="WindowPlacementAdapterTests.cpp" />
+    <ClCompile Include="WindowPlacementApplicationTests.cpp" />
+    <ClCompile Include="WindowPlacementExplicitCascadeTests.cpp" />
+    <ClCompile Include="WindowPlacementCoordinatorTests.cpp" />
+    <ClCompile Include="WindowPlacementDisplayRoutingTests.cpp" />
+    <ClCompile Include="WindowPlacementCaptureTests.cpp" />
+    <ClCompile Include="WindowPlacementDetachedLoaderTests.cpp" />
+    <ClCompile Include="WindowPlacementStoreTests.cpp" />
+    <ClCompile Include="WindowPlacementPublicTests.cpp" />
+    <ClInclude Include="..\..\WindowPlacementRecord.h" />
+    <ClInclude Include="..\..\WindowPlacementStorageFormat.h" />
+    <ClInclude Include="..\..\WindowPlacementPolicy.h" />
+    <ClInclude Include="..\..\WindowPlacementAdapter.h" />
+    <ClInclude Include="..\..\WindowPlacementCoordinator.h" />
+    <ClInclude Include="..\..\WindowPlacementCapture.h" />
+    <ClInclude Include="..\..\WindowPlacementStore.h" />
+  </ItemGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;WINDOWPLACEMENT_TESTS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>onecoreuap.lib;bcrypt.lib;dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+  <Import Project="$(TaefPkgDirectory)\build\Microsoft.Taef.targets" />
+</Project>

@@ -2187,6 +2187,14 @@ namespace DirectUI
     };
     DEFINE_ENUM_FLAG_OPERATORS(WindowActivationState);
 
+    enum class WindowCascadeBehavior : uint8_t
+    {
+        Automatic = 0,
+        Enabled = 1,
+        Disabled = 2,
+    };
+    DEFINE_ENUM_FLAG_OPERATORS(WindowCascadeBehavior);
+
     enum class WindowInteractionState : uint8_t
     {
         Running = 0,
@@ -2196,6 +2204,25 @@ namespace DirectUI
         NotResponding = 4,
     };
     DEFINE_ENUM_FLAG_OPERATORS(WindowInteractionState);
+
+    enum class WindowPlacementState : uint8_t
+    {
+        Normal = 0,
+        Maximized = 1,
+        Minimized = 2,
+        Snapped = 3,
+        MinimizedFromMaximized = 4,
+        MinimizedFromSnapped = 5,
+    };
+    DEFINE_ENUM_FLAG_OPERATORS(WindowPlacementState);
+
+    enum class WindowShowReason : uint8_t
+    {
+        Default = 0,
+        Launch = 1,
+        ApplicationRestart = 2,
+    };
+    DEFINE_ENUM_FLAG_OPERATORS(WindowShowReason);
 
     enum class WindowVisualState : uint8_t
     {

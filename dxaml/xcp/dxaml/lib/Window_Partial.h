@@ -64,6 +64,20 @@ namespace DirectUI
         _Check_return_ HRESULT get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop** iSystemBackdrop);
         _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* iSystemBackdrop);
 
+        // Window placement persistence (contract 12)
+        _Check_return_ HRESULT get_PersistPlacementIdImpl(_Out_ HSTRING* pValue);
+        _Check_return_ HRESULT put_PersistPlacementIdImpl(_In_opt_ HSTRING value);
+        _Check_return_ HRESULT get_UseAutomaticPlacementPersistenceImpl(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT put_UseAutomaticPlacementPersistenceImpl(_In_ BOOLEAN value);
+        _Check_return_ HRESULT TryApplyInitialPlacementImpl(_In_opt_ xaml::IWindowShowOptions* options, _Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT TryGetPlacementImpl(_Outptr_result_maybenull_ xaml::IWindowPlacement** pValue, _Out_ BOOLEAN* pReturnValue);
+        _Check_return_ HRESULT ShowWithOptionsImpl(_In_opt_ xaml::IWindowShowOptions* options);
+
+        // Public display APIs (contract 12). These are desktop-only and return E_NOTIMPL,
+        // with no side effects, on UWP-backed or framework-dummy windows.
+        _Check_return_ HRESULT ShowPublicImpl();
+        _Check_return_ HRESULT HidePublicImpl();
+
         // IWindowPrivate
         _Check_return_ HRESULT get_TransparentBackgroundImpl(_Out_ BOOLEAN* pValue);
         _Check_return_ HRESULT put_TransparentBackgroundImpl(_In_ BOOLEAN value);
@@ -136,4 +150,3 @@ namespace DirectUI
         bool m_peggedForHWNDLifetime{ false };
     };
 }
-

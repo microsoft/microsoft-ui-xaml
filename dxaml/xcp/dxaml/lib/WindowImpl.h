@@ -66,6 +66,20 @@ namespace DirectUI
             virtual _Check_return_ HRESULT get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop** systemBackdrop) = 0;
             virtual _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* systemBackdrop) = 0;
 
+            // Window placement persistence (contract 12)
+            virtual _Check_return_ HRESULT get_PersistPlacementIdImpl(_Out_ HSTRING* pValue) = 0;
+            virtual _Check_return_ HRESULT put_PersistPlacementIdImpl(_In_opt_ HSTRING value) = 0;
+            virtual _Check_return_ HRESULT get_UseAutomaticPlacementPersistenceImpl(_Out_ BOOLEAN* pValue) = 0;
+            virtual _Check_return_ HRESULT put_UseAutomaticPlacementPersistenceImpl(_In_ BOOLEAN value) = 0;
+            virtual _Check_return_ HRESULT TryApplyInitialPlacementImpl(_In_opt_ xaml::IWindowShowOptions* options, _Out_ BOOLEAN* pValue) = 0;
+            virtual _Check_return_ HRESULT TryGetPlacementImpl(_Outptr_result_maybenull_ xaml::IWindowPlacement** pValue, _Out_ BOOLEAN* pReturnValue) = 0;
+            virtual _Check_return_ HRESULT ShowWithOptionsImpl(_In_opt_ xaml::IWindowShowOptions* options) = 0;
+
+            // True when this backend hosts a real desktop window, so the public display APIs
+            // (Window.Show, Window.Show(WindowShowOptions), Window.Hide) are supported.
+            // UWP-backed and framework-dummy windows return false.
+            virtual bool SupportsPublicDisplayApis() const = 0;
+
             // IWindowNative
             IFACEMETHOD(get_WindowHandle)(_Out_ HWND* pValue) = 0;
 

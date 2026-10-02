@@ -70,6 +70,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_RoutedEventArgs();
     _Check_return_ IActivationFactory* CreateActivationFactory_Thickness();
     _Check_return_ IActivationFactory* CreateActivationFactory_WindowEventArgs();
+    _Check_return_ IActivationFactory* CreateActivationFactory_WindowPlacement();
     _Check_return_ IActivationFactory* CreateActivationFactory_CacheMode();
     _Check_return_ IActivationFactory* CreateActivationFactory_TileBrush();
     _Check_return_ IActivationFactory* CreateActivationFactory_Transform();
@@ -109,6 +110,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_FrameworkTemplate();
     _Check_return_ IActivationFactory* CreateActivationFactory_TriggerCollection();
     _Check_return_ IActivationFactory* CreateActivationFactory_Vector3Transition();
+    _Check_return_ IActivationFactory* CreateActivationFactory_WindowShowOptions();
     _Check_return_ IActivationFactory* CreateActivationFactory_BitmapCache();
     _Check_return_ IActivationFactory* CreateActivationFactory_ImageSource();
     _Check_return_ IActivationFactory* CreateActivationFactory_LineSegment();
@@ -727,6 +729,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.RoutedEventArgs"), &DirectUI::CreateActivationFactory_RoutedEventArgs)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.ThicknessHelper"), &DirectUI::CreateActivationFactory_Thickness)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowEventArgs"), &DirectUI::CreateActivationFactory_WindowEventArgs)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowPlacement"), &DirectUI::CreateActivationFactory_WindowPlacement)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.CacheMode"), &DirectUI::CreateActivationFactory_CacheMode)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.TileBrush"), &DirectUI::CreateActivationFactory_TileBrush)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Transform"), &DirectUI::CreateActivationFactory_Transform)
@@ -766,6 +769,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.FrameworkTemplate"), &DirectUI::CreateActivationFactory_FrameworkTemplate)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.TriggerCollection"), &DirectUI::CreateActivationFactory_TriggerCollection)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Vector3Transition"), &DirectUI::CreateActivationFactory_Vector3Transition)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.WindowShowOptions"), &DirectUI::CreateActivationFactory_WindowShowOptions)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.BitmapCache"), &DirectUI::CreateActivationFactory_BitmapCache)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.ImageSource"), &DirectUI::CreateActivationFactory_ImageSource)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.LineSegment"), &DirectUI::CreateActivationFactory_LineSegment)

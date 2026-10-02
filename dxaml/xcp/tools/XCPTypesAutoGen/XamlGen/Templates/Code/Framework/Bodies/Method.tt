@@ -6,9 +6,9 @@
 <#@ import namespace="OM" #>
 <# if (Model.IsStatic) {
        if (Model.IsInterfaceImplementation) { #>
-IFACEMETHODIMP <#= AsCppType(Model.DeclaringClass.GeneratedFactoryFullName) #>::<#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+IFACEMETHODIMP <#= AsCppType(Model.DeclaringClass.GeneratedFactoryFullName) #>::<#= Model.CppName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
 <#     } else { #>
-_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedFactoryFullName) #>::<#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedFactoryFullName) #>::<#= Model.CppName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
 <#     } #>
 {
 <#= IncludeTemplate<MethodBody>(Model) #>
@@ -21,7 +21,7 @@ _Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedFactoryFullNa
 <#       if (!Model.IsPureVirtual) {
            if (Model.DeclaringVersion.IsVersionInterfaceForwarded()) { #>_Check_return_ HRESULT STDMETHODCALLTYPE <# }
            else { #>IFACEMETHODIMP <# } #>
-<#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+<#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.CppName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
 {
 <#         if (Model.IsVirtual && Model.Modifier == Modifier.Public) { #>
 <#= IncludeTemplate<VirtualDispatchMethodBody>(Model) #>
@@ -55,7 +55,7 @@ IFACEMETHODIMP <#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#
 <#         }
        }
    } else { #>
-_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.IdlMethodInfo.Name #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
+_Check_return_ HRESULT <#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.CppName #>(<#= GetParameterListAsString(Model.Parameters, Model.ReturnType) #>)
 {
 <#= IncludeTemplate<MethodBody>(Model) #>
 }

@@ -29,6 +29,7 @@ import "microsoft.ui.xaml.coretypes.idl";
 import "windows.applicationmodel.core.idl";
 import "windows.foundation.idl";
 import "windows.foundation.numerics.idl";
+import "windows.graphics.idl";
 import "windows.ui.idl";
 
 import "windows.applicationModel.datatransfer.dragdrop.idl";
@@ -309,6 +310,36 @@ namespace Microsoft.UI.Xaml
         NoWrap = 1,
         Wrap,
         WrapWholeWords,
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [webhosthidden]
+    enum WindowCascadeBehavior
+    {
+        Automatic,
+        Enabled,
+        Disabled,
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [webhosthidden]
+    enum WindowPlacementState
+    {
+        Normal,
+        Maximized,
+        Minimized,
+        Snapped,
+        MinimizedFromMaximized,
+        MinimizedFromSnapped,
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [webhosthidden]
+    enum WindowShowReason
+    {
+        Default,
+        Launch,
+        ApplicationRestart,
     };
 }
 namespace Microsoft.UI.Xaml.Media
@@ -598,6 +629,9 @@ namespace Microsoft.UI.Xaml
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.TextReadingOrder>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.TextTrimming>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.TextWrapping>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.WindowCascadeBehavior>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.WindowPlacementState>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.WindowShowReason>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.AutomationActiveEnd>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.AutomationAnimationStyle>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.AutomationBulletStyle>;
@@ -858,6 +892,18 @@ namespace Microsoft.UI.Xaml
         }
     
         [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [interface_name("Microsoft.UI.Xaml.IWindow12")]
+        {
+            String PersistPlacementId;
+            Boolean UseAutomaticPlacementPersistence;
+            Boolean TryApplyInitialPlacement(Microsoft.UI.Xaml.WindowShowOptions options);
+            Boolean TryGetPlacement(out Microsoft.UI.Xaml.WindowPlacement placement);
+            [method_name("ShowWithOptions")] void Show(Microsoft.UI.Xaml.WindowShowOptions options);
+            [method_name("Show"), default_overload] void Show();
+            void Hide();
+        }
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         [feature(Feature_ExperimentalApi)]
         [interface_name("Microsoft.UI.Xaml.IWindowFeature_ExperimentalApi")]
         {
@@ -891,6 +937,33 @@ namespace Microsoft.UI.Xaml
     runtimeclass WindowEventArgs
     {
         Boolean Handled;
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [webhosthidden]
+    runtimeclass WindowPlacement
+    {
+        [method_name("CreateInstance")] WindowPlacement(Windows.Graphics.RectInt32 normalRect, Windows.Graphics.RectInt32 workArea, Int32 dpi);
+        Windows.Graphics.RectInt32 NormalRect;
+        Windows.Graphics.RectInt32 WorkArea;
+        Int32 Dpi;
+        Microsoft.UI.Xaml.WindowPlacementState State;
+        Windows.Foundation.IReference<Windows.Graphics.RectInt32> SnapRect;
+        String DisplayDeviceName;
+        Windows.Foundation.IReference<Guid> VirtualDesktopId;
+        static Microsoft.UI.Xaml.WindowPlacement LoadForPersistPlacementId(String persistPlacementId);
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [webhosthidden]
+    runtimeclass WindowShowOptions
+    {
+        WindowShowOptions();
+        Microsoft.UI.Xaml.WindowPlacement Placement;
+        Microsoft.UI.Xaml.WindowShowReason Reason;
+        Microsoft.UI.Xaml.WindowCascadeBehavior CascadeBehavior;
+        Boolean DoNotActivate;
+        Boolean SkipInitialPlacement;
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]

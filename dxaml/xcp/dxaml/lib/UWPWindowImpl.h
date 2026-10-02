@@ -81,6 +81,15 @@ namespace DirectUI
         _Check_return_ HRESULT get_TransparentBackgroundImpl(_Out_ BOOLEAN* pValue) override;
         _Check_return_ HRESULT put_TransparentBackgroundImpl(_In_ BOOLEAN value) override;
         _Check_return_ HRESULT ShowImpl() override;
+        _Check_return_ HRESULT ShowWithOptionsImpl(_In_opt_ xaml::IWindowShowOptions* options) override;
+
+        bool SupportsPublicDisplayApis() const override { return false; }
+        _Check_return_ HRESULT get_PersistPlacementIdImpl(_Out_ HSTRING* pValue) override;
+        _Check_return_ HRESULT put_PersistPlacementIdImpl(_In_opt_ HSTRING value) override;
+        _Check_return_ HRESULT get_UseAutomaticPlacementPersistenceImpl(_Out_ BOOLEAN* pValue) override;
+        _Check_return_ HRESULT put_UseAutomaticPlacementPersistenceImpl(_In_ BOOLEAN value) override;
+        _Check_return_ HRESULT TryApplyInitialPlacementImpl(_In_opt_ xaml::IWindowShowOptions* options, _Out_ BOOLEAN* pValue) override;
+        _Check_return_ HRESULT TryGetPlacementImpl(_Outptr_result_maybenull_ xaml::IWindowPlacement** pValue, _Out_ BOOLEAN* pReturnValue) override;
         _Check_return_ HRESULT HideImpl() override;
         _Check_return_ HRESULT MoveWindowImpl(_In_ INT x, _In_ INT y, _In_ INT width, _In_ INT height) override;
         _Check_return_ HRESULT SetAtlasSizeHintImpl(UINT width, UINT height) override;

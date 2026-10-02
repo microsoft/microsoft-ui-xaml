@@ -135,7 +135,7 @@ if not "%_initFlavor%" == "" (
         echo Initializing build environment for %_initFlavor%...
         call "%_scriptDir%init.cmd" %_initFlavor% /envcheck /notitle
     )
-    if ERRORLEVEL 1 (
+    if !ERRORLEVEL! NEQ 0 (
         echo ERROR: init.cmd %_initFlavor% /envcheck failed
         set _exitCode=1
         goto:showDurationAndExit
@@ -146,9 +146,13 @@ if not "%_initFlavor%" == "" (
     goto:showDurationAndExit
 )
 
+rem init.cmd also runs this, but its output is suppressed in quiet mode and this warning
+rem explains an MSB4216 task host failure that would otherwise look like a repo problem.
+powershell -ExecutionPolicy Bypass -NoProfile -File "%_scriptDir%scripts\init\Test-MSBuildInstall.ps1"
+
 if "%_clean%"=="1" (
     call :callScript clean.cmd /all
-    if ERRORLEVEL 1 goto:showDurationAndExit
+    if !ERRORLEVEL! NEQ 0 goto:showDurationAndExit
     set _restore=1
 )
 
@@ -160,37 +164,37 @@ rem
 rem Build the XAML compiler from source. XamlCompilerPrerequisites.sln also builds
 rem GenXbf (via the BuildGenXbfForMSBuild project it contains), so no separate step is needed.
 call :buildSolution %reporoot%\XamlCompilerPrerequisites.sln
-if ERRORLEVEL 1 goto:showDurationAndExit
+if !ERRORLEVEL! NEQ 0 goto:showDurationAndExit
 
 if "%_targetMux%" == "1" (
     call :buildSolution %reporoot%\dxaml\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.vcxproj
 ) else if "%_targetProduct%" == "1" (
    call :buildSolution %reporoot%\Microsoft.UI.Xaml-Product.sln
-   if ERRORLEVEL 1 goto:showDurationAndExit
+   if !ERRORLEVEL! NEQ 0 goto:showDurationAndExit
    call :buildSolution %reporoot%\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj
-   if ERRORLEVEL 1 goto:showDurationAndExit
+   if !ERRORLEVEL! NEQ 0 goto:showDurationAndExit
    if not "%_nomock%"=="1" call :buildMockPackage
 ) else if "%_targetProdTest%" == "1" (
    call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.sln
-   if ERRORLEVEL 1 goto:showDurationAndExit
+   if !ERRORLEVEL! NEQ 0 goto:showDurationAndExit
    if not "%_nomock%"=="1" call :buildMockPackage
-   if ERRORLEVEL 1 goto:showDurationAndExit
+   if !ERRORLEVEL! NEQ 0 goto:showDurationAndExit
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
    if ERRORLEVEL 1 goto:showDurationAndExit
    call :buildSolution %reporoot%\src\XamlCompiler\XamlCompilerTests.sln /restore
 ) else if "%_targetTest%" == "1" (
    if not "%_nomock%"=="1" call :buildMockPackage
-   if ERRORLEVEL 1 goto:showDurationAndExit
+   if !ERRORLEVEL! NEQ 0 goto:showDurationAndExit
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
    if ERRORLEVEL 1 goto:showDurationAndExit
    call :buildSolution %reporoot%\src\XamlCompiler\XamlCompilerTests.sln /restore
 )
-if ERRORLEVEL 1 goto:showDurationAndExit
+if !ERRORLEVEL! NEQ 0 goto:showDurationAndExit
 
 if "%_targetSamples%" == "1" (
     rem If not fake and not building prodtest (so already built the mock), do so
     if "%_fake%%_targetProdTest%%_nomock%"=="" call :buildMockPackage
-    if ERRORLEVEL 1 goto:showDurationAndExit
+    if !ERRORLEVEL! NEQ 0 goto:showDurationAndExit
 
     rem Note that buildsamples.cmd does it's own check for "fake", so we just call it directly.
     call :callScript buildsamples.cmd %_versionOption%
@@ -199,10 +203,10 @@ if "%_targetSamples%" == "1" (
         rem buildsamples.cmd has its own /fake support, so we call it here to show the user what it will do.
         call buildsamples.cmd /fake %_versionOption%
     )
-    if ERRORLEVEL 1 goto :showDurationAndExit
+    if !ERRORLEVEL! NEQ 0 goto :showDurationAndExit
 )
 git diff --exit-code "controls/dev/dll/XamlMetadataProviderGenerated.h" > nul
-if ERRORLEVEL 1 (
+if !ERRORLEVEL! NEQ 0 (
     set _muxcIXMPChanged=1
 )
 if "%_muxcIXMPChanged%"=="1" (
@@ -285,7 +289,7 @@ if NOT "%PSModulePath%" == "" (
 echo Building %_title%...
 %_command%
 
-if ERRORLEVEL 1  (
+if !ERRORLEVEL! NEQ 0 (
     set _exitCode=!ERRORLEVEL!
     echo ---
     echo ERROR: buildSolution for !_solution! FAILED.  Binlog is here: !_binlog!
@@ -303,7 +307,7 @@ if "%_fake%"=="1" (
 echo Running %*...
 call %*
 
-if ERRORLEVEL 1  (
+if !ERRORLEVEL! NEQ 0 (
     set _exitCode=!ERRORLEVEL!
     echo ---
     echo ERROR: callScript FAILED.
@@ -318,7 +322,7 @@ if "%_fake%"=="1" (
 )
 echo Building mock package...
 call %RepoRoot%\pack.component.cmd /version %_version%
-if ERRORLEVEL 1 set _exitCode=%ERRORLEVEL%
+if !ERRORLEVEL! NEQ 0 set _exitCode=!ERRORLEVEL!
 exit /b %_exitCode%
 
 

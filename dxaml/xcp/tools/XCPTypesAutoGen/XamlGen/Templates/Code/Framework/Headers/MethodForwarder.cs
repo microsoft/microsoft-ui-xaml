@@ -33,7 +33,7 @@ namespace XamlGen.Templates.Code.Framework.Headers
             this.Write(")(");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetParameterListAsString(Model.Member.Parameters, Model.Member.ReturnType)));
             this.Write(") override { return This()->");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Model.Name));
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.TargetName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetArgumentListAsString(Model.Member.Parameters, Model.Member.ReturnType)));
             this.Write("); }");

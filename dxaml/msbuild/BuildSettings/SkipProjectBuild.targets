@@ -1,8 +1,17 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!--
+      Marker so other targets can tell that this file was actually imported. It is only imported
+      from Microsoft.UI.Xaml.Build.targets, which SDK-style projects do not import, so SkipProject
+      silently does nothing there. See ValidateSkipProjectIsHonored in the root Directory.Build.targets.
+    -->
+    <PropertyGroup>
+        <SkipProjectBuildImported>true</SkipProjectBuildImported>
+    </PropertyGroup>
+
     <Target Name="Build">
-        <Warning Text="Skipping project $(MSBuildProjectFile) due to TestCode=$(TestCode) and BuildTestCode=$(BuildTestCode)" Condition="'$(TestCode)'!='' and '$(BuildTestCode)'=='false'"/>
-        <Warning Text="Skipping project $(MSBuildProjectFile) due to SkipProject=$(SkipProject) and BuildAll=$(BuildAll)" Condition="'$(SkipProject)'=='true' and '$(BuildAll)'!='true'"/>
+        <Warning Code="XAMLSKIP001" Text="Skipping project $(MSBuildProjectFile) due to TestCode=$(TestCode) and BuildTestCode=$(BuildTestCode)" Condition="'$(TestCode)'!='' and '$(BuildTestCode)'=='false'"/>
+        <Warning Code="XAMLSKIP002" Text="Skipping project $(MSBuildProjectFile) due to SkipProject=$(SkipProject) and BuildAll=$(BuildAll)" Condition="'$(SkipProject)'=='true' and '$(BuildAll)'!='true'"/>
     </Target>
 
     <Target Name="Midl"/>

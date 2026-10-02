@@ -33,7 +33,7 @@ namespace XamlGen.Templates.Code.Framework.Bodies
             this.Write("IFACEMETHODIMP ");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(Model.DeclaringClass.GeneratedFactoryFullName)));
             this.Write("::");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Model.IdlMethodInfo.Name));
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.CppName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetParameterListAsString(Model.Parameters, Model.ReturnType)));
             this.Write(")\r\n");
@@ -41,7 +41,7 @@ namespace XamlGen.Templates.Code.Framework.Bodies
             this.Write("_Check_return_ HRESULT ");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(Model.DeclaringClass.GeneratedFactoryFullName)));
             this.Write("::");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Model.IdlMethodInfo.Name));
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.CppName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetParameterListAsString(Model.Parameters, Model.ReturnType)));
             this.Write(")\r\n");
@@ -64,7 +64,7 @@ namespace XamlGen.Templates.Code.Framework.Bodies
  } 
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(Model.DeclaringClass.GeneratedClassFullName)));
             this.Write("::");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Model.IdlMethodInfo.Name));
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.CppName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetParameterListAsString(Model.Parameters, Model.ReturnType)));
             this.Write(")\r\n{\r\n");
@@ -116,7 +116,7 @@ namespace XamlGen.Templates.Code.Framework.Bodies
             this.Write("_Check_return_ HRESULT ");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(Model.DeclaringClass.GeneratedClassFullName)));
             this.Write("::");
-            this.Write(this.ToStringHelper.ToStringWithCulture(Model.IdlMethodInfo.Name));
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.CppName));
             this.Write("(");
             this.Write(this.ToStringHelper.ToStringWithCulture(GetParameterListAsString(Model.Parameters, Model.ReturnType)));
             this.Write(")\r\n{\r\n");

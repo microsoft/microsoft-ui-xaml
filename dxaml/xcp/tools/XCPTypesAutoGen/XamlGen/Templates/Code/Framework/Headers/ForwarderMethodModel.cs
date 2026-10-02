@@ -6,15 +6,29 @@ namespace XamlGen.Templates.Code.Framework.Headers
 {
     public class ForwarderMethodModel : ForwarderMemberModel<MethodDefinition>
     {
+        /// <summary>
+        /// Gets the ABI name of the forwarded method.
+        /// </summary>
         public string Name
+        {
+            get { return UsesVirtualName ? Member.IdlMethodInfo.VirtualName : Member.IdlMethodInfo.Name; }
+        }
+
+        /// <summary>
+        /// Gets the name of the generated C++ method the forwarder calls. This matches the ABI
+        /// name unless the method sets CppNameOverride.
+        /// </summary>
+        public string TargetName
+        {
+            get { return UsesVirtualName ? Member.IdlMethodInfo.VirtualName : Member.CppName; }
+        }
+
+        private bool UsesVirtualName
         {
             get
             {
-                if (ForwarderRequestedInterface == ForwarderRequestedInterface.VirtualMembers && Member.Modifier == Modifier.Public)
-                {
-                    return Member.IdlMethodInfo.VirtualName;
-                }
-                return Member.IdlMethodInfo.Name;
+                return ForwarderRequestedInterface == ForwarderRequestedInterface.VirtualMembers &&
+                    Member.Modifier == Modifier.Public;
             }
         }
 

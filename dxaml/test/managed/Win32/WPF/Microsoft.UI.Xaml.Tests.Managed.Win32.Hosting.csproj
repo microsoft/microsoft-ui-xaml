@@ -6,10 +6,6 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <SkipProject>true</SkipProject>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="$(InfraTestPath)\Win32Hosting\WPF\netcore\Private.Infrastructure.Hosting.WPF.csproj" />
   </ItemGroup>

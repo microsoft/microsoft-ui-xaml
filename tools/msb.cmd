@@ -44,5 +44,8 @@ for %%a in (%args%) do (
 if not defined _title for %%i in ("%CD%") do set "_title=%%~ni"
 set "_binlog=%RepoRoot%\BuildOutput\%_title%.%_BuildArch%%_BuildType%.binlog"
 
-MSBuild.exe  %args% %LoggingOpts% /m /nologo /bl:!_binlog! /v:%_verbosity% /clp:Summary /consoleLoggerParameters:ForceNoAlign
+rem /nr:false matches Build.cmd. Reusable nodes outlive the build by 15 minutes and keep
+rem build output and MSBuild task assemblies loaded, which breaks later builds and
+rem Visual Studio updates with file-in-use errors.
+MSBuild.exe  %args% %LoggingOpts% /m /nr:false /nologo /bl:!_binlog! /v:%_verbosity% /clp:Summary /consoleLoggerParameters:ForceNoAlign
 exit /b %ERRORLEVEL%

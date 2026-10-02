@@ -206,6 +206,11 @@ namespace XamlGen
 
         private static string GetDefaultIndexName(MethodDefinition member)
         {
+            // This uses member.Name, which DXamlName keeps in sync with CppName, not the ABI
+            // name (member.IdlMemberInfo.Name).
+            // That is deliberate. A method that sets DXamlName.IdlName has a C++ name that differs
+            // from its ABI name precisely because another method already owns the ABI name, so
+            // indexing by ABI name would produce duplicate KnownMethodIndex entries.
             return GetDefaultIndexName(member.DeclaringType) + "_" + member.Name;
         }
     }

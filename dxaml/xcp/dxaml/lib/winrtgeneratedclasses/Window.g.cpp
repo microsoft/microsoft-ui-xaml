@@ -12,6 +12,8 @@
 #include "Window.g.h"
 #include "SystemBackdrop.g.h"
 #include "UIElement.g.h"
+#include "WindowPlacement.g.h"
+#include "WindowShowOptions.g.h"
 #include "XamlTelemetry.h"
 
 // Constructors/destructors.
@@ -44,6 +46,10 @@ HRESULT DirectUI::WindowGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ 
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindow2)))
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IWindow2>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindow12)))
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IWindow12>(this);
     }
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
@@ -261,6 +267,26 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_MinWidth
 Cleanup:
     RRETURN(hr);
 }
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_PersistPlacementId(_Out_ HSTRING* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<Window*>(this)->get_PersistPlacementIdImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_PersistPlacementId(_In_opt_ HSTRING value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->put_PersistPlacementIdImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue)
 {
     HRESULT hr = S_OK;
@@ -318,6 +344,26 @@ IFACEMETHODIMP DirectUI::WindowGenerated::put_TransparentBackground(BOOLEAN valu
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Window*>(this)->put_TransparentBackgroundImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_UseAutomaticPlacementPersistence(_Out_ BOOLEAN* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<Window*>(this)->get_UseAutomaticPlacementPersistenceImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_UseAutomaticPlacementPersistence(BOOLEAN value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->put_UseAutomaticPlacementPersistenceImpl(value));
 Cleanup:
     RRETURN(hr);
 }
@@ -429,6 +475,24 @@ Cleanup:
     }
     RRETURN(hr);
 }
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::HidePublic()
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Window_HidePublic", 0);
+    }
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->HidePublicImpl());
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "Window_HidePublic", hr);
+    }
+    RRETURN(hr);
+}
 IFACEMETHODIMP DirectUI::WindowGenerated::MoveWindow(INT x, INT y, INT width, INT height)
 {
     HRESULT hr = S_OK;
@@ -534,6 +598,82 @@ Cleanup:
     if (EventEnabledApiFunctionCallStop())
     {
         XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "Window_Show", hr);
+    }
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::ShowPublic()
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Window_ShowPublic", 0);
+    }
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->ShowPublicImpl());
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "Window_ShowPublic", hr);
+    }
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::ShowWithOptions(_In_ ABI::Microsoft::UI::Xaml::IWindowShowOptions* pOptions)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Window_ShowWithOptions", 0);
+    }
+    ARG_NOTNULL(pOptions, "options");
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->ShowWithOptionsImpl(pOptions));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "Window_ShowWithOptions", hr);
+    }
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::TryApplyInitialPlacement(_In_ ABI::Microsoft::UI::Xaml::IWindowShowOptions* pOptions, _Out_ BOOLEAN* pReturnValue)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Window_TryApplyInitialPlacement", 0);
+    }
+    ARG_NOTNULL(pOptions, "options");
+    ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->TryApplyInitialPlacementImpl(pOptions, pReturnValue));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "Window_TryApplyInitialPlacement", hr);
+    }
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::TryGetPlacement(_Outptr_ ABI::Microsoft::UI::Xaml::IWindowPlacement** ppPlacement, _Out_ BOOLEAN* pReturnValue)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Window_TryGetPlacement", 0);
+    }
+    ARG_NOTNULL(ppPlacement, "placement");
+    ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->TryGetPlacementImpl(ppPlacement, pReturnValue));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "Window_TryGetPlacement", hr);
     }
     RRETURN(hr);
 }

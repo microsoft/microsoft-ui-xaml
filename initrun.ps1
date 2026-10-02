@@ -31,6 +31,10 @@ param(
 $ErrorActionPreference = "Stop"
 $scriptDir = $PSScriptRoot
 
+# Prevent inherited Visual Studio installations from being mixed during setup.
+$toolchainVariablePattern = '^(VS|__VSCMD|DevEnvDir|VC|WindowsSdk|UCRT|UniversalCRT|ExtensionSdk|_OriginalPathBeforeInit|VisualStudioVersion|MSBuild)'
+Get-ChildItem Env: | Where-Object Name -match $toolchainVariablePattern | Remove-Item
+
 if (-not $Command -or $Command.Count -eq 0) {
     Get-Help $MyInvocation.MyCommand.Path -Detailed
     exit 1
