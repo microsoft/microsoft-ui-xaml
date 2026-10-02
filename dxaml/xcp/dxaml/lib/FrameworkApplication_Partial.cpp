@@ -34,6 +34,8 @@ using namespace DirectUI;
 using namespace DirectUISynonyms;
 using DirectUI::Application;
 
+void EnsureWinUIInitialized();
+
 // A per-process FrameworkApplication instance, used for Application.Current. Xaml has a reference on this object.
 static FrameworkApplication* g_pApplication = NULL;
 
@@ -615,6 +617,8 @@ FrameworkApplication::~FrameworkApplication()
 
 _Check_return_ HRESULT FrameworkApplication::Initialize()
 {
+    EnsureWinUIInitialized();
+
     {
         CApplicationLock lock;
 
