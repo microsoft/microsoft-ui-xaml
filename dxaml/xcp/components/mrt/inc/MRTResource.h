@@ -30,6 +30,34 @@ public:
     _Check_return_ HRESULT TryGetRawStream(const PALResources::RawStreamType streamType, _Outptr_result_maybenull_ void** ppStream) override;
     unsigned int GetScalePercentage() override;
 
+#if defined(__XAML_UNITTESTS__)
+    static _Check_return_ HRESULT CreateEmbeddedDataForTest(
+        _In_reads_(bufferSize) const BYTE* buffer,
+        std::uint32_t bufferSize,
+        _Outptr_ CMRTResource** resource)
+    {
+        IFCPTR_RETURN(buffer);
+        IFCPTR_RETURN(resource);
+        *resource = nullptr;
+
+        auto testResource = make_xref<CMRTResource>(nullptr, nullptr);
+        testResource->m_embeddedDataBuffer = static_cast<BYTE*>(CoTaskMemAlloc(bufferSize));
+        IFCOOM_RETURN(testResource->m_embeddedDataBuffer);
+
+        memcpy(testResource->m_embeddedDataBuffer, buffer, bufferSize);
+        testResource->m_embeddedDataBufferSize = bufferSize;
+        testResource->m_kind = mwar::ResourceCandidateKind::ResourceCandidateKind_EmbeddedData;
+        *resource = testResource.detach();
+
+        return S_OK;
+    }
+
+    const BYTE* GetEmbeddedDataBufferForTest() const
+    {
+        return m_embeddedDataBuffer;
+    }
+#endif
+
 private:
     CMRTResource(_In_ IPALUri* pResourceUri, _In_ IPALUri* pPhysicalResourceUri);
     ~CMRTResource() override;
