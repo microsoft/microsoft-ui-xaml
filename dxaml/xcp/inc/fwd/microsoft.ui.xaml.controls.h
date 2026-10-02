@@ -927,6 +927,7 @@ namespace Controls {
     interface ISymbolIconStatics;
     interface ITelemetryCollectionPriv;
     interface ITextBlock;
+    interface ITextBlockFactory;
     interface ITextBlock2;
     interface ITextBlock3;
     interface ITextBlock4;
