@@ -297,6 +297,12 @@ call :SetEnviromentVariable DOTNET_ROOT "%RepoRoot%\.dotnet"
 
 call :SetEnviromentVariable DOTNET_ROOT_x86 "%RepoRoot%\.dotnet\x86"
 
+rem Keep Visual Studio/MSBuild's .NET SDK resolver on the repo-local SDK installed by init.
+rem global.json allows major-version roll-forward, so a hosted image with a newer system
+rem SDK can otherwise select that SDK even though init installed the requested SDK locally.
+rem This is required for VS 2022/MSBuild 17, which cannot load .NET 10 SDKs requiring MSBuild 18.
+call :SetEnviromentVariable DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR "%RepoRoot%\.dotnet"
+
 call :SetEnviromentVariable DOTNET_INSTALL_DIR "%RepoRoot%\.dotnet"
 
 call :SetEnviromentVariable DOTNET_MULTILEVEL_LOOKUP 0
@@ -312,6 +318,10 @@ if "%EnvOnly%"=="" (
     rem For dev builds, ensure that submodules are populated with latest commits
     git submodule update --init --recursive
     powershell -ExecutionPolicy Bypass -NoProfile -File %RepoRoot%\scripts\init\Initialize-Restore.ps1 -RepoRoot %RepoRoot% %Verbose%
+    if errorlevel 1 (
+        echo Dependency restore failed during Initialize-Restore.ps1.
+        exit /b 1
+    )
 )
 
 if "%ARM64EC%"=="1" (
