@@ -208,14 +208,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             ContentDialogStyleSource::ExplicitInCode);
     }
 
-    void ContentDialogIntegrationTests::ApplyTemplateUsesExplicitAndImplicitStylesWithoutOptimizeApplyStyles()
+    void ContentDialogIntegrationTests::ApplyTemplateUsesMarkupExplicitAndApplicationImplicitStylesWithoutOptimizeApplyStyles()
     {
-        ApplyTemplateUsesExplicitAndImplicitStylesWorker(false /* expectOptimizeApplyStylesEnabled */);
+        ApplyTemplateUsesMarkupExplicitAndApplicationImplicitStylesWorker(false /* expectOptimizeApplyStylesEnabled */);
     }
 
-    void ContentDialogIntegrationTests::ApplyTemplateUsesExplicitAndImplicitStylesWithOptimizeApplyStyles()
+    void ContentDialogIntegrationTests::ApplyTemplateUsesMarkupExplicitAndApplicationImplicitStylesWithOptimizeApplyStyles()
     {
-        ApplyTemplateUsesExplicitAndImplicitStylesWorker(true /* expectOptimizeApplyStylesEnabled */);
+        ApplyTemplateUsesMarkupExplicitAndApplicationImplicitStylesWorker(true /* expectOptimizeApplyStylesEnabled */);
     }
 
     void ContentDialogIntegrationTests::ShowingAnimationPlaysWorker(
@@ -290,10 +290,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             {
                 Platform::String^ styleResourceKey = L"ShowingAnimationContentDialogStyle";
                 auto applicationResources = xaml::Application::Current->Resources;
+                const bool hadPreviousStyleResource = applicationResources->HasKey(styleResourceKey);
+                Platform::Object^ previousStyleResource =
+                    hadPreviousStyleResource ? applicationResources->Lookup(styleResourceKey) : nullptr;
+
                 applicationResources->Insert(styleResourceKey, contentDialogStyle);
-                auto removeStyleResource = wil::scope_exit([&]()
+                auto restoreStyleResource = wil::scope_exit([&]()
                 {
-                    applicationResources->Remove(styleResourceKey);
+                    if (hadPreviousStyleResource)
+                    {
+                        applicationResources->Insert(styleResourceKey, previousStyleResource);
+                    }
+                    else
+                    {
+                        applicationResources->Remove(styleResourceKey);
+                    }
                 });
 
                 contentDialog = safe_cast<xaml_controls::ContentDialog^>(xaml_markup::XamlReader::Load(
@@ -350,7 +361,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         CloseContentDialog(contentDialog);
     }
 
-    void ContentDialogIntegrationTests::ApplyTemplateUsesExplicitAndImplicitStylesWorker(
+    void ContentDialogIntegrationTests::ApplyTemplateUsesMarkupExplicitAndApplicationImplicitStylesWorker(
         bool expectOptimizeApplyStylesEnabled)
     {
         TestCleanupWrapper cleanup;
@@ -391,11 +402,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     ? safe_cast<Platform::Object^>(styleResourceKey)
                     : ref new Platform::Box<::Windows::UI::Xaml::Interop::TypeName>(
                         xaml_controls::ContentDialog::typeid);
+                const bool hadPreviousStyleResource = applicationResources->HasKey(applicationResourceKey);
+                Platform::Object^ previousStyleResource =
+                    hadPreviousStyleResource ? applicationResources->Lookup(applicationResourceKey) : nullptr;
 
                 applicationResources->Insert(applicationResourceKey, contentDialogStyle);
-                auto removeStyleResource = wil::scope_exit([&]()
+                auto restoreStyleResource = wil::scope_exit([&]()
                 {
-                    applicationResources->Remove(applicationResourceKey);
+                    if (hadPreviousStyleResource)
+                    {
+                        applicationResources->Insert(applicationResourceKey, previousStyleResource);
+                    }
+                    else
+                    {
+                        applicationResources->Remove(applicationResourceKey);
+                    }
                 });
 
                 if (styleSource == ContentDialogStyleSource::ExplicitInMarkup)
