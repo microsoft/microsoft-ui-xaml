@@ -10,7 +10,7 @@ We assure our community that their input is invaluable to us, and we are dedicat
 
 
 ## Public Post on Github
-- The drafted spec from is posted as a PR under the `./specs/` directory.  
+- The drafted spec is posted as a PR under the `docs/api-specs` directory.
 
     - Example PR: [Popup placement properties API spec](https://github.com/microsoft/microsoft-ui-xaml/pull/4905)
     - Every spec will link to this public spec markdown file. <!-- TODO: Add link once it is public --> 
