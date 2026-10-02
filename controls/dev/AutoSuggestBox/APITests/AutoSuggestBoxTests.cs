@@ -18,6 +18,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class AutoSuggestBoxTests : ApiTestBase
     {
+        private sealed class DerivedAutoSuggestBox : AutoSuggestBox
+        {
+        }
+
+        [TestMethod]
+        public void CanDeriveFromAutoSuggestBox()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var autoSuggestBox = new DerivedAutoSuggestBox();
+                autoSuggestBox.Text = "Derived";
+                Verify.AreEqual("Derived", autoSuggestBox.Text);
+            });
+        }
+
         [TestMethod]
         [TestProperty("Ignore", "True")] // TODO 29616803: Disabled after converting MUXControlsTestApp to a desktop .NET 5 app.  Re-enable when fixed.
         public void VerifyAutoSuggestBoxCornerRadius()
