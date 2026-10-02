@@ -210,7 +210,7 @@ IFACEMETHODIMP BindableObservableVectorWrapper::Clear()
 
 _Check_return_ HRESULT BindableObservableVectorWrapper::CheckMoveSourceUnchanged() const
 {
-    if (m_sourceChangedDuringMove)
+    if (m_moveView && m_sourceChangedDuringMove)
     {
         IFC_RETURN(E_CHANGED_STATE);
     }
@@ -363,10 +363,10 @@ _Check_return_
 HRESULT
 BindableObservableVectorWrapper::ProcessCollectionChange(_In_ INotifyCollectionChangedEventArgs *pArgs)
 {
-    if (m_moveView)
+    if (m_preparingMove || m_moveView)
     {
-        // The app changed the original source during a synthetic notification. Invalidate
-        // the projection and reconcile with a Reset after the current notification unwinds.
+        // The source changed while preparing or projecting a Move. Reconcile with a Reset
+        // rather than forwarding a nested notification against a stale source state.
         m_sourceChangedDuringMove = true;
         return S_OK;
     }
@@ -432,6 +432,8 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
     ctl::ComPtr<IBindableVector> oldItems;
     ctl::ComPtr<IBindableVector> newItems;
 
+    m_preparingMove = true;
+
     IFC(pArgs->get_OldStartingIndex(&oldIndex));
     IFC(pArgs->get_NewStartingIndex(&newIndex));
     IFC(pArgs->get_OldItems(&oldItems));
@@ -446,24 +448,33 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
     }
     IFC(BindableVectorWrapper::get_Size(&sourceSize));
 
-    if (!Components::CollectionMoveView::IsValid(sourceSize, oldIndex, newIndex, oldCount, newCount))
+    // A nested change may alter the source size. Preserve intrinsic argument errors,
+    // but reconcile instead of validating indices against the changed source.
+    if (!Components::CollectionMoveView::HasValidArguments(oldIndex, newIndex, oldCount, newCount) ||
+        (!m_sourceChangedDuringMove &&
+            !Components::CollectionMoveView::IsValid(sourceSize, oldIndex, newIndex, oldCount, newCount)))
     {
         IFC_ORIGINATE_ERROR(
             E_INVALIDARG,
             wrl_wrappers::HStringReference(
                 L"A Move notification must specify valid old and new indices and equally sized, nonempty item ranges.").Get());
     }
+    if (m_sourceChangedDuringMove)
+    {
+        resetRequired = true;
+        goto Cleanup;
+    }
     if (oldIndex == newIndex)
     {
-        return S_OK;
+        goto Cleanup;
     }
 
+    m_preparingMove = false;
     {
         m_moveView.emplace(sourceSize, oldIndex, newIndex, oldCount);
         auto clearMoveView = wil::scope_exit([this]()
         {
             m_moveView.reset();
-            m_sourceChangedDuringMove = false;
         });
 
         for (UINT removed = 0; removed < oldCount && SUCCEEDED(hr) && !m_sourceChangedDuringMove; ++removed)
@@ -481,6 +492,8 @@ BindableObservableVectorWrapper::ProcessCollectionMove(_In_ INotifyCollectionCha
     }
 
 Cleanup:
+    m_preparingMove = false;
+    m_sourceChangedDuringMove = false;
     if (FAILED(hr) || resetRequired)
     {
         // The source has already changed, even if preparation failed before creating a view.

@@ -110,6 +110,7 @@ namespace DirectUI
     private:
 
         std::optional<Components::CollectionMoveView> m_moveView;
+        bool m_preparingMove = false;
         bool m_sourceChangedDuringMove = false;
 
         TrackerEventSource<

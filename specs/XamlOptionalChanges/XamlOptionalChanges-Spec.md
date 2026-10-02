@@ -297,10 +297,11 @@ compatibility behavior remains unchanged unless the application enables
 With the change enabled, WinUI adapts a move of one or more contiguous items
 to `ItemRemoved` notifications at the old starting index, followed by
 `ItemInserted` notifications at successive new indices. The new starting
-index is the range's index in the final collection. A same-index move emits
-no vector notifications. Move arguments must contain equally sized, nonempty
-old/new item ranges and valid indices; invalid arguments cause WinUI to
-attempt a Reset against the actual source before returning `E_INVALIDARG`.
+index is the range's index in the final collection. A same-index move without
+a nested source change emits no vector notifications. Move arguments must
+contain equally sized, nonempty old/new item ranges and valid indices. Invalid
+arguments cause WinUI to attempt a Reset against the actual source before
+returning `E_INVALIDARG`.
 Failures while reading the notification or source size also attempt a Reset
 and preserve the original error, even if a Reset handler fails. Genuine Reset
 and ordinary Add, Remove, and Replace notifications retain their existing
@@ -330,6 +331,14 @@ abandons the remaining synthetic notifications and publishes a Reset against
 the actual source after the current notification unwinds. If a notification
 handler fails, WinUI also restores the source view and attempts a Reset,
 propagating the original failure.
+
+If the source raises a nested change while WinUI reads Move arguments or source
+size, WinUI coalesces those changes into one recovery Reset before emitting any
+synthetic notifications, including for a same-index move. Intrinsically invalid
+arguments (such as empty or mismatched ranges or negative indices) still cause
+`E_INVALIDARG`, but index bounds are not validated against a source size that
+may have changed during preparation. A getter failure still triggers recovery
+and preserves the original error.
 
 ## XamlOptionalChanges class
 

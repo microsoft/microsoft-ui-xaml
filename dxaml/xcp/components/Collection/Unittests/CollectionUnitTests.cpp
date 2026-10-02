@@ -99,6 +99,12 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
 
     void CollectionUnitTests::MoveViewValidatesRanges()
     {
+        VERIFY_IS_TRUE(CollectionMoveView::HasValidArguments(0, 3, 1, 1));
+        VERIFY_IS_TRUE(CollectionMoveView::HasValidArguments(3, 0, 5, 5));
+        VERIFY_IS_FALSE(CollectionMoveView::HasValidArguments(0, 0, 0, 0));
+        VERIFY_IS_FALSE(CollectionMoveView::HasValidArguments(0, 0, 1, 2));
+        VERIFY_IS_FALSE(CollectionMoveView::HasValidArguments(-1, 0, 1, 1));
+        VERIFY_IS_FALSE(CollectionMoveView::HasValidArguments(0, -1, 1, 1));
         VERIFY_IS_TRUE(CollectionMoveView::IsValid(4, 0, 3, 1, 1));
         VERIFY_IS_TRUE(CollectionMoveView::IsValid(4, 2, 0, 2, 2));
         VERIFY_IS_TRUE(CollectionMoveView::IsValid(4, 0, 0, 4, 4));

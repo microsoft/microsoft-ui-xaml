@@ -12,8 +12,7 @@ namespace DirectUI { namespace Components {
     class CollectionMoveView
     {
     public:
-        static bool IsValid(
-            std::uint32_t sourceSize,
+        static bool HasValidArguments(
             std::int32_t oldIndex,
             std::int32_t newIndex,
             std::uint32_t oldCount,
@@ -21,9 +20,19 @@ namespace DirectUI { namespace Components {
         {
             return oldCount != 0 &&
                 oldCount == newCount &&
-                oldCount <= sourceSize &&
                 oldIndex >= 0 &&
-                newIndex >= 0 &&
+                newIndex >= 0;
+        }
+
+        static bool IsValid(
+            std::uint32_t sourceSize,
+            std::int32_t oldIndex,
+            std::int32_t newIndex,
+            std::uint32_t oldCount,
+            std::uint32_t newCount)
+        {
+            return HasValidArguments(oldIndex, newIndex, oldCount, newCount) &&
+                oldCount <= sourceSize &&
                 static_cast<std::uint32_t>(oldIndex) <= sourceSize - oldCount &&
                 static_cast<std::uint32_t>(newIndex) <= sourceSize - oldCount;
         }
