@@ -1212,9 +1212,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass RowDefinitionCollection
+    unsealed runtimeclass RowDefinitionCollection
         :[default] Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.RowDefinition>
     {
+        [method_name("CreateInstance")] RowDefinitionCollection();
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
