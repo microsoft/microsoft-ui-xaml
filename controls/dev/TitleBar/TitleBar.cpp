@@ -486,15 +486,6 @@ void TitleBar::UpdateTitle()
 
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, titleText.c_str());
 
-    const auto appWindow = TryGetAppWindow();
-
-    // Capture default title once.
-    if (appWindow && !m_hasDefaultAppWindowTitle)
-    {
-        m_defaultAppWindowTitle = appWindow.Title();
-        m_hasDefaultAppWindowTitle = true;
-    }
-
     if (titleText.empty())
     {
         // Do not set appWindow.Title here. Reset is handled by ResetTitle via OnPropertyChanged.
@@ -502,41 +493,31 @@ void TitleBar::UpdateTitle()
         return;
     }
 
-    // Only set the window title if it actually needs to change.
-    if (appWindow)
+    // Mirror the TitleBar's Title into the window title.
+    //
+    // Note: we intentionally do NOT read AppWindow.Title() back first (neither to capture a
+    // "default" title nor to skip a redundant set). Reading the window title during a deferred
+    // layout pass can fault inside the windowing layer's AppWindow.Title getter when the native
+    // title is momentarily empty (E_INVALIDARG fail-fast; see #11214). Setting the title
+    // unconditionally is cheap and avoids the read entirely.
+    if (const auto appWindow = TryGetAppWindow())
     {
-        const auto currentTitle = appWindow.Title();
-        if (currentTitle != titleText)
-        {
-            appWindow.Title(titleText);
-        }
+        appWindow.Title(titleText);
     }
 
     GoToState(s_titleTextVisibleVisualStateName, false);
 }
 
-void TitleBar::ResetTitle(winrt::hstring const& lastAppliedTitle)
+void TitleBar::ResetTitle(winrt::hstring const& /*lastAppliedTitle*/)
 {
     TITLEBAR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, nullptr);
 
-    if (!m_hasDefaultAppWindowTitle)
-    {
-        return;
-    }
-
-    const auto appWindow = TryGetAppWindow();
-    if (!appWindow)
-    {
-        return;
-    }
-
-    // Restore only if the current title matches what we previously applied
-    const auto currentTitle = appWindow.Title();
-    if (lastAppliedTitle == currentTitle && currentTitle != m_defaultAppWindowTitle)
-    {
-        appWindow.Title(m_defaultAppWindowTitle);
-        m_hasDefaultAppWindowTitle = false;
-    }
+    // Previously this restored the window's original title by reading AppWindow.Title() back
+    // and comparing. That getter can fault inside the windowing layer when the native title is
+    // momentarily empty (E_INVALIDARG fail-fast; see #11214), so the read is removed and the
+    // TitleBar no longer auto-restores a previously-captured window title. Apps that need a
+    // specific window title after clearing TitleBar.Title should set Window.Title /
+    // AppWindow.Title directly.
 }
 
 void TitleBar::UpdateSubtitle()
