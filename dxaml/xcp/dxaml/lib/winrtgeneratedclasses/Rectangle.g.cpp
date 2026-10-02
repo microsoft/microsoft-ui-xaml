@@ -66,13 +66,17 @@ IFACEMETHODIMP DirectUI::Rectangle::put_RadiusY(DOUBLE value)
 
 HRESULT DirectUI::RectangleFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Shapes::IRectangleStatics)))
+    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Shapes::IRectangleFactory)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Shapes::IRectangleFactory*>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Shapes::IRectangleStatics)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Shapes::IRectangleStatics*>(this);
     }
     else
     {
-        RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
+        RRETURN(ctl::BetterAggregableCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
     }
 
     AddRefOuter();
@@ -81,6 +85,29 @@ HRESULT DirectUI::RectangleFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_
 
 
 // Factory methods.
+IFACEMETHODIMP DirectUI::RectangleFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Shapes::IRectangle** ppInstance)
+{
+
+#if DBG
+    // We play some games with reinterpret_cast and assuming that the GUID type table is accurate - which is somewhat sketchy, but
+    // really good for binary size.  This code is a sanity check that the games we play are ok.
+    const GUID uuidofGUID = __uuidof(ABI::Microsoft::UI::Xaml::Shapes::IRectangle);
+    const GUID metadataAPIGUID = MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetGuid();
+    const KnownTypeIndex typeIndex = GetTypeIndex();
+
+    if(uuidofGUID != metadataAPIGUID)
+    {
+        XAML_FAIL_FAST();
+    }
+#endif
+
+    // Can't just IFC(_RETURN) this because for some validate calls (those with multiple template parameters), the
+    // preprocessor gets confused at the "," in the template type-list before the function's opening parenthesis.
+    // So we'll use IFC_RETURN syntax with a local hr variable, kind of weirdly.
+    const HRESULT hr = ctl::ValidateFactoryCreateInstanceWithBetterAggregableCoreObjectActivationFactory(pOuter, ppInner, reinterpret_cast<IUnknown**>(ppInstance), GetTypeIndex(), false /*isFreeThreaded*/);
+    IFC_RETURN(hr);
+    return S_OK;
+}
 
 // Dependency properties.
 IFACEMETHODIMP DirectUI::RectangleFactory::get_RadiusXProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
