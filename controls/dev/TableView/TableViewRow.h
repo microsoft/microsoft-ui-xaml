@@ -27,6 +27,8 @@ public:
     void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
+    // Right/Left expand and collapse a tree row, mirrored under RTL.
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
     // Updates the weak owner ref, column subscription, and realized cells.
     void SetOwningTableViewInternal(winrt::TableView const& owner);
@@ -46,12 +48,33 @@ public:
     // which clears it without transitions.
     void SetIsSelectedInternal(bool isSelected);
 
+    // Owner-only writer for the read-only hierarchy DPs, fed from the row metadata for this row's
+    // index. Pass level 0 to clear the affordance (flat and grouped sources).
+    void SetHierarchyStateInternal(int32_t level, bool isExpandable, bool isExpanded);
+
+    // Re-applies the indent and chevron from the current DP values. Called on template apply and
+    // after every cell rebuild, both of which discard the previous pass's layout.
+    void ApplyHierarchyAffordance();
+    void ApplyHierarchyIndentToCells();
+    // Overload for callers that have already resolved the indent, so a single row preparation pays
+    // for the TableViewRowIndentSize lookup once instead of twice.
+    void ApplyHierarchyIndentToCells(double indent);
+    double HierarchyIndent();
+
+    // The state this row reports through ExpandCollapsePattern: LeafNode unless it is an
+    // expandable tree row.
+    winrt::ExpandCollapseState HierarchyExpandCollapseState();
+
     // Used by automation peers to enumerate live cells after template application.
     winrt::Panel GetCellsHostPanelInternal() const { return m_cellsHost.get(); }
     winrt::TableViewColumn GetCellOwningColumn(const winrt::UIElement& cellElement) const;
 
     // Keep body and header leading-frozen cells pinned to the same scroll offset.
     void RefreshFrozenColumnLayout(double horizontalOffset, double leadingFrozenWidth);
+    void SyncExpanderGutterWithLeadCell(winrt::Panel const& host);
+    // The cells panel reports the lead (first visible) cell's arranged slot after every arrange,
+    // so the chevron can be confined to it. leadWidth < 0 means there is no visible cell.
+    void OnCellsArrangedInternal(double leadLeft, double leadWidth, double height);
     void RefreshDensity();
     // Rebuild realized cells when column content changes at runtime.
     void RefreshCells();
@@ -99,6 +122,16 @@ public:
         const winrt::PointerRoutedEventArgs& args);
 
 private:
+    // Routes an expansion-state transition to this row's automation peer, if a client is listening.
+    void RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
+
+    // True when keyboard focus is on the row container itself rather than on something inside a
+    // cell, so cell content keeps its own arrow keys.
+    bool IsRowItselfFocused();
+
+    // Directional expand/collapse for the keyboard, routed through the owner like the chevron.
+    void RequestExpansion(bool expand);
+
     // Installs a generated display element as a cell's content, wiring the ContentPresenter Content
     // binding a template column needs. GenerateElement alone is not a complete cell.
     void AttachCellContent(const winrt::Border& cellWrapper, const winrt::FrameworkElement& cellElement);
@@ -131,6 +164,12 @@ private:
         const winrt::Windows::Foundation::IInspectable& sender,
         const winrt::Microsoft::UI::Xaml::DependencyPropertyChangedEventArgs& args);
 
+    void OnExpanderGutterPointerPressed(
+        const winrt::IInspectable& sender,
+        const winrt::PointerRoutedEventArgs& args);
+    bool IsWithinExpanderGutter(const winrt::IInspectable& source) const;
+    void UpdateExpanderGutterClip();
+
     void RebuildCells();
     void ClearOwnedCellToolTips(const winrt::Panel& host);
 
@@ -141,6 +180,16 @@ private:
     void UpdateVisualState(bool useTransitions);
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
+    // The hierarchy chevron's hit target. Null for a re-template that drops the part, which simply
+    // means no toggle affordance -- the indent still applies.
+    tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
+    winrt::UIElement::PointerPressed_revoker m_gutterPointerPressedRevoker{};
+    // Lead cell's last arranged slot in the cells host (negative width: none yet / none visible).
+    double m_leadCellLeft{ 0.0 };
+    double m_leadCellWidth{ -1.0 };
+    double m_cellsArrangedHeight{ 0.0 };
+    // Distinguishes "not arranged yet" from "arranged with no visible cell" (both report width -1).
+    bool m_cellsArranged{ false };
     // Use auto_revoke for self-event subscriptions instead of manual token cleanup.
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};

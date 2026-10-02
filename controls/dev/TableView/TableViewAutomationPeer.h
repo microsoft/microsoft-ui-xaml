@@ -50,20 +50,20 @@ public:
     // of the TableView peer may be stale.
     void RaiseStructureChangedForGroupExpansion();
 
-private:
-    // One peer per column, kept alive for as long as the column stays in Columns(). Each call
-    // to GetColumnHeaders must hand back the same provider for a given column: minting a fresh
+    // The one header peer for this column, kept alive by this peer for as long as the column stays
+    // in Columns(). Each call must hand back the same provider for a given column: minting a fresh
     // peer per call yields unstable provider identity and leaves the returned providers with no
-    // owner keeping them alive.
+    // owner keeping them alive. Also used by a cell's TableItem.GetColumnHeaderItems.
+    winrt::AutomationPeer GetOrCreateColumnHeaderPeer(
+        winrt::TableView const& tableView,
+        winrt::TableViewColumn const& column);
+
+private:
     struct ColumnHeaderPeerCacheEntry
     {
         winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
         winrt::AutomationPeer peer{ nullptr };
     };
-
-    winrt::AutomationPeer GetOrCreateColumnHeaderPeer(
-        winrt::TableView const& tableView,
-        winrt::TableViewColumn const& column);
 
     void RaiseStructureChanged(winrt::AutomationStructureChangeType const& structureChangeType);
     com_ptr<TableView> GetImpl();

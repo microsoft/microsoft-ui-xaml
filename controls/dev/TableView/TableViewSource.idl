@@ -28,9 +28,11 @@ runtimeclass TableViewSource
     //  * UI-thread affinity, like any XAML items source. The underlying collection must also
     //    raise its change notifications on that thread; raising them from a background thread
     //    is not supported. The verbs hold no lock.
-    //  * Rows are identified by their item's OBJECT identity; there is no app-supplied row key.
-    //    So selection and focus re-anchor across a reshape, but NOT across an item being
-    //    re-created, and the same object in two rows fails fast at materialization.
+    //  * Rows are identified by their item's OBJECT identity, with one exception: under WithParent
+    //    the app-supplied node key (keySelector) is the row identity. So selection and focus
+    //    re-anchor across a reshape; for a flat or grouped source NOT across an item being
+    //    re-created (a hierarchical row re-anchors on its key), and the same object in two rows
+    //    fails fast at materialization.
 
     // Accepts the same collection interfaces as ItemsSourceView: IVector<Object> (so also
     // IObservableVector<Object>), IBindableVector, IIterable<Object>, or IBindableIterable.
@@ -82,6 +84,55 @@ runtimeclass TableViewSource
     TableViewSource ClearFilter();
     TableViewSource ClearGroupBy();
     TableViewSource ClearSort();
+
+    // Declares a self-referencing parent/child relation over the flat source.
+    // keySelector: unique identity of each item; null or an empty string throws E_INVALIDARG.
+    // parentKeySelector: key of the parent, or null / empty string for a root.
+    // Items whose parent key matches no item are shown as roots. Duplicate keys, null or empty
+    // keys, self-parent and cycles raise E_INVALIDARG naming the key; the previous projection stays
+    // intact. A throwing selector is treated as having returned null.
+    //
+    // Both selectors are required, non-null (throws E_INVALIDARG when null; use ClearParent() to
+    // remove). Value-typed keys -- strings, numbers, Boolean, Char16, Guid, DateTime, TimeSpan,
+    // Point, Size, Rect and WinRT enums -- are compared by value, type included (an Int32 key never
+    // matches an Int64 one, nor an enum of another type); a fresh box per call is fine. Any other
+    // object is compared by reference identity, so both selectors must return the same instance.
+    // That includes an enum declared in app code that is not a WinRT type (e.g. a plain C# enum):
+    // it reaches the control as an opaque object, so convert it to its integer value first.
+    // The node key is the row identity for hierarchical rows (selection, focus and expansion
+    // follow it).
+    //
+    // Error contract beyond the call itself:
+    //  * After WithParent throws, the relation REMAINS declared: every later reshape (another verb,
+    //    or a source collection change) re-validates and throws again until the data is fixed or
+    //    ClearParent() is called.
+    //  * Invalid data arriving through a source collection change (e.g. list.Add of a duplicate
+    //    key) makes the control throw E_INVALIDARG from its collection-changed handler. Whether
+    //    that surfaces from the app's own mutation call depends on how the collection raises its
+    //    events (C++/WinRT observable vectors swallow handler exceptions). Either way the
+    //    collection keeps the item and the previous projection stays on screen.
+    //
+    // Every visible row is a real data row, and a row with children can be expanded to reveal them
+    // indented beneath it. Rows start COLLAPSED; use TableView.ExpandAllRows() to start expanded.
+    // Expansion state is kept per key and survives sort, filter and source changes. Re-declaring
+    // WithParent replaces the previous relation (last writer wins) and resets expansion state;
+    // ClearParent() resets it too.
+    //
+    // Sort applies within each sibling set. Filter keeps each match plus all of its ancestors; while
+    // a filter is active those ancestors are shown expanded so the matches are reachable. Expanding
+    // or collapsing such an ancestor lasts only while that filter is active; changing or clearing
+    // the filter restores the expansion state the rows had before.
+    //
+    // Grouping COMPOSES with hierarchy: GroupBy applies to the ROOTS, so the top level is bucketed
+    // under headers and each root still expands into its own subtree beneath its header.
+    //
+    // The relation is re-evaluated on every collection change of the source. A property change on
+    // an item's key or parent key is not observed; replace the item to reparent it immediately.
+    // UI-thread affinity applies as for the rest of this class.
+    TableViewSource WithParent(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
+
+    // Removes the relation and shows the source flat again. Resets expansion state.
+    TableViewSource ClearParent();
 
 }
 

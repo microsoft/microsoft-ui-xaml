@@ -73,6 +73,7 @@ namespace RuntimeProfiler
         ProfId_SortIndicator,
         ProfId_ResizeGripper,
         ProfId_GroupedSourceAdapter,
+        ProfId_HierarchicalSourceAdapter,
         ProfId_Size // ProfId_Size is the last always.
     } ProfilerClassId;
 

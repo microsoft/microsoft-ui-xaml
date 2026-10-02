@@ -91,6 +91,19 @@ struct TableViewResourceCache
     };
     FontInfo font{};
 
+    // Per-level hierarchy indent, resolved from the fixed TableViewRowIndentSize key. Cached and
+    // cleared alongside the rest: a resource an app swaps at runtime arrives with no change
+    // notification, so a swap only takes effect once the cache is invalidated (density, theme or
+    // high-contrast change, or re-templating) AND the affected rows are re-prepared.
+    struct HierarchyInfo
+    {
+        bool hasRowIndentSize{ false };
+        double rowIndentSize{ 0.0 };
+        bool hasRowExpanderSize{ false };
+        double rowExpanderSize{ 0.0 };
+    };
+    HierarchyInfo hierarchy{};
+
     // Resolved gridline brush; re-resolved when the theme or high-contrast state changes.
     struct GridLineInfo
     {
@@ -160,6 +173,16 @@ public:
     winrt::Thickness GetDensityHeaderCellPadding();
     double GetCellFontSize();
     double GetHeaderFontSize();
+
+    // Per-level hierarchy indent, from the TableViewRowIndentSize resource. A resource rather than
+    // a property for the same reason the metrics above are: it is chrome geometry, themeable per
+    // app or per element subtree, and rows resolve it through the owner's cache instead of
+    // walking the tree themselves once per row.
+    double GetRowIndentSize();
+
+    // Width of the chevron gutter, from the TableViewRowExpanderSize resource. Cached like the
+    // indent; the row template's gutter binds the same key, so the two stay in step.
+    double GetRowExpanderSize();
 
     // Resolved grid-line brush (theme/HC-aware, cached); rows call this via get_self, like the
     // density/font accessors above.
@@ -349,10 +372,28 @@ public:
     // Re-derives IsSelected for a realized or re-indexed row; it never survives recycling.
     void RefreshRowSelectionState(winrt::TableViewRow const& row);
     void RefreshRowSelectionState(winrt::TableViewRow const& row, int32_t selectedIndex);
+    void RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t index);
+
+    // Re-derives the hierarchy state of every realized row after a reshape. A row that kept its
+    // index is never re-prepared, so it would otherwise keep the state it had before the toggle.
+    void RefreshRealizedRowHierarchyState();
+
+    // Deferred form, for the edges where the notification arrives while the repeater has not yet
+    // reconciled: element indices are only trustworthy once it has, and a stale index would stamp
+    // one row's level onto another. Coalesced, so a burst of notifications costs one pass.
+    void QueueRefreshRealizedRowHierarchyState();
+
+    // Watches the projected row view for the wholesale-change notification. Rewired whenever the
+    // pipeline re-reads the view, on the same identity-guard pattern as the selection detectors.
+    void UpdateRowHierarchyResetSubscription();
+    void OnRowsSourceResetForHierarchy(
+        const winrt::IInspectable& sender,
+        const winrt::NotifyCollectionChangedEventArgs& args);
 
     // For the automation peers, which cannot reach the private members. Both read the model.
     int32_t SelectedIndexInternal() const;
     winrt::IInspectable SelectedItemInternal() const;
+
     // --- Grouped projections (TableView_Grouping.cpp) ---
     //
     // Which container type a row-source item realizes as. Item-based rather than index-based
@@ -369,10 +410,18 @@ public:
     // target group's identity immediately and apply the mutation on a later turn.
     void ToggleGroupExpansion(winrt::UIElement const& container);
     void SetGroupExpansion(winrt::UIElement const& container, bool expand);
+    // Expands the hierarchical row and every descendant (the Multiply key). Same deferral as above.
+    void ExpandRowSubtree(winrt::UIElement const& container);
 
-    // Public grouping commands (from TableView IDL).
+    // Tree keyboard navigation. Each moves row focus and returns whether it did.
+    bool TryFocusFirstChildRow(winrt::UIElement const& container);
+    bool TryFocusParentRow(winrt::UIElement const& container);
+
+    // Public bulk expansion commands (from TableView IDL), one pair per axis.
     void ExpandAllGroups();
     void CollapseAllGroups();
+    void ExpandAllRows();
+    void CollapseAllRows();
 
     // The peer resolves the row index of its header through the repeater rather than a tree walk.
     winrt::ItemsRepeater GetRowsRepeaterForPeer() const { return m_rowsRepeater.get(); }
@@ -478,6 +527,15 @@ private:
     // deselect flows through ApplySelection(-1) and nulls it, so an intentional clear is never
     // "restored".
     tracker_ref<winrt::IInspectable> m_stickySelectedItem{ this };
+
+    // Tree sources only: the node key of m_stickySelectedItem, captured alongside it. A tree's
+    // selection is anchored on the node, not the object, so a row the app re-creates with the same
+    // key keeps its selection across the Reset that republishes it. Consulted only by the Reset
+    // restore (m_pendingSelectedIdentity), never across a source swap, where the same key may name
+    // an unrelated row. Empty for flat and plain grouped sources.
+    winrt::hstring m_stickySelectedIdentity;
+    winrt::hstring m_pendingSelectedIdentity;
+    winrt::hstring HierarchyIdentityForIndex(int32_t index) const;
 
     // Armed by OnSelectionSourceReset when a Reset drops the selection with a surviving sticky item,
     // consumed by OnSelectionItemsSourceCollectionChanged to run the identity restore once the
@@ -720,20 +778,33 @@ private:
     // brand-new source.
     uint64_t m_rowMetadataGeneration{ 0 };
 
-    void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired);    void QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired);
-    void ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation);
+    void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired, bool subtree = false);
+    void QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, bool subtree = false);
+    void ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation, bool subtree = false);
     void RaiseGroupStructureChanged();
-    void SetAllGroupsExpansion(bool expand);
+
+    // Which expandable axis a bulk command drives. Both axes share the edit-coalescing, focus
+    // restore and restamping machinery; only the verb they hand the metadata provider differs.
+    enum class BulkExpansionAxis
+    {
+        Groups,
+        Rows,
+    };
+
+    void SetBulkExpansion(bool expand, BulkExpansionAxis axis);
 
     // Keyboard-driven group toggle loses focus without this: the Enter/Space toggle defers a
     // structural reshape that recycles the focused header container, dropping focus (and its
     // visual) to nothing. Capture the header's identity + FocusState at gesture time, then restore
     // focus to the same group's header once the reshape's relayout has settled. Only keyboard /
     // programmatic focus is restored -- a pointer toggle carries no focus visual.
-    void CaptureGroupHeaderFocusForRestore(winrt::UIElement const& container, winrt::hstring const& identity);
-    winrt::hstring CaptureFocusedGroupHeaderForRestore();
-    void RestoreGroupHeaderFocusIfPending(winrt::hstring const& identity);
-    void FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt::FocusState focusState);
+    // The same applies to a focused hierarchical DATA row: any toggle that resets the row list (a
+    // subtree expand, a toggle under grouping, a bulk expand/collapse) recycles its container too.
+    // A data row is only re-focused when focus did not survive on that row.
+    void CaptureContainerFocusForRestore(winrt::UIElement const& container, winrt::hstring const& identity);
+    winrt::hstring CaptureFocusedContainerForRestore();
+    void RestoreContainerFocusIfPending(winrt::hstring const& identity);
+    void FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState);
     // Row identity for a realized container. Identity is index-independent once captured.
     winrt::hstring TryGetContainerIdentity(winrt::UIElement const& container);
 
@@ -822,6 +893,12 @@ private:
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
     winrt::ItemsSourceView::CollectionChanged_revoker m_emptyStateCollectionChangedRevoker{};
+    // Hierarchy metadata can be rewritten without the row set changing (a node losing its last
+    // child, a hierarchy declared or retracted over the same items). Nothing re-prepares a row in
+    // that case, so this subscription is the only edge that tells realized rows to re-read.
+    winrt::ItemsSourceView::CollectionChanged_revoker m_rowHierarchyResetRevoker{};
+    winrt::ItemsSourceView m_rowHierarchyResetView{ nullptr };
+    bool m_rowHierarchyRefreshQueued{ false };
     // ActualThemeChanged refreshes imperatively-resolved brushes that ItemsRepeater rows do not re-pump.
     winrt::event_token m_actualThemeChangedToken{};
 
@@ -906,6 +983,7 @@ private:
     bool m_focusLossCommitQueued{ false };
 
     int32_t m_navAnchorRow{ -1 };
+
     void OnPreviewKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
@@ -914,3 +992,4 @@ private:
     int32_t GetFocusedRowIndex() const;
     int32_t GetEstimatedRowsPerPage(); // Non-const — GetDensityRowMinHeight() mutates the resource cache.
 };
+

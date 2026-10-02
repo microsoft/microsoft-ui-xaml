@@ -117,7 +117,53 @@ void TableView::SetGroupExpansion(winrt::UIElement const& container, bool expand
     RequestGroupExpansion(container, expand);
 }
 
-void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired)
+void TableView::ExpandRowSubtree(winrt::UIElement const& container)
+{
+    RequestGroupExpansion(container, true, true /* subtree */);
+}
+
+bool TableView::TryFocusFirstChildRow(winrt::UIElement const& container)
+{
+    auto const repeater = m_rowsRepeater.get();
+    if (!repeater || !container)
+    {
+        return false;
+    }
+
+    const auto index = repeater.GetElementIndex(container);
+    TableViewRowInfo info{};
+    TableViewRowInfo next{};
+    if (index < 0 || !TryGetTableViewSourceRowInfo(index, info) || info.Level <= 0 ||
+        !TryGetTableViewSourceRowInfo(index + 1, next) ||
+        next.Kind != TableViewRowKind::Data || next.Level != info.Level + 1)
+    {
+        return false;
+    }
+
+    return FocusRow(index + 1);
+}
+
+bool TableView::TryFocusParentRow(winrt::UIElement const& container)
+{
+    auto const repeater = m_rowsRepeater.get();
+    if (!repeater || !container || !m_tableViewSourceRowMetadata)
+    {
+        return false;
+    }
+
+    const auto index = repeater.GetElementIndex(container);
+    TableViewRowInfo info{};
+    int32_t parentIndex = -1;
+    if (index < 0 || !TryGetTableViewSourceRowInfo(index, info) || info.ParentIdentity.empty() ||
+        !m_tableViewSourceRowMetadata->TryGetIndexForIdentity(info.ParentIdentity, parentIndex))
+    {
+        return false;
+    }
+
+    return FocusRow(parentIndex);
+}
+
+void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired, bool subtree)
 {
     if (!m_tableViewSourceRowMetadata)
     {
@@ -130,11 +176,11 @@ void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::op
     // dropping the request). Identity is index-independent once captured.
     winrt::hstring const identity = TryGetContainerIdentity(container);
 
-    // Capture keyboard focus on this header (if any) so it can be restored after the deferred
-    // reshape recycles the container. Done here, while the container still owns focus.
-    CaptureGroupHeaderFocusForRestore(container, identity);
+    // Capture keyboard focus on this header or row (if any) so it can be restored after the
+    // deferred reshape recycles the container. Done here, while the container still owns focus.
+    CaptureContainerFocusForRestore(container, identity);
 
-    QueueGroupExpansionByIdentity(identity, desired);
+    QueueGroupExpansionByIdentity(identity, desired, subtree);
 }
 
 winrt::hstring TableView::TryGetContainerIdentity(winrt::UIElement const& container)
@@ -167,7 +213,7 @@ winrt::hstring TableView::TryGetContainerIdentity(winrt::UIElement const& contai
     }
 }
 
-void TableView::CaptureGroupHeaderFocusForRestore(winrt::UIElement const& container, winrt::hstring const& identity)
+void TableView::CaptureContainerFocusForRestore(winrt::UIElement const& container, winrt::hstring const& identity)
 {
     // Clear any prior capture: a fresh toggle supersedes an earlier one whose restore has not run.
     m_pendingGroupFocusIdentity.clear();
@@ -202,7 +248,14 @@ void TableView::CaptureGroupHeaderFocusForRestore(winrt::UIElement const& contai
         return;
     }
 
-    if (auto const control = container.try_as<winrt::Control>())
+    // A data row's focus usually sits on a cell or editor inside it, so the row's own FocusState
+    // reads Unfocused; the focused element carries the state that matters. A header keeps reading
+    // its own state, as it always has.
+    auto const stateSource = container.try_as<winrt::TableViewRow>()
+        ? focused.try_as<winrt::Control>()
+        : container.try_as<winrt::Control>();
+
+    if (auto const control = stateSource)
     {
         // Pointer focus draws no focus visual, so there is nothing to restore for a band click.
         // Keyboard (and programmatic, e.g. a test driving Focus) carry a visual worth preserving.
@@ -215,7 +268,7 @@ void TableView::CaptureGroupHeaderFocusForRestore(winrt::UIElement const& contai
     }
 }
 
-winrt::hstring TableView::CaptureFocusedGroupHeaderForRestore()
+winrt::hstring TableView::CaptureFocusedContainerForRestore()
 {
     // A bulk expand/collapse supersedes any earlier capture whose restore has not run, exactly as
     // a fresh single-group toggle does.
@@ -228,15 +281,24 @@ winrt::hstring TableView::CaptureFocusedGroupHeaderForRestore()
         return {};
     }
 
-    // Walk out from the focused element to its header container, if it is inside one. Focus on a
-    // data row is deliberately not captured.
+    // Walk out from the focused element to its header or data-row container, if it is inside one.
     auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
     for (winrt::DependencyObject node = focused; node; node = winrt::VisualTreeHelper::GetParent(node))
     {
+        winrt::UIElement container{ nullptr };
         if (auto const header = node.try_as<winrt::TableViewGroupHeader>())
         {
-            auto const identity = TryGetContainerIdentity(header);
-            CaptureGroupHeaderFocusForRestore(header, identity);
+            container = header;
+        }
+        else if (auto const row = node.try_as<winrt::TableViewRow>())
+        {
+            container = row;
+        }
+
+        if (container)
+        {
+            auto const identity = TryGetContainerIdentity(container);
+            CaptureContainerFocusForRestore(container, identity);
             return identity;
         }
     }
@@ -246,7 +308,7 @@ winrt::hstring TableView::CaptureFocusedGroupHeaderForRestore()
 
 // Directional request from a UIA provider or the band gesture. Identity is resolved here, while
 // the container's index is still current, because the mutation below is deferred.
-void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired)
+void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, bool subtree)
 {
     if (identity.empty())
     {
@@ -266,11 +328,11 @@ void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, st
     if (auto const queue = DispatcherQueue())
     {
         // A refused enqueue means the thread is shutting down and the UI is going away regardless.
-        queue.TryEnqueue([weakThis, identity, desired, generation]()
+        queue.TryEnqueue([weakThis, identity, desired, generation, subtree]()
             {
                 if (auto strongThis = weakThis.get())
                 {
-                    strongThis->ApplyGroupExpansionByIdentity(identity, desired, generation);
+                    strongThis->ApplyGroupExpansionByIdentity(identity, desired, generation, subtree);
                 }
             });
         return;
@@ -278,10 +340,10 @@ void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, st
 
     // No dispatcher means this is not a UI thread (test host), so there is no in-flight callout to
     // unwind and the hazard above cannot apply.
-    ApplyGroupExpansionByIdentity(identity, desired, generation);
+    ApplyGroupExpansionByIdentity(identity, desired, generation, subtree);
 }
 
-void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation)
+void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation, bool subtree)
 {
     // Identities are value-based strings, not tied to a provider instance. If ItemsSource was
     // replaced while this request sat on the queue, the same string could name an unrelated group
@@ -302,9 +364,9 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     {
         if (m_editState == EditState::Ending)
         {
-            QueueCoalescedEditReshape([this, identity, desired, generation]()
+            QueueCoalescedEditReshape([this, identity, desired, generation, subtree]()
             {
-                ApplyGroupExpansionByIdentity(identity, desired, generation);
+                ApplyGroupExpansionByIdentity(identity, desired, generation, subtree);
             });
         }
         return;
@@ -313,22 +375,30 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     bool changed = false;
     try
     {
-        if (desired.has_value())
+        // A local strong ref: a handler of the collection change this raises may re-declare the
+        // source's shape, which replaces m_tableViewSourceRowMetadata while the call is running.
+        auto const provider = m_tableViewSourceRowMetadata;
+        if (subtree)
+        {
+            provider->ExpandSubtree(identity);
+            changed = true;
+        }
+        else if (desired.has_value())
         {
             // Idempotent set: applying the state we already have is a no-op in the provider.
             if (*desired)
             {
-                m_tableViewSourceRowMetadata->Expand(identity);
+                provider->Expand(identity);
             }
             else
             {
-                m_tableViewSourceRowMetadata->Collapse(identity);
+                provider->Collapse(identity);
             }
             changed = true;
         }
         else
         {
-            changed = m_tableViewSourceRowMetadata->Toggle(identity);
+            changed = provider->Toggle(identity);
         }
     }
     catch (...)
@@ -342,17 +412,22 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     // told clients to re-read a structure that had not changed yet.
     if (changed)
     {
+        // The toggled row keeps its index, so the repeater never re-prepares it and never raises
+        // ElementIndexChanged for it -- only the rows BELOW shift. Without this, the row that was
+        // just expanded keeps IsExpanded=false, which is what both ExpandCollapsePattern and the
+        // chevron read off the DP.
+        RefreshRealizedRowHierarchyState();
         RaiseGroupStructureChanged();
     }
 
-    // Restore keyboard focus to the toggled header even when nothing structurally changed: a
+    // Restore keyboard focus to the toggled header or row even when nothing structurally changed: a
     // non-expandable/no-op toggle still ran the container through the reshape path, and leaving
     // focus stranded is the very bug this guards. Matches on identity, so an unrelated queued
     // toggle does not consume this restore.
-    RestoreGroupHeaderFocusIfPending(identity);
+    RestoreContainerFocusIfPending(identity);
 }
 
-void TableView::RestoreGroupHeaderFocusIfPending(winrt::hstring const& identity)
+void TableView::RestoreContainerFocusIfPending(winrt::hstring const& identity)
 {
     if (m_pendingGroupFocusIdentity.empty() || m_pendingGroupFocusIdentity != identity)
     {
@@ -389,11 +464,11 @@ void TableView::RestoreGroupHeaderFocusIfPending(winrt::hstring const& identity)
                 strongThis->m_pendingGroupFocusLayoutToken = {};
             }
 
-            strongThis->FocusGroupHeaderByIdentity(identity, focusState);
+            strongThis->FocusContainerByIdentity(identity, focusState);
         });
 }
 
-void TableView::FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt::FocusState focusState)
+void TableView::FocusContainerByIdentity(winrt::hstring const& identity, winrt::FocusState focusState)
 {
     if (identity.empty() || !m_tableViewSourceRowMetadata)
     {
@@ -409,6 +484,32 @@ void TableView::FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt
     auto repeater = m_rowsRepeater.get();
     if (!repeater)
     {
+        return;
+    }
+
+    // A data row: a splice toggle leaves the focused row (and a focused cell inside it) in place,
+    // and re-focusing then would pull focus off that cell. Only restore when focus is no longer
+    // inside the row now presented at this identity's index -- the Reset recycled the container.
+    TableViewRowInfo info{};
+    if (TryGetTableViewSourceRowInfo(index, info) && info.Kind == TableViewRowKind::Data)
+    {
+        if (auto const root = XamlRoot())
+        {
+            auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+            for (winrt::DependencyObject node = focused; node; node = winrt::VisualTreeHelper::GetParent(node))
+            {
+                if (auto const row = node.try_as<winrt::TableViewRow>())
+                {
+                    if (repeater.GetElementIndex(row) == index)
+                    {
+                        return;
+                    }
+                    break;
+                }
+            }
+        }
+
+        FocusRow(index);
         return;
     }
 
@@ -438,20 +539,40 @@ void TableView::FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt
 
 void TableView::ExpandAllGroups()
 {
-    SetAllGroupsExpansion(true);
+    SetBulkExpansion(true, BulkExpansionAxis::Groups);
 }
 
 void TableView::CollapseAllGroups()
 {
-    SetAllGroupsExpansion(false);
+    SetBulkExpansion(false, BulkExpansionAxis::Groups);
 }
 
-// Bulk counterpart of ApplyGroupExpansionByIdentity. No UIA callout to unwind here - the caller is
-// the app - so this runs inline, but it still has to coalesce behind an in-flight edit for the same
-// reason: the edit sits over a row that the reshape is about to move.
-void TableView::SetAllGroupsExpansion(bool expand)
+void TableView::ExpandAllRows()
+{
+    SetBulkExpansion(true, BulkExpansionAxis::Rows);
+}
+
+void TableView::CollapseAllRows()
+{
+    SetBulkExpansion(false, BulkExpansionAxis::Rows);
+}
+
+// Bulk counterpart of ApplyGroupExpansionByIdentity, for either axis. No UIA callout to unwind here
+// - the caller is the app - so this runs inline, but it still has to coalesce behind an in-flight
+// edit for the same reason: the edit sits over a row that the reshape is about to move.
+void TableView::SetBulkExpansion(bool expand, BulkExpansionAxis axis)
 {
     if (!m_tableViewSourceRowMetadata)
+    {
+        return;
+    }
+
+    // Documented no-ops must stay no-ops: without a tree (Rows) or groups (Groups) there is nothing
+    // to reshape, and terminating the edit first would commit and close an open editor for nothing.
+    const bool hasAxis = (axis == BulkExpansionAxis::Rows)
+        ? m_tableViewSourceRowMetadata->IsHierarchicalSource()
+        : IsTableViewSourceGrouped();
+    if (!hasAxis)
     {
         return;
     }
@@ -460,27 +581,38 @@ void TableView::SetAllGroupsExpansion(bool expand)
     {
         if (m_editState == EditState::Ending)
         {
-            QueueCoalescedEditReshape([this, expand]()
+            QueueCoalescedEditReshape([this, expand, axis]()
             {
-                SetAllGroupsExpansion(expand);
+                SetBulkExpansion(expand, axis);
             });
         }
         return;
     }
 
-    auto const focusedGroupIdentity = CaptureFocusedGroupHeaderForRestore();
+    // Captured for both axes: expanding the rows of a grouped tree reshapes the row stream under
+    // the headers, which recycles the focused header container just as a group toggle does.
+    auto const focusedGroupIdentity = CaptureFocusedContainerForRestore();
 
     bool changed = false;
     try
     {
-        if (expand)
+        // Local strong ref, as in ApplyGroupExpansionByIdentity.
+        auto const provider = m_tableViewSourceRowMetadata;
+        switch (axis)
         {
-            m_tableViewSourceRowMetadata->ExpandAllGroups();
+        case BulkExpansionAxis::Groups:
+            expand
+                ? provider->ExpandAllGroups()
+                : provider->CollapseAllGroups();
+            break;
+
+        case BulkExpansionAxis::Rows:
+            expand
+                ? provider->ExpandAllRows()
+                : provider->CollapseAllRows();
+            break;
         }
-        else
-        {
-            m_tableViewSourceRowMetadata->CollapseAllGroups();
-        }
+
         changed = true;
     }
     catch (...)
@@ -492,10 +624,35 @@ void TableView::SetAllGroupsExpansion(bool expand)
 
     if (changed)
     {
+        RefreshRealizedRowHierarchyState();
+
+        // Raised for both axes: a UIA client's view of the table changed shape either way, and
+        // under a grouped tree a row-axis expansion changes what each group contains.
         RaiseGroupStructureChanged();
     }
 
-    RestoreGroupHeaderFocusIfPending(focusedGroupIdentity);
+    RestoreContainerFocusIfPending(focusedGroupIdentity);
+}
+
+// Re-derives Level/IsExpandable/IsExpanded for every row the repeater still holds. Needed after a
+// reshape, where a row that kept its index kept its stale state with it.
+void TableView::RefreshRealizedRowHierarchyState()
+{
+    auto const repeater = m_rowsRepeater.get();
+    if (!repeater)
+    {
+        return;
+    }
+
+    ForEachRealizedRow([this, repeater](winrt::TableViewRow const& row)
+    {
+        // A container awaiting recycle reports -1; its state is about to be re-derived on prepare.
+        const auto index = repeater.GetElementIndex(row);
+        if (index >= 0)
+        {
+            RefreshRowHierarchyState(row, index);
+        }
+    });
 }
 
 void TableView::RaiseGroupStructureChanged()
@@ -663,7 +820,11 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         {
             groupKey = groupObject;
         }
-        itemCount = entry->GroupItemCount();
+        // Row metadata wins when it describes this header: under a hierarchy the entry's count is
+        // the rows the group spans (roots plus visible descendants) while the metadata reports the
+        // roots the header actually owns. The entry stays the fallback for the reshape window
+        // where the metadata describes a different row.
+        itemCount = hasRowInfo ? rowInfo.ChildCount : entry->GroupItemCount();
         isExpanded = hasRowInfo ? rowInfo.IsExpanded : entry->IsExpanded();
         isExpandable = hasRowInfo ? rowInfo.IsExpandable : (entry->GroupItemCount() > 0);
         level = hasRowInfo ? std::max(0, rowInfo.Level) : 0;
