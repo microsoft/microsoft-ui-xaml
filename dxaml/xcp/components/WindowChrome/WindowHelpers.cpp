@@ -111,6 +111,9 @@ short WindowHelpers::ClampToShortMax(const long value, const short min) noexcept
         static_cast<long>(SHRT_MAX)));
 }
 
+// True iff XamlChangeId::FixWindowTopBorder is enabled and the DWM probe
+// indicates Windows 10 (E_INVALIDARG for DWMWA_VISIBLE_FRAME_BORDER_THICKNESS).
+// Windows 11 supports that attribute; success or any other probe failure returns false.
 bool WindowHelpers::ShouldApplyDwmTopBorderWorkaround(HWND hwnd) noexcept
 {
     if (!OptionalChangeState::IsWindowTopBorderFixEnabled())

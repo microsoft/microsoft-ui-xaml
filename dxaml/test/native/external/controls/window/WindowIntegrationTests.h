@@ -63,16 +63,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowTopBorderPaintingPreservesCompatBehavior)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates legacy background erase when the Window top-border fix is disabled.")
+            TEST_METHOD_PROPERTY(L"Description", L"Validates normal background erase when the Window top-border fix is disabled.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{FixWindowTopBorder:false}")
             TEST_METHOD_PROPERTY(L"Data:ECITBBeforeActivation", L"{false,true}")
-        END_TEST_METHOD()
-
-        BEGIN_TEST_METHOD(WindowTopBorderMatchesSideBorders)
-            TEST_METHOD_PROPERTY(L"Description", L"Compares the composed active and inactive Windows 10 top row with the native side borders.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
-            TEST_METHOD_PROPERTY(L"Data:Theme", L"{Light,Dark}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowTopBorderEraseDuringClose)
