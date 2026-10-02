@@ -3006,11 +3006,43 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Event Sources
     };
+    class PivotHeaderPanelFactory
+        :
+        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::Primitives::IPivotHeaderPanelFactory>
+    {
+
+    friend class PivotHeaderPanelGenerated;
+    friend class PivotHeaderPanel;
+
+    public:
+         _Check_return_ HRESULT RuntimeClassInitialize();
+         static _Check_return_ HRESULT EnsureProperties();
+         static void ClearProperties();
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IPivotHeaderPanel** ppInstance);
+
+        // Properties.
+
+        // Dependency properties.
+
+        // Attached properties.
+
+        // Static methods.
+
+    private:
+
+        // Properties' statics.
+
+        // Properties' initializers.
+
+    };
     
     class __declspec(novtable) PivotHeaderPanelGenerated
         : public PivotHeaderPanelRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::Primitives::PivotHeaderPanel;
+        friend class pctl::AggregableComObject< 
+            ABI::Microsoft::UI::Xaml::Controls::Primitives::PivotHeaderPanel,
+            ABI::Microsoft::UI::Xaml::Controls::Primitives::IPivotHeaderPanel>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_Primitives_PivotHeaderPanel, TrustLevel::BaseTrust);
 
     public:
@@ -3073,8 +3105,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Customized properties.
 
-        // Initialization methods
-        virtual _Check_return_ HRESULT InitializeImpl();
+        // Initialization methods required by AggregableComObject to make this an aggregable class.
+        virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
 
         // Event Sources
     };
