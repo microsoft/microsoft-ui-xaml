@@ -37,6 +37,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
+#include <cstdint>
+
 ");
   foreach (var includeFile in Model.NeededCppWinRTProjectionHeaderFiles) { 
             this.Write("#if __has_include(<");
@@ -80,14 +82,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundation)));
             this.Write("::Uri const& resourceLocator);\r\n");
   }
-            this.Write("        virtual void Connect(int32_t connectionId, IInspectable const& target);\r\n" +
-                    "        virtual ");
+            this.Write("        virtual void Connect(std::int32_t connectionId, IInspectable const& targe" +
+                    "t);\r\n        virtual ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlMarkup)));
-            this.Write("::IComponentConnector GetBindingConnector(int32_t connectionId, IInspectable cons" +
-                    "t& target);\r\n        void UnloadObject(");
+            this.Write("::IComponentConnector GetBindingConnector(std::int32_t connectionId, IInspectable" +
+                    " const& target);\r\n        void UnloadObject(");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
             this.Write("::DependencyObject const& dependencyObject);\r\n        void DisconnectUnloadedObje" +
-                    "ct(int32_t connectionId);\r\n");
+                    "ct(std::int32_t connectionId);\r\n");
   foreach (var fieldData in Model.CodeInfo.FieldDeclarations) {
         if (fieldData.IsDeprecated) { 
             this.Write("#pragma warning(push)\r\n#pragma warning(disable : 4973)\r\n");
