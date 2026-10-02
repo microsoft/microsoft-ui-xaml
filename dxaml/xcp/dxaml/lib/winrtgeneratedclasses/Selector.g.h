@@ -108,6 +108,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ISelector** ppInstance);
 
         // Static properties.
 
