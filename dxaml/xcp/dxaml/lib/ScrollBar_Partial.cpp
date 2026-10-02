@@ -10,6 +10,7 @@
 #include "AutomationProperties.h"
 #include "localizedResource.h"
 #include "LayoutCycleDebugSettings.h"
+#include "ResourceDictionary_partial.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -701,6 +702,44 @@ _Check_return_ HRESULT ScrollBar::ChangeVisualState(
     IFC(get_IndicatorMode(&scrollingIndicator));
 
     IFC(get_IsEnabled(&isEnabled));
+    if (isEnabled && (!IsConscious() || m_isPointerOver))
+    {
+        // Install persistent base brushes only when the track is first shown. VSM can then
+        // restore them when its overrides end, including changes in another state group.
+        ctl::ComPtr<xaml::IFrameworkElement> root;
+        IFC(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"Root"), root.ReleaseAndGetAddressOf()));
+        if (root)
+        {
+            ctl::ComPtr<xaml::IResourceDictionary> resources;
+            ctl::ComPtr<IInspectable> key;
+            BOOLEAN hasStyle = FALSE;
+            IFC(root->get_Resources(&resources));
+            IFC(PropertyValue::CreateFromString(wrl_wrappers::HStringReference(L"DeferredTrackBrushStyle").Get(), &key));
+            IFC(resources.Cast<ResourceDictionary>()->HasKey(key.Get(), &hasStyle));
+            if (hasStyle)
+            {
+                ctl::ComPtr<IInspectable> resource;
+                ctl::ComPtr<xaml::IStyle> trackStyle;
+                IFC(resources.Cast<ResourceDictionary>()->Lookup(key.Get(), &resource));
+                IFC(resource.As(&trackStyle));
+                for (const auto name : { L"HorizontalTrackRect", L"VerticalTrackRect" })
+                {
+                    ctl::ComPtr<xaml::IDependencyObject> child;
+                    IFC(GetTemplateChild(wrl_wrappers::HStringReference(name).Get(), &child));
+                    auto track = child.AsOrNull<xaml::IFrameworkElement>();
+                    if (track)
+                    {
+                        ctl::ComPtr<xaml::IStyle> existingStyle;
+                        IFC(track->get_Style(&existingStyle));
+                        if (!existingStyle)
+                        {
+                            IFC(track->put_Style(trackStyle.Get()));
+                        }
+                    }
+                }
+            }
+        }
+    }
     if (!isEnabled)
     {
         IFC(GoToState(bUseTransitions, L"Disabled", &isIgnored));
