@@ -1888,7 +1888,6 @@ namespace Microsoft.UI.Xaml.Controls
     }
 
     [CodeGen(partial: true)]
-    [ForceSealed]
     [DXamlIdlGroup("Controls2")]
     [InstanceCountTelemetry]
     [Guids(ClassGuid = "71d529d6-3a4e-4a1f-8b40-6f1e6cdce52c")]
