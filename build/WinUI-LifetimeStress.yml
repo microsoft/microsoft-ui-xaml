@@ -109,6 +109,14 @@ extends:
         pipelineKind: Nightly
         signOutput: ${{ parameters.SignOutput }}
         runStaticAnalysis: false
+        # Disable PGO by forcing PGOBuildMode=Off directly onto every solution's MSBuild args. This soak
+        # only builds WinUI to run tests - it never ships the binaries, so it does not need PGO-optimized
+        # output. Overriding the parameter (rather than the pgoBuildMode variable) is required because the
+        # Nightly matrix marks the fre legs shouldPgo=true; on those legs the variable can still resolve to
+        # Optimize, which invokes RestorePGONuget and fails the native build with "Could not find matching
+        # PGO package" (the matching Microsoft.WinUI.PGO data package is not published for experimental soak
+        # builds). The shared GitHub-PR pipeline disables PGO the same way.
+        pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
 
     - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
       parameters:
