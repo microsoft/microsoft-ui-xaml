@@ -2106,6 +2106,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 SafeUI(() => Content = null);
 
                 FinalizeAndReport(objects);
+
+                // Unconditional forced failure: records a Failed verdict at the end of the scenario so the test
+                // reports as Failed. This is NOT the native LsDestroyBreakRecord crash and does not depend on the
+                // #12126 fix being present or absent - it fires identically on fixed and unfixed code.
+                Verify.Fail("StressLineBreakCacheDeferredReleaseNative: forced failure.");
             });
         }
 
