@@ -376,6 +376,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     }
 
+    void StyleIntegrationTests::CanUseSetterValueAsContent()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto canvas = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetVariationFileName(L"SetterValueContentProperty")));
+
+        RunOnUIThread([&]()
+        {
+            TestServices::WindowHelper->WindowContent = m_rootCanvas;
+            m_rootCanvas->Children->Append(canvas);
+
+            auto targetControl = safe_cast<CustomControl^>(canvas->Children->GetAt(0));
+            targetControl->ApplyTemplate();
+
+            auto textBlockFromTemplate = safe_cast<TextBlock^>(targetControl->PublicGetTemplateChild(L"textBlockFromTemplate"));
+            VERIFY_IS_TRUE(L"Monty Python" == textBlockFromTemplate->Text);
+        });
+    }
+
     void StyleIntegrationTests::CanStyleSetterDetectMissingValue()
     {
         TestCleanupWrapper cleanup;
