@@ -23,6 +23,7 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(ResetOptionalChanges)() override { return This()->ResetOptionalChanges(); }
+        IFACEMETHOD(TriggerLowMemoryForTest)() override { return This()->TriggerLowMemoryForTest(); }
     };
 }
 #pragma endregion
@@ -56,6 +57,7 @@ namespace DirectUI
 
         // Methods.
         _Check_return_ HRESULT STDMETHODCALLTYPE ResetOptionalChanges();
+        _Check_return_ HRESULT STDMETHODCALLTYPE TriggerLowMemoryForTest();
 
 
     protected:

@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
@@ -78,10 +79,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                SettleAndCollect();
-                // Leaks are reported as warnings; this suite only gates on host crashes.
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -150,10 +148,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                // Treat residual repeater graphs as warnings.
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -197,9 +192,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -216,9 +209,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     objects["Window"] = CreateActivateAndCloseWindow();
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -281,9 +272,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -329,9 +318,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -389,9 +376,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -439,9 +424,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -485,9 +468,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -538,9 +519,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -588,9 +567,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -641,9 +618,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -682,9 +657,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -722,9 +695,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -780,9 +751,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -822,9 +791,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -867,9 +834,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -922,9 +887,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -975,9 +938,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -1023,9 +984,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -1080,9 +1039,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -1127,9 +1084,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -1169,9 +1124,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -1221,9 +1174,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -1279,9 +1230,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -1333,9 +1282,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -1378,9 +1325,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -1427,9 +1372,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -1696,9 +1639,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                FinalizeAndReport(objects);
             });
         }
 
@@ -1750,9 +1691,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                FinalizeAndReport(objects);
             });
         }
 
@@ -1798,9 +1737,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                FinalizeAndReport(objects);
             });
         }
 
@@ -1830,9 +1767,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
 
-                FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                FinalizeAndReport(objects);
             });
         }
 
@@ -1927,9 +1862,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                FinalizeAndReport(objects);
             });
         }
 
@@ -1978,9 +1911,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     _ = leaf.ActualWidth;
                 });
 
-                FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                FinalizeAndReport(objects);
             });
         }
 
@@ -2035,9 +1966,88 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                FinalizeAndReport(objects);
+            });
+        }
+
+        [TestMethod]
+        public void StressLineBreakCacheDeferredReleaseNative()
+        {
+            RunNativeStress("StressLineBreakCacheDeferredReleaseNative", (iteration) =>
+            {
+                var objects = new Dictionary<string, WeakReference>();
+                int subtrees = AggressiveNativeReproEnabled ? 48 : 6;
+                string paragraph = string.Concat(Enumerable.Repeat("The quick brown fox jumps over the lazy dog. ", 48));
+
+                SafeUI(() =>
+                {
+                    Content = new Grid();
+                    ((Grid)Content).UpdateLayout();
+                });
+
+                for (int s = 0; s < subtrees; s++)
+                {
+                    bool trackFirst = s == 0;
+
+                    SafeUI(() =>
+                    {
+                        var root = (Grid)Content;
+
+                        var panel = new StackPanel() { Width = 160 };
+                        for (int t = 0; t < 4; t++)
+                        {
+                            var block = new TextBlock()
+                            {
+                                TextWrapping = TextWrapping.WrapWholeWords,
+                                TextTrimming = TextTrimming.CharacterEllipsis,
+                                IsTextSelectionEnabled = true,
+                                Width = 150,
+                            };
+                            block.Inlines.Add(new Run() { Text = paragraph, FontSize = 14 });
+                            block.Inlines.Add(new LineBreak());
+                            block.Inlines.Add(new Run() { Text = paragraph, FontSize = 18 });
+
+                            panel.Children.Add(new Button() { Content = block, Width = 160 });
+                        }
+
+                        var host = new UserControl() { Content = panel };
+                        root.Children.Add(host);
+                        root.UpdateLayout();
+
+                        if (trackFirst)
+                        {
+                            objects["FirstHost"] = new WeakReference(host);
+                            objects["FirstPanel"] = new WeakReference(panel);
+                        }
+
+                        root.Children.Remove(host);
+                    });
+
+                    PumpUI();
+
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+
+                    SafeUI(() =>
+                    {
+                        var root = (Grid)Content;
+
+                        DxamlCoreTestHooks.GetForCurrentThread().TriggerLowMemoryForTest();
+
+                        var pressure = new TextBlock() { Text = paragraph + paragraph, TextWrapping = TextWrapping.Wrap, Width = 120 };
+                        root.Children.Add(pressure);
+                        root.UpdateLayout();
+                        root.Children.Remove(pressure);
+                    });
+
+                    PumpUI();
+                    PumpUI();
+                }
+
+                SafeUI(() => Content = null);
+
+                FinalizeAndReport(objects);
             });
         }
 
@@ -2085,9 +2095,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                FinalizeAndReport(objects);
             });
         }
 
@@ -2150,9 +2158,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     (container as ListViewItem)?.UpdateLayout();
                 });
 
-                FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                FinalizeAndReport(objects);
             });
         }
 
@@ -2217,9 +2223,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     firstItem?.UpdateLayout();
                 });
 
-                FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                FinalizeAndReport(objects);
             });
         }
 
@@ -2279,9 +2283,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                FinalizeAndReport(objects);
             });
         }
 
@@ -2333,9 +2335,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     firstToggle?.UpdateLayout();
                 });
 
-                FinalizeOffThread();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                FinalizeAndReport(objects);
             });
         }
 
@@ -2371,9 +2371,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Content = null;
                 });
 
-                SettleAndCollect();
-                SafeUI(() => VerifyCollected(objects, failOnLeak: false));
-                IdleSynchronizer.Wait();
+                SettleAndReport(objects);
             });
         }
 
@@ -2716,7 +2714,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Converge collection off the UI thread, then report survivors. Routes leaks through VerifyCollected so
-        // they keep the exact "object 'X' was still alive after forced collection" phrase the PostTestRun totals
+        // they keep the exact "object 'X' was still alive after a full garbage collection" phrase the PostTestRun totals
         // step counts. Always non-gating: leaks are warning-only, exactly like the rest of the suite.
         private static void VerifyLifetime(Dictionary<string, WeakReference> objects)
         {
@@ -2805,6 +2803,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleAndCollect();
         }
 
+        // Shared scenario tail: settle UI work + GC, then report any survivors as non-gating warnings
+        // (routed through VerifyCollected so leaks keep the exact phrase the PostTestRun totals step counts)
+        // and settle once more. Used by the managed create/teardown scenarios.
+        private static void SettleAndReport(Dictionary<string, WeakReference> objects)
+        {
+            SettleAndCollect();
+            SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+            IdleSynchronizer.Wait();
+        }
+
+        // Shared native-scenario tail: finalize off-thread, then report any survivors as non-gating warnings
+        // and settle. Used by the *Native() repro scenarios.
+        private static void FinalizeAndReport(Dictionary<string, WeakReference> objects)
+        {
+            FinalizeOffThread();
+            SafeUI(() => VerifyCollected(objects, failOnLeak: false));
+            IdleSynchronizer.Wait();
+        }
+
         private static void VerifyCollected(Dictionary<string, WeakReference> objects, bool failOnLeak)
         {
             foreach (var pair in objects)
@@ -2822,7 +2839,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     else
                     {
                         // Residual references are warning-only for this report suite.
-                        Log.Warning(string.Format("[LifetimeStress] REPORT: object '{0}' was still alive after forced collection; logged as a warning (non-gating). Investigate for a possible lifetime leak.", pair.Key));
+                        Log.Warning(string.Format("[LifetimeStress] REPORT: object '{0}' was still alive after a full garbage collection; logged as a warning (non-gating). Investigate for a possible lifetime leak.", pair.Key));
                     }
                 }
             }

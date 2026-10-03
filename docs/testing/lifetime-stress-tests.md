@@ -24,7 +24,9 @@ aggressively settles and collects so a dangling peer faults promptly rather than
   paths that have historically produced lifetime crashes: ItemsRepeater realization/recycling (currently
   quarantined — see below), element reparenting (enter/leave), window open/close, window event-handler
   dispatch/teardown (reentrant Window-event dispatch during finalization), ListView container recycling,
-  Popup open/close, NavigationView menu churn, and TabView add/remove.
+  Popup open/close, NavigationView menu churn, TabView add/remove, and text Line Services break-record
+  teardown (`StressTextLineServicesChurnNative`, and the deferred-release
+  `StressLineBreakCacheDeferredReleaseNative` that simulates Watson 56307002 — see below).
 - **Isolation.** The tests are tagged into their own TAEF test suite (`LifetimeStressTestSuite`). The Helix
   work-item generator emits a dedicated work item for that suite, so a lifetime crash does not cascade into
   unrelated tests and the soak can be scheduled independently.
@@ -37,6 +39,11 @@ Each test carries `[TestProperty("TestSuite", "LifetimeStressTestSuite")]` and t
 `[TestProperty("Classification", "Integration")]`, so the existing Helix work-item generation
 (`Helix/common/pipeline/GenerateHelixWorkItems.ps1`) produces an **isolated** work item for the suite on every
 DevTestSuite test pass. Isolation means a lifetime crash cannot cascade into unrelated tests.
+
+Within the lifetime work item, `RunHelixWorkItem.ps1` adds `/isolationlevel:test` so each
+scenario runs in a separate TAEF test-host process. This isolates subsequent scenarios
+from UI/process state left by earlier tests. Other suites and the five-second setup
+`Loaded` wait are unchanged; setup failures remain visible in the original TAEF log.
 
 **Reports in the PR run, but never gates it.** The suite runs its create/teardown/GC workload on **every** test
 pass — including the per-PR gate and Nightly — so a lifetime **report** is produced right there in the pipeline run.
@@ -100,6 +107,40 @@ A set of `Legacy*Tests()` scenarios port techniques from the Win8-era System XAM
 
 All of these are non-gating by default and route residual-object reports through `VerifyCollected`, so leaks keep
 the exact phrase the PostTestRun totals step counts.
+
+### Line Services break-record cache (Watson 56307002)
+
+`StressLineBreakCacheDeferredReleaseNative` simulates the `LsDestroyBreakRecord` access violation reported in
+Watson bug 56307002. The reported stack tears a `TextBlock` down **during a later render tick**, not at the point
+it is removed from the tree:
+
+```
+CXcpDispatcher::Tick -> NWDrawTree -> BuildTreeService::BuildTrees ->
+UIAffinityReleaseQueue::DoCleanup -> CUserControl final release ->
+CUIElement::~CUIElement -> CTextBlock::~CTextBlock ->
+ParagraphNode::DeleteLineCache -> ~LsTextLineBreak -> LsDestroyBreakRecord
+```
+
+The cached `LsTextLineBreak` stores a raw Line Services context/break-record pair with **no owning reference** to
+the formatter that produced it. Dropping the subtree only *queues* the native release onto the UI-affinity release
+queue, which drains on a subsequent tick; if the shared text-formatter pool is trimmed in that window, the owning
+context can already be gone when `DeleteLineCache` finally runs. The scenario reproduces that ordering
+deterministically: it builds wrapping, fast-path-opted-out (Line Services) `TextBlock`s inside a
+`UserControl`-rooted template subtree (matching the Watson chain), lays them out to populate the break-record
+cache, drops the subtree so its release defers onto the queue, then trims the shared text-formatter pool via the
+private `DxamlCoreTestHooks.TriggerLowMemoryForTest()` hook (which drives
+`CCoreServices::CheckMemoryUsage(simulateLowMemory: true)` → `ReleaseUnusedTextFormatters`) while the line cache is
+still queued.
+
+> **Note:** on **unfixed** code the owning formatter is freed before the deferred `DeleteLineCache` runs, so
+> `~LsTextLineBreak → LsDestroyBreakRecord` touches freed state and **genuinely crashes** with the reported
+> ACCESS_VIOLATION. This faults the native TAEF host, so there is no managed `Verify.Fail`: the harness
+> (`Report-LifetimeNativeCrash` in `RunHelixWorkItem.ps1`) attributes the host crash to this scenario as a
+> `[LifetimeStress] REPORT: scenario '...' threw` native warning (counted in the native-warning totals). On
+> **fixed** code (#12126) the break record binds the owning formatter via `DependentResource`, keeping the context
+> valid, so the destroy is safe and the scenario **passes cleanly**. Either way it stays **non-gating**: for the
+> lifetime suite `RunHelixWorkItem.ps1` rewrites the results to zero failures (`Set-LifetimeResultsNonGating`), so
+> the native crash is visible as a warning but never fails the pipeline stage.
 
 > **Note:** the `StressItemsRepeaterRealizationAndRecycling` scenario is currently **quarantined**
 > (`[TestProperty("Ignore", "True")]`) because it reproduces a deterministic native crash. Re-enable it once that
