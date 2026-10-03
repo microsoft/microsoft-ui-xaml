@@ -380,7 +380,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
     {
         TestCleanupWrapper cleanup;
 
-        auto canvas = safe_cast<Canvas^>(LoadXamlFileOnUIThread(L"SetterValueContentProperty.xaml"));
+        auto canvas = safe_cast<Canvas^>(LoadXamlFileOnUIThread(GetVariationFileName(L"SetterValueContentProperty")));
 
         RunOnUIThread([&]()
         {
