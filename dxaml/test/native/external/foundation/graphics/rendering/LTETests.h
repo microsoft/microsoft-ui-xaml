@@ -46,7 +46,7 @@ public:
 
     BEGIN_TEST_METHOD(GridViewEntranceInFlyoutEntranceWUC)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing shadows
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Missing shadows
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -63,7 +63,7 @@ public:
 
     BEGIN_TEST_METHOD(PopupLTE)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash when opening popup
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Crash when opening popup
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
@@ -81,7 +81,7 @@ public:
         // in WindowHelper::ShutdownXaml.
         TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // LTE test hook can't add to transition root of island's popup root
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // LTE test hook can't add to transition root of island's popup root
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(SecondaryLTELeavesDanglingCompNodePointer)

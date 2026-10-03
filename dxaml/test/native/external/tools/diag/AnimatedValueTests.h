@@ -50,7 +50,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e22a917c-ad18-4a09-bff9-d3ca3e5ee0b8")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"IsolationLevel", L"Class")
-                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
             END_TEST_CLASS()
 
@@ -209,7 +209,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             BEGIN_TEST_METHOD(TestCanAddCommonStateInControlTemplate)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can add basic states such as 'PointerOver' and have them be applied")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"True")
             END_TEST_METHOD()
 

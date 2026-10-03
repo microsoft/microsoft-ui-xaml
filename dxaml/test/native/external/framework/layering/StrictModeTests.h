@@ -30,7 +30,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateNonStrictType)
             TEST_METHOD_PROPERTY(L"Description", L"Validates strict-mode with non-strict types.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF Dispatcher timing of the UI is vastly different than UWP
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // WPF Dispatcher timing of the UI is vastly different than UWP
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateStrictType)

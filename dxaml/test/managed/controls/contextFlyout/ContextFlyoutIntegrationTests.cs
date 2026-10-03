@@ -261,7 +261,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // Disabled on OneCore pending fix
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFlyoutOnListViewWithDrag()
         {
             RunListViewTest(

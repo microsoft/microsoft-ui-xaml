@@ -36,7 +36,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateUseSystemFocusVisualsDefaults)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the UseSystemFocusVisuals is the correct default on various controls.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // When test calls "Application::Current->FocusVisualKind = FocusVisualKind::Reveal",
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // When test calls "Application::Current->FocusVisualKind = FocusVisualKind::Reveal",
                                                             // some elements don't seem to have an updated UseSystemFocusVisuals as expected.
         END_TEST_METHOD()
 

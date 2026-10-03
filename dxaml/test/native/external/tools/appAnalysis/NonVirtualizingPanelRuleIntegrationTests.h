@@ -36,7 +36,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(DoesntFireFalsePositives)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that when the panel does derive from ModernCollectionBase or LV inside ScrollViewer but layout is "
                                      L"in opposite direction that we don't fire.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
         private:

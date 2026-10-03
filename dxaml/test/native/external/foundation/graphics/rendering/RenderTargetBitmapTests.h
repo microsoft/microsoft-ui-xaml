@@ -89,7 +89,7 @@ public:
     BEGIN_TEST_METHOD(ScaledRenderWUCFull)
         TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap after having changed the current scale factor and checks the effective rendered size.")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Testing private API: XamlRenderingBackgroundTask.SetScalePercentage this is not supported in Island mode
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // Testing private API: XamlRenderingBackgroundTask.SetScalePercentage this is not supported in Island mode
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(BorderDiscardMaskOnResizeWUCFull)

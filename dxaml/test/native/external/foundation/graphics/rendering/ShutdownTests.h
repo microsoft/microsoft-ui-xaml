@@ -33,7 +33,7 @@ public:
     BEGIN_TEST_METHOD(ClosePopupWithTreeReset)
         // We can't recover from resetting the visual tree, so run this test in its own process.
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Missing window background treatment & comp node
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Missing window background treatment & comp node
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 };

@@ -37,7 +37,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(MediaTransportControlsTest)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies automatic focus when Media Transport controls are showing")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Te.ProcessHost.exe crash
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Te.ProcessHost.exe crash
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // _MEDIA_REMOVED_
             END_TEST_METHOD()
 
@@ -162,7 +162,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(EngagedElementCanDistinguishBetweenPopupsOpenedBeforeAndAfterEngagement)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that we can distinguish between when to consider a popup as a candidate based on when it was opened")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in test dll
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Crash in test dll
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(EngagedElementCanNavigateToPopupOpenedByAnotherPopup)
@@ -195,13 +195,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(UsingFocusHintRectShouldIncludeFocusedElement)
                 TEST_METHOD_PROPERTY(L"Description", L"When we pass in a focus hint rect, the focused element should be part of the candidate list")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(XYFocusIgnoresOcclusivity)
                 TEST_METHOD_PROPERTY(L"Description", L"When using private api: IgnoreOcclusivity, we should choose a candidate even when occluded")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
         private:

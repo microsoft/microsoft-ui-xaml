@@ -28,7 +28,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         [TestProperty("IsolationLevel", "Method")]
         [TestProperty("RunAs", "UAP")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public static void Setup(TestContext context)
         {

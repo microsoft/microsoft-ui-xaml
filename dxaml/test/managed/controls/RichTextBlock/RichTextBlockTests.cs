@@ -41,7 +41,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("Description", "Validates textblock selection highlight on touch input")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void RichTextBlockHighlightGripperSelectionFlyoutOnTouch()
         {

@@ -113,12 +113,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(TabExitsAKMode)
             TEST_METHOD_PROPERTY(L"Description", L"When we tab, we should exit ak mode and process the tab normally")
             TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // UAP hosting required: cannot exit access key mode
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // UAP hosting required: cannot exit access key mode
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DirectionArrowsExitsAKMode)
             TEST_METHOD_PROPERTY(L"Description", L"When using the direction arrows, we should exit ak mode and process the input normally")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // UAP hosting required: cannot exit access key mode
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // UAP hosting required: cannot exit access key mode
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ElementEnteringTreeFiresAKEvents)

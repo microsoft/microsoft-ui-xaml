@@ -652,7 +652,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyScrollviewerCleanDestroy)
             TEST_METHOD_PROPERTY(L"Description", L"Validate ScrollViewer's dtor does not throw.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // WPF_HOSTING_MODE_FAILURE - Creates new UWP view
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // WPF_HOSTING_MODE_FAILURE - Creates new UWP view
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateScrollviewerKeyboardInteraction)

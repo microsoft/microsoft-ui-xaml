@@ -293,7 +293,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that we get the first focusable element")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFindFirstFocusableElement()
         {
             const string rootPanelXaml =
@@ -336,7 +336,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that we get the last focusable element")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFindLastFocusableElement()
         {
             const string rootPanelXaml =
@@ -728,7 +728,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Verify that we get the first/last focusable correctly when adding elements to the tree")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFindAndLastFocusableElementWhenElementAdded()
         {
             const string rootPanelXaml =

@@ -120,7 +120,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateAcceptDismissButtonsAreHiddenWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that opening a DatePickerFlyout with a gamepad causes the accept and dismiss buttons to become hidden.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // When opening the flyout with gamepad input, AcceptDismissHostGrid is still visible. 
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF") // When opening the flyout with gamepad input, AcceptDismissHostGrid is still visible.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateOverlayBrush)
@@ -192,4 +192,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::DatePickerFlyout
-

@@ -146,7 +146,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void VerifyComboBoxPlaceholderForeground()
         {
@@ -206,7 +206,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void VerifyComboBoxPlaceholderForegroundHC()
         {
@@ -268,7 +268,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         // Test relies on MessageDialog behavior of taking focus off the current window on Desktop and Xbox.
         [TestProperty("TestPass:ExcludeOn", "OneCore,WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateFocusStateWhenWindowLosesFocus()
         {
             ComboBox comboBox = null;

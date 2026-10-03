@@ -56,7 +56,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Renders an animated image.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // IsPlaying by default
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // IsPlaying by default
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
@@ -69,28 +69,28 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(AnimatedSetSource)
                 TEST_METHOD_PROPERTY(L"Description", L"See if a SetSource based image animates.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AnimatedSetSourceNotInTree)
                 TEST_METHOD_PROPERTY(L"Description", L"SetSource is called on the image not being in the live tree.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AnimatedSetSourceAsyncPreLiveTree)
                 TEST_METHOD_PROPERTY(L"Description", L"See if a SetSourceAsync based image animates (before it is live in tree).")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AnimatedSetSourceAsyncPostLiveTree)
                 TEST_METHOD_PROPERTY(L"Description", L"See if a SetSourceAsync based image animates (after it is live in tree).")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Illegal to wait on a task in a Windows Runtime STA
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Illegal to wait on a task in a Windows Runtime STA
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AnimatedSWBrush)
@@ -102,7 +102,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(PlateauScale)
                 TEST_METHOD_PROPERTY(L"Description", L"Check that animation is not interrupted by plateau scale change.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // TODO: ETWWaiterProxy does not detect an ImageAnimationEndInfo_value event in WPF hosting mode.
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // TODO: ETWWaiterProxy does not detect an ImageAnimationEndInfo_value event in WPF hosting mode.
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
 
             END_TEST_METHOD()

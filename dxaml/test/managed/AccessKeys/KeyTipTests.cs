@@ -229,7 +229,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestProperty("Description", "Validates key tips on pivot control.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")]  // crash reason: crashes at the end
+        [TestProperty("Hosting:Mode", "WPF")]  // crash reason: crashes at the end
         public void PivotSimpleScene()
         {
             XamlRoot xamlRoot = null;
@@ -288,7 +288,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestProperty("Description", "Validates key tip displayed at specified key tip target.")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")] // crash reason: crash at test end
+        [TestProperty("Hosting:Mode", "WPF")] // crash reason: crash at test end
 
         public void ValidateKeyTipTarget()
         {
@@ -495,7 +495,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")]  // crash reason: cannot move focus to hyperlink
+        [TestProperty("Hosting:Mode", "WPF")]  // crash reason: cannot move focus to hyperlink
         public void MultipleHyperlinks()
         {
             XamlRoot xamlRoot = null;
@@ -543,7 +543,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")] // crash reason: focus doesn't move
+        [TestProperty("Hosting:Mode", "WPF")] // crash reason: focus doesn't move
         public void KeyTipProperlyPlacedOnHyperlinkWithScaledTextBlock()
         {
             XamlRoot xamlRoot = null;
@@ -592,7 +592,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")]  // crash reason: focus doesn't move
+        [TestProperty("Hosting:Mode", "WPF")]  // crash reason: focus doesn't move
         public void HyperlinkOnMultipleLines()
         {
            XamlRoot xamlRoot = null;
@@ -633,7 +633,7 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")]  // crash reason: focus doesn't move
+        [TestProperty("Hosting:Mode", "WPF")]  // crash reason: focus doesn't move
         public void MultipleCharacters()
         {
             XamlRoot xamlRoot = null;
@@ -823,7 +823,7 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")]  // crash reason: cannot move focus
+        [TestProperty("Hosting:Mode", "WPF")]  // crash reason: cannot move focus
 
         public void ElementRemoval()
         {
@@ -1086,7 +1086,7 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")] // Test Failure: KeyTipTests.OverrideResources in WPF-hosting mode fails sometimes with incorrect offset of KeyTip
+        [TestProperty("Hosting:Mode", "WPF")] // Test Failure: KeyTipTests.OverrideResources in WPF-hosting mode fails sometimes with incorrect offset of KeyTip
         public void OverrideResources()
         {
             XamlRoot xamlRoot = null;
@@ -1181,7 +1181,7 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")]  // crash reason: crash at the end of test
+        [TestProperty("Hosting:Mode", "WPF")]  // crash reason: crash at the end of test
 
         public void AutopositioningKeytipsForColumnWithPlateauScaling()
         {
@@ -1504,7 +1504,7 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")]  // crash reason: crashes at the end
+        [TestProperty("Hosting:Mode", "WPF")]  // crash reason: crashes at the end
         public void KeyTipsAutopositioningAvoidsFocusableHyperlinksWhenPlateauScaling()
         {
             XamlRoot xamlRoot = null;
@@ -1911,7 +1911,7 @@ that spans multiple lines. BlahBlahBlahBlah</Run>
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")]  // crash reason: focus doesn't move
+        [TestProperty("Hosting:Mode", "WPF")]  // crash reason: focus doesn't move
         public void CommandBarKeyTipIsDrawnForMoreButton()
         {
             Log.Comment("Press ALT for a CommandBar that does not have an overflow button");

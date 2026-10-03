@@ -60,7 +60,7 @@ public:
     BEGIN_TEST_METHOD(PointerDownThemeAnimationWithTransformGroup)
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DComp verification fails because a PrependVisual's TransformMatrix
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // DComp verification fails because a PrependVisual's TransformMatrix
                                                         // is different
     END_TEST_METHOD()
 

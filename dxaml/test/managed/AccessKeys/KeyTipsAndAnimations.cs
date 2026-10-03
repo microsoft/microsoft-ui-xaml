@@ -35,7 +35,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestProperty("RunAs", "UAP")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Hosting:Mode", "UAP")]  // crash reason :  test crashes at the end
+        [TestProperty("Hosting:Mode", "WPF")]  // crash reason :  test crashes at the end
         public static void Setup(TestContext context)
         {
             AssemblySetup.CommonTestClassSetup();

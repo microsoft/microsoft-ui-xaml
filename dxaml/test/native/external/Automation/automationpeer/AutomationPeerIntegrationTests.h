@@ -27,7 +27,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyCommonUiaPropertyChangesBeingRaised)
             TEST_METHOD_PROPERTY(L"Description", L"Validates if common UIA property change events are being raised on layout update.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")//WPF_HOSTING_MODE_FAILURE: When WPF-hosted, automation change event isn't raised as expected.
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")//WPF_HOSTING_MODE_FAILURE: When WPF-hosted, automation change event isn't raised as expected.
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyControllerForPropertyChanged)
@@ -98,7 +98,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyPeerFromPointWithNon100DpiIsCorrect)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that retrieving an automation peer from a point when DPI is something other than 100% retrieves the correct peer.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP,WPF")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF,WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"True")
         END_TEST_METHOD()
 

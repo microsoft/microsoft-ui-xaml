@@ -345,7 +345,7 @@ namespace Microsoft.UI.Xaml.Tests.Input
 
         [TestMethod]
         [TestProperty("Description", "Verifies the order of keydown events from a popup")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyKeyEventOrderFromUnparentedPopup()
         {
             const string rootPanelXaml =

@@ -47,7 +47,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(TapAStickyWUCFull)
                 TEST_METHOD_PROPERTY(L"Description", L"Pans a StickyHeader ListView with DManip-on-DComp enabled then taps on a Sticky Header")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Intermittent MockDComp crash
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Intermittent MockDComp crash
             END_TEST_METHOD()
 
         private:

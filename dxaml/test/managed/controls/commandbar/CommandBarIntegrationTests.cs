@@ -174,7 +174,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("Description", "Validates that a submenu is shown on the left of its parent menu when no room is available on the right.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateSubMenuPositioning()
         {
             TestServices.WindowHelper.SetWindowSizeOverride(new Size(1024, 400));

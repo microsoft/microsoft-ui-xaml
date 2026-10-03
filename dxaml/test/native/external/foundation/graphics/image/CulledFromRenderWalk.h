@@ -32,42 +32,42 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(Basics)
                 TEST_METHOD_PROPERTY(L"Description", L"Creates an Image element that is culled from the RenderWalk and verifies it still uses DecodeToRenderSize feature")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Zoom scale not applied
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(Basics2)
                 TEST_METHOD_PROPERTY(L"Description", L"Creates a Canvas element with background image that is culled from the RenderWalk and verifies it still uses DecodeToRenderSize feature")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Zoom scale not applied
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(Basics3WUCFull)
                 TEST_METHOD_PROPERTY(L"Description", L"Creates an Image element with BitmapCache that is culled from the RenderWalk, verifies it falls back to natural size due to software rendering which disables DecodeToRenderSize")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Zoom scale not applied
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(Basics4)
                 TEST_METHOD_PROPERTY(L"Description", L"Creates an Ellipse element that is culled from the RenderWalk, verifies it falls back to natural size due to software rendering which disables DecodeToRenderSize")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Zoom scale not applied
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(Advanced1)
                 TEST_METHOD_PROPERTY(L"Description", L"Creates two Image elements that share the same BitmapImage, both are culled from the RenderWalk, and verifies both still use DecodeToRenderSize feature")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Zoom scale not applied
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(Advanced2)
                 TEST_METHOD_PROPERTY(L"Description", L"Creates an Image element inside an InlineUIContainer, both are culled from the RenderWalk, and verifies both still use DecodeToRenderSize feature")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")   // Zoom scale not applied
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 

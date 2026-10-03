@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using Private.Infrastructure;
 using System;
@@ -141,7 +141,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")] // Reliability issue in WPF mode.
+        [TestProperty("Hosting:Mode", "WPF")] // Reliability issue in WPF mode.
         public void CanUseMouseWheelToNavigate()
         {
             ListView list = PrepareListView();
@@ -295,7 +295,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ItemsPresenterTests
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanCarouselPanelHandleReset()
         {
             //

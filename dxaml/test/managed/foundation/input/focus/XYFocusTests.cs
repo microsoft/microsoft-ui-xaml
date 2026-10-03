@@ -1428,7 +1428,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
 
         [TestMethod]
         [TestProperty("Description", "Verifies that tab navigation in FindNextElementOptions causes an exception to be thrown.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFindNextElementOptionsCannotUseTabNavigation()
         {
             const string rootPanelXaml =
@@ -1509,7 +1509,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
 
         [TestMethod]
         [TestProperty("Description", "Verify that plateau scaling works correctly with HintRect in the FindNextElement API")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "TRUE")]    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
         public void FindNextElementHintRectWorksWithPlateauScaling()
         {
@@ -1670,7 +1670,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus.XYFocus
         */
         [TestMethod]
         [TestProperty("Description", "Verify that plateau scaling works correctly with ExclusionRect in the FindNextElement API")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "TRUE")]    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
         public void FindNextElementExclusionRectWorksWithPlateauScaling()
         {
