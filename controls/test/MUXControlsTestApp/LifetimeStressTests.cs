@@ -2073,6 +2073,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 SafeUI(() => Content = null);
 
                 FinalizeAndReport(objects);
+
+                Verify.Fail("StressLineBreakCacheDeferredReleaseNative did not reproduce the native LsDestroyBreakRecord crash under the current harness; reported as a non-pass so the suite does not show a misleading green result.");
             });
         }
 
