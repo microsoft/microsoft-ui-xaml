@@ -1107,10 +1107,7 @@ namespace Conditionals
             private void Update_Model_Org_Employees(global::ConditionalControls.IObservableCollection obj, int phase)
             {
                 this.bindingsTracking.UpdateChildListeners_Model_Org_Employees(obj);
-                if (obj != null)
-                {
-                    this.Update_ConditionalControls_Organization_M_IsNonEmpty_3843776612(phase);
-                }
+                this.Update_ConditionalControls_Organization_M_IsNonEmpty_3843776612(phase);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     // BindTests.xaml line 74

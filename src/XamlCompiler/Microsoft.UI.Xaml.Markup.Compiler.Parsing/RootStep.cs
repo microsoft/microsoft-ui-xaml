@@ -20,6 +20,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         public override bool NeedsCheckForNull => IsElementRoot ? false : base.NeedsCheckForNull;
 
-        public bool IsElementRoot;
+        public override bool IsElementRoot { get; }
     }
 }
