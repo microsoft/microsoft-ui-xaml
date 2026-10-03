@@ -325,27 +325,10 @@ steps:
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
       # Build log is published by the WinUI-BuildProject-Steps.yml pipeline
 
-  # The build step below using buildMockWinAppSdkPackage.ps1 does not directly benefit from compiler override via invoking the WinUndockNativeCompiler
-  # task because at this point the <root>\WindowsAppSDKAggregator path for the target .sln file has not been setup yet, so such a path can't be passed to
-  # the WinUndockNativeCompiler task.
-
-  # Note: Microsoft.UI.Xaml.sln builds Microsoft.UI.Xaml.Controls.dll, so we can build the mock package at this stage.
-  # Standalone only — depends on the WindowsAppSDKAggregator submodule which monobuild does NOT clone, and on
-  # the mock package being consumed by BuildScenarioApps (also standalone-only).
+  # Standalone only - monobuild packs the per-platform bits in its own Pack stage instead.
   - ${{ if ne(parameters.IsMonobuild, 'true') }}:
-    - task: PowerShell@2
-      displayName: 'Build mock Windows App SDK package'
-      condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
-      inputs:
-        filePath: 'scripts\buildMockWinAppSdkPackage.ps1'
-        arguments: "-RepoRoot '$(Build.SourcesDirectory)' -Platform $(buildPlatform) -Configuration $(buildConfiguration) -WinUITransportPackageVersion $(versionFinal) -CleanOutput -AzurePipelineBuild"
-      env:
-        LkgVcToolsName: $(compilerOverridePackageName)
-        LkgVcToolsVersion: $(compilerOverrideNupkgVersion)
-
-    # Build WinUI component package before copying to output directory so it's included
-    # in the mock output alongside the mock WindowsAppSDK package. The BuildScenarioApps
-    # stage downloads these packages and sample apps reference Microsoft.WindowsAppSDK.WinUI.
+    # Build WinUI component package before copying to output directory. The BuildScenarioApps
+    # stage downloads this package and sample apps reference Microsoft.WindowsAppSDK.WinUI.
     # Monobuild centralizes the per-platform produced bits into Pack — see
     # WinUI-CreateTransportNupkg-Steps.yml (IsMonobuild=true path).
     - powershell: |
@@ -373,19 +356,8 @@ steps:
         }
       displayName: Build WinUI component package
 
-    # Now, this task is also responsible for copying Microsoft.WindowsAppSDK.WinUI package to output directory.
-    - task: CopyFiles@2
-      displayName: Move MockPackage To Output Directory
-      condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
-      inputs:
-        SourceFolder: '$(WindowsAppSDKMockPackagePath)'
-        TargetFolder: '$(ob_outputDirectory)\mock'
-        Contents: |
-          Microsoft.WindowsAppSDK.*.nupkg
-          !Microsoft.WindowsAppSDK.Base.*.nupkg
-
-  # MUXControls.sln is test infra; monobuild skips it (depends on AzureMaps token,
-  # mock package, and WindowsAppSDKConfig overlay — all standalone-only).
+  # MUXControls.sln is test infra; monobuild skips it (depends on the AzureMaps token
+  # and the WindowsAppSDKConfig overlay - both standalone-only).
   - ${{ if and(eq(parameters.buildProductOnly, 'false'), ne(parameters.IsMonobuild, 'true')) }}:
     - template: WinUI-BuildProject-Steps.yml
       parameters:
