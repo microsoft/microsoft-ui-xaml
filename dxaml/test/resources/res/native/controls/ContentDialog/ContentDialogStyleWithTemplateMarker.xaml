@@ -1,0 +1,15 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- Minimal ContentDialog style used to verify which template ApplyTemplate expands. -->
+<Style TargetType="ContentDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="ContentDialog">
+                <Grid>
+                    <Grid x:Name="PART_VerifyThisTemplateWasUsed" />
+                </Grid>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
