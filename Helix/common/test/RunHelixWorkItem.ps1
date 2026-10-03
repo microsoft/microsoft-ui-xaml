@@ -234,6 +234,20 @@ function Report-LifetimeNativeCrash
     # A crash is any of: non-zero exit code, a new dump, or an in-flight scenario.
     $crashDetected = ($teExitCode -ne 0) -or ($newDumps.Count -gt 0) -or ($inFlight.Count -gt 0)
 
+    # Surface recorded (non-host-crash) scenario failures and managed leaks as non-gating pipeline warnings.
+    # A scenario that threw (e.g. a managed exception caught by RunIterationReporting) or an object that
+    # survived forced collection is marked Passed by TAEF, so without this it would be invisible behind a
+    # green result. Emit a '##vso' warning per unique scenario/object so the failing test is visible in the
+    # build log while the stage still stays green.
+    foreach ($threwScenario in @($warningScenarios | Select-Object -Unique))
+    {
+        Write-Host "##vso[task.logissue type=warning]Lifetime stress scenario '$threwScenario' reported a failure (threw during the run); surfaced as a non-gating warning."
+    }
+    foreach ($leakedObject in @($managedWarningObjects | Select-Object -Unique))
+    {
+        Write-Host "##vso[task.logissue type=warning]Lifetime stress: object '$leakedObject' was still alive after forced collection; surfaced as a non-gating warning."
+    }
+
     $scenarioLabel = "none"
     $dumpNames = @()
     if ($crashDetected)
