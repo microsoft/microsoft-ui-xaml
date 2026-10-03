@@ -248,6 +248,12 @@ function Report-LifetimeNativeCrash
         Write-Host "##vso[task.logissue type=warning]Lifetime stress: object '$leakedObject' was still alive after forced collection; surfaced as a non-gating warning."
     }
 
+    # Heartbeat: always emit one non-gating warning confirming the native lifetime-stress scenarios executed,
+    # with their outcome. A clean run (no crash, no throw, no leak) is otherwise silent and indistinguishable
+    # from the suite never running, so surface a visible proof-of-execution regardless of outcome.
+    $heartbeatScenarios = if ($startedScenarios.Count -gt 0) { @($startedScenarios | Select-Object -Unique) -join ", " } else { "none observed" }
+    Write-Host "##vso[task.logissue type=warning]Lifetime stress native repro executed (scenarios: $heartbeatScenarios; hostCrash=$crashDetected, threw=$($warningScenarios.Count), leaks=$($managedWarningObjects.Count)). Non-gating heartbeat so a clean run is still visible in the build log."
+
     $scenarioLabel = "none"
     $dumpNames = @()
     if ($crashDetected)
