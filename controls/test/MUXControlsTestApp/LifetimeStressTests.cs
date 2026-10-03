@@ -2004,7 +2004,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 int subtrees = AggressiveNativeReproEnabled ? 48 : 6;
                 string paragraph = string.Concat(Enumerable.Repeat("The quick brown fox jumps over the lazy dog. ", 48));
 
-                // Stable root; each subtree below is built, dropped, deferred, trimmed and drained in turn.
                 SafeUI(() =>
                 {
                     Content = new Grid();
@@ -2015,11 +2014,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     bool trackFirst = s == 0;
 
-                    // 1. Build a UserControl-rooted template subtree (UserControl -> StackPanel -> Button ->
-                    //    ContentPresenter -> TextBlock) matching the Watson teardown chain, lay it out to
-                    //    populate the Line Services break-record cache, then drop it. Keep only WeakReferences:
-                    //    the live managed peers still peg the native objects, so the native release CANNOT run
-                    //    here. This is why the trim must not be called inline - at this point nothing is queued.
                     SafeUI(() =>
                     {
                         var root = (Grid)Content;
@@ -2027,8 +2021,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         var panel = new StackPanel() { Width = 160 };
                         for (int t = 0; t < 4; t++)
                         {
-                            // Mixed inline formatting + selection + trimming opts out of the DWrite fast path,
-                            // so layout runs through Line Services and caches continuation break records.
                             var block = new TextBlock()
                             {
                                 TextWrapping = TextWrapping.WrapWholeWords,
@@ -2045,7 +2037,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                         var host = new UserControl() { Content = panel };
                         root.Children.Add(host);
-                        root.UpdateLayout(); // populate the break-record cache
+                        root.UpdateLayout();
 
                         if (trackFirst)
                         {
@@ -2053,33 +2045,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             objects["FirstPanel"] = new WeakReference(panel);
                         }
 
-                        // Drop the subtree. The native release does not run here - the managed peers keep the
-                        // native objects alive until they are collected off the UI thread (step 2).
                         root.Children.Remove(host);
                     });
 
-                    // Settle the drop on the UI thread. Nothing is queued for deferred cleanup yet (the peers
-                    // are still alive), so this cannot drain anything - it only releases transient layout roots
-                    // so the collection in step 2 is reliable.
                     PumpUI();
 
-                    // 2. Collect the dropped subtree's managed peers OFF the UI thread. Each native object then
-                    //    becomes unreachable on a non-UI thread, so its final release is marshaled onto the
-                    //    UIAffinityReleaseQueue for *deferred* cleanup (DXamlCore::QueueObjectForUnreachableCleanup)
-                    //    instead of being destroyed inline. The queue drains on a later render tick - the Watson
-                    //    window. Deliberately no UI pump here, so the subtree's line cache (and its cached
-                    //    LsTextLineBreak break records) stays queued and undestroyed across the trim in step 3.
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
                     GC.Collect();
 
-                    // 3. Trim the shared text-formatter pool while the subtree's line cache is still queued for
-                    //    deferred destruction. This drives CCoreServices::CheckMemoryUsage(simulateLowMemory:
-                    //    true) -> ReleaseUnusedTextFormatters. On unfixed code the queued break record holds only
-                    //    a raw, non-owning Line Services context, so trimming frees the owning context out from
-                    //    under it. Re-pressure the pool afterwards (acquire/format/release a fresh formatter) so
-                    //    the freed context's memory is reused, turning the later dangling destroy into a hard
-                    //    fault rather than a silent touch of still-mapped freed memory.
                     SafeUI(() =>
                     {
                         var root = (Grid)Content;
@@ -2092,13 +2066,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         root.Children.Remove(pressure);
                     });
 
-                    // 4. Drive render ticks so UIAffinityReleaseQueue::DoCleanup drains now and runs the deferred
-                    //    CUserControl final release -> ~CUIElement -> ~CTextBlock -> ParagraphNode::DeleteLineCache
-                    //    -> ~LsTextLineBreak -> LsDestroyBreakRecord. On unfixed code the destroy touches the freed
-                    //    context and genuinely crashes (Watson ACCESS_VIOLATION), faulting the native TAEF host;
-                    //    the #12126 fix keeps the owning formatter alive via DependentResource, so the context is
-                    //    still valid and the destroy is safe. Two passes cover the two-phase (unreachable-cleanup
-                    //    then final-release) drain.
                     PumpUI();
                     PumpUI();
                 }
@@ -2106,11 +2073,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 SafeUI(() => Content = null);
 
                 FinalizeAndReport(objects);
-
-                // Unconditional forced failure: records a Failed verdict at the end of the scenario so the test
-                // reports as Failed. This is NOT the native LsDestroyBreakRecord crash and does not depend on the
-                // #12126 fix being present or absent - it fires identically on fixed and unfixed code.
-                Verify.Fail("StressLineBreakCacheDeferredReleaseNative: forced failure.");
             });
         }
 
