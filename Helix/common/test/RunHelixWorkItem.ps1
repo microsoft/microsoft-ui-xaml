@@ -216,10 +216,8 @@ function Report-LifetimeNativeCrash
     # Dumps produced by *this* work item = whatever is new since the pre-run snapshot.
     $newDumps = @(Get-LifetimeDumpFiles | Where-Object { $preRunDumps -notcontains $_.FullName })
 
-    # Count "REPORT: scenario 'X' threw" lines - native warnings that didn't crash the host, tracked separately.
-    # Also count "REPORT: object 'X' was still alive after a full garbage collection" lines - managed leak warnings from
-    # VerifyCollected(failOnLeak:false). These previously never reached the aggregation, so only native signals
-    # showed in the pipeline; capture them here so the totals step can surface them too.
+    # Count "REPORT: scenario 'X' threw" (native non-crash warnings) and "REPORT: object 'X' was still alive
+    # after a full garbage collection" (managed leak warnings) lines so the totals step can surface them too.
     $warningScenarios = New-Object System.Collections.Generic.List[string]
     $managedWarningObjects = New-Object System.Collections.Generic.List[string]
     if ($teConsoleLogPath -and (Test-Path $teConsoleLogPath))
@@ -234,11 +232,8 @@ function Report-LifetimeNativeCrash
     # A crash is any of: non-zero exit code, a new dump, or an in-flight scenario.
     $crashDetected = ($teExitCode -ne 0) -or ($newDumps.Count -gt 0) -or ($inFlight.Count -gt 0)
 
-    # Surface recorded (non-host-crash) scenario failures and managed leaks as non-gating pipeline warnings.
-    # A scenario that threw (e.g. a managed exception caught by RunIterationReporting) or an object that
-    # survived a full garbage collection is marked Passed by TAEF, so without this it would be invisible behind a
-    # green result. Emit a '##vso' warning per unique scenario/object so the failing test is visible in the
-    # build log while the stage still stays green.
+    # A scenario that threw or an object that survived collection is marked Passed by TAEF, so emit a '##vso'
+    # warning per unique scenario/object to make it visible in the build log while the stage stays green.
     foreach ($threwScenario in @($warningScenarios | Select-Object -Unique))
     {
         Write-Host "##vso[task.logissue type=warning]Lifetime stress scenario '$threwScenario' reported a failure (threw during the run); surfaced as a non-gating warning."
@@ -248,9 +243,8 @@ function Report-LifetimeNativeCrash
         Write-Host "##vso[task.logissue type=warning]Lifetime stress: object '$leakedObject' was still alive after a full garbage collection; surfaced as a non-gating warning."
     }
 
-    # Heartbeat: always emit one non-gating warning confirming the native lifetime-stress scenarios executed,
-    # with their outcome. A clean run (no crash, no throw, no leak) is otherwise silent and indistinguishable
-    # from the suite never running, so surface a visible proof-of-execution regardless of outcome.
+    # Heartbeat: always emit one non-gating warning so a clean run (no crash, throw, or leak) is still visible
+    # and distinguishable from the suite never running.
     $heartbeatScenarios = if ($startedScenarios.Count -gt 0) { @($startedScenarios | Select-Object -Unique) -join ", " } else { "none observed" }
     Write-Host "##vso[task.logissue type=warning]Lifetime stress native repro executed (scenarios: $heartbeatScenarios; hostCrash=$crashDetected, threw=$($warningScenarios.Count), leaks=$($managedWarningObjects.Count)). Non-gating heartbeat so a clean run is still visible in the build log."
 
