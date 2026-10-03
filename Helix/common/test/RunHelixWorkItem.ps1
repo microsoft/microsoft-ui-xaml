@@ -316,9 +316,14 @@ function Set-LifetimeResultsNonGating
                 {
                     if ($test.result -eq 'Fail')
                     {
-                        # Downgrade to non-gating 'Skip' (PublishTestResults only fails on Failed tests).
-                        $test.result = 'Skip'
+                        # Surface the failed test as a non-gating pipeline warning (visible in the build log),
+                        # then downgrade to 'Skip' (PublishTestResults only fails the stage on Failed tests).
                         $failureNode = $test.SelectSingleNode('failure')
+                        $failureMessage = ""
+                        if ($failureNode) { $failureMessage = ($failureNode.InnerText -replace '\s+', ' ').Trim() }
+                        if ($failureMessage.Length -gt 300) { $failureMessage = $failureMessage.Substring(0, 300) + "..." }
+                        Write-Host "##vso[task.logissue type=warning]Lifetime stress: test '$($test.name)' reported a failure (downgraded to non-gating Skip): $failureMessage"
+                        $test.result = 'Skip'
                         if ($failureNode) { [void]$test.RemoveChild($failureNode) }
                         $flipped++
                     }
