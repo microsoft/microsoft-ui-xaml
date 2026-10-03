@@ -406,6 +406,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that setting a KeyboardAccelerator on a MenuFlyoutItem causes us to generate a default value for KeyboardAcceleratorTextOverride.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateKeyboardAcceleratorsDoNotCreateMenuFlyoutItemToolTips)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that MenuFlyoutItems with KeyboardAccelerators do not get ToolTips when OptimizeApplyStyles is enabled.")
+            TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:true}")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(ValidateSettingKeyboardAcceleratorDoesNotOverrideItemCustomKeyboardAcceleratorText)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that setting a KeyboardAccelerator on a MenuFlyoutItem with a value of KeyboardAcceleratorTextOverride already defined does not overwrite that value.")
         END_TEST_METHOD()
