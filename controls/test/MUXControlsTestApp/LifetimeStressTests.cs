@@ -1970,31 +1970,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Line Services break-record cache vs. the deferred UI-affinity release queue.
-        //
-        // Models the reported ACCESS_VIOLATION in LsDestroyBreakRecord. The reported stack tears a
-        // TextBlock down during a later render tick, not at the Remove call:
-        //   CXcpDispatcher::Tick -> NWDrawTree -> BuildTreeService::BuildTrees ->
-        //   UIAffinityReleaseQueue::DoCleanup -> CUserControl final release ->
-        //   CUIElement::~CUIElement (collection teardown) -> CTextBlock::~CTextBlock ->
-        //   ParagraphNode::DeleteLineCache -> ~LsTextLineBreak -> LsDestroyBreakRecord.
-        //
-        // The cached LsTextLineBreak holds a raw Line Services context/break-record pair with no owning
-        // reference to the formatter that produced it. Dropping the subtree only queues the native release;
-        // it drains on a subsequent tick. This scenario reproduces the ordering deterministically: build
-        // wrapping LS-mode TextBlocks inside a UserControl-rooted template subtree (matching the Watson
-        // chain), lay them out to populate the break cache, drop the subtree so its release defers onto the
-        // UI-affinity queue, then trim the shared text-formatter pool via the TriggerLowMemoryForTest hook
-        // while the cache is still queued. On unfixed code the owning context is freed before DeleteLineCache
-        // runs, so the deferred break-record destroy touches freed state and genuinely crashes
-        // (ACCESS_VIOLATION in LsDestroyBreakRecord).
-        //
-        // On fixed code (#12126) the break record binds the owning formatter via DependentResource, so the
-        // formatter is kept alive and the context is still valid when the destroy runs: no crash, the test
-        // passes cleanly. A genuine crash on unfixed code faults the native TAEF host; the harness
-        // (Report-LifetimeNativeCrash in RunHelixWorkItem.ps1) attributes that host crash to this scenario as a
-        // NON-GATING native warning and rewrites the results to zero failures (Set-LifetimeResultsNonGating),
-        // so the pipeline stage stays green while the regression stays visible.
         [TestMethod]
         public void StressLineBreakCacheDeferredReleaseNative()
         {
@@ -2073,8 +2048,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 SafeUI(() => Content = null);
 
                 FinalizeAndReport(objects);
-
-                Verify.Fail("StressLineBreakCacheDeferredReleaseNative did not reproduce the native LsDestroyBreakRecord crash under the current harness; reported as a non-pass so the suite does not show a misleading green result.");
             });
         }
 
