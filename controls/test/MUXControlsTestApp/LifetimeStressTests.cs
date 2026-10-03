@@ -2716,7 +2716,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Converge collection off the UI thread, then report survivors. Routes leaks through VerifyCollected so
-        // they keep the exact "object 'X' was still alive after forced collection" phrase the PostTestRun totals
+        // they keep the exact "object 'X' was still alive after a full garbage collection" phrase the PostTestRun totals
         // step counts. Always non-gating: leaks are warning-only, exactly like the rest of the suite.
         private static void VerifyLifetime(Dictionary<string, WeakReference> objects)
         {
@@ -2841,7 +2841,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     else
                     {
                         // Residual references are warning-only for this report suite.
-                        Log.Warning(string.Format("[LifetimeStress] REPORT: object '{0}' was still alive after forced collection; logged as a warning (non-gating). Investigate for a possible lifetime leak.", pair.Key));
+                        Log.Warning(string.Format("[LifetimeStress] REPORT: object '{0}' was still alive after a full garbage collection; logged as a warning (non-gating). Investigate for a possible lifetime leak.", pair.Key));
                     }
                 }
             }

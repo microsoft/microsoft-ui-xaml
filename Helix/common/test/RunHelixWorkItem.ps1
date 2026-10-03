@@ -217,7 +217,7 @@ function Report-LifetimeNativeCrash
     $newDumps = @(Get-LifetimeDumpFiles | Where-Object { $preRunDumps -notcontains $_.FullName })
 
     # Count "REPORT: scenario 'X' threw" lines - native warnings that didn't crash the host, tracked separately.
-    # Also count "REPORT: object 'X' was still alive after forced collection" lines - managed leak warnings from
+    # Also count "REPORT: object 'X' was still alive after a full garbage collection" lines - managed leak warnings from
     # VerifyCollected(failOnLeak:false). These previously never reached the aggregation, so only native signals
     # showed in the pipeline; capture them here so the totals step can surface them too.
     $warningScenarios = New-Object System.Collections.Generic.List[string]
@@ -227,7 +227,7 @@ function Report-LifetimeNativeCrash
         foreach ($line in Get-Content $teConsoleLogPath)
         {
             if ($line -match "\[LifetimeStress\] REPORT: scenario '([^']+)' threw") { $warningScenarios.Add($Matches[1]) }
-            elseif ($line -match "\[LifetimeStress\] REPORT: object '([^']+)' was still alive after forced collection") { $managedWarningObjects.Add($Matches[1]) }
+            elseif ($line -match "\[LifetimeStress\] REPORT: object '([^']+)' was still alive after a full garbage collection") { $managedWarningObjects.Add($Matches[1]) }
         }
     }
 
@@ -236,7 +236,7 @@ function Report-LifetimeNativeCrash
 
     # Surface recorded (non-host-crash) scenario failures and managed leaks as non-gating pipeline warnings.
     # A scenario that threw (e.g. a managed exception caught by RunIterationReporting) or an object that
-    # survived forced collection is marked Passed by TAEF, so without this it would be invisible behind a
+    # survived a full garbage collection is marked Passed by TAEF, so without this it would be invisible behind a
     # green result. Emit a '##vso' warning per unique scenario/object so the failing test is visible in the
     # build log while the stage still stays green.
     foreach ($threwScenario in @($warningScenarios | Select-Object -Unique))
@@ -245,7 +245,7 @@ function Report-LifetimeNativeCrash
     }
     foreach ($leakedObject in @($managedWarningObjects | Select-Object -Unique))
     {
-        Write-Host "##vso[task.logissue type=warning]Lifetime stress: object '$leakedObject' was still alive after forced collection; surfaced as a non-gating warning."
+        Write-Host "##vso[task.logissue type=warning]Lifetime stress: object '$leakedObject' was still alive after a full garbage collection; surfaced as a non-gating warning."
     }
 
     # Heartbeat: always emit one non-gating warning confirming the native lifetime-stress scenarios executed,
@@ -321,7 +321,7 @@ function Set-LifetimeResultsNonGating
     $prefix = ""
     if ($testnameprefix) { $prefix = "$testnameprefix." }
 
-    $needSynthetic = $true
+    $needPlaceholderReport = $true
 
     if (Test-Path $resultsPath)
     {
@@ -330,7 +330,7 @@ function Set-LifetimeResultsNonGating
             [xml]$doc = Get-Content $resultsPath -Raw
             if ($doc.assemblies)
             {
-                $needSynthetic = $false
+                $needPlaceholderReport = $false
                 $flipped = 0
                 foreach ($test in @($doc.SelectNodes('//test')))
                 {
@@ -367,12 +367,12 @@ function Set-LifetimeResultsNonGating
         }
         catch
         {
-            Write-Host "Lifetime stress: could not post-process testResults.xml ($($_.Exception.Message)); emitting a synthetic passing report instead."
-            $needSynthetic = $true
+            Write-Host "Lifetime stress: could not post-process testResults.xml ($($_.Exception.Message)); emitting a zero-failure passing report instead."
+            $needPlaceholderReport = $true
         }
     }
 
-    if ($needSynthetic)
+    if ($needPlaceholderReport)
     {
         # No results file - te.exe likely crashed. Emit one passing entry so the suite isn't silently missing.
         $runDate = (Get-Date).ToString('yyyy-MM-dd')
@@ -391,7 +391,7 @@ function Set-LifetimeResultsNonGating
 </assemblies>
 "@
         Set-Content -Path $resultsPath -Value $xml -Encoding UTF8
-        Write-Host "Lifetime stress: emitted synthetic passing report at testResults.xml (te.exe produced no results file)."
+        Write-Host "Lifetime stress: emitted a zero-failure passing report at testResults.xml (te.exe produced no results file)."
     }
 }
 
@@ -437,7 +437,7 @@ Write-Host "WorkItemTestEndTime: $(Get-Date)"
 
 if ($isLifetimeStress -and -not (Test-Path .\te.wtl))
 {
-    # te.exe crashed without flushing its log; the non-gating handling below emits a synthetic report.
+    # te.exe crashed without flushing its log; the non-gating handling below emits a zero-failure report.
     Write-Host "Lifetime stress: te.wtl was not produced (TAEF host likely crashed on a native lifetime fault)."
 }
 else
@@ -512,7 +512,7 @@ if ($isLifetimeStress)
         }
         catch
         {
-            Write-Host "Lifetime stress: ConvertWttLogToXUnit failed ($($_.Exception.Message)); a synthetic passing report will be emitted."
+            Write-Host "Lifetime stress: ConvertWttLogToXUnit failed ($($_.Exception.Message)); a zero-failure passing report will be emitted."
             Delete-IfExists .\testResults.xml
         }
     }

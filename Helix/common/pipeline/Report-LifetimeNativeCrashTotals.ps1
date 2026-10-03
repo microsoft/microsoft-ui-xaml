@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 #
 # Totals the per-work-item LifetimeNativeCrashReport.json files under a search root: native host crashes, native
-# scenario warnings, and managed leak warnings ("object still alive after forced collection" WeakReference probes).
+# scenario warnings, and managed leak warnings ("object still alive after a full garbage collection" WeakReference probes).
 # Non-gating: emits a warning, sets the LifetimeNativeCrashTotal / LifetimeManagedWarningTotal / LifetimeSignalTotal
 # variables, and writes LifetimeNativeCrashSummary.json.
 
