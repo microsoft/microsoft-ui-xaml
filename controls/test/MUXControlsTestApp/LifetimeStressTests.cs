@@ -2049,6 +2049,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 FinalizeAndReport(objects);
             });
+
+            Verify.Fail("StressLineBreakCacheDeferredReleaseNative forced failure.");
         }
 
         // ScrollView/DirectManipulation service setup and teardown stress.
