@@ -633,6 +633,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO 36060166: Re-enable after fixing unreliability.
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateIndicatorsHideAfterVerticalScrollBarHover)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that indicators hide after the pointer leaves the vertical scrollbar.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateIndicatorsHideAfterHorizontalScrollBarHover)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that indicators hide after the pointer leaves the horizontal scrollbar.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(ConstrainImageAvailableSize)
             TEST_METHOD_PROPERTY(L"Description", L"Validate basic effect of ScrollContentPresenter's SizesContentToTemplatedParent property.")
         END_TEST_METHOD()
@@ -710,6 +720,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         void ValidateNoLayoutCycleWithScaledMargins(float scaleFactor);
         void ValidateNoLayoutCycleWithMaxOffset(float scaleFactor);
         void ValidateScrollBarTrackLengthWithContentChanged(bool isVerticalScenario);
+        void ValidateIndicatorsHideAfterScrollBarHover(xaml_controls::Orientation orientation);
         void ValidateUIElementTreeHelper();
     };
 
