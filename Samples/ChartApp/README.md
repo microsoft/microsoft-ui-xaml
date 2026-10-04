@@ -15,19 +15,24 @@ For exploring Chart features, start with `ChartAppCsUnpackaged`.
 
 ## Required package version
 
-The Charts API this sample consumes is delivered through
-`Microsoft.Internal.WinUIDetails`. Use **`3.10.0-experimental.20260916.0`**
-(Sep 16) or newer. Earlier builds, including the repository's currently pinned
-`3.10.0-experimental.20260819.0` (Aug 19), ship an incomplete `Charts.winmd`
-(missing `AreaSeries`, `BarSeries`, and the axis types) and cannot compile this
-sample. The Sep 16 version arrives via Maestro PR
-[microsoft/microsoft-ui-xaml#11952](https://github.com/microsoft/microsoft-ui-xaml/pull/11952);
-until it merges, update `eng/Version.Details.xml` locally to that version.
+The Charts API this sample consumes ships in `Microsoft.Internal.WinUIDetails`,
+which is produced by the repository's shared ("mono") build. Since the mono-build
+migration the WinUIDetails version is defined centrally in
+[`eng/Versions.props`](../../eng/Versions.props) (`WinUIDetailsNugetVersion`);
+there is no longer a per-dependency `eng/Version.Details.xml` to edit, and the
+earlier Maestro delivery PR no longer applies.
 
-> **Restore gap:** the repository's default `Microsoft.WindowsAppSDK.Foundation`
-> `3.0.0-dev.experimental11` packages are not available from a public feed. Build
-> against an internal mirror that supplies the matching runtime, resources, and
-> projections. Do not mix metadata from one package with binaries from another.
+The sample requires a WinUIDetails build whose `Charts.winmd` includes the full
+control surface — `AreaSeries`, `BarSeries`, and the axis types. Packages that
+predate those types ship an incomplete `Charts.winmd` and cannot compile this
+sample. Build against a WinUIDetails package that supplies matching native
+metadata and managed projection, and do not mix metadata from one package with
+binaries from another.
+
+> **Note:** the exact supported WindowsAppSDK / WinUIDetails version for the
+> shared pipeline is still being confirmed. The validated version and
+> smoke-test results for all four hosts will be recorded in the PR once the
+> pipeline path is finalized.
 
 ## Building and publishing
 
