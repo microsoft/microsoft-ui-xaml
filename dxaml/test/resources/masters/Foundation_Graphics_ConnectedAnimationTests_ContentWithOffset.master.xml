@@ -82,7 +82,7 @@
             </Visual>
           </Visual>
           <Visual Tag="PrependVisual">
-            <Visual Tag="PrimaryVisual">
+            <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
               <Visual Tag="ContentVisual" />
               <wucSpriteVisual Tag="ConnectedAnimationSnapshotVisual" SizeX="67.84" SizeY="19.95">
                 <Offset>
