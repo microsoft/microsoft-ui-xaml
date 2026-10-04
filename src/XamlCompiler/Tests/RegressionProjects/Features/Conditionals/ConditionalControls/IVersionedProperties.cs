@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConditionalControls
+namespace ConditionalControlsV2
 {
     public interface IVersionedProperties
     {

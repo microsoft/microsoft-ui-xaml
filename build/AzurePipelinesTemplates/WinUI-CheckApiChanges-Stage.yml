@@ -25,15 +25,16 @@ stages:
     steps:
     - checkout: self
 
-    - template: AzurePipelinesTemplates\WindowsAppSDK-CheckApiChanges-Steps.yml@WindowsAppSDKConfig
+    - template: WinUI-CheckApiChanges-Wrapper.yml
       parameters:
-        ComponentPackagePatterns: ['Microsoft.WindowsAppSDK.WinUI.*.nupkg']
-        CompareAgainstStable: ${{ parameters.CompareAgainstStable }}
-        CompareAgainstExperimental: ${{ parameters.CompareAgainstExperimental }}
-        DownloadPipelineArtifactInputs:
-          source: specific
-          runVersion: specific
-          project: $(System.TeamProjectId)
-          pipeline: $(_useBuildOutputFromPipeline)
-          pipelineId: $(_useBuildOutputFromBuildId)
-          artifactName: 'NugetPackages'
+        InnerParams:
+          ComponentPackagePatterns: ['Microsoft.WindowsAppSDK.WinUI.*.nupkg']
+          CompareAgainstStable: ${{ parameters.CompareAgainstStable }}
+          CompareAgainstExperimental: ${{ parameters.CompareAgainstExperimental }}
+          DownloadPipelineArtifactInputs:
+            source: specific
+            runVersion: specific
+            project: $(System.TeamProjectId)
+            pipeline: $(_useBuildOutputFromPipeline)
+            pipelineId: $(_useBuildOutputFromBuildId)
+            artifactName: 'NugetPackages'

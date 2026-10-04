@@ -2,5 +2,9 @@
 <RunSettings>
   <MSTest>
     <DeploymentEnabled>false</DeploymentEnabled>
+    <!-- The chk compiler emits ~1.75 million Debug.WriteLine messages per full run (one per
+         duplicate type name; see TestRunSetup.cs). Capturing them into the .trx made it 830 MB,
+         against 0.34 MB with capture off, for no diagnostic value. -->
+    <CaptureTraceOutput>false</CaptureTraceOutput>
   </MSTest>
 </RunSettings>
