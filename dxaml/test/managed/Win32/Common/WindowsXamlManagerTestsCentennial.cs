@@ -103,6 +103,32 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Win32.Common
         }
 
         [TestMethod]
+        public void InitializesSystemDispatcherQueue()
+        {
+            DispatcherQueueController dqc = DispatcherQueueController.CreateOnCurrentThread();
+            global::Windows.System.DispatcherQueue systemDispatcherQueue;
+
+            using (WindowsXamlManager.InitializeForCurrentThread())
+            {
+                systemDispatcherQueue = global::Windows.System.DispatcherQueue.GetForCurrentThread();
+                Verify.IsNotNull(systemDispatcherQueue);
+
+                using (WindowsXamlManager.InitializeForCurrentThread())
+                {
+                    Verify.AreEqual(
+                        systemDispatcherQueue,
+                        global::Windows.System.DispatcherQueue.GetForCurrentThread());
+                }
+            }
+
+            Verify.AreEqual(
+                systemDispatcherQueue,
+                global::Windows.System.DispatcherQueue.GetForCurrentThread());
+
+            dqc.ShutdownQueue();
+        }
+
+        [TestMethod]
         public void CanCreateMultipleDesktopWindowXamlSource()
         {
             DispatcherQueueController dqc = DispatcherQueueController.CreateOnCurrentThread();

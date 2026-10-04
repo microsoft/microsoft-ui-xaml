@@ -505,6 +505,22 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
         TextInputProducerHelper::EnableTemporaryUWPTestMode(true);
     }
 
+    // XAML UI threads require both the lifted and system DispatcherQueues. Ensure the system queue
+    // before activating Jupiter or Composition so the system compositor binds to its own queue.
+    {
+        wrl::ComPtr<msy::IDispatcherQueueStatics> dispatcherQueueStatics;
+        wrl::ComPtr<msy::IDispatcherQueue> dispatcherQueue;
+        wrl::ComPtr<msy::IDispatcherQueue3> dispatcherQueue3;
+
+        IFC(wf::GetActivationFactory(
+            wrl::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+            &dispatcherQueueStatics));
+        IFC(dispatcherQueueStatics->GetForCurrentThread(&dispatcherQueue));
+        IFCEXPECT(dispatcherQueue);
+        IFC(dispatcherQueue.As(&dispatcherQueue3));
+        IFC(dispatcherQueue3->EnsureSystemDispatcherQueue());
+    }
+
     XamlOneCoreTransforms::EnsureInitialized(XamlOneCoreTransforms::InitMode::Normal);
 
     IFC(CJupiterControl::Create(&m_pControl));
