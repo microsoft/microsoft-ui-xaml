@@ -1,4 +1,4 @@
-# PR build (OSS). Product-only compile gate; tests and signing run in internal ADO.
+# PR product build with formal XamlCompiler T4 synchronization.
 
 name: PR Build
 
@@ -21,6 +21,13 @@ on:
       - 'CODE_OF_CONDUCT.md'
       - 'CONTRIBUTING.md'
       - 'CONTRIBUTING_feedback_and_requests.md'
+  push:
+    branches:
+      - review/xamlc-bootstrap
+      - review/xamlc-incremental
+      - review/xamlc-named-modules
+      - review/xamlc-module-docs
+      - feat/xamlccppmodule/product
   workflow_dispatch: {}
 
 concurrency:
@@ -31,10 +38,127 @@ permissions:
   contents: read
 
 env:
-  DISABLE_PR_BUILD_MATRIX_VALIDATION: 'true'
+  DISABLE_PR_BUILD_MATRIX_VALIDATION: 'false'
 
 jobs:
+  sync-xamlc-t4:
+    name: Sync XamlC T4 outputs
+    runs-on: windows-2025
+    permissions:
+      actions: write
+      contents: write
+    outputs:
+      checkout_sha: ${{ steps.sync.outputs.checkout_sha }}
+      generated_commit: ${{ steps.sync.outputs.generated_commit }}
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          show-progress: false
+
+      - name: Locate MSBuild for T4 generation
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Locate NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore MSBuild cache package required for project evaluation
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          [xml]$packagesConfig = Get-Content packages.config
+          $cachePackage = $packagesConfig.packages.package | Where-Object { $_.id -eq 'Microsoft.MSBuildCache.Local' }
+          if (-not $cachePackage) {
+              throw 'Microsoft.MSBuildCache.Local was not found in packages.config.'
+          }
+
+          nuget install $cachePackage.id `
+            -Version $cachePackage.version `
+            -OutputDirectory packages `
+            -Source https://api.nuget.org/v3/index.json `
+            -NonInteractive
+          if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+          }
+
+      - name: Regenerate checked-in T4 classes
+        id: sync
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          msbuild src\XamlCompiler\Microsoft.UI.Xaml.Markup.Compiler.csproj /t:TransformAll /p:TransformOnBuild=true /p:TransformOutOfDateOnly=false /p:BuildingInsideVisualStudio=true /m:1 /v:minimal
+          if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+          }
+
+          git -c core.whitespace=-blank-at-eol,-blank-at-eof diff --check
+          $trackedChanges = @(git diff --name-only)
+          $untrackedChanges = @(git ls-files --others --exclude-standard)
+          $changed = @($trackedChanges + $untrackedChanges | Sort-Object -Unique)
+          $unexpected = @()
+          foreach ($file in $changed) {
+              if ($file -notmatch '^src/XamlCompiler/BuildTasks/Microsoft/Xaml/XamlCompiler/CodeGenerators/.+\.cs$') {
+                  $unexpected += $file
+                  continue
+              }
+
+              $template = [System.IO.Path]::ChangeExtension($file, '.tt')
+              if (-not (Test-Path $template)) {
+                  $unexpected += $file
+              }
+          }
+          if ($unexpected.Count -ne 0) {
+              throw "TransformAll changed non-generated files: $($unexpected -join ', ')"
+          }
+
+          if ($changed.Count -eq 0) {
+              "checkout_sha=$(git rev-parse HEAD)" >> $env:GITHUB_OUTPUT
+              "generated_commit=false" >> $env:GITHUB_OUTPUT
+              exit 0
+          }
+
+          $eventName = "${{ github.event_name }}"
+          $targetBranch = "${{ github.event.pull_request.head.ref || github.ref_name }}"
+          $isSameRepoPr = $eventName -eq 'pull_request' -and
+              "${{ github.event.pull_request.head.repo.full_name }}" -eq "${{ github.repository }}"
+          $isBranchRun = $eventName -in @('push', 'workflow_dispatch') -and
+              $targetBranch -match '^(review/xamlc-|feat/xamlccppmodule/)'
+
+          if (-not ($isSameRepoPr -or $isBranchRun)) {
+              throw "XamlC T4 outputs are stale. Generated .cs files are available in the T4 artifact; push them to the source branch."
+          }
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- src/XamlCompiler/BuildTasks/Microsoft/Xaml/XamlCompiler/CodeGenerators
+          git diff --cached --check
+          git commit -m 'Regenerate XamlC T4 templates'
+          $generatedSha = git rev-parse HEAD
+          git push origin "HEAD:$targetBranch"
+          if ($LASTEXITCODE -ne 0) { throw 'The source branch moved or rejected the generated commit.' }
+          "checkout_sha=$generatedSha" >> $env:GITHUB_OUTPUT
+          "generated_commit=true" >> $env:GITHUB_OUTPUT
+
+          # GITHUB_TOKEN pushes do not recursively trigger the PR workflow.
+          # Dispatch a fresh run explicitly so checks are attached to the new HEAD.
+          $env:GH_TOKEN = "${{ github.token }}"
+          gh workflow run pr-build.yml --repo "${{ github.repository }}" --ref "$targetBranch"
+          if ($LASTEXITCODE -ne 0) { throw 'Could not dispatch validation for the generated commit.' }
+
+      - name: Upload formal T4 outputs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: xamlc-formal-t4-outputs
+          path: src/XamlCompiler/BuildTasks/Microsoft/Xaml/XamlCompiler/CodeGenerators/**/*.cs
+          retention-days: 7
+
   build:
+    needs: sync-xamlc-t4
+    if: always() && !cancelled() && needs.sync-xamlc-t4.result == 'success'
     name: Build (${{ matrix.flavor }})
     runs-on: windows-2022
     timeout-minutes: 120
@@ -72,20 +196,15 @@ jobs:
       CL: '/MP2'
 
     steps:
-      - name: Skip disabled PR Build validation
-        if: env.DISABLE_PR_BUILD_MATRIX_VALIDATION == 'true'
-        shell: pwsh
-        run: Write-Host "PR Build matrix validation is disabled by DISABLE_PR_BUILD_MATRIX_VALIDATION."
-
       - name: Checkout
-        if: env.DISABLE_PR_BUILD_MATRIX_VALIDATION != 'true'
         uses: actions/checkout@v5
         with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ needs.sync-xamlc-t4.outputs.checkout_sha }}
           fetch-depth: 1
           show-progress: false
 
       - name: Initialize build environment and build
-        if: env.DISABLE_PR_BUILD_MATRIX_VALIDATION != 'true'
         shell: pwsh
         run: |
           & "${{ github.workspace }}/.github/scripts/build-pr.ps1" `
@@ -94,7 +213,7 @@ jobs:
             -Configuration $env:WINUI_BUILD_CONFIGURATION
 
       - name: Upload MSBuild binlogs
-        if: failure() && env.DISABLE_PR_BUILD_MATRIX_VALIDATION != 'true'
+        if: failure()
         uses: actions/upload-artifact@v6
         with:
           name: binlogs-${{ matrix.flavor }}
@@ -103,7 +222,6 @@ jobs:
           retention-days: 7
 
       - name: Upload product runtime payload
-        if: env.DISABLE_PR_BUILD_MATRIX_VALIDATION != 'true'
         uses: actions/upload-artifact@v6
         with:
           name: winui-product-${{ matrix.flavor }}
