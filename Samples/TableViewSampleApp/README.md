@@ -97,6 +97,13 @@ The **Filter / sort / group** page exercises the data-shaping surface:
 - `TableViewSource.Sort` / `ClearSort` — programmatic sort with `SortDirection`
 - `TableView.CanUserSortColumns`, `SortByColumn`, `ClearSort`, `Sorting` / `Sorted`
 - `GroupHeaderTemplate` (custom vs. built-in), `ExpandAllGroups` / `CollapseAllGroups`
+- `TableViewSource.IsLiveSorting` / `IsLiveFiltering` / `IsLiveGrouping` — the "Live" toggles
+  plus the "Mutate selected" buttons, which change one property of the selected row
+
+The **Live shaping self-check** page runs scripted checks for the live-shaping flags (flat,
+grouped, and `ParentBy` hierarchies) and shows PASS/FAIL per case. To run it unattended, create an
+empty file named `autorun-livecheck` next to the exe; the app opens the page, writes
+`livecheck-results.txt` there, and exits.
 
 ## More detail
 
