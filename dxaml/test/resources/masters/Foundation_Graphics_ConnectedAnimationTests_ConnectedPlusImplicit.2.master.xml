@@ -63,7 +63,7 @@
                       <Visual Tag="PrependVisual" Visible="False">
                         <Visual VisualId="2" Tag="PrimaryVisual" SizeX="69" SizeY="19" OffsetX="200" OffsetY="0" OffsetZ="0">
                           <Visual Tag="ContentVisual">
-                            <wucSpriteVisual SizeX="68" SizeY="10" BorderMode="Hard" OffsetX="0" OffsetY="5" OffsetZ="0">
+                            <wucSpriteVisual SizeX="70" SizeY="12" BorderMode="Hard" OffsetX="-1" OffsetY="4" OffsetZ="0">
                               <MaskBrush>
                                 <Source>
                                   <ColorBrush Color="#ffffffff" />
@@ -99,7 +99,7 @@
                       <Visual Tag="PrependVisual" Visible="False">
                         <Visual VisualId="1" Tag="PrimaryVisual" SizeX="41" SizeY="19">
                           <Visual Tag="ContentVisual">
-                            <wucSpriteVisual SizeX="41" SizeY="7" BorderMode="Hard" OffsetX="0" OffsetY="8" OffsetZ="0">
+                            <wucSpriteVisual SizeX="43" SizeY="9" BorderMode="Hard" OffsetX="-1" OffsetY="7" OffsetZ="0">
                               <MaskBrush>
                                 <Source>
                                   <ColorBrush Color="#ffffffff" />

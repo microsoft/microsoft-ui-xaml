@@ -943,6 +943,9 @@ private:
     void OnKeyUpForHeaderSort(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
+
+    // Redirects a header's bring-into-view onto the body scroller, so the header cannot scroll
+    // independently of the columns it labels.
     void OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args);
 
     // Pre-key focus snapshots are needed because XAML directional navigation can move focus before

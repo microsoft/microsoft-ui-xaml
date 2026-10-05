@@ -140,7 +140,7 @@
                   </TransformMatrix>
                   <Visual VisualId="14" Tag="PrimaryVisual" SizeX="111" SizeY="80" OffsetX="145" OffsetY="160" OffsetZ="0">
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="103" SizeY="43" BorderMode="Hard" OffsetX="5" OffsetY="23" OffsetZ="0">
+                      <wucSpriteVisual SizeX="105" SizeY="45" BorderMode="Hard" OffsetX="4" OffsetY="22" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="rgb {1, 1, 0}" />

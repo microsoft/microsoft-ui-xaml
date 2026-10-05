@@ -385,6 +385,10 @@ TableView::TableView()
             if (auto strongThis = weakThis.get())
             {
                 strongThis->QueueRebuildHeaders();
+                // Body cells carry the same stamp as a one-sided BorderThickness, and realized rows
+                // are not rebuilt by the header pass - refresh them or the body grid lines stay on
+                // the edge the previous direction chose.
+                strongThis->RefreshGridLinesOnRealizedRows();
                 strongThis->QueueTerminalGridLineRefresh();
             }
         });
@@ -2147,7 +2151,10 @@ void TableView::RebuildHeaders()
             }
             headerCell.Visibility(column.Visibility());
             // Header cells are the named keyboard/UIA targets; the host is one Tab stop, and arrows
-            // must still reach every visible header.
+            // must still reach every visible header. Every visible header is a tab stop by product
+            // decision, including non-actionable ones: ARIA permits skipping them, but skipping makes
+            // the band's keyboard model depend on per-column capability, which is harder to explain
+            // than one uniform rule.
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             headerCell.IsTabStop(true);
@@ -2233,14 +2240,6 @@ void TableView::RebuildHeaders()
 
             if (headerIsSortable)
             {
-                // The header cell is a Grid, and a Grid with a null Background is not hit-test
-                // visible in its empty regions. The header content presenter and the chevron host
-                // below are both effectively non-hit-testable in their padding, so without an
-                // explicit brush a tap that misses the header glyphs never reaches the Tapped
-                // handler and the column never sorts. A transparent fill makes the WHOLE cell the
-                // click target, matching the group-header band and WPF DataGrid column headers.
-                headerCell.Background(winrt::SolidColorBrush{ winrt::Colors::Transparent() });
-
                 // Hosted in its own panel so the chevron sits on the logical trailing edge without
                 // competing with the header content's Stretch alignment.
                 winrt::StackPanel indicatorHost;

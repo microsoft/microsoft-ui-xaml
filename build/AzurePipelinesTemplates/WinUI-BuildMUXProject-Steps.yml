@@ -325,27 +325,10 @@ steps:
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
       # Build log is published by the WinUI-BuildProject-Steps.yml pipeline
 
-  # The build step below using buildMockWinAppSdkPackage.ps1 does not directly benefit from compiler override via invoking the WinUndockNativeCompiler
-  # task because at this point the <root>\WindowsAppSDKAggregator path for the target .sln file has not been setup yet, so such a path can't be passed to
-  # the WinUndockNativeCompiler task.
-
-  # Note: Microsoft.UI.Xaml.sln builds Microsoft.UI.Xaml.Controls.dll, so we can build the mock package at this stage.
-  # Standalone only — depends on the WindowsAppSDKAggregator submodule which monobuild does NOT clone, and on
-  # the mock package being consumed by BuildScenarioApps (also standalone-only).
+  # Standalone only - monobuild packs the per-platform bits in its own Pack stage instead.
   - ${{ if ne(parameters.IsMonobuild, 'true') }}:
-    - task: PowerShell@2
-      displayName: 'Build mock Windows App SDK package'
-      condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
-      inputs:
-        filePath: 'scripts\buildMockWinAppSdkPackage.ps1'
-        arguments: "-RepoRoot '$(Build.SourcesDirectory)' -Platform $(buildPlatform) -Configuration $(buildConfiguration) -WinUITransportPackageVersion $(versionFinal) -CleanOutput -AzurePipelineBuild"
-      env:
-        LkgVcToolsName: $(compilerOverridePackageName)
-        LkgVcToolsVersion: $(compilerOverrideNupkgVersion)
-
-    # Build WinUI component package before copying to output directory so it's included
-    # in the mock output alongside the mock WindowsAppSDK package. The BuildScenarioApps
-    # stage downloads these packages and sample apps reference Microsoft.WindowsAppSDK.WinUI.
+    # Build WinUI component package before copying to output directory. The BuildScenarioApps
+    # stage downloads this package and sample apps reference Microsoft.WindowsAppSDK.WinUI.
     # Monobuild centralizes the per-platform produced bits into Pack — see
     # WinUI-CreateTransportNupkg-Steps.yml (IsMonobuild=true path).
     - powershell: |
@@ -373,19 +356,8 @@ steps:
         }
       displayName: Build WinUI component package
 
-    # Now, this task is also responsible for copying Microsoft.WindowsAppSDK.WinUI package to output directory.
-    - task: CopyFiles@2
-      displayName: Move MockPackage To Output Directory
-      condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
-      inputs:
-        SourceFolder: '$(WindowsAppSDKMockPackagePath)'
-        TargetFolder: '$(ob_outputDirectory)\mock'
-        Contents: |
-          Microsoft.WindowsAppSDK.*.nupkg
-          !Microsoft.WindowsAppSDK.Base.*.nupkg
-
-  # MUXControls.sln is test infra; monobuild skips it (depends on AzureMaps token,
-  # mock package, and WindowsAppSDKConfig overlay — all standalone-only).
+  # MUXControls.sln is test infra; monobuild skips it (depends on the AzureMaps token
+  # and the WindowsAppSDKConfig overlay - both standalone-only).
   - ${{ if and(eq(parameters.buildProductOnly, 'false'), ne(parameters.IsMonobuild, 'true')) }}:
     - template: WinUI-BuildProject-Steps.yml
       parameters:
@@ -424,6 +396,63 @@ steps:
         pipelineKind: ${{ parameters.pipelineKind }}
         MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  # The mono-build stamps its own product version into the WinUI binaries, which changes RT_VERSION.
+  # RT_VERSION is inside the MUI-covered resource set, so the binaries no longer match the prebuilt
+  # localized .mui that come from Microsoft.Internal.WinUILocalizationResources (split from a
+  # differently-versioned binary). Windows silently rejects a mismatched .mui and falls back to
+  # UltimateFallbackLanguage (en-US), so every non-English string renders in English. Re-stamp each
+  # .mui with the checksum of the binary it sits beside. Content is already correct for this source;
+  # only the stamp is wrong.
+  - ${{ if eq(parameters.IsMonobuild, 'true') }}:
+    - task: PowerShell@2
+      displayName: 'Re-stamp localized .mui checksums against the built binaries'
+      inputs:
+        targetType: inline
+        script: |
+          $ErrorActionPreference = 'Stop'
+          $root = '${{ parameters.buildArtifactsDirectory }}'
+
+          $muirct = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Recurse -Filter 'muirct.exe' -ErrorAction SilentlyContinue |
+                    Where-Object { $_.FullName -match '\\x64\\' } | Sort-Object FullName -Descending | Select-Object -First 1
+          if (-not $muirct) { throw 'muirct.exe not found under the Windows SDK' }
+          Write-Host "muirct : $($muirct.FullName)"
+          Write-Host "root   : $root"
+
+          function Get-MuiChecksum([string]$path) {
+              $out = & $muirct.FullName -d $path 2>&1
+              $line = $out | Where-Object { $_ -match '^\s*Checksum\s+-' } | Select-Object -First 1
+              if ($line) { return ($line -split '-')[-1].Trim() }
+              return ''
+          }
+
+          $stamped = 0; $alreadyOk = 0; $failed = 0
+          foreach ($dllName in @('Microsoft.ui.xaml.dll', 'Microsoft.UI.Xaml.Phone.dll')) {
+              foreach ($dll in @(Get-ChildItem $root -Recurse -Filter $dllName -ErrorAction SilentlyContinue)) {
+                  $want = Get-MuiChecksum $dll.FullName
+                  if (-not $want) { continue }
+                  $langDirs = @(Get-ChildItem $dll.Directory.FullName -Directory -ErrorAction SilentlyContinue |
+                                Where-Object { $_.Name -match '^[a-zA-Z]{2,3}(-[a-zA-Z0-9]+)+$' })
+                  foreach ($langDir in $langDirs) {
+                      $mui = Join-Path $langDir.FullName "$dllName.mui"
+                      if (-not (Test-Path $mui)) { continue }
+                      if ((Get-MuiChecksum $mui) -eq $want) { $alreadyOk++; continue }
+                      & $muirct.FullName -c $dll.FullName -e $mui 2>&1 | Out-Null
+                      if ((Get-MuiChecksum $mui) -eq $want) {
+                          $stamped++
+                      } else {
+                          $failed++
+                          Write-Host "##vso[task.logissue type=error;]Failed to re-stamp $mui"
+                      }
+                  }
+              }
+          }
+
+          Write-Host "re-stamped=$stamped already-matching=$alreadyOk failed=$failed"
+          if ($failed -gt 0) { exit 1 }
+          if (($stamped + $alreadyOk) -eq 0) {
+              Write-Host "##vso[task.logissue type=warning;]No localized .mui files were found next to the WinUI binaries"
+          }
 
   # Cleanup before staging artifacts to free disk. Monobuild path keeps only .dotnet because
   # _enableVsBuildTools=false there (VS is preinstalled on the OneBranch image), so the
