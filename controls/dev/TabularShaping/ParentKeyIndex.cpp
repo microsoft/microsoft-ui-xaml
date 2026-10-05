@@ -191,7 +191,16 @@ bool BuildParentKeyIndex(
         keepAlive.push_back(std::move(key));
         if (nodeKeys[i].empty())
         {
-            error = L"WithParent: key selector returned null or empty for item at source position " + winrt::to_hstring(i) + L".";
+            // `rows` is already sorted, so its index is not the item's position in the app's
+            // collection; name the item's type instead of reporting a misleading position.
+            winrt::hstring typeName;
+            if (rows[i])
+            {
+                try { typeName = winrt::get_class_name(rows[i]); } catch (...) {}
+            }
+            error = L"WithParent: key selector returned null or empty for an item"
+                + (typeName.empty() ? winrt::hstring{} : L" of type '" + typeName + L"'")
+                + L".";
             return false;
         }
         if (!indexByKey.emplace(nodeKeys[i], i).second)

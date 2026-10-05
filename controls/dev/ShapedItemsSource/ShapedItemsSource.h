@@ -198,7 +198,9 @@ private:
     // before anything is mutated, so the previous projection stays intact. Returns null -- and
     // queues a Refresh -- when a selector re-declared or retracted the relation mid-build; the
     // caller then publishes nothing.
-    std::shared_ptr<ShapingHelpers::ParentKeyIndex> BuildHierarchyIndex(std::vector<winrt::IInspectable> const& sortedRows);
+    std::shared_ptr<ShapingHelpers::ParentKeyIndex> BuildHierarchyIndex(
+        std::vector<winrt::IInspectable> const& sortedRows,
+        uint64_t declarationGeneration);
 
     // Creates the adapter on first use, applies a pending intent reset (relation re-declared) and
     // hands it the index. `rootSegments` as for HierarchicalSourceAdapter::SetIndex.

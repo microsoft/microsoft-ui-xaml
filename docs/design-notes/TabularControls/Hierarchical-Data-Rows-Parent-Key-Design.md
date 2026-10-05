@@ -8,8 +8,10 @@ Status: **implemented** (decisions in §13).
 candidate, and two key selectors say "this is my key" and "this is my parent's key".
 
 ```csharp
-var byManager = TableViewSource.From(employees).WithParent(e => e.Id, e => e.ManagerId);
-var byMentor  = TableViewSource.From(employees).WithParent(e => e.Id, e => e.MentorId);
+var byManager = TableViewSource.From(employees).WithParent(
+    item => ((Employee)item).Id, item => ((Employee)item).ManagerId);
+var byMentor  = TableViewSource.From(employees).WithParent(
+    item => ((Employee)item).Id, item => ((Employee)item).MentorId);
 ```
 
 Why:
@@ -84,7 +86,7 @@ rebuild (`MakeNodeKey`, built on `ShapingHelpers::ValueKey::ToObjectLookupKey`):
   **by value**. `42` from `Id` and `42` from `ManagerId` match. This is the database-id case. A
   fresh box per selector call is fine.
 - **Any other object** is compared **by reference identity**. So
-  `WithParent(e => e, e => e.Manager)` works: the item is its own key and the parent selector
+  `WithParent(item => item, item => ((Employee)item).Manager)` works: the item is its own key and the parent selector
   returns the parent object. This covers the object-reference case without a second overload. Both
   selectors must return the same instance for a link to form.
 
@@ -401,6 +403,10 @@ On a focused hierarchical row (row container focused, not a cell editor):
 | `Left` (mirrored in RTL) | Move focus to the parent | Collapse | Move focus to the parent |
 | `*` (Multiply) | Expand this subtree | Expand this subtree | Not handled |
 
+These keys act only when Ctrl, Shift and Alt are all up, as in `TreeViewItem`; with a modifier held
+they fall through to TableView's own navigation. A move to the parent or the first child selects
+that row, as Up/Down do (selection follows the keyboard cursor).
+
 "Move to parent" resolves `NodeRow::ParentKey` to an index through the key map, which is O(1).
 
 The index knows the whole subtree, so `*` is cheap: the adapter's `ExpandSubtree(nodeKey)` records
@@ -493,8 +499,8 @@ item; an `autorun-selfcheck` file runs it unattended).
 ## 12. Tests
 
 No new test infrastructure was added. Verification is the product build gates, the scripted
-self-check page in `Samples/TableViewSampleApp` (`HierarchySelfCheck.cs`, 36 cases driven through the
-public API and UIA; last run **PASS 36 / FAIL 0**), the perf button (§9) and manual keyboard and
+self-check page in `Samples/TableViewSampleApp` (`HierarchySelfCheck.cs`, 66 cases driven through the
+public API, UIA and injected input; last run **PASS 66 / FAIL 0**), the perf button (§9) and manual keyboard and
 frozen-gutter checks. The list below is the coverage those map to (layers 1 and 3 are exercised
 through the public API rather than headless):
 

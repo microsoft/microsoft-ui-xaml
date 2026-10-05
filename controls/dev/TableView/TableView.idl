@@ -628,7 +628,8 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     //
     // Separate verbs rather than one "expand everything", because the two axes are independent: a
     // grouped tree's headers and its nodes are opened and closed separately. ExpandAllRows makes
-    // every row of the tree visible, so the visible row count becomes the size of the source.
+    // every row of the tree visible, so the visible row count becomes the size of the source -- or,
+    // while a filter is active, the size of the filtered set (the matches plus their ancestors).
     //
     // Unlike toggling a single row, these change the remembered expansion state of EVERY node,
     // including the ancestors a filter keeps expanded for context. So the result persists after

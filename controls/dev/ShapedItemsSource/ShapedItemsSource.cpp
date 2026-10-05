@@ -1512,11 +1512,15 @@ void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& ro
     // `rows` arrives UNFILTERED: the filter runs inside the index build, which needs the whole
     // parent chain to keep a match's ancestors. Sorting the whole list once, then bucketing it by
     // parent stably, sorts every sibling set among its own peers.
+    //
+    // The declaration generation is captured BEFORE sorting: sort key selectors are app code too,
+    // and a WithParent/ClearParent issued from one must make this pass obsolete.
+    const uint64_t declarationGeneration = m_parentDeclarationGeneration;
     ApplySort(rows);
 
     // May throw on invalid data. Nothing has been mutated yet, so the previous projection stays
     // intact.
-    auto index = BuildHierarchyIndex(rows);
+    auto index = BuildHierarchyIndex(rows, declarationGeneration);
     if (!index)
     {
         // The relation was re-declared or retracted mid-build; the queued Refresh projects that.
@@ -1581,8 +1585,10 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
     const std::vector<winrt::IInspectable> sourceOrder = rows;
 
     // Every sibling set below the roots is sorted by the full sort, exactly as when ungrouped.
+    // Generation captured before sorting, as in RebuildHierarchical.
+    const uint64_t declarationGeneration = m_parentDeclarationGeneration;
     ApplySort(rows);
-    auto index = BuildHierarchyIndex(rows);
+    auto index = BuildHierarchyIndex(rows, declarationGeneration);
     if (!index)
     {
         // Obsolete relation, as in RebuildHierarchical.
@@ -1758,8 +1764,18 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
     PublishProjection();
 }
 
-std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarchyIndex(std::vector<winrt::IInspectable> const& sortedRows)
+std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarchyIndex(
+    std::vector<winrt::IInspectable> const& sortedRows,
+    uint64_t declarationGeneration)
 {
+    // The relation changed while the caller was still preparing rows (e.g. from a sort key
+    // selector). The selectors below may already be cleared, so do not run them at all.
+    if (declarationGeneration != m_parentDeclarationGeneration)
+    {
+        m_pendingRefresh = true;
+        return nullptr;
+    }
+
     auto index = std::make_shared<ShapingHelpers::ParentKeyIndex>();
 
     ShapingHelpers::ParentKeyFilter filter;
@@ -1773,12 +1789,11 @@ std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarch
     // the declared ones afterwards.
     auto const keySelector = m_keySelector;
     auto const parentKeySelector = m_parentKeySelector;
-    const uint64_t generation = m_parentDeclarationGeneration;
 
     winrt::hstring error;
     const bool built = ShapingHelpers::BuildParentKeyIndex(sortedRows, keySelector, parentKeySelector, filter, *index, error);
 
-    if (generation != m_parentDeclarationGeneration)
+    if (declarationGeneration != m_parentDeclarationGeneration)
     {
         // Obsolete: whatever this pass built or rejected describes a relation that is no longer
         // declared, so neither the index nor its validation error may surface. The verb that
