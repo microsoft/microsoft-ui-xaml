@@ -20,7 +20,11 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.UI.Core.h>
+#include <winrt/Windows.UI.Input.h>
+#include <winrt/Windows.Devices.Input.h>
+#include <winrt/Windows.System.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
+#include <atomic>
 #include <functional>
 #include <vector>
 
@@ -167,6 +171,119 @@ private:
     bool m_isEraserInputEnabled{ true };
 };
 
+// PointerPoint, PointerPointProperties and PointerDevice are marshaling_behavior(none), so the OS pointer args
+// raised on the ink thread can't be read from the UI thread (CurrentPoint() fails with 0x80004021). These agile
+// copies are taken on the ink thread while the OS args are live and handed to the app's StrokeInput /
+// UnprocessedInput handlers in their place, as the projected Windows.UI.Core.PointerEventArgs (UWP parity).
+struct InkPointerPointPropertiesSnapshot :
+    winrt::implements<InkPointerPointPropertiesSnapshot,
+        winrt::Windows::UI::Input::IPointerPointProperties,
+        winrt::Windows::UI::Input::IPointerPointProperties2>
+{
+    explicit InkPointerPointPropertiesSnapshot(winrt::Windows::UI::Input::PointerPointProperties const& properties);
+
+    float Pressure() const noexcept { return m_pressure; }
+    bool IsInverted() const noexcept { return m_isInverted; }
+    bool IsEraser() const noexcept { return m_isEraser; }
+    float Orientation() const noexcept { return m_orientation; }
+    float XTilt() const noexcept { return m_xTilt; }
+    float YTilt() const noexcept { return m_yTilt; }
+    float Twist() const noexcept { return m_twist; }
+    winrt::Windows::Foundation::Rect ContactRect() const noexcept { return m_contactRect; }
+    winrt::Windows::Foundation::Rect ContactRectRaw() const noexcept { return m_contactRectRaw; }
+    bool TouchConfidence() const noexcept { return m_touchConfidence; }
+    bool IsLeftButtonPressed() const noexcept { return m_isLeftButtonPressed; }
+    bool IsRightButtonPressed() const noexcept { return m_isRightButtonPressed; }
+    bool IsMiddleButtonPressed() const noexcept { return m_isMiddleButtonPressed; }
+    int32_t MouseWheelDelta() const noexcept { return m_mouseWheelDelta; }
+    bool IsHorizontalMouseWheel() const noexcept { return m_isHorizontalMouseWheel; }
+    bool IsPrimary() const noexcept { return m_isPrimary; }
+    bool IsInRange() const noexcept { return m_isInRange; }
+    bool IsCanceled() const noexcept { return m_isCanceled; }
+    bool IsBarrelButtonPressed() const noexcept { return m_isBarrelButtonPressed; }
+    bool IsXButton1Pressed() const noexcept { return m_isXButton1Pressed; }
+    bool IsXButton2Pressed() const noexcept { return m_isXButton2Pressed; }
+    winrt::Windows::UI::Input::PointerUpdateKind PointerUpdateKind() const noexcept { return m_pointerUpdateKind; }
+    // Raw HID usages can't be enumerated up front, so they are not part of the snapshot.
+    bool HasUsage(uint32_t, uint32_t) const noexcept { return false; }
+    int32_t GetUsageValue(uint32_t, uint32_t) const noexcept { return 0; }
+    winrt::Windows::Foundation::IReference<float> ZDistance() const noexcept { return m_zDistance; }
+
+private:
+    float m_pressure{};
+    bool m_isInverted{};
+    bool m_isEraser{};
+    float m_orientation{};
+    float m_xTilt{};
+    float m_yTilt{};
+    float m_twist{};
+    winrt::Windows::Foundation::Rect m_contactRect{};
+    winrt::Windows::Foundation::Rect m_contactRectRaw{};
+    bool m_touchConfidence{};
+    bool m_isLeftButtonPressed{};
+    bool m_isRightButtonPressed{};
+    bool m_isMiddleButtonPressed{};
+    int32_t m_mouseWheelDelta{};
+    bool m_isHorizontalMouseWheel{};
+    bool m_isPrimary{};
+    bool m_isInRange{};
+    bool m_isCanceled{};
+    bool m_isBarrelButtonPressed{};
+    bool m_isXButton1Pressed{};
+    bool m_isXButton2Pressed{};
+    winrt::Windows::UI::Input::PointerUpdateKind m_pointerUpdateKind{};
+    winrt::Windows::Foundation::IReference<float> m_zDistance{ nullptr };
+};
+
+struct InkPointerPointSnapshot :
+    winrt::implements<InkPointerPointSnapshot, winrt::Windows::UI::Input::IPointerPoint>
+{
+    explicit InkPointerPointSnapshot(winrt::Windows::UI::Input::PointerPoint const& point);
+
+    // PointerDevice can't be copied across threads; it is looked up by id on the calling thread instead.
+    winrt::Windows::Devices::Input::PointerDevice PointerDevice() const;
+    winrt::Windows::Foundation::Point Position() const noexcept { return m_position; }
+    winrt::Windows::Foundation::Point RawPosition() const noexcept { return m_rawPosition; }
+    uint32_t PointerId() const noexcept { return m_pointerId; }
+    uint32_t FrameId() const noexcept { return m_frameId; }
+    uint64_t Timestamp() const noexcept { return m_timestamp; }
+    bool IsInContact() const noexcept { return m_isInContact; }
+    winrt::Windows::UI::Input::PointerPointProperties Properties() const noexcept { return m_properties; }
+
+private:
+    winrt::Windows::Foundation::Point m_position{};
+    winrt::Windows::Foundation::Point m_rawPosition{};
+    uint32_t m_pointerId{};
+    uint32_t m_frameId{};
+    uint64_t m_timestamp{};
+    bool m_isInContact{};
+    winrt::Windows::UI::Input::PointerPointProperties m_properties{ nullptr };
+};
+
+struct InkPointerEventArgsSnapshot :
+    winrt::implements<InkPointerEventArgsSnapshot,
+        winrt::Windows::UI::Core::IPointerEventArgs,
+        winrt::Windows::UI::Core::ICoreWindowEventArgs>
+{
+    explicit InkPointerEventArgsSnapshot(winrt::Windows::UI::Core::PointerEventArgs const& args);
+
+    winrt::Windows::UI::Input::PointerPoint CurrentPoint() const noexcept { return m_currentPoint; }
+    winrt::Windows::System::VirtualKeyModifiers KeyModifiers() const noexcept { return m_keyModifiers; }
+    winrt::Windows::Foundation::Collections::IVector<winrt::Windows::UI::Input::PointerPoint> GetIntermediatePoints() const;
+    // Raised after the OS has already acted on the input, so Handled can't flow back to the OS presenter.
+    bool Handled() const noexcept { return m_handled; }
+    void Handled(bool value) noexcept { m_handled = value; }
+
+private:
+    winrt::Windows::UI::Input::PointerPoint m_currentPoint{ nullptr };
+    winrt::Windows::System::VirtualKeyModifiers m_keyModifiers{};
+    std::vector<winrt::Windows::UI::Input::PointerPoint> m_intermediatePoints;
+    bool m_handled{};
+};
+
+// Must be called on the ink thread, inside the OS event handler, while 'args' is still live.
+winrt::Windows::UI::Core::PointerEventArgs SnapshotPointerEventArgs(winrt::Windows::UI::Core::PointerEventArgs const& args);
+
 // Mirror of Windows.UI.Input.Inking.InkStrokeInput. Holds the app's handlers; the owning
 // InkPresenter proxy subscribes to the OS presenter's InkStrokeInput on the ink thread and calls
 // the Raise* helpers (marshaled to the UI thread) to fire these events. Agile (default), so the
@@ -257,8 +374,8 @@ private:
 // committed and suppresses the presenter's own dry rendering; EndDry releases the wet-ink layer once
 // the app has drawn them. UWP returns the OS InkSynchronizer directly; this mirror exists only because
 // that object is thread-affine to the ink thread, so it forwards BeginDry/EndDry through the owning
-// InkPresenter proxy's work queue and holds no dry-transaction state of its own. The InkPresenter keeps
-// this projected mirror, never the raw OS inking::InkSynchronizer.
+// InkPresenter proxy's work queue. Its only state is the EndDry calls deferred until XAML commits the app's
+// dry content. The InkPresenter keeps this projected mirror, never the raw OS inking::InkSynchronizer.
 class InkSynchronizer :
     public winrt::implementation::InkSynchronizerT<InkSynchronizer>
 {
@@ -274,11 +391,23 @@ public:
     void Initialize(inking::InkSynchronizer const& osSynchronizer) noexcept { m_osSynchronizer = osSynchronizer; }
 
 private:
+    void EndDryAfterNextXamlFrame(uint32_t generation);
+    void EndDryNow(uint32_t generation);
+    void CancelEndDryWait();
+
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
 
     // The OS InkSynchronizer this mirror fronts (from OS ActivateCustomDrying). Thread-affine to the ink
     // thread; only ever touched inside ink-thread work items. Null until custom drying is activated.
     inking::InkSynchronizer m_osSynchronizer{ nullptr };
+
+    // App EndDry calls not yet forwarded to the OS (each is forwarded; none are dropped), and a generation
+    // that invalidates in-flight frame/commit waits when they are flushed early or cancelled.
+    std::atomic<uint32_t> m_pendingEndDryCount{ 0 };
+    std::atomic<uint32_t> m_endDryGeneration{ 0 };
+    std::atomic<bool> m_endDryWaitInFlight{ false };
+    winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingRevoker{};
+    winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendered_revoker m_renderedRevoker{};
 };
 
 // Manipulable subset of Windows.UI.Input.Inking.InkPresenter. The OS presenter can only be created
@@ -341,6 +470,10 @@ public:
     void SetRulerEnabled(bool enabled);
     void SetProtractorEnabled(bool enabled);
 
+    // Internal (not on the winmd surface). Set by InkCanvas from its effective XAML visibility: a collapsed
+    // canvas must not take ink input (UWP parity), without changing the app-visible IsInputEnabled value.
+    void SetHostVisible(bool visible);
+
     // Internal (not on the winmd surface). Fire our StrokesCollected/StrokesErased events on the UI
     // thread. Called from the stroke-forwarding lambdas after the (agile) strokes have been
     // snapshotted off the ink thread and marshaled back to the UI thread.
@@ -375,6 +508,7 @@ private:
     // InitializeOsPresenter applies on the ink thread.
     winrt::CoreInputDeviceTypes m_inputDeviceTypes{ winrt::CoreInputDeviceTypes::Pen };
     bool m_isInputEnabled{ true };
+    bool m_isHostVisible{ true };
     winrt::InkDrawingAttributes m_defaultDrawingAttributes{ nullptr };
 
     // UI-thread cache of the high-contrast adjustment, mirroring the OS presenter default

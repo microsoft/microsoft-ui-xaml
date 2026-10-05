@@ -152,6 +152,7 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
     // (SetRootVisual below runs against it). Safe here: we are past construction and on the UI thread.
     InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::InkPresenter);
     EnsureInkPresenter();
+    RegisterVisibilityCallbacks();
 
     // Hook up this ink canvas with the DComp tree. Attaching can throw on an OS build that lacks the
     // system-composition splice interop, on a null XamlRoot, or on a transient composition/device
@@ -321,6 +322,7 @@ void InkCanvas::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEvent
     m_xamlRootChangedRevoker.revoke();
     m_sizeChangedRevoker.revoke();
     m_layoutUpdatedRevoker.revoke();
+    UnregisterVisibilityCallbacks();
 
     // Flush the roll-up here rather than relying on ~InkCanvas: closing the window tears the process
     // down without destructing the tree, so the destructor is not a reliable emit point. The state's
@@ -371,6 +373,63 @@ void InkCanvas::EnsureInkPresenter()
     // weak-ref, which is only safe post-construction - hence it is not done in the proxy's ctor.
     m_inkPresenterProxy = winrt::make<::InkPresenter>(m_threadData->m_inkHost, DispatcherQueue());
     winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->Start();
+}
+
+void InkCanvas::RegisterVisibilityCallbacks()
+{
+    UnregisterVisibilityCallbacks();
+
+    // InkCanvas is unsealed, so route the weak reference through the outer object (cppwinrt #1431).
+    auto weakThis{ winrt::make_weak(static_cast<winrt::InkCanvas>(*this)) };
+    for (winrt::DependencyObject current = *this; current; current = winrt::VisualTreeHelper::GetParent(current))
+    {
+        if (auto element = current.try_as<winrt::UIElement>())
+        {
+            const auto token = element.RegisterPropertyChangedCallback(winrt::UIElement::VisibilityProperty(),
+                [weakThis](auto const&, auto const&)
+                {
+                    if (auto strongThis = weakThis.get())
+                    {
+                        winrt::get_self<InkCanvas>(strongThis)->UpdateHostVisibility();
+                    }
+                });
+            m_visibilityCallbacks.emplace_back(winrt::make_weak(element), token);
+        }
+    }
+
+    UpdateHostVisibility();
+}
+
+void InkCanvas::UnregisterVisibilityCallbacks()
+{
+    for (auto const& [weakElement, token] : m_visibilityCallbacks)
+    {
+        if (auto element = weakElement.get())
+        {
+            element.UnregisterPropertyChangedCallback(winrt::UIElement::VisibilityProperty(), token);
+        }
+    }
+    m_visibilityCallbacks.clear();
+}
+
+void InkCanvas::UpdateHostVisibility()
+{
+    if (!m_inkPresenterProxy)
+    {
+        return;
+    }
+
+    bool visible = true;
+    for (auto const& [weakElement, token] : m_visibilityCallbacks)
+    {
+        if (auto element = weakElement.get(); element && element.Visibility() != winrt::Visibility::Visible)
+        {
+            visible = false;
+            break;
+        }
+    }
+
+    winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->SetHostVisible(visible);
 }
 
 void InkCanvas::UpdateInkPresenterSize()

@@ -45,6 +45,12 @@ private:
     void EnsureInkPresenter();
     void UpdateInkPresenterSize();
 
+    // A collapsed canvas (or ancestor) must not take ink input; XAML has no effective-visibility event,
+    // so watch Visibility on the canvas and each ancestor while loaded.
+    void RegisterVisibilityCallbacks();
+    void UnregisterVisibilityCallbacks();
+    void UpdateHostVisibility();
+
     void AttachToVisualLink();
     void DetachFromVisualLink();
 
@@ -92,6 +98,8 @@ private:
     winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_sizeChangedRevoker;
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker;
+
+    std::vector<std::pair<winrt::weak_ref<winrt::UIElement>, int64_t>> m_visibilityCallbacks;
 
     // Last physical-pixel size pushed to the lifted PlacementVisual; lets PositionInkVisual skip
     // redundant work on the frequent LayoutUpdated event. Reset on (re)attach.

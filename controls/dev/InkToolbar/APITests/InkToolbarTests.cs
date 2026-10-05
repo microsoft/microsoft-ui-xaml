@@ -659,6 +659,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // The pen button's built-in palette becomes the color picker's ItemsSource. A plain IVector<Brush> is
+        // rejected by ItemsSource (E_INVALIDARG fail-fast when the pen flyout opens), so the default palette
+        // must be bindable.
+        [TestMethod]
+        public void InkToolbarDefaultPenPaletteBindsToColorPickerTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var pen = new InkToolbarBallpointPenButton();
+                var config = new InkToolbarPenConfigurationControl();
+                config.SetValue(InkToolbarPenConfigurationControl.PenButtonProperty, pen);
+
+                var host = new StackPanel();
+                host.Children.Add(pen);
+                Content = host;
+                Content.UpdateLayout();
+
+                Verify.IsNotNull(pen.Palette, "Applying the pen template should populate the default palette.");
+                Verify.IsGreaterThan(pen.Palette.Count, 0, "The default palette should not be empty.");
+
+                host.Children.Add(config);
+                Content.UpdateLayout();
+
+                var colorPicker = config.FindVisualChildByName("PenColorPalette") as ItemsControl;
+                Verify.IsNotNull(colorPicker, "PenColorPalette should be realized after template apply.");
+                Verify.AreEqual(pen.Palette.Count, colorPicker.Items.Count, "The color picker should show every palette entry.");
+            });
+        }
+
+        // UWP apps restyle InkToolbar buttons with the toolbar's keyed resources from the system generic.xaml;
+        // the same keys must resolve from app markup here.
+        [TestMethod]
+        public void InkToolbarKeyedResourcesAreAppVisibleTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var root = (Grid)XamlReader.Load(
+                    "<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                        "<TextBlock Style='{StaticResource InkToolbarGlyphFontStyle}' />" +
+                        "<ToggleButton Style='{StaticResource InkToolbarCommonButtonStyle}' />" +
+                        "<TextBlock Foreground='{ThemeResource InkToolbarAccentColorForegroundThemeBrush}' Width='{StaticResource InkToolbarButtonWidth}' />" +
+                    "</Grid>");
+                Content = root;
+                Content.UpdateLayout();
+
+                Verify.IsNotNull(((TextBlock)root.Children[0]).Style, "InkToolbarGlyphFontStyle should resolve from app markup.");
+                Verify.IsNotNull(((ToggleButton)root.Children[1]).Style, "InkToolbarCommonButtonStyle should resolve from app markup.");
+                Verify.AreEqual(36.0, ((TextBlock)root.Children[2]).Width, "InkToolbarButtonWidth should resolve from app markup.");
+            });
+        }
+
         // ====================================================================
         // Missing API coverage: EraserButton, CustomPen, CustomPenButton, Events
         // ====================================================================
