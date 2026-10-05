@@ -313,7 +313,7 @@ void NumberBox::ValidateNumberFormatter(winrt::INumberFormatter2 value)
     // NumberFormatter also needs to be an INumberParser
     if (!value.try_as<winrt::INumberParser>())
     {
-        throw winrt::hresult_error(E_INVALIDARG);
+        throw winrt::hresult_invalid_argument(L"NumberFormatter must implement both INumberFormatter2 and INumberParser.");
     }
 }
 
