@@ -457,9 +457,7 @@ differences further.
 `Name`, `Title` and `Dept`. Two `TableView`s side by side over the **same** collection, one using
 `WithParent(Id, ManagerId)` and the other `WithParent(Id, MentorId)`. Commands to add an employee,
 reparent one (replace the item), filter by name (showing context ancestors), sort, group roots by
-department, and expand or collapse all. The **100k perf** button times the 100k-row case (§9). The
-sample also hosts the scripted self-check page (`HierarchySelfCheck.cs`, "Self-check" navigation
-item; an `autorun-selfcheck` file runs it unattended).
+department, and expand or collapse all. The **100k perf** button times the 100k-row case (§9).
 
 ## 11. Open issues and future work
 
@@ -484,7 +482,7 @@ item; an `autorun-selfcheck` file runs it unattended).
   `IsNodeExpanded`, `SetNodeExpanded`, `ExpandAll`, `CollapseAll`, `ExpandSubtree`) into an interface
   would let another adapter plug in; it pairs naturally with the child-provider seam above.
 - **Headless tests.** `ParentKeyIndex` and the adapter have no dependency on XAML or the
-  dispatcher-bound control, but are exercised only through the sample's UI-level self-check (§12).
+  dispatcher-bound control, but are exercised only through the public API and UI (§12).
   Unit tests for index building, filtering and splice/descriptor coherence would be a cheaper
   regression net.
 - **App-defined enum keys.** A non-WinRT enum is compared by reference identity (§3.1). Keying it by
@@ -498,9 +496,9 @@ item; an `autorun-selfcheck` file runs it unattended).
 
 ## 12. Tests
 
-No new test infrastructure was added. Verification is the product build gates, the scripted
-self-check page in `Samples/TableViewSampleApp` (`HierarchySelfCheck.cs`, 66 cases driven through the
-public API, UIA and injected input; last run **PASS 66 / FAIL 0**), the perf button (§9) and manual keyboard and
+No new test infrastructure was added. Verification is the product build gates, a scripted
+UI-level check run locally against the sample (driven through the public API, UIA and injected
+input; not part of this change), the perf button (§9) and manual keyboard and
 frozen-gutter checks. The list below is the coverage those map to (layers 1 and 3 are exercised
 through the public API rather than headless):
 
