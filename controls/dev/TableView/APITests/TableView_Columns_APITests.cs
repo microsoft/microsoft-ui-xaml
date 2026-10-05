@@ -475,7 +475,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual(3, GetHeaderColumns(tableView).Count, "Every column should get a header cell, including the null-header one.");
 
-                Verify.AreEqual("Name", GetHeaderPresenter(tableView, 0).Content as string, "A string Header should be presented verbatim.");
+                Verify.AreEqual("Name", GetRenderedHeaderText(tableView, 0), "A string Header should be presented verbatim.");
                 Verify.AreEqual(objectHeader, GetHeaderPresenter(tableView, 1).Content, "A non-string Header should be presented as the object itself, not stringified.");
                 Verify.IsNull(GetHeaderPresenter(tableView, 2).Content, "A null Header should present null rather than a placeholder.");
             });
@@ -498,7 +498,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual("Name", GetHeaderPresenter(tableView, 0).Content as string);
+                Verify.AreEqual("Name", GetRenderedHeaderText(tableView, 0));
 
                 tableView.Columns[0].Header = "Renamed";
                 Content.UpdateLayout();
@@ -508,9 +508,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual("Renamed", GetHeaderPresenter(tableView, 0).Content as string,
+                Verify.AreEqual("Renamed", GetRenderedHeaderText(tableView, 0),
                     "Changing Header after load should update the rendered header.");
-                Verify.AreEqual("Role", GetHeaderPresenter(tableView, 1).Content as string,
+                Verify.AreEqual("Role", GetRenderedHeaderText(tableView, 1),
                     "The other column's header should be untouched.");
             });
         }
@@ -769,6 +769,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var headerRow = tableView.FindVisualChildByName("PART_HeaderRow");
             Verify.IsNotNull(headerRow, "PART_HeaderRow should exist once the template has applied.");
             return headerRow;
+        }
+
+        private static string GetRenderedHeaderText(TableView tableView, int index)
+        {
+            var textBlock = GetHeaderPresenter(tableView, index).Content as TextBlock;
+            Verify.IsNotNull(textBlock, $"String header {index} should render through a TextBlock.");
+            return textBlock.Text;
         }
 
         private sealed class TestHeaderTemplateSelector : DataTemplateSelector

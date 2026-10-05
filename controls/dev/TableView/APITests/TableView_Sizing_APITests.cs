@@ -1065,13 +1065,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies resizing an Auto or Star column converts it to an explicit pixel width.")]
-        public void VerifyResizeConvertsStarOrAutoToPixelWidth()
+        [TestProperty("Description", "Verifies resizing converts Auto to Pixel while preserving Star sizing intent.")]
+        public void VerifyResizeConvertsAutoToPixelAndPreservesStar()
         {
-            // Remark: this behavior follows from the DragDelta handler writing
-            // GridLengthHelper::FromPixels, but the IDL never states that resizing changes the sizing
-            // *mode*. That is a real and user-visible spec gap - it silently opts the column out of
-            // the proportional layout the app author chose.
             TableView tableView = null;
 
             RunOnUIThread.Execute(() =>
@@ -1100,8 +1096,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Log.Comment($"{authored} column resolved to {column.Width.GridUnitType} {column.Width.Value} after a completed drag.");
 
-                    Verify.AreEqual(GridUnitType.Pixel, column.Width.GridUnitType,
-                        $"A completed drag on a {authored} column must leave an explicit pixel width, or the drag will not hold across the next measure.");
+                    var expected = authored == GridUnitType.Auto ? GridUnitType.Pixel : GridUnitType.Star;
+                    Verify.AreEqual(expected, column.Width.GridUnitType,
+                        $"A completed drag on a {authored} column must preserve its intended post-resize sizing mode.");
                 }
             });
         }
