@@ -46,7 +46,7 @@
                       <Scale ScaleX="2" ScaleY="2" />
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="61" SizeY="30" BorderMode="Hard" ScaleX="0.3333" ScaleY="0.3333" OffsetX="1.333" OffsetY="5" OffsetZ="0">
+                      <wucSpriteVisual SizeX="63" SizeY="32" BorderMode="Hard" ScaleX="0.3333" ScaleY="0.3333" OffsetX="1" OffsetY="4.667" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="rgb {0, 0.502, 0}" />

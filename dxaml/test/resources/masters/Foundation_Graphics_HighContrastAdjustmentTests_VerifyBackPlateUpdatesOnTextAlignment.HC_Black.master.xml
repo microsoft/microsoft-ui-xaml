@@ -46,7 +46,7 @@
                 <wucSpriteVisual SizeX="73" SizeY="19" BorderMode="Soft" OffsetX="200" OffsetY="0" OffsetZ="0">
                   <ColorBrush Color="#ff000000" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="71" SizeY="13" BorderMode="Hard" OffsetX="201" OffsetY="5" OffsetZ="0">
+                <wucSpriteVisual SizeX="73" SizeY="15" BorderMode="Hard" OffsetX="200" OffsetY="4" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -59,7 +59,7 @@
                 <wucSpriteVisual SizeX="83" SizeY="19" BorderMode="Soft" OffsetX="517" OffsetY="19" OffsetZ="0">
                   <ColorBrush Color="#ff000000" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="80" SizeY="13" BorderMode="Hard" OffsetX="519" OffsetY="24" OffsetZ="0">
+                <wucSpriteVisual SizeX="82" SizeY="15" BorderMode="Hard" OffsetX="518" OffsetY="23" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -72,7 +72,7 @@
                 <wucSpriteVisual SizeX="92" SizeY="19" BorderMode="Soft" OffsetX="354" OffsetY="38" OffsetZ="0">
                   <ColorBrush Color="#ff000000" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="89" SizeY="13" BorderMode="Hard" OffsetX="355" OffsetY="43" OffsetZ="0">
+                <wucSpriteVisual SizeX="91" SizeY="15" BorderMode="Hard" OffsetX="354" OffsetY="42" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -85,7 +85,7 @@
                 <wucSpriteVisual SizeX="79" SizeY="19" BorderMode="Soft" OffsetX="200" OffsetY="57" OffsetZ="0">
                   <ColorBrush Color="#ff000000" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="78" SizeY="10" BorderMode="Hard" OffsetX="200" OffsetY="62" OffsetZ="0">
+                <wucSpriteVisual SizeX="80" SizeY="12" BorderMode="Hard" OffsetX="199" OffsetY="61" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />

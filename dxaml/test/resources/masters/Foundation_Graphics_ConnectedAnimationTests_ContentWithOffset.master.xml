@@ -46,7 +46,7 @@
                   </TransformMatrix>
                   <Visual VisualId="1" Tag="PrimaryVisual" SizeX="360" SizeY="20">
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="68" SizeY="11" BorderMode="Hard" OffsetX="0" OffsetY="5" OffsetZ="0">
+                      <wucSpriteVisual SizeX="70" SizeY="13" BorderMode="Hard" OffsetX="-1" OffsetY="4" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
@@ -65,7 +65,7 @@
                   </TransformMatrix>
                   <Visual VisualId="2" Tag="PrimaryVisual" SizeX="160" SizeY="20" OffsetX="100" OffsetY="100" OffsetZ="0">
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="68" SizeY="11" BorderMode="Hard" OffsetX="0" OffsetY="5" OffsetZ="0">
+                      <wucSpriteVisual SizeX="70" SizeY="13" BorderMode="Hard" OffsetX="-1" OffsetY="4" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
