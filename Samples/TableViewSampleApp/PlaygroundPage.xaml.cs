@@ -200,6 +200,12 @@ public sealed partial class PlaygroundPage : Page
     private void HeaderTmpl_Toggle(object sender, RoutedEventArgs e)
         => _score.HeaderTemplate = (HeaderTmplToggle.IsChecked == true) ? Tmpl("StarHeader") : null;
 
+    // Mirrors the control under test only, not the page, so the feature panel stays left-to-right and
+    // usable while the table is flipped. FlowDirection inherits down the whole visual subtree, so this
+    // exercises headers, frozen columns, grid lines, sort chevrons and resize grippers together.
+    private void Rtl_Toggle(object sender, RoutedEventArgs e)
+        => Table.FlowDirection = (RtlToggle.IsChecked == true) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+
     // Reads the bound Item objects, not the cells, so a committed edit is visibly confirmed to have
     // reached the source rather than only the element that displayed it. Subscribed per item so the
     // readout tracks a write the moment the setter raises PropertyChanged.

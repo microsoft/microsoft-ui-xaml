@@ -38,6 +38,19 @@ ResizeGripper::ResizeGripper()
 
     IsEnabledChanged({ this, &ResizeGripper::OnIsEnabledChanged });
     Unloaded({ this, &ResizeGripper::OnUnloaded });
+
+    // The separator's side is derived from FlowDirection, and FlowDirection is not a property this
+    // control declares, so there is no OnPropertyChanged for it. A host may flip direction on a live
+    // tree rather than rebuilding it, which would otherwise leave the separator on the stale edge.
+    RegisterPropertyChangedCallback(
+        winrt::FrameworkElement::FlowDirectionProperty(),
+        [](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
+        {
+            if (auto const gripper = sender.try_as<winrt::ResizeGripper>())
+            {
+                winrt::get_self<ResizeGripper>(gripper)->UpdateOrientationVisualState();
+            }
+        });
 }
 
 // Detached mid-gesture - the host rebuilt the subtree we live in - so no manipulation event will
@@ -94,11 +107,26 @@ bool ResizeGripper::IsHorizontalDrag()
     return DragOrientation() != winrt::Orientation::Vertical;
 }
 
+// The separator is drawn on one side of the gripper, so the state has to carry the mirror as well as
+// the axis: under RTL a horizontal gripper's trailing edge is its LEFT edge. Only the horizontal case
+// mirrors - FlowDirection does not mirror y, so a vertical gripper's separator stays on the bottom.
+// Falls back to the unmirrored state if a host's template predates HorizontalMirrored, which is the
+// previous behaviour rather than no separator at all.
 void ResizeGripper::UpdateOrientationVisualState()
 {
-    winrt::VisualStateManager::GoToState(*this,
-        IsHorizontalDrag() ? L"Horizontal" : L"Vertical",
-        true /* useTransitions */);
+    if (!IsHorizontalDrag())
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Vertical", true /* useTransitions */);
+        return;
+    }
+
+    if (FlowDirection() == winrt::FlowDirection::RightToLeft &&
+        winrt::VisualStateManager::GoToState(*this, L"HorizontalMirrored", true /* useTransitions */))
+    {
+        return;
+    }
+
+    winrt::VisualStateManager::GoToState(*this, L"Horizontal", true /* useTransitions */);
 }
 
 // PARKED - deliberately not called. The framework drops ProtectedCursor on the next pointer move,
