@@ -704,7 +704,7 @@ void TableView::WatchTelemetryVisualProperty(
 
 void TableView::WatchTelemetrySourceChanges()
 {
-    if (!m_telemetry.operationStarted || !m_rowsItemsSourceView) { return; }
+    if (!TableViewTelemetry::IsOperationStarted(m_telemetry) || !m_rowsItemsSourceView) { return; }
     auto const generation = m_telemetryLayoutGeneration;
     m_telemetrySourceChangedRevoker = m_rowsItemsSourceView.CollectionChanged(winrt::auto_revoke,
         [weakThis = get_weak(), generation](auto&&, auto&&)
@@ -901,7 +901,7 @@ void TableView::EndOperationTelemetry() noexcept
 
 void TableView::InvalidateOperationTelemetry() noexcept
 {
-    if (!m_telemetry.operationStarted) { return; }
+    if (!TableViewTelemetry::IsOperationStarted(m_telemetry)) { return; }
     // Control-owned sort writes notify inside their own scope; a Sorted handler can reshape
     // after that scope ends but before the enclosing telemetry operation unwinds.
     if (m_telemetryMutationDepth &&

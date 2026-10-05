@@ -4,10 +4,15 @@
 #pragma once
 
 #include <cstdint>
-#include <guiddef.h>
+#include <optional>
+#include <TraceLoggingActivity.h>
+#include "MuxcTraceLogging.h"
 
 namespace TableViewTelemetry
 {
+    using Activity = TraceLoggingActivity<
+        g_hTelemetryProvider, MICROSOFT_KEYWORD_MEASURES, WINEVENT_LEVEL_INFO>;
+
     enum class Result : uint32_t { Started = 0, Success = 1, Failure = 2, Cancelled = 3 };
     enum class Operation : uint32_t { InitialLayout = 0, ReplaceSource = 1, Sort = 2, HeaderRefresh = 3, Layout = 4 };
     enum class Origin : uint32_t { Template = 0, Loaded = 1 };
@@ -30,11 +35,10 @@ namespace TableViewTelemetry
         State(State const&) = delete;
         State& operator=(State const&) = delete;
 
-        GUID id{};
+        std::optional<Activity> initialActivity;
+        std::optional<Activity> operationActivity;
         InitialState initial{};
         Origin origin{};
-        uint64_t initialStarted{};
-        uint64_t operationStarted{};
         uint64_t operationGeneration{};
         Operation operation{};
         uint32_t reportedErrors{};
@@ -42,6 +46,7 @@ namespace TableViewTelemetry
     };
 
     bool IsEnabled() noexcept;
+    bool IsOperationStarted(State const& state) noexcept;
     bool NeedsLayout(State const& state) noexcept;
     void BeginInitial(State& state, Origin origin) noexcept;
     void CompleteInitial(State& state, Result result, Stage stage = Stage::None) noexcept;
