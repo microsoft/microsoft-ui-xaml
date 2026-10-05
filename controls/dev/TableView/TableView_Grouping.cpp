@@ -588,6 +588,8 @@ void TableView::SetAllGroupsExpansion(bool expand)
 
 void TableView::RaiseGroupStructureChanged()
 {
+    QueueTerminalGridLineRefresh();
+
     if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewAutomationPeer>())
     {
         winrt::get_self<TableViewAutomationPeer>(peer)->RaiseStructureChangedForGroupExpansion();

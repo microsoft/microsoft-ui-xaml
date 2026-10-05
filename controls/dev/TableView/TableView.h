@@ -659,6 +659,12 @@ private:
     void UpdateHeaderVisibility();
     void ApplyGridLinesToHeader();
     void RefreshGridLinesOnRealizedRows();
+    void QueueTerminalGridLineRefresh(bool isGeometryRetry = false);
+    void RefreshTerminalGridLines();
+    std::optional<bool> ShouldSuppressTrailingGridLine();
+    std::optional<bool> ShouldSuppressBottomGridLine(
+        const winrt::FrameworkElement& element,
+        bool hasBottomGridLine);
     void RefreshRowBackgroundsOnRealizedRows();
     void QueueGroupExpansionRowRefresh();
     void RefreshRealizedRowsAfterGroupExpansion();
@@ -713,8 +719,8 @@ private:
     }
     // EmptyTemplate shows only for null or empty row sources.
     void UpdateEmptyState();
-    void UpdateEmptyStateCollectionChangedSubscription();
-    void OnEmptyStateItemsSourceCollectionChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
+    void UpdateItemsSourceCollectionChangedSubscription();
+    void OnItemsSourceCollectionChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
 
     winrt::event_token m_columnsVectorChangedToken{};
 
@@ -840,6 +846,18 @@ private:
     bool m_isApplyingControlInitiatedSort{ false };
     bool m_sortReconcileQueued{ false };
     winrt::event_token m_rowsRepeaterLoadedToken{};
+    // Terminal-edge geometry is evaluated once after layout settles; gridline rendering then
+    // changes without changing row/cell layout thickness.
+    winrt::event_token m_terminalGridLinesLayoutToken{};
+    winrt::weak_ref<winrt::TableViewRow> m_terminalGridLineRow{};
+    winrt::weak_ref<winrt::TableViewGroupHeader> m_terminalGridLineGroupHeader{};
+    winrt::FrameworkElement::SizeChanged_revoker m_terminalGridLineRowSizeChangedRevoker{};
+    bool m_suppressTrailingGridLine{ false };
+    bool m_suppressBottomGridLine{ false };
+    bool m_terminalGridLineGeometryRetryAvailable{ true };
+    int32_t m_terminalGridLineColumnIndex{ -1 };
+    double m_terminalGridLineHorizontalOffset{ std::numeric_limits<double>::quiet_NaN() };
+    double m_terminalGridLineVerticalOffset{ std::numeric_limits<double>::quiet_NaN() };
     winrt::event_token m_pendingFocusLayoutToken{};
     // Deferred restore of keyboard focus to a group header after a toggle reshape recycles it.
     // Separate from m_pendingFocusLayoutToken (row focus) so a row-focus request and a group-focus
@@ -848,7 +866,8 @@ private:
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
     winrt::event_token m_pendingGroupRowRefreshLayoutToken{};
-    winrt::ItemsSourceView::CollectionChanged_revoker m_emptyStateCollectionChangedRevoker{};
+    // Count changes refresh both empty state and the terminal row separator.
+    winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceCollectionChangedRevoker{};
     // ActualThemeChanged refreshes imperatively-resolved brushes that ItemsRepeater rows do not re-pump.
     winrt::event_token m_actualThemeChangedToken{};
 

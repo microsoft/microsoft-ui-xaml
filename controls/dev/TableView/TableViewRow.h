@@ -14,6 +14,12 @@ class TableViewRow :
     public TableViewRowProperties
 {
 public:
+    struct TerminalGridLineSuppressionState
+    {
+        bool suppressTrailing{ false };
+        bool suppressBottom{ false };
+    };
+
     TableViewRow();
 
     // IFrameworkElement overrides
@@ -39,6 +45,7 @@ public:
     winrt::TableView GetOwningTableView();
 
     void RefreshGridLines();
+    void SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state);
     void RefreshRowBackground();
 
     // Owner-only writer for the read-only IsSelected DP. Selection is owned by the TableView, so
@@ -49,6 +56,7 @@ public:
 
     // Used by automation peers to enumerate live cells after template application.
     winrt::Panel GetCellsHostPanelInternal() const { return m_cellsHost.get(); }
+    winrt::FrameworkElement GetLastVisibleCellInternal() const;
     winrt::TableViewColumn GetCellOwningColumn(const winrt::UIElement& cellElement) const;
 
     // ----- Cell-level keyboard focus -----
@@ -164,6 +172,8 @@ private:
     void UpdateVisualState(bool useTransitions);
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
+    tracker_ref<winrt::Border> m_gridLineBorder{ this };
+    // Use auto_revoke for self-event subscriptions instead of manual token cleanup.
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
@@ -174,6 +184,11 @@ private:
 
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
+    bool m_suppressTrailingGridLine{ false };
+    bool m_suppressBottomGridLine{ false };
+
+    // Selection commits on pointer-release (ListViewBaseItem parity), so a pan or a cancelled
+    // press does not select the row it started on. The id pins it to the arming pointer.
     bool m_selectOnPointerRelease{ false };
     uint32_t m_selectPointerId{ 0 };
 
