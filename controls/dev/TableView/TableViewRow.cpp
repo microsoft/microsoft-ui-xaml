@@ -1346,8 +1346,6 @@ void TableViewRow::RefreshGridLines()
         gridLineBrush = winrt::get_self<TableView>(owner)->GetGridLineBrush();
     }
 
-    // The control calls this on ActualTheme / High Contrast changes.
-
     const auto children = host.Children();
     const uint32_t childCount = children.Size();
     uint32_t lastVisibleCell = childCount;
