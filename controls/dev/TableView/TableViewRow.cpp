@@ -1382,7 +1382,7 @@ void TableViewRow::RefreshGridLines()
         {
             if (wantVertical)
             {
-                // Main's RTL-aware thickness, not the LTR-only static: the separator must sit on the
+                // RTL-aware thickness, not the LTR-only static: the separator must sit on the
                 // trailing edge in both flow directions.
                 cellWrapper.BorderThickness(verticalThickness);
                 // Keep the separator's layout thickness stable and suppress only its brush when
