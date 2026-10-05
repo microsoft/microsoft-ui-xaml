@@ -101,6 +101,8 @@ struct TableViewResourceCache
         double rowIndentSize{ 0.0 };
         bool hasRowExpanderSize{ false };
         double rowExpanderSize{ 0.0 };
+        bool hasGroupExpanderSize{ false };
+        double groupExpanderSize{ 0.0 };
     };
     HierarchyInfo hierarchy{};
 
@@ -183,6 +185,7 @@ public:
     // Width of the chevron gutter, from the TableViewRowExpanderSize resource. Cached like the
     // indent; the row template's gutter binds the same key, so the two stay in step.
     double GetRowExpanderSize();
+    double GetGroupHeaderContentOffset();
 
     // Resolved grid-line brush (theme/HC-aware, cached); rows call this via get_self, like the
     // density/font accessors above.

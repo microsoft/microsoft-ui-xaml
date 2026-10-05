@@ -140,7 +140,15 @@ bool TableView::TryFocusFirstChildRow(winrt::UIElement const& container)
         return false;
     }
 
-    return FocusRow(index + 1);
+    if (!FocusRow(index + 1))
+    {
+        return false;
+    }
+
+    // Selection follows the keyboard cursor, as for Up/Down (OnKeyDownForNavigation). The row
+    // handler only reaches here with no modifier down, so this is never a Ctrl+arrow move.
+    SelectRowIndexFromInteraction(index + 1, false /* toggle */);
+    return true;
 }
 
 bool TableView::TryFocusParentRow(winrt::UIElement const& container)
@@ -160,7 +168,14 @@ bool TableView::TryFocusParentRow(winrt::UIElement const& container)
         return false;
     }
 
-    return FocusRow(parentIndex);
+    if (!FocusRow(parentIndex))
+    {
+        return false;
+    }
+
+    // Selection follows the keyboard cursor; see TryFocusFirstChildRow.
+    SelectRowIndexFromInteraction(parentIndex, false /* toggle */);
+    return true;
 }
 
 void TableView::RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired, bool subtree)

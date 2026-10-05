@@ -20,11 +20,6 @@ static constexpr double c_defaultRowExpanderSize{ 24.0 };
 // Mirrors the TableViewRowIndentSize resource. Used only when there is no owner to ask.
 static constexpr double c_defaultRowIndentSize{ 16.0 };
 
-// Where a group header's own content starts: PART_ExpanderGutter's width plus its Grid's
-// ColumnSpacing in the group-header template. A root row under a header is a child of that header,
-// so it starts where the header's text does instead of hanging off its left edge.
-static constexpr double c_groupHeaderContentOffset{ 24.0 + 6.0 };
-
 namespace
 {
     constexpr winrt::Thickness s_verticalThickness{ 0, 0, 1, 0 };
@@ -626,7 +621,18 @@ void TableViewRow::RaiseExpandCollapseStateChanged(
 // the rows of a hierarchical source only.
 void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 {
-    if (!args.Handled() && Level() > 0 && IsRowItselfFocused())
+    // Tree keys act only without modifiers, as TreeViewItem::IsExpandCollapse does: Ctrl+arrow is
+    // TableView's focus-without-select move, and Shift/Alt chords belong to the app.
+    auto const isModifierDown = [](winrt::VirtualKey key)
+    {
+        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
+            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    };
+
+    if (!args.Handled() && Level() > 0 && IsRowItselfFocused() &&
+        !isModifierDown(winrt::VirtualKey::Control) &&
+        !isModifierDown(winrt::VirtualKey::Shift) &&
+        !isModifierDown(winrt::VirtualKey::Menu))
     {
         const bool isRtl = FlowDirection() == winrt::FlowDirection::RightToLeft;
         auto const owner = GetOwningTableView();
@@ -756,6 +762,18 @@ void TableViewRow::ApplyHierarchyAffordance()
     // The indent resolved above, handed down rather than recomputed: this is the hot path (once per
     // row preparation) and the resource lookup behind it is not free.
     ApplyHierarchyIndentToCells(indent);
+
+    // A Level change that does not re-prepare the row (WithParent/ClearParent over the same view)
+    // never reaches RefreshFrozenColumnLayout, so the gutter must pick up the pinned lead cell's
+    // Translation here or it scrolls away from that cell until the next horizontal scroll.
+    if (auto const host = m_cellsHost.get())
+    {
+        auto const gutter = m_rowExpanderGutter.get();
+        if (gutter && (isHierarchical || gutter.Translation().x != 0.0f))
+        {
+            SyncExpanderGutterWithLeadCell(host);
+        }
+    }
 }
 
 // Level 1 (a root) gets no indent, only the gutter's own width. Level is 1-based because UIA is;
@@ -779,10 +797,11 @@ double TableViewRow::HierarchyIndent()
         indentSize = ownerImpl->GetRowIndentSize();
 
         // Only when headers are actually present. An ungrouped tree's roots are top-level rows and
-        // must stay flush against the cell's leading edge.
+        // must stay flush against the cell's leading edge. A root under a header is a child of that
+        // header, so it starts where the header's text does.
         if (ownerImpl->IsTableViewSourceGrouped())
         {
-            baseIndent = c_groupHeaderContentOffset;
+            baseIndent = ownerImpl->GetGroupHeaderContentOffset();
         }
     }
 

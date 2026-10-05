@@ -37,6 +37,12 @@ static constexpr double c_defaultRowIndentSize{ 16.0 };
 
 // Mirrors the TableViewRowExpanderSize resource shipped in TableView.xaml.
 static constexpr double c_defaultRowExpanderSize{ 24.0 };
+
+// Mirrors the TableViewGroupExpanderSize resource shipped in TableView.xaml.
+static constexpr double c_defaultGroupExpanderSize{ 24.0 };
+
+// The ColumnSpacing of the Grid hosting PART_ExpanderGutter in the group-header template.
+static constexpr double c_groupHeaderExpanderSpacing{ 6.0 };
 static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator"sv };
 // ScrollViewer template names are documented; ancestors are resolved by walking from child parts.
 
@@ -178,6 +184,7 @@ namespace
         cache.font.hasHeaderFontSize = false;
         cache.hierarchy.hasRowIndentSize = false;
         cache.hierarchy.hasRowExpanderSize = false;
+        cache.hierarchy.hasGroupExpanderSize = false;
         cache.gridLine.hasBrush = false;
     }
 
@@ -1417,6 +1424,31 @@ double TableView::GetRowExpanderSize()
     cache.hierarchy.rowExpanderSize = resolved;
     cache.hierarchy.hasRowExpanderSize = true;
     return resolved;
+}
+
+// Where a group header's own content starts: its chevron gutter (TableViewGroupExpanderSize) plus
+// the template's column spacing. Root rows under a header start here so they line up with the
+// header's text even when an app overrides the expander size.
+double TableView::GetGroupHeaderContentOffset()
+{
+    auto& cache = GetTableViewResourceCache(this);
+    if (!cache.hierarchy.hasGroupExpanderSize)
+    {
+        double resolved = c_defaultGroupExpanderSize;
+        if (auto raw = LookupElementResource(*this, L"TableViewGroupExpanderSize"))
+        {
+            const double value = winrt::unbox_value_or<double>(raw, c_defaultGroupExpanderSize);
+            if (std::isfinite(value) && value >= 0.0)
+            {
+                resolved = value;
+            }
+        }
+
+        cache.hierarchy.groupExpanderSize = resolved;
+        cache.hierarchy.hasGroupExpanderSize = true;
+    }
+
+    return cache.hierarchy.groupExpanderSize + c_groupHeaderExpanderSpacing;
 }
 
 void TableView::OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
