@@ -3,12 +3,15 @@
 
 using Microsoft.UI.Private.Controls;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,6 +21,17 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
+    // Base for every TableView API test class.
+    public class TableViewApiTestBase : ApiTestBase
+    {
+        // Hosts the element as test content and runs a synchronous layout pass. Call on the UI thread.
+        protected void LoadContent(UIElement element)
+        {
+            Content = element;
+            Content.UpdateLayout();
+        }
+    }
+
     // Shared fixtures for the TableView API test suite. 
     // A custom column written the way TableView.idl:198-201 requires: it binds reactively against
     // the inherited DataContext and never assigns a local DataContext or bakes dataItem in as
@@ -157,8 +171,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // The columns backing the header cells in PART_HeaderHost, in rendered order.
         internal static List<TableViewColumn> GetHeaderColumns(TableView tableView)
         {
-            var host = tableView.FindVisualChildByName("PART_HeaderHost") as Panel;
-            Verify.IsNotNull(host, "PART_HeaderHost should exist once the template has applied.");
+            var host = GetHeaderHost(tableView);
 
             return host.Children
                 .OfType<FrameworkElement>()
@@ -170,8 +183,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // The ContentPresenter RebuildHeaders puts Header / HeaderTemplate / HeaderTemplateSelector on.
         internal static ContentPresenter GetHeaderPresenter(TableView tableView, int index)
         {
-            var host = tableView.FindVisualChildByName("PART_HeaderHost") as Panel;
-            Verify.IsNotNull(host, "PART_HeaderHost should exist once the template has applied.");
+            var host = GetHeaderHost(tableView);
             Verify.IsGreaterThan(host.Children.Count, index, "The header host should have a cell at the requested index.");
 
             var presenter = ((DependencyObject)host.Children[index]).FindVisualChildByType<ContentPresenter>();
@@ -182,10 +194,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // The columns backing the cell wrappers in a row's PART_CellsHost, in rendered order.
         internal static List<TableViewColumn> GetRowCellColumns(TableViewRow row)
         {
-            var host = row.FindVisualChildByName("PART_CellsHost") as Panel;
-            Verify.IsNotNull(host, "PART_CellsHost should exist on a realized row.");
-
-            return host.Children
+            return GetCellsHost(row).Children
                 .OfType<FrameworkElement>()
                 .Select(child => child.Tag as TableViewColumn)
                 .Where(column => column != null)
@@ -283,10 +292,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     true);
             });
 
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() => tableView.UpdateLayout());
-            IdleSynchronizer.Wait();
+            SettleLayout(tableView);
         }
 
         internal static ScrollViewer GetBodyScroller(TableView tableView)
@@ -298,8 +304,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         internal static FrameworkElement GetHeaderCell(TableView tableView, int index)
         {
-            var host = tableView.FindVisualChildByName("PART_HeaderHost") as Panel;
-            Verify.IsNotNull(host, "PART_HeaderHost should exist once the template has applied.");
+            var host = GetHeaderHost(tableView);
             Verify.IsGreaterThan(host.Children.Count, index, "The header host should have a cell at the requested index.");
             return (FrameworkElement)host.Children[index];
         }
@@ -318,7 +323,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // height, with text columns each bound to "Name" at the given widths. Defaults to a single
         // 200px "Name" column when none are supplied.
         internal static TableView CreateTableViewWithColumns(
-            List<Person> items = null,
+            object items = null,
             double width = 500,
             double height = 260,
             params (string Header, GridLength Width)[] columns)
@@ -337,8 +342,285 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             return tableView;
         }
+
+        // Waits for the dispatcher, forces a layout pass, and waits again, so a source or template change
+        // has been fully realized before the test reads the visual tree.
+        internal static void SettleLayout(TableView tableView)
+        {
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => tableView.UpdateLayout());
+            IdleSynchronizer.Wait();
+        }
+
+        internal static Panel GetHeaderHost(TableView tableView)
+        {
+            var host = tableView.FindVisualChildByName("PART_HeaderHost") as Panel;
+            Verify.IsNotNull(host, "PART_HeaderHost should exist once the template has applied.");
+            return host;
+        }
+
+        internal static ItemsRepeater GetRowsRepeater(TableView tableView)
+        {
+            var repeater = tableView.FindVisualChildByName("PART_RowsRepeater") as ItemsRepeater;
+            Verify.IsNotNull(repeater, "PART_RowsRepeater should exist once the template has applied.");
+            return repeater;
+        }
+
+        // The repeater's view of the projected source: data rows and group header rows, in projection
+        // order, independent of what happens to be realized.
+        private static ItemsSourceView GetProjectionView(TableView tableView)
+        {
+            var view = GetRowsRepeater(tableView).ItemsSourceView;
+            if (view == null)
+            {
+                Verify.Fail("PART_RowsRepeater should have an ItemsSourceView once the source is bound.");
+            }
+
+            return view;
+        }
+
+        internal static int GetProjectedCount(TableView tableView) => GetProjectionView(tableView)?.Count ?? 0;
+
+        internal static object GetProjectedItem(TableView tableView, int index)
+        {
+            var view = GetProjectionView(tableView);
+            if (view == null || index >= view.Count)
+            {
+                Verify.Fail($"No projected row at index {index}.");
+                return null;
+            }
+
+            return view.GetAt(index);
+        }
+
+        internal static List<object> GetProjectedItems(TableView tableView)
+        {
+            var items = new List<object>();
+            var view = GetProjectionView(tableView);
+
+            for (var i = 0; i < (view?.Count ?? 0); i++)
+            {
+                items.Add(view.GetAt(i));
+            }
+
+            return items;
+        }
+
+        // The element realized for each projected index, in projection order rather than the
+        // visual-child order, which is recycling order. Cleared containers stay parented to the
+        // repeater's panel, so a visual-tree walk over-counts after any source mutation.
+        //
+        // requireAllRealized: true fails the test on the first unrealized index (the fixtures are sized
+        // so every row realizes); false keeps a null entry for it.
+        internal static List<UIElement> GetProjectedElements(TableView tableView, bool requireAllRealized = true)
+        {
+            var elements = new List<UIElement>();
+            var repeater = GetRowsRepeater(tableView);
+            var view = GetProjectionView(tableView);
+
+            for (var i = 0; i < (view?.Count ?? 0); i++)
+            {
+                var element = repeater.TryGetElement(i);
+                if (element == null && requireAllRealized)
+                {
+                    Verify.Fail($"Projected element {i} of {view.Count} should be realized; the fixtures are sized so every one is.");
+                    return elements;
+                }
+
+                elements.Add(element);
+            }
+
+            return elements;
+        }
+
+        internal static TableViewRow GetProjectedRow(TableView tableView, int index)
+        {
+            var row = GetRowsRepeater(tableView).TryGetElement(index) as TableViewRow;
+            if (row == null)
+            {
+                Verify.Fail($"Row {index} should be realized in these fixtures.");
+            }
+
+            return row;
+        }
+
+        // One label per projected row: the ShapedPerson's name for a data row, and "#Key" (or
+        // "#Key(Count)" when includeCount) for a group header row.
+        internal static List<string> GetProjectedLabels(TableView tableView, bool includeCount)
+        {
+            var labels = new List<string>();
+
+            foreach (var element in GetProjectedElements(tableView))
+            {
+                if (element is TableViewGroupHeader header)
+                {
+                    var info = header.Content as TableViewGroupInfo;
+                    if (info == null)
+                    {
+                        Verify.Fail($"A group header should carry a TableViewGroupInfo, saw '{header.Content}'.");
+                        return labels;
+                    }
+
+                    labels.Add(includeCount ? $"#{info.Key}({info.ItemCount})" : $"#{info.Key}");
+                }
+                else if (element is TableViewRow row)
+                {
+                    var person = row.DataContext as ShapedPerson;
+                    if (person == null)
+                    {
+                        Verify.Fail($"A row should be bound to a ShapedPerson, saw '{row.DataContext}'.");
+                        return labels;
+                    }
+
+                    labels.Add(person.Name);
+                }
+                else
+                {
+                    Verify.Fail($"A projected element realized as {element.GetType().Name}, which is neither a row nor a group header.");
+                    return labels;
+                }
+            }
+
+            return labels;
+        }
+
+        // Logs both sequences on any failure, so an ordering bug is readable from the log alone.
+        internal static void VerifySequence(IList<string> expected, IList<string> actual, string context)
+        {
+            var detail = $"Expected [{string.Join(", ", expected)}], saw [{string.Join(", ", actual ?? new List<string>())}].";
+
+            if (actual == null)
+            {
+                Verify.Fail($"No rows were captured ({context}). {detail}");
+                return;
+            }
+
+            Verify.AreEqual(expected.Count, actual.Count, $"Projected row count ({context}). {detail}");
+
+            for (var i = 0; i < Math.Min(expected.Count, actual.Count); i++)
+            {
+                Verify.AreEqual(expected[i], actual[i], $"Projected row {i} ({context}). {detail}");
+            }
+        }
+
+        // Indexed in projection order, not visual-child order.
+        internal static TableViewGroupHeader GetGroupHeader(TableView tableView, int index)
+        {
+            var headers = GetProjectedElements(tableView).OfType<TableViewGroupHeader>().ToList();
+            if (headers.Count <= index)
+            {
+                Verify.Fail($"The test needs a projected group header at index {index}; saw {headers.Count}.");
+                return null;
+            }
+
+            return headers[index];
+        }
+
+        internal static TableViewGroupInfo GetGroupInfo(TableView tableView, int index)
+        {
+            var header = GetGroupHeader(tableView, index);
+            var info = header?.Content as TableViewGroupInfo;
+            if (header != null && info == null)
+            {
+                Verify.Fail($"Group header {index} should carry a TableViewGroupInfo as its Content, saw '{header.Content}'.");
+            }
+
+            return info;
+        }
+
+        internal static TableViewGroupHeaderAutomationPeer GetGroupHeaderPeer(TableView tableView, int index)
+        {
+            var header = GetGroupHeader(tableView, index);
+            var peer = header == null ? null : FrameworkElementAutomationPeer.CreatePeerForElement(header) as TableViewGroupHeaderAutomationPeer;
+            Verify.IsNotNull(peer, "A TableViewGroupHeader must produce a TableViewGroupHeaderAutomationPeer.");
+            return peer;
+        }
+
+        // Setting TableViewGroupHeader.IsExpanded only mirrors state onto the header; the reshape runs
+        // through the owner, so the peer's ExpandCollapse pattern is the input-free way to toggle a group.
+        internal static IExpandCollapseProvider GetExpandCollapseProvider(TableView tableView, int index)
+        {
+            var provider = GetGroupHeaderPeer(tableView, index).GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+            Verify.IsNotNull(provider, "A group header peer must advertise ExpandCollapse.");
+            return provider;
+        }
+
+        internal static TableViewRow GetRowForItem(TableView tableView, object item)
+        {
+            var row = GetRealizedRows(tableView).FirstOrDefault(r => ReferenceEquals(r.DataContext, item));
+            Verify.IsNotNull(row, "The test needs a realized row for the target item.");
+            return row;
+        }
+
+        internal static TableViewRowAutomationPeer GetRowPeer(TableViewRow row)
+        {
+            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(row) as TableViewRowAutomationPeer;
+            Verify.IsNotNull(peer, "A TableViewRow must produce a TableViewRowAutomationPeer.");
+            return peer;
+        }
+
+        internal static TableViewCellAutomationPeer GetCellPeer(TableViewRowAutomationPeer rowPeer, int visibleColumnIndex)
+        {
+            var children = rowPeer.GetChildren();
+            Verify.IsTrue(
+                children != null && children.Count > visibleColumnIndex,
+                $"The row peer must expose a cell peer for visible column {visibleColumnIndex}; saw {children?.Count ?? 0}.");
+
+            var cellPeer = children[visibleColumnIndex] as TableViewCellAutomationPeer;
+            Verify.IsNotNull(cellPeer, $"Child {visibleColumnIndex} of the row peer must be a TableViewCellAutomationPeer.");
+            return cellPeer;
+        }
+
+        internal static TableViewCellAutomationPeer GetCellPeer(TableViewRow row, int columnIndex)
+            => GetCellPeer(GetRowPeer(row), columnIndex);
+
+        internal static TableViewCellAutomationPeer GetCellPeer(TableView tableView, object item, int columnIndex)
+            => GetCellPeer(GetRowForItem(tableView, item), columnIndex);
+
+        // The current state of a visual state group declared on the control's template root.
+        internal static string GetCurrentVisualState(Control control, string groupName)
+        {
+            var root = control != null && VisualTreeHelper.GetChildrenCount(control) > 0
+                ? VisualTreeHelper.GetChild(control, 0) as FrameworkElement
+                : null;
+
+            if (root == null)
+            {
+                Verify.Fail("The control's template should have applied.");
+                return null;
+            }
+
+            var group = VisualStateManager.GetVisualStateGroups(root).FirstOrDefault(candidate => candidate.Name == groupName);
+            if (group == null)
+            {
+                Verify.Fail($"The template should declare a '{groupName}' visual state group.");
+                return null;
+            }
+
+            return group.CurrentState?.Name;
+        }
+
+        // The TextBlock a cell renders, whichever column type produced it: a text column generates one
+        // directly, a template column generates a ContentPresenter that inflates one.
+        internal static TextBlock GetCellTextBlock(Border cellWrapper)
+        {
+            var textBlock = cellWrapper.Child as TextBlock ?? FindVisualChildrenByType<TextBlock>(cellWrapper).FirstOrDefault();
+            if (textBlock == null)
+            {
+                Verify.Fail("The cell should host a TextBlock.");
+            }
+
+            return textBlock;
+        }
+
+        internal static string GetCellText(Border cellWrapper) => GetCellTextBlock(cellWrapper)?.Text;
+
+        internal static string GetCellText(TableView tableView, int rowIndex, int columnIndex)
+        {
+            var row = GetProjectedRow(tableView, rowIndex);
+            return row == null ? null : GetCellText(GetRowCell(row, columnIndex));
+        }
     }
-    
     // The default row item: two plain, non-notifying string properties. Tests that need change
     // notification, validation, or grouping keys use the richer items defined by their own area.
     internal sealed class Person
@@ -372,9 +654,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return tableView;
         }
 
-        internal static DataTemplate CreateBoundTextTemplate() => (DataTemplate)XamlReader.Load(
-            @"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
-                  <TextBlock Text=""{Binding Name}"" />
+        internal static DataTemplate CreateBoundTextTemplate(string path = "Name") => (DataTemplate)XamlReader.Load(
+            $@"<DataTemplate xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"">
+                  <TextBlock Text=""{{Binding {path}}}"" />
               </DataTemplate>");
 
         internal static List<Person> MakeManyItems(int count) => Enumerable
@@ -397,17 +679,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // The CommonStates state a row is currently in. Read by name rather than by brush because
         // several states share a brush, which would make a wrong state look correct.
-        internal static string GetCommonState(TableViewRow row)
-        {
-            var rootBorder = row.FindVisualChildByName("PART_RootBorder") as FrameworkElement;
-            Verify.IsNotNull(rootBorder, "PART_RootBorder should exist once the row template has applied.");
-
-            var groups = VisualStateManager.GetVisualStateGroups(rootBorder);
-            var common = groups.FirstOrDefault(group => group.Name == "CommonStates");
-            Verify.IsNotNull(common, "The row template should declare a CommonStates group on its root.");
-
-            return common.CurrentState?.Name;
-        }
+        internal static string GetCommonState(TableViewRow row) => GetCurrentVisualState(row, "CommonStates");
 
         internal static void VerifyBanding(
             TableView tableView,

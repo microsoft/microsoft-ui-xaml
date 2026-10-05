@@ -22,7 +22,7 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class TableViewTests : ApiTestBase
+    public class TableViewTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies TableView can be constructed and initializes its columns collection.")]
@@ -454,8 +454,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Name", tableView.Columns[0].Header as string);
                 Verify.AreEqual("Role", tableView.Columns[1].Header as string, "Child content of a column should be assigned to Header.");
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -481,8 +480,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(tableView.Columns, "Columns is created even when XAML declares no children.");
                 Verify.AreEqual(0, tableView.Columns.Count);
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -528,8 +526,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 tableView.ItemsSource = new List<Person> { new Person { Name = "Ada" } };
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -566,8 +563,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var root = new Grid();
                 root.Children.Add(firstHost);
                 root.Children.Add(secondHost);
-                Content = root;
-                Content.UpdateLayout();
+                LoadContent(root);
             });
 
             IdleSynchronizer.Wait();
@@ -662,8 +658,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 host = new Grid();
                 host.Children.Add(tableView);
-                Content = host;
-                Content.UpdateLayout();
+                LoadContent(host);
             });
 
             IdleSynchronizer.Wait();
@@ -732,8 +727,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         new Person { Name = "Diego", Role = "Engineer" },
                     }, bound: false);
 
-                    Content = tableView;
-                    Content.UpdateLayout();
+                    LoadContent(tableView);
 
                     // Remove from the tree while the rows pipeline may still have queued work.
                     Content = null;
@@ -765,8 +759,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(headers: new[] { "Name", "Role" });
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -792,8 +785,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableView(new List<Person>(), bound: false, emptyTemplate: CreateTextTemplate("No rows"));
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -817,8 +809,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // so a null source must reach the same state as an empty collection.
                 tableView = CreateTableView(null, bound: false, emptyTemplate: CreateTextTemplate("No rows"));
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -841,8 +832,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableView(headers: new[] { "Name", "Role" });
                 tableView.EmptyTemplate = CreateTextTemplate("No rows");
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -866,8 +856,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 tableView = CreateTableView(items, bound: false, emptyTemplate: CreateTextTemplate("No rows"));
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -904,8 +893,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 tableView = CreateTableView(items, bound: false, emptyTemplate: CreateTextTemplate("No rows"));
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -937,8 +925,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // No EmptyTemplate yet: the control loads empty but shows nothing.
                 tableView = CreateTableView(new List<Person>(), bound: false);
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -972,8 +959,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableView(new List<Person>(), bound: false, emptyTemplate: CreateTextTemplate("No rows"));
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1009,8 +995,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableView(null, bound: false);
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();

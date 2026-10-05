@@ -31,7 +31,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // The Tag is the supported way to map a rendered element back to the column that produced it,
     // and it is what the control's own frozen-column and recycling code uses.
     [TestClass]
-    public class TableViewColumnsTests : ApiTestBase
+    public class TableViewColumnsTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies TableView.Columns is observable despite being typed as IVector, and raises VectorChanged.")]
@@ -277,8 +277,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.Columns.Insert(0, new TableViewTextColumn { Header = "Role" });
                 tableView.Columns.Remove(scratch);
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -386,15 +385,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private TableView CreateLoadedTableView(params string[] headers)
         {
             var tableView = CreateTableView(headers: headers);
-            Content = tableView;
-            Content.UpdateLayout();
+            LoadContent(tableView);
             return tableView;
         }
     }
 
     // Category 3.2 of the TableView test plan: column ownership.
     [TestClass]
-    public class TableViewColumnOwnershipTests : ApiTestBase
+    public class TableViewColumnOwnershipTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies a column instance removed from Columns can be added back and renders again.")]
@@ -406,8 +404,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(headers: new[] { "Name", "Role" });
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -448,7 +445,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // Header content is read back from the ContentPresenter inside each header cell, which is where
     // RebuildHeaders puts Header, HeaderTemplate, and HeaderTemplateSelector.
     [TestClass]
-    public class TableViewHeaderTests : ApiTestBase
+    public class TableViewHeaderTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies string, non-string, and null Header values all render a header cell.")]
@@ -465,8 +462,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.Columns.Add(new TableViewTextColumn { Header = objectHeader });
                 tableView.Columns.Add(new TableViewTextColumn { Header = null });
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -490,8 +486,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(headers: new[] { "Name", "Role" });
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -528,8 +523,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns[0].HeaderTemplate = template;
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -554,8 +548,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns[0].HeaderTemplateSelector = selector;
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -586,8 +579,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.Columns[0].HeaderTemplate = CreateTextTemplate("Templated");
                 tableView.Columns[0].HeaderTemplateSelector = selector;
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -612,8 +604,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns[0].HeaderTemplate = CreateTextTemplate("First");
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -648,8 +639,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns[0].HeaderTemplateSelector = new TestHeaderTemplateSelector { Template = CreateTextTemplate("First") };
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -681,8 +671,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableView(headers: new[] { "Name", "Role" });
                 Verify.AreEqual(TableViewHeadersVisibility.Column, tableView.HeadersVisibility, "Column is the documented default.");
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -706,8 +695,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableView(headers: new[] { "Name", "Role" });
                 tableView.HeadersVisibility = TableViewHeadersVisibility.None;
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -732,8 +720,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(headers: new[] { "Name", "Role" });
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -790,7 +777,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     // Category 3.5 of the TableView test plan: column visibility.
     [TestClass]
-    public class TableViewColumnVisibilityTests : ApiTestBase
+    public class TableViewColumnVisibilityTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies a collapsed column contributes no width to the header or to rows.")]
@@ -803,8 +790,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -853,8 +839,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.Columns[1].Width = new GridLength(180.0, GridUnitType.Pixel);
                 tableView.Columns[1].MinWidth = 40.0;
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -892,8 +877,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -961,13 +945,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 $"The following {context} cell must close up into the collapsed column's slot, leaving no gap.");
         }
 
-        private static Panel GetHeaderHost(TableView tableView)
-        {
-            var host = tableView.FindVisualChildByName("PART_HeaderHost") as Panel;
-            Verify.IsNotNull(host, "PART_HeaderHost should exist once the template has applied.");
-            return host;
-        }
-
         private static double GetHeaderCellWidth(TableView tableView, int index)
             => ((FrameworkElement)GetHeaderHost(tableView).Children[index]).ActualWidth;
 
@@ -983,7 +960,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // ... baking it in as static content (or a local DataContext) will show stale data after
     // recycle."
     [TestClass]
-    public class TableViewCellFactoryTests : ApiTestBase
+    public class TableViewCellFactoryTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies TableViewTextColumn.GenerateElement returns a TextBlock.")]
@@ -1095,8 +1072,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns.Add(probe);
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1121,8 +1097,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableView(headers: new[] { "Name" });
                 tableView.Columns.Add(new ProbeColumn { Header = "Probe" });
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1161,8 +1136,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = CreateTableViewShell(items, 500, 300);
                 tableView.Columns.Add(new ProbeColumn { Header = "Probe" });
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1171,21 +1145,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 VerifyProbeCellsMatchRowData(tableView, "before scrolling");
 
-                scroller = tableView.FindVisualChildByName("PART_BodyScroller") as ScrollViewer;
-                Verify.IsNotNull(scroller, "PART_BodyScroller should be a ScrollViewer.");
+                scroller = GetBodyScroller(tableView);
 
                 // Far enough that every row realized above has been recycled.
                 scroller.ChangeView(null, 2000.0, null, true);
             });
 
-            IdleSynchronizer.Wait();
-
             // A second layout pass and wait. ChangeView returns before the repeater has finished
             // re-assigning DataContext to the containers it recycles, and a row sampled in that window
             // is parented but not yet bound. Without this settle the test reads a transient state and
             // reports it as a product bug.
-            RunOnUIThread.Execute(() => tableView.UpdateLayout());
-            IdleSynchronizer.Wait();
+            SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
             {

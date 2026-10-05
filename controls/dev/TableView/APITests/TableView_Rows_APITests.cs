@@ -29,7 +29,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // each is for, and the CommonStates list - because "MIDL3 does not surface [TemplatePart], so this
     // block is it". These tests cite it rather than reasoning from the template.
     [TestClass]
-    public class TableViewRowStructureTests : ApiTestBase
+    public class TableViewRowStructureTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies the default row template exposes all four required named parts with their contract types.")]
@@ -40,8 +40,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableViewWithColumns();
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -74,8 +73,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 items = MakeItems();
                 tableView = CreateTableViewWithColumns(items);
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -123,8 +121,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // A column far wider than its short text leaves a large slice of the wrapper with no
                 // TextBlock over it, which is exactly the area that used to be dead.
                 tableView = CreateTableViewWithColumns(columns: new[] { ("Name", new GridLength(320.0, GridUnitType.Pixel)) });
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -159,7 +156,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     // Category 5.2 of the TableView test plan: generated cell content.
     [TestClass]
-    public class TableViewCellContentTests : ApiTestBase
+    public class TableViewCellContentTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies generated text cells are vertically centred and trim rather than wrap.")]
@@ -178,8 +175,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 };
 
                 tableView = CreateTableViewWithColumns(items, columns: new[] { ("Name", new GridLength(90.0, GridUnitType.Pixel)) });
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -221,8 +217,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 items = MakeItems();
                 tableView = CreateTemplateColumnTable(items);
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -254,7 +249,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     // Category 5.3 of the TableView test plan: recycling.
     [TestClass]
-    public class TableViewRowRecyclingTests : ApiTestBase
+    public class TableViewRowRecyclingTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies recycled text and template cells show the values of the items they now represent.")]
@@ -271,8 +266,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 items = MakeManyItems(120);
                 tableView = CreateMixedColumnTable(items);
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -351,8 +345,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 alternateBrush = new SolidColorBrush(Colors.LightBlue);
                 tableView.RowBackground = baseBrush;
                 tableView.AlternatingRowBackground = alternateBrush;
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -391,8 +384,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 items = MakeManyItems(120);
                 tableView = CreateTableViewWithColumns(items);
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -442,7 +434,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     // Category 5.4 of the TableView test plan: row backgrounds and gridlines.
     [TestClass]
-    public class TableViewRowVisualsTests : ApiTestBase
+    public class TableViewRowVisualsTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies RowBackground alone fills every row and AlternatingRowBackground then overrides only odd rows.")]
@@ -464,8 +456,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 baseBrush = new SolidColorBrush(Colors.LightGray);
                 alternateBrush = new SolidColorBrush(Colors.LightBlue);
                 tableView.RowBackground = baseBrush;
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -510,8 +501,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 firstBrush = new SolidColorBrush(Colors.LightGray);
                 secondBrush = new SolidColorBrush(Colors.Khaki);
                 tableView.RowBackground = firstBrush;
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -580,8 +570,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableViewWithColumns();
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -643,7 +632,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // comparing brushes: the groups live on the template root, and several states share a brush, so the
     // state name is the only unambiguous observable.
     [TestClass]
-    public class TableViewRowVisualStateTests : ApiTestBase
+    public class TableViewRowVisualStateTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies selection enters the Selected state and that disabling a selected row gives SelectedDisabled.")]
@@ -658,8 +647,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableViewWithColumns();
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();

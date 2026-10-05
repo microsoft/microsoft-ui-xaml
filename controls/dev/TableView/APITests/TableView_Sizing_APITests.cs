@@ -36,7 +36,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // require being loaded is part of the contract, because a column that reported a stale
     // provisional width until it was attached would mis-size its very first arrange.
     [TestClass]
-    public class TableViewColumnActualWidthTests : ApiTestBase
+    public class TableViewColumnActualWidthTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies a pixel Width resolves to exactly that many pixels on an unattached column.")]
@@ -262,7 +262,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // current RasterizationScale, so exact equality would encode the test machine's DPI. Ratios and
     // relative comparisons carry the same contract without that fragility.
     [TestClass]
-    public class TableViewColumnAutoAndStarSizingTests : ApiTestBase
+    public class TableViewColumnAutoAndStarSizingTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies an Auto column sizes to its widest realized cell rather than to the provisional default.")]
@@ -314,8 +314,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // Header far longer than any cell, so the header is unambiguously the widest
                 // contributor and the column width is attributable to it alone.
                 tableView = CreateAutoColumnTable(VeryLongText, new[] { "Al", "Bo", "Cy" });
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -376,8 +375,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 names[c_wideRowIndex] = VeryLongText;
 
                 tableView = CreateAutoColumnTable("Name", names);
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -447,8 +445,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         ("Two", new GridLength(2.0, GridUnitType.Star)),
                     });
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -507,8 +504,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 tableView.Columns[0].MinWidth = 420.0;
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -617,8 +613,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var host = new StackPanel { Orientation = Orientation.Horizontal };
                 host.Children.Add(tableView);
 
-                Content = host;
-                Content.UpdateLayout();
+                LoadContent(host);
             });
 
             IdleSynchronizer.Wait();
@@ -657,7 +652,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // queued state to observe mid-flight; asserting InvalidateMeasure call counts would test the
     // implementation rather than the contract.
     [TestClass]
-    public class TableViewColumnLayoutInvalidationTests : ApiTestBase
+    public class TableViewColumnLayoutInvalidationTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies replacing a loaded Auto column's Header re-runs the width resolve.")]
@@ -669,8 +664,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateAutoColumnTable("Name", new[] { "Al", "Bo", "Cy" });
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -710,8 +704,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 tableView.Columns.Add(MakeTemplateColumn("Cell", CreateFixedWidthTemplate(60.0), GridLength.Auto));
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -759,7 +752,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // subcategory and belongs in category 11. VerifyKeyboardStepHonorsKeyboardIncrement below covers
     // the step-size arithmetic; only the modifier read is left uncovered.
     [TestClass]
-    public class TableViewColumnResizeTests : ApiTestBase
+    public class TableViewColumnResizeTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies CanUserResizeColumns=false removes the gripper from every column while every header stays a tab stop.")]
@@ -771,8 +764,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
                 tableView.CanUserResizeColumns = false;
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -809,8 +801,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
                 tableView.Columns[1].CanResize = false;
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -840,8 +831,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateResizableTable(("Name", new GridLength(150.0, GridUnitType.Pixel)));
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -891,8 +881,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateResizableTable(("Name", new GridLength(200.0, GridUnitType.Pixel)));
                 tableView.Columns[0].MinWidth = 80.0;
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -925,8 +914,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateResizableTable(("Name", new GridLength(200.0, GridUnitType.Pixel)));
                 tableView.Columns[0].MaxWidth = 320.0;
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -958,8 +946,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateResizableTable(("Name", GridLength.Auto));
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -996,8 +983,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateResizableTable(("Name", GridLength.Auto));
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1038,8 +1024,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("First", new GridLength(150.0, GridUnitType.Pixel)),
                     ("Second", new GridLength(150.0, GridUnitType.Pixel)));
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1079,8 +1064,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ("Auto", GridLength.Auto),
                     ("Star", new GridLength(1.0, GridUnitType.Star)));
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1127,8 +1111,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateResizableTable(("Name", new GridLength(200.0, GridUnitType.Pixel)));
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1206,8 +1189,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateResizableTable(("Name", new GridLength(300.0, GridUnitType.Pixel)));
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1261,7 +1243,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     //
     // Category 4.6 of the TableView test plan: leading frozen columns.
     [TestClass]
-    public class TableViewFrozenColumnTests : ApiTestBase
+    public class TableViewFrozenColumnTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies a leading frozen column holds its viewport position while the rest scrolls.")]
@@ -1273,8 +1255,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateScrollableTable(columnCount: 5);
                 tableView.Columns[0].FrozenEdge = TableViewFrozenEdge.Leading;
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1318,8 +1299,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     tableView.Columns[i].FrozenEdge = TableViewFrozenEdge.Leading;
                 }
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1382,8 +1362,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.Columns[1].FrozenEdge = TableViewFrozenEdge.None;
                 tableView.Columns[2].FrozenEdge = TableViewFrozenEdge.Leading;
 
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1424,8 +1403,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateScrollableTable(columnCount: 5);
                 tableView.Columns[4].FrozenEdge = TableViewFrozenEdge.Trailing;
-                Content = tableView;
-                Content.UpdateLayout();
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
@@ -1480,8 +1458,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 host.Children.Add(tableView);
                 wrapper = host;
 
-                Content = host;
-                Content.UpdateLayout();
+                LoadContent(host);
             });
 
             IdleSynchronizer.Wait();
@@ -1490,8 +1467,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 // Without this the whole test could pass trivially on a table that never went RTL at
                 // all, and a genuine mirroring failure would be indistinguishable from a setup bug.
-                var cellsHost = GetRealizedRows(tableView).First().FindVisualChildByName("PART_CellsHost") as FrameworkElement;
-                Verify.IsNotNull(cellsHost, "PART_CellsHost should exist on a realized row.");
+                var cellsHost = GetCellsHost(GetRealizedRows(tableView).First());
                 Verify.AreEqual(FlowDirection.RightToLeft, cellsHost.FlowDirection,
                     "Precondition: FlowDirection must reach the cells panel, or nothing downstream can mirror.");
 
