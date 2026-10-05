@@ -6,6 +6,7 @@ using WEX.Logging.Interop;
 using System.Runtime.InteropServices;
 using System;
 using System.Diagnostics;
+using System.Linq;
 
 namespace MUXControlsTestApp
 {
@@ -13,6 +14,7 @@ namespace MUXControlsTestApp
     {
         private int backRequestedCount = 0;
         private int paneToggleRequestedCount = 0;
+        private int contentButtonClickCount = 0;
 
         private const int GWL_EXSTYLE = -20;
         private const int WS_EX_LAYOUTRTL = 0x00400000;
@@ -83,7 +85,12 @@ namespace MUXControlsTestApp
 
         private void WindowingTitleBar_BackRequested(TitleBar sender, object args)
         {
-            BackRequestedCountTextBox.Text = (backRequestedCount++).ToString();
+            BackRequestedCountTextBox.Text = (++backRequestedCount).ToString();
+        }
+
+        private void ContentButton_Click(object sender, RoutedEventArgs e)
+        {
+            ContentButtonClickCountTextBlock.Text = (++contentButtonClickCount).ToString();
         }
 
         private void IsBackButtonVisibleCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
@@ -104,7 +111,7 @@ namespace MUXControlsTestApp
 
         private void WindowingTitleBar_PaneToggleRequested(TitleBar sender, object args)
         {
-            PaneToggleButtonRequestedCountTextBox.Text = (paneToggleRequestedCount++).ToString();
+            PaneToggleButtonRequestedCountTextBox.Text = (++paneToggleRequestedCount).ToString();
         }
 
         private void IsPaneToggleButtonVisibleCheckbox_CheckedChanged(object sender, RoutedEventArgs e)
@@ -145,11 +152,15 @@ namespace MUXControlsTestApp
                             <ColumnDefinition Width='*' />
                          </Grid.ColumnDefinitions >
 
-                         <Button Content='Left'/>
-                         <Button Grid.Column='1' Content='Right' HorizontalAlignment='Right'/>
+                         <Button Content='Left' AutomationProperties.AutomationId='TitleBarContentLeftButton'/>
+                         <Button Grid.Column='1' Content='Right' HorizontalAlignment='Right' AutomationProperties.AutomationId='TitleBarContentRightButton'/>
                     </Grid>";
 
                     var element = (Grid)XamlReader.Load(xaml);
+                    foreach (var button in element.Children.OfType<Button>())
+                    {
+                        button.Click += ContentButton_Click;
+                    }
                     WindowingTitleBar.Content = element;
                 }
                 else

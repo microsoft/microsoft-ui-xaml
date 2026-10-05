@@ -131,6 +131,13 @@
                     Checked="CustomContentCheckBox_CheckedChanged"
                     Unchecked="CustomContentCheckBox_CheckedChanged" />
 
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Content Button Clicks:" />
+                <TextBlock x:Name="ContentButtonClickCountTextBlock"
+                        Margin="8,0,0,0"
+                        Foreground="Red" />
+            </StackPanel>
+
             <CheckBox x:Name="RightHeaderCheckBox"
                     Content="RightHeader"
                     Checked="RightHeaderCheckBox_CheckedChanged"

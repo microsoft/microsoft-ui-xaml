@@ -588,6 +588,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TitleBar_TestUI", "dev\Titl
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TitleBar_InteractionTests", "dev\TitleBar\InteractionTests\TitleBar_InteractionTests.shproj", "{AEC0BAEE-7A86-4539-9E07-A5363F7B9A8C}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TitleBar_APITests", "dev\TitleBar\APITests\TitleBar_APITests.shproj", "{AA5B4A1C-B1EF-4251-8119-2CA6F56C8CD7}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.WinUI", "..\packaging\Microsoft.WinUI.csproj", "{1D6EDD7D-D380-444D-B233-3C718ABB382D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MUXControls.Test", "test\MUXControls.Test\MUXControls.Test.csproj", "{4D8C5D1B-F982-44A1-B744-DD0E51651BF2}"
@@ -1738,6 +1740,7 @@ Global
 		{B122B4A6-BA38-4738-984B-3DAB2177D5E2} = {FBDF77D8-BBA9-46CF-A140-020B766035C1}
 		{0C05E2F0-F21F-4E60-A5BD-B4F5EB655C1D} = {FBDF77D8-BBA9-46CF-A140-020B766035C1}
 		{AEC0BAEE-7A86-4539-9E07-A5363F7B9A8C} = {FBDF77D8-BBA9-46CF-A140-020B766035C1}
+		{AA5B4A1C-B1EF-4251-8119-2CA6F56C8CD7} = {FBDF77D8-BBA9-46CF-A140-020B766035C1}
 		{4D8C5D1B-F982-44A1-B744-DD0E51651BF2} = {D3327F36-E161-4FED-A0F4-56F2B735827E}
 		{4E6F8103-9E20-40DD-8FE0-1E73964BB800} = {D3327F36-E161-4FED-A0F4-56F2B735827E}
 		{52DDC946-7073-4130-8454-80E84AD3CF5A} = {D3327F36-E161-4FED-A0F4-56F2B735827E}
@@ -1986,6 +1989,7 @@ Global
 		dev\TabView\TestUI\TabView_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\TeachingTip\APITests\TeachingTip_APITests.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
+		dev\TitleBar\APITests\TitleBar_APITests.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\TitleBar\TestUI\TitleBar_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\TreeView\APITests\TreeView_APITests.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\TreeView\TestUI\TreeView_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
@@ -2064,6 +2068,7 @@ Global
 		dev\WebView2\WebView2.vcxitems*{ad144714-93fc-4281-b500-a5c2193dbc60}*SharedItemsImports = 9
 		dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems*{ae308818-af18-48ba-bf33-89779083d297}*SharedItemsImports = 13
 		dev\TreeView\InteractionTests\TreeView_InteractionTests.projitems*{ae638a24-2bc6-4d4f-a51e-715d198f01fd}*SharedItemsImports = 13
+		dev\TitleBar\APITests\TitleBar_APITests.projitems*{aa5b4a1c-b1ef-4251-8119-2ca6f56c8cd7}*SharedItemsImports = 13
 		dev\TitleBar\InteractionTests\TitleBar_InteractionTests.projitems*{aec0baee-7a86-4539-9e07-a5363f7b9a8c}*SharedItemsImports = 13
 		dev\RatingControl\InteractionTests\RatingControl_InteractionTests.projitems*{afaad014-132c-4d2a-a28e-4ef717d3e647}*SharedItemsImports = 13
 		dev\PersonPicture\InteractionTests\PersonPicture_InteractionTests.projitems*{b0c15318-1f57-4914-b860-ebf248841511}*SharedItemsImports = 13

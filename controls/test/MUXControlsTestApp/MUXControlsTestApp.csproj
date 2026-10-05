@@ -331,6 +331,7 @@
   <Import Project="$(MUXCProjectRoot)dev\SelectorBar\TestUI\SelectorBar_TestUI.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\SelectorBar\APITests\SelectorBar_APITests.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TitleBar\TestUI\TitleBar_TestUI.projitems" Label="Shared" Condition="$(FeatureTitleBarEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TitleBar\APITests\TitleBar_APITests.projitems" Label="Shared" Condition="$(FeatureTitleBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\SystemBackdropElement\TestUI\SystemBackdropElement_TestUI.projitems" Label="Shared" Condition="$(FeatureSystemBackdropElementEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\SystemBackdropElement\APITests\SystemBackdropElement_APITests.projitems" Label="Shared" Condition="$(FeatureSystemBackdropElementEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\InkCanvas\TestUI\InkCanvas_TestUI.projitems" Label="Shared" Condition="$(FeatureInkCanvasEnabled) == 'true'" />
