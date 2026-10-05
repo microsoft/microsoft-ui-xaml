@@ -24,7 +24,7 @@ resources:
     - repository: WinAppSDK
       type: git
       name: OS/WinAppSDK
-      ref: refs/heads/release/dev/monobuild
+      ref: refs/heads/release/main
 
 extends:
   template: v2/Microsoft.Official.yml@templates
