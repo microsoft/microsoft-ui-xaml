@@ -2251,22 +2251,37 @@ ShapedItemsSource::LiveShapeSnapshot ShapedItemsSource::CaptureLiveShapeSnapshot
 {
     LiveShapeSnapshot snapshot{};
 
+    // Selectors are app code. The rebuild treats a throwing selector as having returned null, so
+    // the snapshot does too -- otherwise the throw would surface from the app's property setter.
+    auto const keyOf = [&item](ShapingHelpers::KeySelector const& selector) -> winrt::hstring
+    {
+        if (!selector)
+        {
+            return {};
+        }
+        try { return RowIdentity::StringifyKey(selector(item)); } catch (...) { return RowIdentity::StringifyKey(nullptr); }
+    };
+
     if (m_liveSorting)
     {
         for (auto const& axis : m_pipeline.ActiveSortAxes(-1, -1))
         {
-            winrt::IInspectable key{ nullptr };
-            if (axis.Key)
-            {
-                key = axis.Key(item);
-            }
-            snapshot.SortKeys.push_back(StringifyKey(key));
+            snapshot.SortKeys.push_back(keyOf(axis.Key));
         }
     }
 
     if (m_liveGrouping && m_groupSelector)
     {
-        snapshot.GroupKey = StringifyKey(m_groupSelector(item));
+        snapshot.GroupKey = keyOf(m_groupSelector);
+    }
+
+    // Any live flag implies the hierarchy edge: sort, filter and grouping are all evaluated
+    // against the tree (sibling sets, ancestor retention, root bucketing), so an edge change
+    // reshapes every one of them.
+    if (m_parentKeySelector)
+    {
+        snapshot.NodeKey = keyOf(m_keySelector);
+        snapshot.ParentKey = keyOf(m_parentKeySelector);
     }
 
     if (m_liveFiltering)
@@ -2283,6 +2298,8 @@ bool ShapedItemsSource::LiveShapeSnapshotsDiffer(
 {
     return left.PassesFilter != right.PassesFilter ||
         left.GroupKey != right.GroupKey ||
+        left.NodeKey != right.NodeKey ||
+        left.ParentKey != right.ParentKey ||
         left.SortKeys != right.SortKeys;
 }
 
@@ -2482,7 +2499,17 @@ void ShapedItemsSource::MarkLiveShapingDirty()
             {
                 if (auto const strongThis = weakThis.lock())
                 {
-                    strongThis->RestoreLiveShaping();
+                    try
+                    {
+                        strongThis->RestoreLiveShaping();
+                    }
+                    catch (...)
+                    {
+                        // No app call is on the stack to receive this (e.g. a ParentBy key edited
+                        // into a duplicate or a cycle). As with ScheduleRefreshReplay: the previous
+                        // projection stays, and the next verb or source change re-validates and
+                        // throws to the app.
+                    }
                 }
             }))
         {

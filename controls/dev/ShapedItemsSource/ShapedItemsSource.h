@@ -288,6 +288,11 @@ private:
     {
         std::vector<winrt::hstring> SortKeys;
         winrt::hstring GroupKey;
+        // Hierarchy edge (node key + parent key). Captured whenever live shaping is on and a
+        // ParentBy relation is declared: a refresh re-reads the whole relation anyway, so leaving
+        // these out would make a reparent show up only when some OTHER tracked key happened to move.
+        winrt::hstring NodeKey;
+        winrt::hstring ParentKey;
         bool PassesFilter{ true };
     };
     LiveShapeSnapshot CaptureLiveShapeSnapshot(winrt::IInspectable const& item) const;
