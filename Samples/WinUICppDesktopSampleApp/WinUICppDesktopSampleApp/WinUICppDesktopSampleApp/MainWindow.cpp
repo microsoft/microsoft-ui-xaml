@@ -8,6 +8,7 @@
 #include <winrt/microsoft.ui.xaml.h>
 #include <winrt/microsoft.ui.xaml.hosting.h>
 #include <winrt/windows.ui.core.h>
+#include <winrt/Windows.UI.Input.h>
 #include <winrt/Microsoft.UI.Windowing.h>
 #include "strsafe.h"
 #include <iostream>
@@ -328,6 +329,40 @@ namespace winrt::WinUICppDesktopSampleApp::implementation
     void MainWindow::DropDownButton_Click(IInspectable const&, RoutedEventArgs const&)
     {
         textBlockMUXCControls().Text(L"DropDownButton.Click");
+    }
+
+    void MainWindow::InkCanvas_Loaded(IInspectable const&, RoutedEventArgs const&)
+    {
+        inkToolbar().TargetInkCanvas(inkCanvas());
+
+        auto presenter = inkCanvas().InkPresenter();
+        presenter.InputDeviceTypes(
+            winrt::Windows::UI::Core::CoreInputDeviceTypes::Mouse |
+            winrt::Windows::UI::Core::CoreInputDeviceTypes::Pen |
+            winrt::Windows::UI::Core::CoreInputDeviceTypes::Touch);
+
+        // Reads the pointer args the way apps do (Snipping Tool positions UI from them); the test checks the result.
+        presenter.StrokeInput().StrokeStarted([weakThis = get_weak()](auto const&, winrt::Windows::UI::Core::PointerEventArgs const& args)
+        {
+            auto self = weakThis.get();
+            if (!self)
+            {
+                return;
+            }
+            try
+            {
+                const auto position = args.CurrentPoint().Position();
+                self->textBlockInking().Text(position.X >= 0 && position.Y >= 0 ? L"StrokeStarted" : L"StrokeStarted.BadPosition");
+            }
+            catch (winrt::hresult_error const& e)
+            {
+                wchar_t message[64];
+                StringCchPrintfW(message, ARRAYSIZE(message), L"StrokeStarted.Failed 0x%08X", static_cast<uint32_t>(e.code()));
+                self->textBlockInking().Text(message);
+            }
+        });
+
+        textBlockInking().Text(L"InkCanvas.Loaded");
     }
 
     void MainWindow::ButtonResetBounds_Click(IInspectable const&, RoutedEventArgs const&)

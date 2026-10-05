@@ -214,6 +214,22 @@
                     </StackPanel>
                 </TabViewItem>
 
+                <!-- InkToolbar/InkCanvas in a native app: no CLR host, so XAML can't wrap a non-bindable collection
+                     (the pen palette) and pointer args are read on the app's own UI thread. -->
+                <TabViewItem x:Name="tviInking" AutomationProperties.Name="tviInking" Header="Inking">
+                    <TabViewItem.IconSource>
+                        <SymbolIconSource Symbol="Edit"/>
+                    </TabViewItem.IconSource>
+
+                    <StackPanel x:Name="stackPanelInking" AutomationProperties.Name="stackPanelInking">
+                        <TextBlock x:Name="textBlockInking" AutomationProperties.Name="textBlockInking" MinWidth="150" Margin="2"/>
+                        <InkToolbar x:Name="inkToolbar" AutomationProperties.Name="inkToolbar" HorizontalAlignment="Left" Margin="2"/>
+                        <Border BorderBrush="Gray" BorderThickness="1" Background="White" Width="400" Height="250" HorizontalAlignment="Left" Margin="2">
+                            <InkCanvas x:Name="inkCanvas" AutomationProperties.Name="inkCanvas" Loaded="InkCanvas_Loaded"/>
+                        </Border>
+                    </StackPanel>
+                </TabViewItem>
+
                 <!-- Controls from separate project -->
                 <TabViewItem x:Name="tviExternalControls" AutomationProperties.Name="tviExternalControls" Header="External Controls">
                     <TabViewItem.IconSource>
