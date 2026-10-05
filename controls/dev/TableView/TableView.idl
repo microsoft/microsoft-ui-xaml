@@ -543,7 +543,8 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     // The selected data item, or null.
     Object SelectedItem { get; };
 
-    // The selected item's index, or -1 when nothing is selected.
+    // The selected item's index in the displayed row projection, or -1 when nothing is selected.
+    // Under grouping, group headers occupy projection indexes but cannot be selected.
     [MUX_DEFAULT_VALUE("-1")]
     Int32 SelectedIndex { get; };
 
