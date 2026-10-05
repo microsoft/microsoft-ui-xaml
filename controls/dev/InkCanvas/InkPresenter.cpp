@@ -782,6 +782,7 @@ winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynch
             }
         },
         /* pumpMessages */ false);
+    m_isInDry = true;
     // Build the returned collection on the calling (UI) thread so the app is never handed an
     // ink-thread-affine object.
     return winrt::single_threaded_vector<inking::InkStroke>(std::move(strokes)).GetView();
@@ -789,6 +790,14 @@ winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynch
 
 void InkSynchronizer::EndDry()
 {
+    // The OS EndDry runs later, so its E_ILLEGAL_METHOD_CALL for an EndDry without a BeginDry could not reach
+    // the app; raise it here instead, as UWP's synchronizer does.
+    if (!m_isInDry)
+    {
+        throw winrt::hresult_illegal_method_call();
+    }
+    m_isInDry = false;
+
     ++m_pendingEndDryCount;
     if (m_endDryWaitInFlight.exchange(true))
     {
@@ -800,7 +809,8 @@ void InkSynchronizer::EndDry()
     // The app draws the dried strokes into XAML content, which the lifted compositor shows on XAML's next
     // frame, but the OS EndDry removes the wet ink on the ink host's own DComp device immediately. Doing
     // that now leaves a frame with neither (the strokes blink), so wait for XAML to commit the dry content.
-    // UWP needed no wait: wet and dry shared one compositor.
+    // UWP did the same wait inside the OS: its InkCanvas gave the presenter a commit provider on XAML's own
+    // DComp device, which the lifted ink host cannot do.
     try
     {
         m_renderingRevoker = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(winrt::auto_revoke,

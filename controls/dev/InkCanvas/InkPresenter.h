@@ -406,6 +406,8 @@ private:
     std::atomic<uint32_t> m_pendingEndDryCount{ 0 };
     std::atomic<uint32_t> m_endDryGeneration{ 0 };
     std::atomic<bool> m_endDryWaitInFlight{ false };
+    // UI-thread view of the dry transaction (BeginDry seen, EndDry not yet), so a stray EndDry fails synchronously.
+    bool m_isInDry{ false };
     winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingRevoker{};
     winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendered_revoker m_renderedRevoker{};
 };
