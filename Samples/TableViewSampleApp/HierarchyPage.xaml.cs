@@ -24,6 +24,23 @@ public sealed partial class HierarchyPage : Page
 
     public static bool AutoPerf { get; set; }
 
+    // LocalFolder when the app has package identity; otherwise the exe's directory (the build
+    // produces an unpackaged app, where ApplicationData.Current throws).
+    public static string DataDirectory
+    {
+        get
+        {
+            try
+            {
+                return Windows.Storage.ApplicationData.Current.LocalFolder.Path;
+            }
+            catch (Exception)
+            {
+                return AppContext.BaseDirectory;
+            }
+        }
+    }
+
     private readonly ObservableCollection<Employee> _employees = new(HierarchyData.Generate(200));
     private TableViewSource _managerSource = null!;
     private TableViewSource _mentorSource = null!;
@@ -388,7 +405,7 @@ public sealed partial class HierarchyPage : Page
         StatusText.Text = string.Join("\n", lines);
         try
         {
-            File.WriteAllLines(Path.Combine(HierarchySelfCheckPage.DataDirectory, PerfResultsFileName), lines, new UTF8Encoding(false));
+            File.WriteAllLines(Path.Combine(DataDirectory, PerfResultsFileName), lines, new UTF8Encoding(false));
         }
         catch (Exception ex)
         {
