@@ -198,6 +198,7 @@ struct Entry
         typesToClearDependencyProperties
             .Where(x => File.Exists(Path.Combine(propertiesHeadersDirectory, x.Name + ".properties.h")))
             .OrderBy(x => x.Name);
+    bool tableViewIncluded = RegisteredTypes.Keys.Contains("Microsoft.UI.Xaml.Controls.Tabular.TableView");
     
     WriteLine("");
     
@@ -206,8 +207,11 @@ struct Entry
         WriteLine("#include \"" + type.Name + ".properties.h\"");
     }
 
-    // A non-generated file defines its own ClearProperties method that we'll need to manually include.
-    WriteLine("#include \"TableViewToolTipHelpers.h\"");
+    if (tableViewIncluded)
+    {
+        // A non-generated file defines its own ClearProperties method that we'll need to manually include.
+        WriteLine("#include \"TableViewToolTipHelpers.h\"");
+    }
 
     // The Tabular controls DLL hosts only TableView + its primitives; the MUXC-only helpers
     // (AutoSuggestBoxHelper / ComboBoxHelper / RecyclePool / RevealBrush) that the full MUXC
@@ -228,8 +232,11 @@ namespace {
         // The Tabular controls DLL hosts only TableView + its primitives; the MUXC-only helpers
         // (AutoSuggestBoxHelper / ComboBoxHelper / RecyclePool / RevealBrush) are intentionally omitted.
         //
-        // A non-generated file defines its own ClearProperties method that we'll need to manually call.
-        WriteLine("TableViewDetails::ClearCellToolTipProperties();");
+        if (tableViewIncluded)
+        {
+            // A non-generated file defines its own ClearProperties method that we'll need to manually call.
+            WriteLine("TableViewDetails::ClearCellToolTipProperties();");
+        }
     });
     WriteLine("");
 #>

@@ -167,10 +167,6 @@
   <!-- Dependencies for TabView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTabViewEnabled) == 'true'">
   </PropertyGroup>
-  <!-- Dependencies for TableView -->
-  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTableViewEnabled) == 'true'">
-    <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
-  </PropertyGroup>
   <!-- Dependencies for TeachingTip -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTeachingTipEnabled) == 'true'">
   </PropertyGroup>
