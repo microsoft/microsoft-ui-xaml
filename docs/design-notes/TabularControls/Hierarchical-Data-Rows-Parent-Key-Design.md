@@ -8,9 +8,9 @@ Status: **implemented** (decisions in §13).
 candidate, and two key selectors say "this is my key" and "this is my parent's key".
 
 ```csharp
-var byManager = TableViewSource.From(employees).WithParent(
+var byManager = TableViewSource.From(employees).ParentBy(
     item => ((Employee)item).Id, item => ((Employee)item).ManagerId);
-var byMentor  = TableViewSource.From(employees).WithParent(
+var byMentor  = TableViewSource.From(employees).ParentBy(
     item => ((Employee)item).Id, item => ((Employee)item).MentorId);
 ```
 
@@ -53,10 +53,10 @@ runtimeclass TableViewSource
     // keySelector:       the item's own key.
     // parentKeySelector: the key of the item's parent. Null means "root".
     //
-    // Both required and non-null (E_INVALIDARG otherwise; use ClearParent() to remove).
-    TableViewSource WithParent(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
+    // Both required and non-null (E_INVALIDARG otherwise; use ClearParentBy() to remove).
+    TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
 
-    TableViewSource ClearParent();
+    TableViewSource ClearParentBy();
 }
 
 runtimeclass TableView
@@ -73,6 +73,8 @@ expander gutter and states, and the `TableViewRowAutomationPeer` `IExpandCollaps
 
 The names follow the rule the source already uses: the verb is named after the thing being
 configured, and the removal verb mirrors it (`Filter`/`ClearFilter`, `GroupBy`/`ClearGroupBy`).
+`ParentBy` takes the `GroupBy` form: it reads as "parent the rows by these keys", and
+`ClearParentBy` removes it as `ClearGroupBy` removes `GroupBy`.
 
 ## 3. Key semantics
 
@@ -86,7 +88,7 @@ rebuild (`MakeNodeKey`, built on `ShapingHelpers::ValueKey::ToObjectLookupKey`):
   **by value**. `42` from `Id` and `42` from `ManagerId` match. This is the database-id case. A
   fresh box per selector call is fine.
 - **Any other object** is compared **by reference identity**. So
-  `WithParent(item => item, item => ((Employee)item).Manager)` works: the item is its own key and the parent selector
+  `ParentBy(item => item, item => ((Employee)item).Manager)` works: the item is its own key and the parent selector
   returns the parent object. This covers the object-reference case without a second overload. Both
   selectors must return the same instance for a link to form.
 
@@ -219,9 +221,9 @@ Every item has exactly one parent, and the app supplies the key, so no path key 
 - `ExpandAllRows` / `CollapseAllRows` move the baseline. They call no app code: the index already
   exists, so the cost is only the size of the visible axis. Moving the baseline changes persistent
   intent for every node, including filter context rows, so the result outlives the filter (§4.2).
-- **Last writer wins.** A second `WithParent` call *replaces* the previous relation. It does not
+- **Last writer wins.** A second `ParentBy` call *replaces* the previous relation. It does not
   stack or compose with it, which matches how `GroupBy` replaces a previous `GroupBy`. The replaced
-  hierarchy is torn down as if `ClearParent()` had been called, and its expansion intent is
+  hierarchy is torn down as if `ClearParentBy()` had been called, and its expansion intent is
   cleared with it. A different relation is a different tree: "Bob is expanded" in the org chart
   says nothing about Bob in the mentoring tree.
 
@@ -291,10 +293,10 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
 
 ### 6.2 Layer 2 — `ShapedItemsSource`
 
-- `SetParent(key, parentKey)` / `ClearParent()` set `m_hierarchyAxisDirty`. The hierarchy axis has
+- `SetParent(key, parentKey)` / `ClearParentBy()` set `m_hierarchyAxisDirty`. The hierarchy axis has
   no description in the pipeline spec, so without the flag a verb-only change would diff as a no-op
   and never rebuild. Both clear expansion intent (§5.2).
-- `ClearParent()`, and every rebuild into a projection that is not hierarchical, releases the
+- `ClearParentBy()`, and every rebuild into a projection that is not hierarchical, releases the
   adapter: its index and intent are cleared and the engine drops its reference, so the last visible
   rows are not kept alive. The previous row-metadata provider shares ownership until the projection
   swap replaces it; the next declaration creates a fresh adapter.
@@ -312,7 +314,7 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
 - **Property changes are not observed**, the same contract as sort keys. Reparenting through
   `INotifyPropertyChanged` on `ManagerId` takes effect at the next collection change or reshape.
   To reparent immediately, an app replaces the item or removes and re-inserts it. Documented on
-  `WithParent`.
+  `ParentBy`.
 - `Rows()` is the snapshot of the visible rows.
 
 ### 6.3 Layer 3 — `HierarchicalSourceAdapter`
@@ -371,7 +373,7 @@ back to one Rebuild and a single Reset.
 
 | Component | Role |
 | --- | --- |
-| `TableViewSource.idl` | `WithParent` / `ClearParent`. |
+| `TableViewSource.idl` | `ParentBy` / `ClearParentBy`. |
 | `ParentKeyIndex` (layer 1) | Build, validate and filter the relation (§6.1). |
 | `ShapedItemsSource` hierarchy paths | Index build, filter inside the build, incremental bail-out, intent reset on redeclaration, adapter release on retraction (§6.2). |
 | `HierarchicalSourceAdapter` | Walk, splice and publish the visible rows (§6.3). |
@@ -431,7 +433,7 @@ cost.
 The perf gate is the **100k perf** button on the sample's Hierarchical rows page
 (`Samples/TableViewSampleApp/HierarchyPage.xaml.cs`, `RunPerfAsync`), also run unattended by creating
 an `autorun-perf` file next to the exe (writes `perf-results.txt`). It generates 100,000 flat employees
-(branching 3) and times `WithParent`, `Sort(Name)` and `ExpandAllRows` against a `GroupBy(Dept)`,
+(branching 3) and times `ParentBy`, `Sort(Name)` and `ExpandAllRows` against a `GroupBy(Dept)`,
 `Sort(Name)`, `ExpandAllGroups` baseline over the same rows. Groups start expanded, so the baseline
 collapses them (untimed) before the timed `ExpandAllGroups`; both expand steps then realize the same
 100k rows. Each step includes a synchronous layout pass. Target: total within about 2x the baseline.
@@ -441,21 +443,21 @@ Debug, so absolute values are inflated; times in ms):
 
 | Step | Hierarchy | GroupBy(Dept) baseline |
 | --- | --- | --- |
-| `WithParent` / `GroupBy(Dept)` | 1577.9 | 620.9 |
+| `ParentBy` / `GroupBy(Dept)` | 1577.9 | 620.9 |
 | `Sort(Name)` | 3644.4 | 2893.1 |
 | `ExpandAllRows` / `ExpandAllGroups` | 390.0 | 221.7 |
 | **Sum of step medians** | **5612.2** | **3735.7** |
 
 Ratio (sum of step medians) **1.50x**, inside the 2x target; the median of per-run totals gives
 5647.0 / 3735.0 = 1.51x. Sort dominates both columns. The hierarchy side is slower by about
-957 ms in WithParent, 751 ms in sort and 168 ms in expand; this probe does not attribute those
+957 ms in ParentBy, 751 ms in sort and 168 ms in expand; this probe does not attribute those
 differences further.
 
 ## 10. Sample
 
 `TableViewSampleApp`: one `ObservableCollection<Employee>` with `Id`, `ManagerId`, `MentorId`,
 `Name`, `Title` and `Dept`. Two `TableView`s side by side over the **same** collection, one using
-`WithParent(Id, ManagerId)` and the other `WithParent(Id, MentorId)`. Commands to add an employee,
+`ParentBy(Id, ManagerId)` and the other `ParentBy(Id, MentorId)`. Commands to add an employee,
 reparent one (replace the item), filter by name (showing context ancestors), sort, group roots by
 department, and expand or collapse all. The **100k perf** button times the 100k-row case (§9).
 
@@ -515,7 +517,7 @@ through the public API rather than headless):
    is cleared by redeclaration. `SetIndex` causes exactly one Reset.
 4. **Layer 2**: add, remove, replace and move on the flat source with the hierarchy on (including
    the unsorted, unfiltered case, which must not take the flat incremental path); a sort does not
-   reset expansion; grouping buckets roots only; `ClearParent` releases the rows the hierarchy
+   reset expansion; grouping buckets roots only; `ClearParentBy` releases the rows the hierarchy
    presented.
 5. **UI / UIA**: chevron and indent, the frozen lead column keeps the chevron (§7.1), the keyboard
    table in §8, and `LeafNode`, `Level`, `PositionInSet` and `SizeOfSet` values.
@@ -524,11 +526,11 @@ through the public API rather than headless):
 
 | # | Question | Decision |
 | --- | --- | --- |
-| 1 | Names | `WithParent` / `ClearParent`. |
+| 1 | Names | `ParentBy` / `ClearParentBy`. |
 | 2 | Orphans | Shown as roots. This matches Syncfusion, DevExpress WPF (default) and AG Grid, and no row is silently lost (§3.2). |
 | 3 | Filter default | Matches plus their ancestors, the majority default (§4.2). |
 | 4 | Auto-expand on filter | On. While a filter is active, context ancestors are expanded as a temporary overlay; the user can collapse or re-expand them, but those toggles are overlay-only. The user's prior state is restored when the filter changes or clears, which avoids DevExtreme's reset (§4.2). |
-| 5 | Second `WithParent` call | Replaces the previous relation (last writer wins) and clears its expansion intent (§5.2). |
+| 5 | Second `ParentBy` call | Replaces the previous relation (last writer wins) and clears its expansion intent (§5.2). |
 
 ## 14. Prior art behind decisions 2–4
 

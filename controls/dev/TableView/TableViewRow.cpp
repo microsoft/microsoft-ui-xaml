@@ -763,7 +763,7 @@ void TableViewRow::ApplyHierarchyAffordance()
     // row preparation) and the resource lookup behind it is not free.
     ApplyHierarchyIndentToCells(indent);
 
-    // A Level change that does not re-prepare the row (WithParent/ClearParent over the same view)
+    // A Level change that does not re-prepare the row (ParentBy/ClearParentBy over the same view)
     // never reaches RefreshFrozenColumnLayout, so the gutter must pick up the pinned lead cell's
     // Translation here or it scrolls away from that cell until the next horizontal scroll.
     if (auto const host = m_cellsHost.get())

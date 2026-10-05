@@ -129,7 +129,7 @@ void ShapedItemsSource::SetParent(ShapingHelpers::KeySelector key, ShapingHelper
     ApplyShapingChange();
 }
 
-void ShapedItemsSource::ClearParent()
+void ShapedItemsSource::ClearParentBy()
 {
     // Nothing declared: genuinely a no-op, so do not fire a Reset that would drop every realized
     // row for a shape that is already flat.
@@ -1209,7 +1209,7 @@ void ShapedItemsSource::Refresh()
             ScheduleRefreshReplay();
         }
 
-        // A ClearParent from inside the pass must still take effect: the rebuild that would have
+        // A ClearParentBy from inside the pass must still take effect: the rebuild that would have
         // released the hierarchy is the one that just failed.
         CompleteDeferredHierarchyTeardown();
         throw;
@@ -1514,7 +1514,7 @@ void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& ro
     // parent stably, sorts every sibling set among its own peers.
     //
     // The declaration generation is captured BEFORE sorting: sort key selectors are app code too,
-    // and a WithParent/ClearParent issued from one must make this pass obsolete.
+    // and a ParentBy/ClearParentBy issued from one must make this pass obsolete.
     const uint64_t declarationGeneration = m_parentDeclarationGeneration;
     ApplySort(rows);
 
@@ -1876,7 +1876,7 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
         // Callback first: nothing below may drive a re-slice on the way out.
         m_hierarchicalAdapter->ProjectionChanged(nullptr);
         // Also detaches it: this can run from inside one of its own notifications (an app handler
-        // calling ClearParent), and the publication still on the stack must stop there.
+        // calling ClearParentBy), and the publication still on the stack must stop there.
         m_hierarchicalAdapter->ClearIndex();
 
         // Inert from here on: a row-metadata provider still bound to it until the swap must not
@@ -1919,7 +1919,7 @@ void ShapedItemsSource::ResliceGroupsFromHierarchy()
 {
     // Everything this pass reads is pinned or snapshotted up front. The SetItems calls below notify
     // the grouped adapter and through it app handlers, and a handler may retract or rebuild the
-    // hierarchy (ClearParent tears it down directly; a Refresh is deferred, see below).
+    // hierarchy (ClearParentBy tears it down directly; a Refresh is deferred, see below).
     auto const adapter = m_hierarchicalAdapter;
     if (!adapter || m_hierarchyGroups.empty())
     {
@@ -1938,7 +1938,7 @@ void ShapedItemsSource::ResliceGroupsFromHierarchy()
         auto guard = wil::scope_exit([this]() noexcept { m_reslicingGroups = false; });
 
         // A handler of one of the SetItems below can throw. The re-slice guard is released on the
-        // way out, and what the pass deferred behind itself -- a Refresh, a ClearParent teardown --
+        // way out, and what the pass deferred behind itself -- a Refresh, a ClearParentBy teardown --
         // must not be lost with it: the teardown completes now, the Refresh is posted (replaying it
         // synchronously would throw into the same app call).
         auto completion = wil::scope_exit([this]() noexcept
@@ -2046,7 +2046,7 @@ void ShapedItemsSource::CompleteDeferredHierarchyTeardown()
     }
 
     // The teardown publication runs app code (the consumer's swap raises property-change,
-    // selection and collection notifications). A ClearParent from there would otherwise land right
+    // selection and collection notifications). A ClearParentBy from there would otherwise land right
     // back here while the obligation is still owed and publish again from inside this publication,
     // without bound. Nested requests are recorded instead and replayed at most once, after the
     // outer attempt has unwound.
@@ -2069,7 +2069,7 @@ void ShapedItemsSource::CompleteDeferredHierarchyTeardown()
         TryCompleteDeferredHierarchyTeardown();
 
         // Only matters if the outer attempt failed: success already discharged the obligation. If
-        // this attempt fails too, the obligation stays for the next ClearParent or Refresh.
+        // this attempt fails too, the obligation stays for the next ClearParentBy or Refresh.
         if (std::exchange(m_teardownReplayRequested, false))
         {
             TryCompleteDeferredHierarchyTeardown();
@@ -2105,9 +2105,9 @@ void ShapedItemsSource::TryCompleteDeferredHierarchyTeardown()
     // adapter is released and the rows are republished without it, not expandable and not bound to
     // intent recorded against the retracted relation. The next successful Refresh re-shapes them.
     //
-    // Reached from an unwind (a failed pass, a scope guard, a repeat ClearParent), so nothing here
+    // Reached from an unwind (a failed pass, a scope guard, a repeat ClearParentBy), so nothing here
     // may escape: the pass's own error is the one the app hears. The flag stays set until a
-    // publication succeeds, so a repeat ClearParent or the next Refresh can retry it; each of those
+    // publication succeeds, so a repeat ClearParentBy or the next Refresh can retry it; each of those
     // makes at most one attempt, so a publication that keeps failing cannot loop.
     try
     {

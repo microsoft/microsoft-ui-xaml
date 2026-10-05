@@ -13,7 +13,7 @@ using Microsoft.UI.Xaml.Controls.Tabular;
 namespace TableViewSampleApp;
 
 // Flat parent-key hierarchy demo. One ObservableCollection<Employee> feeds two TableViewSources;
-// each declares its own relation with WithParent, so the same rows form two different trees.
+// each declares its own relation with ParentBy, so the same rows form two different trees.
 // Filter, Sort and GroupBy are stages on the same sources and compose with the hierarchy.
 public sealed partial class HierarchyPage : Page
 {
@@ -95,12 +95,12 @@ public sealed partial class HierarchyPage : Page
 
     // A null parent key makes a root; a key with no matching Id makes an orphan, which is also a root.
     private static void DeclareManagerRelation(TableViewSource source) =>
-        source.WithParent(
+        source.ParentBy(
             new TableViewKeySelector(item => ((Employee)item).Id),
             new TableViewKeySelector(item => ((Employee)item).ManagerId!));
 
     private static void DeclareMentorRelation(TableViewSource source) =>
-        source.WithParent(
+        source.ParentBy(
             new TableViewKeySelector(item => ((Employee)item).Id),
             new TableViewKeySelector(item => ((Employee)item).MentorId!));
 
@@ -339,7 +339,7 @@ public sealed partial class HierarchyPage : Page
 
     private async void Perf_Click(object sender, RoutedEventArgs e) => await RunPerfAsync();
 
-    // Times the hierarchy pipeline (WithParent, Sort, ExpandAllRows) against a GroupBy(Dept)
+    // Times the hierarchy pipeline (ParentBy, Sort, ExpandAllRows) against a GroupBy(Dept)
     // baseline (GroupBy, Sort, CollapseAllGroups [untimed], ExpandAllGroups) over the same 100k flat
     // rows. Each step includes a synchronous layout pass. Three runs each; per-step medians and the
     // median of per-run totals are reported. Writes perf-results.txt.
@@ -379,7 +379,7 @@ public sealed partial class HierarchyPage : Page
 
             table.ItemsSource = _managerSource;
 
-            string[] hierSteps = { "WithParent", "Sort(Name)", "ExpandAllRows" };
+            string[] hierSteps = { "ParentBy", "Sort(Name)", "ExpandAllRows" };
             string[] groupSteps = { "GroupBy(Dept)", "Sort(Name)", "ExpandAllGroups" };
             lines.Add($"items={PerfCount} branching={HierarchyData.Branching} runs={PerfRuns} (median, warm-up discarded) build={BuildFlavor()} clr={Environment.Version} time=ms");
             double hierTotal = 0, groupTotal = 0;

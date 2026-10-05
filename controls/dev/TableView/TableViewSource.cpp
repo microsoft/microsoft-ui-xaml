@@ -84,11 +84,11 @@ winrt::TableViewSource TableViewSource::ClearGroupBy()
     return *this;
 }
 
-winrt::TableViewSource TableViewSource::WithParent(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector)
+winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector)
 {
     if (!keySelector || !parentKeySelector)
     {
-        throw winrt::hresult_invalid_argument(L"WithParent: keySelector and parentKeySelector are required.");
+        throw winrt::hresult_invalid_argument(L"ParentBy: keySelector and parentKeySelector are required.");
     }
 
     m_engine->SetParent(
@@ -97,9 +97,9 @@ winrt::TableViewSource TableViewSource::WithParent(winrt::TableViewKeySelector c
     return *this;
 }
 
-winrt::TableViewSource TableViewSource::ClearParent()
+winrt::TableViewSource TableViewSource::ClearParentBy()
 {
-    m_engine->ClearParent();
+    m_engine->ClearParentBy();
     return *this;
 }
 
