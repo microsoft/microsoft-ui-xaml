@@ -238,13 +238,8 @@ private:
     bool m_hierarchyPublished{ false };
     // Raises ProjectionRebuilt for the staged m_kind and maintains m_hierarchyPublished.
     void PublishProjection();
-    // One completion attempt; CompleteDeferredHierarchyTeardown guards and replays it.
+    // One completion attempt; CompleteDeferredHierarchyTeardown guards it.
     void TryCompleteDeferredHierarchyTeardown();
-    // Set while a teardown completion runs (and publishes). Nested ClearParentBy / completion /
-    // Refresh / source-change requests are deferred behind it rather than re-entering.
-    bool m_completingTeardown{ false };
-    // A completion requested while one was already running; replayed once when it unwinds.
-    bool m_teardownReplayRequested{ false };
     // The visible rows of a released, ungrouped tree while its teardown is owed.
     std::vector<winrt::IInspectable> m_releasedHierarchyRows;
     // Drops the adapter's collapse overrides on filter context rows. Called by every filter verb.
@@ -314,7 +309,8 @@ private:
     std::unordered_set<winrt::hstring> m_flatRowIdentities;
     std::unordered_map<winrt::hstring, uint32_t> m_flatRowIdentityToIndex;
     // Guards re-entrant Refresh (a source notification arriving while a rebuild's ReplaceAll is
-    // already mutating the projection).
+    // already mutating the projection). Also held while a deferred hierarchy teardown publishes, so
+    // requests from that publication's handlers are deferred the same way.
     bool m_isRefreshing{ false };
     // Guards re-entrant incremental application: a synchronous VectorChanged handler that mutates
     // the source must not interleave a nested update against a half-updated projection.

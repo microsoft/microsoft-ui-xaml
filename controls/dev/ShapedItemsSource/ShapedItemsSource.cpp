@@ -149,8 +149,8 @@ void ShapedItemsSource::ClearParentBy()
     ++m_parentDeclarationGeneration;
     m_parentRelationRedeclared = false;
 
-    // Torn down now only when no publication of this engine is on the stack (a rebuild, a group
-    // re-slice or a teardown completion). From inside one (an app
+    // Torn down now only when no publication of this engine is on the stack (a rebuild -- which
+    // includes a teardown completion's publication -- or a group re-slice). From inside one (an app
     // handler of a notification the rebuild or group re-slice raised) the outer frame is still
     // publishing THIS hierarchy and will hand its adapter to consumers; releasing it underneath would
     // hand them none. The Refresh requested below is deferred behind that frame, and every
@@ -159,7 +159,7 @@ void ShapedItemsSource::ClearParentBy()
     // owed separately -- until non-hierarchical metadata is actually published -- and completed
     // when the publication unwinds either way. Set before the release so it snapshots the rows.
     m_pendingHierarchyTeardown = true;
-    if (!m_isRefreshing && !m_reslicingGroups && !m_completingTeardown)
+    if (!m_isRefreshing && !m_reslicingGroups)
     {
         ReleaseHierarchyProjection();
     }
@@ -407,7 +407,7 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
     // Re-entrant during a full rebuild: the in-flight Refresh() re-materializes the live source
     // when it completes, but changes after its initial materialization still need one coalesced
     // follow-up rebuild after the outer rebuild unwinds.
-    if (m_isRefreshing || m_completingTeardown)
+    if (m_isRefreshing)
     {
         m_pendingRefresh = true;
         return;
@@ -453,7 +453,7 @@ void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collec
 {
     // See the UI-thread contract on OnSourceCollectionChanged().
 
-    if (m_isRefreshing || m_completingTeardown)
+    if (m_isRefreshing)
     {
         m_pendingRefresh = true;
         return;
@@ -1106,9 +1106,10 @@ void ShapedItemsSource::Refresh()
     //
     // A group re-slice is part of the same guarded publication: it mutates the grouped adapter's
     // groups one by one, and a rebuild nested inside it would replace those groups under its loop.
-    // It is deferred the same way and replayed by the re-slice once it finishes. So is one requested
-    // from inside a teardown completion's publication (see CompleteDeferredHierarchyTeardown).
-    if (m_isRefreshing || m_reslicingGroups || m_completingTeardown)
+    // It is deferred the same way and replayed by the re-slice once it finishes. A teardown
+    // completion publishes under m_isRefreshing too, so one requested from there is deferred as
+    // well (see CompleteDeferredHierarchyTeardown).
+    if (m_isRefreshing || m_reslicingGroups)
     {
         m_pendingRefresh = true;
         return;
@@ -2040,40 +2041,24 @@ void ShapedItemsSource::ResliceGroupsFromHierarchy()
 
 void ShapedItemsSource::CompleteDeferredHierarchyTeardown()
 {
+    // A publication on the stack completes the teardown itself: Refresh and the group re-slice both
+    // call back here as they unwind, on success and failure alike.
     if (!m_pendingHierarchyTeardown || m_isRefreshing || m_reslicingGroups)
     {
         return;
     }
 
     // The teardown publication runs app code (the consumer's swap raises property-change,
-    // selection and collection notifications). A ClearParentBy from there would otherwise land right
-    // back here while the obligation is still owed and publish again from inside this publication,
-    // without bound. Nested requests are recorded instead and replayed at most once, after the
-    // outer attempt has unwound.
-    if (m_completingTeardown)
-    {
-        m_teardownReplayRequested = true;
-        return;
-    }
-
+    // selection and collection notifications), so it is guarded exactly like a rebuild. A
+    // ClearParentBy from there coalesces into this attempt instead of publishing again from inside
+    // it; a Refresh or source change is deferred behind it. If this attempt fails, the obligation
+    // stays for the next ClearParentBy or Refresh.
     bool const refreshAlreadyPending = m_pendingRefresh;
     {
-        m_completingTeardown = true;
-        m_teardownReplayRequested = false;
-        auto guard = wil::scope_exit([this]() noexcept
-        {
-            m_completingTeardown = false;
-            m_teardownReplayRequested = false;
-        });
+        m_isRefreshing = true;
+        auto guard = wil::scope_exit([this]() noexcept { m_isRefreshing = false; });
 
         TryCompleteDeferredHierarchyTeardown();
-
-        // Only matters if the outer attempt failed: success already discharged the obligation. If
-        // this attempt fails too, the obligation stays for the next ClearParentBy or Refresh.
-        if (std::exchange(m_teardownReplayRequested, false))
-        {
-            TryCompleteDeferredHierarchyTeardown();
-        }
     }
 
     // A Refresh requested from inside the publication (a verb or source change in a handler) was
