@@ -28,7 +28,7 @@ runtimeclass TableViewSource
     //  * UI-thread affinity, like any XAML items source. The underlying collection must also
     //    raise its change notifications on that thread; raising them from a background thread
     //    is not supported. The verbs hold no lock.
-    //  * Rows are identified by their item's OBJECT identity, with one exception: under WithParent
+    //  * Rows are identified by their item's OBJECT identity, with one exception: under ParentBy
     //    the app-supplied node key (keySelector) is the row identity. So selection and focus
     //    re-anchor across a reshape; for a flat or grouped source NOT across an item being
     //    re-created (a hierarchical row re-anchors on its key), and the same object in two rows
@@ -105,7 +105,7 @@ runtimeclass TableViewSource
     // keys, self-parent and cycles raise E_INVALIDARG naming the key; the previous projection stays
     // intact. A throwing selector is treated as having returned null.
     //
-    // Both selectors are required, non-null (throws E_INVALIDARG when null; use ClearParent() to
+    // Both selectors are required, non-null (throws E_INVALIDARG when null; use ClearParentBy() to
     // remove). Value-typed keys -- strings, numbers, Boolean, Char16, Guid, DateTime, TimeSpan,
     // Point, Size, Rect and WinRT enums -- are compared by value, type included (an Int32 key never
     // matches an Int64 one, nor an enum of another type); a fresh box per call is fine. Any other
@@ -116,9 +116,9 @@ runtimeclass TableViewSource
     // follow it).
     //
     // Error contract beyond the call itself:
-    //  * After WithParent throws, the relation REMAINS declared: every later reshape (another verb,
+    //  * After ParentBy throws, the relation REMAINS declared: every later reshape (another verb,
     //    or a source collection change) re-validates and throws again until the data is fixed or
-    //    ClearParent() is called.
+    //    ClearParentBy() is called.
     //  * Invalid data arriving through a source collection change (e.g. list.Add of a duplicate
     //    key) makes the control throw E_INVALIDARG from its collection-changed handler. Whether
     //    that surfaces from the app's own mutation call depends on how the collection raises its
@@ -128,8 +128,8 @@ runtimeclass TableViewSource
     // Every visible row is a real data row, and a row with children can be expanded to reveal them
     // indented beneath it. Rows start COLLAPSED; use TableView.ExpandAllRows() to start expanded.
     // Expansion state is kept per key and survives sort, filter and source changes. Re-declaring
-    // WithParent replaces the previous relation (last writer wins) and resets expansion state;
-    // ClearParent() resets it too.
+    // ParentBy replaces the previous relation (last writer wins) and resets expansion state;
+    // ClearParentBy() resets it too.
     //
     // Sort applies within each sibling set. Filter keeps each match plus all of its ancestors; while
     // a filter is active those ancestors are shown expanded so the matches are reachable. Expanding
@@ -142,10 +142,10 @@ runtimeclass TableViewSource
     // The relation is re-evaluated on every collection change of the source. A property change on
     // an item's key or parent key is not observed; replace the item to reparent it immediately.
     // UI-thread affinity applies as for the rest of this class.
-    TableViewSource WithParent(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
+    TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
 
     // Removes the relation and shows the source flat again. Resets expansion state.
-    TableViewSource ClearParent();
+    TableViewSource ClearParentBy();
 
 }
 

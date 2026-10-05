@@ -120,7 +120,7 @@ public:
     // descendant is never pulled out from under its parent to join a bucket, because its depth --
     // and therefore the tree itself -- would not survive it.
     void SetParent(ShapingHelpers::KeySelector key, ShapingHelpers::KeySelector parentKey);
-    void ClearParent();
+    void ClearParentBy();
     void SetSort(
         winrt::hstring const& previousAxisToken,
         winrt::hstring const& axisToken,
@@ -225,11 +225,11 @@ private:
     // adapter would keep re-slicing groups -- and keep its last rows alive -- for a projection that
     // is no longer being shown.
     void ReleaseHierarchyProjection();
-    // Completes a ClearParent that arrived while a publication was on the stack. Runs when that
+    // Completes a ClearParentBy that arrived while a publication was on the stack. Runs when that
     // publication unwinds, on success and failure alike; a no-op once non-hierarchical metadata has
     // been published.
     void CompleteDeferredHierarchyTeardown();
-    // Set by ClearParent; cleared only once non-hierarchical metadata has actually been published
+    // Set by ClearParentBy; cleared only once non-hierarchical metadata has actually been published
     // (m_hierarchyPublished), not merely once the adapter is released or a flat kind is staged.
     bool m_pendingHierarchyTeardown{ false };
     // Whether the consumer may currently hold hierarchical row metadata. Tracked apart from m_kind,
@@ -240,7 +240,7 @@ private:
     void PublishProjection();
     // One completion attempt; CompleteDeferredHierarchyTeardown guards and replays it.
     void TryCompleteDeferredHierarchyTeardown();
-    // Set while a teardown completion runs (and publishes). Nested ClearParent / completion /
+    // Set while a teardown completion runs (and publishes). Nested ClearParentBy / completion /
     // Refresh / source-change requests are deferred behind it rather than re-entering.
     bool m_completingTeardown{ false };
     // A completion requested while one was already running; replayed once when it unwinds.
@@ -333,7 +333,7 @@ private:
     // declared" test everywhere.
     ShapingHelpers::KeySelector m_keySelector{ nullptr };
     ShapingHelpers::KeySelector m_parentKeySelector{ nullptr };
-    // Bumped by SetParent / ClearParent. An index build that sees it move under it (a selector
+    // Bumped by SetParent / ClearParentBy. An index build that sees it move under it (a selector
     // re-declared the relation) discards its result, including any validation error.
     uint64_t m_parentDeclarationGeneration{ 0 };
     // Set by SetParent, consumed by the next publish: re-declaring the relation clears intent.

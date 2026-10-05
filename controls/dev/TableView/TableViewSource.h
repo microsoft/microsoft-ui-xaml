@@ -55,8 +55,8 @@ public:
     winrt::TableViewSource ClearFilter();
     winrt::TableViewSource ClearGroupBy();
     winrt::TableViewSource ClearSort();
-    winrt::TableViewSource WithParent(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector);
-    winrt::TableViewSource ClearParent();
+    winrt::TableViewSource ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector);
+    winrt::TableViewSource ClearParentBy();
     winrt::TableViewSource ClearSort(winrt::hstring const& sortAxisToken);
     // Internal, for the owning control: make sortAxisToken the ONLY sort axis, dropping any the
     // app declared through the fluent Sort verb (which is untokenized and so unaddressable by

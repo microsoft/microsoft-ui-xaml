@@ -618,13 +618,13 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     // are the programmatic bulk counterparts. Both are no-ops when the source is not grouped.
     //
     // GROUPS ONLY. A source CAN be both grouped and hierarchical (TableViewSource.GroupBy composed
-    // with WithParent), and under that projection these open and close the headers while leaving
+    // with ParentBy), and under that projection these open and close the headers while leaving
     // every tree node's expansion alone.
     void ExpandAllGroups();
     void CollapseAllGroups();
 
     // The hierarchy counterpart: expands or collapses every NODE of the rows produced by
-    // TableViewSource.WithParent. No-ops when the source is not hierarchical.
+    // TableViewSource.ParentBy. No-ops when the source is not hierarchical.
     //
     // Separate verbs rather than one "expand everything", because the two axes are independent: a
     // grouped tree's headers and its nodes are opened and closed separately. ExpandAllRows makes

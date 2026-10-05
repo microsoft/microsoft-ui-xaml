@@ -198,14 +198,14 @@ bool BuildParentKeyIndex(
             {
                 try { typeName = winrt::get_class_name(rows[i]); } catch (...) {}
             }
-            error = L"WithParent: key selector returned null or empty for an item"
+            error = L"ParentBy: key selector returned null or empty for an item"
                 + (typeName.empty() ? winrt::hstring{} : L" of type '" + typeName + L"'")
                 + L".";
             return false;
         }
         if (!indexByKey.emplace(nodeKeys[i], i).second)
         {
-            error = L"WithParent: duplicate key '" + DescribeNodeKey(nodeKeys[i]) + L"'.";
+            error = L"ParentBy: duplicate key '" + DescribeNodeKey(nodeKeys[i]) + L"'.";
             return false;
         }
     }
@@ -219,7 +219,7 @@ bool BuildParentKeyIndex(
         if (parentKey.empty()) continue;
         if (parentKey == nodeKeys[i])
         {
-            error = L"WithParent: item with key '" + DescribeNodeKey(nodeKeys[i]) + L"' is its own parent.";
+            error = L"ParentBy: item with key '" + DescribeNodeKey(nodeKeys[i]) + L"' is its own parent.";
             return false;
         }
         if (auto it = indexByKey.find(parentKey); it != indexByKey.end())
@@ -266,7 +266,7 @@ bool BuildParentKeyIndex(
                     onPath[p] = true;
                     p = parentIndex[p];
                 }
-                error = L"WithParent: cycle detected involving key '" + DescribeNodeKey(nodeKeys[p]) + L"'.";
+                error = L"ParentBy: cycle detected involving key '" + DescribeNodeKey(nodeKeys[p]) + L"'.";
                 return false;
             }
         }
