@@ -34,8 +34,8 @@
                             </Mask>
                           </MaskBrush>
                         </wucSpriteVisual>
-                        <wucSpriteVisual SizeX="19" SizeY="10" BorderMode="Hard" OffsetX="41" OffsetY="11" OffsetZ="0">
-                          <Clip ClipLeft="-1" ClipTop="-5" ClipRight="-1" ClipBottom="3" TransformMatrix="Identity" />
+                        <wucSpriteVisual SizeX="21" SizeY="12" BorderMode="Hard" OffsetX="40" OffsetY="10" OffsetZ="0">
+                          <Clip ClipLeft="0" ClipTop="-4" ClipRight="0" ClipBottom="4" TransformMatrix="Identity" />
                           <MaskBrush>
                             <Source>
                               <ColorBrush Color="#ffffffff" />

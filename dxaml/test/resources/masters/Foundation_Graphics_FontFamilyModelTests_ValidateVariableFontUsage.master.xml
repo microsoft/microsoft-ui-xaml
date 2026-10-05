@@ -40,7 +40,7 @@
                 <wucSpriteVisual SizeX="800" SizeY="400" BorderMode="Soft">
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="183" SizeY="20" BorderMode="Hard" OffsetX="0" OffsetY="3" OffsetZ="0">
+                <wucSpriteVisual SizeX="185" SizeY="22" BorderMode="Hard" OffsetX="-1" OffsetY="2" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -50,7 +50,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="110" SizeY="18" BorderMode="Hard" OffsetX="1" OffsetY="26" OffsetZ="0">
+                <wucSpriteVisual SizeX="112" SizeY="20" BorderMode="Hard" OffsetX="0" OffsetY="25" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -60,7 +60,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="167" SizeY="18" BorderMode="Hard" OffsetX="0" OffsetY="52" OffsetZ="0">
+                <wucSpriteVisual SizeX="169" SizeY="20" BorderMode="Hard" OffsetX="-1" OffsetY="51" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -70,7 +70,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="163" SizeY="18" BorderMode="Hard" OffsetX="1" OffsetY="78" OffsetZ="0">
+                <wucSpriteVisual SizeX="165" SizeY="20" BorderMode="Hard" OffsetX="0" OffsetY="77" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -80,7 +80,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="212" SizeY="18" BorderMode="Hard" OffsetX="1" OffsetY="104" OffsetZ="0">
+                <wucSpriteVisual SizeX="214" SizeY="20" BorderMode="Hard" OffsetX="0" OffsetY="103" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -90,7 +90,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="738" SizeY="57" BorderMode="Hard" OffsetX="3" OffsetY="139" OffsetZ="0">
+                <wucSpriteVisual SizeX="740" SizeY="59" BorderMode="Hard" OffsetX="2" OffsetY="138" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -100,7 +100,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="537" SizeY="53" BorderMode="Hard" OffsetX="2" OffsetY="191" OffsetZ="0">
+                <wucSpriteVisual SizeX="539" SizeY="55" BorderMode="Hard" OffsetX="1" OffsetY="190" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -110,7 +110,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="444" SizeY="50" BorderMode="Hard" OffsetX="1" OffsetY="270" OffsetZ="0">
+                <wucSpriteVisual SizeX="446" SizeY="52" BorderMode="Hard" OffsetX="0" OffsetY="269" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -188,7 +188,7 @@
                       </ExpressionAnimation>
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="143" SizeY="15" BorderMode="Hard" OffsetX="1" OffsetY="0" OffsetZ="0">
+                      <wucSpriteVisual SizeX="145" SizeY="17" BorderMode="Hard" OffsetX="0" OffsetY="-1" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />

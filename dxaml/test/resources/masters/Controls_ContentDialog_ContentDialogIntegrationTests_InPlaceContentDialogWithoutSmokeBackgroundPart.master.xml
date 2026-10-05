@@ -110,7 +110,7 @@
                             </ExpressionAnimation>
                           </TransformMatrix>
                           <Visual Tag="ContentVisual">
-                            <wucSpriteVisual SizeX="169" SizeY="20" BorderMode="Hard" OffsetX="1" OffsetY="7" OffsetZ="0">
+                            <wucSpriteVisual SizeX="171" SizeY="22" BorderMode="Hard" OffsetX="0" OffsetY="6" OffsetZ="0">
                               <MaskBrush>
                                 <Source>
                                   <ColorBrush Color="#ffffffff" />
@@ -120,7 +120,7 @@
                                 </Mask>
                               </MaskBrush>
                             </wucSpriteVisual>
-                            <wucSpriteVisual SizeX="143" SizeY="13" BorderMode="Hard" OffsetX="0" OffsetY="44" OffsetZ="0">
+                            <wucSpriteVisual SizeX="145" SizeY="15" BorderMode="Hard" OffsetX="-1" OffsetY="43" OffsetZ="0">
                               <MaskBrush>
                                 <Source>
                                   <ColorBrush Color="#ffffffff" />
@@ -146,7 +146,7 @@
                           </Source>
                         </NineGridBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="19" SizeY="10" BorderMode="Hard" OffsetX="82" OffsetY="138" OffsetZ="0">
+                      <wucSpriteVisual SizeX="21" SizeY="12" BorderMode="Hard" OffsetX="81" OffsetY="137" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
@@ -169,7 +169,7 @@
                           </Source>
                         </NineGridBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="40" SizeY="10" BorderMode="Hard" OffsetX="208" OffsetY="138" OffsetZ="0">
+                      <wucSpriteVisual SizeX="42" SizeY="12" BorderMode="Hard" OffsetX="207" OffsetY="137" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="#ffffffff" />
