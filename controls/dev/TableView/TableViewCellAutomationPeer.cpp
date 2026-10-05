@@ -960,7 +960,12 @@ winrt::UIElement TableViewCellAutomationPeer::GetRealizedCellFromRow(winrt::Tabl
     }
 
     auto const rowImpl = winrt::get_self<TableViewRow>(row);
-    auto const cellsHost = rowImpl ? rowImpl->GetCellsHostPanelInternal() : nullptr;
+    if (!rowImpl)
+    {
+        return nullptr;
+    }
+
+    auto const cellsHost = rowImpl->GetCellsHostPanelInternal();
     if (!cellsHost)
     {
         return nullptr;
