@@ -266,17 +266,18 @@ bool HardwareTileCopyTests::ClassSetup()
 
 void HardwareTileCopyTests::BelowThresholdUsesHeap()
 {
-    VerifyCopy(127, 64, { {0, 0, 127, 64} }, false, 1);
+    VerifyCopy(96, 96, { {0, 0, 96, 96} }, false, 1);
+    VerifyCopy(127, 256, { {0, 0, 127, 256} }, false, 1);
 }
 
 void HardwareTileCopyTests::AtThresholdReleasesScratch()
 {
-    VerifyCopy(128, 64, { {0, 0, 128, 64} }, true, 1);
+    VerifyCopy(128, 256, { {0, 0, 128, 256} }, true, 1);
 }
 
 void HardwareTileCopyTests::AboveThresholdReleasesScratch()
 {
-    VerifyCopy(129, 64, { {0, 0, 129, 64} }, true, 1);
+    VerifyCopy(129, 256, { {0, 0, 129, 256} }, true, 1);
 }
 
 void HardwareTileCopyTests::FinalStripReleasesOriginalAllocation()
@@ -286,8 +287,8 @@ void HardwareTileCopyTests::FinalStripReleasesOriginalAllocation()
 
 void HardwareTileCopyTests::VirtualTilesPreservePixels()
 {
-    VerifyCopy(256, 129, { {128, 64, 128, 64}, {0, 0, 128, 64}, {128, 128, 128, 1},
-        {128, 0, 128, 64}, {0, 128, 128, 1}, {0, 64, 128, 64} }, true, 3, Failure::None, true);
+    VerifyCopy(512, 129, { {256, 64, 256, 64}, {0, 0, 256, 64}, {256, 128, 256, 1},
+        {256, 0, 256, 64}, {0, 128, 256, 1}, {0, 64, 256, 64} }, true, 3, Failure::None, true);
 }
 
 void HardwareTileCopyTests::CopyPixelsFailureReleasesScratch()
@@ -297,5 +298,5 @@ void HardwareTileCopyTests::CopyPixelsFailureReleasesScratch()
 
 void HardwareTileCopyTests::LockFailureReleasesScratch()
 {
-    VerifyCopy(128, 64, { {0, 0, 128, 64} }, true, 1, Failure::Lock);
+    VerifyCopy(128, 256, { {0, 0, 128, 256} }, true, 1, Failure::Lock);
 }

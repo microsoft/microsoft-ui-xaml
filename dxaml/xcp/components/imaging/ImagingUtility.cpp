@@ -574,10 +574,10 @@ static _Check_return_ HRESULT CopyToHardwareTiles(
 
     // Allocate the temporary buffer
     uint32_t copySegmentSize = tempBufferStride * lineDecodeCount;
-    // A 32 KiB cutoff includes medium-size buffers (e.g. 96x96 BGRA) while
-    // leaving small decodes on the cheaper heap path. This is a policy cutoff,
-    // not a Windows heap threshold. Release larger buffers' commit at scope exit.
-    constexpr uint32_t virtualAllocThreshold = 32 * 1024;
+    // Keep buffers below 128 KiB on the heap to limit allocation/page-fault
+    // overhead on repeated decodes; release larger buffers' commit at scope exit.
+    // This is a policy cutoff, not a Windows heap threshold.
+    constexpr uint32_t virtualAllocThreshold = 128 * 1024;
     wistd::unique_ptr<uint8_t[]> heapBuffer;
     wil::unique_virtualalloc_ptr<uint8_t> virtualBuffer;
     if (copySegmentSize >= virtualAllocThreshold)
