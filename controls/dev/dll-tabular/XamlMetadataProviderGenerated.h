@@ -501,7 +501,10 @@ Entry c_typeEntries[] =
                 {
                     winrt::ITableViewRowStatics statics = GetFactory<winrt::ITableViewRowStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewRow");
                     {
+                        xamlType.AddDPMember(L"IsExpandable", L"Boolean", statics.IsExpandableProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IsExpanded", L"Boolean", statics.IsExpandedProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsSelected", L"Boolean", statics.IsSelectedProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Level", L"Int32", statics.LevelProperty(), false /* isContent */);
                     }
 
                 });

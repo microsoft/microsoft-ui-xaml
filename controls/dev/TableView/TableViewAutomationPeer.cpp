@@ -9,6 +9,7 @@
 #include "TableViewAutomationPeer.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
+#include "TableViewRowAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewAutomationPeer.properties.cpp"
 
@@ -256,11 +257,18 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::GetItem(int32_t row, i
 
     if (auto const cellFE = cellElement.try_as<winrt::FrameworkElement>())
     {
-        // Return the same rich cell peer used for tree navigation.
+        // Return the same rich cell peer, by identity, that tree navigation hands out: the row
+        // peer owns it, so the provider stays alive after this call returns.
         auto const owningColumn = rowImpl->GetCellOwningColumn(cellElement);
-        winrt::AutomationPeer const cellPeer =
-            winrt::make<TableViewCellAutomationPeer>(cellFE, rowElement, owningColumn, column);
-        return ProviderFromPeer(cellPeer);
+        if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement)
+                .try_as<winrt::TableViewRowAutomationPeer>())
+        {
+            if (auto const cellPeer = winrt::get_self<TableViewRowAutomationPeer>(rowPeer)->GetOrCreateCellPeer(
+                    cellFE, owningColumn, column))
+            {
+                return ProviderFromPeer(cellPeer);
+            }
+        }
     }
     return nullptr;
 }
@@ -398,8 +406,17 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateColumnHeaderPeer(
 
     // The TableView owns the peer so headers stay enumerable before their templates realize;
     // TableViewColumnHeaderAutomationPeer supplies its own per-column RuntimeId and AutomationId
-    // to keep the headers distinguishable despite the shared owner.
-    return winrt::make<TableViewColumnHeaderAutomationPeer>(tableView, column);
+    // to keep the headers distinguishable despite the shared owner. Cached immediately so a
+    // lookup from a cell, ahead of any GetColumnHeaders call, still yields a stable provider.
+    auto const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(tableView, column);
+    // Drop entries for columns that no longer exist, so cell-driven lookups cannot grow the cache
+    // between GetColumnHeaders rebuilds.
+    m_columnHeaderPeerCache.erase(
+        std::remove_if(m_columnHeaderPeerCache.begin(), m_columnHeaderPeerCache.end(),
+            [](ColumnHeaderPeerCacheEntry const& entry) { return !entry.column.get(); }),
+        m_columnHeaderPeerCache.end());
+    m_columnHeaderPeerCache.push_back({ winrt::make_weak(column), peer });
+    return peer;
 }
 
 static winrt::hstring ItemToName(winrt::IInspectable const& item)

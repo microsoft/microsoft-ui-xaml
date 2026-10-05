@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -15,6 +16,16 @@ public sealed partial class MainWindow : Window
 
         // Select the first item, which navigates the frame to the playground via SelectionChanged.
         Nav.SelectedItem = Nav.MenuItems[0];
+
+        // Unattended perf run: an autorun-perf file in the app's data directory opens the hierarchy
+        // page and runs the 100k probe.
+        var perfTrigger = System.IO.Path.Combine(HierarchyPage.DataDirectory, HierarchyPage.PerfTriggerFileName);
+        if (System.IO.File.Exists(perfTrigger))
+        {
+            System.IO.File.Delete(perfTrigger);
+            HierarchyPage.AutoPerf = true;
+            Nav.SelectedItem = Nav.MenuItems.OfType<NavigationViewItem>().First(i => (i.Tag as string) == "hierarchy");
+        }
     }
 
     private void Nav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -34,6 +45,7 @@ public sealed partial class MainWindow : Window
             "selection" => typeof(SelectionPage),
             "tooltips" => typeof(ToolTipsPage),
             "shaping" => typeof(ShapingPage),
+            "hierarchy" => typeof(HierarchyPage),
             _ => typeof(PlaygroundPage),
         };
 
