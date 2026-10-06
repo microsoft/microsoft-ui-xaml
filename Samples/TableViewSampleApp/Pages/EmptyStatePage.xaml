@@ -93,14 +93,20 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <StackPanel Spacing="4" AutomationProperties.Name="Empty state data source options">
+                <StackPanel Spacing="4">
                     <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Data source" Style="{StaticResource SectionHeaderTextStyle}"/>
                     <TextBlock
                         Text="Clear ItemsSource to show the EmptyTemplate."
                         Style="{StaticResource SectionDescriptionTextStyle}"
                         TextWrapping="Wrap"/>
-                    <RadioButton Content="Populated" Tag="Populated" GroupName="EmptyStateSource" IsChecked="True" Checked="OnDataSourceChecked" AutomationProperties.AutomationId="EmptyStatePopulatedRadio"/>
-                    <RadioButton Content="Empty (null)" Tag="Empty" GroupName="EmptyStateSource" Checked="OnDataSourceChecked" AutomationProperties.AutomationId="EmptyStateEmptyRadio"/>
+                    <muxc:RadioButtons
+                        x:Name="DataSourceRadioButtons"
+                        AutomationProperties.Name="Data source"
+                        SelectedIndex="0"
+                        SelectionChanged="OnDataSourceSelectionChanged">
+                        <RadioButton Content="Populated" Tag="Populated" AutomationProperties.AutomationId="EmptyStatePopulatedRadio"/>
+                        <RadioButton Content="Empty (null)" Tag="Empty" AutomationProperties.AutomationId="EmptyStateEmptyRadio"/>
+                    </muxc:RadioButtons>
                 </StackPanel>
 
                 <muxc:InfoBar AutomationProperties.LiveSetting="Polite"

@@ -49,9 +49,10 @@ public sealed partial class EmptyStatePage : Page, INotifyPropertyChanged
         }
     }
 
-    private void OnDataSourceChecked(object sender, RoutedEventArgs e)
+    private void OnDataSourceSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (DemoTable is null || sender is not FrameworkElement { Tag: string tag })
+        if (DemoTable is null ||
+            sender is not RadioButtons { SelectedItem: FrameworkElement { Tag: string tag } })
         {
             return;
         }

@@ -67,9 +67,10 @@ public sealed partial class DensityReadOnlyPage : Page, INotifyPropertyChanged
         }
     }
 
-    private void OnDensityChecked(object sender, RoutedEventArgs e)
+    private void OnDensitySelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (DemoTable is null || sender is not FrameworkElement { Tag: string tag })
+        if (DemoTable is null ||
+            sender is not RadioButtons { SelectedItem: FrameworkElement { Tag: string tag } })
         {
             return;
         }

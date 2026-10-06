@@ -29,14 +29,15 @@
                     AutomationProperties.HeadingLevel="Level3"
                     VerticalAlignment="Center"/>
                 <Button
+                    x:Name="CopyButton"
                     Grid.Column="1"
                     Click="OnCopyClick"
                     AutomationProperties.Name="Copy code"
                     Style="{ThemeResource SubtleButtonStyle}"
                     Padding="8,4">
                     <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon Glyph="&#xE8C8;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
-                        <TextBlock Text="Copy" FontSize="12"/>
+                        <FontIcon x:Name="CopyIcon" Glyph="&#xE8C8;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+                        <TextBlock x:Name="CopyText" Text="Copy" FontSize="12"/>
                     </StackPanel>
                 </Button>
             </Grid>

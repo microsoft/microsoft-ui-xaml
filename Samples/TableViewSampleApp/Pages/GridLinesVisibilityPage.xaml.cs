@@ -80,9 +80,10 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
         }
     }
 
-    private void OnGridLinesVisibilityChecked(object sender, RoutedEventArgs e)
+    private void OnGridLinesVisibilitySelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (DemoTable is null || sender is not FrameworkElement { Tag: string tag })
+        if (DemoTable is null ||
+            sender is not RadioButtons { SelectedItem: FrameworkElement { Tag: string tag } })
         {
             return;
         }
@@ -100,9 +101,10 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
         UpdateStatus();
     }
 
-    private void OnModeRadioChecked(object sender, RoutedEventArgs e)
+    private void OnModeSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (DemoTable is null || sender is not FrameworkElement { Tag: string tag })
+        if (DemoTable is null ||
+            sender is not RadioButtons { SelectedItem: FrameworkElement { Tag: string tag } })
         {
             return;
         }
@@ -117,7 +119,7 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
         UpdateStatus();
     }
 
-    private void OnBandingRadioChecked(object sender, RoutedEventArgs e)
+    private void OnBandingSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (DemoTable is null)
         {

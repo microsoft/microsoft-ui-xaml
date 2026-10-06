@@ -20,7 +20,7 @@
         <controls:SamplePresenter.Example>
     <Grid Padding="24" ColumnSpacing="12">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="260"/>
+            <ColumnDefinition Width="320"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -44,10 +44,27 @@
                 <ListView x:Name="FileList"
                           Grid.Row="1"
                           AutomationProperties.AutomationId="FilePropertiesFileList"
-                          DisplayMemberPath="Name"
                           SelectionChanged="OnFileSelectionChanged"
                           SelectionMode="Single"
-                          MinHeight="420"/>
+                          MinHeight="420">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid
+                                AutomationProperties.Name="{Binding Name}"
+                                ToolTipService.ToolTip="{Binding Name}">
+                                <TextBlock
+                                    Text="{Binding Name}"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextWrapping="NoWrap"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </Grid>
         </Border>
 

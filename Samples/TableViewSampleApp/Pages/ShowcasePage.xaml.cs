@@ -89,9 +89,10 @@ public sealed partial class ShowcasePage : Page
 
     // ----- Source mode (flat / grouped) -----
 
-    private void OnModeRadioChecked(object sender, RoutedEventArgs e)
+    private void OnModeSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (PeopleTable is null || sender is not RadioButton { Tag: string tag })
+        if (PeopleTable is null ||
+            sender is not RadioButtons { SelectedItem: FrameworkElement { Tag: string tag } })
         {
             return;
         }

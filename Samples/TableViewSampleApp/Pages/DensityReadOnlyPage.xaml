@@ -115,15 +115,23 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <StackPanel Spacing="4" AutomationProperties.Name="Density options">
+                <StackPanel Spacing="4">
                     <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Density" Style="{StaticResource SectionHeaderTextStyle}"/>
                     <TextBlock
+                        x:Name="DensityDescriptionText"
                         Text="Row height + built-in cell padding preset."
                         Style="{StaticResource SectionDescriptionTextStyle}"
                         TextWrapping="Wrap"/>
-                    <RadioButton Content="Compact" Tag="Compact" GroupName="Density" Checked="OnDensityChecked" AutomationProperties.AutomationId="DensityCompactRadio"/>
-                    <RadioButton Content="Standard (default)" Tag="Standard" GroupName="Density" IsChecked="True" Checked="OnDensityChecked" AutomationProperties.AutomationId="DensityStandardRadio"/>
-                    <RadioButton Content="Comfortable" Tag="Comfortable" GroupName="Density" Checked="OnDensityChecked" AutomationProperties.AutomationId="DensityComfortableRadio"/>
+                    <muxc:RadioButtons
+                        x:Name="DensityRadioButtons"
+                        AutomationProperties.Name="Density"
+                        AutomationProperties.HelpText="Row height + built-in cell padding preset."
+                        SelectedIndex="1"
+                        SelectionChanged="OnDensitySelectionChanged">
+                        <RadioButton Content="Compact" Tag="Compact" AutomationProperties.AutomationId="DensityCompactRadio"/>
+                        <RadioButton Content="Standard (default)" Tag="Standard" AutomationProperties.AutomationId="DensityStandardRadio"/>
+                        <RadioButton Content="Comfortable" Tag="Comfortable" AutomationProperties.AutomationId="DensityComfortableRadio"/>
+                    </muxc:RadioButtons>
                 </StackPanel>
 
                 <StackPanel Spacing="4" AutomationProperties.Name="Read-only options">
