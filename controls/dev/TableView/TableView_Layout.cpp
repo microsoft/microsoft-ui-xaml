@@ -120,6 +120,7 @@ winrt::Size TableView::MeasureOverride(winrt::Size const& availableSize)
 {
     auto desired = __super::MeasureOverride(availableSize);
     ResolveColumnWidths();
+    QueueTerminalGridLineRefresh();
     return desired;
 }
 
