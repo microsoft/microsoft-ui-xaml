@@ -59,13 +59,15 @@ variables:
 # Monobuild test runs in the OS project, so use the OS-project mirror of WinUI's
 # variable groups (WinAppSDK-WinUI-*) rather than the WinUI-project originals.
 - group: WinAppSDK-WinUI-Variable-Library
-# sourcePipeline -> definition id, for the run name only. Same mapping as Foundation/WinML.
+# sourcePipeline -> definition id. Used for the run name AND for consumeProductFromPipeline
+# below, so it must name the pipeline that actually produced the artifacts being consumed.
+# Same mapping as Foundation/WinML.
 - ${{ if eq(parameters.sourcePipeline, 'Monobuild-Nightly') }}:
   - name: sourcePipelineId
-    value: '190463'
+    value: '201186'
 - ${{ if eq(parameters.sourcePipeline, 'Monobuild-Test') }}:
   - name: sourcePipelineId
-    value: '201186'
+    value: '190463'
 - ${{ if eq(parameters.sourcePipeline, 'Monobuild-Official') }}:
   - name: sourcePipelineId
     value: '196647'
