@@ -17,17 +17,10 @@ public sealed partial class MainWindow : Window
         // Select the first item, which navigates the frame to the playground via SelectionChanged.
         Nav.SelectedItem = Nav.MenuItems[0];
 
-        // Unattended runs: a trigger file in the app's data directory opens the matching page and
-        // runs it. autorun-livecheck runs the live-shaping self-check; autorun-perf the 100k probe.
-        var liveTrigger = System.IO.Path.Combine(HierarchyPage.DataDirectory, LiveShapingSelfCheckPage.TriggerFileName);
+        // Unattended perf run: an autorun-perf file in the app's data directory opens the hierarchy
+        // page and runs the 100k probe.
         var perfTrigger = System.IO.Path.Combine(HierarchyPage.DataDirectory, HierarchyPage.PerfTriggerFileName);
-        if (System.IO.File.Exists(liveTrigger))
-        {
-            System.IO.File.Delete(liveTrigger);
-            LiveShapingSelfCheckPage.AutoRun = true;
-            Nav.SelectedItem = Nav.MenuItems.OfType<NavigationViewItem>().First(i => (i.Tag as string) == "livecheck");
-        }
-        else if (System.IO.File.Exists(perfTrigger))
+        if (System.IO.File.Exists(perfTrigger))
         {
             System.IO.File.Delete(perfTrigger);
             HierarchyPage.AutoPerf = true;
@@ -53,7 +46,6 @@ public sealed partial class MainWindow : Window
             "tooltips" => typeof(ToolTipsPage),
             "shaping" => typeof(ShapingPage),
             "hierarchy" => typeof(HierarchyPage),
-            "livecheck" => typeof(LiveShapingSelfCheckPage),
             _ => typeof(PlaygroundPage),
         };
 

@@ -21,7 +21,6 @@
             <controls:NavigationViewItem Content="Cell tooltips" Tag="tooltips"/>
             <controls:NavigationViewItem Content="Filter / sort / group" Tag="shaping"/>
             <controls:NavigationViewItem Content="Hierarchical rows" Tag="hierarchy"/>
-            <controls:NavigationViewItem Content="Live shaping self-check" Tag="livecheck"/>
         </controls:NavigationView.MenuItems>
 
         <Frame x:Name="ContentFrame"/>

@@ -103,11 +103,6 @@ The **Filter / sort / group** page exercises the data-shaping surface:
 The **Hierarchical rows** page uses observable rows with a "Live shaping" switch (on by default):
 Reparent / Rename / Next dept edit a property in place and both trees reshape.
 
-The **Live shaping self-check** page runs scripted checks for the live-shaping flags (flat,
-grouped, and `ParentBy` hierarchies) and shows PASS/FAIL per case. To run it unattended, create an
-empty file named `autorun-livecheck` next to the exe; the app opens the page, writes
-`livecheck-results.txt` there, and exits.
-
 ## More detail
 
 See [AGENTS.md](AGENTS.md).
