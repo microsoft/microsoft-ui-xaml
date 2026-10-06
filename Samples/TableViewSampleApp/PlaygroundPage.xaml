@@ -39,13 +39,13 @@
 
                 <TextBlock Text="HeadersVisibility" FontWeight="SemiBold" Margin="0,8,0,0"/>
                 <ComboBox x:Name="HeadersCombo" HorizontalAlignment="Stretch" SelectionChanged="Headers_Changed">
-                    <ComboBoxItem Content="Column" IsSelected="True"/>
+                    <ComboBoxItem Content="Column"/>
                     <ComboBoxItem Content="None"/>
                 </ComboBox>
 
                 <TextBlock Text="GridLinesVisibility" FontWeight="SemiBold" Margin="0,8,0,0"/>
                 <ComboBox x:Name="GridLinesCombo" HorizontalAlignment="Stretch" SelectionChanged="GridLines_Changed">
-                    <ComboBoxItem Content="All" IsSelected="True"/>
+                    <ComboBoxItem Content="All"/>
                     <ComboBoxItem Content="Horizontal"/>
                     <ComboBoxItem Content="Vertical"/>
                     <ComboBoxItem Content="None"/>
@@ -54,7 +54,7 @@
                 <TextBlock Text="Density" FontWeight="SemiBold" Margin="0,8,0,0"/>
                 <ComboBox x:Name="DensityCombo" HorizontalAlignment="Stretch" SelectionChanged="Density_Changed">
                     <ComboBoxItem Content="Compact"/>
-                    <ComboBoxItem Content="Standard" IsSelected="True"/>
+                    <ComboBoxItem Content="Standard"/>
                     <ComboBoxItem Content="Comfortable"/>
                 </ComboBox>
 

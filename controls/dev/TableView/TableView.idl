@@ -460,7 +460,9 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("winrt::TableViewHeadersVisibility::Column")]
     TableViewHeadersVisibility HeadersVisibility { get; set; };
 
-    // Controls row dividers and column separators; row banding is separate.
+    // Controls the body's row dividers and column separators, and the rule under the column-header
+    // row. Row banding is separate. Defaults to All for parity with WPF DataGrid, whose enum this
+    // mirrors.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::TableViewGridLinesVisibility::All")]
     TableViewGridLinesVisibility GridLinesVisibility { get; set; };
@@ -470,10 +472,13 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("true")]
     Boolean CanUserResizeColumns { get; set; };
 
-    // Opt-in row banding; null brushes preserve the theme row background.
+    // RowBackground supplies the base fill for every row.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Media.Brush RowBackground { get; set; };
 
+    // Opt-in row banding. The default style does not set this, so the default (and ClearValue)
+    // is null, which leaves every row on RowBackground. When set, it overrides odd rows only,
+    // matching WPF DataGrid, where AlternationIndex 0 keeps the base brush.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground { get; set; };
 

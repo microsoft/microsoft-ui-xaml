@@ -324,6 +324,7 @@
   <Import Project="$(MUXCProjectRoot)dev\ProgressBar\APITests\ProgressBar_APITests.projitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\ItemContainer\TestUI\ItemContainer_TestUI.projitems" Label="Shared" Condition="$(FeatureItemContainerEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\ItemContainer\APITests\ItemContainer_APITests.projitems" Label="Shared" Condition="$(FeatureItemContainerEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\TableView\APITests\TableView_APITests.projitems" Label="Shared" Condition="$(FeatureTableViewEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\AnnotatedScrollBar\TestUI\AnnotatedScrollBar_TestUI.projitems" Label="Shared" Condition="$(FeatureAnnotatedScrollBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\AnnotatedScrollBar\APITests\AnnotatedScrollBar_APITests.projitems" Label="Shared" Condition="$(FeatureAnnotatedScrollBarEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\MapControl\TestUI\MapControl_TestUI.projitems" Label="Shared" Condition="$(FeatureMapControlEnabled) == 'true'" />

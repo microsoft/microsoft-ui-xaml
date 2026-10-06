@@ -72,6 +72,8 @@ struct TableViewResourceCache
     {
         bool hasRowMinHeight{ false };
         double rowMinHeight{ 0.0 };
+        bool hasHeaderMinHeight{ false };
+        double headerMinHeight{ 0.0 };
         bool hasCellPadding{ false };
         winrt::Thickness cellPadding{};
         bool hasHeaderCellPadding{ false };
@@ -91,7 +93,9 @@ struct TableViewResourceCache
     };
     FontInfo font{};
 
-    // Resolved gridline brush; re-resolved when the theme or high-contrast state changes.
+    // Resolved gridline brushes; re-resolved when the theme or high-contrast state changes.
+    // Horizontal and vertical rules are separate tokens because the design weights them
+    // differently (the vertical rule is the lighter of the two).
     struct GridLineInfo
     {
         bool hasBrush{ false };
@@ -100,6 +104,7 @@ struct TableViewResourceCache
         winrt::Brush brush{ nullptr };
     };
     GridLineInfo gridLine{};
+    GridLineInfo verticalGridLine{};
 
     // Cached horizontal scroll offset used to reposition frozen columns (not a theme resource,
     // so it is intentionally left out of the density/gridline groups above).
@@ -156,6 +161,7 @@ public:
 
     // Density resources fall back to Standard defaults; rows and columns call these via get_self.
     double GetDensityRowMinHeight();
+    double GetDensityHeaderMinHeight();
     winrt::Thickness GetDensityCellPadding();
     winrt::Thickness GetDensityHeaderCellPadding();
     double GetCellFontSize();
@@ -164,6 +170,8 @@ public:
     // Resolved grid-line brush (theme/HC-aware, cached); rows call this via get_self, like the
     // density/font accessors above.
     winrt::Brush GetGridLineBrush();
+    // Vertical column separators resolve their own, lighter token.
+    winrt::Brush GetVerticalGridLineBrush();
 
     // Per-instance resource cache (density metrics + gridline brush); accessed by the
     // file-scope resource helpers in TableView.cpp through this owner pointer.
@@ -794,7 +802,19 @@ private:
     tracker_ref<winrt::ItemsRepeater> m_rowsRepeater{ this };
     tracker_ref<winrt::ContentControl> m_emptyStatePresenter{ this };
     tracker_ref<winrt::FrameworkElement> m_headerRow{ this };
+    // The header rule's "on" thickness, captured from the template at OnApplyTemplate so a
+    // GridLinesVisibility toggle restores what the template declared instead of a hard-coded
+    // value, and so a custom template's other three edges survive the toggle. The source element
+    // is tracked alongside it so a repeat OnApplyTemplate over the same tree cannot re-read a
+    // thickness this control already toggled off.
+    winrt::Thickness m_headerRowBorderThickness{ 0, 0, 0, 1 };
+    winrt::weak_ref<winrt::Border> m_headerRowBorderThicknessSource{ nullptr };
     tracker_ref<winrt::Panel> m_headerHost{ this };
+    // Captured at creation so a GridLinesVisibility toggle does not re-walk the header visual
+    // tree looking for named children. Non-owning: the header host owns the Borders, so weak_ref
+    // (not tracker_ref) keeps this out of the reference-tracker graph. Cleared and repopulated by
+    // RebuildHeaders, which every column/theme/density change routes through.
+    std::vector<winrt::weak_ref<winrt::Border>> m_headerGridLines{};
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
     // Keeps the header band locked to the body when focus moves to an off-screen header.
     winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
