@@ -42,6 +42,15 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.Common.targets" />
+  <Import Project="$(TestInProductionTargetsFile)" Condition="Exists('$(TestInProductionTargetsFile)')" />
+  <PropertyGroup>
+    <!-- Apply Tabular's existing external-header analysis policy to the restored TiP package. -->
+    <ExternalIncludePath>$(TestInProductionPkgDirectory)\inc;$(TestInProductionPkgDirectory)\inc\tip;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
+  <Target Name="EnsureTableViewTipPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('$(TestInProductionTargetsFile)')"
+           Text="The selected TestInProduction package is missing. Restore NuGet packages before building Tabular. Missing file: $(TestInProductionTargetsFile)" />
+  </Target>
   <!-- Give C++/WinRT MUXC's unmerged winmd for shared/future type projections; do not feed it to MIDL. -->
   <PropertyGroup>
     <CppWinRTParameters>$(CppWinRTParameters) -reference "$(XamlBuildOutputRoot)\controls\dev\dll\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd"</CppWinRTParameters>
