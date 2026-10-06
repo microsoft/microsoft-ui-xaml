@@ -31,7 +31,8 @@ namespace TableViewTelemetry
 
     bool NeedsLayout(State const& state) noexcept
     {
-        return (state.initial == InitialState::Started || !state.usageReported || IsOperationStarted(state)) && IsEnabled();
+        return state.initial == InitialState::Started || IsOperationStarted(state) ||
+            (!state.usageReported && IsEnabled());
     }
 
     bool IsOperationStarted(State const& state) noexcept

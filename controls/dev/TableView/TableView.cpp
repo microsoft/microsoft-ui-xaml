@@ -20,6 +20,7 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
+#include <initializer_list>
 
 static constexpr std::wstring_view s_RowsRepeaterPartName{ L"PART_RowsRepeater"sv };
 static constexpr std::wstring_view s_HeaderRowPartName{ L"PART_HeaderRow"sv };
@@ -655,18 +656,18 @@ void TableView::StopTelemetryLayout() noexcept
     catch (...) { OutputDebugStringW(L"TableView telemetry: layout observer removal failed.\n"); }
 }
 
-void TableView::WatchTelemetryVisualProperty(
+bool TableView::WatchTelemetryVisualProperty(
     winrt::DependencyObject const& object, winrt::DependencyProperty const& property)
 {
     for (auto const& watch : m_telemetryVisualWatches)
     {
-        if (watch.property == property && watch.object.get() == object) { return; }
+        if (watch.property == property && watch.object.get() == object) { return false; }
     }
     auto const dispatcher = DispatcherQueue();
     if (!dispatcher)
     {
         OutputDebugStringW(L"TableView telemetry: visual observer has no dispatcher.\n");
-        return;
+        return false;
     }
     auto const generation = m_telemetryLayoutGeneration;
     m_telemetryVisualWatches.push_back({ winrt::make_weak(object), property, std::nullopt });
@@ -699,6 +700,54 @@ void TableView::WatchTelemetryVisualProperty(
     {
         m_telemetryVisualWatches.pop_back();
         throw;
+    }
+    return true;
+}
+
+void TableView::WatchTelemetryTransform(winrt::Transform const& transform)
+{
+    if (!transform) { return; }
+    auto const watch = [this, &transform](std::initializer_list<winrt::DependencyProperty> properties)
+    {
+        for (auto const& property : properties) { WatchTelemetryVisualProperty(transform, property); }
+    };
+    if (transform.try_as<winrt::TranslateTransform>())
+    {
+        watch({ winrt::TranslateTransform::XProperty(), winrt::TranslateTransform::YProperty() });
+    }
+    else if (transform.try_as<winrt::ScaleTransform>())
+    {
+        watch({ winrt::ScaleTransform::ScaleXProperty(), winrt::ScaleTransform::ScaleYProperty(),
+            winrt::ScaleTransform::CenterXProperty(), winrt::ScaleTransform::CenterYProperty() });
+    }
+    else if (transform.try_as<winrt::RotateTransform>())
+    {
+        watch({ winrt::RotateTransform::AngleProperty(), winrt::RotateTransform::CenterXProperty(),
+            winrt::RotateTransform::CenterYProperty() });
+    }
+    else if (transform.try_as<winrt::SkewTransform>())
+    {
+        watch({ winrt::SkewTransform::AngleXProperty(), winrt::SkewTransform::AngleYProperty(),
+            winrt::SkewTransform::CenterXProperty(), winrt::SkewTransform::CenterYProperty() });
+    }
+    else if (transform.try_as<winrt::MatrixTransform>())
+    {
+        watch({ winrt::MatrixTransform::MatrixProperty() });
+    }
+    else if (transform.try_as<winrt::CompositeTransform>())
+    {
+        watch({ winrt::CompositeTransform::CenterXProperty(), winrt::CompositeTransform::CenterYProperty(),
+            winrt::CompositeTransform::ScaleXProperty(), winrt::CompositeTransform::ScaleYProperty(),
+            winrt::CompositeTransform::SkewXProperty(), winrt::CompositeTransform::SkewYProperty(),
+            winrt::CompositeTransform::RotationProperty(), winrt::CompositeTransform::TranslateXProperty(),
+            winrt::CompositeTransform::TranslateYProperty() });
+    }
+    else if (auto group = transform.try_as<winrt::TransformGroup>())
+    {
+        if (WatchTelemetryVisualProperty(group, winrt::TransformGroup::ChildrenProperty()))
+        {
+            for (auto const& child : group.Children()) { WatchTelemetryTransform(child); }
+        }
     }
 }
 
@@ -788,17 +837,33 @@ bool TableView::TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& 
             {
                 if (auto clip = visual.Clip())
                 {
-                    visible = intersect(visible, visual.TransformToVisual(scroller).TransformBounds(clip.Rect()));
+                    visible = intersect(visible, visual.TransformToVisual(scroller).TransformBounds(clip.Bounds()));
                     if (visible.Width <= 0 || visible.Height <= 0)
                     {
                         WatchTelemetryVisualProperty(visual, winrt::UIElement::ClipProperty());
                         WatchTelemetryVisualProperty(clip, winrt::RectangleGeometry::RectProperty());
+                        WatchTelemetryVisualProperty(clip, winrt::Geometry::TransformProperty());
+                        WatchTelemetryTransform(clip.Transform());
                     }
                 }
             }
         }
+        if (visible.Width <= 0 || visible.Height <= 0)
+        {
+            for (winrt::DependencyObject node = element; node; node = winrt::VisualTreeHelper::GetParent(node))
+            {
+                if (auto visual = node.try_as<winrt::UIElement>())
+                {
+                    WatchTelemetryVisualProperty(visual, winrt::UIElement::RenderTransformProperty());
+                    WatchTelemetryVisualProperty(visual, winrt::UIElement::RenderTransformOriginProperty());
+                    WatchTelemetryTransform(visual.RenderTransform());
+                }
+            }
+            return false;
+        }
         return visible.Width > 0 && visible.Height > 0;
     };
+    if (!inViewport(scroller)) { return false; }
     if (GetItemsSourceCount() != 0)
     {
         bool found = false;

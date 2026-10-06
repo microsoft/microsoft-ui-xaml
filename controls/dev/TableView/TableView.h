@@ -608,7 +608,8 @@ private:
     void StopTelemetryLayout() noexcept;
     void OnTelemetryLayout();
     void WatchTelemetrySourceChanges();
-    void WatchTelemetryVisualProperty(winrt::DependencyObject const& object, winrt::DependencyProperty const& property);
+    bool WatchTelemetryVisualProperty(winrt::DependencyObject const& object, winrt::DependencyProperty const& property);
+    void WatchTelemetryTransform(winrt::Transform const& transform);
     bool TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& configuration);
     uint64_t BeginOperationTelemetry(TableViewTelemetry::Operation operation) noexcept;
     void EndOperationTelemetry() noexcept;
