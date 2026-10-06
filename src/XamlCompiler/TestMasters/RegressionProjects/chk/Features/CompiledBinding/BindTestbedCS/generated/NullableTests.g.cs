@@ -305,10 +305,7 @@ namespace BindTestbed
             }
             private void Update_Model_NullableDoublePropertyDP(global::System.Nullable<global::System.Double> obj, int phase)
             {
-                if (obj != null)
-                {
-                    this.Update_Model_M_FunctionReturningNullableDouble_2231344659(phase);
-                }
+                this.Update_Model_M_FunctionReturningNullableDouble_2231344659(phase);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
                     // NullableTests.xaml line 41

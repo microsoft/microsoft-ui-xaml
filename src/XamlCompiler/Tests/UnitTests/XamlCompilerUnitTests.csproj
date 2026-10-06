@@ -57,6 +57,11 @@
     <Compile Include="CodeCoverage.cs" />
     <Compile Include="CodeGeneratorProjectContext.cs" />
     <Compile Include="CodeGeneratorTests.cs" />
+    <Compile Include="FunctionBindingCodegenTests.cs" />
+    <Compile Include="FixMastersTests.cs" />
+    <Compile Include="..\..\Tools\FixMasters\FixMasters.cs">
+      <Link>FixMasters.cs</Link>
+    </Compile>
     <Compile Include="HarvesterTests.cs" />
     <Compile Include="KnownBugs.cs" />
     <Compile Include="MultipleViewTests.cs" />
