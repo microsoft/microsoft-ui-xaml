@@ -97,6 +97,11 @@ The **Filter / sort / group** page exercises the data-shaping surface:
 - `TableViewSource.Sort` / `ClearSort` — programmatic sort with `SortDirection`
 - `TableView.CanUserSortColumns`, `SortByColumn`, `ClearSort`, `Sorting` / `Sorted`
 - `GroupHeaderTemplate` (custom vs. built-in), `ExpandAllGroups` / `CollapseAllGroups`
+- `TableViewSource.IsLiveSorting` / `IsLiveFiltering` / `IsLiveGrouping` — the "Live" toggles
+  (on by default) plus the "Mutate selected" buttons, which change one property of the selected row
+
+The **Hierarchical rows** page uses observable rows with a "Live shaping" switch (on by default):
+Reparent / Rename / Next dept edit a property in place and both trees reshape.
 
 ## More detail
 

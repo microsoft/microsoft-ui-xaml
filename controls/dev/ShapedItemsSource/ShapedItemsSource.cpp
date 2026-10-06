@@ -48,17 +48,46 @@ ShapedItemsSource::ShapedItemsSource(winrt::IInspectable const& source) :
     m_source(source),
     m_rows(winrt::single_threaded_observable_vector<winrt::IInspectable>())
 {
+    m_liveShaping->SetChangeHandler(
+        [this](winrt::IInspectable const& item, winrt::hstring const& propertyName)
+        {
+            OnLiveShapedItemChanged(item, propertyName);
+        });
 }
 
 ShapedItemsSource::~ShapedItemsSource()
 {
     UnsubscribeFromSourceCollectionChanges();
+    ClearLiveShapingSubscriptions();
 }
 
 void ShapedItemsSource::Start()
 {
     SubscribeToSourceCollectionChanges();
     Refresh();
+}
+
+void ShapedItemsSource::SetLiveShaping(bool liveSorting, bool liveGrouping, bool liveFiltering)
+{
+    if (m_liveSorting == liveSorting &&
+        m_liveGrouping == liveGrouping &&
+        m_liveFiltering == liveFiltering)
+    {
+        return;
+    }
+
+    m_liveSorting = liveSorting;
+    m_liveGrouping = liveGrouping;
+    m_liveFiltering = liveFiltering;
+
+    if (IsLiveShapingEnabled())
+    {
+        ResubscribeLiveShapingFromSource();
+    }
+    else
+    {
+        ClearLiveShapingSubscriptions();
+    }
 }
 
 void ShapedItemsSource::SetFilter(ShapingHelpers::Predicate const& predicate)
@@ -232,6 +261,14 @@ void ShapedItemsSource::ApplyShapingChange()
     // into a hierarchical one or back. A hierarchy change therefore always takes the rebuild.
     if (!hierarchyChanged && TryApplyShapingDeltaInPlace(delta))
     {
+        // This path deliberately skips Refresh(), which is where live-shaping keys are normally
+        // re-captured. The committed spec just changed, so every cached key describes the OLD
+        // shape; re-capture against the new one. Subscriptions themselves are unaffected (the
+        // reconcile is mark-and-sweep), so this costs one pass over the source and no COM churn.
+        if (IsLiveShapingEnabled())
+        {
+            ResubscribeLiveShapingFromSource();
+        }
         RaiseShapingChanged(true /* reorderOnly */);
         return;
     }
@@ -489,6 +526,11 @@ void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collec
 
 void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
+    // Subscription maintenance is a DELTA, derived from the notification itself. Doing it here
+    // rather than at each splice site below keeps it correct for every branch -- the sorted
+    // fast-path, the flat splice, and the Refresh() fallbacks alike -- and costs work proportional
+    // to the items that actually changed instead of to the size of the source.
+    ApplyLiveShapingDelta(args);
 
     // Every path below either mutates m_rows without going through Refresh or falls back to
     // Refresh. The first leaves the retained layer-1 membership describing a projection that no
@@ -656,6 +698,10 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
 
 void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
 {
+    // Unlike NotifyCollectionChangedEventArgs, VectorChanged carries no items -- only a verb and
+    // an index -- so the subscription delta cannot be derived up front. It is applied at each
+    // splice site below, where the affected object is in hand. Every other path here ends in
+    // Refresh(), which reconciles subscriptions itself.
 
     // Same reasoning as ApplyIncrementalChange: the retained membership stops describing m_rows
     // the moment this splices it.
@@ -707,6 +753,7 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
         }
 
         m_rows.InsertAt(index, item);
+        AddLiveShapingSubscription(item);
         return;
     }
     case CollectionChange::ItemRemoved:
@@ -734,6 +781,7 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
         }
 
         m_rows.RemoveAt(index);
+        RemoveLiveShapingSubscription(item);
         return;
     }
     case CollectionChange::ItemChanged:
@@ -776,7 +824,12 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
             }
         }
 
+        auto const outgoing = m_rows.GetAt(index);
         m_rows.SetAt(index, newItem);
+        // Remove before add: when the slot was reassigned to the SAME object, adding first would
+        // be a no-op and the removal would then drop the live subscription entirely.
+        RemoveLiveShapingSubscription(outgoing);
+        AddLiveShapingSubscription(newItem);
         return;
     }
     case CollectionChange::Reset:
@@ -1130,6 +1183,13 @@ void ShapedItemsSource::Refresh()
 
         auto const authoritativeSource = m_source;
         auto rows = Materialize(authoritativeSource);
+        RefreshLiveShapingSubscriptions(rows);
+
+        // Every snapshot was just recaptured from the current source against the committed spec,
+        // so whatever a live-shaping change was waiting for has now happened -- whether this
+        // refresh was the posted restore or something else that got here first. A restore that
+        // arrives after this finds nothing to do and returns.
+        m_liveShapingDirty = false;
 
         if (!HasAnyShapingVerb())
         {
@@ -2175,3 +2235,310 @@ winrt::hstring ShapedItemsSource::Diagnostic(std::wstring_view text) const
     return m_diagnosticName + L": " + winrt::hstring{ text };
 }
 
+void const* ShapedItemsSource::LiveShapingKeyFor(winrt::IInspectable const& item)
+{
+    if (!item)
+    {
+        return nullptr;
+    }
+
+    auto const unknown = item.as<winrt::Windows::Foundation::IUnknown>();
+    return winrt::get_abi(unknown);
+}
+
+ShapedItemsSource::LiveShapeSnapshot ShapedItemsSource::CaptureLiveShapeSnapshot(
+    winrt::IInspectable const& item) const
+{
+    LiveShapeSnapshot snapshot{};
+
+    // Selectors are app code. The rebuild treats a throwing selector as having returned null, so
+    // the snapshot does too -- otherwise the throw would surface from the app's property setter.
+    auto const keyOf = [&item](ShapingHelpers::KeySelector const& selector) -> winrt::hstring
+    {
+        if (!selector)
+        {
+            return {};
+        }
+        try { return RowIdentity::StringifyKey(selector(item)); } catch (...) { return RowIdentity::StringifyKey(nullptr); }
+    };
+
+    if (m_liveSorting)
+    {
+        for (auto const& axis : m_pipeline.ActiveSortAxes(-1, -1))
+        {
+            snapshot.SortKeys.push_back(keyOf(axis.Key));
+        }
+    }
+
+    if (m_liveGrouping && m_groupSelector)
+    {
+        snapshot.GroupKey = keyOf(m_groupSelector);
+    }
+
+    // Any live flag implies the hierarchy edge: sort, filter and grouping are all evaluated
+    // against the tree (sibling sets, ancestor retention, root bucketing), so an edge change
+    // reshapes every one of them.
+    if (m_parentKeySelector)
+    {
+        snapshot.NodeKey = keyOf(m_keySelector);
+        snapshot.ParentKey = keyOf(m_parentKeySelector);
+    }
+
+    if (m_liveFiltering)
+    {
+        snapshot.PassesFilter = m_pipeline.PassesFilter(item);
+    }
+
+    return snapshot;
+}
+
+bool ShapedItemsSource::LiveShapeSnapshotsDiffer(
+    LiveShapeSnapshot const& left,
+    LiveShapeSnapshot const& right)
+{
+    return left.PassesFilter != right.PassesFilter ||
+        left.GroupKey != right.GroupKey ||
+        left.NodeKey != right.NodeKey ||
+        left.ParentKey != right.ParentKey ||
+        left.SortKeys != right.SortKeys;
+}
+
+void ShapedItemsSource::RefreshLiveShapingSubscriptions(
+    std::vector<winrt::IInspectable> const& items)
+{
+    if (!IsLiveShapingEnabled())
+    {
+        ClearLiveShapingSubscriptions();
+        return;
+    }
+
+    // Mark-and-sweep against the complete source. Clearing and rebuilding would revoke and re-add
+    // every subscription on every refresh -- two COM calls plus a QI per row to arrive back at the
+    // subscription set we already had. Here an item that is still present keeps its existing
+    // revoker untouched, so only arrivals subscribe and only departures revoke.
+    std::unordered_set<void const*> live;
+    live.reserve(items.size());
+
+    // Snapshots are rebuilt rather than reconciled: a refresh is also where the committed shaping
+    // spec can have changed (a new sort axis, a different filter), which invalidates every cached
+    // key. Building into a fresh map drops entries for departed items as a side effect.
+    std::unordered_map<void const*, LiveShapeSnapshot> snapshots;
+    snapshots.reserve(items.size());
+
+    for (auto const& item : items)
+    {
+        if (!item)
+        {
+            continue;
+        }
+
+        auto const key = LiveShapingKeyFor(item);
+        live.insert(key);
+        m_liveShaping->Subscribe(item);
+        snapshots[key] = CaptureLiveShapeSnapshot(item);
+    }
+
+    m_liveShaping->RetainOnly(live);
+    m_liveShapeSnapshots = std::move(snapshots);
+}
+
+void ShapedItemsSource::AddLiveShapingSubscription(winrt::IInspectable const& item)
+{
+    if (!IsLiveShapingEnabled() || !item)
+    {
+        return;
+    }
+
+    m_liveShaping->Subscribe(item);
+    m_liveShapeSnapshots[LiveShapingKeyFor(item)] = CaptureLiveShapeSnapshot(item);
+}
+
+void ShapedItemsSource::RemoveLiveShapingSubscription(winrt::IInspectable const& item)
+{
+    // Deliberately not gated on IsLiveShapingEnabled: pruning an entry left over from a mode that
+    // has since been turned off is always correct, and never pruning would strand it.
+    if (!item)
+    {
+        return;
+    }
+
+    m_liveShaping->Unsubscribe(item);
+    m_liveShapeSnapshots.erase(LiveShapingKeyFor(item));
+}
+
+void ShapedItemsSource::ApplyLiveShapingDelta(
+    winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+{
+    if (!IsLiveShapingEnabled())
+    {
+        return;
+    }
+
+    using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
+
+    auto const unsubscribeAll = [this](winrt::Microsoft::UI::Xaml::Interop::IBindableVector const& items)
+    {
+        if (!items)
+        {
+            return;
+        }
+        for (uint32_t i = 0; i < items.Size(); ++i)
+        {
+            RemoveLiveShapingSubscription(items.GetAt(i));
+        }
+    };
+
+    auto const subscribeAll = [this](winrt::Microsoft::UI::Xaml::Interop::IBindableVector const& items)
+    {
+        if (!items)
+        {
+            return;
+        }
+        for (uint32_t i = 0; i < items.Size(); ++i)
+        {
+            AddLiveShapingSubscription(items.GetAt(i));
+        }
+    };
+
+    switch (args.Action())
+    {
+    case NotifyCollectionChangedAction::Add:
+        subscribeAll(args.NewItems());
+        break;
+    case NotifyCollectionChangedAction::Remove:
+        unsubscribeAll(args.OldItems());
+        break;
+    case NotifyCollectionChangedAction::Replace:
+        // Remove before add, so a replace that reuses the same object ends up subscribed.
+        unsubscribeAll(args.OldItems());
+        subscribeAll(args.NewItems());
+        break;
+    case NotifyCollectionChangedAction::Move:
+        // Membership is unchanged; only ordering moved, which no subscription depends on.
+        break;
+    case NotifyCollectionChangedAction::Reset:
+    default:
+        // A reset says nothing about which items survived. Every caller funnels a reset into
+        // Refresh(), whose mark-and-sweep reconcile is the cheapest correct answer.
+        break;
+    }
+}
+
+void ShapedItemsSource::ClearLiveShapingSubscriptions()
+{
+    m_liveShaping->UnsubscribeAll();
+    m_liveShapeSnapshots.clear();
+    // Nothing is tracked any more, so there is no stale shape to restore. Leaving this set would
+    // hand a posted restore a reason to re-shape after live shaping was switched off.
+    m_liveShapingDirty = false;
+}
+
+void ShapedItemsSource::ResubscribeLiveShapingFromSource()
+{
+    if (!IsLiveShapingEnabled())
+    {
+        ClearLiveShapingSubscriptions();
+        return;
+    }
+
+    RefreshLiveShapingSubscriptions(Materialize(m_source));
+}
+
+void ShapedItemsSource::OnLiveShapedItemChanged(
+    winrt::IInspectable const& item,
+    winrt::hstring const&)
+{
+    if (!IsLiveShapingEnabled() || !item)
+    {
+        return;
+    }
+
+    // A restore is already posted, and it re-shapes from the source in full. A second changed item
+    // cannot add anything to that, so there is nothing to learn by pricing its snapshot. This is
+    // what makes a bulk mutation cost one snapshot capture rather than one per changed row --
+    // without it the early-out below still runs every sort selector, the group selector and the
+    // filter predicate for each notification.
+    if (m_liveShapingDirty)
+    {
+        return;
+    }
+
+    // The subscription is deliberately blanket: the source raises PropertyChanged for properties
+    // no active verb reads, and this is where those are discarded. The snapshot is compared, not
+    // stored -- until the restore runs, the cached snapshot is the shape the projection actually
+    // reflects, and overwriting it here would claim a reshape that has not happened.
+    auto const key = LiveShapingKeyFor(item);
+    auto const existing = m_liveShapeSnapshots.find(key);
+    if (existing != m_liveShapeSnapshots.end() &&
+        !LiveShapeSnapshotsDiffer(existing->second, CaptureLiveShapeSnapshot(item)))
+    {
+        return;
+    }
+
+    MarkLiveShapingDirty();
+}
+
+void ShapedItemsSource::MarkLiveShapingDirty()
+{
+    if (m_liveShapingDirty)
+    {
+        return;
+    }
+    m_liveShapingDirty = true;
+
+    // Posting rather than re-shaping inline is the whole point. An app that writes several
+    // properties, or several rows, does so within one turn; re-shaping on each write would rebuild
+    // the projection once per write and publish a Reset the UI has to absorb each time. Deferring
+    // to the queue collapses the whole turn into a single rebuild, and it also keeps the reshape
+    // out of the app's own PropertyChanged handler, where re-entering the projection would be
+    // hostile.
+    auto weakThis = weak_from_this();
+    if (auto const queue = winrt::DispatcherQueue::GetForCurrentThread())
+    {
+        if (queue.TryEnqueue([weakThis]()
+            {
+                if (auto const strongThis = weakThis.lock())
+                {
+                    try
+                    {
+                        strongThis->RestoreLiveShaping();
+                    }
+                    catch (...)
+                    {
+                        // No app call is on the stack to receive this (e.g. a ParentBy key edited
+                        // into a duplicate or a cycle). As with ScheduleRefreshReplay: the previous
+                        // projection stays, and the next verb or source change re-validates and
+                        // throws to the app.
+                    }
+                }
+            }))
+        {
+            return;
+        }
+    }
+
+    // No queue on this thread, or the queue is shutting down and refused the work. Degrade to the
+    // eager behaviour: slower, but a stale projection that never restores would be a correctness
+    // bug, and silently dropping the change is worse than paying for it now.
+    RestoreLiveShaping();
+}
+
+void ShapedItemsSource::RestoreLiveShaping()
+{
+    if (!m_liveShapingDirty)
+    {
+        // A refresh ran for another reason between the mark and this callback -- a shaping verb, a
+        // collection change -- and it recaptured every snapshot. The projection is already true.
+        return;
+    }
+
+    if (!IsLiveShapingEnabled())
+    {
+        // Live shaping was turned off while this was in flight. Whatever was stale is no longer
+        // anyone's concern: with the flags down the projection is not expected to track items.
+        m_liveShapingDirty = false;
+        return;
+    }
+
+    Refresh();
+}

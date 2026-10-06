@@ -140,12 +140,23 @@ runtimeclass TableViewSource
     // under headers and each root still expands into its own subtree beneath its header.
     //
     // The relation is re-evaluated on every collection change of the source. A property change on
-    // an item's key or parent key is not observed; replace the item to reparent it immediately.
+    // an item's key or parent key is not observed unless live shaping is on (any of IsLiveSorting /
+    // IsLiveFiltering / IsLiveGrouping), in which case it reparents on the next dispatcher turn;
+    // otherwise replace the item to reparent it immediately. A live reparent that makes the data
+    // invalid (duplicate key, cycle) keeps the previous projection; the next verb or collection
+    // change re-validates and throws.
     // UI-thread affinity applies as for the rest of this class.
     TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
 
     // Removes the relation and shows the source flat again. Resets expansion state.
     TableViewSource ClearParentBy();
+
+    // Live shaping is opt-in and subscribes to source item property changes. Changes coalesce: all
+    // property changes in one dispatcher turn cost one reshape. Under ParentBy, turning on any of
+    // these also tracks each item's key and parent key (see ParentBy).
+    Boolean IsLiveSorting{ get; set; };
+    Boolean IsLiveFiltering{ get; set; };
+    Boolean IsLiveGrouping{ get; set; };
 
 }
 

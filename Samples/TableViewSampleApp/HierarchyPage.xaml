@@ -31,7 +31,7 @@
         <StackPanel Grid.Row="0" Spacing="2">
             <TextBlock Text="Hierarchical rows (flat parent keys)" FontSize="18" FontWeight="SemiBold"/>
             <TextBlock Opacity="0.7" FontSize="12" TextWrapping="Wrap"
-                       Text="The data is one flat list of employees. ParentBy(key, parentKey) tells a TableViewSource how the rows relate; the rows themselves have no children collection, level or expanded flag. Both tables below share ONE ObservableCollection: the left declares the Manager relation (ManagerId), the right the Mentor relation (MentorId), so the same person appears at a different depth in each. Rows start collapsed; a null parent key makes a root and an unknown parent key makes an orphan root. Sort applies within each sibling set, Filter keeps matches plus their ancestors (auto-expanded while the filter is active), and 'Group roots by Dept' buckets the roots while every root keeps its subtree. Add and remove edit the shared collection and both tables follow."/>
+                       Text="The data is one flat list of employees. ParentBy(key, parentKey) tells a TableViewSource how the rows relate; the rows themselves have no children collection, level or expanded flag. Both tables below share ONE ObservableCollection: the left declares the Manager relation (ManagerId), the right the Mentor relation (MentorId), so the same person appears at a different depth in each. Rows start collapsed; a null parent key makes a root and an unknown parent key makes an orphan root. Sort applies within each sibling set, Filter keeps matches plus their ancestors (auto-expanded while the filter is active), and 'Group roots by Dept' buckets the roots while every root keeps its subtree. Add and remove edit the shared collection and both tables follow. With 'Live shaping' on, the rows are observable and property edits (Reparent, Rename, Next dept) reshape both trees in place."/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
@@ -40,6 +40,8 @@
             <Button Content="Add report" Click="AddReport_Click"/>
             <Button Content="Add root" Click="AddRoot_Click"/>
             <Button Content="Reparent selected" Click="Reparent_Click"/>
+            <Button Content="Rename selected" Click="Rename_Click"/>
+            <Button Content="Next dept" Click="NextDept_Click"/>
             <Button Content="Remove selected" Click="Remove_Click"/>
             <Button Content="Reset data" Click="Reset_Click"/>
             <Button x:Name="PerfButton" Content="100k perf" Click="Perf_Click"/>
@@ -58,6 +60,12 @@
             </ComboBox>
             <ToggleSwitch x:Name="GroupToggle" OnContent="Group roots by Dept" OffContent="Group roots by Dept"
                           Toggled="Group_Toggled"/>
+            <!-- On: both sources set IsLiveSorting/IsLiveFiltering/IsLiveGrouping, so editing a
+                 property (Reparent / Rename / Next dept) reshapes the tree in place. Off: the edit
+                 is applied to the data but the rows stay where they were until the next reshape,
+                 so Reparent falls back to replacing the item in the collection. -->
+            <ToggleSwitch x:Name="LiveToggle" IsOn="True" OnContent="Live shaping" OffContent="Live shaping"
+                          Toggled="Live_Toggled"/>
         </StackPanel>
 
         <Grid Grid.Row="3" ColumnSpacing="12">
