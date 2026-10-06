@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Private.Controls;
+﻿using Microsoft.UI.Input;
+using Microsoft.UI.Private.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
@@ -30,6 +31,27 @@ namespace MUXControlsTestApp
 
             // Set titlebar's title to window's title.
             this.Title = this.WindowingTitleBar.Title;
+
+            // Test hooks: report the non-client icon region and how often the window rect changed. The event handler
+            // must not touch the UI: any layout pass makes TitleBar refresh its icon region on its own, which would
+            // hide whether TitleBar reacted to WindowRectChanged.
+            nonClientPointerSource = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
+            nonClientPointerSource.WindowRectChanged += (sender, args) => windowRectChangedCount++;
+        }
+
+        private readonly InputNonClientPointerSource nonClientPointerSource;
+        private int windowRectChangedCount = 0;
+
+        private void ReadIconRegionButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Read the region before changing any UI so the readout reflects the state left by the last window move.
+            var rects = nonClientPointerSource.GetRegionRects(NonClientRegionKind.Icon);
+            int rectChangedCount = windowRectChangedCount;
+
+            IconRegionTextBlock.Text = (rects == null || rects.Length == 0)
+                ? "none"
+                : string.Join(";", rects.Select(r => $"{r.X},{r.Y},{r.Width},{r.Height}"));
+            WindowRectChangedCountTextBlock.Text = rectChangedCount.ToString();
         }
 
         private void CmbTitleBarOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)

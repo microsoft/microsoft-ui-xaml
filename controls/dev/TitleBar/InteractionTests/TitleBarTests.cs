@@ -136,6 +136,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("IsolationLevel", "Method")]
+        public void IconRegionIsKeptWhenWindowIsDraggedByCaption()
+        {
+            RunInTitleBarTestWindow(window =>
+            {
+                string before = ReadIconRegion(window);
+                Verify.AreNotEqual("none", before, "The default TitleBarPageWindow icon should be registered as the icon region");
+
+                // Smoke test: drag the empty TitleBar area so the window moves through the non-client caption and
+                // InputNonClientPointerSource.WindowRectChanged is raised, then read the icon region immediately
+                // (before the readout updates any UI) and check that it is still registered at the icon's
+                // window-relative bounds. On the validation VM the platform does not clear the icon region on such a
+                // move, so a TitleBar that ignored WindowRectChanged would also pass (verified with a throwaway stub).
+                var startBounds = window.BoundingRectangle;
+                InputHelper.MouseDragDistance(FindIn(window, "WindowingTitleBar"), 120, Direction.South);
+                Wait.ForIdle();
+
+                var endBounds = window.BoundingRectangle;
+                Log.Comment(string.Format("Window bounds before {0}, after {1}", startBounds, endBounds));
+                Verify.AreNotEqual(startBounds.Y, endBounds.Y, "Dragging the caption should move the window");
+
+                string after = ReadIconRegion(window);
+                Verify.AreNotEqual("0", FindIn(window, "WindowRectChangedCountTextBlock").Name, "WindowRectChanged should have been raised");
+                Verify.AreEqual(before, after, "The icon region should still match the icon after the window moved");
+            });
+        }
+
+        private static string ReadIconRegion(Window window)
+        {
+            new InvokeImplementation(FindIn(window, "ReadIconRegionButton")).Invoke();
+            Wait.ForIdle();
+            string region = FindIn(window, "IconRegionTextBlock").Name;
+            Log.Comment("Icon region: " + region);
+            return region;
+        }
+
         private static void RunInTitleBarTestWindow(Action<Window> test)
         {
             using (var windowOpenedWaiter = new WindowOpenedWaiter(TitleBarWindowCondition))

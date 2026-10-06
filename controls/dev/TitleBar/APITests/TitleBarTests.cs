@@ -862,6 +862,268 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifyDependencyPropertyIdentifiers()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var properties = new DependencyProperty[]
+                {
+                    TitleBar.TitleProperty,
+                    TitleBar.SubtitleProperty,
+                    TitleBar.IconSourceProperty,
+                    TitleBar.LeftHeaderProperty,
+                    TitleBar.ContentProperty,
+                    TitleBar.RightHeaderProperty,
+                    TitleBar.IsBackButtonVisibleProperty,
+                    TitleBar.IsBackButtonEnabledProperty,
+                    TitleBar.IsPaneToggleButtonVisibleProperty,
+                    TitleBar.TemplateSettingsProperty,
+                    TitleBar.AutoRefreshDragRegionsProperty,
+                    TitleBar.IsDragRegionProperty,
+                    TitleBarTemplateSettings.IconElementProperty,
+                };
+
+                for (int i = 0; i < properties.Length; i++)
+                {
+                    Verify.IsNotNull(properties[i], "Dependency property identifier #" + i + " should not be null");
+                    for (int j = 0; j < i; j++)
+                    {
+                        Verify.IsFalse(ReferenceEquals(properties[i], properties[j]), "Dependency property identifiers #" + j + " and #" + i + " should be distinct");
+                    }
+                }
+
+                // The static getters must return the same identifier on every call.
+                Verify.IsTrue(ReferenceEquals(TitleBar.TitleProperty, TitleBar.TitleProperty));
+                Verify.IsTrue(ReferenceEquals(TitleBar.IsDragRegionProperty, TitleBar.IsDragRegionProperty));
+            });
+        }
+
+        [TestMethod]
+        public void VerifyDependencyPropertiesMatchClrProperties()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var titleBar = new TitleBar();
+
+                VerifyDependencyPropertyRoundTrip(titleBar, TitleBar.TitleProperty, () => titleBar.Title, string.Empty, "DP title");
+                VerifyDependencyPropertyRoundTrip(titleBar, TitleBar.SubtitleProperty, () => titleBar.Subtitle, string.Empty, "DP subtitle");
+                VerifyDependencyPropertyRoundTrip(titleBar, TitleBar.LeftHeaderProperty, () => titleBar.LeftHeader, null, new Button());
+                VerifyDependencyPropertyRoundTrip(titleBar, TitleBar.ContentProperty, () => titleBar.Content, null, new Button());
+                VerifyDependencyPropertyRoundTrip(titleBar, TitleBar.RightHeaderProperty, () => titleBar.RightHeader, null, new Button());
+                VerifyDependencyPropertyRoundTrip(titleBar, TitleBar.IsBackButtonVisibleProperty, () => titleBar.IsBackButtonVisible, false, true);
+                VerifyDependencyPropertyRoundTrip(titleBar, TitleBar.IsBackButtonEnabledProperty, () => titleBar.IsBackButtonEnabled, true, false);
+                VerifyDependencyPropertyRoundTrip(titleBar, TitleBar.IsPaneToggleButtonVisibleProperty, () => titleBar.IsPaneToggleButtonVisible, false, true);
+                VerifyDependencyPropertyRoundTrip(titleBar, TitleBar.AutoRefreshDragRegionsProperty, () => titleBar.AutoRefreshDragRegions, false, true);
+
+                // Setting IconSource through the DP must reach the TitleBar's change handler, which builds the icon element.
+                var iconSource = new SymbolIconSource() { Symbol = Symbol.Home };
+                Verify.IsNull(titleBar.GetValue(TitleBar.IconSourceProperty));
+                titleBar.SetValue(TitleBar.IconSourceProperty, iconSource);
+                Verify.IsTrue(ReferenceEquals(iconSource, titleBar.IconSource), "IconSource set through the DP should be returned by the CLR property");
+                Verify.IsNotNull(titleBar.TemplateSettings.IconElement, "Setting IconSource through the DP should create the icon element");
+                titleBar.ClearValue(TitleBar.IconSourceProperty);
+                Verify.IsNull(titleBar.IconSource);
+                Verify.IsNull(titleBar.TemplateSettings.IconElement);
+
+                // TemplateSettings is read-only from the CLR surface; the DP returns the same instance.
+                Verify.IsNotNull(titleBar.TemplateSettings);
+                Verify.IsTrue(ReferenceEquals(titleBar.TemplateSettings, titleBar.GetValue(TitleBar.TemplateSettingsProperty)));
+
+                // IsDragRegion is an attached nullable bool.
+                var element = new Border();
+                Verify.IsNull(element.GetValue(TitleBar.IsDragRegionProperty));
+                element.SetValue(TitleBar.IsDragRegionProperty, true);
+                Verify.AreEqual((bool?)true, TitleBar.GetIsDragRegion(element));
+                TitleBar.SetIsDragRegion(element, false);
+                Verify.AreEqual(false, (bool)element.GetValue(TitleBar.IsDragRegionProperty));
+                element.ClearValue(TitleBar.IsDragRegionProperty);
+                Verify.IsNull(TitleBar.GetIsDragRegion(element));
+            });
+        }
+
+        [TestMethod]
+        public void VerifyXamlMetadata()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var provider = new Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider();
+                var titleBarType = provider.GetXamlType("Microsoft.UI.Xaml.Controls.TitleBar");
+                Verify.IsNotNull(titleBarType, "TitleBar should be described by the controls metadata provider");
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.Control", titleBarType.BaseType.FullName);
+                Verify.AreEqual("Content", titleBarType.ContentProperty.Name);
+
+                var members = new (string Name, string TypeName)[]
+                {
+                    ("Title", "String"),
+                    ("Subtitle", "String"),
+                    ("IconSource", "Microsoft.UI.Xaml.Controls.IconSource"),
+                    ("LeftHeader", "Microsoft.UI.Xaml.UIElement"),
+                    ("Content", "Microsoft.UI.Xaml.UIElement"),
+                    ("RightHeader", "Microsoft.UI.Xaml.UIElement"),
+                    ("IsBackButtonVisible", "Boolean"),
+                    ("IsBackButtonEnabled", "Boolean"),
+                    ("IsPaneToggleButtonVisible", "Boolean"),
+                    ("TemplateSettings", "Microsoft.UI.Xaml.Controls.TitleBarTemplateSettings"),
+                    ("AutoRefreshDragRegions", "Boolean"),
+                };
+
+                foreach (var (name, typeName) in members)
+                {
+                    var member = titleBarType.GetMember(name);
+                    Verify.IsNotNull(member, "TitleBar metadata should expose member " + name);
+                    Verify.AreEqual(name, member.Name);
+                    Verify.IsTrue(member.IsDependencyProperty, name + " should be a dependency property");
+                    Verify.AreEqual(typeName, member.Type.FullName, name + " member type");
+                }
+
+                var isDragRegion = titleBarType.GetMember("IsDragRegion");
+                Verify.IsNotNull(isDragRegion, "TitleBar metadata should expose IsDragRegion");
+                Verify.IsTrue(isDragRegion.IsDependencyProperty);
+
+                var templateSettingsType = provider.GetXamlType("Microsoft.UI.Xaml.Controls.TitleBarTemplateSettings");
+                Verify.IsNotNull(templateSettingsType);
+                var iconElement = templateSettingsType.GetMember("IconElement");
+                Verify.IsNotNull(iconElement);
+                Verify.IsTrue(iconElement.IsDependencyProperty);
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.IconElement", iconElement.Type.FullName);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyAutomationPeerCreatedDirectly()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var titleBar = new TitleBar() { Title = "Direct peer title" };
+                var peer = new TitleBarAutomationPeer(titleBar);
+
+                Verify.IsTrue(ReferenceEquals(titleBar, peer.Owner), "Peer owner should be the TitleBar passed to the constructor");
+                Verify.AreEqual(AutomationControlType.TitleBar, peer.GetAutomationControlType());
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.TitleBar", peer.GetClassName());
+                Verify.AreEqual("Direct peer title", peer.GetName());
+            });
+        }
+
+        [TestMethod]
+        public void VerifyTemplateSettingsCreatedDirectly()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var templateSettings = new TitleBarTemplateSettings();
+                Verify.IsNull(templateSettings.IconElement);
+                Verify.IsNull(templateSettings.GetValue(TitleBarTemplateSettings.IconElementProperty));
+
+                var icon = new SymbolIcon(Symbol.Home);
+                templateSettings.IconElement = icon;
+                Verify.IsTrue(ReferenceEquals(icon, templateSettings.IconElement));
+                Verify.IsTrue(ReferenceEquals(icon, templateSettings.GetValue(TitleBarTemplateSettings.IconElementProperty)));
+
+                var otherIcon = new SymbolIcon(Symbol.Mail);
+                templateSettings.SetValue(TitleBarTemplateSettings.IconElementProperty, otherIcon);
+                Verify.IsTrue(ReferenceEquals(otherIcon, templateSettings.IconElement));
+
+                templateSettings.ClearValue(TitleBarTemplateSettings.IconElementProperty);
+                Verify.IsNull(templateSettings.IconElement);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyAutoRefreshDragRegionsCanBeTurnedOff()
+        {
+            StackPanel panel = null;
+            Button first = null;
+            Func<UIElement> createContent = () =>
+            {
+                first = new Button() { Content = "First" };
+                // Fixed width so adding buttons does not move earlier ones inside the centered content area.
+                panel = new StackPanel() { Orientation = Orientation.Horizontal, Width = 400 };
+                panel.Children.Add(first);
+                return panel;
+            };
+
+            using (var host = new TitleBarWindowHost(() => new TitleBar() { AutoRefreshDragRegions = true }, createContent))
+            {
+                Button second = null;
+                Button third = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyRegionRects(host.GetRegionRects(NonClientRegionKind.Passthrough), first);
+                    second = new Button() { Content = "Second" };
+                    panel.Children.Add(second);
+                });
+                host.WaitForLayout();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    // Auto-refresh is on: the new content is picked up after layout.
+                    VerifyRegionRects(host.GetRegionRects(NonClientRegionKind.Passthrough), first, second);
+
+                    // Opting out stops automatic refresh: later content changes are not registered...
+                    host.TitleBar.AutoRefreshDragRegions = false;
+                    third = new Button() { Content = "Third" };
+                    panel.Children.Add(third);
+                });
+                host.WaitForLayout();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyRegionRects(host.GetRegionRects(NonClientRegionKind.Passthrough), first, second);
+
+                    // ...until the app asks for a refresh.
+                    host.TitleBar.RecomputeDragRegions();
+                    VerifyRegionRects(host.GetRegionRects(NonClientRegionKind.Passthrough), first, second, third);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyTitleBarChangesAfterWindowClosed()
+        {
+            using (var host = new TitleBarWindowHost(() => new TitleBar()
+            {
+                Title = "Applied title",
+                IconSource = new SymbolIconSource() { Symbol = Symbol.Home },
+            }))
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("Applied title", host.Window.AppWindow.Title);
+                });
+                host.CloseWindow();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var titleBar = host.TitleBar;
+                    Verify.IsNull(titleBar.XamlRoot, "Closing the window detaches the TitleBar from its XamlRoot");
+
+                    // The window is gone: clearing or changing Title and IconSource must not throw, and the TitleBar's
+                    // own state still follows the properties.
+                    titleBar.Title = string.Empty;
+                    Verify.AreEqual("TitleTextCollapsed", GetCurrentState(titleBar, "TitleTextGroup"));
+                    titleBar.Title = "Title after close";
+                    Verify.AreEqual("TitleTextVisible", GetCurrentState(titleBar, "TitleTextGroup"));
+
+                    titleBar.IconSource = null;
+                    Verify.IsNull(titleBar.TemplateSettings.IconElement);
+                    Verify.AreEqual("IconCollapsed", GetCurrentState(titleBar, "IconGroup"));
+                });
+            }
+        }
+
+        private static void VerifyDependencyPropertyRoundTrip<T>(TitleBar titleBar, DependencyProperty property, Func<T> getClrValue, T defaultValue, T newValue)
+        {
+            Verify.AreEqual(defaultValue, getClrValue());
+            Verify.AreEqual(defaultValue, (T)titleBar.GetValue(property));
+
+            titleBar.SetValue(property, newValue);
+            Verify.AreEqual(newValue, getClrValue(), "Value set through the DP should be visible through the CLR property");
+            Verify.AreEqual(newValue, (T)titleBar.GetValue(property));
+
+            titleBar.ClearValue(property);
+            Verify.AreEqual(defaultValue, getClrValue(), "ClearValue should restore the default");
+        }
+
         private static void WaitForVisualStates(TitleBar titleBar, (string Group, string State)[] expectedStates)
         {
             // InputActivationListener notifications arrive asynchronously and are not exposed to the app, so poll the
@@ -1072,11 +1334,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(wasChanged, expectActive ? "Waiting for the TitleBar host window to activate" : "Waiting for the TitleBar host window to deactivate");
             }
 
+            // Closes the host window early; Dispose then only restores the main window.
+            public void CloseWindow()
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Window.Close();
+                    windowClosed = true;
+                });
+                IdleSynchronizer.Wait();
+            }
+
+            private bool windowClosed;
+
             public void Dispose()
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    Window?.Close();
+                    if (!windowClosed)
+                    {
+                        Window?.Close();
+                    }
                     MUXControlsTestApp.App.CurrentWindow.Activate();
                 });
                 IdleSynchronizer.Wait();

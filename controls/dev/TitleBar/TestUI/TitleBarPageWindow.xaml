@@ -143,6 +143,20 @@
                     Checked="RightHeaderCheckBox_CheckedChanged"
                     Unchecked="RightHeaderCheckBox_CheckedChanged" />
 
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button x:Name="ReadIconRegionButton"
+                        Content="Read icon region"
+                        Click="ReadIconRegionButton_Click" />
+                <TextBlock x:Name="IconRegionTextBlock" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="WindowRectChanged count:" />
+                <TextBlock x:Name="WindowRectChangedCountTextBlock"
+                        Margin="8,0,0,0"
+                        Text="0" />
+            </StackPanel>
+
         </StackPanel>
     </Grid>
 </Window>
