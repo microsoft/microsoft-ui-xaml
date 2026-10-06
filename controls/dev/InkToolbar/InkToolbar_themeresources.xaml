@@ -15,6 +15,7 @@
       <StaticResource x:Key="InkToolbarButtonSelectedBackground" ResourceKey="SubtleFillColorSecondaryBrush" />
       <StaticResource x:Key="InkToolbarButtonSelectedBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
       <StaticResource x:Key="InkToolbarButtonSelectedBackgroundPressed" ResourceKey="SubtleFillColorTertiaryBrush" />
+      <SolidColorBrush x:Key="InkToolbarButtonSelectedBackgroundThemeBrush" Color="{ThemeResource SystemChromeMediumColor}" />
       <StaticResource x:Key="InkToolbarButtonSelectedBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
       <StaticResource x:Key="InkToolbarButtonPressedBackgroundThemeBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
       <StaticResource x:Key="InkToolbarDisabledBackgroundThemeBrush" ResourceKey="SystemColorButtonFaceColor" />
@@ -75,6 +76,7 @@
       <StaticResource x:Key="InkToolbarButtonSelectedBackground" ResourceKey="SubtleFillColorSecondaryBrush" />
       <StaticResource x:Key="InkToolbarButtonSelectedBackgroundPointerOver" ResourceKey="SubtleFillColorSecondaryBrush" />
       <StaticResource x:Key="InkToolbarButtonSelectedBackgroundPressed" ResourceKey="SubtleFillColorSecondaryBrush" />
+      <SolidColorBrush x:Key="InkToolbarButtonSelectedBackgroundThemeBrush" Color="{ThemeResource SystemChromeMediumColor}" />
       <StaticResource x:Key="InkToolbarButtonSelectedBackgroundDisabled" ResourceKey="ControlFillColorDisabledBrush" />
       <StaticResource x:Key="InkToolbarButtonPressedBackgroundThemeBrush" ResourceKey="SubtleFillColorTertiaryBrush" />
       <StaticResource x:Key="InkToolbarDisabledBackgroundThemeBrush" ResourceKey="SystemColorButtonFaceColor" />

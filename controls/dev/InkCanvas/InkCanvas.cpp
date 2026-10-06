@@ -119,8 +119,15 @@ InkCanvas::~InkCanvas()
     {
     }
 
-    // Ensure that we have torn down our dcomp stuff
-    DetachFromVisualLink();
+    // Ensure that we have torn down our dcomp stuff. Destruction can run during app shutdown, after XAML has
+    // torn down; a throw here would terminate the process.
+    try
+    {
+        DetachFromVisualLink();
+    }
+    catch (...)
+    {
+    }
 }
 
 void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -664,7 +671,12 @@ void InkCanvas::DetachFromVisualLink()
     // the OS presenter / system-visual resources mid-teardown. Cheap acquire/release pair.
     m_isDetached.store(true, std::memory_order_release);
 
-    winrt::ElementCompositionPreview::SetElementChildVisual(*this, nullptr);
+    // Only a canvas that attached has a child visual to clear. A canvas that was never loaded (e.g. on an unselected
+    // tab) is destroyed during app shutdown, where SetElementChildVisual can throw.
+    if (m_systemDCompTarget || m_systemVisualLink || m_inkRootVisual)
+    {
+        winrt::ElementCompositionPreview::SetElementChildVisual(*this, nullptr);
+    }
 
     m_systemDCompTarget = nullptr;
     m_systemVisualLink = nullptr;
