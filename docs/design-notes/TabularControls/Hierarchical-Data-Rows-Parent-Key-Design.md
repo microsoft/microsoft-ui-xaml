@@ -278,16 +278,17 @@ namespace ShapingHelpers
     {
         std::vector<winrt::IInspectable> Roots;                                          // shaped order
         std::unordered_map<std::wstring, std::vector<winrt::IInspectable>> Children;     // parent node key -> shaped children
-        std::unordered_map<void*, std::wstring> KeyByItem;                               // item ABI -> node key
+        RowKeyTable KeyByItem;                                                           // indexed item ABI -> node key
         std::unordered_set<std::wstring> UnfilteredKeys;                                 // unfiltered; for pruning (§5.3)
         std::unordered_set<std::wstring> ContextKeys;                                    // filter-retained ancestors (§4.2)
     };
 
-    // `sortedRows` is the UNFILTERED source, already sorted. `filter` may be empty.
-    // Returns false with `error` set on duplicate key, null key, self-parent or cycle.
+    // `sortedRows` is the UNFILTERED source, already sorted. `keys` holds every row's validated node
+    // key (built by row-identity validation) and is consumed. `filter` may be empty.
+    // Returns false with `error` set on self-parent or cycle.
     bool BuildParentKeyIndex(
         std::vector<winrt::IInspectable> const& sortedRows,
-        KeySelector const& keySelector,
+        RowKeyTable keys,
         KeySelector const& parentKeySelector,
         ParentKeyFilter const& filter,
         ParentKeyIndex& out,
@@ -297,8 +298,9 @@ namespace ShapingHelpers
 
 Steps, all O(n) apart from the incoming sort:
 
-1. Evaluate both selectors once per item, holding every returned key object until the build ends
-   (§3.1), and cache the node keys and a local parent-index array. Reject a null or duplicate key.
+1. Read each row's node key from `keys`; the app's key selector is not run again. Evaluate the
+   parent selector once per item, holding every returned parent key object until the build ends
+   (§3.1), and cache a local parent-index array.
 2. Classify each item as a root (null, empty or orphan parent key) or a child of `parentKey`.
 3. Check reachability from the roots (§3.2). Reject cycles.
 4. If there is a filter, compute the kept set as matches plus ancestors, and record `ContextKeys`.
@@ -312,18 +314,20 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
 
 ### 6.2 Layer 2 — `ShapedItemsSource`
 
-- `SetRowKey(key)` (from `KeyBy`) stores the key and derives the row-identity selector from its
-  node-key form, so a row's identity string is the same flat, grouped or hierarchical. It sets
-  `m_rowKeyDirty` when a verb is in force (identity changed; the spec diff cannot see it), and under
-  a relation also bumps the declaration generation and clears intent. `ClearRowKey()` throws while a
-  relation is declared.
-- `SetParent(parentKey)` / `ClearParentBy()` set `m_hierarchyAxisDirty`. The hierarchy axis has
+- `SetRowKey(key)` (from `KeyBy`) stores the key as a row-identity selector yielding its node-key
+  form, so a row's identity string is the same flat, grouped or hierarchical. It sets
+  `m_projectionAxisDirty` when a verb is in force (identity changed; the spec diff cannot see it), and
+  under a relation also bumps the declaration generation and clears intent. `ClearRowKey()` throws
+  while a relation is declared.
+- `SetParent(parentKey)` / `ClearParentBy()` set `m_projectionAxisDirty`. The hierarchy axis has
   no description in the pipeline spec, so without the flag a verb-only change would diff as a no-op
   and never rebuild. Both clear expansion intent (§5.2). `SetParent` throws when no key is declared;
   `ClearParentBy` leaves the key declared.
 - Row identities are validated before every shaped rebuild. Under a key that is where a duplicate or
-  null key is caught and reported as `KeyBy: duplicate key '…'`; the index build's own key checks
-  are the backstop.
+  null key is caught and reported as `KeyBy: duplicate key '…'`. Under a hierarchy the validated keys
+  are kept as a `RowKeyTable` and handed to the index build, so the app's key selector runs once per
+  row per refresh. The relation generation is captured before validation, so a re-declaration from
+  the key selector itself makes the pass obsolete.
 - `ClearParentBy()`, and every rebuild into a projection that is not hierarchical, releases the
   adapter: its index and intent are cleared and the engine drops its reference, so the last visible
   rows are not kept alive. The previous row-metadata provider shares ownership until the projection

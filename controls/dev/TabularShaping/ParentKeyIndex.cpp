@@ -163,7 +163,7 @@ std::wstring const* ParentKeyIndex::TryGetKey(winrt::IInspectable const& item) c
 
 bool BuildParentKeyIndex(
     std::vector<winrt::IInspectable> const& rows,
-    KeySelector const& keySelector,
+    RowKeyTable keys,
     KeySelector const& parentKeySelector,
     ParentKeyFilter const& filter,
     ParentKeyIndex& out,
@@ -176,36 +176,22 @@ bool BuildParentKeyIndex(
     std::unordered_map<std::wstring, size_t> indexByKey;
     indexByKey.reserve(n);
 
-    // An object key's lookup form is its address, so every key and parent key is held for the
-    // whole build: a released temporary's address could be reused by the next one and alias it.
+    // An object key's lookup form is its address, so every parent key is held for the whole build:
+    // a released temporary's address could be reused by the next one and alias it.
     std::vector<winrt::IInspectable> keepAlive;
-    keepAlive.reserve(n * 2);
+    keepAlive.reserve(n);
 
-    // Pass 1: keys, duplicates, null keys.
+    // Pass 1: each row's key, from the table the caller already validated (unique, non-empty).
+    // The checks below are defensive only: they fire if the table does not describe `rows`.
     for (size_t i = 0; i < n; ++i)
     {
-        auto key = SafeSelect(keySelector, rows[i]);
-        nodeKeys[i] = MakeNodeKey(key);
-        keepAlive.push_back(std::move(key));
-        if (nodeKeys[i].empty())
+        auto const found = keys.find(winrt::get_abi(rows[i]));
+        if (found == keys.end() || found->second.empty() || !indexByKey.emplace(found->second, i).second)
         {
-            // `rows` is already sorted, so its index is not the item's position in the app's
-            // collection; name the item's type instead of reporting a misleading position.
-            winrt::hstring typeName;
-            if (rows[i])
-            {
-                try { typeName = winrt::get_class_name(rows[i]); } catch (...) {}
-            }
-            error = L"KeyBy: key selector returned null or empty for an item"
-                + (typeName.empty() ? winrt::hstring{} : L" of type '" + typeName + L"'")
-                + L".";
+            error = L"KeyBy: an item has no unique key.";
             return false;
         }
-        if (!indexByKey.emplace(nodeKeys[i], i).second)
-        {
-            error = L"KeyBy: duplicate key '" + DescribeNodeKey(nodeKeys[i]) + L"'.";
-            return false;
-        }
+        nodeKeys[i] = found->second;
     }
 
     // Pass 2: resolve parents; self-parent is an error, unknown parent = orphan root.
@@ -287,13 +273,18 @@ bool BuildParentKeyIndex(
     for (size_t i = 0; i < n; ++i)
     {
         result.UnfilteredKeys.insert(nodeKeys[i]);
-        if (!state[i]) continue;
-        result.KeyByItem.emplace(winrt::get_abi(rows[i]), nodeKeys[i]);
+        if (!state[i])
+        {
+            // Filtered out: the index does not hold the row, so its pointer must not stay a key.
+            keys.erase(winrt::get_abi(rows[i]));
+            continue;
+        }
         if (state[i] == 2) result.ContextKeys.insert(nodeKeys[i]);
         std::vector<winrt::IInspectable> kids;
         for (size_t c : childIdx[i]) if (state[c]) kids.push_back(rows[c]);
         if (!kids.empty()) result.Children.emplace(nodeKeys[i], std::move(kids));
     }
+    result.KeyByItem = std::move(keys);
     out = std::move(result);
     return true;
 }

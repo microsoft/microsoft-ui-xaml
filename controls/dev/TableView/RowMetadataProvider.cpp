@@ -379,9 +379,9 @@ winrt::hstring RowMetadataProvider::GetIdentity(int32_t index)
 
     case SourceKind::Hierarchical:
     {
-        // The node key ("node:" + the app key), not the item key. It is what the adapter's
-        // expand/collapse takes, so identity and expansion speak the same language, and it survives
-        // the app re-creating the item object, so selection re-anchors on it too.
+        // The node key: the declared key's node-key form, so the same string a flat or grouped row
+        // reports for this item, and what the adapter's expand/collapse takes. Read from the
+        // descriptor, which already holds it, instead of re-running the app's key selector.
         if (m_hierarchicalAdapter)
         {
             if (auto const* const node = m_hierarchicalAdapter->TryGetNodeRow(index))
@@ -400,10 +400,10 @@ winrt::hstring RowMetadataProvider::GetIdentity(int32_t index)
             return GetGroupExpansionKey(entry->Group());
         }
 
-        // A data row's identity is its node key, not its item key. Expand/collapse addresses
-        // nodes by node key, and identity is what the control hands back to Toggle, so the two must
-        // agree. Falls back to the item key for a row the hierarchy no longer knows (mid-reshape),
-        // which keeps selection re-anchoring working even in that window.
+        // A data row's identity is its node key: the same string GetItemKey yields for the row (both
+        // are the declared key's node-key form), read from the descriptor rather than by re-running
+        // the app's key selector. The item-key fallback covers a row the hierarchy no longer knows
+        // (mid-reshape) and yields that same identity.
         auto const item = GetGroupedRow(index);
         if (m_hierarchicalAdapter)
         {

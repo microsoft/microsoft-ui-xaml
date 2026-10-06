@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -42,12 +43,15 @@ namespace RowIdentity
 
     // Confirm every row has a usable identity and that no two rows share one. Under object identity
     // a repeat means one object occupies more than one row; under a declared key, two rows share a
-    // key. `duplicate`, when supplied, receives the repeated identity.
+    // key. `duplicate`, when supplied, receives the repeated identity. `identityByItem`, when
+    // supplied, receives every row's identity by its ABI pointer (ShapingHelpers::RowKeyTable), so a
+    // consumer needing the keys does not run the selector again; it is complete only on success.
     bool ValidateRowIdentities(
         std::vector<winrt::IInspectable> const& rows,
         ShapingHelpers::KeySelector const& keySelector,
         wchar_t const*& reason,
-        winrt::hstring* duplicate = nullptr);
+        winrt::hstring* duplicate = nullptr,
+        std::unordered_map<void*, std::wstring>* identityByItem = nullptr);
 
     void ClearFlatRowIdentityTracking(
         std::unordered_set<winrt::hstring>& identities,

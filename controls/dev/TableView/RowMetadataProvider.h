@@ -75,7 +75,13 @@ public:
         return m_sourceKind == SourceKind::Hierarchical || m_sourceKind == SourceKind::GroupedHierarchical;
     }
 
-    bool HasStableRowIdentity() const override { return m_hasDeclaredRowKey || IsHierarchicalSource(); }
+    // A tree cannot be declared without a key (ParentBy requires KeyBy), so the declared key alone
+    // decides.
+    bool HasStableRowIdentity() const override
+    {
+        MUX_ASSERT(m_hasDeclaredRowKey || !IsHierarchicalSource());
+        return m_hasDeclaredRowKey;
+    }
     void SetHasDeclaredRowKey(bool value) override { m_hasDeclaredRowKey = value; }
 
     enum class SourceKind

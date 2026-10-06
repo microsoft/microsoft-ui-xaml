@@ -121,10 +121,16 @@ namespace RowIdentity
         std::vector<winrt::IInspectable> const& rows,
         ShapingHelpers::KeySelector const& keySelector,
         wchar_t const*& reason,
-        winrt::hstring* duplicate)
+        winrt::hstring* duplicate,
+        std::unordered_map<void*, std::wstring>* identityByItem)
     {
         std::unordered_set<winrt::hstring> identities;
         identities.reserve(rows.size());
+        if (identityByItem)
+        {
+            identityByItem->clear();
+            identityByItem->reserve(rows.size());
+        }
 
         for (auto const& item : rows)
         {
@@ -144,6 +150,11 @@ namespace RowIdentity
                     *duplicate = identity;
                 }
                 return false;
+            }
+
+            if (identityByItem)
+            {
+                identityByItem->emplace(winrt::get_abi(item), std::wstring{ identity });
             }
         }
 
