@@ -281,7 +281,11 @@ public sealed partial class SamplePresenter : UserControl
     // expander header and the bottom of the right-rail Options card.
     private void ApplyStretchSizing(double availableHeight)
     {
-        if (StretchExample && availableHeight > 0)
+        if (StretchExample && SourceExpander?.IsExpanded == true)
+        {
+            OuterGrid.ClearValue(HeightProperty);
+        }
+        else if (StretchExample && availableHeight > 0)
         {
             var verticalMargin = OuterGrid.Margin.Top + OuterGrid.Margin.Bottom;
             var target = availableHeight - verticalMargin;
@@ -294,6 +298,12 @@ public sealed partial class SamplePresenter : UserControl
             OuterGrid.ClearValue(HeightProperty);
         }
     }
+
+    private void OnSourceExpanderExpanded(Expander sender, ExpanderExpandingEventArgs args) =>
+        ApplyStretchSizing(ActualHeight);
+
+    private void OnSourceExpanderCollapsed(Expander sender, ExpanderCollapsedEventArgs args) =>
+        ApplyStretchSizing(ActualHeight);
 
     private void ApplyResponsiveLayout(double availableWidth)
     {

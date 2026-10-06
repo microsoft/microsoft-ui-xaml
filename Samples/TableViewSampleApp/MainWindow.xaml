@@ -53,7 +53,7 @@
                     Padding="0"
                     VerticalAlignment="Center"
                     ToolTipService.ToolTip="Toggle theme (Default → Light → Dark)"
-                    AutomationProperties.Name="Toggle theme"
+                    AutomationProperties.AutomationId="ThemeToggleButton"
                     Click="OnThemeToggleClick">
                 <muxc:FontIcon x:Name="ThemeToggleIcon" Glyph="&#xE793;" FontSize="14"/>
             </Button>
@@ -62,6 +62,8 @@
         <muxc:NavigationView
             Grid.Row="1"
             x:Name="NavView"
+            PaneTitle="Sample navigation"
+            AutomationProperties.Name="Sample navigation"
             PaneDisplayMode="Auto"
             IsBackButtonVisible="Collapsed"
             IsBackEnabled="False"

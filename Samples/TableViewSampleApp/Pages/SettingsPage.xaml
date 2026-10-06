@@ -83,7 +83,8 @@
                         <Button Content="Refresh Windows state" Click="OnRefreshWindowsStateClick"
                                 AutomationProperties.AutomationId="SettingsRefreshContrastState"/>
                         <TextBlock x:Name="ContrastStatusText" TextWrapping="Wrap"
-                                   AutomationProperties.AutomationId="SettingsContrastState"/>
+                                   AutomationProperties.AutomationId="SettingsContrastState"
+                                   AutomationProperties.LiveSetting="Polite"/>
                     </StackPanel>
                 </Border>
 

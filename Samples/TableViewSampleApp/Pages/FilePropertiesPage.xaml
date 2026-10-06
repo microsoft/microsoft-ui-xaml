@@ -10,7 +10,7 @@
 
     <Grid Padding="24" ColumnSpacing="12">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="260"/>
+            <ColumnDefinition Width="320"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
@@ -34,10 +34,15 @@
                 <ListView x:Name="FileList"
                           Grid.Row="1"
                           AutomationProperties.AutomationId="FilePropertiesFileList"
-                          DisplayMemberPath="Name"
                           SelectionChanged="OnFileSelectionChanged"
                           SelectionMode="Single"
-                          MinHeight="420"/>
+                          MinHeight="420">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" TextWrapping="WrapWholeWords"/>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </Grid>
         </Border>
 

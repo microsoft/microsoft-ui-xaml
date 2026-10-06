@@ -247,15 +247,15 @@ public sealed partial class ShapingPage : Page
 
     private void ExpandAll_Click(object sender, RoutedEventArgs e)
     {
-        _diag = "focusAtClick=" + FocusedName();
         Table.ExpandAllGroups();
+        _diag = "expanded all groups; focusAtClick=" + FocusedName();
         UpdateStatus();
     }
 
     private void CollapseAll_Click(object sender, RoutedEventArgs e)
     {
-        _diag = "focusAtClick=" + FocusedName();
         Table.CollapseAllGroups();
+        _diag = "collapsed all groups; focusAtClick=" + FocusedName();
         UpdateStatus();
     }
 
@@ -295,7 +295,7 @@ public sealed partial class ShapingPage : Page
         var found = new List<(double Y, char C)>();
         Collect(Table, found);
         var ordered = found.OrderBy(t => t.Y).Select(t => t.C).ToArray();
-        _diag = "band " + new string(ordered);
+        _diag = "band " + (ordered.Length == 0 ? "(no realized row containers)" : new string(ordered));
         UpdateStatus();
     }
 
@@ -395,7 +395,9 @@ public sealed partial class ShapingPage : Page
 
     private void ClearSort_Click(object sender, RoutedEventArgs e)
     {
+        _diag = "sort cleared";
         SortCombo.SelectedIndex = 0;   // re-enters ApplySort, which clears both sort states
+        UpdateStatus();
     }
 
     // Header clicks reshape the same source the Sort row drives, so the readout has to follow the
@@ -445,10 +447,12 @@ public sealed partial class ShapingPage : Page
             return;
         }
 
+        _diag = "repump requested";
         TableHost.Child = null;
         DispatcherQueue.TryEnqueue(() =>
         {
             TableHost.Child = Table;
+            _diag = "repump complete";
             UpdateStatus();
         });
     }
@@ -462,6 +466,7 @@ public sealed partial class ShapingPage : Page
     private void ClearSelLog_Click(object sender, RoutedEventArgs e)
     {
         _selLog.Clear();
+        _diag = "selection log cleared";
         UpdateStatus();
     }
 
@@ -490,6 +495,7 @@ public sealed partial class ShapingPage : Page
         var n = _items.Count + 1;
         _items.Add(new Item($"Added {n}", "Engineer", "Seattle", 42, "", DateTimeOffset.Now, "", null));
 
+        _diag = $"added item {n}";
         UpdateStatus();
     }
 

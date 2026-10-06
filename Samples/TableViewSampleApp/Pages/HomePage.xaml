@@ -37,7 +37,8 @@
                                     <ColumnDefinition Width="12"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="·" VerticalAlignment="Top" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Grid.Column="0" Text="·" VerticalAlignment="Top" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           AutomationProperties.AccessibilityView="Raw"/>
                                 <TextBlock Grid.Column="1" Text="{Binding}" TextWrapping="Wrap" Style="{ThemeResource BodyTextBlockStyle}"/>
                             </Grid>
                         </DataTemplate>
@@ -70,32 +71,32 @@
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Showcase" Tag="Showcase" Click="OnNavigateButtonClick"/>
-                    <Button Content="Task Manager" Tag="TaskManager" Click="OnNavigateButtonClick"/>
-                    <Button Content="File Explorer" Tag="FileExplorer" Click="OnNavigateButtonClick"/>
-                    <Button Content="File properties" Tag="FileProperties" Click="OnNavigateButtonClick"/>
-                    <Button Content="Grouped rows" Tag="Groups" Click="OnNavigateButtonClick"/>
+                    <Button Content="Showcase" Tag="Showcase" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Showcase sample."/>
+                    <Button Content="Task Manager" Tag="TaskManager" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Task Manager sample."/>
+                    <Button Content="File Explorer" Tag="FileExplorer" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the File Explorer sample."/>
+                    <Button Content="File properties" Tag="FileProperties" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the File properties sample."/>
+                    <Button Content="Grouped rows" Tag="Groups" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grouped rows sample."/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Sorting" Tag="Sort" Click="OnNavigateButtonClick"/>
-                    <Button Content="Filtering" Tag="Filter" Click="OnNavigateButtonClick"/>
-                    <Button Content="Selection" Tag="Selection" Click="OnNavigateButtonClick"/>
-                    <Button Content="Headers visibility" Tag="HeadersVisibility" Click="OnNavigateButtonClick"/>
-                    <Button Content="Grid lines visibility" Tag="GridLinesVisibility" Click="OnNavigateButtonClick"/>
+                    <Button Content="Sorting" Tag="Sort" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Sorting sample."/>
+                    <Button Content="Filtering" Tag="Filter" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Filtering sample."/>
+                    <Button Content="Selection" Tag="Selection" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Selection sample."/>
+                    <Button Content="Headers visibility" Tag="HeadersVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Headers visibility sample."/>
+                    <Button Content="Grid lines visibility" Tag="GridLinesVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grid lines visibility sample."/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Column resize" Tag="ColumnResize" Click="OnNavigateButtonClick"/>
-                    <Button Content="Column reorder + autosize" Tag="ColumnReorder" Click="OnNavigateButtonClick"/>
-                    <Button Content="Dynamic columns" Tag="DynamicColumns" Click="OnNavigateButtonClick"/>
-                    <Button Content="Template cells" Tag="MixedControls" Click="OnNavigateButtonClick"/>
+                    <Button Content="Column resize" Tag="ColumnResize" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Column resize sample."/>
+                    <Button Content="Column reorder + autosize" Tag="ColumnReorder" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Column reorder and autosize sample."/>
+                    <Button Content="Dynamic columns" Tag="DynamicColumns" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Dynamic columns sample."/>
+                    <Button Content="Template cells" Tag="MixedControls" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Template cells sample."/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Virtualization" Tag="Virtualization" Click="OnNavigateButtonClick"/>
-                    <Button Content="Performance" Tag="Performance" Click="OnNavigateButtonClick"/>
+                    <Button Content="Virtualization" Tag="Virtualization" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Virtualization sample."/>
+                    <Button Content="Performance" Tag="Performance" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Performance sample."/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Keyboard navigation + accessibility" Tag="KeyboardNav" Click="OnNavigateButtonClick"/>
-                    <Button Content="Right-to-left layout" Tag="RTLPlayground" Click="OnNavigateButtonClick"/>
+                    <Button Content="Keyboard navigation + accessibility" Tag="KeyboardNav" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Keyboard navigation and accessibility sample."/>
+                    <Button Content="Right-to-left layout" Tag="RTLPlayground" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Right-to-left layout sample."/>
                 </StackPanel>
             </StackPanel>
 
@@ -172,10 +173,14 @@
                     Text="Found a bug or have feedback on TableView? Log it on the shared Loop page so the team can triage it. Include the sample page name, repro steps, and the build (the About page shows the exact commit)."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
-                <Button x:Name="ReportLoopButton"
+                <HyperlinkButton x:Name="ReportLoopButton"
                     Content="🔗 Report an issue (Loop)"
                     HorizontalAlignment="Left"
-                    ToolTipService.ToolTip="Opens the shared Loop page to log a TableView samples issue."/>
+                    NavigateUri="https://loop.cloud.microsoft/p/eyJ1IjoiaHR0cHM6Ly9taWNyb3NvZnQuc2hhcmVwb2ludC1kZi5jb20vdGVhbXMvU2hlbGxGVEw%2FbmF2PWN6MGxNa1owWldGdGN5VXlSbE5vWld4c1JsUk1KbVE5WWlFdFFWUTBiSEZaV0U5clpUZGZTakJ5T0ZGclJrSklabkpCVXpkclNWOTRUbk13WVRob1JXcDVNMkY1U0dvMlVHWkxURmgxVWpkTllURlZhVVJDZUcxMUptWTlNREV5UzFsVlYweEhWRW8wVUVORFRrRmFVbFpJV1ZvMFJWbEdWamMyVFUxV1RTWmpQU1V5UmlabWJIVnBaRDB4Sm1FOVZHVmhiWE1tY0QwbE5EQm1iSFZwWkhnbE1rWnNiMjl3TFhCaFoyVXRZMjl1ZEdGcGJtVnkifQ%3D%3D"
+                    ToolTipService.ToolTip="Opens the shared Loop page to log a TableView samples issue."
+                    AutomationProperties.AutomationId="HomeReportLoopLink"
+                    AutomationProperties.Name="Report an issue (Loop)"
+                    AutomationProperties.HelpText="Opens the shared Loop page to log a TableView samples issue."/>
             </StackPanel>
 
         </StackPanel>

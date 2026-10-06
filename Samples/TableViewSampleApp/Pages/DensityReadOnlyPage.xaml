@@ -18,6 +18,7 @@
             <TextBox
                 Text="{Binding FirstName, Mode=TwoWay}"
                 IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
+                AutomationProperties.Name="First name"
                 BorderThickness="0"
                 Background="Transparent"
                 Margin="4,1"
@@ -30,6 +31,7 @@
             <TextBox
                 Text="{Binding LastName, Mode=TwoWay}"
                 IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
+                AutomationProperties.Name="Last name"
                 BorderThickness="0"
                 Background="Transparent"
                 Margin="4,1"
@@ -42,6 +44,7 @@
             <TextBox
                 Text="{Binding Role, Mode=TwoWay}"
                 IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
+                AutomationProperties.Name="Role"
                 BorderThickness="0"
                 Background="Transparent"
                 Margin="4,1"
@@ -54,6 +57,7 @@
             <TextBox
                 Text="{Binding Email, Mode=TwoWay}"
                 IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
+                AutomationProperties.Name="Email"
                 BorderThickness="0"
                 Background="Transparent"
                 Margin="4,1"
@@ -116,9 +120,22 @@
                         Text="Row height + built-in cell padding preset."
                         Style="{StaticResource SectionDescriptionTextStyle}"
                         TextWrapping="Wrap"/>
-                    <RadioButton Content="Compact" Tag="Compact" GroupName="Density" Checked="OnDensityChecked" AutomationProperties.AutomationId="DensityCompactRadio"/>
-                    <RadioButton Content="Standard (default)" Tag="Standard" GroupName="Density" IsChecked="True" Checked="OnDensityChecked" AutomationProperties.AutomationId="DensityStandardRadio"/>
-                    <RadioButton Content="Comfortable" Tag="Comfortable" GroupName="Density" Checked="OnDensityChecked" AutomationProperties.AutomationId="DensityComfortableRadio"/>
+                    <muxc:RadioButtons
+                        x:Name="DensitySelector"
+                        MaxColumns="1"
+                        SelectedIndex="1"
+                        SelectionChanged="OnDensitySelectionChanged"
+                        AutomationProperties.Name="Density">
+                        <RadioButton Content="Compact" Tag="Compact"
+                                     AutomationProperties.AutomationId="DensityCompactRadio"
+                                     AutomationProperties.HelpText="Row height + built-in cell padding preset."/>
+                        <RadioButton Content="Standard (default)" Tag="Standard"
+                                     AutomationProperties.AutomationId="DensityStandardRadio"
+                                     AutomationProperties.HelpText="Row height + built-in cell padding preset."/>
+                        <RadioButton Content="Comfortable" Tag="Comfortable"
+                                     AutomationProperties.AutomationId="DensityComfortableRadio"
+                                     AutomationProperties.HelpText="Row height + built-in cell padding preset."/>
+                    </muxc:RadioButtons>
                 </StackPanel>
 
                 <StackPanel Spacing="4" AutomationProperties.Name="Read-only options">

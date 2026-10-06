@@ -40,6 +40,7 @@ public sealed partial class FileExplorerPage : Page
     private readonly FileSystemBrowser _browser = new();
     private readonly Stack<string> _history = new();
     private string _currentDir = string.Empty;
+    private string _lastRefreshText = string.Empty;
 
     public FileExplorerPage()
     {
@@ -138,6 +139,7 @@ public sealed partial class FileExplorerPage : Page
     {
         if (!string.IsNullOrEmpty(_currentDir))
         {
+            _lastRefreshText = $" · refreshed {DateTime.Now:HH:mm:ss}";
             RefreshEntries();
         }
     }
@@ -209,7 +211,7 @@ public sealed partial class FileExplorerPage : Page
         }
 
         var folderCount = Entries.Count(entry => entry.IsFolder);
-        StatusText.Text = $"{Entries.Count} items ({folderCount} folders)";
+        StatusText.Text = $"{Entries.Count} items ({folderCount} folders){_lastRefreshText}";
     }
 
     private void RefreshSelectionText()

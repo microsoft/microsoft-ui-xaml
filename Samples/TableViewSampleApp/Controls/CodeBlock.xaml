@@ -28,6 +28,7 @@
                     FontWeight="SemiBold"
                     VerticalAlignment="Center"/>
                 <Button
+                    x:Name="CopyButton"
                     Grid.Column="1"
                     Click="OnCopyClick"
                     AutomationProperties.Name="Copy code"
@@ -35,7 +36,7 @@
                     Padding="8,4">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <FontIcon Glyph="&#xE8C8;" FontSize="14"/>
-                        <TextBlock Text="Copy" FontSize="12"/>
+                        <TextBlock x:Name="CopyLabel" Text="Copy" FontSize="12"/>
                     </StackPanel>
                 </Button>
             </Grid>

@@ -42,6 +42,7 @@
                         MinWidth="40"
                         IsEnabled="False"
                         Click="OnBackClick"
+                        AutomationProperties.Name="Back"
                         ToolTipService.ToolTip="Back">
                     <FontIcon Glyph="&#xE72B;" FontSize="14"/>
                 </Button>
@@ -50,6 +51,7 @@
                         Grid.Column="1"
                         MinWidth="40"
                         Click="OnUpClick"
+                        AutomationProperties.Name="Up"
                         ToolTipService.ToolTip="Up">
                     <FontIcon Glyph="&#xE74A;" FontSize="14"/>
                 </Button>
@@ -62,9 +64,12 @@
                          HorizontalAlignment="Stretch"
                          VerticalAlignment="Center"/>
 
-                <Button Grid.Column="3"
+                <Button x:Name="RefreshButton"
+                        Grid.Column="3"
                         MinWidth="40"
                         Click="OnRefreshClick"
+                        AutomationProperties.Name="Refresh"
+                        AutomationProperties.AutomationId="RefreshButton"
                         ToolTipService.ToolTip="Refresh">
                     <FontIcon Glyph="&#xE72C;" FontSize="14"/>
                 </Button>

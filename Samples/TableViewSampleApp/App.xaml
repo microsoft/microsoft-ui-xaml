@@ -20,16 +20,16 @@
 
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="SampleCustomRowBackgroundBrush" Color="{ThemeResource SystemChromeLowColor}"/>
-                    <SolidColorBrush x:Key="SampleCustomAlternatingRowBackgroundBrush" Color="{ThemeResource SystemAccentColorLight3}"/>
+                    <SolidColorBrush x:Key="SampleCustomRowBackgroundBrush" Color="#FFFFFFFF"/>
+                    <SolidColorBrush x:Key="SampleCustomAlternatingRowBackgroundBrush" Color="#FFF3F6FA"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="SampleCustomRowBackgroundBrush" Color="{ThemeResource SystemChromeLowColor}"/>
-                    <SolidColorBrush x:Key="SampleCustomAlternatingRowBackgroundBrush" Color="{ThemeResource SystemAccentColorDark2}"/>
+                    <SolidColorBrush x:Key="SampleCustomRowBackgroundBrush" Color="#FF1F1F1F"/>
+                    <SolidColorBrush x:Key="SampleCustomAlternatingRowBackgroundBrush" Color="#FF2B2B2B"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Default">
-                    <SolidColorBrush x:Key="SampleCustomRowBackgroundBrush" Color="{ThemeResource SystemChromeLowColor}"/>
-                    <SolidColorBrush x:Key="SampleCustomAlternatingRowBackgroundBrush" Color="{ThemeResource SystemAccentColorLight3}"/>
+                    <SolidColorBrush x:Key="SampleCustomRowBackgroundBrush" Color="#FFFFFFFF"/>
+                    <SolidColorBrush x:Key="SampleCustomAlternatingRowBackgroundBrush" Color="#FFF3F6FA"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
                     <!-- Sample-owned optional row banding only. Do not override

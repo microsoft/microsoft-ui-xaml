@@ -107,7 +107,7 @@
                     <TextBlock TextWrapping="Wrap" Style="{ThemeResource BodyTextBlockStyle}">
                         <Run Text="Report a bug — pick whichever fits your workflow:"/>
                     </TextBlock>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
+                    <StackPanel Spacing="8" HorizontalAlignment="Left">
                         <Button x:Name="ReportLoopButton" Content="🔗 Report an issue (Loop)"
                                 ToolTipService.ToolTip="Opens the shared Loop page to log a TableView samples issue — the preferred channel for triage."/>
                         <Button x:Name="ReportEmailButton" Content="✉ Report via email"

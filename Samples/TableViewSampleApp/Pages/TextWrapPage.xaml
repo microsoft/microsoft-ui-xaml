@@ -111,8 +111,8 @@
                         AutomationProperties.AutomationId="TextWrapToggle"/>
                 </StackPanel>
 
-                <StackPanel Spacing="4" AutomationProperties.Name="Column width options">
-                    <TextBlock Text="Bio column width" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <StackPanel Spacing="4">
+                    <TextBlock x:Name="BioColumnWidthHeader" Text="Bio column width" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                     <TextBlock Text="Narrow widths force more wrapping and should produce taller rows." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
                     <Slider
                         x:Name="ColumnWidthSlider"
@@ -121,17 +121,19 @@
                         StepFrequency="20"
                         Value="360"
                         ValueChanged="OnColumnWidthChanged"
-                        AutomationProperties.AutomationId="TextWrapColumnWidthSlider"/>
+                        AutomationProperties.AutomationId="TextWrapColumnWidthSlider"
+                        AutomationProperties.Name="Bio column width"/>
                     <TextBlock Text="{x:Bind ColumnWidthText, Mode=OneWay}" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TextWrapColumnWidthText"/>
                 </StackPanel>
 
-                <StackPanel Spacing="4" AutomationProperties.Name="Line limit options">
-                    <TextBlock Text="Max lines" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <StackPanel Spacing="4">
+                    <TextBlock x:Name="MaxLinesHeader" Text="Max lines" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                     <ComboBox
                         x:Name="MaxLinesComboBox"
                         SelectedIndex="0"
                         SelectionChanged="OnMaxLinesSelectionChanged"
-                        AutomationProperties.AutomationId="TextWrapMaxLinesComboBox">
+                        AutomationProperties.AutomationId="TextWrapMaxLinesComboBox"
+                        AutomationProperties.Name="Max lines">
                         <ComboBoxItem Content="Unlimited" Tag="0"/>
                         <ComboBoxItem Content="2 lines + trimming" Tag="2"/>
                         <ComboBoxItem Content="3 lines + trimming" Tag="3"/>

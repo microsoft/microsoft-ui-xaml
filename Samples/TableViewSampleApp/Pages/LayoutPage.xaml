@@ -60,7 +60,7 @@
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
-            <StackPanel Spacing="12">
+            <StackPanel Spacing="12" Margin="0,0,12,0">
                 <TextBlock Text="Layout mode" Style="{StaticResource SectionHeaderTextStyle}"/>
                 <TextBlock Text="Choose the column-layout scenario to rebuild the table." Style="{StaticResource SectionDescriptionTextStyle}"/>
                 <muxc:RadioButtons

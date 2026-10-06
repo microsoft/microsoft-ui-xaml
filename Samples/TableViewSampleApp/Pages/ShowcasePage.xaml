@@ -63,7 +63,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
-                            <muxc:DropDownButton x:Name="SelectButton" AutomationProperties.AutomationId="ShowcaseSelectButton">
+                            <muxc:DropDownButton x:Name="SelectButton" AutomationProperties.AutomationId="ShowcaseSelectButton" AutomationProperties.Name="Select rows">
                                 <muxc:DropDownButton.Content>
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <FontIcon Glyph="&#xE762;" FontSize="16"/>
@@ -72,7 +72,7 @@
                                 </muxc:DropDownButton.Content>
                                 <muxc:DropDownButton.Flyout>
                                     <MenuFlyout>
-                                        <MenuFlyoutItem Text="Select all" Click="OnSelectAllClick">
+                                        <MenuFlyoutItem Text="Select all" Click="OnSelectAllClick" IsEnabled="False">
                                             <MenuFlyoutItem.Icon>
                                                 <FontIcon Glyph="&#xE8B3;"/>
                                             </MenuFlyoutItem.Icon>
@@ -86,7 +86,7 @@
                                 </muxc:DropDownButton.Flyout>
                             </muxc:DropDownButton>
 
-                            <Button x:Name="AutosizeButton" Click="OnAutosizeAllClick" AutomationProperties.AutomationId="ShowcaseAutosizeButton">
+                            <Button x:Name="AutosizeButton" Click="OnAutosizeAllClick" AutomationProperties.AutomationId="ShowcaseAutosizeButton" AutomationProperties.Name="Autosize columns">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon Glyph="&#xE9A6;" FontSize="16"/>
                                     <TextBlock Text="Autosize"/>
@@ -175,23 +175,16 @@
                     Text="Switch the source between a flat list and Department-grouped rows."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
-                <StackPanel Spacing="4">
-                    <RadioButton
-                        x:Name="FlatModeRadio"
-                        AutomationProperties.AutomationId="ShowcaseModeFlatRadio"
-                        GroupName="ShowcaseMode"
-                        Content="Flat"
-                        Tag="Flat"
-                        IsChecked="True"
-                        Checked="OnModeRadioChecked"/>
-                    <RadioButton
-                        x:Name="GroupedModeRadio"
-                        AutomationProperties.AutomationId="ShowcaseModeGroupedRadio"
-                        GroupName="ShowcaseMode"
-                        Content="Grouped"
-                        Tag="Grouped"
-                        Checked="OnModeRadioChecked"/>
-                </StackPanel>
+                <muxc:RadioButtons
+                    x:Name="ModeRadioButtons"
+                    AutomationProperties.AutomationId="ShowcaseModeRadioButtons"
+                    AutomationProperties.Name="Mode"
+                    MaxColumns="1"
+                    SelectedIndex="0"
+                    SelectionChanged="OnModeSelectionChanged">
+                    <RadioButton Content="Flat" Tag="Flat" AutomationProperties.AutomationId="ShowcaseModeFlatRadio"/>
+                    <RadioButton Content="Grouped" Tag="Grouped" AutomationProperties.AutomationId="ShowcaseModeGroupedRadio"/>
+                </muxc:RadioButtons>
 
 
                 <TextBlock Text="Row count" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
@@ -205,6 +198,7 @@
                     Header="Flat row count"
                     SelectedIndex="0"
                     HorizontalAlignment="Stretch"
+                    Margin="2,0"
                     SelectionChanged="OnRowCountChanged"
                     AutomationProperties.Name="Flat row count">
                     <ComboBoxItem Content="10"   Tag="10"/>
@@ -288,6 +282,7 @@
                     x:Name="UpdateIntervalSlider"
                     AutomationProperties.AutomationId="ShowcaseUpdateIntervalSlider"
                     Header="Update interval (ms)"
+                    AutomationProperties.Name="Update interval (ms)"
                     Minimum="100"
                     Maximum="2000"
                     StepFrequency="50"

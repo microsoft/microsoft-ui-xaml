@@ -4,10 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Input;
 // tabular-namespace TableView aliases: disambiguate from the (stale-mock) base Microsoft.UI.Xaml.Controls.TableView projection
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -110,9 +114,14 @@ public sealed partial class MainWindow : Window
     /// </summary>
     public void NavigateTo(string tag)
     {
+        // The button that requested this navigation is unloaded with its page, so hand keyboard
+        // focus to the new page; otherwise it falls back to the first element in the title bar.
+        _focusOnNavigatedPageType = s_pageMap.TryGetValue(tag, out var pageType) ? pageType : null;
         SelectNavItem(tag);
         Navigate(tag, new DrillInNavigationTransitionInfo());
     }
+
+    private Type? _focusOnNavigatedPageType;
 
 
     private void ContentFrame_NavigationFailed(object sender, NavigationFailedEventArgs e)
@@ -386,6 +395,7 @@ public sealed partial class MainWindow : Window
         // sync. The helper also fires ThemeChanged, which our handler in
         // the ctor uses to keep the glyph current.
         Services.AppSettings.ApplyAndPersist(root, next);
+        RaiseThemeChangedNotification(next);
     }
 
     private void OnPersistedThemeChanged(object? sender, ElementTheme theme)
@@ -402,6 +412,37 @@ public sealed partial class MainWindow : Window
             ElementTheme.Dark => "\uE708",    // QuietHours / Moon-ish
             _ => "\uE793",                    // Color (system default)
         };
+
+        var current = GetThemeDisplayName(theme);
+        var next = GetThemeDisplayName(GetNextTheme(theme));
+        AutomationProperties.SetName(ThemeToggleButton, $"Theme: {current}. Switch to {next}.");
+        AutomationProperties.SetHelpText(ThemeToggleButton, $"The current theme is {current}. Activating this button switches to {next}.");
+        ToolTipService.SetToolTip(ThemeToggleButton, $"Theme: {current}. Switch to {next}.");
+    }
+
+    private static ElementTheme GetNextTheme(ElementTheme theme) => theme switch
+    {
+        ElementTheme.Default => ElementTheme.Light,
+        ElementTheme.Light => ElementTheme.Dark,
+        _ => ElementTheme.Default,
+    };
+
+    private static string GetThemeDisplayName(ElementTheme theme) => theme switch
+    {
+        ElementTheme.Light => "Light",
+        ElementTheme.Dark => "Dark",
+        _ => "Default",
+    };
+
+    private void RaiseThemeChangedNotification(ElementTheme theme)
+    {
+        var peer = FrameworkElementAutomationPeer.FromElement(ThemeToggleButton)
+            ?? FrameworkElementAutomationPeer.CreatePeerForElement(ThemeToggleButton);
+        peer?.RaiseNotificationEvent(
+            AutomationNotificationKind.ActionCompleted,
+            AutomationNotificationProcessing.ImportantMostRecent,
+            $"{GetThemeDisplayName(theme)} theme selected.",
+            "ThemeChanged");
     }
 
     private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
@@ -446,6 +487,32 @@ public sealed partial class MainWindow : Window
         SyncNavViewSelectionToCurrentPage(e.SourcePageType);
         App.AppendVerificationLog($"ContentFrameNavigated Page={e.SourcePageType?.FullName ?? "(null)"}");
         App.AppendSelectionVerificationLog($"ContentFrameNavigated Page={e.SourcePageType?.FullName ?? "(null)"}");
+        var focusPageType = _focusOnNavigatedPageType;
+        _focusOnNavigatedPageType = null;
+        if (focusPageType is not null && e.SourcePageType == focusPageType && e.Content is FrameworkElement page)
+        {
+            void OnPageLoaded(object s, RoutedEventArgs args)
+            {
+                page.Loaded -= OnPageLoaded;
+                FocusFirstElement(page, attemptsLeft: 10);
+            }
+            page.Loaded += OnPageLoaded;
+        }
+    }
+
+    // Synchronous on purpose: the previous page (holding the focused button) stays in the tree until the
+    // navigation transition ends, and its removal clears a still-pending FocusManager.TryFocusAsync.
+    private void FocusFirstElement(FrameworkElement page, int attemptsLeft)
+    {
+        if (FocusManager.FindFirstFocusableElement(page) is UIElement first && first.Focus(FocusState.Programmatic))
+        {
+            return;
+        }
+
+        if (attemptsLeft > 0)
+        {
+            DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => FocusFirstElement(page, attemptsLeft - 1));
+        }
     }
 
     private void SyncNavViewSelectionToCurrentPage(Type? pageType)

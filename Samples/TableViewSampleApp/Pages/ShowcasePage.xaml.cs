@@ -92,14 +92,14 @@ public sealed partial class ShowcasePage : Page
 
     // ----- Source mode (flat / grouped) -----
 
-    private void OnModeRadioChecked(object sender, RoutedEventArgs e)
+    private void OnModeSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (PeopleTable is null || sender is not RadioButton { Tag: string tag })
+        if (PeopleTable is null || ModeRadioButtons?.SelectedItem is not RadioButton { Tag: string modeName })
         {
             return;
         }
 
-        if (Enum.TryParse<ShowcaseMode>(tag, out var mode))
+        if (Enum.TryParse<ShowcaseMode>(modeName, out var mode))
         {
             ApplyMode(mode);
         }

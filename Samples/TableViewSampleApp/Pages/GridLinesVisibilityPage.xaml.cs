@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Media;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Models;
+using Windows.UI.ViewManagement;
 using TableViewGridLinesVisibility = Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility;
 
 namespace TableViewSampleApp.Pages;
@@ -63,6 +64,7 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
         InitializeComponent();
 
         DemoTable.HeadersVisibility = TableViewHeadersVisibility.Column;
+        DemoTable.ActualThemeChanged += OnDemoTableActualThemeChanged;
         ApplyMode(LayoutMode.Flat);
         ApplyBanding();
         UpdateStatus();
@@ -81,9 +83,9 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
         }
     }
 
-    private void OnGridLinesVisibilityChecked(object sender, RoutedEventArgs e)
+    private void OnGridLinesVisibilityChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (DemoTable is null || sender is not FrameworkElement { Tag: string tag })
+        if (DemoTable is null || sender is not RadioButtons { SelectedItem: RadioButton { Tag: string tag } })
         {
             return;
         }
@@ -101,9 +103,9 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
         UpdateStatus();
     }
 
-    private void OnModeRadioChecked(object sender, RoutedEventArgs e)
+    private void OnModeSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (DemoTable is null || sender is not FrameworkElement { Tag: string tag })
+        if (DemoTable is null || sender is not RadioButtons { SelectedItem: RadioButton { Tag: string tag } })
         {
             return;
         }
@@ -118,7 +120,7 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
         UpdateStatus();
     }
 
-    private void OnBandingRadioChecked(object sender, RoutedEventArgs e)
+    private void OnBandingSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (DemoTable is null)
         {
@@ -147,22 +149,12 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
 
     private void ApplyBanding()
     {
-        if (DemoTable is null || CustomBandingRadio is null) return;
+        if (DemoTable is null || BandingSelector is null) return;
 
-        if (CustomBandingRadio.IsChecked == true)
+        if (BandingSelector.SelectedIndex == 1)
         {
-            if (Application.Current.Resources.TryGetValue("SampleCustomRowBackgroundBrush", out var rowBrush) &&
-                rowBrush is Brush rowBackground)
-            {
-                DemoTable.RowBackground = rowBackground;
-            }
-
-            if (Application.Current.Resources.TryGetValue("SampleCustomAlternatingRowBackgroundBrush", out var alternatingBrush) &&
-                alternatingBrush is Brush alternatingRowBackground)
-            {
-                DemoTable.AlternatingRowBackground = alternatingRowBackground;
-            }
-
+            DemoTable.RowBackground = GetBandingBrush("SampleCustomRowBackgroundBrush");
+            DemoTable.AlternatingRowBackground = GetBandingBrush("SampleCustomAlternatingRowBackgroundBrush");
             return;
         }
 
@@ -170,9 +162,32 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
         DemoTable.AlternatingRowBackground = null;
     }
 
+    // Application.Current.Resources resolves theme dictionaries against the app-level theme, not the
+    // theme that the title-bar toggle applies to the window root, so use the dictionary that matches
+    // this table's ActualTheme. High Contrast overrides both and the app-level lookup resolves it.
+    private Brush? GetBandingBrush(string key)
+    {
+        var resources = Application.Current.Resources;
+        if (!new AccessibilitySettings().HighContrast)
+        {
+            var themeKey = DemoTable.ActualTheme == ElementTheme.Dark ? "Dark" : "Light";
+            if (resources.ThemeDictionaries.TryGetValue(themeKey, out var themeDictionary) &&
+                themeDictionary is ResourceDictionary dictionary &&
+                dictionary.TryGetValue(key, out var themed) &&
+                themed is Brush themedBrush)
+            {
+                return themedBrush;
+            }
+        }
+
+        return resources.TryGetValue(key, out var value) ? value as Brush : null;
+    }
+
+    private void OnDemoTableActualThemeChanged(FrameworkElement sender, object args) => ApplyBanding();
+
     private void UpdateStatus()
     {
-        var banding = CustomBandingRadio is not null && CustomBandingRadio.IsChecked == true ? "custom banding" : "theme banding";
+        var banding = BandingSelector is not null && BandingSelector.SelectedIndex == 1 ? "custom banding" : "theme banding";
         var lines = _lines switch
         {
             TableViewGridLinesVisibility.None       => "no grid lines",

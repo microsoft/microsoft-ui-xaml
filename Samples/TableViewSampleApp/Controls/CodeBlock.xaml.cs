@@ -4,7 +4,9 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -19,6 +21,8 @@ namespace TableViewSampleApp.Controls;
 /// </summary>
 public sealed partial class CodeBlock : UserControl
 {
+    private int _copyConfirmationVersion;
+
     public CodeBlock()
     {
         InitializeComponent();
@@ -93,7 +97,15 @@ public sealed partial class CodeBlock : UserControl
         {
             CodeText.Text = Code ?? string.Empty;
         }
+
+        if (CopyButton is not null)
+        {
+            AutomationProperties.SetName(CopyButton, CopyAutomationName());
+        }
     }
+
+    private string CopyAutomationName() =>
+        string.IsNullOrWhiteSpace(Caption) ? "Copy code" : $"Copy {Caption} code";
 
     private static string LoadSnippet(string snippetName)
     {
@@ -121,5 +133,18 @@ public sealed partial class CodeBlock : UserControl
         var package = new DataPackage();
         package.SetText(Code ?? string.Empty);
         Clipboard.SetContent(package);
+
+        var version = ++_copyConfirmationVersion;
+        CopyLabel.Text = "Copied";
+        AutomationProperties.SetName(CopyButton, "Copied to clipboard");
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            await Task.Delay(1500);
+            if (version == _copyConfirmationVersion)
+            {
+                CopyLabel.Text = "Copy";
+                AutomationProperties.SetName(CopyButton, CopyAutomationName());
+            }
+        });
     }
 }

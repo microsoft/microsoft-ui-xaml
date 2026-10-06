@@ -83,7 +83,7 @@ public sealed partial class SettingsPage : Page
     private void RefreshWindowsState()
     {
         var highContrast = new AccessibilitySettings().HighContrast;
-        ContrastStatusText.Text = $"Windows HighContrast = {highContrast} (read on page load or Refresh). " +
+        ContrastStatusText.Text = $"Windows HighContrast = {highContrast} (refreshed {DateTimeOffset.Now:HH:mm:ss.fff}). " +
             "This is an OS setting readout, not a rendering, contrast-ratio, or UIA test result.";
     }
 
