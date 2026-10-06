@@ -26,7 +26,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // These tests assert against two structures the control builds from Columns:
     //   - PART_HeaderHost, whose children are header cell Grids, each tagged with its column
     //     (TableView.cpp:1610, headerCell.Tag(column)).
-    //   - each realized TableViewRow's PART_CellsHost, whose children are Border cell wrappers,
+    //   - each realized TableViewRow's PART_CellsHost, whose children are Grid cell wrappers,
     //     each tagged with its column (TableViewRow.cpp:762, cellWrapper.Tag(column)).
     // The Tag is the supported way to map a rendered element back to the column that produced it,
     // and it is what the control's own frozen-column and recycling code uses.

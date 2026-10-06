@@ -319,7 +319,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return;
                 }
 
-                var presenter = wrapper.Child as ContentPresenter;
+                var presenter = GetCellContent(wrapper) as ContentPresenter;
                 if (presenter == null)
                 {
                     Verify.Fail("A template column should still generate a ContentPresenter when CellTemplate is null.");

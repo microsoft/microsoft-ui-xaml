@@ -264,15 +264,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return host;
         }
 
-        internal static Border GetRowCell(TableViewRow row, int index)
+        // A cell wrapper is a single-child Grid (TableViewCell): the Grid is the cell's focus and UIA
+        // target and draws its vertical separator; the column-generated element is its only child.
+        internal static Grid GetRowCell(TableViewRow row, int index)
         {
             var host = GetCellsHost(row);
             Verify.IsGreaterThan(host.Children.Count, index, "The cells host should have a cell at the requested index.");
 
-            var wrapper = host.Children[index] as Border;
-            Verify.IsNotNull(wrapper, "Every cell is hosted in a Border wrapper.");
+            var wrapper = host.Children[index] as Grid;
+            Verify.IsNotNull(wrapper, "Every cell is hosted in a Grid cell wrapper.");
             return wrapper;
         }
+
+        // The column-generated element a cell wrapper hosts, or null for an empty cell.
+        internal static UIElement GetCellContent(Grid cellWrapper)
+            => cellWrapper.Children.Count > 0 ? cellWrapper.Children[0] : null;
 
         internal static void ScrollBodyTo(TableView tableView, ScrollAxis axis, double offset)
         {
@@ -577,7 +583,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         internal static TableViewCellAutomationPeer GetCellPeer(TableView tableView, object item, int columnIndex)
             => GetCellPeer(GetRowForItem(tableView, item), columnIndex);
 
-        // The current state of a visual state group declared on the control's template root.
+        // The current state of a visual state group declared in the control's template. Templates may
+        // wrap the element that owns the groups (e.g. an outer layout Grid around PART_RootBorder), so
+        // search the template tree for the first element that declares the group.
         internal static string GetCurrentVisualState(Control control, string groupName)
         {
             var root = control != null && VisualTreeHelper.GetChildrenCount(control) > 0
@@ -590,7 +598,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 return null;
             }
 
-            var group = VisualStateManager.GetVisualStateGroups(root).FirstOrDefault(candidate => candidate.Name == groupName);
+            var group = new[] { root }
+                .Concat(FindVisualChildrenByType<FrameworkElement>(root))
+                .SelectMany(element => VisualStateManager.GetVisualStateGroups(element))
+                .FirstOrDefault(candidate => candidate.Name == groupName);
             if (group == null)
             {
                 Verify.Fail($"The template should declare a '{groupName}' visual state group.");
@@ -602,9 +613,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // The TextBlock a cell renders, whichever column type produced it: a text column generates one
         // directly, a template column generates a ContentPresenter that inflates one.
-        internal static TextBlock GetCellTextBlock(Border cellWrapper)
+        internal static TextBlock GetCellTextBlock(Grid cellWrapper)
         {
-            var textBlock = cellWrapper.Child as TextBlock ?? FindVisualChildrenByType<TextBlock>(cellWrapper).FirstOrDefault();
+            var textBlock = GetCellContent(cellWrapper) as TextBlock ?? FindVisualChildrenByType<TextBlock>(cellWrapper).FirstOrDefault();
             if (textBlock == null)
             {
                 Verify.Fail("The cell should host a TextBlock.");
@@ -613,7 +624,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return textBlock;
         }
 
-        internal static string GetCellText(Border cellWrapper) => GetCellTextBlock(cellWrapper)?.Text;
+        internal static string GetCellText(Grid cellWrapper) => GetCellTextBlock(cellWrapper)?.Text;
 
         internal static string GetCellText(TableView tableView, int rowIndex, int columnIndex)
         {
