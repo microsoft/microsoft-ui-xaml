@@ -20,12 +20,12 @@
 
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="SampleCustomRowBackgroundBrush" Color="{ThemeResource SystemChromeLowColor}"/>
-                    <SolidColorBrush x:Key="SampleCustomAlternatingRowBackgroundBrush" Color="{ThemeResource SystemAccentColorLight3}"/>
+                    <SolidColorBrush x:Key="SampleCustomRowBackgroundBrush" Color="{ThemeResource LayerFillColorDefault}"/>
+                    <SolidColorBrush x:Key="SampleCustomAlternatingRowBackgroundBrush" Color="{ThemeResource CardBackgroundFillColorSecondary}"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="SampleCustomRowBackgroundBrush" Color="{ThemeResource SystemChromeLowColor}"/>
-                    <SolidColorBrush x:Key="SampleCustomAlternatingRowBackgroundBrush" Color="{ThemeResource SystemAccentColorDark2}"/>
+                    <SolidColorBrush x:Key="SampleCustomRowBackgroundBrush" Color="{ThemeResource LayerFillColorDefault}"/>
+                    <SolidColorBrush x:Key="SampleCustomAlternatingRowBackgroundBrush" Color="{ThemeResource CardBackgroundFillColorSecondary}"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
                     <SolidColorBrush x:Key="SampleCustomRowBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>

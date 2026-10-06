@@ -6,6 +6,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 // Tabular aliases keep the sample code concise.
@@ -53,8 +55,25 @@ public sealed partial class FilterPage : Page
 
     private void OnSearchChanged(object sender, TextChangedEventArgs e)
     {
+        UpdateClearFilterButtonState();
         if (FilterTable is null) return;
         ApplyFilter();
+    }
+
+    private void OnClearFilterClicked(object sender, RoutedEventArgs e)
+    {
+        SearchBox.Text = string.Empty;
+        UpdateClearFilterButtonState();
+        ApplyFilter();
+        SearchBox.Focus(FocusState.Programmatic);
+
+        var peer = FrameworkElementAutomationPeer.FromElement(SearchBox)
+            ?? FrameworkElementAutomationPeer.CreatePeerForElement(SearchBox);
+        peer?.RaiseNotificationEvent(
+            AutomationNotificationKind.ActionCompleted,
+            AutomationNotificationProcessing.MostRecent,
+            "Filter cleared",
+            "FilterCleared");
     }
 
     private void OnActiveToggled(object sender, RoutedEventArgs e)
@@ -104,6 +123,14 @@ public sealed partial class FilterPage : Page
 
     private static bool Contains(string? value, string query) =>
         value is not null && value.Contains(query, StringComparison.OrdinalIgnoreCase);
+
+    private void UpdateClearFilterButtonState()
+    {
+        if (ClearFilterButton is not null)
+        {
+            ClearFilterButton.IsEnabled = !string.IsNullOrEmpty(SearchBox?.Text);
+        }
+    }
 
     private static string PersonIdentity(object item) => item is Person person ? person.Email : string.Empty;
 }

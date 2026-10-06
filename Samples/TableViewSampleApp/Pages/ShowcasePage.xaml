@@ -78,6 +78,8 @@
                                                 <FontIcon Glyph="&#xE8B3;" AutomationProperties.AccessibilityView="Raw"/>
                                             </MenuFlyoutItem.Icon>
                                         </MenuFlyoutItem>
+                                        <!-- No "Select all": TableViewSelectionMode is None/Single only,
+                                             so a multi-select command would always be inert. -->
                                         <MenuFlyoutItem Text="Clear selection" Click="OnClearSelectionClick">
                                             <MenuFlyoutItem.Icon>
                                                 <FontIcon Glyph="&#xE8E6;" AutomationProperties.AccessibilityView="Raw"/>
@@ -176,23 +178,22 @@
                     Text="Switch the source between a flat list and Department-grouped rows."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
-                <StackPanel Spacing="4">
+                <muxc:RadioButtons
+                    x:Name="ShowcaseModeRadioButtons"
+                    AutomationProperties.Name="Mode"
+                    SelectedIndex="0"
+                    SelectionChanged="OnModeSelectionChanged">
                     <RadioButton
                         x:Name="FlatModeRadio"
                         AutomationProperties.AutomationId="ShowcaseModeFlatRadio"
-                        GroupName="ShowcaseMode"
                         Content="Flat"
-                        Tag="Flat"
-                        IsChecked="True"
-                        Checked="OnModeRadioChecked"/>
+                        Tag="Flat"/>
                     <RadioButton
                         x:Name="GroupedModeRadio"
                         AutomationProperties.AutomationId="ShowcaseModeGroupedRadio"
-                        GroupName="ShowcaseMode"
                         Content="Grouped"
-                        Tag="Grouped"
-                        Checked="OnModeRadioChecked"/>
-                </StackPanel>
+                        Tag="Grouped"/>
+                </muxc:RadioButtons>
 
 
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Row count" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>

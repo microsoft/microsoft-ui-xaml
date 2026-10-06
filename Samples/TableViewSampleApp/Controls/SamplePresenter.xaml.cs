@@ -22,6 +22,9 @@ namespace TableViewSampleApp.Controls;
 /// </summary>
 public sealed partial class SamplePresenter : UserControl
 {
+    private const double OptionsColumnWidth = 320;
+    private const double WideLayoutMinWidth = 900;
+
     public SamplePresenter()
     {
         InitializeComponent();
@@ -96,9 +99,7 @@ public sealed partial class SamplePresenter : UserControl
     {
         var hasOptions = Options is not null;
         OptionsBorder.Visibility = hasOptions ? Visibility.Visible : Visibility.Collapsed;
-        // FIXED 320 px (matching the rail's natural max) so the table doesn't
-        // re-flow as you navigate between pages — pane-shake fix.
-        OptionsColumn.Width = hasOptions ? new GridLength(320) : new GridLength(0);
+        ApplyResponsiveLayout(ActualWidth);
     }
 
     public string? SourceXaml
@@ -285,14 +286,15 @@ public sealed partial class SamplePresenter : UserControl
 
     private void ApplyResponsiveLayout(double availableWidth)
     {
+        var hasOptions = Options is not null;
+        var isNarrow = hasOptions && availableWidth < WideLayoutMinWidth;
+
         // Below 900 px, drop the Options rail under the Example so the demo isn't squeezed.
         // The Options rail then takes Row 4 (which was the source-expander row in wide
         // mode), so we also have to move SourceExpander down to Row 5 to avoid both
-        // landing in the same cell. Skip the layout shuffle if there's no Options
-        // rail — SourceExpander then keeps its default XAML Row=4 placement.
-        if (Options is null) return;
-
-        if (availableWidth < 900)
+        // landing in the same cell. Without Options, keep the default wide placement
+        // with a collapsed Options column.
+        if (isNarrow)
         {
             Grid.SetRow(OptionsBorder, 4);
             Grid.SetColumn(OptionsBorder, 0);
@@ -311,7 +313,7 @@ public sealed partial class SamplePresenter : UserControl
             Grid.SetColumnSpan(OptionsBorder, 1);
             OptionsBorder.Margin = new Thickness(12, 0, 0, 0);
             // Restore the fixed-width column for the wide layout.
-            OptionsColumn.Width = new GridLength(320);
+            OptionsColumn.Width = hasOptions ? new GridLength(OptionsColumnWidth) : new GridLength(0);
             Grid.SetRow(SourceExpander, 4);
         }
     }

@@ -35,6 +35,12 @@
             <TextBox x:Name="SearchBox" Width="280" PlaceholderText="Filter by name, department, role, email…"
                      TextChanged="OnSearchChanged"
                      AutomationProperties.Name="Filter query"/>
+            <Button x:Name="ClearFilterButton"
+                    Content="Clear filter"
+                    IsEnabled="False"
+                    Click="OnClearFilterClicked"
+                    AutomationProperties.Name="Clear filter"
+                    AutomationProperties.AutomationId="ClearFilterButton"/>
             <ToggleSwitch x:Name="ActiveOnlyToggle" Header="Active only" OffContent="Off" OnContent="On"
                           Toggled="OnActiveToggled"/>
         </StackPanel>

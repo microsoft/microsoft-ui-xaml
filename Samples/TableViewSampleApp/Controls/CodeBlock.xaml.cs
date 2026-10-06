@@ -4,6 +4,8 @@
 using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel.DataTransfer;
@@ -19,9 +21,19 @@ namespace TableViewSampleApp.Controls;
 /// </summary>
 public sealed partial class CodeBlock : UserControl
 {
+    private const string CopyButtonText = "Copy";
+    private const string CopyButtonAutomationName = "Copy code";
+    private const string CopyIconGlyph = "\uE8C8";
+    private const string CopiedIconGlyph = "\uE73E";
+
+    private readonly DispatcherTimer _copyFeedbackTimer;
+
     public CodeBlock()
     {
         InitializeComponent();
+        _copyFeedbackTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        _copyFeedbackTimer.Tick += OnCopyFeedbackTimerTick;
+        Unloaded += OnUnloaded;
     }
 
     public string Caption
@@ -93,7 +105,18 @@ public sealed partial class CodeBlock : UserControl
         {
             CodeText.Text = Code ?? string.Empty;
         }
+
+        if (CopyButton is not null && !_copyFeedbackTimer.IsEnabled)
+        {
+            AutomationProperties.SetName(CopyButton, ResolvedCopyAutomationName);
+        }
     }
+
+    // A page can host more than one CodeBlock (XAML plus code-behind), so the copy
+    // buttons are qualified by caption — otherwise they are indistinguishable to a
+    // screen reader and read as the same button twice.
+    private string ResolvedCopyAutomationName =>
+        string.IsNullOrWhiteSpace(Caption) ? CopyButtonAutomationName : $"Copy {Caption}";
 
     private static string LoadSnippet(string snippetName)
     {
@@ -118,8 +141,54 @@ public sealed partial class CodeBlock : UserControl
 
     private void OnCopyClick(object sender, RoutedEventArgs e)
     {
-        var package = new DataPackage();
-        package.SetText(Code ?? string.Empty);
-        Clipboard.SetContent(package);
+        try
+        {
+            var package = new DataPackage();
+            package.SetText(Code ?? string.Empty);
+            Clipboard.SetContent(package);
+            ShowCopyFeedback("Copied", "Copied to clipboard", CopiedIconGlyph,
+                AutomationNotificationKind.ActionCompleted, "Code copied to clipboard");
+        }
+        catch (Exception)
+        {
+            ShowCopyFeedback("Copy failed", "Copy failed", CopyIconGlyph,
+                AutomationNotificationKind.ActionAborted, "Code could not be copied to clipboard");
+        }
+    }
+
+    private void ShowCopyFeedback(
+        string buttonText,
+        string automationName,
+        string iconGlyph,
+        AutomationNotificationKind notificationKind,
+        string notificationText)
+    {
+        CopyText.Text = buttonText;
+        CopyIcon.Glyph = iconGlyph;
+        AutomationProperties.SetName(CopyButton, automationName);
+
+        var peer = FrameworkElementAutomationPeer.FromElement(CopyButton)
+                   ?? FrameworkElementAutomationPeer.CreatePeerForElement(CopyButton);
+        peer?.RaiseNotificationEvent(
+            notificationKind,
+            AutomationNotificationProcessing.MostRecent,
+            notificationText,
+            "CodeBlockCopy");
+
+        _copyFeedbackTimer.Stop();
+        _copyFeedbackTimer.Start();
+    }
+
+    private void OnCopyFeedbackTimerTick(object? sender, object e)
+    {
+        _copyFeedbackTimer.Stop();
+        CopyText.Text = CopyButtonText;
+        CopyIcon.Glyph = CopyIconGlyph;
+        AutomationProperties.SetName(CopyButton, ResolvedCopyAutomationName);
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        _copyFeedbackTimer.Stop();
     }
 }

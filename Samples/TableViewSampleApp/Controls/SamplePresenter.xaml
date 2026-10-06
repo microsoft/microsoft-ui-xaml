@@ -16,10 +16,12 @@
             Row 4: Source expander (spans both, wide mode) OR Options rail (narrow mode)
             Row 5: Source expander (spans both, narrow mode only — keeps it below the reparented Options rail)
 
-        The OptionsColumn is FIXED at 320 px when Options is set, 0 px otherwise.
-        Auto-sizing here caused the right pane (and consequently the table) to
-        shake on navigation between right-pane pages, because each page's options
-        content has a different natural width. Fixed width = stable layout.
+        The OptionsColumn is FIXED at 320 px when Options is set in wide layouts,
+        0 px otherwise. Auto-sizing here caused the right pane (and consequently
+        the table) to shake on navigation between right-pane pages, because each
+        page's options content has a different natural width. Fixed width = stable
+        layout. Narrow layouts stack the options card below the example so portrait
+        windows do not clip the demo or options content.
 
         Theme toggle is intentionally absent from this scaffold — the shell
         MainWindow.xaml hosts the single app-wide theme cycle button in the
@@ -89,8 +91,10 @@
                 Content="{x:Bind Example, Mode=OneWay}"/>
         </Border>
 
-        <!-- Options rail (right) — collapses when Options is null. Width is governed
-             by the parent OptionsColumn (fixed 320 px) so the table never shakes. -->
+        <!-- Options rail (right in wide layouts, stacked under the example in narrow
+             layouts) — collapses when Options is null. In wide mode its width is
+             governed by the parent OptionsColumn (fixed 320 px) so the table never
+             shakes. -->
         <Border
             x:Name="OptionsBorder"
             Grid.Row="3" Grid.Column="1"

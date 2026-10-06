@@ -6,7 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using TableViewSampleApp.Pages;
@@ -50,6 +53,8 @@ public sealed partial class MainWindow : Window
 
     private bool _showDevInfo;
     private bool _isUpdatingSelection;
+    private bool _shouldFocusContentAfterNavigation;
+    private FocusState _contentNavigationFocusState = FocusState.Programmatic;
 
     public MainWindow(IReadOnlyList<string>? launchArguments = null)
     {
@@ -89,7 +94,7 @@ public sealed partial class MainWindow : Window
             App.AppendVerificationLog($"DispatcherNavigate InitialTag={initialTag}");
             App.AppendSelectionVerificationLog($"DispatcherNavigate InitialTag={initialTag}");
             SelectNavItem(initialTag);
-            Navigate(initialTag, new EntranceNavigationTransitionInfo());
+            Navigate(initialTag, new EntranceNavigationTransitionInfo(), false);
         });
     }
 
@@ -100,7 +105,7 @@ public sealed partial class MainWindow : Window
     public void NavigateTo(string tag)
     {
         SelectNavItem(tag);
-        Navigate(tag, new DrillInNavigationTransitionInfo());
+        Navigate(tag, new DrillInNavigationTransitionInfo(), true);
     }
 
 
@@ -325,6 +330,7 @@ public sealed partial class MainWindow : Window
         // sync. The helper also fires ThemeChanged, which our handler in
         // the ctor uses to keep the glyph current.
         Services.AppSettings.ApplyAndPersist(root, next);
+        RaiseThemeChangedNotification(next);
     }
 
     private void OnPersistedThemeChanged(object? sender, ElementTheme theme)
@@ -341,13 +347,15 @@ public sealed partial class MainWindow : Window
             ElementTheme.Dark => "\uE708",    // QuietHours / Moon-ish
             _ => "\uE793",                    // Color (system default)
         };
+
+        AutomationProperties.SetName(ThemeToggleButton, $"Theme: {GetThemeName(theme)}. Switch to {GetThemeName(GetNextTheme(theme))}");
     }
 
     private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
         if (args.InvokedItemContainer is NavigationViewItem item && item.Tag is string tag)
         {
-            Navigate(tag, args.RecommendedNavigationTransitionInfo);
+            Navigate(tag, args.RecommendedNavigationTransitionInfo, true);
         }
     }
 
@@ -372,7 +380,7 @@ public sealed partial class MainWindow : Window
             {
                 return;
             }
-            Navigate(tag, args.RecommendedNavigationTransitionInfo);
+            Navigate(tag, args.RecommendedNavigationTransitionInfo, true);
         }
     }
 
@@ -390,6 +398,7 @@ public sealed partial class MainWindow : Window
         SyncNavViewSelectionToCurrentPage(e.SourcePageType);
         App.AppendVerificationLog($"ContentFrameNavigated Page={e.SourcePageType?.FullName ?? "(null)"}");
         App.AppendSelectionVerificationLog($"ContentFrameNavigated Page={e.SourcePageType?.FullName ?? "(null)"}");
+        FocusContentAfterNavigationIfRequested();
     }
 
     private void SyncNavViewSelectionToCurrentPage(Type? pageType)
@@ -409,7 +418,7 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private void Navigate(string tag, NavigationTransitionInfo? transitionInfo)
+    private void Navigate(string tag, NavigationTransitionInfo? transitionInfo, bool focusContentAfterNavigation)
     {
         if (!s_pageMap.TryGetValue(tag, out var pageType))
         {
@@ -431,7 +440,17 @@ public sealed partial class MainWindow : Window
 
         try
         {
+            if (focusContentAfterNavigation)
+            {
+                _shouldFocusContentAfterNavigation = true;
+                _contentNavigationFocusState = GetNavigationFocusState();
+            }
+
             var navigated = ContentFrame.Navigate(pageType, this, transitionInfo);
+            if (!navigated && focusContentAfterNavigation)
+            {
+                _shouldFocusContentAfterNavigation = false;
+            }
             App.AppendVerificationLog($"NavigateReturned {navigated} CurrentTypeAfter={ContentFrame.CurrentSourcePageType?.FullName ?? "(null)"}");
             App.AppendSelectionVerificationLog($"NavigateReturned {navigated} CurrentTypeAfter={ContentFrame.CurrentSourcePageType?.FullName ?? "(null)"}");
         }
@@ -441,8 +460,61 @@ public sealed partial class MainWindow : Window
             App.AppendVerificationLog(ex.ToString());
             App.AppendSelectionVerificationLog($"NavigateException {ex.GetType().FullName}: {ex.Message}");
             App.AppendSelectionVerificationLog(ex.ToString());
+            _shouldFocusContentAfterNavigation = false;
             throw;
         }
+    }
+
+    private FocusState GetNavigationFocusState()
+    {
+        if (FocusManager.GetFocusedElement(ContentFrame.XamlRoot) is Control { FocusState: FocusState.Keyboard })
+        {
+            return FocusState.Keyboard;
+        }
+
+        return FocusState.Programmatic;
+    }
+
+    private void FocusContentAfterNavigationIfRequested()
+    {
+        if (!_shouldFocusContentAfterNavigation)
+        {
+            return;
+        }
+
+        _shouldFocusContentAfterNavigation = false;
+        (ContentFrame.Content as UIElement)?.Focus(_contentNavigationFocusState);
+    }
+
+    private static ElementTheme GetNextTheme(ElementTheme theme)
+    {
+        return theme switch
+        {
+            ElementTheme.Default => ElementTheme.Light,
+            ElementTheme.Light => ElementTheme.Dark,
+            _ => ElementTheme.Default,
+        };
+    }
+
+    private static string GetThemeName(ElementTheme theme)
+    {
+        return theme switch
+        {
+            ElementTheme.Light => "Light",
+            ElementTheme.Dark => "Dark",
+            _ => "Default",
+        };
+    }
+
+    private void RaiseThemeChangedNotification(ElementTheme theme)
+    {
+        var peer = FrameworkElementAutomationPeer.FromElement(ThemeToggleButton)
+            ?? FrameworkElementAutomationPeer.CreatePeerForElement(ThemeToggleButton);
+        peer?.RaiseNotificationEvent(
+            AutomationNotificationKind.ActionCompleted,
+            AutomationNotificationProcessing.MostRecent,
+            $"Theme changed to {GetThemeName(theme)}",
+            "ThemeChanged");
     }
 
     private void SelectNavItem(string tag)
