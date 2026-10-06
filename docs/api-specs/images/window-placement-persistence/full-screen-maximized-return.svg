@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="900" viewBox="0 0 1120 900" role="img" aria-labelledby="title desc">
+  <title id="title">Reopen in full-screen and return to the remembered windowed placement</title>
+  <desc id="desc">Four stages on the same display B: the app closes in full-screen with a remembered maximized windowed state; it reopens directly in full-screen without a windowed flash; leaving full-screen returns it to maximized; the user restores the maximized window to its remembered normal size and position. Arrows connect the four stages in order. Dashed outlines show remembered normal bounds, not additional open windows.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.saved{fill:none;stroke:#8b4500;stroke-width:3;stroke-dasharray:8 6}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="900" fill="white"/>
+  <text x="32" y="40" class="heading">Reopen in full-screen and keep the windowed placement</text>
+  <text x="32" y="85" class="panel">1. Close in full-screen</text>
+  <text x="610" y="85" class="panel">2. Reopen in full-screen</text>
+  <text x="44" y="119">Display B</text>
+  <text x="620" y="119">Display B (same display)</text>
+  <rect x="44" y="136" width="440" height="252" class="monitor"/>
+  <rect x="46" y="138" width="436" height="248" fill="#d5ecff"/>
+  <text x="264" y="181" class="panel" text-anchor="middle">App: full-screen</text>
+  <rect x="135" y="214" width="255" height="116" class="saved"/>
+  <text x="264" y="278" class="note" text-anchor="middle">Saved normal bounds</text>
+  <path d="M530 252 H581" class="arrow"/>
+  <rect x="620" y="136" width="440" height="252" class="monitor"/>
+  <rect x="622" y="138" width="436" height="248" fill="#d5ecff"/>
+  <text x="840" y="181" class="panel" text-anchor="middle">App: full-screen</text>
+  <rect x="711" y="214" width="255" height="116" class="saved"/>
+  <text x="840" y="278" class="note" text-anchor="middle">Saved normal bounds</text>
+  <path d="M612 350 H572 Q556 350 556 366 V564 Q556 580 540 580 H495" class="arrow"/>
+  <text x="44" y="425">Saved windowed state: maximized</text>
+  <text x="620" y="425">First visible state: full-screen</text>
+  <text x="32" y="495" class="panel">3. Leave full-screen</text>
+  <text x="610" y="495" class="panel">4. Restore from maximization</text>
+  <text x="44" y="529">Display B (same display)</text>
+  <text x="620" y="529">Display B (same display)</text>
+  <rect x="44" y="546" width="440" height="252" class="monitor"/>
+  <rect x="45" y="764" width="438" height="33" fill="#697681"/>
+  <text x="264" y="789" text-anchor="middle" style="fill:white">Taskbar</text>
+  <rect x="49" y="551" width="430" height="208" class="app"/>
+  <rect x="51" y="553" width="426" height="28" class="bar"/>
+  <text x="63" y="574">App: maximized</text>
+  <rect x="135" y="624" width="255" height="116" class="saved"/>
+  <text x="264" y="688" class="note" text-anchor="middle">Saved normal bounds</text>
+  <text x="556" y="620" class="note" text-anchor="middle">User</text>
+  <text x="556" y="644" class="note" text-anchor="middle">restores</text>
+  <path d="M530 662 H581" class="arrow"/>
+  <rect x="620" y="546" width="440" height="252" class="monitor"/>
+  <rect x="621" y="764" width="438" height="33" fill="#697681"/>
+  <text x="840" y="789" text-anchor="middle" style="fill:white">Taskbar</text>
+  <rect x="711" y="624" width="255" height="116" class="app"/>
+  <rect x="713" y="626" width="251" height="28" class="bar"/>
+  <text x="725" y="647">App: normal</text>
+  <text x="840" y="696" class="note" text-anchor="middle">Remembered bounds</text>
+  <text x="44" y="835">Returns to maximized on B</text>
+  <text x="620" y="835">Returns to the saved normal bounds</text>
+  <text x="32" y="878" class="note">Dashed outlines: remembered normal bounds, not additional windows.</text>
+</svg>
