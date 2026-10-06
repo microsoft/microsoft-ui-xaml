@@ -6,7 +6,7 @@
 namespace MU_XCP_NAMESPACE
 {
 
-[MUX_PREVIEW]
+[MUX_PUBLIC_V12]
 [webhosthidden]
 unsealed runtimeclass InkToolbarStrokeWidthSlider : Microsoft.UI.Xaml.Controls.Slider
 {

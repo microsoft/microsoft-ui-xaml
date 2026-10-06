@@ -4,6 +4,7 @@
 
 - [How to build experimental and release](#how-to-build-experimental-and-release)
 - [WinUI Experimental APIs](#winui-experimental-apis)
+- [Promoting experimental APIs](#promoting-experimental-apis)
 
 The Windows App SDK has three distinct [release
 channels](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/release-channels):
@@ -66,3 +67,15 @@ which APIs are controlled by which feature flags with the feature attribute, lik
 `[feature(Feature_MyExperimentalFeature)]`.  Please see the featureflags.h file for more
 information.
 
+## Promoting experimental APIs
+
+`MUX_PREVIEW` adds an experimental feature attribute; it does not mean that an API is
+available in the Preview release channel. After API review, promote the complete intended
+surface to an unshipped `MUX_PUBLIC_Vn` contract and regenerate the IDL from `Contracts.cs`.
+Do not add APIs to a shipped contract. Keep the controls and Tabular IDL macro definitions
+aligned when allocating a new contract.
+
+The Inking surface uses `MUX_PUBLIC_V12`, reserved for the next WinAppSDK 2.x minor release.
+Main's 3.0 and experimental APIs use contract 13. These contract numbers are independent of
+NuGet package versions. Promotion on main does not publish a stable package: the corresponding
+release-branch change, servicing containment, validation, and release approval are separate.

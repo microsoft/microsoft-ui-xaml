@@ -33,18 +33,19 @@ namespace Microsoft.UI.Xaml
     [ContractVersion(9)] // WinAppSDK 1.8
     [ContractVersion(10)] // WinAppSDK 2.0
     [ContractVersion(11)] // WinAppSDK 2.2
-    [ContractVersion(12)] // WinAppSDK 3.0
+    [ContractVersion(12)] // Next WinAppSDK 2.x minor release
+    [ContractVersion(13)] // WinAppSDK 3.0
     public class WinUIContract : Contract
     {
         // Put new APIs in the Experimental contract version. Move into the specific
         // WinAppSDK version after completing API review and determining the stable
         // release version.
-        public const int Experimental  = 12;
+        public const int Experimental  = 13;
 
         public const int WinAppSDK_2_0 = 10;
         public const int WinAppSDK_2_2 = 11;
 
-        public const int WinAppSDK_3_0 = 12;
+        public const int WinAppSDK_3_0 = 13;
     };
 
     [ContractVersion(1)]
@@ -59,5 +60,6 @@ namespace Microsoft.UI.Xaml
     [ContractVersion(10)]
     [ContractVersion(11)]
     [ContractVersion(12)]
+    [ContractVersion(13)]
     public class XamlContract : Contract { };
 }

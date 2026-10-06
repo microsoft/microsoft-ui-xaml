@@ -1,21 +1,21 @@
 ﻿namespace MU_XC_NAMESPACE
 {
     // Args for InkPresenter.StrokesCollected.
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     runtimeclass InkStrokesCollectedEventArgs
     {
         Windows.Foundation.Collections.IVectorView<Windows.UI.Input.Inking.InkStroke> Strokes{ get; };
     }
 
     // Args for InkPresenter.StrokesErased.
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     runtimeclass InkStrokesErasedEventArgs
     {
         Windows.Foundation.Collections.IVectorView<Windows.UI.Input.Inking.InkStroke> Strokes{ get; };
     }
 
     // Ink-thread-marshaled subset of Windows.UI.Input.Inking.InkStrokeContainer.
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     runtimeclass InkStrokeContainer
     {
         void Clear();
@@ -40,7 +40,7 @@
     }
 
     // Mirror of Windows.UI.Input.Inking.InkInputProcessingMode.
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     enum InkInputProcessingMode
     {
         None = 0,
@@ -49,7 +49,7 @@
     };
 
     // Mirror of Windows.UI.Input.Inking.InkInputRightDragAction.
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     enum InkInputRightDragAction
     {
         LeaveUnprocessed = 0,
@@ -57,7 +57,7 @@
     };
 
     // Ink-thread-marshaled subset of Windows.UI.Input.Inking.InkInputProcessingConfiguration.
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     runtimeclass InkInputProcessingConfiguration
     {
         InkInputProcessingMode Mode;
@@ -65,7 +65,7 @@
     }
 
     // Ink-thread-marshaled subset of Windows.UI.Input.Inking.InkInputConfiguration.
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     runtimeclass InkInputConfiguration
     {
         Boolean IsPrimaryBarrelButtonInputEnabled;
@@ -73,7 +73,7 @@
     }
 
     // Mirror of Windows.UI.Input.Inking.InkHighContrastAdjustment (identical values).
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     enum InkHighContrastAdjustment
     {
         UseSystemColorsWhenNecessary = 0,
@@ -84,7 +84,7 @@
     // Ink-thread-marshaled mirror of Windows.UI.Input.Inking.InkStrokeInput. The OS object is
     // thread-affine to the ink thread; the owning InkPresenter subscribes there and re-raises these
     // events on the UI thread, passing the OS PointerEventArgs through.
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     runtimeclass InkStrokeInput
     {
         event Windows.Foundation.TypedEventHandler<InkStrokeInput, Windows.UI.Core.PointerEventArgs> StrokeStarted;
@@ -100,7 +100,7 @@
     // Ink-thread-marshaled mirror of Windows.UI.Input.Inking.InkUnprocessedInput. Fires the raw
     // pointer events the presenter did not turn into ink (used with InputProcessingMode.None, e.g.
     // lasso selection). Re-raised on the UI thread, passing the OS PointerEventArgs through.
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     runtimeclass InkUnprocessedInput
     {
         event Windows.Foundation.TypedEventHandler<InkUnprocessedInput, Windows.UI.Core.PointerEventArgs> PointerEntered;
@@ -121,7 +121,7 @@
     // BeginDry/EndDry bracket the app's own rendering of the strokes the presenter just committed, so
     // the presenter does not also draw them. The OS synchronizer is thread-affine to the ink thread,
     // so both calls marshal there through the owning InkPresenter.
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     runtimeclass InkSynchronizer
     {
         Windows.Foundation.Collections.IVectorView<Windows.UI.Input.Inking.InkStroke> BeginDry();
@@ -129,7 +129,7 @@
     }
 
     // Ink-thread-marshaled subset of Windows.UI.Input.Inking.InkPresenter.
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     runtimeclass InkPresenter
     {
         Windows.UI.Core.CoreInputDeviceTypes InputDeviceTypes;
@@ -156,7 +156,7 @@
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesErasedEventArgs> StrokesErased;
     }
 
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V12]
     unsealed runtimeclass InkCanvas : Microsoft.UI.Xaml.FrameworkElement
     {
         InkCanvas();
