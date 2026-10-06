@@ -33,9 +33,11 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     auto const owner = GetOwningTableView();
     // Cell content is left-aligned and vertically centered within the row (standard grid look).
     textBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
-    // Fluent body text: theme font size / Normal.
+    // Fluent body text: theme font size. FontWeight is deliberately NOT set here -- Normal is
+    // already the inherited default, so a local value would only block FontWeight set on the
+    // TableView (or inherited from the app) from reaching cell text, while changing nothing
+    // visually.
     textBlock.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
-    textBlock.FontWeight(winrt::FontWeights::Normal());
     // Density-aware built-in cell padding (Standard = 8,4,8,4 = unchanged default).
     if (owner)
     {
@@ -76,10 +78,11 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
     auto const owner = GetOwningTableView();
 
     // Match the display cell's metrics so swapping the TextBlock for the TextBox does not shift the
-    // text or resize the row as the edit opens.
+    // text or resize the row as the edit opens. FontWeight is omitted for the same reason as in
+    // GenerateElementCore: Normal is the inherited default, so setting it locally would only block
+    // app-supplied inheritance.
     textBox.VerticalAlignment(winrt::VerticalAlignment::Center);
     textBox.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
-    textBox.FontWeight(winrt::FontWeights::Normal());
     textBox.Padding(owner
         ? winrt::get_self<TableView>(owner)->GetDensityCellPadding()
         : winrt::ThicknessHelper::FromLengths(8, 4, 8, 4));
@@ -128,6 +131,17 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
     editingBinding.UpdateSourceTrigger(winrt::Microsoft::UI::Xaml::Data::UpdateSourceTrigger::Explicit);
 
     winrt::BindingOperations::SetBinding(textBox, winrt::TextBox::TextProperty(), editingBinding);
+
+    // The editor replaces the cell's TextBlock when editing begins, so focus lands on this TextBox.
+    // Every other property above is matched to the display cell; without a name the editor is the
+    // one thing that loses the column context, and assistive technology announces an unlabeled edit
+    // field. Name it from the column header, the same text the cell and header peers already use.
+    // An explicit CellEditingTemplate returns early above, so an app that supplies its own editor
+    // keeps full control of its naming.
+    if (auto const headerText = TableViewDetails::GetHeaderContentText(Header()); !headerText.empty())
+    {
+        winrt::AutomationProperties::SetName(textBox, headerText);
+    }
 
     return textBox;
 }
