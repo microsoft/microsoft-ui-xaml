@@ -9,6 +9,9 @@
 #include <winrt/microsoft.ui.xaml.hosting.h>
 #include <winrt/windows.ui.core.h>
 #include <winrt/Windows.UI.Input.h>
+#include <winrt/Windows.UI.Input.Inking.h>
+#include <winrt/Windows.UI.Input.Inking.Core.h>
+#include <winrt/Windows.Foundation.Numerics.h>
 #include <winrt/Microsoft.UI.Windowing.h>
 #include "strsafe.h"
 #include <iostream>
@@ -362,7 +365,63 @@ namespace winrt::WinUICppDesktopSampleApp::implementation
             }
         });
 
+        // UWP apps get draw-and-hold from CoreWetStrokeUpdateSource.Create(InkPresenter); WinUI keeps the same call in
+        // its own namespace, and raises the events on the ink thread. The test checks the event arrives off the UI thread.
+        try
+        {
+            auto wetStrokeSource = CoreWetStrokeUpdateSource::Create(presenter);
+            const bool sameInstance = wetStrokeSource == CoreWetStrokeUpdateSource::Create(presenter);
+            const DWORD uiThreadId = ::GetCurrentThreadId();
+            auto uiDispatcher = textBlockInkingWetStroke().DispatcherQueue();
+            wetStrokeSource.WetStrokeStarting([weakThis = get_weak(), uiDispatcher, uiThreadId, sameInstance](auto const&, auto const&)
+            {
+                const bool onInkThread = ::GetCurrentThreadId() != uiThreadId;
+                uiDispatcher.TryEnqueue([weakThis, onInkThread, sameInstance]()
+                {
+                    if (auto self = weakThis.get())
+                    {
+                        self->textBlockInkingWetStroke().Text(
+                            !sameInstance ? L"WetStrokeStarting.NewInstance" :
+                            onInkThread ? L"WetStrokeStarting" : L"WetStrokeStarting.UIThread");
+                    }
+                });
+            });
+            textBlockInkingWetStroke().Text(L"WetStroke.Ready");
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            wchar_t message[64];
+            StringCchPrintfW(message, ARRAYSIZE(message), L"WetStroke.Failed 0x%08X", static_cast<uint32_t>(e.code()));
+            textBlockInkingWetStroke().Text(message);
+        }
+
         textBlockInking().Text(L"InkCanvas.Loaded");
+    }
+
+    void MainWindow::ButtonShowRuler_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        // UWP parity: showing the stencil fills InkToolbarStencilButton.Ruler, which apps position from the UI thread.
+        inkToolbar().IsStencilButtonChecked(true);
+        auto stencilButton = inkToolbar().GetMenuButton(InkToolbarMenuKind::Stencil).try_as<InkToolbarStencilButton>();
+        auto ruler = stencilButton ? stencilButton.Ruler() : nullptr;
+        if (!ruler)
+        {
+            textBlockInkingRuler().Text(L"Ruler.Null");
+            return;
+        }
+
+        try
+        {
+            ruler.Transform(winrt::Windows::Foundation::Numerics::make_float3x2_translation(10.0f, 20.0f));
+            const auto transform = ruler.Transform();
+            textBlockInkingRuler().Text(transform.m31 == 10.0f && transform.m32 == 20.0f ? L"Ruler.Ready" : L"Ruler.BadTransform");
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            wchar_t message[64];
+            StringCchPrintfW(message, ARRAYSIZE(message), L"Ruler.Failed 0x%08X", static_cast<uint32_t>(e.code()));
+            textBlockInkingRuler().Text(message);
+        }
     }
 
     void MainWindow::ButtonResetBounds_Click(IInspectable const&, RoutedEventArgs const&)

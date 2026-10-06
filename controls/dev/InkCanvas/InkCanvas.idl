@@ -156,6 +156,25 @@
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesErasedEventArgs> StrokesErased;
     }
 
+    // Mirror of Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateSource for a WinUI InkPresenter (UWP:
+    // CoreWetStrokeUpdateSource.Create(InkPresenter)). The OS source only accepts handlers on the ink thread
+    // that owns the OS presenter, so this mirror subscribes there and re-raises each event synchronously on
+    // the ink thread with the OS args: handlers can change or cancel the wet stroke as in UWP.
+    [MUX_PREVIEW]
+    runtimeclass CoreWetStrokeUpdateSource
+    {
+        // Returns the presenter's wet-stroke update source; repeated calls return the same instance.
+        static CoreWetStrokeUpdateSource Create(InkPresenter inkPresenter);
+
+        InkPresenter InkPresenter{ get; };
+
+        event Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> WetStrokeStarting;
+        event Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> WetStrokeContinuing;
+        event Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> WetStrokeStopping;
+        event Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> WetStrokeCompleted;
+        event Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> WetStrokeCanceled;
+    }
+
     [MUX_PREVIEW]
     unsealed runtimeclass InkCanvas : Microsoft.UI.Xaml.FrameworkElement
     {

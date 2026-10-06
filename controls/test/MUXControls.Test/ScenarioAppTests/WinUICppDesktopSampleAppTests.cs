@@ -302,7 +302,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [Description("InkToolbar and InkCanvas in a native app, which has no CLR host to wrap a non-bindable collection: StrokeInput pointer args are readable and the pen color flyout shows its palette.")]
+        [Description("InkToolbar and InkCanvas in a native app, which has no CLR host to wrap a non-bindable collection: StrokeInput pointer args are readable, CoreWetStrokeUpdateSource events arrive on the ink thread, InkToolbarStencilButton.Ruler is usable, and the pen color flyout shows its palette.")]
         public void InkingTest()
         {
             Log.Comment("Selecting Inking tab");
@@ -323,6 +323,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestEnvironment.VerifyAreEqualWithRetry(20,
                 () => "StrokeStarted",
                 () => textBlock.DocumentText);
+
+            Log.Comment("The same stroke reaches the app's CoreWetStrokeUpdateSource handler on the ink thread");
+            var wetStrokeTextBlock = new TextBlock(FindElement.ByName("textBlockInkingWetStroke"));
+            TestEnvironment.VerifyAreEqualWithRetry(20,
+                () => "WetStrokeStarting",
+                () => wetStrokeTextBlock.DocumentText);
+
+            Log.Comment("Showing the ruler fills InkToolbarStencilButton.Ruler, usable from the UI thread");
+            new Button(FindElement.ByName("buttonShowRuler")).Invoke();
+            Wait.ForIdle();
+            var rulerTextBlock = new TextBlock(FindElement.ByName("textBlockInkingRuler"));
+            TestEnvironment.VerifyAreEqualWithRetry(20,
+                () => "Ruler.Ready",
+                () => rulerTextBlock.DocumentText);
 
             Log.Comment("Opening the ballpoint pen's color flyout");
             // The pen's automation name gains ", selected" while it is the active tool, so find it by id.

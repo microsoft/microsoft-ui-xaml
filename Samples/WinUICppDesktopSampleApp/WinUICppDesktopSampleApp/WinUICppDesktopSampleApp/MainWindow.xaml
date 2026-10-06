@@ -223,6 +223,11 @@
 
                     <StackPanel x:Name="stackPanelInking" AutomationProperties.Name="stackPanelInking">
                         <TextBlock x:Name="textBlockInking" AutomationProperties.Name="textBlockInking" MinWidth="150" Margin="2"/>
+                        <TextBlock x:Name="textBlockInkingWetStroke" AutomationProperties.Name="textBlockInkingWetStroke" MinWidth="150" Margin="2"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="buttonShowRuler" AutomationProperties.Name="buttonShowRuler" Content="Show ruler" Click="ButtonShowRuler_Click" Margin="2"/>
+                            <TextBlock x:Name="textBlockInkingRuler" AutomationProperties.Name="textBlockInkingRuler" MinWidth="150" Margin="2" VerticalAlignment="Center"/>
+                        </StackPanel>
                         <InkToolbar x:Name="inkToolbar" AutomationProperties.Name="inkToolbar" HorizontalAlignment="Left" Margin="2"/>
                         <Border BorderBrush="Gray" BorderThickness="1" Background="White" Width="400" Height="250" HorizontalAlignment="Left" Margin="2">
                             <InkCanvas x:Name="inkCanvas" AutomationProperties.Name="inkCanvas" Loaded="InkCanvas_Loaded"/>

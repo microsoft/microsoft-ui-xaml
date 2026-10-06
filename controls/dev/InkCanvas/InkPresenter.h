@@ -13,6 +13,7 @@
 #include "InkStrokeInput.g.h"
 #include "InkUnprocessedInput.g.h"
 #include "InkSynchronizer.g.h"
+#include "CoreWetStrokeUpdateSource.g.h"
 #include "InkPresenter.g.h"
 #include <windows.ui.input.inking.h>
 #include <inkpresenterdesktop.h>
@@ -21,6 +22,7 @@
 #include <winrt/Windows.Storage.Streams.h>
 #include <winrt/Windows.UI.Core.h>
 #include <winrt/Windows.UI.Input.h>
+#include <winrt/Windows.UI.Input.Inking.Core.h>
 #include <winrt/Windows.Devices.Input.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
@@ -412,6 +414,53 @@ private:
     winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendered_revoker m_renderedRevoker{};
 };
 
+// Mirror of Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateSource, returned by
+// CoreWetStrokeUpdateSource.Create(InkPresenter). The OS source only accepts handlers on the thread that
+// owns the OS presenter (CCallbackHelper checks it; RPC_E_WRONG_THREAD otherwise), which is the ink thread
+// here. So this mirror subscribes to the OS source once on the ink thread and re-raises each event
+// synchronously there, with the OS args, so app handlers can change NewInkPoints / Disposition as in UWP.
+// App handlers attach on any thread (winrt::event is thread-safe).
+class CoreWetStrokeUpdateSource :
+    public winrt::implementation::CoreWetStrokeUpdateSourceT<CoreWetStrokeUpdateSource>
+{
+public:
+    using Handler = winrt::Windows::Foundation::TypedEventHandler<muxc::CoreWetStrokeUpdateSource, inking::Core::CoreWetStrokeUpdateEventArgs>;
+
+    CoreWetStrokeUpdateSource(winrt::weak_ref<muxc::InkPresenter> const& owner) : m_owner(owner) {}
+
+    static muxc::CoreWetStrokeUpdateSource Create(muxc::InkPresenter const& inkPresenter);
+
+    muxc::InkPresenter InkPresenter() { return m_owner.get(); }
+
+    winrt::event_token WetStrokeStarting(Handler const& h) { return m_wetStrokeStarting.add(h); }
+    void WetStrokeStarting(winrt::event_token const& t) noexcept { m_wetStrokeStarting.remove(t); }
+    winrt::event_token WetStrokeContinuing(Handler const& h) { return m_wetStrokeContinuing.add(h); }
+    void WetStrokeContinuing(winrt::event_token const& t) noexcept { m_wetStrokeContinuing.remove(t); }
+    winrt::event_token WetStrokeStopping(Handler const& h) { return m_wetStrokeStopping.add(h); }
+    void WetStrokeStopping(winrt::event_token const& t) noexcept { m_wetStrokeStopping.remove(t); }
+    winrt::event_token WetStrokeCompleted(Handler const& h) { return m_wetStrokeCompleted.add(h); }
+    void WetStrokeCompleted(winrt::event_token const& t) noexcept { m_wetStrokeCompleted.remove(t); }
+    winrt::event_token WetStrokeCanceled(Handler const& h) { return m_wetStrokeCanceled.add(h); }
+    void WetStrokeCanceled(winrt::event_token const& t) noexcept { m_wetStrokeCanceled.remove(t); }
+
+    // Internal (not on the winmd surface). Subscribes to the OS source and forwards its events. Called once,
+    // on the ink thread, where the OS source accepts handlers.
+    void Attach(inking::Core::CoreWetStrokeUpdateSource const& osSource);
+
+private:
+    winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
+
+    // The OS source this mirror fronts. Only touched on the ink thread (Attach); kept so the OS handlers
+    // stay registered for the presenter's lifetime.
+    inking::Core::CoreWetStrokeUpdateSource m_osSource{ nullptr };
+
+    winrt::event<Handler> m_wetStrokeStarting;
+    winrt::event<Handler> m_wetStrokeContinuing;
+    winrt::event<Handler> m_wetStrokeStopping;
+    winrt::event<Handler> m_wetStrokeCompleted;
+    winrt::event<Handler> m_wetStrokeCanceled;
+};
+
 // Manipulable subset of Windows.UI.Input.Inking.InkPresenter. The OS presenter can only be created
 // and called on the IInkDesktopHost ink thread, so this proxy is the single owner of it: it holds
 // the ink host reference (handed in at construction by the owning InkCanvas), creates the OS
@@ -466,11 +515,22 @@ public:
     void RunInkPresenterWorkItemSync(std::function<void(inking::InkPresenter const&)> workItem, bool pumpMessages);
 
     // Internal (not on the winmd surface). Shows/hides the ruler / protractor stencils on the OS
-    // presenter. InkPresenterRuler / InkPresenterProtractor are thread-affine, so they are created
-    // and toggled entirely on the ink thread; InkToolBar (same DLL) drives these via winrt::get_self
-    // when its ruler toggle / stencil menu button changes.
+    // presenter. The stencils are constructed against the OS presenter, which lives on the ink thread,
+    // so creation and the member are kept on that thread; InkToolBar (same DLL) drives these via
+    // winrt::get_self when its ruler toggle / stencil menu button changes.
     void SetRulerEnabled(bool enabled);
     void SetProtractorEnabled(bool enabled);
+
+    // Internal (not on the winmd surface). Return the OS ruler / protractor for this presenter, creating
+    // it on the ink thread if needed (null if the OS presenter does not exist). The returned objects are
+    // agile and synchronize internally, so InkToolbar hands them to the app through
+    // InkToolbarStencilButton.Ruler / Protractor, like UWP.
+    inking::InkPresenterRuler EnsureRuler();
+    inking::InkPresenterProtractor EnsureProtractor();
+
+    // Internal (not on the winmd surface). Backs CoreWetStrokeUpdateSource.Create: returns this presenter's
+    // wet-stroke update source, attaching it to the OS source on the ink thread on first use.
+    muxc::CoreWetStrokeUpdateSource GetWetStrokeUpdateSource();
 
     // Internal (not on the winmd surface). Set by InkCanvas from its effective XAML visibility: a collapsed
     // canvas must not take ink input (UWP parity), without changing the app-visible IsInputEnabled value.
@@ -529,9 +589,12 @@ private:
     // only this projected wrapper, never the raw OS one.
     muxc::InkSynchronizer m_customDrySynchronizer{ nullptr };
 
-    // Ruler / protractor stencils bound to the OS presenter. Thread-affine to the ink
-    // thread, so they are only ever constructed and touched inside serialized ink-thread
-    // work items (never accessed from the UI thread).
+    // The wet-stroke update source handed out by CoreWetStrokeUpdateSource.Create (UI-thread cached;
+    // one per presenter, like the OS source it fronts).
+    muxc::CoreWetStrokeUpdateSource m_wetStrokeUpdateSource{ nullptr };
+
+    // Ruler / protractor stencils bound to the OS presenter. Only assigned inside serialized
+    // ink-thread work items; the objects themselves are agile (see EnsureRuler).
     inking::InkPresenterRuler m_inkRuler{ nullptr };
     inking::InkPresenterProtractor m_inkProtractor{ nullptr };
 
