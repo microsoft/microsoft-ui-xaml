@@ -86,7 +86,7 @@ namespace features
 #define MUX_PUBLIC_V9 contract(Microsoft.UI.Xaml.XamlContract, 9)   // WinAppSDK 1.8
 #define MUX_PUBLIC_V10 contract(Microsoft.UI.Xaml.XamlContract, 10) // WinAppSDK 2.0
 #define MUX_PUBLIC_V11 contract(Microsoft.UI.Xaml.XamlContract, 11) // WinAppSDK 2.2
-#define MUX_PUBLIC_V12 contract(Microsoft.UI.Xaml.XamlContract, 12) // Next WinAppSDK 2.x minor release
+#define MUX_PUBLIC_V12 contract(Microsoft.UI.Xaml.XamlContract, 12) // WinAppSDK 2.6
 #define MUX_PUBLIC_V13 contract(Microsoft.UI.Xaml.XamlContract, 13) // WinAppSDK 3.0
 
 // Note: It's expected that these are the same version because we require internal be in a different namespace,

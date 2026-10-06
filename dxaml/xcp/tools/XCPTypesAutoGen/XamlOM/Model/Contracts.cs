@@ -33,7 +33,7 @@ namespace Microsoft.UI.Xaml
     [ContractVersion(9)] // WinAppSDK 1.8
     [ContractVersion(10)] // WinAppSDK 2.0
     [ContractVersion(11)] // WinAppSDK 2.2
-    [ContractVersion(12)] // Next WinAppSDK 2.x minor release
+    [ContractVersion(12)] // WinAppSDK 2.6
     [ContractVersion(13)] // WinAppSDK 3.0
     public class WinUIContract : Contract
     {
