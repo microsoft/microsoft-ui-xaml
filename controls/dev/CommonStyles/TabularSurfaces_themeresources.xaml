@@ -77,10 +77,16 @@
             <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="Transparent" />
             <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0</Thickness>
 
-            <!-- Grid lines. DividerStrokeColorDefault (~16% white on Dark) — visible above row
-                 banding without dominating the surface. Earlier ControlStrokeColorDefault (~7%
-                 white) was too faint at 1-px width on alternating rows. -->
-            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#29FFFFFF" />                               <!-- DividerStrokeColorDefault (Dark) — bumped 8.2%→16.1% for readability over banding -->
+            <!-- Grid lines. NOTE: this is a measured alpha, NOT a Fluent token. The Dark
+                 DividerStrokeColorDefault is #15FFFFFF (~8.2%) and ControlStrokeColorDefault is
+                 #12FFFFFF (~7.1%); the value below is ~16.1%, roughly double either token, chosen
+                 during visual tuning because a 1-px line at token strength was too faint over
+                 alternating row banding.
+                 Tracked by bug 64475611: design must confirm which token these dividers should use
+                 (the design DRI asked for Control Stroke/Default; the XAML skill rule asks for
+                 DividerStrokeColorDefaultBrush) before this is pinned to a token. Until then the
+                 value is deliberately literal and the key stays app-overridable. -->
+            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#29FFFFFF" />                               <!-- measured ~16.1% white - not a Fluent token, see note above -->
             <Thickness x:Key="TabularSurfaceGridLineThickness">0,0,0,1</Thickness>
             <Thickness x:Key="TabularSurfaceVerticalGridLineThickness">0,0,1,0</Thickness>
 

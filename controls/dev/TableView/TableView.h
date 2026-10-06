@@ -19,6 +19,38 @@
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
 #include <winrt/Microsoft.UI.System.h>
 
+namespace TableViewDetails
+{
+    // Header-text extraction, shared by the header cell's automation name, the resize gripper's
+    // OwnerName and the name stamped on a text column's cell editor. Lives here rather than in a
+    // .cpp so every consumer derives the same answer for the same header content.
+    //
+    // Takes the header content rather than the column so a column implementation can call it with
+    // its own Header() without needing a projected TableViewColumn.
+    inline winrt::hstring GetHeaderContentText(const winrt::IInspectable& header)
+    {
+        if (header)
+        {
+            if (auto const stringable = header.try_as<winrt::IStringable>())
+            {
+                return stringable.ToString();
+            }
+            if (auto const propValue = header.try_as<winrt::IPropertyValue>();
+                propValue && propValue.Type() == winrt::PropertyType::String)
+            {
+                return propValue.GetString();
+            }
+        }
+
+        return {};
+    }
+
+    inline winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
+    {
+        return GetHeaderContentText(column.Header());
+    }
+}
+
 struct ColumnResizeBounds
 {
     double Min{ 0.0 };
