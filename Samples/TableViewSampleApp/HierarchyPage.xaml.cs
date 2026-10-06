@@ -93,16 +93,17 @@ public sealed partial class HierarchyPage : Page
 
     // ---- Relations ----
 
+    // The primary key: every row is named by its Id, and a parent key names a row by that Id.
+    private static readonly TableViewKeySelector s_idKey = new(item => ((Employee)item).Id);
+
     // A null parent key makes a root; a key with no matching Id makes an orphan, which is also a root.
     private static void DeclareManagerRelation(TableViewSource source) =>
-        source.ParentBy(
-            new TableViewKeySelector(item => ((Employee)item).Id),
-            new TableViewKeySelector(item => ((Employee)item).ManagerId!));
+        source.KeyBy(s_idKey)
+              .ParentBy(new TableViewKeySelector(item => ((Employee)item).ManagerId!));
 
     private static void DeclareMentorRelation(TableViewSource source) =>
-        source.ParentBy(
-            new TableViewKeySelector(item => ((Employee)item).Id),
-            new TableViewKeySelector(item => ((Employee)item).MentorId!));
+        source.KeyBy(s_idKey)
+              .ParentBy(new TableViewKeySelector(item => ((Employee)item).MentorId!));
 
     private IEnumerable<TableViewSource> Sources => new[] { _managerSource, _mentorSource };
 

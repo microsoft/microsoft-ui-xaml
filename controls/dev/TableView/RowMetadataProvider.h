@@ -75,6 +75,9 @@ public:
         return m_sourceKind == SourceKind::Hierarchical || m_sourceKind == SourceKind::GroupedHierarchical;
     }
 
+    bool HasStableRowIdentity() const override { return m_hasDeclaredRowKey || IsHierarchicalSource(); }
+    void SetHasDeclaredRowKey(bool value) override { m_hasDeclaredRowKey = value; }
+
     enum class SourceKind
     {
         Flat,
@@ -126,6 +129,7 @@ private:
     static bool SameObject(winrt::IInspectable const& a, winrt::IInspectable const& b);
 
     SourceKind m_sourceKind{ SourceKind::Flat };
+    bool m_hasDeclaredRowKey{ false };
     winrt::ItemsSourceView m_flatRows{ nullptr };
     winrt::ItemsSourceView m_groupedRows{ nullptr };
     GroupedSourceAdapterPtr m_groupedAdapter{};

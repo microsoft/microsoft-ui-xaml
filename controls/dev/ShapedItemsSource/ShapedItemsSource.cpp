@@ -107,9 +107,84 @@ void ShapedItemsSource::ClearGroup()
     ApplyShapingChange();
 }
 
-void ShapedItemsSource::SetParent(ShapingHelpers::KeySelector key, ShapingHelpers::KeySelector parentKey)
+void ShapedItemsSource::SetRowKey(ShapingHelpers::KeySelector key)
 {
     m_keySelector = std::move(key);
+    if (m_keySelector)
+    {
+        // Identity is the key's node-key form -- the same string a hierarchical row already uses --
+        // so a row keeps one identity whether the projection is flat, grouped or a tree. A throwing
+        // selector reads as no key, which validation reports.
+        m_keyIdentitySelector = [selector = m_keySelector](winrt::IInspectable const& item) -> winrt::IInspectable
+        {
+            winrt::IInspectable key{ nullptr };
+            try
+            {
+                key = selector(item);
+            }
+            catch (...)
+            {
+                return nullptr;
+            }
+
+            auto nodeKey = ShapingHelpers::MakeNodeKey(key);
+            if (nodeKey.empty())
+            {
+                return nullptr;
+            }
+            return winrt::box_value(winrt::hstring{ nodeKey });
+        };
+    }
+    else
+    {
+        m_keyIdentitySelector = nullptr;
+    }
+
+    if (m_parentKeySelector)
+    {
+        // The tree is keyed by this selector, so a different key is a different tree.
+        ++m_parentDeclarationGeneration;
+        m_parentRelationRedeclared = true;
+    }
+
+    // With no verb in force there is no shaped projection and no published identity: nothing to
+    // re-project, and a rebuild would only fire a Reset for an unchanged mirror. The next verb picks
+    // the key up.
+    if (!HasAnyShapingVerb())
+    {
+        return;
+    }
+
+    m_rowKeyDirty = true;
+    ApplyShapingChange();
+}
+
+void ShapedItemsSource::ClearRowKey()
+{
+    if (m_parentKeySelector)
+    {
+        throw winrt::hresult_invalid_argument(
+            Diagnostic(L"ClearKeyBy: a parent relation is declared and requires the key. Call ClearParentBy first."));
+    }
+
+    if (!m_keySelector)
+    {
+        return;
+    }
+
+    SetRowKey(nullptr);
+}
+
+void ShapedItemsSource::SetParent(ShapingHelpers::KeySelector parentKey)
+{
+    if (!m_keySelector)
+    {
+        // Rejected up front rather than at projection time: without a key there is no way to name
+        // a row as anything's parent, and leaving the relation declared would fail every reshape.
+        throw winrt::hresult_invalid_argument(
+            Diagnostic(L"ParentBy: no key is declared. Declare each item's unique key with KeyBy before ParentBy."));
+    }
+
     m_parentKeySelector = std::move(parentKey);
     // An index build in flight (this ran from inside one of the selectors) discards its result.
     ++m_parentDeclarationGeneration;
@@ -144,7 +219,7 @@ void ShapedItemsSource::ClearParentBy()
         return;
     }
 
-    m_keySelector = nullptr;
+    // The key stays declared: it is the app's row identity, not part of the relation.
     m_parentKeySelector = nullptr;
     ++m_parentDeclarationGeneration;
     m_parentRelationRedeclared = false;
@@ -214,10 +289,9 @@ void ShapedItemsSource::ApplyShapingChange()
     // change that has already been applied.
     auto const delta = m_pipeline.CommitSpec();
 
-    // Consumed here regardless of the spec delta: the hierarchy axis is invisible to the diff, so
-    // this flag is the only record that the projection kind must change.
-    const bool hierarchyChanged = m_hierarchyAxisDirty;
-    m_hierarchyAxisDirty = false;
+    // Consumed here regardless of the spec delta: the hierarchy axis and the row key are invisible
+    // to the diff, so these flags are the only record that the projection must be rebuilt.
+    const bool hierarchyChanged = std::exchange(m_hierarchyAxisDirty, false) | std::exchange(m_rowKeyDirty, false);
 
     if (delta.IsNoOp() && !hierarchyChanged)
     {
@@ -905,6 +979,22 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
         auto const newItems = args.NewItems();
         if (oldItems && newItems && oldItems.Size() == 1 && newItems.Size() == 1)
         {
+            // Under a declared key, an item re-created with the SAME key is the same row. A splice
+            // would report it removed and re-added, which drops its selection; a rebuild publishes
+            // a Reset, across which the control re-anchors selection on the key.
+            if (m_keySelector && identityRequired && oldItems.GetAt(0) != newItems.GetAt(0))
+            {
+                winrt::hstring oldIdentity;
+                winrt::hstring newIdentity;
+                wchar_t const* reason = nullptr;
+                if (TryGetRequiredRowIdentity(oldItems.GetAt(0), oldIdentity, reason) &&
+                    TryGetRequiredRowIdentity(newItems.GetAt(0), newIdentity, reason) &&
+                    oldIdentity == newIdentity)
+                {
+                    return false;
+                }
+            }
+
             // Remove the old row, then re-insert the new value at its (possibly changed) sort
             // position — this also covers a same-object value change that re-orders the row.
             if (!tryRemove(oldItems.GetAt(0)))
@@ -992,9 +1082,10 @@ bool ShapedItemsSource::TryGetRequiredRowIdentity(
 
 bool ShapedItemsSource::ValidateRowIdentities(
     std::vector<winrt::IInspectable> const& rows,
-    wchar_t const*& reason) const
+    wchar_t const*& reason,
+    winrt::hstring* duplicate) const
 {
-    return RowIdentity::ValidateRowIdentities(rows, EffectiveIdentitySelector(), reason);
+    return RowIdentity::ValidateRowIdentities(rows, EffectiveIdentitySelector(), reason, duplicate);
 }
 
 void ShapedItemsSource::ClearFlatRowIdentityTracking()
@@ -1151,9 +1242,24 @@ void ShapedItemsSource::Refresh()
             // A shaping verb is in force here (the branch above took the no-verb case), and a verb
             // always requires identity, so there is nothing to gate on.
             wchar_t const* reason = nullptr;
-            if (!ValidateRowIdentities(rows, reason))
+            winrt::hstring duplicate;
+            if (!ValidateRowIdentities(rows, reason, &duplicate))
             {
                 LogIdentityProjectionDisabled(reason);
+
+                if (m_keySelector && !(reason && std::wstring_view{ reason } == L"null row item"))
+                {
+                    // Identity is the app's declared key, so the failure is in the app's data: name
+                    // the key rather than an object.
+                    if (!duplicate.empty())
+                    {
+                        throw winrt::hresult_invalid_argument(
+                            Diagnostic(L"KeyBy: duplicate key '" + std::wstring{ ShapingHelpers::DescribeNodeKey(duplicate) } + L"'. Keys must be unique."));
+                    }
+
+                    throw winrt::hresult_invalid_argument(
+                        Diagnostic(L"KeyBy: key selector returned null or empty for an item. Every item needs a key."));
+                }
 
                 // Identity is derived from each item's object identity, which is unique among live
                 // objects, so the expected failure is one object occupying more than one row --

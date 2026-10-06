@@ -143,9 +143,9 @@ void TableView::ClearPendingSelection()
     m_pendingSelectedIdentity.clear();
 }
 
-winrt::hstring TableView::HierarchyIdentityForIndex(int32_t index) const
+winrt::hstring TableView::StableIdentityForIndex(int32_t index) const
 {
-    if (index < 0 || !m_tableViewSourceRowMetadata || !m_tableViewSourceRowMetadata->IsHierarchicalSource())
+    if (index < 0 || !m_tableViewSourceRowMetadata || !m_tableViewSourceRowMetadata->HasStableRowIdentity())
     {
         return {};
     }
@@ -173,12 +173,12 @@ bool TableView::DrainPendingSelection()
         auto const pendingIdentity = m_pendingSelectedIdentity;
         ClearPendingSelection();
 
-        // A tree re-anchors on the node key first: the app may have replaced the object with a new
-        // one for the same node. Object identity remains the fallback (and the only anchor for a
-        // non-tree source).
+        // A tree, or a source with a declared key, re-anchors on the row key first: the app may have
+        // replaced the object with a new one for the same row. Object identity remains the fallback
+        // (and the only anchor for a source without a key).
         int32_t index = -1;
         if (!pendingIdentity.empty() && m_tableViewSourceRowMetadata &&
-            m_tableViewSourceRowMetadata->IsHierarchicalSource())
+            m_tableViewSourceRowMetadata->HasStableRowIdentity())
         {
             int32_t candidate = -1;
             TableViewRowInfo info{};
@@ -273,7 +273,7 @@ void TableView::ApplySelection(int32_t index)
     // sticky anchor - which is exactly why a Reset-driven model clear (which does NOT call this)
     // leaves it intact for the identity restore.
     m_stickySelectedItem.set(index >= 0 ? SelectedItemForIndex(index) : nullptr);
-    m_stickySelectedIdentity = (index >= 0 && m_stickySelectedItem.get()) ? HierarchyIdentityForIndex(index) : winrt::hstring{};
+    m_stickySelectedIdentity = (index >= 0 && m_stickySelectedItem.get()) ? StableIdentityForIndex(index) : winrt::hstring{};
 
     // The model raises SelectionChanged only when the selection actually moved; publish here too so
     // a rejected write still leaves the DPs agreeing with the model.

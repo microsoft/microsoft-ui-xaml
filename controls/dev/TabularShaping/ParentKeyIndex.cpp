@@ -101,44 +101,42 @@ namespace
     {
         try { return filter(item); } catch (...) { return false; }
     }
+}
 
-    // User-facing form of a node key for error text: the raw value for a value key (the internal
-    // "value:<type-tag>:" prefix stripped), or a placeholder for an object key, whose lookup form
-    // is only a pointer.
-    winrt::hstring DescribeNodeKey(std::wstring const& nodeKey)
+// The internal "value:<type-tag>:" prefix is stripped from a value key.
+winrt::hstring DescribeNodeKey(std::wstring_view nodeKey)
+{
+    std::wstring_view view{ nodeKey };
+    if (view.starts_with(c_nodePrefix))
     {
-        std::wstring_view view{ nodeKey };
-        if (view.starts_with(c_nodePrefix))
-        {
-            view.remove_prefix(c_nodePrefixLength);
-        }
-
-        if (view.starts_with(c_objectKeyPrefix))
-        {
-            return L"(object key)";
-        }
-
-        if (view.starts_with(c_valueKeyPrefix))
-        {
-            view.remove_prefix(c_valueKeyPrefix.size());
-            const bool isEnum = view.starts_with(L"e:");
-            if (const auto tagEnd = view.find(L':'); tagEnd != std::wstring_view::npos)
-            {
-                view.remove_prefix(tagEnd + 1);
-            }
-
-            // An enum key is "<type>:<value>"; the value alone is what the app would recognise.
-            if (isEnum)
-            {
-                if (const auto valueStart = view.rfind(L':'); valueStart != std::wstring_view::npos)
-                {
-                    view.remove_prefix(valueStart + 1);
-                }
-            }
-        }
-
-        return winrt::hstring{ view };
+        view.remove_prefix(c_nodePrefixLength);
     }
+
+    if (view.starts_with(c_objectKeyPrefix))
+    {
+        return L"(object key)";
+    }
+
+    if (view.starts_with(c_valueKeyPrefix))
+    {
+        view.remove_prefix(c_valueKeyPrefix.size());
+        const bool isEnum = view.starts_with(L"e:");
+        if (const auto tagEnd = view.find(L':'); tagEnd != std::wstring_view::npos)
+        {
+            view.remove_prefix(tagEnd + 1);
+        }
+
+        // An enum key is "<type>:<value>"; the value alone is what the app would recognise.
+        if (isEnum)
+        {
+            if (const auto valueStart = view.rfind(L':'); valueStart != std::wstring_view::npos)
+            {
+                view.remove_prefix(valueStart + 1);
+            }
+        }
+    }
+
+    return winrt::hstring{ view };
 }
 
 std::wstring MakeNodeKey(winrt::IInspectable const& key)
@@ -198,14 +196,14 @@ bool BuildParentKeyIndex(
             {
                 try { typeName = winrt::get_class_name(rows[i]); } catch (...) {}
             }
-            error = L"ParentBy: key selector returned null or empty for an item"
+            error = L"KeyBy: key selector returned null or empty for an item"
                 + (typeName.empty() ? winrt::hstring{} : L" of type '" + typeName + L"'")
                 + L".";
             return false;
         }
         if (!indexByKey.emplace(nodeKeys[i], i).second)
         {
-            error = L"ParentBy: duplicate key '" + DescribeNodeKey(nodeKeys[i]) + L"'.";
+            error = L"KeyBy: duplicate key '" + DescribeNodeKey(nodeKeys[i]) + L"'.";
             return false;
         }
     }

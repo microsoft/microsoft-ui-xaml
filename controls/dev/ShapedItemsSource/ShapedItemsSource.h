@@ -108,18 +108,30 @@ public:
         RowIdentity::IdentitySelector const& groupIdentitySelector);
     void ClearGroup();
 
+    // Declares the app's primary key: `key` yields each item's unique identity. While declared it is
+    // the ROW IDENTITY of every shape (flat, grouped, hierarchical), so selection and focus
+    // re-anchor across an item being re-created; without it rows are identified by object
+    // identity. Required by SetParent. Keys must be unique and non-null/non-empty across the rows a
+    // shaped projection publishes; a violation throws E_INVALIDARG with the previous projection
+    // intact.
+    void SetRowKey(ShapingHelpers::KeySelector key);
+    // Throws E_INVALIDARG while a parent relation is declared: a hierarchy cannot exist without a key.
+    void ClearRowKey();
+    bool HasRowKey() const noexcept { return static_cast<bool>(m_keySelector); }
+
     // Declares the source a HIERARCHY through a self-referencing parent/child relation over the flat
-    // rows: `key` yields each item's unique identity and `parentKey` the identity of its parent (null
-    // or empty for a root; a key that matches no item also makes a root). The index is rebuilt from
-    // the whole source on every refresh, and invalid data (duplicate / null key, self-parent, cycle)
-    // throws E_INVALIDARG with the previous projection intact. Re-declaring or clearing the relation
+    // rows: `parentKey` yields the key (see SetRowKey) of each item's parent (null or empty for a
+    // root; a key that matches no item also makes a root). Requires a declared row key; throws
+    // E_INVALIDARG otherwise. The index is rebuilt from the whole source on every refresh, and
+    // invalid data (duplicate / null key, self-parent, cycle) throws E_INVALIDARG with the previous
+    // projection intact. Re-declaring or clearing the relation, or changing the key under it,
     // resets expansion intent: a different relation is a different tree.
     //
     // Composes with grouping. When both are in force the GROUP key is applied to the ROOTS: the
     // top level is bucketed under headers, and each root still expands into its own subtree. A
     // descendant is never pulled out from under its parent to join a bucket, because its depth --
     // and therefore the tree itself -- would not survive it.
-    void SetParent(ShapingHelpers::KeySelector key, ShapingHelpers::KeySelector parentKey);
+    void SetParent(ShapingHelpers::KeySelector parentKey);
     void ClearParentBy();
     void SetSort(
         winrt::hstring const& previousAxisToken,
@@ -256,14 +268,16 @@ private:
     // which is also true for a merely mutable source: a mutable source with no verbs still wants
     // no identity, because there is no projection to anchor.
     bool HasAnyShapingVerb() const;
-    // Every identity consumer funnels through here. Identity comes from each item's object
-    // identity, so a row ALWAYS has one and no shaping verb has to refuse to run for want of one.
+    // Every identity consumer funnels through here: the declared row key (in its node-key form,
+    // so a row reads the same identity flat, grouped or hierarchical) when there is one, otherwise
+    // each item's object identity. A row ALWAYS has a selector, so no shaping verb has to refuse to
+    // run for want of one.
     ShapingHelpers::KeySelector const& EffectiveIdentitySelector() const noexcept
     {
-        return m_intrinsicKeySelector;
+        return m_keyIdentitySelector ? m_keyIdentitySelector : m_intrinsicKeySelector;
     }
     // Confirm every row in the set a rebuild is about to publish has a usable, distinct identity.
-    bool ValidateRowIdentities(std::vector<winrt::IInspectable> const& rows, wchar_t const*& reason) const;
+    bool ValidateRowIdentities(std::vector<winrt::IInspectable> const& rows, wchar_t const*& reason, winrt::hstring* duplicate = nullptr) const;
     bool HasActiveSort() const;
     bool IsSourceMutable() const;
     bool TryGetRequiredRowIdentity(winrt::IInspectable const& item, winrt::hstring& identity, wchar_t const*& reason) const;
@@ -325,20 +339,28 @@ private:
     std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> m_groupCache;
     std::shared_ptr<GroupedSourceAdapter> m_groupedAdapter{};
 
-    // The parent-key relation. Both set or both null; m_parentKeySelector is the "hierarchy is
-    // declared" test everywhere.
+    // The app's primary key (SetRowKey), and the identity selector derived from it. Both set or both
+    // null. Independent of the parent relation, which requires it.
     ShapingHelpers::KeySelector m_keySelector{ nullptr };
+    ShapingHelpers::KeySelector m_keyIdentitySelector{ nullptr };
+    // The parent-key relation; the "hierarchy is declared" test everywhere. Never set without
+    // m_keySelector.
     ShapingHelpers::KeySelector m_parentKeySelector{ nullptr };
-    // Bumped by SetParent / ClearParentBy. An index build that sees it move under it (a selector
-    // re-declared the relation) discards its result, including any validation error.
+    // Bumped by SetParent / ClearParentBy / SetRowKey. An index build that sees it move under it (a
+    // selector re-declared the relation or its key) discards its result, including any validation
+    // error.
     uint64_t m_parentDeclarationGeneration{ 0 };
-    // Set by SetParent, consumed by the next publish: re-declaring the relation clears intent.
+    // Set by SetParent / SetRowKey (under a relation), consumed by the next publish: a re-declared
+    // relation or key is a different tree, so intent is cleared.
     bool m_parentRelationRedeclared{ false };
     // Set by the parent verbs, consumed by ApplyShapingChange. The hierarchy axis re-projects
     // rather than filtering/bucketing/sorting, so it has no description in the pipeline spec and
     // the spec diff cannot report it. Survives a shaping batch: the batch's own flag only defers
     // the apply, it does not consume this one.
     bool m_hierarchyAxisDirty{ false };
+    // Same, for the row key: it changes every row's identity (and, under a relation, the tree), which
+    // the spec diff cannot see either.
+    bool m_rowKeyDirty{ false };
     std::shared_ptr<HierarchicalSourceAdapter> m_hierarchicalAdapter{};
 
     std::function<void()> m_projectionRebuilt{ nullptr };

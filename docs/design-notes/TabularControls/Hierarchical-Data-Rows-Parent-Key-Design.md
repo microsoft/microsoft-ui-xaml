@@ -5,13 +5,16 @@ Status: **implemented** (decisions in §13).
 ## 1. Motivation
 
 `TableView` reads hierarchy **from a relation inside a flat collection**: every item is a row
-candidate, and two key selectors say "this is my key" and "this is my parent's key".
+candidate, `KeyBy` says "this is my key" (the app's primary key) and `ParentBy` says "this is my
+parent's key".
 
 ```csharp
-var byManager = TableViewSource.From(employees).ParentBy(
-    item => ((Employee)item).Id, item => ((Employee)item).ManagerId);
-var byMentor  = TableViewSource.From(employees).ParentBy(
-    item => ((Employee)item).Id, item => ((Employee)item).MentorId);
+var byManager = TableViewSource.From(employees)
+    .KeyBy(item => ((Employee)item).Id)
+    .ParentBy(item => ((Employee)item).ManagerId);
+var byMentor  = TableViewSource.From(employees)
+    .KeyBy(item => ((Employee)item).Id)
+    .ParentBy(item => ((Employee)item).MentorId);
 ```
 
 Why:
@@ -48,13 +51,21 @@ delegate Object TableViewKeySelector(Object item);
 
 runtimeclass TableViewSource
 {
+    // Declares each item's primary key. It is the row identity of every shape (flat, grouped,
+    // hierarchical); without it rows are identified by object identity. Required by ParentBy.
+    // Required and non-null (E_INVALIDARG otherwise; use ClearKeyBy() to remove).
+    TableViewSource KeyBy(TableViewKeySelector keySelector);
+
+    // Throws E_INVALIDARG while a ParentBy relation is declared.
+    TableViewSource ClearKeyBy();
+
     // Declares the source a HIERARCHY defined by a parent-key relation over its own items.
     //
-    // keySelector:       the item's own key.
-    // parentKeySelector: the key of the item's parent. Null means "root".
+    // parentKeySelector: the KeyBy key of the item's parent. Null means "root".
     //
-    // Both required and non-null (E_INVALIDARG otherwise; use ClearParentBy() to remove).
-    TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
+    // Required and non-null (E_INVALIDARG otherwise; use ClearParentBy() to remove). Throws
+    // E_INVALIDARG when no key is declared with KeyBy.
+    TableViewSource ParentBy(TableViewKeySelector parentKeySelector);
 
     TableViewSource ClearParentBy();
 }
@@ -73,8 +84,15 @@ expander gutter and states, and the `TableViewRowAutomationPeer` `IExpandCollaps
 
 The names follow the rule the source already uses: the verb is named after the thing being
 configured, and the removal verb mirrors it (`Filter`/`ClearFilter`, `GroupBy`/`ClearGroupBy`).
-`ParentBy` takes the `GroupBy` form: it reads as "parent the rows by these keys", and
+`ParentBy` takes the `GroupBy` form: it reads as "parent the rows by this key", and
 `ClearParentBy` removes it as `ClearGroupBy` removes `GroupBy`.
+
+The primary key is a separate, explicit declaration rather than a second `ParentBy` argument. A
+key is what lets one row name another as its parent, so it is a precondition of the relation, not
+part of it; the app owns its data and is the only party that knows which field is unique. Declared
+once, it also serves as the row identity everywhere, so a flat or grouped row re-anchors selection
+across an item being re-created, as a hierarchical row always has. Asking for a hierarchy without
+one is an error up front (`ParentBy` throws) rather than a silent fall-back to object identity.
 
 ## 3. Key semantics
 
@@ -88,7 +106,7 @@ rebuild (`MakeNodeKey`, built on `ShapingHelpers::ValueKey::ToObjectLookupKey`):
   **by value**. `42` from `Id` and `42` from `ManagerId` match. This is the database-id case. A
   fresh box per selector call is fine.
 - **Any other object** is compared **by reference identity**. So
-  `ParentBy(item => item, item => ((Employee)item).Manager)` works: the item is its own key and the parent selector
+  `KeyBy(item => item).ParentBy(item => ((Employee)item).Manager)` works: the item is its own key and the parent selector
   returns the parent object. This covers the object-reference case without a second overload. Both
   selectors must return the same instance for a link to form.
 
@@ -225,7 +243,8 @@ Every item has exactly one parent, and the app supplies the key, so no path key 
   stack or compose with it, which matches how `GroupBy` replaces a previous `GroupBy`. The replaced
   hierarchy is torn down as if `ClearParentBy()` had been called, and its expansion intent is
   cleared with it. A different relation is a different tree: "Bob is expanded" in the org chart
-  says nothing about Bob in the mentoring tree.
+  says nothing about Bob in the mentoring tree. Re-declaring `KeyBy` under a relation does the
+  same: the tree is keyed by it, so a different key is a different tree.
 
 ### 5.3 Pruning: the key set is complete
 
@@ -293,9 +312,18 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
 
 ### 6.2 Layer 2 — `ShapedItemsSource`
 
-- `SetParent(key, parentKey)` / `ClearParentBy()` set `m_hierarchyAxisDirty`. The hierarchy axis has
+- `SetRowKey(key)` (from `KeyBy`) stores the key and derives the row-identity selector from its
+  node-key form, so a row's identity string is the same flat, grouped or hierarchical. It sets
+  `m_rowKeyDirty` when a verb is in force (identity changed; the spec diff cannot see it), and under
+  a relation also bumps the declaration generation and clears intent. `ClearRowKey()` throws while a
+  relation is declared.
+- `SetParent(parentKey)` / `ClearParentBy()` set `m_hierarchyAxisDirty`. The hierarchy axis has
   no description in the pipeline spec, so without the flag a verb-only change would diff as a no-op
-  and never rebuild. Both clear expansion intent (§5.2).
+  and never rebuild. Both clear expansion intent (§5.2). `SetParent` throws when no key is declared;
+  `ClearParentBy` leaves the key declared.
+- Row identities are validated before every shaped rebuild. Under a key that is where a duplicate or
+  null key is caught and reported as `KeyBy: duplicate key '…'`; the index build's own key checks
+  are the backstop.
 - `ClearParentBy()`, and every rebuild into a projection that is not hierarchical, releases the
   adapter: its index and intent are cleared and the engine drops its reference, so the last visible
   rows are not kept alive. The previous row-metadata provider shares ownership until the projection
@@ -373,7 +401,7 @@ back to one Rebuild and a single Reset.
 
 | Component | Role |
 | --- | --- |
-| `TableViewSource.idl` | `ParentBy` / `ClearParentBy`. |
+| `TableViewSource.idl` | `KeyBy` / `ClearKeyBy`, `ParentBy` / `ClearParentBy`. |
 | `ParentKeyIndex` (layer 1) | Build, validate and filter the relation (§6.1). |
 | `ShapedItemsSource` hierarchy paths | Index build, filter inside the build, incremental bail-out, intent reset on redeclaration, adapter release on retraction (§6.2). |
 | `HierarchicalSourceAdapter` | Walk, splice and publish the visible rows (§6.3). |
@@ -457,7 +485,7 @@ differences further.
 
 `TableViewSampleApp`: one `ObservableCollection<Employee>` with `Id`, `ManagerId`, `MentorId`,
 `Name`, `Title` and `Dept`. Two `TableView`s side by side over the **same** collection, one using
-`ParentBy(Id, ManagerId)` and the other `ParentBy(Id, MentorId)`. Commands to add an employee,
+`KeyBy(Id).ParentBy(ManagerId)` and the other `KeyBy(Id).ParentBy(MentorId)`. Commands to add an employee,
 reparent one (replace the item), filter by name (showing context ancestors), sort, group roots by
 department, and expand or collapse all. The **100k perf** button times the 100k-row case (§9).
 
@@ -526,11 +554,12 @@ through the public API rather than headless):
 
 | # | Question | Decision |
 | --- | --- | --- |
-| 1 | Names | `ParentBy` / `ClearParentBy`. |
+| 1 | Names | `KeyBy` / `ClearKeyBy`, `ParentBy` / `ClearParentBy`. |
 | 2 | Orphans | Shown as roots. This matches Syncfusion, DevExpress WPF (default) and AG Grid, and no row is silently lost (§3.2). |
 | 3 | Filter default | Matches plus their ancestors, the majority default (§4.2). |
 | 4 | Auto-expand on filter | On. While a filter is active, context ancestors are expanded as a temporary overlay; the user can collapse or re-expand them, but those toggles are overlay-only. The user's prior state is restored when the filter changes or clears, which avoids DevExtreme's reset (§4.2). |
 | 5 | Second `ParentBy` call | Replaces the previous relation (last writer wins) and clears its expansion intent (§5.2). |
+| 6 | Primary key | Required for a hierarchy and declared explicitly with `KeyBy`, not as a `ParentBy` argument: the app owns its data and knows which field is unique. `ParentBy` takes one delegate returning the parent's key or null, and throws when no key is declared. The key is also the row identity of every shape; without one, flat and grouped rows keep object identity (§2). |
 
 ## 14. Prior art behind decisions 2–4
 

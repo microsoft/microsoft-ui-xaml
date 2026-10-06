@@ -84,16 +84,31 @@ winrt::TableViewSource TableViewSource::ClearGroupBy()
     return *this;
 }
 
-winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector)
+winrt::TableViewSource TableViewSource::KeyBy(winrt::TableViewKeySelector const& keySelector)
 {
-    if (!keySelector || !parentKeySelector)
+    if (!keySelector)
     {
-        throw winrt::hresult_invalid_argument(L"ParentBy: keySelector and parentKeySelector are required.");
+        throw winrt::hresult_invalid_argument(L"KeyBy: keySelector is required; use ClearKeyBy() to remove the key.");
     }
 
-    m_engine->SetParent(
-        [keySelector](winrt::IInspectable const& item) { return keySelector(item); },
-        [parentKeySelector](winrt::IInspectable const& item) { return parentKeySelector(item); });
+    m_engine->SetRowKey([keySelector](winrt::IInspectable const& item) { return keySelector(item); });
+    return *this;
+}
+
+winrt::TableViewSource TableViewSource::ClearKeyBy()
+{
+    m_engine->ClearRowKey();
+    return *this;
+}
+
+winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector const& parentKeySelector)
+{
+    if (!parentKeySelector)
+    {
+        throw winrt::hresult_invalid_argument(L"ParentBy: parentKeySelector is required; use ClearParentBy() to remove the relation.");
+    }
+
+    m_engine->SetParent([parentKeySelector](winrt::IInspectable const& item) { return parentKeySelector(item); });
     return *this;
 }
 
@@ -290,6 +305,11 @@ void TableViewSource::OnProjectionRebuilt()
         break;
     }
 
+    if (m_rowMetadata)
+    {
+        m_rowMetadata->SetHasDeclaredRowKey(m_engine->HasRowKey());
+    }
+
     // Every rebuild mints a fresh row-metadata provider and can swap the view, so anything the
     // owner cached from the previous projection is stale from here - whether or not grouped-ness
     // changed.
@@ -299,8 +319,9 @@ void TableViewSource::OnProjectionRebuilt()
 TableViewRowItemKeySelector TableViewSource::MakeIdentitySelector() const
 {
     // Bridge the engine's Object-returning identity selector to the String-returning selector the
-    // row-metadata provider consumes. The engine derives identity from each item's object identity
-    // and already stringifies it, so this only unwraps the box.
+    // row-metadata provider consumes. The engine derives identity from the declared key (KeyBy) or,
+    // failing that, each item's object identity, and already stringifies it, so this only unwraps
+    // the box.
     auto const keySelector = m_engine->IdentitySelector();
     if (!keySelector)
     {
@@ -317,6 +338,10 @@ TableViewRowItemKeySelector TableViewSource::MakeIdentitySelector() const
         catch (...)
         {
             return L"";
+        }
+        if (!key)
+        {
+            return {};
         }
         if (auto propertyValue = key.try_as<winrt::IPropertyValue>();
             propertyValue && propertyValue.Type() == winrt::PropertyType::String)

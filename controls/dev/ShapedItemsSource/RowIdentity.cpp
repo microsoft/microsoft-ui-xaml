@@ -120,7 +120,8 @@ namespace RowIdentity
     bool ValidateRowIdentities(
         std::vector<winrt::IInspectable> const& rows,
         ShapingHelpers::KeySelector const& keySelector,
-        wchar_t const*& reason)
+        wchar_t const*& reason,
+        winrt::hstring* duplicate)
     {
         std::unordered_set<winrt::hstring> identities;
         identities.reserve(rows.size());
@@ -135,9 +136,13 @@ namespace RowIdentity
 
             if (!identities.insert(identity).second)
             {
-                // Identity is the item's object address, so a repeat means one object is occupying
-                // two rows -- not two items that merely look alike.
+                // Under object identity a repeat is one object occupying two rows -- not two items
+                // that merely look alike. Under a declared key the caller reports it as a key clash.
                 reason = L"the same item object appears on more than one row";
+                if (duplicate)
+                {
+                    *duplicate = identity;
+                }
                 return false;
             }
         }

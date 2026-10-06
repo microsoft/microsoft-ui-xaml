@@ -26,12 +26,12 @@ namespace RowIdentity
     // KeySelector, which returns an arbitrary key object.
     using IdentitySelector = std::function<winrt::hstring(winrt::IInspectable const& item)>;
 
-    // The row-identity selector, derived from each item's COM identity (its canonical IUnknown
-    // pointer). That is unique among live objects and stable for as long as the object lives, which
-    // is exactly the window a projection needs. It is NOT stable across a re-created item -- an app
-    // that rebuilds its item objects gets fresh identities and therefore a full rebuild rather than
-    // a surgical update. There is no app-supplied alternative: this is the only source of row
-    // identity.
+    // The default row-identity selector, derived from each item's COM identity (its canonical
+    // IUnknown pointer). That is unique among live objects and stable for as long as the object
+    // lives, which is exactly the window a projection needs. It is NOT stable across a re-created
+    // item -- an app that rebuilds its item objects gets fresh identities and therefore a full
+    // rebuild rather than a surgical update. An app that declares a key (TableViewSource.KeyBy)
+    // replaces it with that key, which does survive re-creation.
     ShapingHelpers::KeySelector MakeObjectIdentitySelector();
 
     bool TryGetRequiredRowIdentity(
@@ -40,12 +40,14 @@ namespace RowIdentity
         winrt::hstring& identity,
         wchar_t const*& reason);
 
-    // Confirm every row has a usable identity and that no two rows share one. Since identity is the
-    // item's object address, the only way that can fail is one object occupying more than one row.
+    // Confirm every row has a usable identity and that no two rows share one. Under object identity
+    // a repeat means one object occupies more than one row; under a declared key, two rows share a
+    // key. `duplicate`, when supplied, receives the repeated identity.
     bool ValidateRowIdentities(
         std::vector<winrt::IInspectable> const& rows,
         ShapingHelpers::KeySelector const& keySelector,
-        wchar_t const*& reason);
+        wchar_t const*& reason,
+        winrt::hstring* duplicate = nullptr);
 
     void ClearFlatRowIdentityTracking(
         std::unordered_set<winrt::hstring>& identities,

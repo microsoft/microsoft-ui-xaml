@@ -9,8 +9,8 @@ delegate Boolean TableViewPredicate(Object item);
 [webhosthidden]
 delegate Object TableViewKeySelector(Object item);
 
-// Stable string identity for a group key (GroupBy overload). Row identity is not app-supplied:
-// the projection derives it from each item's object identity.
+// Stable string identity for a group key (GroupBy overload). Row identity is the key declared with
+// TableViewSource.KeyBy, or each item's object identity when none is declared.
 [MUX_PREVIEW]
 [webhosthidden]
 delegate String TableViewIdentitySelector(Object item);
@@ -28,11 +28,10 @@ runtimeclass TableViewSource
     //  * UI-thread affinity, like any XAML items source. The underlying collection must also
     //    raise its change notifications on that thread; raising them from a background thread
     //    is not supported. The verbs hold no lock.
-    //  * Rows are identified by their item's OBJECT identity, with one exception: under ParentBy
-    //    the app-supplied node key (keySelector) is the row identity. So selection and focus
-    //    re-anchor across a reshape; for a flat or grouped source NOT across an item being
-    //    re-created (a hierarchical row re-anchors on its key), and the same object in two rows
-    //    fails fast at materialization.
+    //  * Rows are identified by the key declared with KeyBy when there is one, and otherwise by
+    //    their item's OBJECT identity. So selection and focus re-anchor across a reshape, and with
+    //    a key also across an item being re-created (a new object with the same key is the same
+    //    row). Without a key, the same object in two rows fails fast at materialization.
 
     // Accepts the same collection interfaces as ItemsSourceView: IVector<Object> (so also
     // IObservableVector<Object>), IBindableVector, IIterable<Object>, or IBindableIterable.
@@ -98,22 +97,44 @@ runtimeclass TableViewSource
     TableViewSource ClearGroupBy();
     TableViewSource ClearSort();
 
-    // Declares a self-referencing parent/child relation over the flat source.
-    // keySelector: unique identity of each item; null or an empty string throws E_INVALIDARG.
-    // parentKeySelector: key of the parent, or null / empty string for a root.
+    // Declares each item's primary key: a unique identity the app owns. It becomes the ROW IDENTITY
+    // of every shape (flat, grouped and hierarchical), so selection, focus and expansion follow the
+    // key rather than the object. ParentBy requires it.
+    // keySelector: required, non-null (throws E_INVALIDARG when null; use ClearKeyBy() to remove).
+    //
+    // Value-typed keys -- strings, numbers, Boolean, Char16, Guid, DateTime, TimeSpan, Point, Size,
+    // Rect and WinRT enums -- are compared by value, type included (an Int32 key never matches an
+    // Int64 one, nor an enum of another type); a fresh box per call is fine. Any other object is
+    // compared by reference identity, so the selector must return the same instance every call
+    // (and ParentBy's selector that same instance for the parent). That includes an enum declared
+    // in app code that is not a WinRT type (e.g. a plain C# enum): it reaches the control as an
+    // opaque object, so convert it to its integer value first.
+    //
+    // While any shaping verb is in force, every row the projection publishes must have a non-null,
+    // non-empty, unique key; otherwise the call that builds the projection throws E_INVALIDARG
+    // naming the duplicate key, and the previous projection stays intact. A throwing selector is
+    // treated as having returned null. The key is evaluated when the projection is built; a
+    // property change on it is not observed.
+    //
+    // Re-declaring the key (last writer wins) under a ParentBy relation resets expansion state: a
+    // different key is a different tree.
+    TableViewSource KeyBy(TableViewKeySelector keySelector);
+
+    // Removes the key; rows go back to object identity. Throws E_INVALIDARG while a ParentBy
+    // relation is declared (call ClearParentBy() first).
+    TableViewSource ClearKeyBy();
+
+    // Declares a self-referencing parent/child relation over the flat source, over the key declared
+    // with KeyBy. Throws E_INVALIDARG when no key is declared; declare KeyBy first.
+    // parentKeySelector: the key of the item's parent, or null / empty string for a root. Compared
+    // with the keys exactly as KeyBy describes.
     // Items whose parent key matches no item are shown as roots. Duplicate keys, null or empty
     // keys, self-parent and cycles raise E_INVALIDARG naming the key; the previous projection stays
     // intact. A throwing selector is treated as having returned null.
     //
-    // Both selectors are required, non-null (throws E_INVALIDARG when null; use ClearParentBy() to
-    // remove). Value-typed keys -- strings, numbers, Boolean, Char16, Guid, DateTime, TimeSpan,
-    // Point, Size, Rect and WinRT enums -- are compared by value, type included (an Int32 key never
-    // matches an Int64 one, nor an enum of another type); a fresh box per call is fine. Any other
-    // object is compared by reference identity, so both selectors must return the same instance.
-    // That includes an enum declared in app code that is not a WinRT type (e.g. a plain C# enum):
-    // it reaches the control as an opaque object, so convert it to its integer value first.
-    // The node key is the row identity for hierarchical rows (selection, focus and expansion
-    // follow it).
+    // parentKeySelector is required, non-null (throws E_INVALIDARG when null; use ClearParentBy()
+    // to remove). The key is the row identity for hierarchical rows as for any other (selection,
+    // focus and expansion follow it).
     //
     // Error contract beyond the call itself:
     //  * After ParentBy throws, the relation REMAINS declared: every later reshape (another verb,
@@ -142,9 +163,10 @@ runtimeclass TableViewSource
     // The relation is re-evaluated on every collection change of the source. A property change on
     // an item's key or parent key is not observed; replace the item to reparent it immediately.
     // UI-thread affinity applies as for the rest of this class.
-    TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
+    TableViewSource ParentBy(TableViewKeySelector parentKeySelector);
 
-    // Removes the relation and shows the source flat again. Resets expansion state.
+    // Removes the relation and shows the source flat again. Resets expansion state. The key
+    // declared with KeyBy stays.
     TableViewSource ClearParentBy();
 
 }

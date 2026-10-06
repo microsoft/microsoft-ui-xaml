@@ -69,6 +69,12 @@ struct ITableViewRowMetadataProvider
     // Only the source knows the difference, so the answer lives here and not in the row info.
     virtual bool IsHierarchicalSource() const { return false; }
 
+    // True when GetIdentity names the app's row rather than the item object: a tree (node key) or
+    // a source with a declared key (TableViewSource.KeyBy). Such an identity survives the app
+    // re-creating the item, so selection may re-anchor on it.
+    virtual bool HasStableRowIdentity() const { return IsHierarchicalSource(); }
+    virtual void SetHasDeclaredRowKey(bool) {}
+
     // Expands a tree node and every descendant that has children. No-op for a group key or a
     // non-hierarchical source.
     virtual void ExpandSubtree(winrt::hstring const&) {}

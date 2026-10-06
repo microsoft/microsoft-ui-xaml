@@ -39,4 +39,8 @@ bool BuildParentKeyIndex(
 // Exposed for the adapter: "node:" + lookup key, or empty when `key` means "no key".
 std::wstring MakeNodeKey(winrt::IInspectable const& key);
 
+// User-facing form of a node key for error text: the raw value for a value key, or a placeholder
+// for an object key, whose lookup form is only a pointer.
+winrt::hstring DescribeNodeKey(std::wstring_view nodeKey);
+
 }
