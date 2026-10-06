@@ -374,22 +374,17 @@ void TableViewCellAutomationPeer::QueueFinalName(uint64_t generation)
 
 winrt::hstring TableViewCellAutomationPeer::ReadDisplayName(winrt::FrameworkElement const& display)
 {
-    const auto headerText = GetColumnHeaderText();
     uint32_t remaining = 32;
     const auto valueText = display
         ? GetCellContentName(display, true, 8, remaining)
         : GetCellDisplayText(Owner().try_as<winrt::FrameworkElement>());
 
-    if (headerText.empty())
+    if (!valueText.empty())
     {
         return valueText;
     }
-    if (valueText.empty())
-    {
-        return headerText;
-    }
 
-    return FormatLocalizedOrFallback(SR_TableViewCellNameFormat, L"%1!s!, %2!s!", headerText.c_str(), valueText.c_str(), L", ");
+    return GetColumnHeaderText();
 }
 
 winrt::hstring TableViewCellAutomationPeer::GetColumnHeaderText()

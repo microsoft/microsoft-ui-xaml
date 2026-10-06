@@ -675,7 +675,7 @@ unsealed runtimeclass TableViewColumnHeaderAutomationPeer
     TableViewColumnHeaderAutomationPeer(MU_XC_NAMESPACE.TableView owner, MU_XC_NAMESPACE.TableViewColumn column);
 }
 
-// Cell peer supplies per-cell grid/table structure and "{column header}, {cell value}" names.
+// Cell peer supplies per-cell grid/table structure, names, and header relationships.
 [MUX_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass TableViewCellAutomationPeer
