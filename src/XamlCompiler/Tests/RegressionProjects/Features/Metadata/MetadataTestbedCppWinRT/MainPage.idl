@@ -1,0 +1,13 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace MetadataTestbedCppWinRT
+{
+    runtimeclass MainPage : Microsoft.UI.Xaml.Controls.Page
+    {
+        MainPage();
+
+        // Looked up by name through the generated IXamlMetadataProvider, so it has to be
+        // part of the projected surface the XAML compiler emits type info for.
+        Object TestProperty{ get; };
+    }
+}

@@ -46,12 +46,81 @@ namespace
         const auto localMinWidth = column.ReadLocalValue(winrt::TableViewColumn::MinWidthProperty());
         return localMinWidth == winrt::DependencyProperty::UnsetValue() ? 0.0 : column.MinWidth();
     }
+
+    // Divides `available` in proportion to each column's Star factor. A column that would clamp at
+    // its Min/MaxWidth is fixed there and dropped, then the rest re-divide what is left (the WPF
+    // ComputeStarColumnWidths shape).
+    template <typename TFactor, typename TRound, typename TResolve>
+    void DistributeStarWidths(
+        std::vector<winrt::TableViewColumn> pool,
+        double available,
+        TFactor&& factorOf,
+        TRound&& layoutRound,
+        TResolve&& resolve)
+    {
+        auto totalFactor = [&]()
+        {
+            double total = 0.0;
+            for (auto const& c : pool)
+            {
+                total += factorOf(c);
+            }
+            return total;
+        };
+
+        for (bool adjusted = true; adjusted && !pool.empty(); )
+        {
+            adjusted = false;
+
+            const double factorSum = totalFactor();
+            const double unit = factorSum > 0.0 ? available / factorSum : 0.0;
+
+            for (size_t i = 0; i < pool.size(); ++i)
+            {
+                auto const& c = pool[i];
+                const double factor = factorOf(c);
+                const double desired = unit * factor;
+                const double lo = MinWidthForStarFactor(c, factor);
+                const double hi = std::max(lo, c.MaxWidth());
+                const double clamped = std::clamp(desired, lo, hi);
+                // std::clamp returns desired exactly when it is already in [lo, hi], so any
+                // inequality is a real Min/MaxWidth clamp.
+                if (clamped != desired)
+                {
+                    resolve(c, clamped);
+                    available -= clamped;
+                    pool.erase(pool.begin() + i);
+                    adjusted = true;
+                    break;
+                }
+            }
+        }
+
+        const double factorSum = totalFactor();
+        const double unit = factorSum > 0.0 ? std::max(0.0, available) / factorSum : 0.0;
+        // Rounded on the running total rather than per column, so the widths still sum to
+        // `available` once snapped; rounding each independently can overshoot the viewport and
+        // leave a permanent one-pixel scrollbar.
+        double exactConsumed = 0.0;
+        double roundedConsumed = 0.0;
+        for (auto const& c : pool)
+        {
+            const double factor = factorOf(c);
+            const double lo = MinWidthForStarFactor(c, factor);
+            const double hi = std::max(lo, c.MaxWidth());
+            exactConsumed += std::clamp(unit * factor, lo, hi);
+            const double edge = layoutRound(exactConsumed);
+            resolve(c, edge - roundedConsumed);
+            roundedConsumed = edge;
+        }
+    }
 }
 
 winrt::Size TableView::MeasureOverride(winrt::Size const& availableSize)
 {
     auto desired = __super::MeasureOverride(availableSize);
     ResolveColumnWidths();
+    QueueTerminalGridLineRefresh();
     return desired;
 }
 
@@ -206,6 +275,15 @@ void TableView::ResolveColumnWidths()
         case winrt::GridUnitType::Pixel:
         default:
         {
+            // A locked column the authored pass below sizes from its Star share must not also be
+            // booked as fixed here, or it lands in fixedTotal twice and starves the real donors.
+            if (CanUserResizeColumns() && !column.CanResize() &&
+                winrt::get_self<TableViewColumn>(column)->AuthoredWidthInternal().GridUnitType == winrt::GridUnitType::Star)
+            {
+                starColumns.push_back(column);
+                break;
+            }
+
             const double resolved = layoutRound(std::clamp(width.Value, lo, hi));
             changed |= setResolvedActualWidth(column, resolved);
             fixedTotal += resolved;
@@ -242,72 +320,230 @@ void TableView::ResolveColumnWidths()
         return;
     }
 
-    // Distribute the remaining width proportional to each Star factor. A column that would clamp to
-    // its Min/MaxWidth is fixed at the clamp and removed from the pool, then the rest re-divide the
-    // space that is left (the WPF ComputeStarColumnWidths shape). The viewport basis is layout-rounded
-    // so the divided space is snapped consistently with the fixed columns (CGrid rounds availableSize
-    // before distribution); per-column Star widths are then snapped in setResolvedActualWidth.
-    double available = std::max(0.0, layoutRound(viewport) - fixedTotal);
-    std::vector<winrt::TableViewColumn> pool = starColumns;
-    bool adjusted = true;
-
-    while (adjusted && !pool.empty())
+    const bool resizeEnabled = CanUserResizeColumns();
+    auto authoredOf = [](winrt::TableViewColumn const& c)
     {
-        adjusted = false;
+        return winrt::get_self<TableViewColumn>(c)->AuthoredWidthInternal();
+    };
+    // Only while a resize can actually happen; otherwise no column's width is at risk and the
+    // ordinary pool already clamps correctly.
+    auto isLocked = [resizeEnabled](winrt::TableViewColumn const& c)
+    {
+        return resizeEnabled && !c.CanResize();
+    };
 
-        double totalFactor = 0.0;
-        for (auto const& c : pool)
+    if (std::any_of(starColumns.begin(), starColumns.end(), isLocked))
+    {
+        // A locked Star column takes its share of the authored layout rather than of whatever a
+        // neighbor's resize left behind, so a drag cannot change its width.
+        double authoredFixedTotal = 0.0;
+        std::vector<winrt::TableViewColumn> authoredPool;
+        for (auto const& c : columns)
         {
-            totalFactor += std::max(0.0, c.Width().Value);
-        }
-        const double unit = totalFactor > 0.0 ? available / totalFactor : 0.0;
-
-        for (size_t i = 0; i < pool.size(); ++i)
-        {
-            auto const& c = pool[i];
-            const double factor = std::max(0.0, c.Width().Value);
-            const double desired = unit * factor;
-            const double lo = MinWidthForStarFactor(c, factor);
-            const double hi = std::max(lo, c.MaxWidth());
-            const double clamped = std::clamp(desired, lo, hi);
-            // std::clamp returns desired exactly when it is already in [lo, hi], so any inequality is a
-            // real Min/MaxWidth clamp: fix this column at its bound, drop it, and re-divide the rest.
-            if (clamped != desired)
+            if (!c ||
+                winrt::get_self<TableViewColumn>(c)->GetOwningTableView() != *this ||
+                c.Visibility() != winrt::Visibility::Visible)
             {
-                changed |= setResolvedActualWidth(c, clamped);
-                available -= clamped;
-                pool.erase(pool.begin() + i);
-                adjusted = true;
-                break;
+                continue;
+            }
+
+            const auto authored = authoredOf(c);
+            if (authored.GridUnitType == winrt::GridUnitType::Star)
+            {
+                authoredPool.push_back(c);
+                continue;
+            }
+
+            // Clamped and rounded exactly as the resolved pass above does, so the authored basis
+            // and the real layout agree on what the fixed columns take.
+            const double lo = c.MinWidth();
+            const double hi = std::max(lo, c.MaxWidth());
+            if (authored.GridUnitType == winrt::GridUnitType::Auto)
+            {
+                // The content width, not the width a resize gave it: a dragged Auto column must not
+                // change what the authored layout leaves for the Star columns.
+                const double desired = winrt::get_self<TableViewColumn>(c)->DesiredWidthInternal();
+                authoredFixedTotal += layoutRound(std::clamp(desired > 0.0 ? desired : c.ActualWidth(), lo, hi));
+            }
+            else
+            {
+                authoredFixedTotal += layoutRound(std::clamp(authored.Value, lo, hi));
             }
         }
+
+        DistributeStarWidths(
+            authoredPool,
+            std::max(0.0, layoutRound(viewport) - authoredFixedTotal),
+            [&authoredOf](winrt::TableViewColumn const& c) { return std::max(0.0, authoredOf(c).Value); },
+            layoutRound,
+            [&](winrt::TableViewColumn const& c, double width)
+            {
+                if (isLocked(c))
+                {
+                    changed |= setResolvedActualWidth(c, width);
+                    fixedTotal += c.ActualWidth();
+                }
+            });
+
+        starColumns.erase(
+            std::remove_if(starColumns.begin(), starColumns.end(), isLocked), starColumns.end());
     }
 
-    // Whatever survived without clamping splits the remaining space at the final proportional rate.
-    if (!pool.empty())
-    {
-        double totalFactor = 0.0;
-        for (auto const& c : pool)
+    // The viewport basis is layout-rounded so the divided space is snapped consistently with the
+    // fixed columns (CGrid rounds availableSize before distribution); per-column Star widths are
+    // then snapped in setResolvedActualWidth.
+    DistributeStarWidths(
+        starColumns,
+        std::max(0.0, layoutRound(viewport) - fixedTotal),
+        [](winrt::TableViewColumn const& c) { return std::max(0.0, c.Width().Value); },
+        layoutRound,
+        [&](winrt::TableViewColumn const& c, double width)
         {
-            totalFactor += std::max(0.0, c.Width().Value);
-        }
-        const double unit = totalFactor > 0.0 ? std::max(0.0, available) / totalFactor : 0.0;
-        for (auto const& c : pool)
-        {
-            const double factor = std::max(0.0, c.Width().Value);
-            const double lo = MinWidthForStarFactor(c, factor);
-            const double hi = std::max(lo, c.MaxWidth());
-            changed |= setResolvedActualWidth(
-                c,
-                std::clamp(unit * factor, lo, hi));
-        }
-    }
+            changed |= setResolvedActualWidth(c, width);
+        });
 
     if (changed)
     {
         InvalidateCellPanels();
         RefreshFrozenColumns();
     }
+}
+
+// Puts Width back the way the app left it. Restoring the effective value would convert a binding
+// or an inherited default into a local value the app never set.
+void TableView::RestoreColumnWidth(const winrt::TableViewColumn& column, const winrt::IInspectable& localWidth)
+{
+    auto const columnImpl = winrt::get_self<TableViewColumn>(column);
+    auto const resizeScope = columnImpl->BeginUserResizeScope();
+    if (!localWidth || localWidth == winrt::DependencyProperty::UnsetValue())
+    {
+        column.ClearValue(winrt::TableViewColumn::WidthProperty());
+    }
+    else
+    {
+        column.SetValue(winrt::TableViewColumn::WidthProperty(), localWidth);
+    }
+}
+
+// A resize takes space only from the columns after the dragged one (the WPF DataGrid contract).
+// Holding the earlier Star columns at the width they already render keeps them out of the
+// redistribution pass without changing what the user sees. A locked column is skipped: the
+// authored pass below already pins it, and freezing it would double-count it there.
+void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, std::vector<ColumnResizeFrozenColumn>& frozen)
+{
+    auto columns = Columns();
+    uint32_t index = 0;
+    if (!columns || !columns.IndexOf(column, index))
+    {
+        return;
+    }
+
+    // Collected before any write: writing Width runs app callbacks that may mutate Columns, and
+    // indexing a live vector across that would throw out of the manipulation.
+    std::vector<winrt::TableViewColumn> candidates;
+    for (uint32_t i = 0; i < index && i < columns.Size(); ++i)
+    {
+        auto const other = columns.GetAt(i);
+        if (!other ||
+            winrt::get_self<TableViewColumn>(other)->GetOwningTableView() != *this ||
+            other.Visibility() != winrt::Visibility::Visible ||
+            other.Width().GridUnitType != winrt::GridUnitType::Star ||
+            !other.CanResize())
+        {
+            continue;
+        }
+        candidates.push_back(other);
+    }
+
+    for (auto const& other : candidates)
+    {
+        frozen.push_back({ winrt::make_weak(other), other.ReadLocalValue(winrt::TableViewColumn::WidthProperty()) });
+
+        auto const columnImpl = winrt::get_self<TableViewColumn>(other);
+        auto const resizeScope = columnImpl->BeginUserResizeScope();
+        other.Width(winrt::GridLengthHelper::FromPixels(other.ActualWidth()));
+    }
+}
+
+// How far a drag may take this column. A table whose columns divide the viewport may not grow past
+// it, and a column the user may not resize neither gives width away nor takes any.
+ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn& column)
+{
+    ColumnResizeBounds bounds;
+
+    auto columns = Columns();
+    auto bodyScroller = m_bodyScroller.get();
+    const double viewport = bodyScroller ? bodyScroller.ViewportWidth() : 0.0;
+    if (!columns || !(viewport > 0.0) || std::isinf(viewport))
+    {
+        return bounds;
+    }
+
+    auto authoredType = [](winrt::TableViewColumn const& c)
+    {
+        return winrt::get_self<TableViewColumn>(c)->AuthoredWidthInternal().GridUnitType;
+    };
+
+    const bool resizeEnabled = CanUserResizeColumns();
+    uint32_t draggedIndex = 0;
+    if (!columns.IndexOf(column, draggedIndex))
+    {
+        return bounds;
+    }
+
+    double reservedForOthers = 0.0;
+    bool dividesViewport = authoredType(column) == winrt::GridUnitType::Star;
+    bool hasParticipant = false;
+
+    for (uint32_t i = 0; i < columns.Size(); ++i)
+    {
+        auto const other = columns.GetAt(i);
+        if (!other ||
+            i == draggedIndex ||
+            winrt::get_self<TableViewColumn>(other)->GetOwningTableView() != *this ||
+            other.Visibility() != winrt::Visibility::Visible)
+        {
+            continue;
+        }
+
+        dividesViewport |= authoredType(other) == winrt::GridUnitType::Star;
+
+        // Only a column that is Star *now* and sits after the dragged one can yield space: the
+        // layout pass re-divides by current Width, and a resize never takes from its left.
+        const bool participates =
+            i > draggedIndex &&
+            other.Width().GridUnitType == winrt::GridUnitType::Star &&
+            resizeEnabled && other.CanResize();
+        hasParticipant |= participates;
+
+        if (!participates)
+        {
+            reservedForOthers += other.ActualWidth();
+        }
+        else
+        {
+            reservedForOthers += MinWidthForStarFactor(other, std::max(0.0, other.Width().Value));
+        }
+    }
+
+    // Without a Star column anywhere the extent is meant to grow and scroll.
+    if (!dividesViewport)
+    {
+        return bounds;
+    }
+
+    // Pinned in both directions: bounding only growth would let the drag hand width to a column
+    // that is then not allowed to give it back. A Pixel or Auto column owns its width outright, so
+    // it may still shrink -- that only makes the table narrower and needs nothing from a neighbour.
+    if (!hasParticipant && column.Width().GridUnitType == winrt::GridUnitType::Star)
+    {
+        bounds.Min = column.ActualWidth();
+        bounds.Max = bounds.Min;
+        return bounds;
+    }
+
+    bounds.Max = std::max(0.0, viewport - reservedForOthers);
+    return bounds;
 }
 
 // Re-run the cell panels' measure/arrange so the header band and all rows reflect the newly resolved

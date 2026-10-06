@@ -1,16 +1,28 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+using Microsoft.UI;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System;
 using System.Collections.Generic;
 using Windows.UI;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 
 namespace LibManagedDll
 {
     public class AnotherClassForPathing
     {
         public string StringFunction() { return "StringFunction"; }
+
+        public string Format(string value) { return String.Format("Format: {0}", value); }
+
+        public string Describe(AnotherClassForPathing other) { return other == null ? "null" : "self"; }
+    }
+
+    public class NamedElementForPathing : FrameworkElement
+    {
+        public string Value { get; set; }
+
+        public string Format(string value) { return String.Format("Format: {0}", value); }
     }
 
     public class BindPathParserClass
@@ -86,7 +98,7 @@ namespace LibManagedDll
 
         public static explicit operator Thickness(BindPathParserClass instance)
         {
-            return ThicknessHelper.FromUniformLength(20);
+            return new Thickness(20);
         }
 
         public Button SomeButton { get; }

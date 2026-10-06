@@ -212,6 +212,19 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         public virtual bool IsIncludedInUpdate => BindStatus.HasFlag(BindStatus.HasBinding);
 
+        /// <summary>
+        /// The element root stands in for the namescope owning the named elements a path can start
+        /// from, rather than for a value of its own, so it is never retrieved or walked through.
+        /// </summary>
+        public virtual bool IsElementRoot => false;
+
+        /// <summary>
+        /// Whether this step's value has to be obtained by first obtaining its parent's. Roots hold
+        /// their own value, and so do named elements, which are reached through the bindings class
+        /// rather than through the element root.
+        /// </summary>
+        public bool IsRetrievedThroughParent => Parent != null && Parent.IsIncludedInUpdate && !Parent.IsElementRoot;
+
         public string PhaseList => string.Join(":", DistinctPhases);
 
         public virtual bool NeedsCheckForNull => ValueType.IsNullable;

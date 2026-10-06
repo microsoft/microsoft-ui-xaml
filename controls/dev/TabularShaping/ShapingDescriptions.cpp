@@ -349,14 +349,4 @@ namespace ShapingHelpers
         state.HasProjection = true;
     }
 
-    void Reshape(ShapingState& state, ShapingSpec const& spec)
-    {
-        ShapingDelta full;
-        full.FilterChanged = true;
-        full.GroupingChanged = true;
-        full.SortChanged = true;
-        full.RequiredWork = ShapingWork::FullReshape;
-        state.HasProjection = false;
-        Reshape(state, spec, full);
-    }
 }

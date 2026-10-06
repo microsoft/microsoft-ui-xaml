@@ -11,50 +11,47 @@
 #include "TableViewColumnHeaderAutomationPeer.properties.cpp"
 #include "ResourceAccessor.h"
 #include "Utils.h"
-
+#include <UIAutomationCore.h>
+#include <UIAutomationCoreApi.h>
 #include <limits>
 
 namespace
 {
-    // Two 32-bit halves of the column's stable IUnknown, which is the cheapest per-column
-    // identity available here. Widen to 64-bit before shifting so this stays correct on 32-bit,
-    // where uintptr_t is 32-bit and `>> 32` would be an out-of-range shift; the high part is
-    // simply 0 there.
-    std::array<int32_t, 2> RuntimeIdPartsForColumn(winrt::TableViewColumn const& column)
+    uint32_t AutomationIdentityForColumn(winrt::TableViewColumn const& column)
     {
-        if (!column)
-        {
-            return { 0, 0 };
-        }
-
-        const uint64_t identity = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(winrt::get_unknown(column)));
-        return
-        {
-            static_cast<int32_t>(identity & 0xffffffffull),
-            static_cast<int32_t>((identity >> 32) & 0xffffffffull)
-        };
+        return column ? winrt::get_self<TableViewColumn>(column)->AutomationIdentity() : 0;
     }
 
-    // Help text is supplementary: degrade instead of letting a resource failure escape into UIA.
-    winrt::hstring TryGetLocalizedString(const std::wstring_view& resourceName)
+    winrt::TableView OwnerForPublicConstructor(winrt::TableView const& table, winrt::TableViewColumn const& column)
     {
-        try
+        if (table && column &&
+            winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == table)
         {
-            return ResourceAccessor::GetLocalizedStringResource(resourceName);
+            return table;
         }
-        catch (...)
-        {
-            return {};
-        }
+
+        throw winrt::hresult_invalid_argument();
     }
 }
 
 TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
     winrt::TableView const& owner,
     winrt::TableViewColumn const& column)
-    : ReferenceTracker(owner)
+    : ReferenceTracker(OwnerForPublicConstructor(owner, column))
     , m_column(winrt::make_weak(column))
-    , m_columnRuntimeIdParts(RuntimeIdPartsForColumn(column))
+    , m_table(winrt::make_weak(owner))
+    , m_columnAutomationIdentity(AutomationIdentityForColumn(column))
+{
+}
+
+TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
+    winrt::FrameworkElement const& header,
+    winrt::TableView const& table,
+    winrt::TableViewColumn const& column)
+    : ReferenceTracker(header)
+    , m_column(winrt::make_weak(column))
+    , m_table(winrt::make_weak(table))
+    , m_columnAutomationIdentity(AutomationIdentityForColumn(column))
 {
 }
 
@@ -65,19 +62,34 @@ hstring TableViewColumnHeaderAutomationPeer::GetClassNameCore()
 
 hstring TableViewColumnHeaderAutomationPeer::GetNameCore()
 {
-    // Prefer string headers so screen readers announce a distinct column name.
+    if (auto const headerElement = GetHeaderElement())
+    {
+        if (auto const name = winrt::AutomationProperties::GetName(headerElement); !name.empty())
+        {
+            return name;
+        }
+        if (auto const label = GetLabeledBy())
+        {
+            if (auto const name = label.GetName(); !name.empty())
+            {
+                return name;
+            }
+        }
+    }
+
     if (auto const headerString = TryGetColumnHeaderString(m_column.get()))
     {
         return *headerString;
     }
 
-    // For template headers, use the realized header cell and avoid the TableView owner's name.
-    if (auto const headerElement = GetHeaderElement())
+    // Read template content, never re-enter this header's own peer.
+    if (auto const header = GetHeaderElement().try_as<winrt::Panel>())
     {
-        if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(headerElement))
+        uint32_t remaining = 64;
+        for (auto const& child : header.Children())
         {
-            const auto name = peer.GetName();
-            if (!name.empty())
+            if (auto const name = GetCellContentName(child.try_as<winrt::FrameworkElement>(), true, 8, remaining);
+                !name.empty())
             {
                 return name;
             }
@@ -87,32 +99,9 @@ hstring TableViewColumnHeaderAutomationPeer::GetNameCore()
     return {};
 }
 
-winrt::Windows::Foundation::Collections::IVector<winrt::AutomationPeer> TableViewColumnHeaderAutomationPeer::GetChildrenCore()
-{
-    // Column headers are leaf HeaderItems; do not expose the TableView subtree.
-    return winrt::single_threaded_vector<winrt::AutomationPeer>();
-}
-
 winrt::AutomationControlType TableViewColumnHeaderAutomationPeer::GetAutomationControlTypeCore()
 {
-    // HeaderItem is the UIA control type for table column headers.
     return winrt::AutomationControlType::HeaderItem;
-}
-
-winrt::com_array<int32_t> TableViewColumnHeaderAutomationPeer::GetRuntimeIdCore()
-{
-    // Header peers are all owned by the TableView, so the owner-derived RuntimeId the base
-    // would supply is identical for every column - a UIA protocol violation that makes the
-    // headers indistinguishable to assistive technology. Build a self-contained id instead:
-    // the UiaAppendRuntimeId prefix keeps it well-formed as a framework-appended runtime id,
-    // the control-family tag namespaces it, and the column identity parts make it unique and
-    // stable for the lifetime of the column.
-    return winrt::com_array<int32_t>({
-        3, // UiaAppendRuntimeId
-        static_cast<int32_t>(0x54564348), // 'TVCH' control-family tag
-        m_columnRuntimeIdParts[0],
-        m_columnRuntimeIdParts[1]
-    });
 }
 
 hstring TableViewColumnHeaderAutomationPeer::GetAutomationIdCore()
@@ -127,12 +116,8 @@ hstring TableViewColumnHeaderAutomationPeer::GetAutomationIdCore()
         }
     }
 
-    // Otherwise fall back to the same column identity backing the RuntimeId, so headers stay
-    // addressable in UI automation before their templates realize.
     std::wstring automationId{ L"TableViewColumnHeader_" };
-    automationId.append(std::to_wstring(m_columnRuntimeIdParts[0]));
-    automationId.push_back(L'_');
-    automationId.append(std::to_wstring(m_columnRuntimeIdParts[1]));
+    automationId.append(std::to_wstring(m_columnAutomationIdentity));
     return hstring{ automationId };
 }
 
@@ -208,41 +193,133 @@ winrt::IInspectable TableViewColumnHeaderAutomationPeer::GetPatternCore(winrt::P
     return __super::GetPatternCore(patternInterface);
 }
 
+bool TableViewColumnHeaderAutomationPeer::IsEnabledCore()
+{
+    // Grid is not a Control, so its base peer does not report inherited disabled state.
+    auto const table = m_table.get();
+    if (!table || !table.IsEnabled())
+    {
+        return false;
+    }
+
+    // A template control (for example the header ScrollViewer) can be disabled
+    // independently of the table. Its coerced state applies to this header too.
+    auto ancestor = winrt::VisualTreeHelper::GetParent(Owner());
+    while (ancestor && ancestor != table)
+    {
+        if (auto const control = ancestor.try_as<winrt::Control>(); control && !control.IsEnabled())
+        {
+            return false;
+        }
+        ancestor = winrt::VisualTreeHelper::GetParent(ancestor);
+    }
+    return true;
+}
+
 void TableViewColumnHeaderAutomationPeer::Invoke()
 {
+    if (!IsEnabled())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
+    }
+    if (!IsSortableColumn())
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
     if (auto const column = m_column.get())
     {
-        if (auto const owner = Owner().try_as<winrt::TableView>())
+        if (auto const owner = m_table.get())
         {
             winrt::get_self<TableView>(owner)->ToggleSortDirection(column);
+            return;
         }
     }
+
+    throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
+}
+
+winrt::Windows::Foundation::Collections::IVector<winrt::AutomationPeer> TableViewColumnHeaderAutomationPeer::GetChildrenCore()
+{
+    if (!IsTableViewOwned())
+    {
+        return __super::GetChildrenCore();
+    }
+
+    return winrt::single_threaded_vector<winrt::AutomationPeer>();
+}
+
+winrt::Windows::Foundation::Rect TableViewColumnHeaderAutomationPeer::GetBoundingRectangleCore()
+{
+    if (IsTableViewOwned())
+    {
+        return {};
+    }
+
+    return __super::GetBoundingRectangleCore();
+}
+
+winrt::Windows::Foundation::Point TableViewColumnHeaderAutomationPeer::GetClickablePointCore()
+{
+    if (IsTableViewOwned())
+    {
+        return { std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN() };
+    }
+
+    return __super::GetClickablePointCore();
+}
+
+bool TableViewColumnHeaderAutomationPeer::IsOffscreenCore()
+{
+    return IsTableViewOwned() ? true : __super::IsOffscreenCore();
+}
+
+bool TableViewColumnHeaderAutomationPeer::IsTableViewOwned()
+{
+    return Owner().try_as<winrt::TableView>() != nullptr;
 }
 
 bool TableViewColumnHeaderAutomationPeer::IsSortableColumn()
 {
     auto const column = m_column.get();
-    if (!column || !column.CanSort())
+    if (!column || !column.CanSort() || !IsVisibleColumn(column))
     {
         return false;
     }
 
-    auto const owner = Owner().try_as<winrt::TableView>();
-    return owner && owner.CanUserSortColumns();
+    auto const owner = m_table.get();
+    return owner && owner.IsLoaded() && owner.CanUserSortColumns();
 }
 
 int32_t TableViewColumnHeaderAutomationPeer::GetPositionInSetCore()
 {
-    // Complements the distinct RuntimeId and GetNameCore: expose the 1-based visible column
-    // position so AT (Narrator) can announce "column i of n" as the user moves across headers.
+    // The header's attached override wins over the visible-column position.
+    if (auto const header = GetHeaderElement())
+    {
+        if (const auto provided = winrt::AutomationProperties::GetPositionInSet(header); provided > 0)
+        {
+            return provided;
+        }
+    }
+
     const auto index = GetColumnIndex();
-    return index >= 0 ? index + 1 : -1;
+
+    // 0 is UIA's "not specified"; valid values are 1-based, so -1 reached the client as a nonsense
+    // position.
+    return index >= 0 ? index + 1 : 0;
 }
 
 int32_t TableViewColumnHeaderAutomationPeer::GetSizeOfSetCore()
 {
+    if (auto const header = GetHeaderElement())
+    {
+        if (const auto provided = winrt::AutomationProperties::GetSizeOfSet(header); provided > 0)
+        {
+            return provided;
+        }
+    }
+
     // Total visible column count, so PositionInSet reads as "i of n".
-    if (auto const owner = Owner().try_as<winrt::TableView>())
+    if (auto const owner = m_table.get())
     {
         if (auto const columns = owner.Columns())
         {
@@ -254,33 +331,8 @@ int32_t TableViewColumnHeaderAutomationPeer::GetSizeOfSetCore()
             if (count > 0) { return count; }
         }
     }
-    return -1;
-}
 
-winrt::Windows::Foundation::Rect TableViewColumnHeaderAutomationPeer::GetBoundingRectangleCore()
-{
-    // Use this header's realized cell bounds; unrealized headers have no on-screen rect.
-    if (auto const headerElement = GetHeaderElement())
-    {
-        if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(headerElement))
-        {
-            return peer.GetBoundingRectangle();
-        }
-    }
-    return {};
-}
-
-winrt::Windows::Foundation::Point TableViewColumnHeaderAutomationPeer::GetClickablePointCore()
-{
-    if (auto const headerElement = GetHeaderElement())
-    {
-        if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(headerElement))
-        {
-            return peer.GetClickablePoint();
-        }
-    }
-    // Unrealized headers have no clickable point (NaN per UIA convention).
-    return { std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN() };
+    return 0;
 }
 
 int32_t TableViewColumnHeaderAutomationPeer::GetColumnIndex()
@@ -290,7 +342,7 @@ int32_t TableViewColumnHeaderAutomationPeer::GetColumnIndex()
     // consistent even when Columns contains null holes or collapsed columns.
     // Columns are matched by identity; a column instance is a single logical position
     // (single-owner model), so the same instance appearing twice in Columns is unsupported.
-    if (auto const owner = Owner().try_as<winrt::TableView>())
+    if (auto const owner = m_table.get())
     {
         if (auto const col = m_column.get())
         {
@@ -316,7 +368,7 @@ int32_t TableViewColumnHeaderAutomationPeer::GetColumnIndex()
 winrt::FrameworkElement TableViewColumnHeaderAutomationPeer::GetHeaderElement()
 {
     // Match by Tag so null Columns entries do not skew logical indexes.
-    auto const owner = Owner().try_as<winrt::TableView>();
+    auto const owner = m_table.get();
     auto const col = m_column.get();
     if (!owner || !col)
     {
@@ -329,5 +381,10 @@ winrt::FrameworkElement TableViewColumnHeaderAutomationPeer::GetHeaderElement()
         return nullptr;
     }
 
-    return TableViewCellsPanel::CellForColumn(host, col);
+    auto const header = TableViewCellsPanel::CellForColumn(host, col);
+    if (!Owner().try_as<winrt::TableView>() && header != Owner())
+    {
+        return nullptr;
+    }
+    return header;
 }

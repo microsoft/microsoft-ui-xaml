@@ -1,0 +1,179 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# WinUI - MonoBuild Standalone Test Pipeline
+#
+# Queued fire-and-forget by the WinAppSDK monobuild's WinUI test-trigger stage
+# (see Build/WindowsAppSDK/AzurePipelinesTemplates/WinAppSDK-TriggerTestPipeline-Stage.yml
+# in OS/WinAppSDK). Unlike Foundation/Widgets, the monobuild builds WinUI
+# product-only (no test binaries / scenario apps), so this pipeline rebuilds WinUI
+# from source with the test surface enabled and runs the same Build + RunTests +
+# RunStaticTests + RunScenarioTests stages the standalone WinUI-PR pipeline uses,
+# then PUTs `TestSucceeded_WinUI` on the parent monobuild so its TestGate stage can
+# move forward. See docs/Onboarding-Tests-To-Monobuild.md.
+#
+# ADO definition: registered as WinAppSDK-Test-WinUI in the OS project.
+
+trigger: none
+pr: none
+
+name: '${{ parameters.sourcePipeline }} #${{ parameters.sourceBuildId }} (def $(sourcePipelineId))'
+
+parameters: # parameters are shown up in ADO UI at build queue time
+# Source pipeline is locked to known definitions and mapped below to the numeric
+# definition id used for run-name display.
+- name: sourcePipeline
+  displayName: 'Source pipeline'
+  type: string
+  default: 'Monobuild-Nightly'
+  values:
+    - 'Monobuild-Nightly'
+    - 'Monobuild-Test'
+    - 'Monobuild-Official'
+- name: sourceBuildId
+  displayName: 'Source monobuild Build Id (run id of the producing build) - required'
+  type: string
+  default: ''
+# WinUI-PR parity knobs (the trigger only POSTs sourcePipeline + sourceBuildId, so
+# triggered runs use these defaults - matching a default standalone WinUI-PR run).
+- name: MUXFinalRelease
+  type: boolean
+  default: false
+- name: runArm64Tests
+  displayName: "Enable running tests on arm64"
+  type: boolean
+  default: true
+- name: runStaticAnalysis
+  displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
+  type: boolean
+  default: false
+
+variables:
+- template: AzurePipelinesTemplates\WinUI-Versions.yml
+- template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
+# eng\Versions.props infers an internal build from the presence of a .azuredevops folder,
+# which the public GitHub mirror does not carry. Left unset, the OSS pins further down that
+# file override the mono-build component versions and swap the transport package names.
+- name: IsInternalWinUIBuild
+  value: 'true'
+# Monobuild test runs in the OS project, so use the OS-project mirror of WinUI's
+# variable groups (WinAppSDK-WinUI-*) rather than the WinUI-project originals.
+- group: WinAppSDK-WinUI-Variable-Library
+# sourcePipeline -> definition id. Used for the run name AND for consumeProductFromPipeline
+# below, so it must name the pipeline that actually produced the artifacts being consumed.
+# Same mapping as Foundation/WinML.
+- ${{ if eq(parameters.sourcePipeline, 'Monobuild-Nightly') }}:
+  - name: sourcePipelineId
+    value: '201186'
+- ${{ if eq(parameters.sourcePipeline, 'Monobuild-Test') }}:
+  - name: sourcePipelineId
+    value: '190463'
+- ${{ if eq(parameters.sourcePipeline, 'Monobuild-Official') }}:
+  - name: sourcePipelineId
+    value: '196647'
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+    # Shared monobuild test-contract templates (tag-back) live in OS/WinAppSDK.
+    # The trigger stage overrides this ref to the parent monobuild's branch at
+    # queue time so trigger + tag-back templates stay in lockstep.
+    - repository: WinAppSDK
+      type: git
+      name: OS/WinAppSDK
+      ref: refs/heads/release/main
+
+extends:
+  template: v2/Microsoft.NonOfficial.yml@templates # https://aka.ms/obpipelines/templates
+  parameters:
+    featureFlags:
+      EnableCDPxPAT: false
+      WindowsHostVersion:
+        Version: 2022
+        Network: KS3
+    platform:
+      name: 'windows_undocked' # windows undocked
+    globalsdl:                 # https://aka.ms/obpipelines/sdl
+      tsa:
+        enabled: false
+      enableXFGCheck: false
+      codeql:
+        tsandjs:
+          enabled: true
+        python:
+          enabled: false
+        psscriptanalyzer:
+          enable: true
+      prefast:
+        ${{ if eq(parameters.runStaticAnalysis, 'true') }}:
+          enabled: true
+        ${{ else }}:
+          enabled: false
+        break: true
+      apiscan:
+        # We are enabling APIScan on a per job basis, as this scanner is not applicable to most jobs.
+        enabled: false
+        # TODO: Once we've cleared away all existing errors, consider setting this to true.
+        break: false
+      binskim:
+        enabled: true
+        analyzeTargetGlob: $(BinskimExclusion)
+        break: true
+      policheck:
+        exclusionsFile: $(Build.SourcesDirectory)\.config\PolicheckExclusions.xml
+
+    stages:
+    # Build the WinUI test surface (MUXControls.sln test binaries + scenario apps). The WinUI PRODUCT
+    # itself is NOT rebuilt here for the configs the mono-build publishes: consumeProductFromBuildId
+    # makes the Release x86/x64/arm64 jobs download the parent mono-build's Build-WinUI-<plat>-Release
+    # output into BuildOutput\bin and build the test surface against it (eng\consumebinaries.targets).
+    # Debug / arm64ec jobs still build the product (the mono-build is Release x86/x64/arm64 only).
+    # pipelineKind: PR reuses the same build matrix the standalone WinUI-PR pipeline runs.
+    - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
+      parameters:
+        pipelineKind: PR
+        stageDisplayName: 'Build Test Infra'
+        # BuildMUX is CPU-bound: msbuild already runs /m with uncapped /MP, but the default
+        # OneBranch host is an 8-vCPU M8ms. Give it a 64-vCPU host to shorten this stage,
+        # which is the first half of this pipeline's critical path.
+        buildHostSku: D64
+        buildScenarioApps: true
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+        # OS-project WinUI-InternalFeed group; defines WinUILKGCompilerFeedUri + LKG dependency feed URIs (this pipeline runs in the OS project).
+        internalFeedVariableGroup: WinUI-InternalFeed
+        # Pull the WinUI product from the parent mono-build instead of rebuilding it.
+        consumeProductFromBuildId: ${{ parameters.sourceBuildId }}
+        consumeProductFromPipeline: $(sourcePipelineId)
+
+    - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
+      parameters:
+        pipelineKind: PR
+
+    - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
+      parameters:
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+
+    - template: AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml
+      parameters:
+        pipelineKind: PR
+        dependsOn: Build
+        runArm64Tests: ${{ parameters.runArm64Tests }}
+
+    # Tag the parent monobuild on success. condition: succeeded() inside the template
+    # means the tag is applied only when RunTests + RunScenarioTests pass (RunStaticTests
+    # is continueOnError, matching standalone WinUI-PR gating). Test failures, cancel, or
+    # timeout leave the tag absent, which the monobuild TestGate detects via the run's
+    # Triggered_WinUI_<runId> tag and fails on.
+    - template: Build/WindowsAppSDK/AzurePipelinesTemplates/WinAppSDK-TagTestResult-Stage.yml@WinAppSDK
+      parameters:
+        componentName: 'WinUI'
+        sourceBuildId: ${{ parameters.sourceBuildId }}
+        retryParentTestGate: ${{ eq(parameters.sourcePipeline, 'Monobuild-Official') }}
+        dependsOn:
+          - RunTests
+          - RunStaticTests
+          - RunScenarioTests

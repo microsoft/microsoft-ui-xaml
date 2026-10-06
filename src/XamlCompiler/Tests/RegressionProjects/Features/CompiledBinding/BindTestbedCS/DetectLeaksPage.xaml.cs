@@ -41,7 +41,6 @@ namespace BindTestbed
         {
             TrackObject(obj, typeof(T).Name + "_Bindings");
 
-#if !RAZZLE
             // GetNestedTypes and BindingFlags are not available in
             // the franken .Net version that we have in razzle 
             foreach (var nestedType in typeof(T).GetNestedTypes(BindingFlags.NonPublic))
@@ -64,7 +63,6 @@ namespace BindTestbed
                 }
             }
             throw new ArgumentException("Can't find bindings class");
-#endif
         }
 
         public static IEnumerable<string> GetLeakedNames()
@@ -107,8 +105,6 @@ namespace BindTestbed
             App.Model.UpdateValues();
             App.DOModel.UpdateValues();
             App.LanguageModel.UpdateValues();
-            //TODO: Convert BindTestbedModelCX to C++/WinRT
-            //App.ModelCX.UpdateValues();
         }
     }
 }
