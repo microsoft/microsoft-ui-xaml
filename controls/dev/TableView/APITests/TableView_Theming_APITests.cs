@@ -359,7 +359,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             finally
             {
-                ClearApplicationResource("TabularSurfaceGridLineBrush");
+                // Application.Resources is UI-thread affine; a finally block runs on the test thread.
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGridLineBrush"));
             }
         }
 
@@ -415,8 +416,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             finally
             {
-                ClearApplicationResource("ResizeGripperSeparatorBrush");
-                ClearApplicationResource("ResizeGripperSeparatorThickness");
+                // Application.Resources is UI-thread affine; a finally block runs on the test thread.
+                RunOnUIThread.Execute(() =>
+                {
+                    ClearApplicationResource("ResizeGripperSeparatorBrush");
+                    ClearApplicationResource("ResizeGripperSeparatorThickness");
+                });
             }
         }
 
@@ -469,7 +474,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             finally
             {
-                ClearApplicationResource("SortIndicatorForeground");
+                // Application.Resources is UI-thread affine; a finally block runs on the test thread.
+                RunOnUIThread.Execute(() => ClearApplicationResource("SortIndicatorForeground"));
             }
         }
 
@@ -840,7 +846,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             finally
             {
-                ClearApplicationResource("TableViewRowMinHeightCompact");
+                // Application.Resources is UI-thread affine; a finally block runs on the test thread.
+                RunOnUIThread.Execute(() => ClearApplicationResource("TableViewRowMinHeightCompact"));
             }
         }
 

@@ -721,6 +721,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(headers: new[] { "Name" });
+                // Unsortable, so the peer has no sort state to append: this test is about where the
+                // tooltip text is published, and VerifyHeaderPeerHelpTextCombinesToolTipAndSortState
+                // owns the tooltip + sort-state join.
+                tableView.Columns[0].CanSort = false;
                 tableView.Columns[0].HeaderToolTip = "The person's display name";
                 LoadContent(tableView);
             });
@@ -794,6 +798,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateTableView(headers: new[] { "Name", "Role" });
+                // Unsortable, so help text is the tooltip alone and the dedup rule is observable in
+                // isolation; a sortable column would append its sort state to both arms.
+                tableView.Columns[0].CanSort = false;
+                tableView.Columns[1].CanSort = false;
                 tableView.Columns[0].HeaderToolTip = "Name";          // identical to the header
                 tableView.Columns[1].HeaderToolTip = "What they do";   // distinct from it
                 LoadContent(tableView);
