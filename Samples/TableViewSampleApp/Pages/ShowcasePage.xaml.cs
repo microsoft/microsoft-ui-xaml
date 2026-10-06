@@ -145,10 +145,14 @@ public sealed partial class ShowcasePage : Page
         PeopleTable.ItemsSource = _mode switch
         {
             ShowcaseMode.Grouped => ApplyActiveSort(
-                TableViewSource.From(_people)),
+                TableViewSource.From(_people).GroupBy(GroupByDepartment, GroupIdentity)),
             _ => ApplyActiveSort(TableViewSource.From(_people)),
         };
     }
+
+    // Grouping key paired with a stable string identity, so group identity survives re-shaping
+    // (filter/sort) instead of groups being rebuilt on every source change.
+    private static TableViewKeySelector GroupByDepartment => item => ((Person)item).Department;
 
     private TableViewSource ApplyActiveSort(TableViewSource source)
     {
