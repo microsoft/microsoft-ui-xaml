@@ -94,7 +94,7 @@
                                 <Border x:Name="LinePreviewCard" Style="{StaticResource CardStyle}" VerticalAlignment="Top">
                                     <charts:Chart x:Name="MarkupChart" Height="380" ShowLegend="True" LegendTitle="Monthly totals"
                                                   AutomationProperties.Name="Monthly profit and expenses"
-                                                  AutomationProperties.HelpText="Profit uses a solid line and markers; expenses uses a dashed line and labels. Exact values are in Live data.">
+                                                  AutomationProperties.HelpText="Profit uses a solid line and markers; expenses use a dashed line and labels. Exact values are in Live data.">
                                         <charts:Chart.Data>
                                             <charts:Samples x:Name="Month" />
                                             <charts:Samples x:Name="Profit" />
@@ -298,7 +298,7 @@
                                             </Grid>
                                             <Button x:Name="AreaResetButton" Content="Reset area example" Click="OnResetAreaClick" />
                                             <TextBlock x:Name="AreaStatusText" Style="{StaticResource DescriptionStyle}" AutomationProperties.LiveSetting="Polite"
-                                                       Text="Reset restores this example's original presentation, without changing other charts." />
+                                                       Text="Choose options for the area example." />
                                             <Expander x:Name="AreaDataExpander" Header="Monthly area data" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                                                 <TextBlock x:Name="AreaDataText" IsTextSelectionEnabled="True" />
                                             </Expander>
@@ -357,7 +357,7 @@
                                             <Button x:Name="BarOrientationButton" Content="Toggle connected bar orientation" Click="OnToggleBarOrientationClick" />
                                             <Button x:Name="BarResetButton" Content="Reset bar example" Click="OnResetBarClick" />
                                             <TextBlock x:Name="BarStatusText" Style="{StaticResource DescriptionStyle}" AutomationProperties.LiveSetting="Polite"
-                                                       Text="Reset restores horizontal bars and this example's original presentation." />
+                                                       Text="Choose options for the bar example." />
                                             <Expander x:Name="BarDataExpander" Header="Monthly bar data" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
                                                 <TextBlock x:Name="BarDataText" IsTextSelectionEnabled="True" />
                                             </Expander>
@@ -433,7 +433,7 @@
                                                 <Button x:Name="SecondaryButton" Content="Toggle secondary UI thread" Click="OnToggleSecondaryClick" />
                                             </StackPanel>
                                             <Expander x:Name="LiveDataExpander" Header="Current data" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                                <TextBlock x:Name="DataText" IsTextSelectionEnabled="True" AutomationProperties.Name="Current monthly and code chart data" />
+                                                <TextBlock x:Name="DataText" IsTextSelectionEnabled="True" />
                                             </Expander>
                                         </StackPanel>
                                     </Border>

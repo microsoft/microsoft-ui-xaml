@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -384,7 +383,7 @@ namespace ChartsSample
                 var series = SelectedBarSeries();
                 series.Orientation = series.Orientation == BarOrientation.Horizontal
                     ? BarOrientation.Vertical : BarOrientation.Horizontal;
-            }, "Bar orientation changed. X remains categories; Y remains values.");
+            }, "Bar orientation updated.");
         }
 
         private LineSeries SelectedPresentationSeries() =>
@@ -562,12 +561,6 @@ namespace ChartsSample
             return (MarkerShape)index;
         }
 
-        private static void SyncVisibility(CheckBox checkBox, CartesianSeries series)
-        {
-            checkBox.IsChecked = series.IsVisible;
-            checkBox.Content = series.IsVisible ? "Visible" : "Hidden";
-        }
-
         private void SyncAreaOptions()
         {
             var series = SelectedAreaSeries();
@@ -576,7 +569,7 @@ namespace ChartsSample
                 ? fill.Color.A switch { 0x60 => 0, 0xFF => 1, 0 => 2, _ => -1 }
                 : -1;
             AreaMarkerChoice.SelectedIndex = (int)series.MarkerShape;
-            SyncVisibility(AreaVisibleCheckBox, series);
+            AreaVisibleCheckBox.IsChecked = series.IsVisible;
             AreaValuesCheckBox.IsChecked = series.ShowDataLabels;
             AreaMarkersCheckBox.IsChecked = series.ShowDataMarkers;
             AreaLegendCheckBox.IsChecked = AreaMarkupChart.ShowLegend;
@@ -589,7 +582,7 @@ namespace ChartsSample
             var series = SelectedBarSeries();
             BarColorChoice.SelectedIndex = ExampleColorIndex(series.Stroke, OriginalBarStroke);
             BarMarkerChoice.SelectedIndex = (int)series.MarkerShape;
-            SyncVisibility(BarVisibleCheckBox, series);
+            BarVisibleCheckBox.IsChecked = series.IsVisible;
             BarValuesCheckBox.IsChecked = series.ShowDataLabels;
             BarMarkersCheckBox.IsChecked = series.ShowDataMarkers;
             BarLegendCheckBox.IsChecked = BarMarkupChart.ShowLegend;
@@ -645,7 +638,7 @@ namespace ChartsSample
                 // Null selects the palette; an explicit transparent color keeps outline-only mode.
                 series.Fill = new SolidColorBrush(fill);
                 series.Stroke = new SolidColorBrush(stroke);
-            }, "Area color and fill updated. The source data is unchanged.");
+            }, "Area color and fill updated.");
         }
 
         private void OnAreaVisibilityClick(object sender, RoutedEventArgs e) =>
@@ -683,7 +676,7 @@ namespace ChartsSample
                 AreaMarkupChart.ShowLegend = true;
                 _nextAreaSeries = 2;
                 RebuildSeriesChoice(AreaMarkupChart, AreaSeriesChoice, 0);
-            }, "Area example reset. Other charts and the application theme are unchanged.");
+            }, "Area example reset.");
         }
 
         private void OnBarColorChanged(object sender, SelectionChangedEventArgs e)
@@ -694,7 +687,7 @@ namespace ChartsSample
                 Color stroke = SelectedExampleColor(BarColorChoice, OriginalBarStroke);
                 SelectedBarSeries().Fill = new SolidColorBrush(fill);
                 SelectedBarSeries().Stroke = new SolidColorBrush(stroke);
-            }, "Bar color updated. The source data is unchanged.");
+            }, "Bar color updated.");
         }
 
         private void OnBarVisibilityClick(object sender, RoutedEventArgs e) =>
@@ -715,7 +708,7 @@ namespace ChartsSample
                 if (BarOrientationChoice.SelectedIndex is < 0 or > 1)
                     throw new ArgumentException("Choose an available bar orientation.");
                 SelectedBarSeries().Orientation = (BarOrientation)BarOrientationChoice.SelectedIndex;
-            }, "Bar orientation changed. The selected series keeps its own explicit axes.");
+            }, "Bar orientation updated.");
 
         private void OnBarLegendClick(object sender, RoutedEventArgs e) =>
             EditBar(() => BarMarkupChart.ShowLegend = BarLegendCheckBox.IsChecked == true, "Bar legend updated.");
@@ -742,7 +735,7 @@ namespace ChartsSample
                 BarMarkupChart.ShowLegend = true;
                 _nextBarSeries = 2;
                 RebuildSeriesChoice(BarMarkupChart, BarSeriesChoice, 0);
-            }, "Bar example reset to horizontal. Other charts and the application theme are unchanged.");
+            }, "Bar example reset.");
         }
 
         private void OnLineVisibilityClick(object sender, RoutedEventArgs e) =>
@@ -821,7 +814,7 @@ namespace ChartsSample
                     AxisStatusText.Text = "";
                     SyncAxes();
                 });
-            }, "Line example reset. Other charts, updates and the application theme are unchanged.");
+            }, "Line example reset.");
         }
 
         private void ResetProfitAxes()
@@ -872,7 +865,7 @@ namespace ChartsSample
         private void SyncLineOptions()
         {
             var series = SelectedPresentationSeries();
-            SyncVisibility(LineVisibleCheckBox, series);
+            LineVisibleCheckBox.IsChecked = series.IsVisible;
             LineWeightChoice.SelectedIndex = Array.IndexOf(LineWeights, series.StrokeThickness);
             LineStyleChoice.SelectedIndex = (int)series.StrokeDashStyle;
             LineColorChoice.SelectedIndex = series.Stroke == null ? 0 : ExampleColorIndex(series.Stroke, default);
@@ -1007,7 +1000,8 @@ namespace ChartsSample
         }
 
         private void ApplyEdit(Action edit, Action sync, TextBlock status, string success,
-            string invalid = "That value is not supported. The current setting has been restored.", Chart chart = null)
+            string invalid = "That value is not supported. The current setting has been restored.", Chart chart = null,
+            string announcement = null)
         {
             if (!_ready || _syncing || _closing) return;
             _lastEditSucceeded = false;
@@ -1016,14 +1010,10 @@ namespace ChartsSample
                 edit();
                 // Brush changes alone can leave the rendered plot at its previous appearance.
                 chart?.InvalidateArrange();
-                AnnounceStatus(status, success);
+                AnnounceStatus(status, success, announcement);
                 _lastEditSucceeded = true;
             }
             catch (ArgumentException)
-            {
-                AnnounceStatus(status, invalid);
-            }
-            catch (COMException ex) when (ex.HResult == unchecked((int)0x80070057))
             {
                 AnnounceStatus(status, invalid);
             }
@@ -1033,24 +1023,19 @@ namespace ChartsSample
             }
         }
 
-        // Validation errors are usually raised while focus leaves the edited field, and a Polite
-        // live-region update is dropped when it coincides with that focus change. Set the status
-        // text and raise an explicit UIA notification so it is announced without moving focus.
-        // Removing a series also disables the focused button (another focus change), so defer the
-        // notification to a low-priority dispatch that runs after focus has settled; otherwise the
-        // focus-change announcement cuts it off.
-        private void AnnounceStatus(TextBlock target, string message)
+        // A live-region update is dropped when focus moves at the same time (leaving an edited field,
+        // or a button disabled by the edit), so raise a notification after focus has settled.
+        private void AnnounceStatus(TextBlock target, string message, string announcement = null)
         {
             target.Text = message;
-            if (string.IsNullOrEmpty(message)) return;
+            announcement ??= message;
+            if (string.IsNullOrEmpty(announcement)) return;
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
             {
-                AutomationPeer peer = FrameworkElementAutomationPeer.FromElement(target)
-                    ?? FrameworkElementAutomationPeer.CreatePeerForElement(target);
-                peer?.RaiseNotificationEvent(
+                FrameworkElementAutomationPeer.CreatePeerForElement(target)?.RaiseNotificationEvent(
                     AutomationNotificationKind.Other,
                     AutomationNotificationProcessing.MostRecent,
-                    message,
+                    announcement,
                     "ChartsSampleStatus");
             });
         }
@@ -1077,7 +1062,7 @@ namespace ChartsSample
         {
             if (!_ready || _syncing || _closing || !MarkupChart.Series.Contains(ProfitSeries)) return;
             ApplyEdit(edit, sync, AxisStatusText, "Profit axes updated.",
-                "Invalid axis value. Use finite bounds with minimum below maximum, and positive spacing, or leave blank for Auto. Current settings restored.",
+                "Invalid axis value. Use a minimum below the maximum and a positive spacing, or leave a field empty for Auto.",
                 MarkupChart);
         }
         private static double? OptionalNumber(NumberBox box) => double.IsNaN(box.Value) ? null : box.Value;
@@ -1135,28 +1120,23 @@ namespace ChartsSample
 
         private void SetDateInterval(DateTimeAxis axis, ComboBox box, TextBlock warning, TextBlock status, bool daily)
         {
+            if (!_ready || _syncing || _closing) return;
+            string note = DateIntervalNote((DateTimeIntervalType)box.SelectedIndex, daily);
             ApplyEdit(() => axis.IntervalType = (DateTimeIntervalType)box.SelectedIndex, () =>
             {
                 box.SelectedIndex = (int)axis.IntervalType;
-                bool isAuto = axis.IntervalType == DateTimeIntervalType.Auto;
-                bool incompatible = daily ? axis.IntervalType == DateTimeIntervalType.Year :
-                    axis.IntervalType == DateTimeIntervalType.Day || axis.IntervalType == DateTimeIntervalType.Week;
-                if (isAuto)
-                {
-                    // Known open issue: switching back to Auto can keep the previously plotted
-                    // positions. Surface the limitation and the documented workaround instead of
-                    // silently reporting success.
-                    warning.Text = "Known issue: switching back to Auto can keep the previous plotted positions. Select a specific interval (for example Day) and then Auto again to restore the curve. This is an open Charts control integration issue.";
-                    warning.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    warning.Text = daily ? "Warning: Year is not meaningful for a 75-day range." :
-                        "Warning: Day/Week ticks are too dense for a three-year range.";
-                    warning.Visibility = incompatible ? Visibility.Visible : Visibility.Collapsed;
-                }
-            }, status, "Date interval updated.");
+                warning.Text = DateIntervalNote(axis.IntervalType, daily);
+                warning.Visibility = warning.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }, status, "Date interval updated.", announcement: note.Length > 0 ? $"Date interval updated. {note}" : null);
         }
+
+        private static string DateIntervalNote(DateTimeIntervalType interval, bool daily) => interval switch
+        {
+            DateTimeIntervalType.Auto => "Known issue: after switching back to Auto, points can keep their previous positions. Select Day, then Auto, to restore them.",
+            DateTimeIntervalType.Year when daily => "Year is not meaningful for a 75-day range.",
+            DateTimeIntervalType.Day or DateTimeIntervalType.Week when !daily => "Day and Week ticks are too dense for a three-year range.",
+            _ => ""
+        };
 
         private void OnDtLabelFormatAApply(object sender, RoutedEventArgs e) => SetDateFormat(_dtAxisA, DtLabelFormatBoxA, DtFormatStatusA);
         private void OnDtLabelFormatBApply(object sender, RoutedEventArgs e) => SetDateFormat(_dtAxisB, DtLabelFormatBoxB, DtFormatStatusB);

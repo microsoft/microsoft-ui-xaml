@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
@@ -50,26 +49,17 @@ namespace ChartsSample
 
         private void Run()
         {
-            bool apartmentInitialized = false;
             try
             {
-                _stage = "initializing the secondary apartment";
-                Marshal.ThrowExceptionForHR(RoInitialize(0));
-                apartmentInitialized = true;
                 RunWindow();
             }
-            catch (COMException ex)
+            catch (Exception ex)
             {
                 _ready.TrySetResult($"The secondary chart window failed while {_stage} (HRESULT 0x{ex.HResult:X8}): {ex.Message}");
-            }
-            catch (InvalidOperationException ex)
-            {
-                _ready.TrySetResult($"The secondary chart window failed while {_stage}: {ex.Message}");
             }
             finally
             {
                 lock (_gate) _dispatcher = null;
-                if (apartmentInitialized) RoUninitialize();
                 _ready.TrySetResult("The secondary window closed before it was ready.");
                 _stopped.TrySetResult(true);
             }
@@ -154,11 +144,5 @@ namespace ChartsSample
                 controller.ShutdownQueue();
             }
         }
-
-        [DllImport("combase.dll", ExactSpelling = true)]
-        private static extern int RoInitialize(uint initializationType);
-
-        [DllImport("combase.dll", ExactSpelling = true)]
-        private static extern void RoUninitialize();
     }
 }

@@ -27,7 +27,7 @@ namespace winrt::ChartsSample::implementation
     {
         // Initializing XAML on another STA must not create or replace the primary window.
         if (GetCurrentThreadId() != m_primaryThreadId) return;
-        if (!window) window = make<winrt::ChartsSample::implementation::MainWindow>(L"C++/WinRT | Unpackaged | Synthetic data");
+        if (!window) window = make<winrt::ChartsSample::implementation::MainWindow>(L"C++/WinRT | Unpackaged");
         window.Activate();
     }
 }

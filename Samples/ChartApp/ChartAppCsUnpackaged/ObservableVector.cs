@@ -5,9 +5,8 @@ using Windows.Foundation.Collections;
 
 namespace ChartsSample
 {
-    // Expose VectorChanged as well as .NET collection notifications to WinRT consumers.
-    // Marked partial so the C#/WinRT source generator can emit the exposed-type marshalling
-    // (CsWinRT1028) and keep the helper usable in trimmed or AOT apps.
+    // Raises WinRT VectorChanged alongside the .NET collection notifications.
+    // Partial so C#/WinRT can generate AOT-safe marshalling code (CsWinRT1028).
     internal sealed partial class ObservableVector<T> : ObservableCollection<T>, IObservableVector<T>
     {
         internal ObservableVector() { }

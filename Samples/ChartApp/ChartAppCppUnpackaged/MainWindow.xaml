@@ -265,7 +265,8 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="440" /></Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                                 <Border Style="{StaticResource ScenarioCard}" VerticalAlignment="Top">
-                                    <charts:Chart x:Name="AreaMarkupChart" Height="240" FontSize="14" ShowLegend="True" AutomationProperties.Name="Monthly area chart">
+                                    <charts:Chart x:Name="AreaMarkupChart" Height="240" FontSize="14" ShowLegend="True" AutomationProperties.Name="Monthly area chart"
+                                                  AutomationProperties.HelpText="Six months of area values. Exact values are listed under Current data.">
                                         <charts:Chart.Data><charts:Samples x:Name="AreaMonth" /><charts:Samples x:Name="AreaValues" /></charts:Chart.Data>
                                         <charts:AreaSeries x:Name="MarkupAreaSeries" Title="Monthly area" Fill="#604F6BED" Stroke="#FF3047B8" StrokeThickness="2"
                                                            XValues="{x:Bind AreaMonth, Mode=OneTime}" YValues="{x:Bind AreaValues, Mode=OneTime}" />
@@ -313,7 +314,8 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="440" /></Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                                 <Border Style="{StaticResource ScenarioCard}" VerticalAlignment="Top">
-                                    <charts:Chart x:Name="BarMarkupChart" Height="240" FontSize="14" ShowLegend="True" AutomationProperties.Name="Monthly bar chart">
+                                    <charts:Chart x:Name="BarMarkupChart" Height="240" FontSize="14" ShowLegend="True" AutomationProperties.Name="Monthly bar chart"
+                                                  AutomationProperties.HelpText="Six months of bar values. Exact values are listed under Current data.">
                                         <charts:Chart.Data><charts:Samples x:Name="BarMonth" /><charts:Samples x:Name="BarValues" /></charts:Chart.Data>
                                         <charts:BarSeries x:Name="MarkupBarSeries" Title="Monthly bars" Orientation="Horizontal" Fill="#FF0F6CBD" Stroke="#FF073B66" StrokeThickness="1.5"
                                                           XValues="{x:Bind BarMonth, Mode=OneTime}" YValues="{x:Bind BarValues, Mode=OneTime}" />
@@ -342,12 +344,9 @@
                                             <ComboBox x:Name="BarMarkerChoice" Header="Marker shape" SelectionChanged="OnBarMarkerChanged" Style="{StaticResource EditorChoice}">
                                                 <ComboBoxItem Content="None" /><ComboBoxItem Content="Square" /><ComboBoxItem Content="Diamond" /><ComboBoxItem Content="Triangle" /><ComboBoxItem Content="X" /><ComboBoxItem Content="Asterisk" /><ComboBoxItem Content="Short dash" /><ComboBoxItem Content="Long dash" /><ComboBoxItem Content="Circle" /><ComboBoxItem Content="Plus" />
                                             </ComboBox>
-                                            <Button x:Name="BarOrientationButton" Content="Toggle orientation" VerticalAlignment="Bottom"
-                                                    AutomationProperties.Name="Toggle connected bar orientation"
-                                                    AutomationProperties.HelpText="Change orientation while keeping the series connected to its explicit axes."
-                                                    Click="OnToggleBarOrientationClick" />
                                         </Grid>
                                         <TextBlock x:Name="BarOrientationText" Text="Orientation: Horizontal" Style="{StaticResource SecondaryText}" />
+                                        <Button x:Name="BarOrientationButton" Content="Toggle connected bar orientation" Click="OnToggleBarOrientationClick" />
                                         <Grid Style="{StaticResource EditorRow}" Tag="Choices" SizeChanged="OnEditorSizeChanged">
                                             <CheckBox x:Name="BarValuesCheckBox" Content="Value labels" IsChecked="False" Click="OnBarValuesClick" />
                                             <CheckBox x:Name="BarMarkersCheckBox" Content="Point markers" IsChecked="False" Click="OnBarMarkersClick" />
@@ -428,7 +427,7 @@
                                         </Button>
                                         <TextBlock Text="The secondary chart and data use an independent UI thread." Style="{StaticResource SecondaryText}" />
                                         <Expander x:Name="LiveDataExpander" Header="Current data" IsExpanded="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                                            <TextBlock x:Name="DataText" FontFamily="Consolas" IsTextSelectionEnabled="True" TextWrapping="Wrap" AutomationProperties.Name="Current primary chart data" />
+                                            <TextBlock x:Name="DataText" FontFamily="Consolas" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
                                         </Expander>
                                     </StackPanel>
                                 </ScrollViewer>

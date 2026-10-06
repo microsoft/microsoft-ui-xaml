@@ -16,6 +16,8 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <AppxPackageName>ChartAppCsPackaged</AppxPackageName>
     <Configurations>Debug;Release;Debug_test</Configurations>
+    <!-- Charts APIs are experimental and surface as CS8305 ("for evaluation purposes only"). -->
+    <NoWarn>$(NoWarn);CS8305</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

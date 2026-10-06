@@ -22,9 +22,6 @@ namespace winrt::ChartsSample::implementation
         void OnDateLayoutSizeChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::SizeChangedEventArgs const&);
         void OnScenarioSelectionChanged(Microsoft::UI::Xaml::Controls::NavigationView const&, Microsoft::UI::Xaml::Controls::NavigationViewSelectionChangedEventArgs const&);
         void OnThemeChoiceChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&);
-        void OnLightClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
-        void OnDarkClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
-        void OnSystemClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
         void OnToggleUpdatesClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
         void OnToggleSecondaryClick(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::RoutedEventArgs const&);
         void OnLineChoiceChanged(Windows::Foundation::IInspectable const&, Microsoft::UI::Xaml::Controls::SelectionChangedEventArgs const&);
@@ -91,8 +88,10 @@ namespace winrt::ChartsSample::implementation
         void UpdateWorkspaceLayout(Microsoft::UI::Xaml::Controls::Grid const& workspace);
         winrt::hstring SeriesDataText(Microsoft::UI::Xaml::Controls::Charts::CartesianSeries const& series);
         void ApplyEdit(std::function<void()> const& edit,
+            Microsoft::UI::Xaml::Controls::TextBlock const& status, winrt::hstring const& message,
             Microsoft::UI::Xaml::Controls::Charts::Chart const& chart = nullptr,
-            std::function<void()> const& restore = nullptr);
+            std::function<void()> const& restore = nullptr, winrt::hstring const& announcement = {});
+        void ApplyAxisEdit(std::function<void()> const& edit);
         void ApplyExampleEdit(bool area, std::function<void()> const& edit, winrt::hstring const& message);
         void ApplyLineEdit(std::function<void()> const& edit, winrt::hstring const& message);
         void RebuildSeriesSelector(Microsoft::UI::Xaml::Controls::Charts::Chart const& chart,
@@ -105,9 +104,8 @@ namespace winrt::ChartsSample::implementation
         void SyncAreaOptions();
         void SyncBarOptions();
         void SetAreaAppearance(int32_t colorIndex, int32_t fillIndex);
-        void SetAreaMarkers(bool visible);
         void SetBarColor(int32_t colorIndex);
-        void ReportError(winrt::hresult_error const& error);
+        void ReportError(winrt::hresult_error const& error, Microsoft::UI::Xaml::Controls::TextBlock const& status);
         void AnnounceStatus(winrt::hstring const& message);
         void SyncPresentationKnobs();
         void SyncAxisControls(bool includeDateTime = true);
@@ -126,7 +124,6 @@ namespace winrt::ChartsSample::implementation
         void PollSecondaryWindow();
         void StopPrimaryTimer();
 
-        Microsoft::UI::Xaml::Controls::Charts::Chart m_codeChart{ nullptr };
         Microsoft::UI::Xaml::Controls::Charts::LinearAxis m_yAxis{ nullptr };
         Microsoft::UI::Xaml::Controls::Charts::CategoryAxis m_xAxis{ nullptr };
         Microsoft::UI::Xaml::Controls::Charts::CategoryAxis m_barXAxis{ nullptr };
