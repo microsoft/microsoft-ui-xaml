@@ -647,40 +647,43 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         m_sortedEventSource(*this, *args);
     }
 
-    // A programmatic or header-driven re-sort has no input event behind it, so without an
-    // announcement a screen-reader user has no way to learn the order changed.
-    if (trigger)
+    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification))
     {
-        winrt::hstring header;
-        if (auto const headerContent = trigger.Header())
+        // A programmatic or header-driven re-sort has no input event behind it, so without an
+        // announcement a screen-reader user has no way to learn the order changed.
+        if (trigger)
         {
-            if (auto const headerString = headerContent.try_as<winrt::IPropertyValue>();
-                headerString && headerString.Type() == winrt::PropertyType::String)
+            winrt::hstring header;
+            if (auto const headerContent = trigger.Header())
             {
-                header = headerString.GetString();
+                if (auto const headerString = headerContent.try_as<winrt::IPropertyValue>();
+                    headerString && headerString.Type() == winrt::PropertyType::String)
+                {
+                    header = headerString.GetString();
+                }
+            }
+
+            switch (trigger.SortDirection())
+            {
+            case winrt::SortDirection::Ascending:
+                AnnounceSortChange(StringUtil::FormatString(
+                    LocalizedOrFallback(SR_TableViewSortedAscending, L"Sorted by %1!s! ascending."), header.c_str()));
+                break;
+            case winrt::SortDirection::Descending:
+                AnnounceSortChange(StringUtil::FormatString(
+                    LocalizedOrFallback(SR_TableViewSortedDescending, L"Sorted by %1!s! descending."), header.c_str()));
+                break;
+            case winrt::SortDirection::None:
+            default:
+                AnnounceSortChange(StringUtil::FormatString(
+                    LocalizedOrFallback(SR_TableViewSortCleared, L"Sorting cleared for %1!s!."), header.c_str()));
+                break;
             }
         }
-
-        switch (trigger.SortDirection())
+        else
         {
-        case winrt::SortDirection::Ascending:
-            AnnounceSortChange(StringUtil::FormatString(
-                LocalizedOrFallback(SR_TableViewSortedAscending, L"Sorted by %1!s! ascending."), header.c_str()));
-            break;
-        case winrt::SortDirection::Descending:
-            AnnounceSortChange(StringUtil::FormatString(
-                LocalizedOrFallback(SR_TableViewSortedDescending, L"Sorted by %1!s! descending."), header.c_str()));
-            break;
-        case winrt::SortDirection::None:
-        default:
-            AnnounceSortChange(StringUtil::FormatString(
-                LocalizedOrFallback(SR_TableViewSortCleared, L"Sorting cleared for %1!s!."), header.c_str()));
-            break;
+            AnnounceSortChange(LocalizedOrFallback(SR_TableViewSortClearedAll, L"All sorting cleared."));
         }
-    }
-    else
-    {
-        AnnounceSortChange(LocalizedOrFallback(SR_TableViewSortClearedAll, L"All sorting cleared."));
     }
 
     // The chevrons are already current: SetSortStateInternal republished them through
@@ -868,6 +871,11 @@ void TableView::QueueClearSortAfterColumnRemoval(){
 
 void TableView::AnnounceSortChange(const winrt::hstring& announcement){
     if (announcement.empty())
+    {
+        return;
+    }
+
+    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification))
     {
         return;
     }

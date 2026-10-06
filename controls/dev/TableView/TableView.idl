@@ -366,6 +366,7 @@ runtimeclass TableViewGroupHeaderToggleRequestedEventArgs
 // Parts (all optional; omitting one degrades rather than fails):
 //   PART_ExpanderGutter  Border    reserves the chevron column so content stays aligned
 //   PART_ExpanderIcon    FontIcon  glyph driven by ExpansionStates, not by code
+//   PART_GridLineBorder  Border    renders border chrome and terminal-line suppression
 //   content region       inherited from ContentControl
 //
 // States: CommonStates Normal|PointerOver|Pressed|Disabled
@@ -404,6 +405,7 @@ unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentC
 // target fails when the state is applied, not when the template is parsed.
 //
 //   PART_RootBorder              — Border. Row chrome; Background driven by CommonStates.
+//   PART_GridLineBorder          — Border. Renders border chrome and terminal-line suppression.
 //   PART_CellsHost               — Panel. One cell wrapper per column, in Columns order.
 //   PART_CellForegroundPresenter — ContentPresenter hosting PART_CellsHost. Exists because a
 //                                  Border has no Foreground for the Selected* states to animate.
