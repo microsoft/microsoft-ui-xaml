@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="TableViewSampleApp.Controls.SamplePresenter"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TableViewSampleApp.Controls"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch">
+
+    <!--
+        Sample page scaffold. 6-row, 2-col grid:
+            Row 0: Header text  (left col, spans both cols when no Options)
+            Row 1: Description  (left col, spans both cols)
+            Row 2: (spacer)
+            Row 3: Example      (left col)        |  Options rail card   (right col, only if Options set)
+            Row 4: Source expander (spans both, wide mode) OR Options rail (narrow mode)
+            Row 5: Source expander (spans both, narrow mode only — keeps it below the reparented Options rail)
+
+        The OptionsColumn is FIXED at 320 px when Options is set, 0 px otherwise.
+        Auto-sizing here caused the right pane (and consequently the table) to
+        shake on navigation between right-pane pages, because each page's options
+        content has a different natural width. Fixed width = stable layout.
+
+        Theme toggle is intentionally absent from this scaffold — the shell
+        MainWindow.xaml hosts the single app-wide theme cycle button in the
+        title bar (see ThemeToggleButton). A per-page theme button that flipped
+        only ExampleContainer.RequestedTheme caused FilterPage to blank when
+        clicked (nested RequestedTheme on TableView unbinds repeater children
+        mid-realization).
+
+        Inspired by w-ahmad/WinUI.TableView SamplePresenter — adapted to
+        our existing CodeBlock + SamplePageHeader style + theme tokens.
+    -->
+    <ScrollViewer
+        x:Name="OuterScroller"
+        VerticalScrollMode="Auto"
+        VerticalScrollBarVisibility="Auto"
+        HorizontalScrollMode="Disabled"
+        HorizontalScrollBarVisibility="Disabled">
+    <Grid x:Name="OuterGrid" Margin="{StaticResource PageContentMargin}" RowSpacing="8" MaxWidth="{StaticResource PageMaxContentWidth}" HorizontalAlignment="Left">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition x:Name="ExampleRow" Height="Auto" MinHeight="320"/>
+            <RowDefinition x:Name="SourceRow" Height="Auto"/>
+            <RowDefinition x:Name="NarrowSourceRow" Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition x:Name="OptionsColumn" Width="0"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Title — spans both columns; per-page Theme button removed (see file comment). -->
+        <TextBlock
+            x:Name="HeaderText"
+            Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+            Style="{ThemeResource TitleTextBlockStyle}"
+            VerticalAlignment="Center"/>
+
+        <!-- Description -->
+        <TextBlock
+            x:Name="DescriptionText"
+            Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+            Style="{ThemeResource BodyTextBlockStyle}"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            TextWrapping="Wrap"
+            MaxWidth="1000"
+            HorizontalAlignment="Left"/>
+
+        <!-- Example container (live demo) -->
+        <Border
+            x:Name="ExampleContainer"
+            Grid.Row="3" Grid.Column="0"
+            CornerRadius="6"
+            BorderThickness="1"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            Background="{ThemeResource SubtleFillColorTransparentBrush}">
+            <ContentControl
+                x:Name="ExampleHost"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"/>
+        </Border>
+
+        <!-- Options rail (right) — collapses when Options is null. Width is governed
+             by the parent OptionsColumn (fixed 320 px) so the table never shakes. -->
+        <Border
+            x:Name="OptionsBorder"
+            Grid.Row="3" Grid.Column="1"
+            Margin="12,0,0,0"
+            Padding="16"
+            CornerRadius="6"
+            BorderThickness="1"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            Visibility="Collapsed">
+            <ScrollViewer VerticalScrollMode="Auto" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Options" FontWeight="SemiBold" FontSize="12"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <ContentControl
+                        x:Name="OptionsHost"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Source expander spans both columns -->
+        <Expander
+            x:Name="SourceExpander"
+            Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+            Margin="0,12,0,0"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Stretch"
+            Visibility="Collapsed">
+            <Expander.Header>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE943;" FontSize="14"/>
+                    <TextBlock Text="Source" FontWeight="SemiBold"/>
+                </StackPanel>
+            </Expander.Header>
+            <StackPanel Spacing="12">
+                <local:CodeBlock
+                    x:Name="SourceCodeBlock"/>
+                <local:CodeBlock
+                    x:Name="AdditionalSourceCodeBlock"
+                    Visibility="Collapsed"/>
+            </StackPanel>
+        </Expander>
+    </Grid>
+    </ScrollViewer>
+</UserControl>

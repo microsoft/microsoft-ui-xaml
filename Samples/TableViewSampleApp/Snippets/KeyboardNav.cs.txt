@@ -1,0 +1,4 @@
+// App/model readouts only. Inspect UIA properties/patterns externally.
+RowCountText.Text = People.Count.ToString();
+ColumnCountText.Text = PeopleTable.Columns.Count.ToString();
+SelectedIndexText.Text = PeopleTable.SelectedIndex.ToString();

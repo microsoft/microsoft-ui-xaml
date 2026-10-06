@@ -1,0 +1,12 @@
+// Distinct setup cases; these are not measurements of the UIA tree.
+DemoTable.ItemsSource = null;
+DemoTable.ItemsSource = new ObservableCollection<Person>();
+
+// Filter-to-empty retains the original populated collection.
+var source = TableViewSource.From(Rows);
+source.Filter(_ => false);
+DemoTable.ItemsSource = source;
+
+// Reset the filter without replacing the data objects.
+source.ClearFilter();
+DemoTable.DeselectAll();

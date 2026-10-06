@@ -1,0 +1,28 @@
+<!-- Density lives on TableStyle; IsReadOnly is a table-level DP. v1 has no
+     built-in cell editing, so the editable TextBox cells bind their IsReadOnly
+     to a shared ReadOnlyState the page mirrors TableView.IsReadOnly into. -->
+
+<Page.Resources>
+    <local:ReadOnlyState x:Key="ReadOnlyState"/>
+
+    <DataTemplate x:Key="FirstNameCell">
+        <TextBox Text="{Binding FirstName, Mode=TwoWay}"
+                 IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
+                 BorderThickness="0" Background="Transparent"/>
+    </DataTemplate>
+</Page.Resources>
+
+<adv:TableView x:Name="DemoTable" SelectionMode="Single">
+    <adv:TableViewTextColumn     Header="Name"       Binding="{Binding FullName}"/>
+    <adv:TableViewTemplateColumn Header="First name" SortMemberPath="FirstName"
+                                 CellTemplate="{StaticResource FirstNameCell}"/>
+    <!-- Last name / Role / Email columns follow the same editable pattern -->
+</adv:TableView>
+
+<!-- Density picker -->
+<RadioButton Content="Compact"     Tag="Compact"     GroupName="Density" Checked="OnDensityChecked"/>
+<RadioButton Content="Standard"    Tag="Standard"    GroupName="Density" IsChecked="True" Checked="OnDensityChecked"/>
+<RadioButton Content="Comfortable" Tag="Comfortable" GroupName="Density" Checked="OnDensityChecked"/>
+
+<!-- Read-only toggle -->
+<ToggleSwitch Header="IsReadOnly" Toggled="OnReadOnlyToggled"/>

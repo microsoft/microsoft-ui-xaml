@@ -1,0 +1,12 @@
+// The control shapes displayed rows; Teams remains in source order.
+// Sorted updates app/control readouts only, not a UIA/view-order preview.
+private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
+{
+    _sortedFiredCount++;
+    RefreshReadouts(args.Column);
+}
+
+// Programmatic setup; assess keyboard/UIA header activation separately.
+TeamsTable.SortByColumn(PointsColumn, SortDirection.Descending);
+TeamsTable.ToggleSortDirection(PointsColumn);
+TeamsTable.ClearSort();

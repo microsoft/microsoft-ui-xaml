@@ -1,0 +1,14 @@
+// Switch grouping on / off through the canonical model-first source.
+PeopleTableControl.ItemsSource = grouped
+    ? TableViewSource.From(_people).GroupBy(item => ((Person)item).Department)
+    : TableViewSource.From(_people);
+
+// Repeatable mutation: source positions 1, 5, 9, ... rotate relative to
+// their original departments. Reset restores the snapshot on the SAME people.
+var depts = PersonData.Departments.ToArray();
+_rotationStep = (_rotationStep + 1) % depts.Length;
+for (int i = 0; i < _people.Count; i += 4)
+{
+    var originalIndex = Array.IndexOf(depts, _originalDepartments[i]);
+    _people[i].Department = depts[(originalIndex + _rotationStep) % depts.Length];
+}

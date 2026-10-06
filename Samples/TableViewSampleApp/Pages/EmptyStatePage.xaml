@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.EmptyStatePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <Page.Resources>
+        <!-- EmptyTemplate content is TEXT + SHAPES only. A FontIcon inside the
+             EmptyTemplate crashes at startup (known issue), so the empty-state
+             glyph is drawn with a Border/Ellipse instead of a FontIcon. -->
+        <DataTemplate x:Key="EmptyStateTemplate">
+            <StackPanel
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MaxWidth="320"
+                Spacing="12">
+                <Grid Width="64" Height="64" HorizontalAlignment="Center">
+                    <Ellipse
+                        Fill="{ThemeResource SubtleFillColorSecondaryBrush}"
+                        Stroke="{ThemeResource CardStrokeColorDefaultBrush}"
+                        StrokeThickness="1"/>
+                    <Rectangle
+                        Width="26" Height="20"
+                        RadiusX="3" RadiusY="3"
+                        Fill="Transparent"
+                        Stroke="{ThemeResource TextFillColorTertiaryBrush}"
+                        StrokeThickness="2"/>
+                    <Rectangle
+                        Width="26" Height="1.5"
+                        Margin="0,0,0,0"
+                        Fill="{ThemeResource TextFillColorTertiaryBrush}"/>
+                </Grid>
+                <TextBlock
+                    Text="No rows to display"
+                    HorizontalAlignment="Center"
+                    Style="{ThemeResource SubtitleTextBlockStyle}"/>
+                <TextBlock
+                    Text="No records match the current source or filter. Choose Populated or Reset to restore the sample rows."
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="Empty state"
+        Description="Compare null ItemsSource, a real empty collection, and a populated TableViewSource filtered to zero matches. The same EmptyTemplate is expected for each. The readout describes setup, not observed rendering or UIA."
+        SourceCaption="EmptyStatePage.xaml (excerpt)"
+        SourceSnippet="EmptyState.xaml.txt"
+        AdditionalSnippetCaption="EmptyStatePage.xaml.cs (excerpt)"
+        AdditionalSnippet="EmptyState.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Try it"
+                    Message="Choose each empty-source case, inspect the empty message and UIA tree, then Reset to Populated. Filter-to-empty retains all 20 source objects; an empty collection contains zero; null has no source."
+                    MinHeight="104"/>
+                <Border
+                    Grid.Row="1"
+                    Style="{StaticResource TableHostBorderStyle}"
+                    Padding="0"
+                    VerticalAlignment="Stretch">
+                    <adv:TableView
+                        x:Name="DemoTable"
+                        AutomationProperties.Name="Empty state people"
+                        AutomationProperties.AutomationId="EmptyStateTable"
+                        SelectionMode="Single"
+                        EmptyTemplate="{StaticResource EmptyStateTemplate}"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <adv:TableViewTextColumn Header="Name"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding FullName}"   CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding Role}"       CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Email"      Width="*" MinWidth="200"                    Binding="{Binding Email}"      CanSort="False"/>
+                    </adv:TableView>
+                </Border>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <StackPanel Spacing="4" AutomationProperties.Name="Empty state data source options">
+                    <TextBlock Text="Data source" Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock
+                        Text="These options configure distinct source cases. Verify the expected empty presentation and automation state externally."
+                        Style="{StaticResource SectionDescriptionTextStyle}"
+                        TextWrapping="Wrap"/>
+                    <RadioButton x:Name="PopulatedRadio" Content="Populated" Tag="Populated" GroupName="EmptyStateSource" IsChecked="True" Checked="OnDataSourceChecked" AutomationProperties.AutomationId="EmptyStatePopulatedRadio"/>
+                    <RadioButton Content="Null ItemsSource" Tag="Null" GroupName="EmptyStateSource" Checked="OnDataSourceChecked" AutomationProperties.AutomationId="EmptyStateEmptyRadio"/>
+                    <RadioButton Content="Empty collection" Tag="Collection" GroupName="EmptyStateSource" Checked="OnDataSourceChecked" AutomationProperties.AutomationId="EmptyStateCollectionRadio"/>
+                    <RadioButton Content="Filter to zero matches" Tag="Filtered" GroupName="EmptyStateSource" Checked="OnDataSourceChecked" AutomationProperties.AutomationId="EmptyStateFilteredRadio"/>
+                    <Button Content="Reset to populated" Click="OnResetClick" AutomationProperties.AutomationId="EmptyStateReset"/>
+                </StackPanel>
+
+                <muxc:InfoBar
+                    AutomationProperties.AutomationId="EmptyStateStatusInfoBar"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Source setup — not UIA"
+                    Message="{x:Bind StatusText, Mode=OneWay}"
+                    MinHeight="64"/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

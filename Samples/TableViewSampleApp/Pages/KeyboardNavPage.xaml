@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.KeyboardNavPage"
+    NavigationCacheMode="Enabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Keyboard navigation + accessibility"
+        Description="Assess the control's row navigation and ordinary tab stops without a mouse. App/model counters are not UI Automation measurements. Verify actual focus, names, patterns, and announcements with Narrator and an external UIA inspector."
+        SourceCaption="KeyboardNavPage.xaml (excerpt)"
+        SourceSnippet="KeyboardNav.xaml.txt"
+        AdditionalSnippetCaption="KeyboardNavPage.xaml.cs (excerpt)"
+        AdditionalSnippet="KeyboardNav.cs.txt"
+        StretchExample="True">
+
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" TextWrapping="Wrap"
+                           Text="Keyboard-only route: Tab until Before table has focus. Tab once to reach the column headers and once more to reach the rows; each is a single stop. Use Up/Down, Home/End or Page Up/Down to move between rows, and Right/Left to move into and across the cells of the focused row. Tab again to reach After table; Shift+Tab goes back the same way. Record the actual focus sequence; the sample does not redirect focus."/>
+                <Button Grid.Row="1" Content="Before table" HorizontalAlignment="Left"
+                        AutomationProperties.AutomationId="KeyboardNavBeforeTable"/>
+                <Border Grid.Row="2" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch" Padding="0">
+                    <adv:TableView x:Name="PeopleTable" AutomationProperties.AutomationId="PeopleTable" AutomationProperties.Name="Keyboard navigation people" SelectionMode="Single" IsReadOnly="True" SelectionChanged="OnSelectionChanged" VerticalAlignment="Stretch" MinHeight="320">
+                        <adv:TableViewTextColumn Header="#"          Width="{StaticResource ColWidthId}"  Binding="{Binding Number}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Email"      Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
+                        <adv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
+                    </adv:TableView>
+                </Border>
+                <Button Grid.Row="3" Content="After table" HorizontalAlignment="Left"
+                        AutomationProperties.AutomationId="KeyboardNavAfterTable"/>
+                <muxc:InfoBar Grid.Row="4" IsOpen="True" IsClosable="False" Severity="Informational" Title="Assessment, not a pass result" Message="Expected table Name: Keyboard navigation people; AutomationId: PeopleTable. Query UIA dimensions, row/cell names, selection, and focus externally. The counters on the right read the source collection and public control properties only; they do not read peers, realized rows, or Narrator output."/>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock Text="Keyboard shortcuts" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock Text="Follow the Before/After route without clicking the table. Row selection and keyboard focus are different: Ctrl+Up/Down move focus without changing selection. There is no spreadsheet-style cell Tab contract." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Up" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="prev row" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Down" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="next row" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Home" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="first row" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="End" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="last row" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="PageUp / PageDown" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="-1 / +1 viewport" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                </Grid>
+                <TextBlock Text="Space selects the focused data row. Tab/Shift+Tab traverse ordinary focus stops. On a focused header, Left/Right move between headers and Alt+Left/Alt+Right resize the column (Alt+Shift uses a larger step). This page disables header sorting."
+                           Style="{StaticResource SectionDescriptionTextStyle}"/>
+                <TextBlock Text="App/model state — not UIA" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Control SelectedIndex" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SelectedIndexText" Text="-1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedIndexText"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Source objects" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="RowCountText"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Declared columns" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ColumnCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ColumnCountText"/>
+                </Grid>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

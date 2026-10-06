@@ -1,0 +1,26 @@
+<Page.Resources>
+    <!-- A cell whose OWN content carries an app-set tooltip. The control never replaces or
+         clears this one. -->
+    <DataTemplate x:Key="AppToolTipCell">
+        <TextBlock Text="{Binding Email}" Margin="8,0" VerticalAlignment="Center"
+                   ToolTipService.ToolTip="App-owned tooltip, set in the cell template" />
+    </DataTemplate>
+</Page.Resources>
+
+<adv:TableView x:Name="PeopleTable">
+
+    <!-- HeaderToolTip is a plain OBJECT, not a binding: a header is not bound against a row,
+         so there is nothing to defer. A string is reported as help text alongside the sort
+         state; non-string content is mouse-only. -->
+    <adv:TableViewTextColumn Header="Name" Binding="{Binding FullName}"
+                             HeaderToolTip="Full name, as entered" Width="200" />
+
+    <!-- Repeats the header's own text, so the automation peer drops it rather than
+         announcing it twice. -->
+    <adv:TableViewTextColumn Header="Salary" Binding="{Binding Salary}"
+                             HeaderToolTip="Salary" Width="100" />
+
+    <!-- No CellToolTipBinding and no HeaderToolTip: nothing appears. The control never
+         invents a tooltip. -->
+    <adv:TableViewTextColumn Header="Department" Binding="{Binding Department}" Width="140" />
+</adv:TableView>

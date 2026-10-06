@@ -1,0 +1,43 @@
+foreach (var person in PersonData.Take(18))
+{
+    People.Add(person);
+}
+
+PeopleTable.ItemsSource = People;
+
+private void OnDatePickerLoaded(object sender, RoutedEventArgs e)
+{
+    if (sender is DatePicker datePicker)
+    {
+        datePicker.MinYear = new DateTimeOffset(new DateTime(2010, 1, 1));
+        datePicker.MaxYear = new DateTimeOffset(DateTime.Now.AddYears(2));
+    }
+}
+
+private void OnDepartmentComboBoxLoaded(object sender, RoutedEventArgs e)
+{
+    if (sender is ComboBox comboBox)
+    {
+        comboBox.ItemsSource = PersonData.Departments;
+    }
+}
+
+private void OnDetailsButtonClick(object sender, RoutedEventArgs e)
+{
+    if (sender is not FrameworkElement element)
+    {
+        return;
+    }
+
+    // A Flyout declared in a DataTemplate has no XamlRoot on WinUI 3 desktop,
+    // so FlyoutBase.ShowAttachedFlyout silently no-ops. Resolve the attached
+    // flyout, set its XamlRoot, and ShowAt the element instead.
+    var flyout = FlyoutBase.GetAttachedFlyout(element);
+    if (flyout is null)
+    {
+        return;
+    }
+
+    flyout.XamlRoot = element.XamlRoot;
+    flyout.ShowAt(element);
+}

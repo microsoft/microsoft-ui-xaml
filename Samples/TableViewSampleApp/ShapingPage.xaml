@@ -119,7 +119,9 @@
         </StackPanel>
 
         <Border x:Name="TableHost" Grid.Row="5" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
-            <tv:TableView x:Name="Table" SelectionMode="Single"/>
+            <tv:TableView x:Name="Table" SelectionMode="Single"
+                          AutomationProperties.Name="Filter sort and group records"
+                          AutomationProperties.AutomationId="ShapingTable"/>
         </Border>
 
         <TextBlock x:Name="StatusText" Grid.Row="6" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"/>
