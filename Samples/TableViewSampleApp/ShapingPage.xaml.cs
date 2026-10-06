@@ -53,8 +53,8 @@ public sealed partial class ShapingPage : Page
         UpdateCycleHint();
 
         // Seeded from the checkboxes rather than assumed, so the control and the UI cannot start
-        // out disagreeing. All four are off/read-only by default: live shaping is opt-in, and
-        // TableView.IsReadOnly defaults to true.
+        // out disagreeing. The live-shaping boxes start checked (normal usage for changing data);
+        // the API itself defaults them off. TableView.IsReadOnly defaults to true.
         ApplyLiveShaping();
         Table.IsReadOnly = EditableToggle.IsChecked != true;
 

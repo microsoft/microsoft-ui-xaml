@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace TableViewSampleApp;
 
@@ -7,21 +9,44 @@ namespace TableViewSampleApp;
 // collection: the tree is described to the TableViewSource by key selectors (Id, and either
 // ManagerId or MentorId as the parent key), so one list can be shown through two different
 // relations at once.
-public sealed class Employee
+//
+// Observable, so a source with live shaping on follows property edits: changing ManagerId moves
+// the row under its new manager, changing Name re-sorts / re-filters it, and changing a root's
+// Dept moves it (with its subtree) to another group.
+public sealed class Employee : INotifyPropertyChanged
 {
+    private int? _managerId;
+    private int? _mentorId;
+    private string _name = string.Empty;
+    private string _title = string.Empty;
+    private string _dept = string.Empty;
+
     public int Id { get; set; }
-    public int? ManagerId { get; set; }
-    public int? MentorId { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Title { get; set; } = string.Empty;
-    public string Dept { get; set; } = string.Empty;
+    public int? ManagerId { get => _managerId; set => Set(ref _managerId, value); }
+    public int? MentorId { get => _mentorId; set => Set(ref _mentorId, value); }
+    public string Name { get => _name; set => Set(ref _name, value); }
+    public string Title { get => _title; set => Set(ref _title, value); }
+    public string Dept { get => _dept; set => Set(ref _dept, value); }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value))
+        {
+            return;
+        }
+
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
 }
 
 internal static class HierarchyData
 {
     public const int Branching = 3;
 
-    private static readonly string[] Depts = { "Engineering", "Design", "Sales", "Support", "Finance", "Legal", "Research", "Ops" };
+    internal static readonly string[] Depts = { "Engineering", "Design", "Sales", "Support", "Finance", "Legal", "Research", "Ops" };
     private static readonly string[] Titles = { "Director", "Manager", "Lead", "Senior", "Engineer", "Associate" };
     private static readonly string[] First = { "Ada", "Ben", "Cy", "Dan", "Eve", "Fay", "Gus", "Hal", "Ivy", "Jo" };
 

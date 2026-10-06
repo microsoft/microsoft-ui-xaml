@@ -66,6 +66,7 @@ public sealed partial class HierarchyPage : Page
 
         DeclareManagerRelation(_managerSource);
         DeclareMentorRelation(_mentorSource);
+        ApplyLive();
 
         _ready = true;
         UpdateStatus();
@@ -194,6 +195,57 @@ public sealed partial class HierarchyPage : Page
 
     private void Group_Toggled(object sender, RoutedEventArgs e) => ApplyGroup();
 
+    // Live shaping: one switch drives all three flags on both sources. Under ParentBy any flag also
+    // tracks each row's key and parent key, so a ManagerId / MentorId edit reparents.
+    private void ApplyLive()
+    {
+        bool live = LiveToggle.IsOn;
+        foreach (var source in Sources)
+        {
+            source.IsLiveSorting = live;
+            source.IsLiveFiltering = live;
+            source.IsLiveGrouping = live;
+        }
+    }
+
+    private void Live_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (!_ready)
+        {
+            return;
+        }
+
+        ApplyLive();
+        UpdateStatus();
+    }
+
+    private const string RenamePrefix = "zz ";
+
+    // Toggles a prefix that sorts last, so under "Name ascending" the row jumps to the end of its
+    // sibling set and back, and it flips whether it matches a name filter.
+    private void Rename_Click(object sender, RoutedEventArgs e)
+    {
+        if (SelectedEmployee() is { } selected)
+        {
+            selected.Name = selected.Name.StartsWith(RenamePrefix, StringComparison.Ordinal)
+                ? selected.Name.Substring(RenamePrefix.Length)
+                : RenamePrefix + selected.Name;
+            UpdateStatus();
+        }
+    }
+
+    // Only ROOTS are bucketed, so with "Group roots by Dept" on a root moves to another group with
+    // its whole subtree; a descendant's Dept changes its cell but not its place in the tree.
+    private void NextDept_Click(object sender, RoutedEventArgs e)
+    {
+        if (SelectedEmployee() is { } selected)
+        {
+            var depts = HierarchyData.Depts;
+            selected.Dept = depts[(Array.IndexOf(depts, selected.Dept) + 1) % depts.Length];
+            UpdateStatus();
+        }
+    }
+
     private void ExpandAll_Click(object sender, RoutedEventArgs e)
     {
         foreach (var table in new[] { ManagerTable, MentorTable })
@@ -241,8 +293,10 @@ public sealed partial class HierarchyPage : Page
         }
     }
 
-    // Replaces the selected employee with a copy under a different manager. The rows are plain
-    // objects with no change notification, so replacing the item is how a key change is announced.
+    // Moves the selected employee under a different manager. With live shaping on the edit is just
+    // a property set: both sources observe ManagerId and reparent the row on the next dispatcher
+    // turn. With it off, a property set would leave the row where it was, so the item is replaced
+    // in the collection instead -- the collection change is what announces the new key.
     // The candidate must not be the employee or one of its reports, or the relation would cycle.
     private void Reparent_Click(object sender, RoutedEventArgs e)
     {
@@ -273,6 +327,12 @@ public sealed partial class HierarchyPage : Page
             var candidate = _employees[(index + step * 7) % _employees.Count];
             if (candidate.Id != selected.ManagerId && !IsUnderSelected(candidate.Id))
             {
+                if (LiveToggle.IsOn)
+                {
+                    selected.ManagerId = candidate.Id;
+                    break;
+                }
+
                 _employees[index] = new Employee
                 {
                     Id = selected.Id,
@@ -331,7 +391,7 @@ public sealed partial class HierarchyPage : Page
 
         StatusText.Text =
             $"employees={_employees.Count}  group={(GroupToggle.IsOn ? "Dept" : "none")}  sort={sort}  " +
-            $"filter={(filter.Length == 0 ? "none" : "\"" + filter + "\"")}  " +
+            $"filter={(filter.Length == 0 ? "none" : "\"" + filter + "\"")}  live={(LiveToggle.IsOn ? "on" : "off")}  " +
             $"selected={selected?.Name ?? "(none)"}";
     }
 

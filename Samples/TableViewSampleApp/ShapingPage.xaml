@@ -120,18 +120,19 @@
         </StackPanel>
 
         <!-- Live shaping: whether a row that changes UNDERNEATH the projection re-shapes. Each flag
-             is an independent opt-in on the source, and all three default off — that is the classic
-             ItemsControl behaviour, where a reshape happens only on a collection change. The
-             mutators on the right change ONE property of the selected row, which is the notification
-             these flags subscribe to; "Add item" above changes the collection instead, so it
-             reshapes whether or not any of these are on. -->
+             is an independent opt-in on the source and defaults off in the API (the classic
+             ItemsControl behaviour, where a reshape happens only on a collection change). This page
+             turns all three ON, the way an app showing editable, changing data normally would;
+             uncheck one to see rows go stale in place. The mutators on the right change ONE
+             property of the selected row, which is the notification these flags subscribe to;
+             "Add item" above changes the collection instead, so it reshapes either way. -->
         <StackPanel Grid.Row="5" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
             <TextBlock Text="Live:" VerticalAlignment="Center" Width="52"/>
-            <CheckBox x:Name="LiveSortToggle" Content="Sorting"
+            <CheckBox x:Name="LiveSortToggle" Content="Sorting" IsChecked="True"
                       Checked="LiveShaping_Toggled" Unchecked="LiveShaping_Toggled"/>
-            <CheckBox x:Name="LiveFilterToggle" Content="Filtering"
+            <CheckBox x:Name="LiveFilterToggle" Content="Filtering" IsChecked="True"
                       Checked="LiveShaping_Toggled" Unchecked="LiveShaping_Toggled"/>
-            <CheckBox x:Name="LiveGroupToggle" Content="Grouping"
+            <CheckBox x:Name="LiveGroupToggle" Content="Grouping" IsChecked="True"
                       Checked="LiveShaping_Toggled" Unchecked="LiveShaping_Toggled"/>
             <CheckBox x:Name="EditableToggle" Content="Editable cells"
                       Checked="Editable_Toggled" Unchecked="Editable_Toggled"/>
