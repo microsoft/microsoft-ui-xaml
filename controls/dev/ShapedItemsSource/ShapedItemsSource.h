@@ -111,9 +111,9 @@ public:
     // Declares the app's primary key: `key` yields each item's unique identity. While declared it is
     // the ROW IDENTITY of every shape (flat, grouped, hierarchical), so selection and focus
     // re-anchor across an item being re-created; without it rows are identified by object
-    // identity. Required by SetParent. Keys must be unique and non-null/non-empty across the rows a
-    // shaped projection publishes; a violation throws E_INVALIDARG with the previous projection
-    // intact.
+    // identity. Required by SetParent. Keys must be unique and non-null/non-empty across the whole
+    // source (filtered-out items included) while a shaping verb is in force; a violation throws
+    // E_INVALIDARG with the previous projection intact.
     void SetRowKey(ShapingHelpers::KeySelector key);
     // Throws E_INVALIDARG while a parent relation is declared: a hierarchy cannot exist without a key.
     void ClearRowKey();
@@ -353,6 +353,15 @@ private:
     // the key's node-key string, which is also what the parent-key index keys rows by. Null when no
     // key is declared. Independent of the parent relation, which requires it.
     ShapingHelpers::KeySelector m_rowKeySelector{ nullptr };
+    // An object key's node key is its address, so a key object released mid-validation could have
+    // its address reused by the next row's key and read as a duplicate. While Keys is set (only for
+    // the duration of ValidateRowIdentities) m_rowKeySelector parks every key object it returns
+    // there, so no two keys compared in one pass can share an address. Shared with the selector.
+    struct RowKeySink
+    {
+        std::vector<winrt::IInspectable>* Keys{ nullptr };
+    };
+    std::shared_ptr<RowKeySink> m_rowKeySink{ std::make_shared<RowKeySink>() };
     // The parent-key relation; the "hierarchy is declared" test everywhere. Never set without
     // m_rowKeySelector.
     ShapingHelpers::KeySelector m_parentKeySelector{ nullptr };

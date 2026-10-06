@@ -118,8 +118,11 @@ An enum declared in app code that is not a WinRT type (a plain C# `enum`) is not
 `IPropertyValue`; it reaches the control as an opaque object and is therefore compared by reference
 identity, which a fresh box never satisfies. Apps convert such keys to their integer value.
 
-Every key object is held for the whole index build. An object key's lookup form is its address, and
-a released temporary's address could otherwise be reused by the next selector result and alias it.
+Every key object is held for the whole validation pass. An object key's lookup form is its address,
+and a released temporary's address could otherwise be reused by the next selector result and alias
+it into a spurious duplicate. That only protects a single pass: an object key that is a fresh object
+per call still never forms a link, and identity (selection, expansion intent) recorded against it
+cannot be recognised on the next rebuild.
 
 ### 3.2 Roots, orphans, and invalid data
 
@@ -151,8 +154,10 @@ chain from the first unreached item until a node repeats; that node is on the cy
 
 ### 3.3 Duplicate objects
 
-A flat source that contains the same object twice already fails in `ValidateRowIdentities` with the
-existing diagnostic. Every hierarchical row is a source row, so that one check covers the whole tree.
+A source that contains the same object twice already fails in `ValidateRowIdentities` with the
+existing diagnostic. Identity is validated over the whole unfiltered source for every shape, so a
+filter never hides a duplicate (or, under `KeyBy`, a duplicate key). Every hierarchical row is a
+source row, so that one check covers the whole tree.
 
 ## 4. Shaping semantics
 

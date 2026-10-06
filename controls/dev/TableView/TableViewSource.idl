@@ -31,7 +31,8 @@ runtimeclass TableViewSource
     //  * Rows are identified by the key declared with KeyBy when there is one, and otherwise by
     //    their item's OBJECT identity. So selection and focus re-anchor across a reshape, and with
     //    a key also across an item being re-created (a new object with the same key is the same
-    //    row). Without a key, the same object in two rows fails fast at materialization.
+    //    row). Without a key, the same object in two rows -- or a null item -- fails fast at
+    //    materialization, whether or not a filter hides it.
 
     // Accepts the same collection interfaces as ItemsSourceView: IVector<Object> (so also
     // IObservableVector<Object>), IBindableVector, IIterable<Object>, or IBindableIterable.
@@ -110,11 +111,11 @@ runtimeclass TableViewSource
     // in app code that is not a WinRT type (e.g. a plain C# enum): it reaches the control as an
     // opaque object, so convert it to its integer value first.
     //
-    // While any shaping verb is in force, every row the projection publishes must have a non-null,
-    // non-empty, unique key; otherwise the call that builds the projection throws E_INVALIDARG
-    // naming the duplicate key, and the previous projection stays intact. A throwing selector is
-    // treated as having returned null. The key is evaluated when the projection is built; a
-    // property change on it is not observed.
+    // While any shaping verb is in force, every item in the SOURCE must have a non-null,
+    // non-empty, unique key -- including items a filter hides; otherwise the call that builds the
+    // projection throws E_INVALIDARG naming the duplicate key, and the previous projection stays
+    // intact. A throwing selector is treated as having returned null. The key is evaluated when the
+    // projection is built; a property change on it is not observed.
     //
     // Re-declaring the key (last writer wins) under a ParentBy relation resets expansion state: a
     // different key is a different tree.

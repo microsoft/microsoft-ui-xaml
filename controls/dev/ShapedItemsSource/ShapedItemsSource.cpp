@@ -114,7 +114,7 @@ void ShapedItemsSource::SetRowKey(ShapingHelpers::KeySelector key)
         // Identity is the key's node-key form -- the same string a hierarchical row already uses --
         // so a row keeps one identity whether the projection is flat, grouped or a tree. A throwing
         // selector reads as no key, which validation reports.
-        m_rowKeySelector = [selector = std::move(key)](winrt::IInspectable const& item) -> winrt::IInspectable
+        m_rowKeySelector = [selector = std::move(key), sink = m_rowKeySink](winrt::IInspectable const& item) -> winrt::IInspectable
         {
             winrt::IInspectable key{ nullptr };
             try
@@ -124,6 +124,11 @@ void ShapedItemsSource::SetRowKey(ShapingHelpers::KeySelector key)
             catch (...)
             {
                 return nullptr;
+            }
+
+            if (sink->Keys && key)
+            {
+                sink->Keys->push_back(key);
             }
 
             auto nodeKey = ShapingHelpers::MakeNodeKey(key);
@@ -584,8 +589,13 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
 
     // SORTED flat projection (the Task Manager scenario): a single-item Add/Remove/Replace is
     // applied by binary-search insertion / find-remove in place, avoiding a full O(n)
-    // re-materialize + re-sort + re-hash on every underlying change. Optional filter is applied
-    // as an admission gate. Falls back to a full rebuild for anything it can't apply exactly.
+    // re-materialize + re-sort + re-hash on every underlying change. Falls back to a full rebuild
+    // for anything it can't apply exactly.
+    //
+    // Not under a filter: identity is unique across the whole source (see Refresh), but this path
+    // tracks only the visible rows, so it could neither catch a visible row duplicating a hidden
+    // one nor keep a hidden row's identity in step. The filter-only path below rebuilds for the
+    // same kind of reason.
     //
     // Invariant: re-sorting is driven by collection notifications on this path. An in-place
     // mutation of a row's sort-key field that raises only INotifyPropertyChanged leaves the row
@@ -598,7 +608,7 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
         // mirror in m_rows while a sort is still configured), a binary-search insert would splice
         // into an unsorted list at a bogus index, so fall through to a full Refresh() that
         // re-shapes (or re-degrades) coherently.
-        if (m_kind == ProjectionKind::Flat && TryApplyIncrementalSortedChange(args))
+        if (m_kind == ProjectionKind::Flat && !m_pipeline.HasFilter() && TryApplyIncrementalSortedChange(args))
         {
             return;
         }
@@ -882,18 +892,14 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
             static_cast<uint32_t>(startingIndex) == sourceCount - 1;
     };
 
-    // Insert one item into the sorted projection (filter-gated, identity-checked). Returns
-    // false to force a full rebuild (empty/duplicate identity, or an ambiguous tie position ->
-    // re-validate + safe-degrade).
+    // Insert one item into the sorted projection (identity-checked). Returns false to force a full
+    // rebuild (empty/duplicate identity, or an ambiguous tie position -> re-validate +
+    // safe-degrade). Never reached under a filter (see ApplyIncrementalChange).
     auto tryInsert = [&](winrt::IInspectable const& item, bool tiesResolvableByAppend) -> bool
     {
         if (!item)
         {
             return false;
-        }
-        if (!m_pipeline.PassesFilter(item))
-        {
-            return true; // filtered out: projection unchanged
         }
 
         const auto placement = SortedInsertPlacementFor(item);
@@ -1086,6 +1092,16 @@ bool ShapedItemsSource::ValidateRowIdentities(
     winrt::hstring* duplicate,
     ShapingHelpers::RowKeyTable* keys) const
 {
+    // Key objects stay alive for the whole pass (see RowKeySink).
+    std::vector<winrt::IInspectable> keyObjects;
+    auto* const previousSink = m_rowKeySink->Keys;
+    if (m_rowKeySelector)
+    {
+        keyObjects.reserve(rows.size());
+        m_rowKeySink->Keys = &keyObjects;
+    }
+    auto releaseKeys = wil::scope_exit([this, previousSink]() noexcept { m_rowKeySink->Keys = previousSink; });
+
     return RowIdentity::ValidateRowIdentities(rows, EffectiveIdentitySelector(), reason, duplicate, keys);
 }
 
@@ -1233,21 +1249,16 @@ void ShapedItemsSource::Refresh()
         }
         else
         {
-            // A hierarchy filters inside its index build, not here: keeping a match's ancestors
-            // needs the unfiltered parent chain.
-            if (!m_parentKeySelector)
-            {
-                ApplyFilter(rows);
-            }
-
             // Captured before validation runs the app's key selector: a KeyBy/ParentBy issued from
             // it, or from any app code later in the pass, must make the hierarchy pass obsolete.
             const uint64_t declarationGeneration = m_parentDeclarationGeneration;
 
             // A shaping verb is in force here (the branch above took the no-verb case), and a verb
-            // always requires identity, so there is nothing to gate on. Under a hierarchy the keys
-            // validated here are kept and handed to the index build, so the app's key selector
-            // runs once per row.
+            // always requires identity, so there is nothing to gate on. Validated over the WHOLE
+            // source, before any filter: identity belongs to the data, not to what a filter happens
+            // to show, so hiding a row never hides a duplicate. Under a hierarchy the keys validated
+            // here are kept and handed to the index build, so the app's key selector runs once per
+            // row.
             wchar_t const* reason = nullptr;
             winrt::hstring duplicate;
             ShapingHelpers::RowKeyTable keys;
@@ -1290,6 +1301,13 @@ void ShapedItemsSource::Refresh()
                     message = message + L": " + winrt::hstring{ reason };
                 }
                 throw winrt::hresult_invalid_argument(message);
+            }
+
+            // A hierarchy filters inside its index build, not here: keeping a match's ancestors
+            // needs the unfiltered parent chain.
+            if (!m_parentKeySelector)
+            {
+                ApplyFilter(rows);
             }
 
             if (m_parentKeySelector && m_groupSelector)
