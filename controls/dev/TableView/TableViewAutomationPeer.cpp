@@ -9,8 +9,12 @@
 #include "TableViewAutomationPeer.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
+#include "TableViewRowAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
+#include "GroupedEntry.h"
 #include "TableViewAutomationPeer.properties.cpp"
+
+#include <algorithm>
 
 TableViewAutomationPeer::TableViewAutomationPeer(winrt::TableView const& owner)
     : ReferenceTracker(owner)
@@ -256,11 +260,18 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::GetItem(int32_t row, i
 
     if (auto const cellFE = cellElement.try_as<winrt::FrameworkElement>())
     {
-        // Return the same rich cell peer used for tree navigation.
-        auto const owningColumn = rowImpl->GetCellOwningColumn(cellElement);
-        winrt::AutomationPeer const cellPeer =
-            winrt::make<TableViewCellAutomationPeer>(cellFE, rowElement, owningColumn, column);
-        return ProviderFromPeer(cellPeer);
+        // Route through the row peer so Grid.GetItem and tree navigation share provider identity.
+        if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement)
+                .try_as<winrt::TableViewRowAutomationPeer>())
+        {
+            if (auto const cellPeer = winrt::get_self<TableViewRowAutomationPeer>(rowPeer)
+                    ->GetOrCreateCellPeer(cellFE))
+            {
+                return ProviderFromPeer(cellPeer);
+            }
+        }
+
+        // A fresh peer would not match editing/tree navigation; custom row peers may expose no item.
     }
     return nullptr;
 }
@@ -341,8 +352,10 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetC
         if (auto const columns = tableView.Columns())
         {
             const auto count = columns.Size();
+            std::vector<winrt::TableViewColumn> seenColumns;
             headers.reserve(count);
             liveCache.reserve(count);
+            seenColumns.reserve(count);
             for (uint32_t i = 0; i < count; i++)
             {
                 auto const column = columns.GetAt(i);
@@ -350,6 +363,11 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetC
                 {
                     continue;
                 }
+                if (std::find(seenColumns.begin(), seenColumns.end(), column) != seenColumns.end())
+                {
+                    continue;
+                }
+                seenColumns.push_back(column);
 
                 auto headerPeer = GetOrCreateColumnHeaderPeer(tableView, column);
                 if (!headerPeer)
@@ -357,10 +375,12 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetC
                     continue;
                 }
 
-                // The peer is cached even when it currently has no provider: ProviderFromPeer only
-                // yields one for a peer UIA has connected, so a transiently unconnected peer must
-                // keep its identity for the next enumeration rather than being rebuilt.
-                liveCache.push_back({ winrt::make_weak(column), headerPeer });
+                if (auto const headerAutomationPeer = headerPeer.try_as<winrt::TableViewColumnHeaderAutomationPeer>();
+                    headerAutomationPeer &&
+                    winrt::get_self<TableViewColumnHeaderAutomationPeer>(headerAutomationPeer)->IsTableViewOwned())
+                {
+                    liveCache.emplace_back(this, column, headerPeer);
+                }
 
                 // A provider array must not contain nulls - UIA marshals every element.
                 if (auto const provider = ProviderFromPeer(headerPeer))
@@ -381,55 +401,50 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateColumnHeaderPeer(
     winrt::TableView const& tableView,
     winrt::TableViewColumn const& column)
 {
-    if (!tableView || !column)
+    if (!tableView || !column ||
+        winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != tableView)
     {
         return nullptr;
     }
 
-    // Looked up against the cache as it stood at the previous enumeration, so a column that
-    // survives keeps the very same peer - and therefore the same provider identity - across calls.
+    if (auto const host = winrt::get_self<TableView>(tableView)->GetHeaderHostInternal())
+    {
+        if (auto const header = TableViewCellsPanel::CellForColumn(host, column))
+        {
+            m_columnHeaderPeerCache.erase(
+                std::remove_if(
+                    m_columnHeaderPeerCache.begin(),
+                    m_columnHeaderPeerCache.end(),
+                    [column](ColumnHeaderPeerCacheEntry const& entry)
+                    {
+                        return !entry.peer || !entry.column.get() || entry.column.get() == column;
+                    }),
+                m_columnHeaderPeerCache.end());
+
+            return winrt::FrameworkElementAutomationPeer::CreatePeerForElement(header);
+        }
+    }
+
     for (auto const& entry : m_columnHeaderPeerCache)
     {
         if (entry.peer && entry.column.get() == column)
         {
-            return entry.peer;
+            return entry.peer.get();
         }
     }
 
-    // The TableView owns the peer so headers stay enumerable before their templates realize;
-    // TableViewColumnHeaderAutomationPeer supplies its own per-column RuntimeId and AutomationId
-    // to keep the headers distinguishable despite the shared owner.
-    return winrt::make<TableViewColumnHeaderAutomationPeer>(tableView, column);
-}
+    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(tableView, column);
+    peer.SetParent(*this);
 
-static winrt::hstring ItemToName(winrt::IInspectable const& item)
-{
-    // Boxed WinRT primitives surface as IPropertyValue, not IStringable.
-    if (auto const propValue = item.try_as<winrt::IPropertyValue>())
-    {
-        switch (propValue.Type())
-        {
-        case winrt::PropertyType::String:  return propValue.GetString();
-        case winrt::PropertyType::Boolean: return propValue.GetBoolean() ? winrt::hstring{ L"True" } : winrt::hstring{ L"False" };
-        case winrt::PropertyType::Int16:   return winrt::to_hstring(static_cast<int32_t>(propValue.GetInt16()));
-        case winrt::PropertyType::Int32:   return winrt::to_hstring(propValue.GetInt32());
-        case winrt::PropertyType::Int64:   return winrt::to_hstring(propValue.GetInt64());
-        case winrt::PropertyType::UInt8:   return winrt::to_hstring(static_cast<uint32_t>(propValue.GetUInt8()));
-        case winrt::PropertyType::UInt16:  return winrt::to_hstring(static_cast<uint32_t>(propValue.GetUInt16()));
-        case winrt::PropertyType::UInt32:  return winrt::to_hstring(propValue.GetUInt32());
-        case winrt::PropertyType::UInt64:  return winrt::to_hstring(propValue.GetUInt64());
-        case winrt::PropertyType::Single:  return winrt::to_hstring(propValue.GetSingle());
-        case winrt::PropertyType::Double:  return winrt::to_hstring(propValue.GetDouble());
-        default: break;
-        }
-    }
+    m_columnHeaderPeerCache.erase(
+        std::remove_if(
+            m_columnHeaderPeerCache.begin(),
+            m_columnHeaderPeerCache.end(),
+            [](ColumnHeaderPeerCacheEntry const& entry) { return !entry.peer || !entry.column.get(); }),
+        m_columnHeaderPeerCache.end());
 
-    if (auto const stringable = item.try_as<winrt::IStringable>())
-    {
-        return stringable.ToString();
-    }
-
-    return {};
+    m_columnHeaderPeerCache.emplace_back(this, column, peer);
+    return peer;
 }
 
 static winrt::hstring StringPropertyValue(winrt::IInspectable const& value)
@@ -457,6 +472,25 @@ static bool TryGetControlTypePropertyValue(winrt::IInspectable const& value, win
     }
 
     return false;
+}
+
+static bool MatchesItemName(
+    TableView& table,
+    winrt::IInspectable const& item,
+    winrt::UIElement const& element,
+    winrt::hstring const& requested)
+{
+    if (element)
+    {
+        if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(element))
+        {
+            return peer.GetName() == requested;
+        }
+        return false;
+    }
+    auto const group = TryGetGroupedEntry(item);
+    auto const name = group ? table.GetGroupHeaderNameCandidate(*group) : ItemToName(item);
+    return !name.empty() && name == requested;
 }
 
 winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
@@ -496,25 +530,29 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
         return nullptr;
     }
 
-    // Resolve startAfter through its owning realized TableViewRow.
     int32_t startIndex = -1;
     if (startAfter)
     {
+        // Any repeater child is a valid anchor. Matching only TableViewRow restarted grouping
+        // enumeration at item 0, so clients never advanced past the first group header.
+        bool resolved = false;
         if (auto const startPeer = PeerFromProvider(startAfter).try_as<winrt::FrameworkElementAutomationPeer>())
         {
-            if (auto const ownerRow = startPeer.Owner().try_as<winrt::TableViewRow>())
+            if (auto const ownerElement = startPeer.Owner().try_as<winrt::UIElement>())
             {
-                const int32_t rowIndex = repeater.GetElementIndex(ownerRow);
-                if (rowIndex >= 0)
+                if (const int32_t index = repeater.GetElementIndex(ownerElement); index >= 0)
                 {
-                    startIndex = rowIndex;
-                }
-                else
-                {
-                    // Avoid restarting at item 0 after startAfter has been virtualized away.
-                    return nullptr;
+                    startIndex = index;
+                    resolved = true;
                 }
             }
+        }
+
+        // An unresolvable startAfter - virtualized away, or not one of ours - must not degrade to
+        // "start from the beginning": that turns a wrong answer into an enumeration that never ends.
+        if (!resolved)
+        {
+            return nullptr;
         }
     }
 
@@ -540,22 +578,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
             // Realized row peer names override item text for custom AutomationProperties.Name.
             if (property == winrt::AutomationElementIdentifiers::NameProperty())
             {
-                hstring requested = StringPropertyValue(value);
-
-                hstring candidate;
-                if (auto rowElement = repeater.TryGetElement(i))
-                {
-                    if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
-                    {
-                        candidate = rowPeer.GetName();
-                    }
-                }
-                if (candidate.empty())
-                {
-                    candidate = ItemToName(item);
-                }
-
-                isMatch = (candidate == requested);
+                isMatch = MatchesItemName(*impl, item, repeater.TryGetElement(i), StringPropertyValue(value));
             }
             // ValueValue — match by cell value (text content).
             else if (property == winrt::ValuePatternIdentifiers::ValueProperty())
@@ -652,6 +675,12 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
 
         if (rowElement)
         {
+            if (property == winrt::AutomationElementIdentifiers::NameProperty() &&
+                !MatchesItemName(*impl, item, rowElement, StringPropertyValue(value)))
+            {
+                continue;
+            }
+
             if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
             {
                 return ProviderFromPeer(rowPeer);
