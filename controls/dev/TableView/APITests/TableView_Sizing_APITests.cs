@@ -762,7 +762,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class TableViewColumnResizeTests : ApiTestBase
     {
         [TestMethod]
-        [TestProperty("Description", "Verifies CanUserResizeColumns=false removes the gripper and the header tab stop from every column.")]
+        [TestProperty("Description", "Verifies CanUserResizeColumns=false removes the gripper from every column while every header stays a tab stop.")]
         public void VerifyCanUserResizeColumnsFalseHidesGripper()
         {
             TableView tableView = null;
@@ -786,18 +786,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsNull(FindGripper(headerCell),
                         $"Column {i} must have no resize gripper when the table opts out of resizing.");
 
-                    // Not incidental: one expression drives gripper creation, IsTabStop and
-                    // UseSystemFocusVisuals, with the stated rationale that a non-resizable header
-                    // "costs a Tab press for nothing". Asserting it pins the tab-order consequence,
-                    // which no other API test would catch.
-                    Verify.IsFalse(headerCell.IsTabStop,
-                        $"Column {i}'s header must not be a tab stop when there is nothing focusing it can do.");
+                    // Every visible header is a tab stop by product decision, whatever its capabilities,
+                    // so the header band has one uniform keyboard model. Opting out of resizing removes
+                    // only the gripper; it must not take the header out of the tab order.
+                    Verify.IsTrue(headerCell.IsTabStop,
+                        $"Column {i}'s header must stay a tab stop when the table opts out of resizing.");
                 }
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies per-column CanResize=false removes only that column's affordance.")]
+        [TestProperty("Description", "Verifies per-column CanResize=false removes only that column's gripper and leaves every header a tab stop.")]
         public void VerifyPerColumnCanResizeFalseHidesGripper()
         {
             // TableViewColumn.idl:136: "Gates the resize affordance for this column only; the owner's
@@ -822,8 +821,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(FindGripper(GetHeaderCell(tableView, 1)), "The opted-out column must lose its gripper.");
                 Verify.IsNotNull(FindGripper(GetHeaderCell(tableView, 2)), "The opt-out must not apply table-wide.");
 
-                Verify.IsTrue(GetHeaderCell(tableView, 0).IsTabStop, "A resizable column's header stays a tab stop.");
-                Verify.IsFalse(GetHeaderCell(tableView, 1).IsTabStop, "The opted-out column's header must not be a tab stop.");
+                // CanResize gates only the gripper: every visible header stays a tab stop.
+                for (int i = 0; i < tableView.Columns.Count; i++)
+                {
+                    Verify.IsTrue(GetHeaderCell(tableView, i).IsTabStop,
+                        $"Column {i}'s header must stay a tab stop whether or not the column can be resized.");
+                }
             });
         }
 
