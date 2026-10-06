@@ -1,50 +1,3 @@
-<!--
-    Before submitting, delete all "<!-- TEMPLATE marked" comments in this file,
-    and the following quote banner:
--->
-> See comments in Markdown for how to use this spec template
-
-<!-- TEMPLATE
-    The purpose of this spec is to describe new APIs, in a way
-    that will transfer to learn.microsoft.com (LMC).
-
-    There are two audiences for the spec. The first are people that want to evaluate and
-    give feedback on the API, as part of the submission process.
-    When it's complete it will be incorporated into the public documentation at
-    http://learn.microsoft.com (LMC).
-    Hopefully we'll be able to copy it mostly verbatim. So the second audience is
-    everyone that reads there to learn how and why to use this API.
-    Some of this text also shows up in Visual Studio Intellisense.
-
-    For example, much of the examples and descriptions in the `RadialGradientBrush` API spec
-    (https://github.com/microsoft/microsoft-ui-xaml-specs/blob/master/active/RadialGradientBrush/RadialGradientBrush.md)
-    were carried over to the public API page on LMC
-    (https://learn.microsoft.com/windows/winui/api/microsoft.ui.xaml.media.radialgradientbrush?view=winui-2.5)
-
-    Once the API is on LMC, that becomes the official copy, and this spec becomes an archive.
-    For example if the description is updated, that only needs to happen on LMC and needn't
-    be duplicated here.
-
-    Examples:
-    * New class (RadialGradientBrush):
-      https://github.com/microsoft/microsoft-ui-xaml-specs/blob/master/active/RadialGradientBrush/RadialGradientBrush.md
-    * New member on an existing class (UIElement.ProtectedCursor):
-      https://github.com/microsoft/microsoft-ui-xaml-specs/blob/master/active/UIElement/ElementCursor.md
-
-    Style guide:
-    * Use second person; speak to the developer who will be learning/using this API.
-    (For example "you use this to..." rather than "the developer uses this to...")
-    * Use hard returns to keep the page width within ~100 columns.
-    (Otherwise it's more difficult to leave comments in a GitHub PR.)
-    * Talk about an API's behavior, not its implementation.
-    (Speak to the developer using this API, not to the team implementing it.)
-    * A picture is worth a thousand words.
-    * An example is worth a million words.
-    * Keep examples realistic but simple; don't add unrelated complications.
-    (An example that passes a stream needn't show the process of launching the File-Open dialog.)
-
--->
-
 Window placement persistence
 ===
 
@@ -68,14 +21,13 @@ Window placement persistence
     - [2.1.14. Return to the previous virtual desktop after an app restart](#2114-return-to-the-previous-virtual-desktop-after-an-app-restart)
     - [2.1.15. Preserve minimization only for an application restart](#2115-preserve-minimization-only-for-an-application-restart)
     - [2.1.16. Restart without taking focus](#2116-restart-without-taking-focus)
+    - [2.1.17. Reopen multiple windows at their own locations](#2117-reopen-multiple-windows-at-their-own-locations)
+    - [2.1.18. Open a toolbar beside the main window](#2118-open-a-toolbar-beside-the-main-window)
   - [2.2. Restore your app after an app or system restart](#22-restore-your-app-after-an-app-or-system-restart)
 - [3. Examples](#3-examples)
   - [3.1. Enable automatic placement persistence](#31-enable-automatic-placement-persistence)
   - [3.2. Recommended new-project starter code](#32-recommended-new-project-starter-code)
   - [3.3. Restore windows after an app or system restart](#33-restore-windows-after-an-app-or-system-restart)
-    - [3.3.1. Register for a system restart](#331-register-for-a-system-restart)
-    - [3.3.2. Restart your app for an update](#332-restart-your-app-for-an-update)
-    - [3.3.3. Recreate your windows](#333-recreate-your-windows)
   - [3.4. Load and edit a saved placement](#34-load-and-edit-a-saved-placement)
   - [3.5. Store placement yourself](#35-store-placement-yourself)
   - [3.6. Cascade windows without automatic storage](#36-cascade-windows-without-automatic-storage)
@@ -113,18 +65,6 @@ Window placement persistence
     - [6.2.5. Storage and capture lifecycle](#625-storage-and-capture-lifecycle)
 
 
-<!-- TEMPLATE
-    (Optional)
-    
-    For longer docs, consider adding section headers with Table of Contents.
-
-    You can use the VS Code extension [Markdown All in One](https://marketplace.visualstudio.com/items?itemName=yzhang.markdown-all-in-one):
-    - Install the extension
-    - Open .md in VS Code
-    - `Ctrl+Shift+P` and select `Markdown All in One: Add/Update section numbers`
-    - `Ctrl+Shift+P` and select `Markdown All in One: Create Table of Contents`
--->
-
 # 1. Background
 
 Reopening windows at their previous size and position is a commonly requested feature for
@@ -153,15 +93,15 @@ your app creates and when to show them.
 
 The placement APIs in this proposal are in the `Microsoft.UI.Xaml` namespace.
 
-A **placement** records a window's position, size, display environment, and normal, maximized,
-or snapped state. It also records whether the window is minimized and which state it should
-return to when restored. Visibility, activation, full-screen mode, and compact-overlay mode
-are separate from placement. A snapped window occupies a region selected through Windows
-snapping, such as one half of a display.
+A "window placement" describes a window's position, size, and state (normal, maximized,
+snapped, or minimized), along with the display environment. For a minimized window, it also
+includes the state to return to when restored. Visibility, activation, full-screen mode,
+and compact-overlay mode are separate from placement. A snapped window occupies a region
+selected through Windows snapping, such as one half of a display.
 
-**First display** means the first time the window is shown, whether through `Window.Show`,
-`Window.Activate`, `AppWindow`, or a native Windows API. Hiding a window does not make a later
-display its first display.
+The "first display" means the first time the window is shown. Automatic placement persistence
+requires that first display to use `Window.Show` or `Window.Activate`. Hiding a window does
+not make a later display its first display.
 
 If your app has one window, you can enable automatic placement persistence by setting a
 stable, non-empty `PersistPlacementId` before you first show the window. Use the same
@@ -183,11 +123,6 @@ myWindow.PersistPlacementId = "MyMainAppWindow";
 myWindow.Activate();
 ```
 
-`Activate()` and parameterless `Show()` use `WindowShowReason.Default` for initial placement
-and ignore launch-monitor hints. To prefer the process's launch-monitor hint on startup, use
-`Show` with `Reason = WindowShowReason.Launch`, as in
-[Section 3.2](#32-recommended-new-project-starter-code).
-
 If your desktop app has package identity, you only need to set `PersistPlacementId` to enable
 automatic placement persistence. You do not need to handle window-close events or manage
 placement storage yourself.
@@ -207,22 +142,6 @@ You can also manage placement storage yourself. Capture placement with `TryGetPl
 save and load it using your app's storage, and supply the loaded `WindowPlacement` through
 `WindowShowOptions.Placement` when you first show the window. WinUI makes the same display
 adjustments when you supply placement yourself.
-
-Call the `Window` members on the UI thread that owns the window, before it closes. Calls on
-the wrong thread or after close report the corresponding `Window` API error. Methods whose
-names begin with `Try` can still report these programming errors.
-
-You can use `WindowPlacement` and `WindowShowOptions` from any thread. Individual property
-access is thread-safe, but a series of assignments is not a single transaction. Finish related
-edits before passing either object to a method. Each operation takes a consistent snapshot of
-each object; later edits do not change that operation. The options object and its referenced
-placement are snapshotted separately, not as one combined transaction.
-
-`Show(options)` and `TryApplyInitialPlacement(options)` require non-null options, including
-after first display and during nested calls. A null argument reports `E_INVALIDARG` before
-thread, closed-window, or window-type checks. In .NET, `E_INVALIDARG` becomes
-`ArgumentException`. Other reported errors retain their HRESULT, the error code exposed by
-Windows Runtime APIs.
 
 The "Scenarios" section below explains how WinUI handles specific situations and how you can use
 additional options to control your app's launch, restart, and other behavior.
@@ -542,6 +461,56 @@ activation.
 This policy prevents an activation request from the restart operation. It does not lock
 foreground focus against other activation requests.
 
+### 2.1.17. Reopen multiple windows at their own locations
+
+An app such as a browser can have several independent windows, each with its own tabs or
+documents. When you close and reopen the app, it can recreate those windows and restore
+each one to its own size and position.
+
+![Before close, browser windows A and B occupy different locations on one display. After the app recreates both windows, each returns to its own saved location.](images/window-placement-persistence/multiple-windows.svg)
+
+**API notes**
+
+Give each window a stable, distinct `PersistPlacementId`, such as `Browser.WindowA` and
+`Browser.WindowB`. Save those identifiers with your app's window inventory, then reuse them
+when recreating the windows. Call `Window.Show` or `Window.Activate` for each window's first
+display. With automatic persistence enabled, WinUI loads and saves their placements
+independently.
+
+The different identifiers also keep these two windows out of each other's cascade group.
+This differs from [Section 2.1.7](#217-cascade-additional-instances-instead-of-stacking-their-title-bars),
+where windows share an identifier and cascade from an open instance.
+
+Your app stores the window inventory and restores the tabs or documents; WinUI does not
+create the windows or save their content. See
+[Section 3.3](#33-restore-windows-after-an-app-or-system-restart) for a window-inventory example.
+
+### 2.1.18. Open a toolbar beside the main window
+
+An app can restore its main window, then open a separate toolbar beside it without
+requesting activation for the toolbar. If the main window's placement changes to fit the
+available displays, the app can position the toolbar beside the adjusted main window
+rather than restore the toolbar to an independent saved location.
+
+![The app first restores its main window. It then creates a toolbar beside that window, using app-chosen bounds and showing the toolbar without requesting activation.](images/window-placement-persistence/main-window-toolbar.svg)
+
+**API notes**
+
+Show the main window first. Use its actual `AppWindow.Position` and `AppWindow.Size` to
+choose toolbar bounds that fit the display's work area. Capture the display context with
+`TryGetPlacement`, then construct a `WindowPlacement` with the toolbar bounds and the
+captured `WorkArea` and `Dpi`.
+
+For this app-managed layout, set the toolbar's `PreventAutomaticPlacementPersistence` to
+`true`. Show it with the constructed placement, `CascadeBehavior = Disabled`, and
+`DoNotActivate = true`. This prevents an independent saved placement or cascade offset from
+replacing the app's chosen layout.
+
+The diagram shows a normal main window. Your app decides where to place the toolbar if the
+main window is maximized or snapped, or there is not enough space beside it. Placement
+persistence does not establish window ownership, link the windows' lifetimes, or keep the
+toolbar following the main window after launch.
+
 ## 2.2. Restore your app after an app or system restart
 
 When your app restarts, you can restore its windows without treating the restart as a new
@@ -675,62 +644,14 @@ restore a minimized window or request activation of an existing window.
 
 ## 3.3. Restore windows after an app or system restart
 
-The C# example below registers an app-defined `--restore-session` argument, recognizes it
-on startup, and recreates windows from a simple session record. It handles only the restart
-path. For ordinary startup, see
-[Section 3.2](#32-recommended-new-project-starter-code).
-
-`ApplicationRestart` preserves minimization, attempts to restore the saved virtual desktop,
-and suppresses cascading and activation. Do not follow the restart `Show` calls with
-`Activate()` unless you intend to restore a minimized window and request activation.
-
-### 3.3.1. Register for a system restart
-
-To let Windows relaunch your app after a reboot for a system update, call
-[`RegisterApplicationRestart`](https://learn.microsoft.com/windows/win32/api/winbase/nf-winbase-registerapplicationrestart)
-during app startup. Supply command-line arguments that let your startup code recognize
-a restart launch. The C# example in
-[Section 3.3.3](#333-recreate-your-windows) uses CsWin32-generated code to call this Win32 API
-and checks its HRESULT.
-
-`--restore-session` is an argument your app defines, not a Windows or WinUI option.
-
-This example assumes [CsWin32](https://microsoft.github.io/CsWin32/docs/getting-started.html)
-is configured in your app project, with `RegisterApplicationRestart` listed in
-`NativeMethods.txt`. You do not need to write an interop declaration.
-
-Read
-[Registering for Application Restart](https://learn.microsoft.com/windows/win32/recovery/registering-for-application-restart)
-for more details about registration requirements and restart behavior.
-
-### 3.3.2. Restart your app for an update
-
-If your app or updater controls a restart, it also controls the relaunch. Save your session
-data, close your windows normally so WinUI can save their placement, complete the update,
-and pass your restart argument to the replacement process. This path does not require a
-system reboot or restart registration.
-
-You can use the Windows App SDK's
-[`AppInstance.Restart`](https://learn.microsoft.com/windows/apps/windows-app-sdk/applifecycle/applifecycle-restart)
-when it fits your update flow. That API requests an immediate app restart; it does not
-install an update or run WinUI's normal window-close sequence. Complete your app-data and
-placement saving before calling it. Handle its reported failure reason if it cannot restart
-your app.
-
-### 3.3.3. Recreate your windows
-
-For either restart path, recognize your restart argument, load your session data, and recreate
-each window with its original `PersistPlacementId`. Set
-`Reason = WindowShowReason.ApplicationRestart` on each window's first `Show` call:
-
-Add the following members to your existing `App` class. Call `RegisterForSystemRestart`
-during startup to register for future system restarts. From `OnLaunched`, call
-`TryRestoreSessionAfterRestart`. A true result means the restart launch has been handled;
-a false result leaves your existing startup logic responsible for the launch.
+This restart-only example uses [CsWin32](https://microsoft.github.io/CsWin32/docs/getting-started.html).
+Add these helpers to your existing `App` class.
 
 **App.xaml.cs (restart helpers)**
 
 ```csharp
+// Add Microsoft.Windows.CsWin32 to the project and RegisterApplicationRestart
+// to NativeMethods.txt. Allow unsafe blocks for the generated code.
 using System;
 using System.Collections.Generic;
 using Microsoft.UI.Xaml;
@@ -740,16 +661,29 @@ namespace MyApp;
 
 public partial class App : Application
 {
+    // This argument is app-defined, not a Windows or WinUI option.
+    // For an updater-controlled restart: save session data, close windows normally
+    // so WinUI can save placement, finish the update, and relaunch with this argument.
+    // AppInstance.Restart is immediate: it neither installs updates nor runs normal
+    // close/save. Save app data and placement first, and handle its failure result.
     private const string RestoreSessionArgument = "--restore-session";
+
+    // Retain the recreated windows for this session.
     private readonly List<Window> _windows = new();
 
+    // Call during startup to register for future system-update restarts.
+    // An app/updater-controlled relaunch does not require this registration.
     private static void RegisterForSystemRestart()
     {
         PInvoke.RegisterApplicationRestart(RestoreSessionArgument, 0).ThrowOnFailure();
     }
 
+    // Call from OnLaunched. A false result leaves your normal launch path unchanged.
+    // A true result means this helper has handled the restart launch.
     private bool TryRestoreSessionAfterRestart()
     {
+        // These are process-startup arguments. For redirected activations, inspect
+        // the activation arguments in your existing handler instead.
         if (Array.IndexOf(Environment.GetCommandLineArgs(), RestoreSessionArgument) < 0)
         {
             return false;
@@ -763,7 +697,11 @@ public partial class App : Application
                 Title = savedWindow.Title,
             };
 
+            // Restore document contents or other app state here, before showing.
             _windows.Add(window);
+            // Preserve minimization, attempt saved-desktop restoration, and suppress
+            // cascading and activation. Do not follow with Activate unless you want
+            // to restore a minimized window and request activation.
             window.Show(new WindowShowOptions
             {
                 Reason = WindowShowReason.ApplicationRestart,
@@ -777,7 +715,9 @@ public partial class App : Application
 
     private static SavedWindow[] LoadSavedWindowInventory()
     {
-        // Replace these example records with your app's saved session data.
+        // Demo records only: load your app's saved window inventory instead.
+        // Reuse the original placement IDs. Save the inventory and documents
+        // regularly; WinUI stores placements, not the window list or content.
         return new[]
         {
             new SavedWindow("Contoso.MyApp.MainWindow", "MyApp"),
@@ -787,21 +727,9 @@ public partial class App : Application
 }
 ```
 
-These helpers extend your startup code; they do not replace the ordinary launch path.
-`SavedWindow` and the helper methods are example app code, not Windows or WinUI APIs.
-`RegisterApplicationRestart` is a Win32 API.
-The loader returns two fixed records so you can try the window-recreation flow. Replace it
-with code that reads your saved session. The placement identifiers must match those used
-when the original windows were shown.
-
-The `_windows` list retains the created windows. This example restores only their titles
-and placement; recreate document contents and other app state before calling `Show`.
-Save your window inventory and session data regularly. WinUI's automatic placement storage
-does not contain that inventory or your document contents.
-
-`Environment.GetCommandLineArgs()` reads the current process's command line. If your app
-redirects activations to an existing process, read the redirected activation's arguments
-in your activation handler instead of rereading the process command line.
+See [Windows restart registration](https://learn.microsoft.com/windows/win32/recovery/registering-for-application-restart)
+and [`AppInstance.Restart`](https://learn.microsoft.com/windows/apps/windows-app-sdk/applifecycle/applifecycle-restart)
+for their requirements.
 
 ## 3.4. Load and edit a saved placement
 
@@ -1035,6 +963,22 @@ Sizing calls after first display follow their normal behavior. WinUI does not co
 reapply the selected placement.
 
 # 4. API Pages
+
+Call the `Window` members on the UI thread that owns the window, before it closes. Calls on
+the wrong thread or after close report the corresponding `Window` API error. Methods whose
+names begin with `Try` can still report these programming errors.
+
+You can use `WindowPlacement` and `WindowShowOptions` from any thread. Individual property
+access is thread-safe, but a series of assignments is not a single transaction. Finish related
+edits before passing either object to a method. Each operation takes a consistent snapshot of
+each object; later edits do not change that operation. The options object and its referenced
+placement are snapshotted separately, not as one combined transaction.
+
+`Show(options)` and `TryApplyInitialPlacement(options)` require non-null options, including
+after first display and during nested calls. A null argument reports `E_INVALIDARG` before
+thread, closed-window, or window-type checks. In .NET, `E_INVALIDARG` becomes
+`ArgumentException`. Other reported errors retain their HRESULT, the error code exposed by
+Windows Runtime APIs.
 
 ## 4.1. Window.PersistPlacementId property
 

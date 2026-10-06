@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="495" viewBox="0 0 1120 495" role="img" aria-labelledby="title desc">
+  <title id="title">Launch a toolbar beside the restored main window</title>
+  <desc id="desc">The app first shows its main window at its restored placement. The app then chooses bounds beside that main window and shows a separate toolbar without requesting activation. The toolbar position is calculated by the app, not restored from an independent saved placement or assigned by cascading.</desc>
+  <defs>
+    <style>text{font-family:Segoe UI,Arial,sans-serif;fill:#17212b;font-size:19px}.heading{font-size:26px;font-weight:600}.panel{font-size:22px;font-weight:600}.note{font-size:18px}.small{font-size:17px}.monitor{fill:#f6f8fa;stroke:#34495e;stroke-width:3}.app{fill:#d5ecff;stroke:#185a86;stroke-width:3}.bar{fill:#9bcdf1}.tool{fill:#fff2d5;stroke:#8b4500;stroke-width:3}.toolbar{fill:#ffd99b}.button{fill:white;stroke:#b4742d;stroke-width:2}.icon{fill:none;stroke:#8b4500;stroke-width:2}.arrow{fill:none;stroke:#34495e;stroke-width:3;marker-end:url(#arrow)}</style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#34495e"/></marker>
+  </defs>
+  <rect width="1120" height="495" fill="white"/>
+  <text x="32" y="40" class="heading">Launch a toolbar beside the restored main window</text>
+  <text x="32" y="85" class="panel">1. Restore the main window</text>
+  <text x="610" y="85" class="panel">2. Open the toolbar</text>
+  <rect x="44" y="125" width="440" height="280" class="monitor"/>
+  <rect x="45" y="372" width="438" height="32" fill="#697681"/>
+  <text x="264" y="395" text-anchor="middle" style="fill:white">Taskbar</text>
+  <rect x="92" y="156" width="246" height="201" class="app"/>
+  <rect x="94" y="158" width="242" height="28" class="bar"/>
+  <text x="106" y="179">Main window</text>
+  <rect x="106" y="201" width="218" height="141" rx="3" fill="white"/>
+  <text x="215" y="278" class="note" text-anchor="middle">Saved placement</text>
+  <path d="M530 265 H581" class="arrow"/>
+  <rect x="620" y="125" width="440" height="280" class="monitor"/>
+  <rect x="621" y="372" width="438" height="32" fill="#697681"/>
+  <text x="840" y="395" text-anchor="middle" style="fill:white">Taskbar</text>
+  <rect x="668" y="156" width="246" height="201" class="app"/>
+  <rect x="670" y="158" width="242" height="28" class="bar"/>
+  <text x="682" y="179">Main window</text>
+  <rect x="682" y="201" width="218" height="141" rx="3" fill="white"/>
+  <text x="791" y="278" class="note" text-anchor="middle">Same placement</text>
+  <rect x="930" y="164" width="94" height="174" class="tool"/>
+  <rect x="932" y="166" width="90" height="28" class="toolbar"/>
+  <text x="977" y="186" class="small" text-anchor="middle">Toolbar</text>
+  <rect x="942" y="206" width="28" height="28" rx="3" class="button"/>
+  <rect x="984" y="206" width="28" height="28" rx="3" class="button"/>
+  <rect x="942" y="246" width="28" height="28" rx="3" class="button"/>
+  <rect x="984" y="246" width="28" height="28" rx="3" class="button"/>
+  <rect x="942" y="286" width="28" height="28" rx="3" class="button"/>
+  <rect x="984" y="286" width="28" height="28" rx="3" class="button"/>
+  <path d="M949 220 H963 M956 213 V227" class="icon"/>
+  <path d="M991 220 H1005" class="icon"/>
+  <rect x="950" y="254" width="12" height="12" class="icon"/>
+  <circle cx="998" cy="260" r="7" class="icon"/>
+  <path d="M949 306 L963 292 M951 296 L959 304" class="icon"/>
+  <path d="M991 301 L996 306 L1006 294" class="icon"/>
+  <text x="44" y="443">Main window uses its saved placement.</text>
+  <text x="620" y="443">Toolbar opens without requesting activation.</text>
+  <text x="32" y="482" class="note">The app chooses toolbar bounds beside the main window; WinUI does not link their positions.</text>
+</svg>
