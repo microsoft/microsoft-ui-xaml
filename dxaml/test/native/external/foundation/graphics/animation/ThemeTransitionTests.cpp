@@ -654,6 +654,88 @@ void ThemeTransitionTests::ValidateStaggeringWorks()
     }
 }
 
+void ThemeTransitionTests::ValidateStaggeredEntranceVisibilityTiming()
+{
+    TestCleanupWrapper cleanup;
+    RuntimeEnabledFeatureScopeGuard<RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableGlobalAnimations> enableAnimations;
+    WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
+    const auto& wh = TestServices::WindowHelper;
+    wh->SetTimeManagerClockOverrideConstant(0);
+
+    xaml_controls::StackPanel^ panel = nullptr;
+    unsigned int startedStoryboards = 0;
+    unsigned int delayedStoryboards = 0;
+    auto storyboardMonitor = ref new StoryboardMonitorWrapper();
+    storyboardMonitor->AttachStartedHandler([&](xaml_animation::Storyboard^ storyboard, xaml::UIElement^ target)
+    {
+        unsigned int childIndex;
+        if (panel == nullptr || !panel->Children->IndexOf(target, &childIndex))
+        {
+            return;
+        }
+
+        ++startedStoryboards;
+        VERIFY_IS_NOT_NULL(storyboard->BeginTime);
+        if (storyboard->BeginTime->Value.Duration > 0)
+        {
+            ++delayedStoryboards;
+
+            auto visibilityAnimation = safe_cast<xaml_animation::DoubleAnimationUsingKeyFrames^>(
+                storyboard->Children->GetAt(storyboard->Children->Size - 1));
+            VERIFY_ARE_EQUAL(1u, visibilityAnimation->KeyFrames->Size);
+            VERIFY_IS_NOT_NULL(dynamic_cast<xaml_animation::DiscreteDoubleKeyFrame^>(visibilityAnimation->KeyFrames->GetAt(0)));
+            VERIFY_ARE_EQUAL(0LL, visibilityAnimation->KeyFrames->GetAt(0)->KeyTime.TimeSpan.Duration);
+            VERIFY_ARE_EQUAL(xaml::DurationType::TimeSpan, visibilityAnimation->Duration.Type);
+            VERIFY_IS_GREATER_THAN(visibilityAnimation->Duration.TimeSpan.Duration, 0LL);
+
+            auto storyboards = ref new StoryboardVector();
+            storyboards->Append(storyboard);
+            TransitionAnimationTiming timing;
+            VERIFY_IS_TRUE(TryGetTransitionAnimationTiming(
+                storyboards,
+                L"(UIElement.TransitionTarget).(TransitionTarget.CompositeTransform).TranslateY",
+                100.0,
+                timing));
+            const auto transitionDuration = timing.latestEnd - storyboard->BeginTime->Value.Duration;
+            const auto visibilityDuration = visibilityAnimation->Duration.TimeSpan.Duration;
+
+            // Natural durations are stored as floats; allow one 100-nanosecond tick of rounding.
+            VERIFY_IS_TRUE(visibilityDuration >= transitionDuration - 1 && visibilityDuration <= transitionDuration + 1);
+        }
+    });
+
+    for (bool staggeringEnabled : { false, true })
+    {
+        for (int reload = 0; reload < 2; ++reload)
+        {
+            RunOnUIThread([&]()
+            {
+                startedStoryboards = 0;
+                delayedStoryboards = 0;
+                panel = safe_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
+                    L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>"
+                    L"    <StackPanel.ChildrenTransitions>"
+                    L"        <EntranceThemeTransition FromVerticalOffset='100' />"
+                    L"    </StackPanel.ChildrenTransitions>"
+                    L"    <Rectangle Width='100' Height='50' Fill='Red' />"
+                    L"    <Rectangle Width='100' Height='50' Fill='Green' />"
+                    L"    <Rectangle Width='100' Height='50' Fill='Blue' />"
+                    L"</StackPanel>"));
+                safe_cast<xaml_animation::EntranceThemeTransition^>(panel->ChildrenTransitions->GetAt(0))->IsStaggeringEnabled = staggeringEnabled;
+                wh->WindowContent = panel;
+            });
+
+            wh->SynchronouslyTickUIThread(2);
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_ARE_EQUAL(3u, startedStoryboards);
+                VERIFY_ARE_EQUAL(staggeringEnabled ? 3u : 0u, delayedStoryboards);
+            });
+        }
+    }
+}
+
 void ThemeTransitionTests::ValidateSlideThemeTransitionEffect()
 {
     TestCleanupWrapper cleanup;
