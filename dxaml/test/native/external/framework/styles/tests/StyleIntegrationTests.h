@@ -65,6 +65,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(CanUseSetterValueAsContent)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Check that a Setter's value can be specified as its content")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(CanStyleSetterDetectMissingValue)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that if a style setter doesn't have a defined value, a XAML parse exception is thrown")
@@ -367,4 +372,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         void TestCanCreateOptimizedStyle(bool useSetterTarget);
     };
 } } } } } }
-

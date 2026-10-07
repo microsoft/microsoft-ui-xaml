@@ -16246,7 +16246,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     // Microsoft.UI.Xaml.Setter
     {
         KnownPropertyIndex::Setter_Property, // First property
-        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        KnownPropertyIndex::Setter_Value, // Content property
         56, // First enter property = Microsoft.UI.Xaml.Setter.Property
         46, // First render property = Microsoft.UI.Xaml.Setter.Property
         50, // First object property = Microsoft.UI.Xaml.Setter.Property
