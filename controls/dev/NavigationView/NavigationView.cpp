@@ -1039,7 +1039,6 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
 {
     m_shouldRaiseItemInvokedAfterSelection = true;
 
-    const auto selectedItem = SelectedItem();
     const bool updateSelection = m_selectionModel && nvi.SelectsOnInvoked();
     if (updateSelection)
     {
@@ -1053,9 +1052,10 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
         UpdateSelectionModelSelection(ip);
     }
 
-    // Item was invoked but already selected, so raise event here.
-    if (selectedItem == SelectedItem())
+    // Selection callbacks can restore the previous selection after already raising ItemInvoked.
+    if (m_shouldRaiseItemInvokedAfterSelection)
     {
+        m_shouldRaiseItemInvokedAfterSelection = false;
         RaiseItemInvokedForNavigationViewItem(nvi);
     }
 

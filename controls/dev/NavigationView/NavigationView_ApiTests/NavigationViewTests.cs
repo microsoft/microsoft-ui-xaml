@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using Windows.Foundation.Metadata;
 using Windows.UI.ViewManagement;
 using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Markup;
@@ -1222,6 +1223,79 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Clear the MenuItemsSource collection");
                 itemsSource.Clear();
             });
+        }
+
+        [TestMethod]
+        public void VerifyItemInvokedOnceWhenSelectionIsCleared()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var navView = new NavigationView { PaneDisplayMode = paneDisplayMode };
+                    var item = new NavigationViewItem { Content = "Item" };
+                    navView.MenuItems.Add(item);
+                    Content = navView;
+                    Content.UpdateLayout();
+
+                    int invokedCount = 0;
+                    navView.ItemInvoked += (sender, args) => invokedCount++;
+                    navView.SelectionChanged += (sender, args) =>
+                    {
+                        if (args.SelectedItem != null)
+                        {
+                            sender.SelectedItem = null;
+                        }
+                    };
+
+                    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(item);
+                    ((IInvokeProvider)peer).Invoke();
+
+                    Verify.IsNull(navView.SelectedItem);
+                    Verify.AreEqual(1, invokedCount, "Clearing selection must not invoke the item a second time.");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyReplacingItemsSourceDuringSelectionDoesNotCrash()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var navView = new NavigationView { PaneDisplayMode = paneDisplayMode };
+                    var original = new NavigationViewItem { Content = "Original" };
+                    var replacement = new NavigationViewItem { Content = "Replacement" };
+                    var items = new ObservableCollection<NavigationViewItem> { original };
+                    navView.MenuItemsSource = items;
+                    Content = navView;
+                    Content.UpdateLayout();
+
+                    int invokedCount = 0;
+                    navView.ItemInvoked += (sender, args) => invokedCount++;
+                    navView.SelectionChanged += (sender, args) =>
+                    {
+                        if (args.SelectedItem == original)
+                        {
+                            items.Clear();
+                            sender.MenuItemsSource = null;
+                            sender.MenuItemsSource = new ObservableCollection<NavigationViewItem> { replacement };
+                        }
+                    };
+
+                    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(original);
+                    ((IInvokeProvider)peer).Invoke();
+
+                    Verify.IsNull(navView.SelectedItem);
+                    Verify.AreEqual(1, invokedCount, "Replacing the collection must not invoke the removed item again.");
+                    Content.UpdateLayout();
+                    peer = FrameworkElementAutomationPeer.CreatePeerForElement(replacement);
+                    ((IInvokeProvider)peer).Invoke();
+                    Verify.AreEqual(replacement, navView.SelectedItem);
+                    Verify.AreEqual(2, invokedCount, "The replacement item must remain invokable.");
+                });
+            }
         }
 
         [TestMethod]
