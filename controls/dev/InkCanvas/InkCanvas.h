@@ -50,8 +50,10 @@ private:
 
     // Compositor fork: IsSystemCompositor() detects (via CompositionEngine::GetForSystemEngine)
     // whether the process runs on the system composition engine. A system-backed process splices the
-    // ink visual under a lifted MUC visual (AttachToSystemCompositor); a lifted process bridges it
-    // into the XAML tree via ContentExternalOutputLink (AttachToLiftedCompositor).
+    // ink visual under a lifted MUC visual (AttachToSystemCompositor) - through the OS shared-visual API
+    // when available (TrySpliceWithSharedVisual), otherwise through the IXP interop
+    // (SpliceWithExpCompositorInterop); a lifted process bridges it into the XAML tree via
+    // ContentExternalOutputLink (AttachToLiftedCompositor).
     void EnsureCompositionDevice();
     bool IsSystemCompositor();
 
@@ -59,6 +61,14 @@ private:
     void ReportUsageTelemetry(InkTelemetry::CompositorEngine engine) noexcept;
     void SubscribeToStrokeTelemetry() noexcept;
     void AttachToSystemCompositor();
+    // The two ways AttachToSystemCompositor sets m_systemDCompTarget. TrySpliceWithSharedVisual returns
+    // false, with nothing attached, when the OS lacks the shared-visual API.
+    bool TrySpliceWithSharedVisual(
+        winrt::Microsoft::UI::Composition::Compositor const& compositor,
+        winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual);
+    void SpliceWithExpCompositorInterop(
+        winrt::Microsoft::UI::Composition::Compositor const& compositor,
+        winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual);
     void AttachToLiftedCompositor();
     // Shared by both compositor paths: creates the ink visual on the shared DComp device and binds
     // it to the presenter. Called first by AttachToSystemCompositor/AttachToLiftedCompositor, before
