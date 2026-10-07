@@ -339,6 +339,7 @@ namespace UnitTests
         {
             string[] textBlocks =
             {
+                "<TextBlock> \n<Run Text='{x:Bind Name}'/>\n<Run Text='{x:Bind Width}'/>\n</TextBlock>",
                 "<TextBlock><Run Text='{x:Bind Name}'/><Run Text='{x:Bind Width}'/></TextBlock>",
                 "<TextBlock>prefix <Run Text='{x:Bind Name}'/> <Run Text='{x:Bind Width}'/> suffix</TextBlock>",
                 "<TextBlock>\n<Run Text='{x:Bind Name}'/> <Run Text='{x:Bind Width}'/>\n</TextBlock>",
