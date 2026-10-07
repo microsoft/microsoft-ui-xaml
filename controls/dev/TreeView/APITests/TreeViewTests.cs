@@ -706,6 +706,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void RemovingLastChildFromItemsSourcePreservesIsExpanded()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = new TreeView();
+                var rootData = new ObservableCollection<int> { 0 };
+                treeView.ItemsSource = rootData;
+                Content = treeView;
+                Content.UpdateLayout();
+
+                var tvi = (TreeViewItem)treeView.ContainerFromItem(0);
+                var childrenData = new ObservableCollection<int> { 1, 2 };
+                tvi.ItemsSource = childrenData;
+                Content.UpdateLayout();
+
+                var parentNode = treeView.RootNodes[0];
+                Verify.AreEqual(2, (int)parentNode.Children.Count);
+
+                parentNode.IsExpanded = true;
+                Verify.IsTrue(parentNode.IsExpanded);
+                Verify.IsTrue(parentNode.HasChildren);
+
+                // Remove children one at a time until empty using RemoveAt.
+                // This emits Remove (not Reset) notifications on the data source.
+                childrenData.RemoveAt(1);
+                childrenData.RemoveAt(0);
+                Content.UpdateLayout();
+
+                Verify.AreEqual(0, (int)parentNode.Children.Count);
+                // Regression: an ItemsSource-driven removal of the last child must
+                // not collapse the parent (see GitHub issue #10251).
+                Verify.IsTrue(parentNode.IsExpanded);
+                // HasChildren (glyph) and IsExpanded (state) are independent: the
+                // chevron hides while empty even though the expansion state persists.
+                Verify.IsFalse(parentNode.HasChildren);
+
+                // Adding a child back keeps the parent expanded and re-shows the glyph.
+                childrenData.Add(3);
+                Content.UpdateLayout();
+                Verify.AreEqual(1, (int)parentNode.Children.Count);
+                Verify.IsTrue(parentNode.IsExpanded);
+                Verify.IsTrue(parentNode.HasChildren);
+            });
+        }
+
+        [TestMethod]
         public void TreeViewBackgroundTest()
         {
             RunOnUIThread.Execute(() =>
