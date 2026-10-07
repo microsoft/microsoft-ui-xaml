@@ -10,7 +10,10 @@
 #include "AutomationProperties.h"
 #include "localizedResource.h"
 #include "LayoutCycleDebugSettings.h"
-#include "ResourceDictionary_partial.h"
+#include "Shape.g.h"
+#include "Style.h"
+#include "Style.g.h"
+#include "ThemeResource.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -110,6 +113,7 @@ IFACEMETHODIMP ScrollBar::OnApplyTemplate()
 
     wrl_wrappers::HString strAutomationName;
     m_suspendVisualStateUpdates = TRUE;
+    m_areTrackBrushesInitialized = false;
 
     ctl::ComPtr<xaml_primitives::IDragStartedEventHandler> spDragStartedHandler;
     ctl::ComPtr<xaml_primitives::IDragDeltaEventHandler> spDragDeltaHandler;
@@ -702,44 +706,6 @@ _Check_return_ HRESULT ScrollBar::ChangeVisualState(
     IFC(get_IndicatorMode(&scrollingIndicator));
 
     IFC(get_IsEnabled(&isEnabled));
-    if (isEnabled && (!IsConscious() || m_isPointerOver))
-    {
-        // Install persistent base brushes only when the track is first shown. VSM can then
-        // restore them when its overrides end, including changes in another state group.
-        ctl::ComPtr<xaml::IFrameworkElement> root;
-        IFC(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"Root"), root.ReleaseAndGetAddressOf()));
-        if (root)
-        {
-            ctl::ComPtr<xaml::IResourceDictionary> resources;
-            ctl::ComPtr<IInspectable> key;
-            BOOLEAN hasStyle = FALSE;
-            IFC(root->get_Resources(&resources));
-            IFC(PropertyValue::CreateFromString(wrl_wrappers::HStringReference(L"DeferredTrackBrushStyle").Get(), &key));
-            IFC(resources.Cast<ResourceDictionary>()->HasKey(key.Get(), &hasStyle));
-            if (hasStyle)
-            {
-                ctl::ComPtr<IInspectable> resource;
-                ctl::ComPtr<xaml::IStyle> trackStyle;
-                IFC(resources.Cast<ResourceDictionary>()->Lookup(key.Get(), &resource));
-                IFC(resource.As(&trackStyle));
-                for (const auto name : { L"HorizontalTrackRect", L"VerticalTrackRect" })
-                {
-                    ctl::ComPtr<xaml::IDependencyObject> child;
-                    IFC(GetTemplateChild(wrl_wrappers::HStringReference(name).Get(), &child));
-                    auto track = child.AsOrNull<xaml::IFrameworkElement>();
-                    if (track)
-                    {
-                        ctl::ComPtr<xaml::IStyle> existingStyle;
-                        IFC(track->get_Style(&existingStyle));
-                        if (!existingStyle)
-                        {
-                            IFC(track->put_Style(trackStyle.Get()));
-                        }
-                    }
-                }
-            }
-        }
-    }
     if (!isEnabled)
     {
         IFC(GoToState(bUseTransitions, L"Disabled", &isIgnored));
@@ -756,6 +722,58 @@ _Check_return_ HRESULT ScrollBar::ChangeVisualState(
     else
     {
         IFC(GoToState(bUseTransitions, L"Normal", &isIgnored));
+    }
+
+    if (!m_areTrackBrushesInitialized && isEnabled && (!IsConscious() || m_isPointerOver))
+    {
+        // Leave Disabled before installing the local theme bindings, so its state setters
+        // cannot capture the resolved brush instead of the binding as the base value.
+        ctl::ComPtr<xaml::IStyle> style;
+        IFC(GetTemplateChildHelper<xaml::IStyle>(STR_LEN_PAIR(L"DeferredTrackBrushStyle"), style.ReleaseAndGetAddressOf()));
+        if (style)
+        {
+            auto coreStyle = static_cast<CStyle*>(style.Cast<Style>()->GetHandle());
+            IFC(coreStyle->Seal());
+            for (const auto name : { L"HorizontalTrackRect", L"VerticalTrackRect" })
+            {
+                ctl::ComPtr<xaml::IDependencyObject> child;
+                IFC(GetTemplateChild(wrl_wrappers::HStringReference(name).Get(), &child));
+                auto track = child.AsOrNull<xaml_shapes::IShape>();
+                if (track)
+                {
+                    for (const auto property : { KnownPropertyIndex::Shape_Fill, KnownPropertyIndex::Shape_Stroke })
+                    {
+                        const auto dp = MetadataAPI::GetDependencyPropertyByIndex(property);
+                        ctl::ComPtr<IInspectable> localValue;
+                        BOOLEAN isUnset = FALSE;
+                        IFC(track.Cast<Shape>()->ReadLocalValue(dp, &localValue));
+                        IFC(DependencyPropertyFactory::IsUnsetValue(localValue.Get(), isUnset));
+                        if (isUnset)
+                        {
+                            CValue value;
+                            bool found = false;
+                            IFC(coreStyle->GetPropertyValue(property, &value, &found));
+                            if (found)
+                            {
+                                if (value.GetType() == valueThemeResource)
+                                {
+                                    ctl::ComPtr<xaml::IDependencyProperty> propertyHandle;
+                                    IFC(MetadataAPI::GetIDependencyProperty(property, &propertyHandle));
+                                    const auto& key = value.AsThemeResource()->GetResourceKey();
+                                    IFC(track.Cast<Shape>()->SetThemeResourceBinding(
+                                        propertyHandle.Get(), wrl_wrappers::HStringReference(key.GetBuffer(), key.GetCount()).Get()));
+                                }
+                                else
+                                {
+                                    IFC(track.Cast<Shape>()->GetHandle()->SetValue(dp, value));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        m_areTrackBrushesInitialized = true;
     }
 
     if (!m_blockIndicators && (!IsConscious() || scrollingIndicator == xaml_primitives::ScrollingIndicatorMode_MouseIndicator))

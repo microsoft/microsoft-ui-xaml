@@ -210,7 +210,7 @@
         <ControlTemplate TargetType="ScrollBar">
           <Grid x:Name="Root">
             <Grid.Resources>
-              <Style x:Key="DeferredTrackBrushStyle" TargetType="Rectangle">
+              <Style x:Name="DeferredTrackBrushStyle" TargetType="Rectangle">
                 <Setter Property="Fill" Value="{ThemeResource ScrollBarTrackFill}" />
                 <Setter Property="Stroke" Value="{ThemeResource ScrollBarTrackStroke}" />
               </Style>
