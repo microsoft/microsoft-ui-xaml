@@ -93,9 +93,10 @@ visible on purpose.
 
 - A basic showcase table plus Task Manager, File Explorer, and File properties scenarios
 - Selection, sorting, filtering, keyboard navigation, and accessibility behavior
-- Column layout, resizing, reordering, dynamic columns, and header visibility
-- Tooltips, grid lines, template cells, text wrapping, row height, cell flyouts, cell editing,
-  empty state, density, and read-only behavior
+- Column layout &amp; sizing (Pixel / Star widths, Min/Max clamps, drag-to-resize) and column
+  lifecycle (add, remove, reorder at runtime), plus header visibility
+- Tooltips, grid lines, cell templating, text wrapping, row height, cell editing,
+  empty state, density, and grouped rows (hierarchical rows are not available in this release)
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
 - `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
   sample assembly. Snippet references declared on `SamplePresenter` are validated during compile so

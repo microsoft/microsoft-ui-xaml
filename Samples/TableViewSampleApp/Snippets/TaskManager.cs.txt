@@ -1,72 +1,97 @@
 public ObservableCollection<ProcessItem> Processes { get; } = new();
 
+// Reshaping happens IN PLACE on this one instance: Filter / GroupBy / Sort mutate and return
+// the same TableViewSource (TableViewSource.cpp:49-50).
+private TableViewSource? _source;
+private string _mode = "flat";          // requested
+private string _appliedMode = "flat";   // applied
+
 private void ApplyProcessSource()
 {
-    var searchText = _searchText;
-    var source = TableViewSource.From(Processes);
-
-    if (!string.IsNullOrEmpty(searchText))
+    if (_source is null)
     {
-        source = source.Filter(item => MatchesSearch((ProcessItem)item, searchText));
+        _source = TableViewSource.From(Processes);
+        ProcessTable.ItemsSource = _source;
     }
 
-    // Grouping a source is not in this release; the picker leaves the source flat.
-    ProcessTable.ItemsSource = ApplyActiveSort(source);
+    var searchText = _searchText;
+    if (string.IsNullOrEmpty(searchText)) { _source.ClearFilter(); }
+    else { _source.Filter(item => MatchesSearch((ProcessItem)item, searchText)); }
+
+    switch (_mode)
+    {
+        case "grouped":
+            var key = _groupKey;
+            // TableViewKeySelector receives the ROW ITEM; TableViewIdentitySelector receives
+            // the GROUP KEY (TableViewSource.idl:12-16). An item-typed identity lambda
+            // returns an empty identity and fails fast with E_INVALIDARG.
+            _source.GroupBy(
+                item => (object)GroupValue(item, key),
+                groupKey => groupKey?.ToString() ?? "(none)");
+            break;
+
+        // case "hierarchy":
+        // case "groupedhierarchy":
+        //     Hierarchical rows are not available in this release, and no hierarchy API
+        //     exists on TableViewSource or TableView yet, so there is deliberately no call
+        //     written here to copy. When the control ships hierarchy support, apply it to
+        //     this same source instance alongside the GroupBy stage above so the two compose.
+        //     break;
+
+        default:
+            _source.ClearGroupBy();
+            break;
+    }
+
+    _appliedMode = _mode;   // set ONLY after the shaping call returns
+
+    ApplyActiveSort(_source);
+    UpdateShapingUi();
     UpdateStatusBar();
 }
 
-private TableViewSource ApplyActiveSort(TableViewSource source)
+// Real Task Manager bands its processes into Apps / Background processes / Windows processes,
+// and ProcessItem already carries that as Category - so that is the group key.
+// Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
+private static string GroupValue(object item, string key)
 {
+    if (item is not ProcessItem process) { return "(none)"; }
+
+    var value = key switch
+    {
+        "Status" => process.IsEfficiency
+            ? "Efficiency mode"
+            : (string.IsNullOrWhiteSpace(process.StatusText) ? "Running" : process.StatusText),
+        _ => process.Category,
+    };
+
+    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+}
+
+private void ApplyActiveSort(TableViewSource source)
+{
+    // Clear first: the keySelector Sort overload declares an ANONYMOUS axis, so re-declaring
+    // one without clearing would stack a second axis rather than replace the first.
+    source.ClearSort();
+
     var sortColumn = SampleShape.ActiveSortColumn(ProcessTable);
     if (sortColumn is null ||
         SampleShape.ActiveSortDirection(ProcessTable) == SortDirection.None ||
         string.IsNullOrEmpty(sortColumn.SortMemberPath))
     {
-        return source;
+        return;
     }
 
-    return source.Sort(
-        item => SortKey(item, sortColumn.SortMemberPath),
-        SampleShape.ActiveSortDirection(ProcessTable));
+    var path = sortColumn.SortMemberPath;
+    source.Sort(item => SortKey(item, path), SampleShape.ActiveSortDirection(ProcessTable));
 }
 
-private static object? SortKey(object item, string path)
+// Rewrites the selected row's Category, then re-applies GroupBy so the row re-buckets.
+private void OnMoveSelectedCategoryClick(object sender, RoutedEventArgs e)
 {
-    if (item is not ProcessItem process)
-    {
-        return null;
-    }
+    if (ProcessTable.SelectedItem is not ProcessItem selected) { return; }
 
-    return path switch
-    {
-        nameof(ProcessItem.Name) => process.Name,
-        nameof(ProcessItem.StatusText) => process.StatusText,
-        nameof(ProcessItem.CpuPercent) => process.CpuPercent,
-        nameof(ProcessItem.MemoryMB) => process.MemoryMB,
-        nameof(ProcessItem.DiskMBps) => process.DiskMBps,
-        nameof(ProcessItem.NetworkMbps) => process.NetworkMbps,
-        _ => null,
-    };
-}
-
-private void OnProcessTableSorted(TableView sender, TableViewSortedEventArgs args)
-{
+    var index = Array.IndexOf(s_categories, selected.Category);
+    selected.Category = s_categories[(index + 1 + s_categories.Length) % s_categories.Length];
     ApplyProcessSource();
-}
-
-private void OnTimerTick(object? sender, object e)
-{
-    foreach (var process in Processes)
-    {
-        RandomizeValues(process);
-    }
-
-    UpdateSummary();
-}
-
-private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
-{
-    SelectedProcessText.Text = ProcessTable.SelectedItem is ProcessItem process
-        ? process.Name
-        : "(none)";
 }

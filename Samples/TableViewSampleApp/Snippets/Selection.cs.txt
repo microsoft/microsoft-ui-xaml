@@ -1,20 +1,168 @@
-private void OnModeChanged(object sender, SelectionChangedEventArgs e)
-{
-    if (ModeCombo.SelectedItem is not ComboBoxItem item)
-    {
-        return;
-    }
+// One source for the lifetime of the page: Filter / GroupBy / ClearGroupBy mutate and
+// return this same instance, so the projection is reshaped IN PLACE and selection,
+// scroll offset and group state all survive. Never rebuild the source per change.
+private TableViewSource? _source;
 
-    PeopleTable.SelectionMode = (item.Content as string) switch
-    {
-        "None"   => TableViewSelectionMode.None,
-        "Single" => TableViewSelectionMode.Single,
-        _        => TableViewSelectionMode.Single,
-    };
+// Requested vs applied. Readouts and enable/disable guards read the APPLIED fields,
+// which are assigned only after the shaping call returns.
+private string _shapeMode = "flat";
+private string _appliedShapeMode = "flat";
+private string _groupKey = "Department";
+private string _appliedGroupKey = "none";
+
+public SelectionPage()
+{
+    People = PersonData.Take(50);
+    InitializeComponent();
+
+    _source = TableViewSource.From(People);
+    PeopleTable.ItemsSource = _source;
 }
 
+private void ApplyShaping()
+{
+    if (_source is null) return;
+
+    var requestedKey = _shapeMode == "grouped" ? _groupKey : "none";
+
+    switch (_shapeMode)
+    {
+        case "grouped":
+        {
+            var key = requestedKey;
+            // The two delegates receive DIFFERENT things despite both parameters being
+            // named `item` (TableViewSource.idl:12-16):
+            //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
+            //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
+            // An item-typed identity lambda returns the empty string, which is an
+            // unresolvable identity: GroupBy fails fast with E_INVALIDARG and grouping
+            // silently never applies.
+            _source.GroupBy(
+                item => (object)GroupValue(item, key),
+                groupKey => groupKey?.ToString() ?? "(none)");
+            break;
+        }
+
+        // case "hierarchy":
+        // case "groupedhierarchy":
+        //     Hierarchical rows are not available in this release, which is why the two
+        //     matching ComboBoxItems ship IsEnabled="False" with a tooltip. No call is
+        //     written here on purpose: TableViewSource.idl has no hierarchy verb and
+        //     TableView.idl has no hierarchy property, so any code here would name a
+        //     member that does not exist. The intended shape, per TableViewRowInfo.h:27
+        //     ("when hierarchical (tree) rows land"), is to apply the hierarchy stage to
+        //     THIS SAME _source alongside the GroupBy stage above so the two compose into
+        //     one projection. When that ships, write the real call here and drop
+        //     IsEnabled="False" from the two items.
+        //     break;
+
+        default:
+            _source.ClearGroupBy();
+            break;
+    }
+
+    // Applied state is committed only once the shaping call has returned.
+    _appliedGroupKey = requestedKey;
+    _appliedShapeMode = requestedKey == "none" ? "flat" : "grouped";
+
+    RefreshReadout();
+}
+
+// Never returns string.Empty: the empty string is not a usable group identity and makes
+// the projection fail fast.
+private static string GroupValue(object item, string key)
+{
+    if (item is not Person person) return "(none)";
+
+    string? raw = key switch
+    {
+        "Role"   => person.Role,
+        "Active" => person.IsActive ? "Active" : "Inactive",
+        _        => person.Department,
+    };
+
+    return string.IsNullOrWhiteSpace(raw) ? "(none)" : raw;
+}
+
+// Count alone cannot tell a clean reset-absorb from a transient clear-and-restore, so log
+// the per-event AddedItems / RemovedItems delta the control actually reported.
 private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
 {
-    SelectedCountText.Text = (sender.SelectedItem is null ? 0 : 1).ToString();
-    SelectedIndexText.Text = sender.SelectedIndex.ToString();
+    _changeCount++;
+    _lastDelta = $"+[{DescribeItems(args.AddedItems)}] -[{DescribeItems(args.RemovedItems)}]";
+    RefreshReadout();
+}
+
+// Invariant: inserting a row ABOVE the selected row must not raise SelectionChanged.
+private void OnInsertAboveClick(object sender, RoutedEventArgs e)
+{
+    if (PeopleTable.SelectedItem is not Person selected) return;
+
+    int index = People.IndexOf(selected);
+    int before = _changeCount;
+    People.Insert(index, new Person { FirstName = "Inserted", LastName = "Row", /* ... */ });
+
+    DispatcherQueue.TryEnqueue(() =>
+    {
+        _lastAction = _changeCount != before
+            ? "FAIL: insert above the selected row raised SelectionChanged."
+            : "OK: insert above the selected row raised no SelectionChanged.";
+        RefreshReadout();
+    });
+}
+
+// Invariant: removing the selected row must CLEAR selection, not slide to a neighbour.
+private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
+{
+    if (PeopleTable.SelectedItem is not Person selected) return;
+
+    People.Remove(selected);
+
+    DispatcherQueue.TryEnqueue(() =>
+    {
+        _lastAction = PeopleTable.SelectedItem is null
+            ? "OK: removing the selected row cleared selection."
+            : $"FAIL: selection slid to {DescribeItem(PeopleTable.SelectedItem)}.";
+        RefreshReadout();
+    });
+}
+
+private void RefreshReadout()
+{
+    bool grouped = _appliedGroupKey != "none";          // applied, never requested
+    bool hasSelection = PeopleTable.SelectedItem is not null;
+
+    ShapeModeText.Text = grouped ? $"Grouped by {GroupLabel(_appliedGroupKey)}" : "Flat";
+    GroupKeyCombo.IsEnabled = _appliedShapeMode == "grouped";
+    ExpandAllButton.IsEnabled = grouped;
+    CollapseAllButton.IsEnabled = grouped;
+    InsertAboveButton.IsEnabled = hasSelection;
+    RemoveSelectedButton.IsEnabled = hasSelection;
+}
+
+// Page-private chip converters: brushes are cached in static readonly state and built
+// exactly once, so Convert never allocates under virtualization. In HighContrast the tint
+// drops to transparent and the chip relies on the theme foreground plus its border.
+internal static class SelectionChipPalette
+{
+    internal static readonly bool HighContrast =
+        new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
+
+    internal static readonly SolidColorBrush TransparentBrush = new(Colors.Transparent);
+
+    private static readonly IReadOnlyDictionary<string, SolidColorBrush> s_tints = Build(0x40);
+    private static readonly IReadOnlyDictionary<string, SolidColorBrush> s_dots = Build(0xFF);
+
+    internal static SolidColorBrush Tint(object? value) =>
+        HighContrast ? TransparentBrush : Lookup(s_tints, value, s_fallbackTint);
+}
+
+// partial, or the build emits CsWinRT1028.
+public sealed partial class SelectionChipTintConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language) =>
+        SelectionChipPalette.Tint(value);
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) =>
+        throw new NotSupportedException();
 }

@@ -1,32 +1,62 @@
-// CellToolTipBinding is a CLR property rather than a DP, so XAML passes the Binding through
-// UNEVALUATED — it has to be evaluated per row, against that row's data item.
+// Both tooltip surfaces are opt-in and both are per column.
 
-// Same text as the cell: right for a column that truncates. The peer drops the duplicate
-// help text so a screen reader reads it once.
+// HeaderToolTip takes any object. A header is not bound against a row, so there
+// is nothing to defer and no binding involved. A string is reported as help text
+// alongside the sort state; non-string content is mouse-only.
+SalaryColumn.HeaderToolTip = "Salary";
+
+var card = new StackPanel { Spacing = 4 };
+card.Children.Add(new TextBlock { Text = "Bio", FontWeight = FontWeights.SemiBold });
+card.Children.Add(new TextBlock { Text = "Free-form summary", Opacity = 0.75 });
+BioColumn.HeaderToolTip = card;
+
+// CellToolTipBinding is a Binding evaluated against each row's data item, which
+// is why it is a CLR property rather than a DP: XAML has to hand the Binding
+// over unevaluated instead of resolving it once.
 BioColumn.CellToolTipBinding = new Binding { Path = new PropertyPath(nameof(Person.Bio)) };
-
-// A DIFFERENT property, and an observable one: Person raises PropertyChanged for Role, so
-// the tooltip follows the data with no invalidation call from the app.
 DepartmentColumn.CellToolTipBinding = new Binding { Path = new PropertyPath(nameof(Person.Role)) };
 
-// No Path, so the binding produces the ROW ITEM and the converter turns it into content.
+// No Path: the binding produces the row item, and a converter turns it into
+// rich content. Build a FRESH element per evaluation — the returned UIElement is
+// parented by the cell's ToolTip, and one element cannot have two parents.
 NameColumn.CellToolTipBinding = new Binding { Converter = new RowCardConverter() };
 
-// Clearing the binding retracts the tooltip. There is no separate remove call.
+// Clearing the binding retracts the tooltip; there is no separate remove call.
 NameColumn.CellToolTipBinding = null;
 
-// Header tooltips update in place, and null retracts.
-NameColumn.HeaderToolTip = "Changed in place";
-DepartmentColumn.HeaderToolTip = null;
+// The Name, Department and Salary columns are sortable (they do not opt out with
+// CanSort="False"), so the header gesture has to actually do something.
+SampleShape.EnableDefaults(PeopleTable, _people);
 
-public sealed partial class RowCardConverter : IValueConverter
+// Shaping is independent of the tooltips: the columns are untouched by a
+// reshape, so every HeaderToolTip and CellToolTipBinding survives it, and group
+// header bands are not cells so they never acquire a cell tooltip.
+_source = TableViewSource.From(_people);
+PeopleTable.ItemsSource = _source;
+
+private void ApplyShaping()
 {
-    public object Convert(object value, Type targetType, object parameter, string language)
+    if (_mode != "grouped")
     {
-        // A FRESH element per evaluation: the result is parented by the cell's ToolTip, and
-        // one element cannot have two parents, so this must not be cached.
-        var panel = new StackPanel { Spacing = 4 };
-        panel.Children.Add(new TextBlock { Text = ((Person)value).FullName });
-        return panel;
+        _source.ClearGroupBy();
     }
+    else
+    {
+        var key = _groupKey;
+        //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
+        //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
+        _source.GroupBy(
+            item => (object)GroupValue(item, key),
+            groupKey => groupKey?.ToString() ?? "(none)");
+    }
+
+    // case "hierarchy":
+    // case "groupedhierarchy":
+    //     Hierarchical rows are not available in this release: neither
+    //     TableViewSource.idl nor TableView.idl exposes a hierarchy verb (the
+    //     only shaping verbs are Filter / GroupBy / Sort and their Clear*
+    //     counterparts). When the control ships hierarchy support, apply it to
+    //     this same source here, alongside the GroupBy stage above.
+
+    _appliedMode = _mode;   // only after the call returns
 }

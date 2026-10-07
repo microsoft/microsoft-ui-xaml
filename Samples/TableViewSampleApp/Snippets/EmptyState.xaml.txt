@@ -29,6 +29,28 @@
     <tv:TableViewTextColumn Header="Email"      Binding="{Binding Email}"/>
 </tv:TableView>
 
-<!-- Toggle the data source to show / hide the empty state -->
-<RadioButton Content="Populated"    Tag="Populated" GroupName="EmptyStateSource" IsChecked="True" Checked="OnDataSourceChecked"/>
-<RadioButton Content="Empty (null)" Tag="Empty"     GroupName="EmptyStateSource" Checked="OnDataSourceChecked"/>
+<!-- Three data sources, because there are two different ways of being empty:
+     a null ItemsSource, and a live shaped source that holds no items. -->
+<muxc:RadioButtons x:Name="DataSourceRadioButtons"
+                   SelectedIndex="0"
+                   SelectionChanged="OnDataSourceSelectionChanged"
+                   AutomationProperties.Name="Data source">
+    <RadioButton Content="Populated"                  Tag="Populated"/>
+    <RadioButton Content="Empty (null ItemsSource)"   Tag="Null"/>
+    <RadioButton Content="Empty (source with 0 rows)" Tag="ZeroRows"/>
+</muxc:RadioButtons>
+
+<!-- The shaping selector is a ComboBox on every page in this gallery. The two
+     hierarchy entries stay visible but disabled, with a tooltip saying why. -->
+<ComboBox x:Name="ShapingModeSelector"
+          Header="Shaping mode"
+          SelectedIndex="0"
+          SelectionChanged="OnShapingModeChanged"
+          HorizontalAlignment="Stretch">
+    <ComboBoxItem Content="Flat" Tag="flat"/>
+    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+</ComboBox>

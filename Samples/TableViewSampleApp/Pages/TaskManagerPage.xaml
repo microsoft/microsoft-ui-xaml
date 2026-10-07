@@ -4,6 +4,7 @@
     NavigationCacheMode="Disabled"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:models="using:TableViewSampleApp.Models"
     xmlns:local="using:TableViewSampleApp.Pages"
@@ -15,7 +16,11 @@
 
         <DataTemplate x:Key="NameCellTemplate" x:DataType="models:ProcessItem">
             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
-                <Image Source="{x:Bind IconPath, Mode=OneWay}" Width="16" Height="16" Visibility="{x:Bind HasIcon, Mode=OneWay}"/>
+                <!-- No <Image Source="{x:Bind IconPath}"/> here. ProcessItem.IconPath is never
+                     assigned by the sample data, and x:Bind of an EMPTY string to Image.Source
+                     throws while the generated Bindings_Update runs, which aborts the rest of the
+                     template's bindings - that is what left this whole column blank. Rows are
+                     identified by their glyph instead. -->
                 <FontIcon Glyph="{x:Bind IconGlyph, Mode=OneWay}" FontSize="14" Visibility="{x:Bind HasGlyph, Mode=OneWay}" AutomationProperties.AccessibilityView="Raw"/>
                 <TextBlock Text="{x:Bind Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
             </StackPanel>
@@ -92,13 +97,9 @@
 
                 <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
                     <TextBlock Text="Processes" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="ViewModeCombo" SelectedIndex="0" VerticalAlignment="Center"
-                              MinWidth="170" SelectionChanged="OnViewModeChanged"
-                              AutomationProperties.Name="Process list view mode"
-                              ToolTipService.ToolTip="Switch how the process list is shaped (TableViewSource GroupBy or flat list).">
-                        <ComboBoxItem Content="Grouped by category"/>
-                        <ComboBoxItem Content="Flat list"/>
-                    </ComboBox>
+                    <!-- The old "Grouped by category" / "Flat list" ComboBox lived here and was dead:
+                         its handler ran `if (mode == 0) { }`. The real four-option Shaping selector
+                         is in the Options rail and actually calls TableViewSource.GroupBy. -->
                 </StackPanel>
 
                 <AutoSuggestBox x:Name="SearchBox"
@@ -121,7 +122,7 @@
                                   Toggled="OnThemeToggled"
                                   VerticalAlignment="Center"
                                   MinWidth="0"/>
-                    <Button Content="Run new task" AutomationProperties.AutomationId="TaskManagerRunNewTaskButton"/>
+                    <Button Content="Run new task" Click="OnAddProcessClick" AutomationProperties.AutomationId="TaskManagerRunNewTaskButton" AutomationProperties.HelpText="Adds a new process row to the Apps category." ToolTipService.ToolTip="Adds a new process row to the Apps category - the add-a-row-to-a-group action."/>
                     <Button Content="End task" Click="OnEndTaskClick" AutomationProperties.AutomationId="TaskManagerEndTaskButton" AutomationProperties.HelpText="Removes the selected process from the sample process list."/>
                 </StackPanel>
             </Grid>
@@ -194,5 +195,112 @@
         </Border>
     </Grid>
         </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Flat leaves the source unshaped. Grouped calls TableViewSource.GroupBy(keySelector, groupIdentitySelector) on the SAME source instance, so selection, scroll offset and group expansion survive the reshape."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <ComboBox
+                    x:Name="ShapingModeSelector"
+                    AutomationProperties.AutomationId="ShapingModeSelector"
+                    AutomationProperties.Name="Shaping mode"
+                    Header="Shaping mode"
+                    SelectedIndex="0"
+                    HorizontalAlignment="Stretch"
+                    SelectionChanged="OnShapingModeChanged">
+                    <ComboBoxItem Content="Flat" Tag="flat"/>
+                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                    <!-- Hierarchical rows are not available in this release. The options stay
+                         VISIBLE and disabled so the full shape of the shaping axis is honest
+                         signposting rather than a silent omission; re-enable them when the
+                         control ships hierarchy support. -->
+                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                </ComboBox>
+                <ComboBox
+                    x:Name="ShapingGroupKeyCombo"
+                    AutomationProperties.AutomationId="TaskManagerShapingGroupKeyCombo"
+                    AutomationProperties.Name="Group key"
+                    Header="Group by"
+                    SelectedIndex="0"
+                    IsEnabled="False"
+                    ToolTipService.ToolTip="Available once Grouped mode is selected."
+                    HorizontalAlignment="Stretch"
+                    SelectionChanged="OnShapingGroupKeyChanged">
+                    <ComboBoxItem Content="Category" Tag="Category"/>
+                    <ComboBoxItem Content="Status" Tag="Status"/>
+                </ComboBox>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Each action mutates the live collection and re-applies the current shaping, so you can watch rows move between groups, groups empty out, and the grouped projection handle an empty set. Run new task (in the command bar) adds a row to the Apps group."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <StackPanel Spacing="8">
+                    <Button x:Name="ExpandAllButton"
+                            AutomationProperties.AutomationId="TaskManagerExpandAllButton"
+                            Content="Expand all groups"
+                            IsEnabled="False"
+                            ToolTipService.ToolTip="Available once Grouped mode is selected."
+                            Click="OnExpandAllClick"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="CollapseAllButton"
+                            AutomationProperties.AutomationId="TaskManagerCollapseAllButton"
+                            Content="Collapse all groups"
+                            IsEnabled="False"
+                            ToolTipService.ToolTip="Available once Grouped mode is selected."
+                            Click="OnCollapseAllClick"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="MoveCategoryButton"
+                            AutomationProperties.AutomationId="TaskManagerMoveCategoryButton"
+                            Content="Move selected to next category"
+                            IsEnabled="False"
+                            ToolTipService.ToolTip="Select a process first."
+                            Click="OnMoveSelectedCategoryClick"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="EmptyToggleButton"
+                            AutomationProperties.AutomationId="TaskManagerEmptyToggleButton"
+                            Content="Remove all rows (group an empty set)"
+                            Click="OnEmptyToggleClick"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Applied" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="AppliedModeText" Grid.Row="0" Grid.Column="1" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TaskManagerAppliedModeText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Groups" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="GroupCountText" Grid.Row="1" Grid.Column="1" Text="(n/a)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TaskManagerGroupCountText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="RowCountText" Grid.Row="2" Grid.Column="1" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TaskManagerRowCountText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="LastActionText" Grid.Row="3" Grid.Column="1" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TaskManagerLastActionText" TextWrapping="Wrap"/>
+                </Grid>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="What to look for" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <muxc:InfoBar
+                    AutomationProperties.AutomationId="TaskManagerWhatToLookForInfoBar"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="What to look for"
+                    Message="Switch to Grouped and the rows band into Apps / Background processes / Windows processes with a count on each header. Click the CPU header while grouped - the processes reorder WITHIN each band, not across them. Type into the search box while grouped and a band that loses all its rows disappears entirely."/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
     </controls:SamplePresenter>
 </Page>

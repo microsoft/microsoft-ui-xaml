@@ -6,11 +6,36 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
-    xmlns:controls="using:TableViewSampleApp.Controls">
+    xmlns:controls="using:TableViewSampleApp.Controls"
+    xmlns:local="using:TableViewSampleApp.Pages">
+
+    <Page.Resources>
+        <!-- Constrained vocabulary, so the cell editor is a ComboBox rather than free text.
+             TwoWay against a property that raises PropertyChanged, left tab-reachable, and
+             given a per-row accessible name so 20 rows do not all announce "Priority". -->
+        <DataTemplate x:Key="PriorityCell" x:DataType="local:SupportTicket">
+            <ComboBox
+                Margin="8,2"
+                HorizontalAlignment="Stretch"
+                ItemsSource="{x:Bind PriorityOptions}"
+                SelectedItem="{x:Bind Priority, Mode=TwoWay}"
+                AutomationProperties.Name="{x:Bind PriorityAutomationName, Mode=OneWay}"/>
+        </DataTemplate>
+
+        <!-- Boolean, so the cell editor is a CheckBox. Same rules: TwoWay, tab-reachable,
+             per-row accessible name. -->
+        <DataTemplate x:Key="ResolvedCell" x:DataType="local:SupportTicket">
+            <CheckBox
+                Margin="12,0,0,0"
+                MinWidth="0"
+                IsChecked="{x:Bind IsResolved, Mode=TwoWay}"
+                AutomationProperties.Name="{x:Bind ResolvedAutomationName, Mode=OneWay}"/>
+        </DataTemplate>
+    </Page.Resources>
 
     <controls:SamplePresenter
         Header="Headers visibility"
-        Description="Show or hide the table's column headers with the HeadersVisibility property. The aligned control supports Column and None."
+        Description="Show or hide the table's column headers with the HeadersVisibility property. The aligned control supports Column and None. Group headers are a separate surface: hiding the column header strip does not hide them, so the shaping selector is here to make that interaction visible."
         SourceCaption="HeadersVisibilityPage.xaml (excerpt)"
         SourceSnippet="HeadersVisibility.xaml.txt"
         AdditionalSnippetCaption="HeadersVisibilityPage.xaml.cs (excerpt)"
@@ -29,40 +54,97 @@
                     IsClosable="False"
                     Severity="Informational"
                     Title="Try it"
-                    Message="Pick a mode to show or hide the column headers."
+                    Message="Hide the column headers and notice how much harder the Priority and Resolved cells are to interpret — that is the cost the property buys you. Switch shaping to Grouped and hide them again: the group header bands stay, because HeadersVisibility gates the column strip only. Click a group header's chevron (or press Left / Right on it) to collapse one group at a time."
                     MinHeight="104"/>
                 <Border
                     Grid.Row="1"
                     Style="{StaticResource TableHostBorderStyle}"
                     Padding="0"
-                    HorizontalAlignment="Left"
                     VerticalAlignment="Stretch">
                     <tv:TableView
                         x:Name="DemoTable"
                         AutomationProperties.AutomationId="HeadersVisibilityTable"
-                        AutomationProperties.Name="Header visibility records"
+                        AutomationProperties.Name="Support tickets"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <tv:TableViewTextColumn Header="Column 1" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value1}" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Column 2" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value2}" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Column 3" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value3}" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Column 4" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value4}" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Column 5" Width="{StaticResource ColWidthNumber}" Binding="{Binding Value5}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Ticket"   Width="{StaticResource ColWidthNumber}"     Binding="{Binding TicketId}" CanSort="False"
+                                                HeaderToolTip="Incident number, unique per ticket."/>
+                        <tv:TableViewTextColumn Header="Summary"  Width="*" MinWidth="220"                    Binding="{Binding Summary}"  CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Queue"    Width="{StaticResource ColWidthDepartment}" Binding="{Binding Queue}"    CanSort="False"
+                                                HeaderToolTip="Team that owns the ticket."/>
+                        <tv:TableViewTemplateColumn Header="Priority" Width="{StaticResource ColWidthDepartment}" CanSort="False"
+                                                    CellTemplate="{StaticResource PriorityCell}"
+                                                    HeaderToolTip="Urgency: Sev 1 is the most urgent. Editable."/>
+                        <tv:TableViewTextColumn Header="Assignee" Width="{StaticResource ColWidthLongName}"   Binding="{Binding Assignee}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Due"      Width="{StaticResource ColWidthNumber}"     Binding="{Binding DueText}"  CanSort="False"
+                                                HeaderToolTip="Date the ticket breaches its service-level agreement."/>
+                        <tv:TableViewTemplateColumn Header="Resolved" Width="{StaticResource ColWidthNumber}" CanSort="False"
+                                                    CellTemplate="{StaticResource ResolvedCell}"
+                                                    HeaderToolTip="Checked once the ticket is closed. Editable."/>
                     </tv:TableView>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
-            <StackPanel Spacing="12" AutomationProperties.Name="Headers visibility options">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Headers visibility" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock
-                    Text="Choose which header surfaces are visible."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <RadioButton Content="Column" Tag="Column" GroupName="HeadersVisibility" IsChecked="True" Checked="OnHeadersVisibilityChecked" AutomationProperties.AutomationId="HeadersVisibilityColumnRadio" AutomationProperties.HelpText="Shows the table's column headers."/>
-                <RadioButton Content="None" Tag="None" GroupName="HeadersVisibility" Checked="OnHeadersVisibilityChecked" AutomationProperties.AutomationId="HeadersVisibilityNoneRadio" AutomationProperties.HelpText="Hides the table's column headers."/>
+            <StackPanel Spacing="12">
+                <StackPanel Spacing="4" AutomationProperties.Name="Headers visibility options">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Headers visibility" Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock
+                        Text="Choose which header surfaces are visible."
+                        Style="{StaticResource SectionDescriptionTextStyle}"
+                        TextWrapping="Wrap"/>
+                    <RadioButton Content="Column" Tag="Column" GroupName="HeadersVisibility" IsChecked="True" Checked="OnHeadersVisibilityChecked" AutomationProperties.AutomationId="HeadersVisibilityColumnRadio" AutomationProperties.HelpText="Shows the table's column headers."/>
+                    <RadioButton Content="None" Tag="None" GroupName="HeadersVisibility" Checked="OnHeadersVisibilityChecked" AutomationProperties.AutomationId="HeadersVisibilityNoneRadio" AutomationProperties.HelpText="Hides the table's column headers."/>
+                </StackPanel>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"
+                           Text="Flat leaves the source unshaped. Grouped calls TableViewSource.GroupBy on the same source instance, so selection, scroll offset and group expansion survive the reshape. Group headers are a different surface from the column header strip."/>
+                <ComboBox x:Name="ShapingModeSelector"
+                          AutomationProperties.AutomationId="ShapingModeSelector"
+                          Header="Shaping mode"
+                          SelectedIndex="0"
+                          SelectionChanged="OnShapingModeChanged"
+                          HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Flat" Tag="flat"/>
+                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                    <!-- Hierarchical rows are not available in this release. Shown disabled so the
+                         shape of the feature is visible; re-enable when the control ships support
+                         (TableViewSource exposes only Filter / GroupBy / Sort today). -->
+                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                </ComboBox>
+                <ComboBox x:Name="GroupKeyCombo" Header="Group by" IsEnabled="False" SelectedIndex="0"
+                          SelectionChanged="OnGroupKeyChanged"
+                          AutomationProperties.AutomationId="GroupKeyCombo"
+                          AutomationProperties.Name="Group by"
+                          ToolTipService.ToolTip="Available once Grouped mode is selected."
+                          HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Queue" Tag="Queue"/>
+                    <ComboBoxItem Content="Priority" Tag="Priority"/>
+                </ComboBox>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <StackPanel Spacing="8">
+                    <Button x:Name="ExpandAllButton" Content="Expand all groups" Click="OnExpandAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." AutomationProperties.AutomationId="ExpandAllButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="CollapseAllButton" Content="Collapse all groups" Click="OnCollapseAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." AutomationProperties.AutomationId="CollapseAllButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="ReassignRowButton" Content="Escalate first ticket (moves its group)" Click="OnReassignRowClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." AutomationProperties.AutomationId="ReassignRowButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="AddRowButton" Content="File a new ticket" Click="OnAddRowClick" AutomationProperties.AutomationId="AddRowButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="RemoveRowButton" Content="Close the first ticket (removes it)" Click="OnRemoveRowClick" AutomationProperties.AutomationId="RemoveRowButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+
+                <muxc:InfoBar AutomationProperties.LiveSetting="Polite"
+                    AutomationProperties.AutomationId="HeadersVisibilityStatusInfoBar"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Status"
+                    Message="{x:Bind StatusText, Mode=OneWay}"
+                    MinHeight="64"/>
             </StackPanel>
         </controls:SamplePresenter.Options>
 

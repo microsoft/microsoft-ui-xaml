@@ -39,18 +39,23 @@
                         AutomationProperties.Name="Right-to-left people"
                         SelectionMode="Single"
                         FlowDirection="RightToLeft"
+                        IsReadOnly="False"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <!-- RTL mirrors column flow and resize grippers. -->
-                        <tv:TableViewTextColumn x:Name="IndexColumn" Header="Index"        Width="{StaticResource ColWidthId}"  Binding="{Binding Index}" CanSort="False"/>
-                        <tv:TableViewTextColumn x:Name="NameColumn" Header="Name"         Width="{StaticResource ColWidthLongName}"  Binding="{Binding Name}" CanSort="False"/>
-                        <tv:TableViewTextColumn x:Name="DepartmentColumn" Header="Department"   Width="{StaticResource ColWidthDepartment}" CanResize="True"  Binding="{Binding Department}" CanSort="False"/>
-                        <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role"         Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
-                        <tv:TableViewTextColumn x:Name="RegionColumn" Header="Region"       Width="{StaticResource ColWidthLocation}" Binding="{Binding Region}" CanSort="False"/>
-                        <tv:TableViewTextColumn x:Name="JoinDateColumn" Header="Join date"     Width="{StaticResource ColWidthDate}" Binding="{Binding JoinDate}" CanSort="False"/>
-                        <tv:TableViewTextColumn x:Name="NotesColumn" Header="Notes"        Width="{StaticResource ColWidthNotes}" Binding="{Binding Notes}" CanSort="False"/>
-                        <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary"       Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary}" CanSort="False"/>
-                        <tv:TableViewTextColumn x:Name="StatusColumn" Header="Status"       Width="{StaticResource ColWidthDepartment}" Binding="{Binding Status}" CanSort="False"/>
+                        <!-- RTL mirrors column flow, resize grippers AND sort chevrons.
+                             CanSort is on so the chevron side can be verified; IsReadOnly
+                             is false so the built-in text editor is reachable (F2 or
+                             double-tap) and caret/selection behaviour can be checked
+                             under RTL. -->
+                        <tv:TableViewTextColumn x:Name="IndexColumn" Header="Index"        Width="{StaticResource ColWidthId}"  Binding="{Binding Index}" SortMemberPath="Index"/>
+                        <tv:TableViewTextColumn x:Name="NameColumn" Header="Name"         Width="{StaticResource ColWidthLongName}"  Binding="{Binding Name}" SortMemberPath="Name"/>
+                        <tv:TableViewTextColumn x:Name="DepartmentColumn" Header="Department"   Width="{StaticResource ColWidthDepartment}" CanResize="True"  Binding="{Binding Department}" SortMemberPath="Department"/>
+                        <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role"         Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" SortMemberPath="Role"/>
+                        <tv:TableViewTextColumn x:Name="RegionColumn" Header="Region"       Width="{StaticResource ColWidthLocation}" Binding="{Binding Region}" SortMemberPath="Region"/>
+                        <tv:TableViewTextColumn x:Name="JoinDateColumn" Header="Join date"     Width="{StaticResource ColWidthDate}" Binding="{Binding JoinDate}" SortMemberPath="JoinDate"/>
+                        <tv:TableViewTextColumn x:Name="NotesColumn" Header="Notes"        Width="{StaticResource ColWidthNotes}" Binding="{Binding Notes}" SortMemberPath="Notes"/>
+                        <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary"       Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary}" SortMemberPath="Salary"/>
+                        <tv:TableViewTextColumn x:Name="StatusColumn" Header="Status"       Width="{StaticResource ColWidthDepartment}" Binding="{Binding Status}" SortMemberPath="Status"/>
                     </tv:TableView>
                 </Border>
             </Grid>
@@ -79,6 +84,64 @@
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Center"/>
 
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Filtering, grouping and sorting all compose on one TableViewSource. Apply them with RTL on to check that group headers, the filter result and the sort chevron all mirror correctly."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+
+                <TextBox
+                    x:Name="FilterBox"
+                    AutomationProperties.AutomationId="FilterBox"
+                    Header="Filter (name, dept, role, region, status)"
+                    PlaceholderText="Type to filter…"
+                    TextChanged="OnFilterChanged"/>
+
+                <ComboBox
+                    x:Name="ShapingModeSelector"
+                    AutomationProperties.AutomationId="ShapingModeSelector"
+                    Header="Shaping mode"
+                    SelectedIndex="0"
+                    SelectionChanged="OnShapingModeChanged"
+                    HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Flat" Tag="flat"/>
+                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                    <!-- Hierarchical rows are not available in this release. The options are shown
+                         disabled so the shape of the feature is visible; re-enable when the control
+                         ships hierarchy support. No hierarchy API exists on TableView or
+                         TableViewSource yet — TableViewRowInfo.h only reserves room for it — so the
+                         code-behind stub in ApplyShaping is prose, not a call. -->
+                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                </ComboBox>
+                <ComboBox
+                    x:Name="GroupBySelector"
+                    AutomationProperties.AutomationId="GroupBySelector"
+                    Header="Group by"
+                    SelectedIndex="0"
+                    IsEnabled="False"
+                    ToolTipService.ToolTip="Available once the shaping mode is Grouped."
+                    SelectionChanged="OnGroupByChanged"
+                    HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Region"     Tag="Region"/>
+                    <ComboBoxItem Content="Status"     Tag="Status"/>
+                </ComboBox>
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button x:Name="ExpandAllButton" AutomationProperties.AutomationId="ExpandAllButton" Content="Expand all" Click="OnExpandAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once the shaping mode is Grouped."/>
+                    <Button x:Name="CollapseAllButton" AutomationProperties.AutomationId="CollapseAllButton" Content="Collapse all" Click="OnCollapseAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once the shaping mode is Grouped."/>
+                </StackPanel>
+                <Button
+                    x:Name="ClearShapingButton"
+                    AutomationProperties.AutomationId="ClearShapingButton"
+                    Content="Clear filter + grouping"
+                    Click="OnClearShapingClick"
+                    IsEnabled="False"
+                    ToolTipService.ToolTip="Available once a filter is set or the shaping mode is Grouped."
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"/>
+
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                 <Grid ColumnSpacing="12" RowSpacing="4">
                     <Grid.ColumnDefinitions>
@@ -90,15 +153,21 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="FlowDirection" Style="{StaticResource StatusReadoutLabelStyle}"/>
                     <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="0" Grid.Column="1" x:Name="FlowDirectionText" Text="RightToLeft" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="FlowDirectionText"/>
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Rows loaded" Style="{StaticResource StatusReadoutLabelStyle}"/>
                     <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="1" Grid.Column="1" x:Name="RowsLoadedText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="RowsLoadedText"/>
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Selected count" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="1" x:Name="SelectedCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedCountText"/>
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Last reorder" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="1" x:Name="LastReorderText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="LastReorderText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Shown" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="1" x:Name="ShownRowsText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShownRowsText"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Grouped by" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="1" x:Name="GroupedByText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="GroupedByText"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Selected count" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="4" Grid.Column="1" x:Name="SelectedCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedCountText"/>
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Last reorder" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="5" Grid.Column="1" x:Name="LastReorderText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="LastReorderText" TextWrapping="Wrap"/>
                 </Grid>
 
                 <muxc:InfoBar
@@ -106,7 +175,7 @@
                     IsClosable="False"
                     Severity="Informational"
                     Title="What to look for"
-                    Message="With RTL on, the whole grid mirrors: column flow reverses and the Department resize gripper moves to the left of its header."/>
+                    Message="With RTL on the whole grid mirrors: column flow reverses, the Department resize gripper moves to the left of its header, the sort chevron sits on the logical trailing edge, and group headers indent from the right. Edits (F2 or double-tap) keep logical caret order."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
 

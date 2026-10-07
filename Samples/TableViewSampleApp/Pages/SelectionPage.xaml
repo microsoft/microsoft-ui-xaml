@@ -6,7 +6,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
-    xmlns:controls="using:TableViewSampleApp.Controls">
+    xmlns:controls="using:TableViewSampleApp.Controls"
+    xmlns:models="using:TableViewSampleApp.Models"
+    xmlns:pages="using:TableViewSampleApp.Pages">
+
+    <Page.Resources>
+        <pages:SelectionChipTintConverter x:Key="SelectionChipTintConverter"/>
+        <pages:SelectionChipDotConverter x:Key="SelectionChipDotConverter"/>
+        <pages:SelectionRowCellNameConverter x:Key="SelectionRowCellNameConverter"/>
+    </Page.Resources>
 
     <controls:SamplePresenter
         Header="Selection"
@@ -43,8 +51,58 @@
                         <tv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" SortMemberPath="FirstName" CanSort="False"/>
                         <tv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}"  SortMemberPath="LastName" CanSort="False"/>
                         <tv:TableViewTextColumn Header="Email"      Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}"      SortMemberPath="Email" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" SortMemberPath="Department" CanSort="False"/>
+                        <!-- Templated cell: a rounded chip whose tint and dot come from cached,
+                             page-private converters (no per-Convert brush allocation).
+                             SortMemberPath keeps the header sortable even though the cell is
+                             a template rather than text. -->
+                        <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthDepartment}" SortMemberPath="Department" CanSort="True">
+                            <tv:TableViewTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="models:Person">
+                                    <Border
+                                        Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource SelectionChipTintConverter}}"
+                                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="10"
+                                        Padding="8,2"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="7">
+                                            <Ellipse
+                                                Width="8" Height="8"
+                                                VerticalAlignment="Center"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                Fill="{x:Bind Department, Mode=OneWay, Converter={StaticResource SelectionChipDotConverter}}"/>
+                                            <TextBlock
+                                                Text="{x:Bind Department, Mode=OneWay}"
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </tv:TableViewTemplateColumn.CellTemplate>
+                        </tv:TableViewTemplateColumn>
                         <tv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}"       SortMemberPath="Role" CanSort="False"/>
+                        <!-- Boolean cell gets a real CheckBox: TwoWay bound, left tab-reachable
+                             (IsTabStop untouched, hit-testable), and given a per-row accessible
+                             name so fifty checkboxes do not all announce identically. Person
+                             raises PropertyChanged for IsActive, so a recycled row re-binds the
+                             correct state after scrolling. -->
+                        <tv:TableViewTemplateColumn
+                            Header="Active"
+                            Width="{StaticResource ColWidthBoolean}"
+                            SortMemberPath="IsActive"
+                            CanSort="True"
+                            HeaderToolTip="Whether this person is a currently active employee. Toggling it moves the row when the Group by key is Active status.">
+                            <tv:TableViewTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="models:Person">
+                                    <CheckBox
+                                        MinWidth="0"
+                                        VerticalAlignment="Center"
+                                        IsChecked="{x:Bind IsActive, Mode=TwoWay}"
+                                        AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource SelectionRowCellNameConverter}, ConverterParameter=Active employee: {0}}"/>
+                                </DataTemplate>
+                            </tv:TableViewTemplateColumn.CellTemplate>
+                        </tv:TableViewTemplateColumn>
                     </tv:TableView>
                 </Border>
             </Grid>
@@ -52,9 +110,9 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Mode and quick actions" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Selection mode" Style="{StaticResource SectionHeaderTextStyle}"/>
                 <TextBlock
-                    Text="Pick a selection mode, then use the buttons to change the single selected row from code. The hint below updates for each mode."
+                    Text="Pick a selection mode. The hint below updates for each mode; the Actions section drives selection from code so you can compare it with clicking a row."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
                 <ComboBox
@@ -67,17 +125,122 @@
                     <ComboBoxItem Content="None"/>
                     <ComboBoxItem Content="Single"/>
                 </ComboBox>
-                <StackPanel Spacing="8">
-                    <Button Content="Select first" Click="OnSelectFirstClick" AutomationProperties.AutomationId="SelectFirstButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button Content="Select last" Click="OnSelectLastClick" AutomationProperties.AutomationId="SelectLastButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button Content="Clear" Click="OnClearClick" AutomationProperties.AutomationId="ClearButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                </StackPanel>
                 <TextBlock
                     x:Name="ModeDescriptionText"
                     AutomationProperties.AutomationId="SelectionModeDescriptionText"
                     AutomationProperties.LiveSetting="Polite"
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Selection is anchored on each row's item identity, so it is worth selecting a row first and then reshaping. Hierarchical modes are still in development and are shown greyed out rather than hidden."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <ComboBox
+                    x:Name="ShapingModeSelector"
+                    Header="Shaping mode"
+                    SelectedIndex="0"
+                    SelectionChanged="OnShapingModeChanged"
+                    AutomationProperties.AutomationId="ShapingModeSelector"
+                    AutomationProperties.Name="Shaping mode"
+                    HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Flat" Tag="flat"/>
+                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                    <!-- Hierarchical rows are not available in this release. The options are
+                         shown disabled so the shape of the feature is visible; re-enable when
+                         the control ships hierarchy support. The matching (commented) branch
+                         is in SelectionPage.xaml.cs ApplyShaping(). -->
+                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                </ComboBox>
+                <ComboBox
+                    x:Name="GroupKeyCombo"
+                    Header="Group by"
+                    SelectedIndex="0"
+                    IsEnabled="False"
+                    ToolTipService.ToolTip="Available once the shaping mode is Grouped."
+                    SelectionChanged="OnGroupKeyChanged"
+                    AutomationProperties.AutomationId="GroupKeyCombo"
+                    AutomationProperties.Name="Group by key"
+                    HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Role" Tag="Role"/>
+                    <ComboBoxItem Content="Active status" Tag="Active"/>
+                </ComboBox>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Each action reports what it did in the Status section below. Selection is anchored on row item identity, so reshaping, inserting and removing are the cases worth probing. Click a group header to expand or collapse that one group."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <StackPanel Spacing="8">
+                    <Button
+                        x:Name="SelectFirstButton"
+                        Content="Select first (programmatic)"
+                        Click="OnSelectFirstClick"
+                        AutomationProperties.AutomationId="SelectFirstButton"
+                        AutomationProperties.Name="Select first row programmatically"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="SelectLastButton"
+                        Content="Select last (programmatic)"
+                        Click="OnSelectLastClick"
+                        AutomationProperties.AutomationId="SelectLastButton"
+                        AutomationProperties.Name="Select last row programmatically"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="ClearButton"
+                        Content="Clear selection"
+                        Click="OnClearClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Available once a row is selected."
+                        AutomationProperties.AutomationId="ClearButton"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        Content="Expand all groups"
+                        Click="OnExpandAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Available once a Group by key is selected."
+                        AutomationProperties.AutomationId="ExpandAllButton"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        Content="Collapse all groups"
+                        Click="OnCollapseAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Available once a Group by key is selected."
+                        AutomationProperties.AutomationId="CollapseAllButton"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="MoveGroupButton"
+                        Content="Move selected row to another group"
+                        Click="OnMoveSelectedGroupClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Available once a row is selected and the shaping mode is Grouped."
+                        AutomationProperties.AutomationId="MoveGroupButton"
+                        AutomationProperties.Name="Mutate the selected row's group key"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="InsertAboveButton"
+                        Content="Insert row above selection"
+                        Click="OnInsertAboveClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Available once a row is selected."
+                        AutomationProperties.AutomationId="InsertAboveButton"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="RemoveSelectedButton"
+                        Content="Remove selected row"
+                        Click="OnRemoveSelectedClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Available once a row is selected."
+                        AutomationProperties.AutomationId="RemoveSelectedButton"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
 
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                 <Grid ColumnSpacing="12" RowSpacing="4">
@@ -86,6 +249,10 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -103,6 +270,18 @@
 
                     <TextBlock Grid.Row="3" Grid.Column="0" Text="SelectedItem" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
                     <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="1" x:Name="SelectedItemText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedItemText" TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Last delta" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="4" Grid.Column="1" x:Name="SelectionDeltaText" Text="(no SelectionChanged yet)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectionDeltaText" TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Shaping mode" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="5" Grid.Column="1" x:Name="ShapeModeText" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShapeModeText" TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Grouped by" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="6" Grid.Column="1" x:Name="GroupedByText" Text="(not grouped)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="GroupedByText" TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="7" Grid.Column="1" x:Name="InvariantText" Text="(not exercised yet)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="InvariantText" TextWrapping="Wrap"/>
                 </Grid>
             </StackPanel>
         </controls:SamplePresenter.Options>

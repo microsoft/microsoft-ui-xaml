@@ -1,16 +1,83 @@
-private void OnHeadersVisibilityChecked(object sender, RoutedEventArgs e)
+// HeadersVisibility gates the column header strip only.
+DemoTable.HeadersVisibility = tag switch
 {
-    if (sender is RadioButton rb && rb.Tag is string tag &&
-        Enum.TryParse<TableViewHeadersVisibility>(tag, out var v))
+    "None" => TableViewHeadersVisibility.None,
+    _ => TableViewHeadersVisibility.Column,
+};
+
+// One source, reshaped in place: GroupBy / ClearGroupBy mutate and return the
+// SAME instance, so grouping the ticket queue never rebuilds the source.
+_source = TableViewSource.From(Rows);
+DemoTable.ItemsSource = _source;
+
+private void ApplyShaping()
+{
+    if (_mode != "grouped")
     {
-        EnsureTableStyle().HeadersVisibility = v;
+        _source.ClearGroupBy();
+    }
+    else
+    {
+        var key = _groupKey;
+        // The two delegates receive DIFFERENT things despite both parameters
+        // being named `item`:
+        //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
+        //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
+        // An item-typed identity lambda returns empty, which is a fail-fast, so
+        // grouping would silently never apply.
+        _source.GroupBy(
+            item => (object)GroupValue(item, key),
+            groupKey => groupKey?.ToString() ?? "(none)");
+    }
+
+    // case "hierarchy":
+    // case "groupedhierarchy":
+    //     Hierarchical rows are not available in this release: neither
+    //     TableViewSource.idl nor TableView.idl exposes a hierarchy verb (the
+    //     only shaping verbs are Filter / GroupBy / Sort and their Clear*
+    //     counterparts). When the control ships hierarchy support, apply it to
+    //     this same source here, alongside the GroupBy stage above so the two
+    //     compose, then set _appliedMode as below.
+
+    // Set ONLY after the shaping call returns. Every readout and every
+    // enable/disable guard on this page reads _appliedMode, never _mode.
+    _appliedMode = _mode;
+
+    if (_appliedMode == "grouped")
+    {
+        DemoTable.ExpandAllGroups();
     }
 }
 
-private TableStyle EnsureTableStyle()
+// GroupValue never returns the empty string — "" is not a usable group identity
+// and GroupBy fails fast on it, so a blank property is coalesced.
+private static string GroupValue(object item, string key)
 {
-    return DemoTable.TableStyle ??= new TableStyle
+    if (item is not SupportTicket ticket) return "(none)";
+
+    var value = key == "Priority" ? ticket.Priority : ticket.Queue;
+    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+}
+
+// Only ExpandAllGroups / CollapseAllGroups are public in this release; a single
+// group is expanded or collapsed from its header chevron, or with Left / Right
+// while the group header has focus.
+DemoTable.ExpandAllGroups();
+DemoTable.CollapseAllGroups();
+
+// The row model raises PropertyChanged for everything a cell editor binds to,
+// so an edit made in a recycled container is written to the model and re-read
+// when the container is reused — the value survives scrolling.
+public bool IsResolved
+{
+    get => _isResolved;
+    set
     {
-        HeadersVisibility = TableViewHeadersVisibility.Column,
-    };
+        if (_isResolved != value)
+        {
+            _isResolved = value;
+            Raise(nameof(IsResolved));
+            Raise(nameof(ResolvedAutomationName));
+        }
+    }
 }

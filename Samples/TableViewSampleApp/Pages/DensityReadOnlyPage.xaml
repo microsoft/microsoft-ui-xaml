@@ -6,73 +6,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
-    xmlns:controls="using:TableViewSampleApp.Controls"
-    xmlns:local="using:TableViewSampleApp.Pages"
-    xmlns:models="using:TableViewSampleApp.Models">
-
-    <Page.Resources>
-        <!-- Shared read-only flag. The aligned control has framework editing APIs;
-             this density page still hosts template TextBox cells so IsReadOnly has
-             an obvious visual effect outside the dedicated Cell Editing page. -->
-        <local:ReadOnlyState x:Key="ReadOnlyState"/>
-        <local:RowAutomationNameConverter x:Key="RowAutomationNameConverter"/>
-
-        <DataTemplate x:Key="FirstNameCell" x:DataType="models:Person">
-            <TextBox
-                Text="{x:Bind FirstName, Mode=TwoWay}"
-                IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
-                BorderThickness="0"
-                Background="Transparent"
-                Margin="4,1"
-                MinHeight="0"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Stretch"
-                AutomationProperties.Name="{Binding FullName, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='First name for {0}'}"/>
-        </DataTemplate>
-
-        <DataTemplate x:Key="LastNameCell" x:DataType="models:Person">
-            <TextBox
-                Text="{x:Bind LastName, Mode=TwoWay}"
-                IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
-                BorderThickness="0"
-                Background="Transparent"
-                Margin="4,1"
-                MinHeight="0"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Stretch"
-                AutomationProperties.Name="{Binding FullName, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Last name for {0}'}"/>
-        </DataTemplate>
-
-        <DataTemplate x:Key="RoleCell" x:DataType="models:Person">
-            <TextBox
-                Text="{x:Bind Role, Mode=TwoWay}"
-                IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
-                BorderThickness="0"
-                Background="Transparent"
-                Margin="4,1"
-                MinHeight="0"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Stretch"
-                AutomationProperties.Name="{Binding FullName, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Role for {0}'}"/>
-        </DataTemplate>
-
-        <DataTemplate x:Key="EmailCell" x:DataType="models:Person">
-            <TextBox
-                Text="{x:Bind Email, Mode=TwoWay}"
-                IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
-                BorderThickness="0"
-                Background="Transparent"
-                Margin="4,1"
-                MinHeight="0"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Stretch"
-                AutomationProperties.Name="{Binding FullName, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Email for {0}'}"/>
-        </DataTemplate>
-    </Page.Resources>
+    xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
-        Header="Density &amp; read-only"
-        Description="Two table-level knobs in one demo. TableView.Density (Compact / Standard / Comfortable) resizes row height and built-in cell padding live, while TableView.IsReadOnly gates editing — here it flips template TextBox cells between editable and read-only."
+        Header="Density"
+        Description="TableView.Density (Compact / Standard / Comfortable) resizes row height and built-in cell padding live. Plain text columns show the effect most clearly. Grouping is demonstrated alongside it because a group header has its own height, so density and grouping interact: switch the group key and re-run the density presets to see both row and group-header metrics change."
         SourceCaption="DensityReadOnlyPage.xaml (excerpt)"
         SourceSnippet="DensityReadOnly.xaml.txt"
         AdditionalSnippetCaption="DensityReadOnlyPage.xaml.cs (excerpt)"
@@ -91,7 +29,7 @@
                     IsClosable="False"
                     Severity="Informational"
                     Title="Try it"
-                    Message="Pick a density to change the row height, then flip Read-only on and off — the editable name / role / email cells lock and unlock."
+                    Message="Pick a density to change the row height and built-in cell padding, then group by Department or Role and expand or collapse all groups to compare row metrics against group-header metrics."
                     MinHeight="104"/>
                 <Border
                     Grid.Row="1"
@@ -100,16 +38,17 @@
                     VerticalAlignment="Stretch">
                     <tv:TableView
                         x:Name="DemoTable"
-                        AutomationProperties.Name="People density and read-only"
+                        AutomationProperties.Name="People density"
                         AutomationProperties.AutomationId="DensityReadOnlyTable"
                         SelectionMode="Single"
+                        SelectionChanged="OnTableSelectionChanged"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <tv:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
-                        <tv:TableViewTemplateColumn Header="First name" Width="{StaticResource ColWidthShortName}" SortMemberPath="FirstName" CellTemplate="{StaticResource FirstNameCell}" CanSort="False"/>
-                        <tv:TableViewTemplateColumn Header="Last name" Width="{StaticResource ColWidthShortName}" SortMemberPath="LastName" CellTemplate="{StaticResource LastNameCell}" CanSort="False"/>
-                        <tv:TableViewTemplateColumn Header="Role" Width="{StaticResource ColWidthLongName}" SortMemberPath="Role" CellTemplate="{StaticResource RoleCell}" CanSort="False"/>
-                        <tv:TableViewTemplateColumn Header="Email" Width="*" MinWidth="200" SortMemberPath="Email" CellTemplate="{StaticResource EmailCell}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="First name" Width="140" Binding="{Binding FirstName}" SortMemberPath="FirstName" HeaderToolTip="Given name."/>
+                        <tv:TableViewTextColumn Header="Last name" Width="140" Binding="{Binding LastName}" SortMemberPath="LastName" HeaderToolTip="Family name."/>
+                        <tv:TableViewTextColumn Header="Role" Width="180" Binding="{Binding Role}" SortMemberPath="Role" HeaderToolTip="Job title. Can be used as the grouping key."/>
+                        <tv:TableViewTextColumn Header="Department" Width="130" Binding="{Binding Department}" SortMemberPath="Department" HeaderToolTip="Owning department. The default grouping key."/>
+                        <tv:TableViewTextColumn Header="Email" Width="*" MinWidth="180" Binding="{Binding Email}" SortMemberPath="Email" HeaderToolTip="Work email address. Takes the leftover width."/>
                     </tv:TableView>
                 </Border>
             </Grid>
@@ -136,29 +75,130 @@
                     </muxc:RadioButtons>
                 </StackPanel>
 
-                <StackPanel Spacing="4" AutomationProperties.Name="Read-only options">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Read-only" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <StackPanel Spacing="4" AutomationProperties.Name="Shaping options">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                     <TextBlock
-                        Text="Toggle table-level IsReadOnly to lock the editable cells."
+                        Text="TableViewSource.GroupBy reshapes the same source in place, so density, selection and scroll offset survive a mode change. Hierarchy is a separate shaping axis and is not available in this release."
                         Style="{StaticResource SectionDescriptionTextStyle}"
                         TextWrapping="Wrap"/>
-                    <ToggleSwitch
-                        x:Name="ReadOnlyToggle"
-                        Header="IsReadOnly"
-                        OnContent="On (cells locked)"
-                        OffContent="Off (cells editable)"
-                        Toggled="OnReadOnlyToggled"
-                        AutomationProperties.AutomationId="ReadOnlyToggle"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="ShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. The options stay
+                             visible but disabled so the shape of the feature is discoverable;
+                             re-enable them when the control ships hierarchy support, and uncomment
+                             the matching branch in ApplyGrouping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="DensityGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        SelectionChanged="OnGroupKeyChanged"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Department" Tag="Department"/>
+                        <ComboBoxItem Content="Role" Tag="Role"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="DensityExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllGroupsClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="DensityCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllGroupsClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
                 </StackPanel>
 
-                <muxc:InfoBar AutomationProperties.LiveSetting="Polite"
-                    AutomationProperties.AutomationId="DensityReadOnlyStatusInfoBar"
-                    IsOpen="True"
-                    IsClosable="False"
-                    Severity="Informational"
-                    Title="Status"
-                    Message="{x:Bind StatusText, Mode=OneWay}"
-                    MinHeight="64"/>
+                <StackPanel Spacing="4" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock
+                        Text="Mutation and edge cases for the grouping axis. Select a row in the table first — the row-scoped actions stay disabled until something is selected."
+                        Style="{StaticResource SectionDescriptionTextStyle}"
+                        TextWrapping="Wrap"/>
+                    <Button
+                        x:Name="ChangeGroupValueButton"
+                        Content="Change selected row's group value"
+                        Click="OnChangeGroupValueClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Select a row first."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="DensityChangeGroupValueButton"
+                        AutomationProperties.HelpText="Rewrites the property the table is currently grouped on, so the row moves to another group."/>
+                    <Button
+                        x:Name="DuplicateRowButton"
+                        Content="Add a row to that group"
+                        Click="OnDuplicateRowClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Select a row first."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="DensityDuplicateRowButton"
+                        AutomationProperties.HelpText="Inserts a copy of the selected row immediately after it, so a group gains a member."/>
+                    <Button
+                        x:Name="RemoveRowButton"
+                        Content="Remove selected row"
+                        Click="OnRemoveRowClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Select a row first."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="DensityRemoveRowButton"
+                        AutomationProperties.HelpText="Removes the selected row, so a group loses a member and can disappear entirely."/>
+                    <Button
+                        x:Name="EmptyToggleButton"
+                        Content="Clear all rows"
+                        Click="OnToggleEmptyClick"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="DensityEmptyToggleButton"
+                        AutomationProperties.HelpText="Empties the source and restores it, so grouping over an empty set can be observed."/>
+                </StackPanel>
+
+                <StackPanel Spacing="4" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid ColumnSpacing="12" RowSpacing="4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Density" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="DensityValueText" Grid.Row="0" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="DensityValueText"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="RowCountValueText" Grid.Row="1" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="DensityRowCountText"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="GroupedByValueText" Grid.Row="2" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="DensityGroupedByText" TextWrapping="Wrap"/>
+                        <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Top" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="LastActionText" Grid.Row="3" Grid.Column="1" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="DensityLastActionText" TextWrapping="Wrap"/>
+                    </Grid>
+                </StackPanel>
             </StackPanel>
         </controls:SamplePresenter.Options>
 

@@ -31,12 +31,6 @@ namespace TableViewSampleApp.Pages;
 /// </summary>
 public sealed partial class ShowcasePage : Page
 {
-    private enum ShowcaseMode
-    {
-        Flat,
-        Grouped,
-    }
-
     // Active preset for the cell-tint converters. They are instantiated by XAML
     // as page resources, so they read this static rather than holding a page
     // back-reference (matches the conditional-styling sample's pattern).
@@ -49,7 +43,14 @@ public sealed partial class ShowcasePage : Page
     private static readonly int[] s_liveRows = { 0, 1, 2, 3, 4 };
 
     private readonly ObservableCollection<Person> _people = new();
-    private ShowcaseMode _mode = ShowcaseMode.Flat;
+
+    // Reshaped IN PLACE: GroupBy / ClearGroupBy / Sort mutate and return the same TableViewSource
+    // (TableViewSource.cpp:49-50). Rebuilding the source per change - which this page used to do -
+    // drops selection, scroll offset and group expansion on every toggle.
+    private TableViewSource? _source;
+    private string _mode = "flat";          // requested
+    private string _appliedMode = "flat";   // applied - every readout and guard reads THIS
+    private string _groupKey = "Department";
 
     private readonly Random _liveRandom = new();
     private DispatcherTimer? _liveTimer;
@@ -65,7 +66,7 @@ public sealed partial class ShowcasePage : Page
         InitializeComponent();
         PeopleTable.HeadersVisibility = TableViewHeadersVisibility.Column;
 
-        ApplyMode(ShowcaseMode.Flat);
+        ApplyMode();
 
         Vibrant = VibrantToggle?.IsOn ?? true;
         UpdateStatus();
@@ -87,25 +88,35 @@ public sealed partial class ShowcasePage : Page
         UpdateStatus();
     }
 
-    // ----- Source mode (flat / grouped) -----
+    // ----- Source shaping (flat / grouped) -----
 
     private void OnModeSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (PeopleTable is null ||
-            sender is not RadioButtons { SelectedItem: FrameworkElement { Tag: string tag } })
+            ShapingModeSelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
         {
             return;
         }
 
-        if (Enum.TryParse<ShowcaseMode>(tag, out var mode))
-        {
-            ApplyMode(mode);
-        }
+        _mode = tag;
+        ApplyMode();
+        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Shaping mode -> {0}", _appliedMode == "grouped" ? "Grouped" : "Flat"));
     }
 
-    private void ApplyMode(ShowcaseMode mode)
+    private void OnShapingGroupKeyChanged(object sender, SelectionChangedEventArgs e)
     {
-        _mode = mode;
+        if (PeopleTable is null || ShapingGroupKeyCombo?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        {
+            return;
+        }
+
+        _groupKey = tag;
+        ApplyMode();
+        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Group key -> {0}", GroupKeyLabel(tag)));
+    }
+
+    private void ApplyMode()
+    {
         if (PeopleTable is null)
         {
             return;
@@ -129,7 +140,7 @@ public sealed partial class ShowcasePage : Page
 
         if (RowCountCombo is not null)
         {
-            RowCountCombo.IsEnabled = mode == ShowcaseMode.Flat;
+            RowCountCombo.IsEnabled = _appliedMode != "grouped";
         }
 
         UpdateStatus();
@@ -142,31 +153,211 @@ public sealed partial class ShowcasePage : Page
             return;
         }
 
-        PeopleTable.ItemsSource = _mode switch
+        if (_source is null)
         {
-            ShowcaseMode.Grouped => ApplyActiveSort(
-                TableViewSource.From(_people).GroupBy(GroupByDepartment, GroupIdentity)),
-            _ => ApplyActiveSort(TableViewSource.From(_people)),
-        };
+            _source = TableViewSource.From(_people);
+            PeopleTable.ItemsSource = _source;
+        }
+
+        switch (_mode)
+        {
+            case "grouped":
+                var key = _groupKey;
+                // The two delegates receive DIFFERENT things despite both parameters being named
+                // `item`: TableViewKeySelector gets the ROW ITEM, TableViewIdentitySelector gets
+                // the GROUP KEY (TableViewSource.idl:12-16). The old item-typed identity lambda
+                // here could return the empty string, which is an E_INVALIDARG fail-fast.
+                _source.GroupBy(
+                    item => (object)GroupValue(item, key),
+                    groupKey => groupKey?.ToString() ?? "(none)");
+                break;
+
+            // case "hierarchy":
+            // case "groupedhierarchy":
+            //     Hierarchical rows are not available in this release, and no hierarchy API exists
+            //     on TableViewSource or TableView yet, so there is deliberately no call written
+            //     here to copy. When the control ships hierarchy support, apply it to this same
+            //     source instance alongside the GroupBy stage above so the two compose, and drop
+            //     the IsEnabled="False" from the matching options in the XAML.
+            //     break;
+
+            default:
+                _source.ClearGroupBy();
+                break;
+        }
+
+        // Set ONLY after the shaping call returns: a readout driven by the REQUESTED mode lies
+        // about the table whenever GroupBy throws.
+        _appliedMode = _mode;
+
+        ApplyActiveSort(_source);
     }
 
-    // Grouping key paired with a stable string identity, so group identity survives re-shaping
-    // (filter/sort) instead of groups being rebuilt on every source change.
-    private static TableViewKeySelector GroupByDepartment => item => ((Person)item).Department;
-
-    private TableViewSource ApplyActiveSort(TableViewSource source)
+    // Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
+    private static string GroupValue(object item, string key)
     {
+        if (item is not Person person)
+        {
+            return "(none)";
+        }
+
+        var value = key switch
+        {
+            "Role" => person.Role,
+            "Active" => person.IsActive ? "Active" : "Inactive",
+            _ => person.Department,
+        };
+
+        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+    }
+
+    private static string GroupKeyLabel(string key) => key switch
+    {
+        "Role" => "Role",
+        "Active" => "Active status",
+        _ => "Department",
+    };
+
+    private void ApplyActiveSort(TableViewSource source)
+    {
+        // Clear first: the keySelector Sort overload declares an ANONYMOUS axis, so re-declaring
+        // one without clearing would stack a second axis rather than replace the first.
+        source.ClearSort();
+
         var sortColumn = SampleShape.ActiveSortColumn(PeopleTable);
         if (PeopleTable is null ||
             sortColumn is null ||
             SampleShape.ActiveSortDirection(PeopleTable) == TableViewSortDirection.None ||
             string.IsNullOrEmpty(sortColumn.SortMemberPath))
         {
-            return source;
+            return;
         }
 
         var path = sortColumn.SortMemberPath;
-        return source.Sort(item => SortKey(item, path), SampleShape.ActiveSortDirection(PeopleTable));
+        source.Sort(item => SortKey(item, path), SampleShape.ActiveSortDirection(PeopleTable));
+    }
+
+    // ----- Actions -----
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        if (_appliedMode != "grouped")
+        {
+            return;
+        }
+
+        PeopleTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        if (_appliedMode != "grouped")
+        {
+            return;
+        }
+
+        PeopleTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
+    }
+
+    private void OnMoveSelectedGroupClick(object sender, RoutedEventArgs e)
+    {
+        if (PeopleTable?.SelectedItem is not Person selected)
+        {
+            return;
+        }
+
+        var before = GroupValue(selected, _groupKey);
+        switch (_groupKey)
+        {
+            case "Role":
+                selected.Role = NextInRing(_people.Select(p => p.Role).Distinct(StringComparer.Ordinal).OrderBy(r => r, StringComparer.Ordinal).ToList(), selected.Role);
+                break;
+            case "Active":
+                selected.IsActive = !selected.IsActive;
+                break;
+            default:
+                selected.Department = NextInRing(PersonData.Departments, selected.Department);
+                break;
+        }
+
+        // Re-running the shaping stage re-reads every key, so the mutated row re-buckets.
+        ApplyCurrentSource();
+        UpdateStatus();
+        SetLastAction(string.Format(
+            CultureInfo.InvariantCulture,
+            "{0} {1}: {2} -> {3}",
+            selected.FirstName,
+            selected.LastName,
+            before,
+            GroupValue(selected, _groupKey)));
+    }
+
+    private void OnBumpSalaryClick(object sender, RoutedEventArgs e)
+    {
+        if (PeopleTable?.SelectedItem is not Person selected)
+        {
+            return;
+        }
+
+        var before = selected.Salary;
+        selected.Salary = Math.Round(before * 2, 0);
+
+        // Re-applying the sort axis re-reads the key, so a row sorted on Salary re-positions.
+        ApplyCurrentSource();
+        UpdateStatus();
+        SetLastAction(string.Format(
+            CultureInfo.InvariantCulture,
+            "{0} {1} salary {2:N0} -> {3:N0}",
+            selected.FirstName,
+            selected.LastName,
+            before,
+            selected.Salary));
+    }
+
+    private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
+    {
+        if (PeopleTable?.SelectedItem is not Person selected)
+        {
+            return;
+        }
+
+        var group = GroupValue(selected, _groupKey);
+        if (_people.Remove(selected))
+        {
+            ApplyCurrentSource();
+            UpdateStatus();
+            SetLastAction(string.Format(CultureInfo.InvariantCulture, "Removed {0} {1} from {2}", selected.FirstName, selected.LastName, group));
+        }
+    }
+
+    private static string NextInRing(IReadOnlyList<string> ring, string current)
+    {
+        if (ring.Count == 0)
+        {
+            return current;
+        }
+
+        var index = -1;
+        for (var i = 0; i < ring.Count; i++)
+        {
+            if (string.Equals(ring[i], current, StringComparison.Ordinal))
+            {
+                index = i;
+                break;
+            }
+        }
+
+        return ring[(index + 1 + ring.Count) % ring.Count];
+    }
+
+    private void SetLastAction(string text)
+    {
+        if (LastActionText is not null)
+        {
+            LastActionText.Text = text;
+        }
     }
 
     private static object? SortKey(object item, string path) => item switch
@@ -197,7 +388,7 @@ public sealed partial class ShowcasePage : Page
             int.TryParse(tag, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count))
         {
             FillPeople(count);
-            ApplyMode(_mode);
+            ApplyMode();
         }
     }
 
@@ -518,7 +709,11 @@ public sealed partial class ShowcasePage : Page
     // The rows whose tints the live timer animates.
     private IReadOnlyList<object> GetLiveTargets() => _people.Cast<object>().ToList();
 
-    private int CountGroups() => _people.Select(person => person.Department).Distinct(StringComparer.Ordinal).Count();
+    private int CountGroups()
+    {
+        var key = _groupKey;
+        return _people.Select(person => GroupValue(person, key)).Distinct(StringComparer.Ordinal).Count();
+    }
 
     private static double GetSalary(object row) => row is Person p ? p.Salary : 0;
 
@@ -558,11 +753,27 @@ public sealed partial class ShowcasePage : Page
             return;
         }
 
-        ModeReadoutText.Text = _mode switch
+        var grouped = _appliedMode == "grouped";
+        var hasSelection = PeopleTable?.SelectedItem is Person;
+
+        SetActionState(ExpandAllButton, grouped, "Expand every group.");
+        SetActionState(CollapseAllButton, grouped, "Collapse every group.");
+        SetActionState(MoveGroupButton, hasSelection, "Rewrites the selected row's group key, then re-applies GroupBy so the row moves between groups.", "Select a row first.");
+        SetActionState(BumpSalaryButton, hasSelection, "Doubles Salary, then re-applies the sort axis - sort by Salary first to watch the row re-position.", "Select a row first.");
+        SetActionState(RemoveRowButton, hasSelection, "Removes the row; its group disappears when it was the last one.", "Select a row first.");
+
+        if (ShapingGroupKeyCombo is not null)
         {
-            ShowcaseMode.Grouped => $"Grouped by Department ({CountGroups()} groups)",
-            _ => "Flat",
-        };
+            ShapingGroupKeyCombo.IsEnabled = grouped;
+            ToolTipService.SetToolTip(ShapingGroupKeyCombo, grouped
+                ? "Change the GroupBy key while grouped - expansion and selection survive."
+                : "Available once Grouped mode is selected.");
+        }
+
+        // Readouts describe the APPLIED mode, never the requested one.
+        ModeReadoutText.Text = grouped
+            ? $"Grouped by {GroupKeyLabel(_groupKey)} ({CountGroups()} groups)"
+            : "Flat";
 
         var rowCount = _people.Count;
         RowsReadoutText.Text = rowCount.ToString(CultureInfo.InvariantCulture);
@@ -586,10 +797,19 @@ public sealed partial class ShowcasePage : Page
         }
     }
 
+    private static void SetActionState(Button? button, bool enabled, string enabledTip, string disabledTip = "Available once Grouped mode is selected.")
+    {
+        if (button is null)
+        {
+            return;
+        }
+
+        button.IsEnabled = enabled;
+        ToolTipService.SetToolTip(button, enabled ? enabledTip : disabledTip);
+    }
+
     private static string HeaderText(TableViewColumn column) => column.Header?.ToString() ?? "(column)";
 
     private static string PersonIdentity(object item) => item is Person person ? person.Email : string.Empty;
-
-    private static string GroupIdentity(object key) => key?.ToString() ?? string.Empty;
 
 }

@@ -122,5 +122,117 @@
         </Border>
     </Grid>
         </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Grouped reshapes the ALREADY-LOADED entry collection in place with TableViewSource.GroupBy. Changing the mode or the key never re-enumerates the file system - only Back / Up / Refresh / Enter do that."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <ComboBox
+                    x:Name="ShapingModeSelector"
+                    AutomationProperties.AutomationId="ShapingModeSelector"
+                    AutomationProperties.Name="Shaping mode"
+                    Header="Shaping mode"
+                    SelectedIndex="0"
+                    HorizontalAlignment="Stretch"
+                    SelectionChanged="OnShapingModeChanged">
+                    <ComboBoxItem Content="Flat" Tag="flat"/>
+                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                    <!-- Hierarchical rows are not available in this release. The options stay
+                         VISIBLE and disabled so the full shape of the shaping axis is honest
+                         signposting rather than a silent omission; re-enable them when the
+                         control ships hierarchy support. -->
+                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                </ComboBox>
+                <ComboBox
+                    x:Name="ShapingGroupKeyCombo"
+                    AutomationProperties.AutomationId="FileExplorerShapingGroupKeyCombo"
+                    AutomationProperties.Name="Group key"
+                    Header="Group by"
+                    SelectedIndex="0"
+                    IsEnabled="False"
+                    ToolTipService.ToolTip="Available once Grouped mode is selected."
+                    HorizontalAlignment="Stretch"
+                    SelectionChanged="OnShapingGroupKeyChanged">
+                    <ComboBoxItem Content="Item type" Tag="Type"/>
+                    <ComboBoxItem Content="Folders / files" Tag="Kind"/>
+                    <ComboBoxItem Content="Date modified" Tag="Modified"/>
+                </ComboBox>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Filtering runs on the same source as grouping, so you can watch a type band empty out and disappear, filter down to zero rows, and remove a row from its group. Refresh re-reads the folder."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <StackPanel Spacing="8">
+                    <Button x:Name="ExpandAllButton"
+                            AutomationProperties.AutomationId="FileExplorerExpandAllButton"
+                            Content="Expand all groups"
+                            IsEnabled="False"
+                            ToolTipService.ToolTip="Available once Grouped mode is selected."
+                            Click="OnExpandAllClick"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="CollapseAllButton"
+                            AutomationProperties.AutomationId="FileExplorerCollapseAllButton"
+                            Content="Collapse all groups"
+                            IsEnabled="False"
+                            ToolTipService.ToolTip="Available once Grouped mode is selected."
+                            Click="OnCollapseAllClick"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <ComboBox x:Name="FilterCombo"
+                              AutomationProperties.AutomationId="FileExplorerFilterCombo"
+                              AutomationProperties.Name="Row filter"
+                              Header="Filter"
+                              SelectedIndex="0"
+                              HorizontalAlignment="Stretch"
+                              SelectionChanged="OnFilterChanged">
+                        <ComboBoxItem Content="Show everything" Tag="all"/>
+                        <ComboBoxItem Content="Folders only" Tag="folders"/>
+                        <ComboBoxItem Content="Files only" Tag="files"/>
+                        <ComboBoxItem Content="Match nothing (empty result)" Tag="none"/>
+                    </ComboBox>
+                    <Button x:Name="RemoveRowButton"
+                            AutomationProperties.AutomationId="FileExplorerRemoveRowButton"
+                            Content="Remove selected from listing"
+                            IsEnabled="False"
+                            ToolTipService.ToolTip="Select a row first."
+                            Click="OnRemoveSelectedClick"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Applied" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="AppliedModeText" Grid.Row="0" Grid.Column="1" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="FileExplorerAppliedModeText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Groups" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="GroupCountText" Grid.Row="1" Grid.Column="1" Text="(n/a)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="FileExplorerGroupCountText" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="LastActionText" Grid.Row="2" Grid.Column="1" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="FileExplorerLastActionText" TextWrapping="Wrap"/>
+                </Grid>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="What to look for" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <muxc:InfoBar
+                    AutomationProperties.AutomationId="FileExplorerWhatToLookForInfoBar"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="What to look for"
+                    Message="Switch to Grouped and the listing bands by item type with a count per band - and the status bar item count does NOT change, because no folder was re-read. Set Filter to Folders only while grouped and every non-folder band disappears; set it to Match nothing and the whole grouped projection empties to zero groups."/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
     </controls:SamplePresenter>
 </Page>

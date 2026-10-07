@@ -1,112 +1,95 @@
-private readonly ObservableCollection<Person> _people = new(PersonData.Take(60));
-private bool _groupingEnabled;
+// Reshaped IN PLACE: GroupBy / ClearGroupBy mutate and return the SAME TableViewSource
+// (TableViewSource.cpp:49-50). Rebuilding the source per change drops selection, scroll
+// offset and group expansion.
+private TableViewSource? _source;
+private string _mode = "grouped";          // requested
+private string _appliedMode = "grouped";   // applied - every readout and guard reads THIS
 private string _keyName = "Department";
-private GroupExpansionState _expansionState = GroupExpansionState.AllExpanded;
 
-private void ApplyGroupingMode(bool grouped)
+private void ApplyShaping()
 {
-    _groupingEnabled = grouped;
-
-    if (grouped)
+    if (_source is null)
     {
-        if (_expansionState == GroupExpansionState.Flat)
-        {
-            _expansionState = GroupExpansionState.AllExpanded;
-        }
+        _source = TableViewSource.From(_people);
+        PeopleTableControl.ItemsSource = _source;
+    }
 
-        PeopleTableControl.ItemsSource = TableViewSource
-            .From(_people)
-            .GroupBy(GetGroupKeySelector(_keyName), GroupIdentity);
-        ApplyExpansionState();
-    }
-    else
+    switch (_mode)
     {
-        _expansionState = GroupExpansionState.Flat;
-        PeopleTableControl.ItemsSource = TableViewSource.From(_people).ClearGroupBy();
+        case "grouped":
+            var key = _keyName;
+            // The two delegates receive DIFFERENT things despite both parameters being
+            // named `item`:
+            //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
+            //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
+            // (TableViewSource.idl:12-16). An item-typed identity lambda returns an empty
+            // identity -> E_INVALIDARG fail-fast -> GroupBy throws and grouping silently
+            // never applies.
+            _source.GroupBy(
+                item => (object)GroupValue(item, key),
+                groupKey => groupKey?.ToString() ?? "(none)");
+            break;
+
+        // case "hierarchy":
+        // case "groupedhierarchy":
+        //     Hierarchical rows are not available in this release, and no hierarchy API
+        //     exists on TableViewSource or TableView yet, so there is deliberately no call
+        //     written here to copy. When the control ships hierarchy support, apply it to
+        //     this same source instance alongside the GroupBy stage above so the two
+        //     compose, and drop IsEnabled="False" from the matching ComboBoxItems.
+        //     break;
+
+        default:
+            _source.ClearGroupBy();
+            break;
     }
+
+    // Set ONLY after the shaping call returns: a readout driven by the REQUESTED mode lies
+    // about the table whenever GroupBy throws.
+    _appliedMode = _mode;
 
     UpdateReadout();
 }
 
-private void ApplyGroupHeaderTemplate()
+// Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
+private static string GroupValue(object item, string keyName)
 {
-    PeopleTableControl.GroupHeaderTemplate = UseCustomHeaderTemplateToggle.IsOn
-        ? (DataTemplate)Resources["CustomGroupHeaderTemplate"]
-        : null;
+    if (item is not Person person)
+    {
+        return "(none)";
+    }
+
+    var value = keyName switch
+    {
+        "Role" => person.Role,
+        "Active" => person.IsActive ? "Active" : "Inactive",
+        _ => person.Department,
+    };
+
+    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
 }
 
+// Expand / collapse are gated on the APPLIED mode, never the requested one.
 private void OnExpandAllGroupsClick(object sender, RoutedEventArgs e)
 {
-    if (!_groupingEnabled)
-    {
-        UpdateReadout();
-        return;
-    }
-
+    if (_appliedMode != "grouped") { return; }
     PeopleTableControl.ExpandAllGroups();
-    _expansionState = GroupExpansionState.AllExpanded;
-    UpdateReadout();
 }
 
-private void OnCollapseAllGroupsClick(object sender, RoutedEventArgs e)
+// The in-cell Department ComboBox / Active CheckBox edit the very value the table is grouped
+// on, so re-run the shaping stage when the edit commits - otherwise the row keeps its old
+// group until something else reshapes.
+private void OnPersonPropertyChanged(object? sender, PropertyChangedEventArgs e)
 {
-    if (!_groupingEnabled)
+    if (_suppressAutoReshape || _appliedMode != "grouped") { return; }
+
+    var affectsGroupKey = e.PropertyName switch
     {
-        UpdateReadout();
-        return;
-    }
+        nameof(Person.Department) => _keyName == "Department",
+        nameof(Person.Role) => _keyName == "Role",
+        nameof(Person.IsActive) => _keyName == "Active",
+        _ => false,
+    };
 
-    PeopleTableControl.CollapseAllGroups();
-    _expansionState = GroupExpansionState.AllCollapsed;
-    UpdateReadout();
+    if (affectsGroupKey) { ApplyShaping(); }
 }
-
-private void ApplyExpansionState()
-{
-    DispatcherQueue.TryEnqueue(() =>
-    {
-        if (PeopleTableControl is null || !_groupingEnabled)
-        {
-            return;
-        }
-
-        if (_expansionState == GroupExpansionState.AllCollapsed)
-        {
-            PeopleTableControl.CollapseAllGroups();
-        }
-        else
-        {
-            PeopleTableControl.ExpandAllGroups();
-        }
-
-        UpdateReadout();
-    });
-}
-
-private IEnumerable<(string Key, int Count)> GetGroupCounts()
-{
-    var keySelector = GetPersonGroupKeySelector(_keyName);
-
-    return _people
-        .GroupBy(keySelector)
-        .OrderBy(g => g.Key, StringComparer.Ordinal)
-        .Select(g => (g.Key, g.Count()));
-}
-
-private static Func<Person, string> GetPersonGroupKeySelector(string keyName) => keyName switch
-{
-    "Role" => person => CoalesceGroupKey(person.Role),
-    "Active" => person => person.IsActive ? "Active" : "Inactive",
-    _ => person => CoalesceGroupKey(person.Department),
-};
-
-private static TableViewKeySelector GetGroupKeySelector(string keyName) => item =>
-{
-    var person = (Person)item;
-    return GetPersonGroupKeySelector(keyName)(person);
-};
-
-private static string GroupIdentity(object key) => CoalesceGroupKey(key?.ToString());
-
-private static string CoalesceGroupKey(string? key) =>
-    string.IsNullOrWhiteSpace(key) ? "(none)" : key;

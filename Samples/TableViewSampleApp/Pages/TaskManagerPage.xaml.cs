@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
-
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -28,6 +28,23 @@ public sealed partial class TaskManagerPage : Page
     private readonly DispatcherTimer _timer;
     private readonly Random _rng = new();
     private string? _searchText;
+
+    // Reshaping happens IN PLACE on this one instance: Filter / GroupBy / Sort mutate and return
+    // the same TableViewSource (TableViewSource.cpp:49-50), so rebuilding it per change would
+    // needlessly drop selection, scroll offset and group expansion.
+    private TableViewSource? _source;
+    private string _mode = "flat";          // requested
+    private string _appliedMode = "flat";   // applied - every readout and guard reads THIS
+    private string _groupKey = "Category";
+    private readonly List<ProcessItem> _stashedProcesses = new();
+    private int _addedProcessCount;
+
+    private static readonly string[] s_categories =
+    {
+        "Apps",
+        "Background processes",
+        "Windows processes",
+    };
 
     public ObservableCollection<ProcessItem> Processes { get; } = new();
 
@@ -78,28 +95,287 @@ public sealed partial class TaskManagerPage : Page
             return;
         }
 
-        // The picker chooses the data shaping:
-        //   0 Grouped by category – Apps / Background / Windows group-header bands
-        //   1 Flat list           – ungrouped
-        var mode = ViewModeCombo?.SelectedIndex ?? 0;
+        if (_source is null)
+        {
+            _source = TableViewSource.From(Processes);
+            ProcessTable.ItemsSource = _source;
+        }
+
         var searchText = _searchText;
-
-        var source = TableViewSource.From(Processes);
-        if (!string.IsNullOrEmpty(searchText))
+        if (string.IsNullOrEmpty(searchText))
         {
-            source = source.Filter(item => MatchesSearch((ProcessItem)item, searchText));
+            _source.ClearFilter();
+        }
+        else
+        {
+            _source.Filter(item => MatchesSearch((ProcessItem)item, searchText));
         }
 
-        if (mode == 0)
+        switch (_mode)
         {
-            // Grouping a source is not in this release.
+            case "grouped":
+                var key = _groupKey;
+                // The two delegates receive DIFFERENT things despite both parameters being named
+                // `item`: TableViewKeySelector gets the ROW ITEM, TableViewIdentitySelector gets
+                // the GROUP KEY (TableViewSource.idl:12-16). An item-typed identity lambda would
+                // return an empty identity, which fails fast with E_INVALIDARG.
+                _source.GroupBy(
+                    item => (object)GroupValue(item, key),
+                    groupKey => groupKey?.ToString() ?? "(none)");
+                break;
+
+            // case "hierarchy":
+            // case "groupedhierarchy":
+            //     Hierarchical rows are not available in this release, and no hierarchy API exists
+            //     on TableViewSource or TableView yet - so there is deliberately no call written
+            //     out here to copy. When the control ships hierarchy support, apply it to this
+            //     same source instance alongside the GroupBy stage above so the two compose, and
+            //     drop the IsEnabled="False" from the matching options in the XAML.
+            //     break;
+
+            default:
+                _source.ClearGroupBy();
+                break;
         }
 
-        ProcessTable.ItemsSource = ApplyActiveSort(source);
+        // Set ONLY after the shaping call returns: a readout driven by the REQUESTED mode lies
+        // about the table whenever GroupBy throws.
+        _appliedMode = _mode;
+
+        ApplyActiveSort(_source);
+        UpdateShapingUi();
         UpdateStatusBar();
     }
 
-    private void OnViewModeChanged(object sender, SelectionChangedEventArgs e) => ApplyProcessSource();
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ProcessTable is null || ShapingModeSelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        {
+            return;
+        }
+
+        _mode = tag;
+        ApplyProcessSource();
+        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Shaping mode -> {0}", ModeLabel(_appliedMode)));
+    }
+
+    private void OnShapingGroupKeyChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ProcessTable is null || ShapingGroupKeyCombo?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        {
+            return;
+        }
+
+        _groupKey = tag;
+        ApplyProcessSource();
+        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Group key -> {0}", tag));
+    }
+
+    private void UpdateShapingUi()
+    {
+        var grouped = _appliedMode == "grouped";
+        var hasSelection = ProcessTable?.SelectedItem is ProcessItem;
+
+        if (ShapingGroupKeyCombo is not null)
+        {
+            ShapingGroupKeyCombo.IsEnabled = grouped;
+            ToolTipService.SetToolTip(ShapingGroupKeyCombo, grouped
+                ? "Change the GroupBy key while grouped - expansion and selection survive."
+                : "Available once Grouped mode is selected.");
+        }
+
+        SetGroupActionState(ExpandAllButton, grouped, "Expand every group.");
+        SetGroupActionState(CollapseAllButton, grouped, "Collapse every group.");
+
+        if (MoveCategoryButton is not null)
+        {
+            MoveCategoryButton.IsEnabled = hasSelection;
+            ToolTipService.SetToolTip(MoveCategoryButton, hasSelection
+                ? "Rewrites the selected process's Category, then re-applies GroupBy so the row moves to another group."
+                : "Select a process first.");
+        }
+
+        if (EmptyToggleButton is not null)
+        {
+            EmptyToggleButton.Content = _stashedProcesses.Count > 0
+                ? "Restore all rows"
+                : "Remove all rows (group an empty set)";
+        }
+
+        if (AppliedModeText is null)
+        {
+            return;
+        }
+
+        AppliedModeText.Text = grouped
+            ? string.Format(CultureInfo.InvariantCulture, "Grouped by {0}", _groupKey)
+            : "Flat (no shaping)";
+
+        var groups = GroupCounts().ToList();
+        GroupCountText.Text = !grouped
+            ? "(n/a - flat)"
+            : groups.Count == 0
+                ? "0 (empty result)"
+                : string.Join(", ", groups.Select(g => string.Format(CultureInfo.InvariantCulture, "{0} ({1})", g.Key, g.Count)));
+        RowCountText.Text = VisibleProcesses().Count().ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static void SetGroupActionState(Button? button, bool grouped, string enabledTip)
+    {
+        if (button is null)
+        {
+            return;
+        }
+
+        button.IsEnabled = grouped;
+        ToolTipService.SetToolTip(button, grouped ? enabledTip : "Available once Grouped mode is selected.");
+    }
+
+    private IEnumerable<ProcessItem> VisibleProcesses()
+    {
+        var searchText = _searchText;
+        return string.IsNullOrEmpty(searchText)
+            ? Processes
+            : Processes.Where(process => MatchesSearch(process, searchText));
+    }
+
+    private IEnumerable<(string Key, int Count)> GroupCounts()
+    {
+        var key = _groupKey;
+        return VisibleProcesses()
+            .GroupBy(process => GroupValue(process, key), StringComparer.Ordinal)
+            .OrderBy(group => group.Key, StringComparer.Ordinal)
+            .Select(group => (group.Key, group.Count()));
+    }
+
+    // Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
+    private static string GroupValue(object item, string key)
+    {
+        if (item is not ProcessItem process)
+        {
+            return "(none)";
+        }
+
+        var value = key switch
+        {
+            "Status" => process.IsEfficiency
+                ? "Efficiency mode"
+                : (string.IsNullOrWhiteSpace(process.StatusText) ? "Running" : process.StatusText),
+            _ => process.Category,
+        };
+
+        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+    }
+
+    private static string ModeLabel(string mode) => mode == "grouped" ? "Grouped" : "Flat";
+
+    private void SetLastAction(string text)
+    {
+        if (LastActionText is not null)
+        {
+            LastActionText.Text = text;
+        }
+    }
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        if (_appliedMode != "grouped")
+        {
+            return;
+        }
+
+        ProcessTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        if (_appliedMode != "grouped")
+        {
+            return;
+        }
+
+        ProcessTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
+    }
+
+    private void OnMoveSelectedCategoryClick(object sender, RoutedEventArgs e)
+    {
+        if (ProcessTable?.SelectedItem is not ProcessItem selected)
+        {
+            return;
+        }
+
+        var index = Array.IndexOf(s_categories, selected.Category);
+        var next = s_categories[(index + 1 + s_categories.Length) % s_categories.Length];
+        var previous = string.IsNullOrWhiteSpace(selected.Category) ? "(none)" : selected.Category;
+        selected.Category = next;
+
+        // Re-running the shaping stage re-reads every key, so the mutated row re-buckets.
+        ApplyProcessSource();
+        SetLastAction(string.Format(CultureInfo.InvariantCulture, "{0}: {1} -> {2}", selected.Name, previous, next));
+    }
+
+    private void OnAddProcessClick(object sender, RoutedEventArgs e)
+    {
+        _addedProcessCount++;
+        var added = new ProcessItem
+        {
+            Name = string.Format(CultureInfo.InvariantCulture, "Sample app {0}", _addedProcessCount),
+            Category = "Apps",
+            IconGlyph = "\uE7B8",
+            MemoryBaseline = 18 + (_addedProcessCount * 3),
+        };
+        RandomizeValues(added);
+        Processes.Insert(0, added);
+
+        ApplyProcessSource();
+        UpdateSummary();
+        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Added {0} to the Apps group", added.Name));
+    }
+
+    private void OnEmptyToggleClick(object sender, RoutedEventArgs e)
+    {
+        if (_stashedProcesses.Count > 0)
+        {
+            foreach (var process in _stashedProcesses)
+            {
+                Processes.Add(process);
+            }
+
+            var restored = _stashedProcesses.Count;
+            _stashedProcesses.Clear();
+            ApplyProcessSource();
+            UpdateSummary();
+            SetLastAction(string.Format(CultureInfo.InvariantCulture, "Restored {0} rows", restored));
+            return;
+        }
+
+        _stashedProcesses.AddRange(Processes);
+        Processes.Clear();
+        ApplyProcessSource();
+        UpdateSummary();
+        SetLastAction("Removed all rows - the grouped projection now has zero groups");
+    }
+
+    private void ApplyActiveSort(TableViewSource source)
+    {
+        // Clear first: the keySelector Sort overload declares an ANONYMOUS axis, so re-declaring
+        // one without clearing would stack a second axis rather than replace the first.
+        source.ClearSort();
+
+        var sortColumn = SampleShape.ActiveSortColumn(ProcessTable);
+        if (ProcessTable is null ||
+            sortColumn is null ||
+            SampleShape.ActiveSortDirection(ProcessTable) == TableViewSortDirection.None ||
+            string.IsNullOrEmpty(sortColumn.SortMemberPath))
+        {
+            return;
+        }
+
+        var path = sortColumn.SortMemberPath;
+        source.Sort(item => SortKey(item, path), SampleShape.ActiveSortDirection(ProcessTable));
+    }
 
     private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
@@ -110,20 +386,6 @@ public sealed partial class TaskManagerPage : Page
 
         _searchText = SearchBox.Text?.Trim();
         ApplyProcessSource();
-    }
-
-    private TableViewSource ApplyActiveSort(TableViewSource source)
-    {
-        var sortColumn = SampleShape.ActiveSortColumn(ProcessTable);
-        if (ProcessTable is null ||
-            sortColumn is null ||
-            SampleShape.ActiveSortDirection(ProcessTable) == TableViewSortDirection.None ||
-            string.IsNullOrEmpty(sortColumn.SortMemberPath))
-        {
-            return source;
-        }
-
-        return source.Sort(item => SortKey(item, sortColumn.SortMemberPath), SampleShape.ActiveSortDirection(ProcessTable));
     }
 
     private static object? SortKey(object item, string path)
@@ -146,8 +408,6 @@ public sealed partial class TaskManagerPage : Page
     }
 
     private static string ProcessIdentity(object item) => item is ProcessItem process ? process.Key : string.Empty;
-
-    private static string GroupIdentity(object key) => key?.ToString() ?? string.Empty;
 
     private void OnProcessTableSorted(TableView sender, TableViewSortedEventArgs args)
     {
@@ -274,6 +534,7 @@ public sealed partial class TaskManagerPage : Page
                 UpdateStatusBar();
                 SelectedProcessText.Text = "(none)";
                 ApplyProcessSource();
+                SetLastAction(string.Format(CultureInfo.InvariantCulture, "Removed child {0}", selected.Name));
                 return;
             }
         }
@@ -283,6 +544,7 @@ public sealed partial class TaskManagerPage : Page
             UpdateStatusBar();
             SelectedProcessText.Text = "(none)";
             ApplyProcessSource();
+            SetLastAction(string.Format(CultureInfo.InvariantCulture, "Removed {0} from its group", selected.Name));
         }
     }
 
@@ -291,6 +553,7 @@ public sealed partial class TaskManagerPage : Page
         SelectedProcessText.Text = ProcessTable.SelectedItem is ProcessItem process
             ? process.Name
             : "(none)";
+        UpdateShapingUi();
     }
 
     private void PopulateProcesses()

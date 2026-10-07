@@ -1,20 +1,75 @@
 <Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+      xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
+      xmlns:models="using:TableViewSampleApp.Models"
+      xmlns:pages="using:TableViewSampleApp.Pages">
 
-  <ComboBox x:Name="ModeCombo"
-            SelectedIndex="2"
-            SelectionChanged="OnModeChanged">
+  <Page.Resources>
+    <pages:SelectionChipTintConverter x:Key="SelectionChipTintConverter"/>
+    <pages:SelectionChipDotConverter x:Key="SelectionChipDotConverter"/>
+  </Page.Resources>
+
+  <ComboBox x:Name="ModeCombo" Header="Mode" SelectedIndex="1" SelectionChanged="OnModeChanged">
     <ComboBoxItem Content="None"/>
     <ComboBoxItem Content="Single"/>
   </ComboBox>
 
-  <TextBlock Text="This release supports None and Single selection. Drive selection from code with Select, Deselect, and DeselectAll."/>
+  <!-- Four shaping modes. Hierarchical rows are not available in this release: the
+       options are shown disabled so the shape of the feature is visible, and the
+       matching branch is left commented in ApplyShaping(). -->
+  <ComboBox x:Name="ShapingModeSelector" Header="Shaping mode" SelectedIndex="0"
+            SelectionChanged="OnShapingModeChanged">
+    <ComboBoxItem Content="Flat"              Tag="flat"/>
+    <ComboBoxItem Content="Grouped"           Tag="grouped"/>
+    <ComboBoxItem Content="Hierarchy"         Tag="hierarchy"        IsEnabled="False"
+                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+  </ComboBox>
+
+  <!-- Enabled from code only once grouping is actually applied. -->
+  <ComboBox x:Name="GroupKeyCombo" Header="Group by" SelectedIndex="0" IsEnabled="False"
+            ToolTipService.ToolTip="Available once the shaping mode is Grouped."
+            SelectionChanged="OnGroupKeyChanged">
+    <ComboBoxItem Content="Department"    Tag="Department"/>
+    <ComboBoxItem Content="Role"          Tag="Role"/>
+    <ComboBoxItem Content="Active status" Tag="Active"/>
+  </ComboBox>
+
+  <Button x:Name="ExpandAllButton" Content="Expand all groups" Click="OnExpandAllClick"
+          IsEnabled="False" ToolTipService.ToolTip="Available once a Group by key is selected."/>
+  <Button x:Name="CollapseAllButton" Content="Collapse all groups" Click="OnCollapseAllClick"
+          IsEnabled="False" ToolTipService.ToolTip="Available once a Group by key is selected."/>
+  <Button x:Name="InsertAboveButton" Content="Insert row above selection" Click="OnInsertAboveClick"
+          IsEnabled="False" ToolTipService.ToolTip="Available once a row is selected."/>
+  <Button x:Name="RemoveSelectedButton" Content="Remove selected row" Click="OnRemoveSelectedClick"
+          IsEnabled="False" ToolTipService.ToolTip="Available once a row is selected."/>
 
   <tv:TableView x:Name="PeopleTable"
-                 SelectionMode="Single"
-                 SelectionChanged="OnTableSelectionChanged">
+                SelectionMode="Single"
+                SelectionChanged="OnTableSelectionChanged">
     <tv:TableViewTextColumn Header="First name" Binding="{Binding FirstName}"/>
     <tv:TableViewTextColumn Header="Last name"  Binding="{Binding LastName}"/>
     <tv:TableViewTextColumn Header="Email"      Binding="{Binding Email}"/>
+
+    <!-- Templated cell. SortMemberPath keeps the header sortable; the dot is decorative
+         so it is hidden from the accessibility tree. -->
+    <tv:TableViewTemplateColumn Header="Department" SortMemberPath="Department" CanSort="True">
+      <tv:TableViewTemplateColumn.CellTemplate>
+        <DataTemplate x:DataType="models:Person">
+          <Border Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource SelectionChipTintConverter}}"
+                  BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                  BorderThickness="1" CornerRadius="10" Padding="8,2"
+                  HorizontalAlignment="Left" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                       AutomationProperties.AccessibilityView="Raw"
+                       Fill="{x:Bind Department, Mode=OneWay, Converter={StaticResource SelectionChipDotConverter}}"/>
+              <TextBlock Text="{x:Bind Department, Mode=OneWay}" VerticalAlignment="Center"
+                         Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
   </tv:TableView>
 </Page>

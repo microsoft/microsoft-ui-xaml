@@ -19,14 +19,14 @@
 
             <controls:SamplePageHeader
                 Title="TableView"
-                Description="Microsoft.UI.Xaml.Controls.Tabular.TableView is a native WinUI 3 tabular control for data-heavy desktop experiences — model-first data shaping with TableViewSource, lightweight text and template columns, sorting, selection, grouped rows, headers, grid lines, density, column resize and reorder, virtualization, keyboard navigation, accessibility, and right-to-left support."/>
+                Description="Microsoft.UI.Xaml.Controls.Tabular.TableView is a native WinUI 3 tabular control for data-heavy desktop experiences — model-first data shaping with TableViewSource, lightweight text and template columns, sorting, selection, grouped rows, headers, grid lines, density, column layout &amp; sizing, column lifecycle, virtualization, keyboard navigation, accessibility, and right-to-left support."/>
 
             <muxc:InfoBar
                 IsOpen="True"
                 IsClosable="False"
                 Severity="Informational"
                 Title="About this gallery"
-                Message="C# WinUI 3 desktop app (.NET 8, Windows App SDK preview). 28 pages cover the TableView control — TableViewSource.From(items).Filter(...).GroupBy(..., identity).Sort(...), text and template columns, header-click sort, selection, column-header visibility, grid lines, density and layout, column resize and reorder, dynamic columns, template cells, grouped rows, virtualization, keyboard navigation, RTL, performance, and a Task Manager-style dashboard. Use the theme toggle in the title bar — or the Settings page — to flip Default / Light / Dark and the choice persists across launches."/>
+                Message="C# WinUI 3 desktop app (.NET 8, Windows App SDK preview). 23 pages cover the TableView control — TableViewSource.From(items).Filter(...).GroupBy(..., identity).Sort(...), text and template columns, header-click sort, selection, column-header visibility, grid lines, density, column layout &amp; sizing, column lifecycle, cell templating, grouped rows, virtualization, keyboard navigation, RTL, performance, and a Task Manager-style dashboard. Use the theme toggle in the title bar — or the Settings page — to flip Default / Light / Dark and the choice persists across launches."/>
 
             <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="What's supported today" Style="{StaticResource SectionHeaderTextStyle}"/>
@@ -49,16 +49,16 @@
                     <x:String>Columns — TableViewTextColumn for lightweight bound text and TableViewTemplateColumn for DataTemplate cells</x:String>
                     <x:String>Header-click sort via SortMemberPath with a direction indicator</x:String>
                     <x:String>None / Single row selection</x:String>
-                    <x:String>Column resize — drag the gripper or set Min / Width / Max programmatically</x:String>
-                    <x:String>Column reorder — move TableViewColumn entries in the Columns vector</x:String>
+                    <x:String>Column layout &amp; sizing — Pixel / Star widths, MinWidth / MaxWidth clamps, and drag-to-resize grippers</x:String>
+                    <x:String>Column lifecycle — add, remove and reorder TableViewColumn entries in the Columns vector at runtime</x:String>
                     <x:String>Grouped rows with collapsible group headers</x:String>
                     <x:String>HeadersVisibility — None / Column</x:String>
                     <x:String>Density — Compact / Standard / Comfortable</x:String>
-                    <x:String>Dynamic columns at runtime (bind to ObservableCollection)</x:String>
+                    <x:String>Hierarchical rows — not available in this release; the Hierarchy page describes the planned axis</x:String>
                     <x:String>Row virtualization — realizes only the visible rows, so large datasets scroll smoothly</x:String>
                     <x:String>GridLinesVisibility — None / Horizontal / Vertical / All</x:String>
                     <x:String>RTL flow — mirrored layout and resize gripper placement</x:String>
-                    <x:String>Template cells — custom DataTemplate content via TableViewTemplateColumn</x:String>
+                    <x:String>Cell templating — custom DataTemplate content via TableViewTemplateColumn</x:String>
                     <x:String>Filtering — TableViewSource.Filter(predicate) with live query + active-only toggle</x:String>
                     <x:String>Task Manager showcase — grouped categories by default, live telemetry heat-map cells, search filter, and dark/light support</x:String>
                 </ItemsControl>
@@ -85,10 +85,10 @@
                     <Button Content="Grid lines visibility" Tag="GridLinesVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grid lines visibility sample."/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Column resize" Tag="ColumnResize" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Column resize sample."/>
-                    <Button Content="Column reorder + autosize" Tag="ColumnReorder" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Column reorder and autosize sample."/>
-                    <Button Content="Dynamic columns" Tag="DynamicColumns" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Dynamic columns sample."/>
-                    <Button Content="Template cells" Tag="MixedControls" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Template cells sample."/>
+                    <Button Content="Column layout &amp; sizing" Tag="Layout" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Column layout and sizing sample."/>
+                    <Button Content="Column lifecycle" Tag="DynamicColumns" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Column lifecycle sample."/>
+                    <Button Content="Cell templating" Tag="CellFlyouts" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Cell templating sample."/>
+                    <Button Content="Hierarchy" Tag="Hierarchy" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Hierarchy placeholder page."/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button Content="Virtualization" Tag="Virtualization" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Virtualization sample."/>

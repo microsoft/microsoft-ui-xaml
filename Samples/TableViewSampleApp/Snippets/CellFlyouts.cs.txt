@@ -1,27 +1,93 @@
-foreach (var person in PersonData.Take(18))
+// Chip brushes are built ONCE into static readonly dictionaries and handed back
+// by reference. A converter that returns `new SolidColorBrush(...)` allocates
+// per realized cell per call, which under virtualization is continuous churn.
+// Under a Windows Contrast theme the brand tints are dropped entirely so the
+// user's guaranteed contrast pair wins instead of a brand colour painted over it.
+internal static class ChipBrushes
 {
-    People.Add(person);
+    private const byte TintAlpha = 0x33;
+
+    private static AccessibilitySettings? s_accessibilitySettings;
+    private static Brush? s_highContrastForeground;
+
+    private static readonly SolidColorBrush s_transparent = new(Colors.Transparent);
+    private static readonly Dictionary<string, SolidColorBrush> s_departmentTints = BuildDepartmentBrushes(TintAlpha);
+    private static readonly Dictionary<string, SolidColorBrush> s_departmentDots = BuildDepartmentBrushes(0xFF);
+
+    internal static bool IsHighContrast
+    {
+        get
+        {
+            s_accessibilitySettings ??= new AccessibilitySettings();
+            return s_accessibilitySettings.HighContrast;
+        }
+    }
+
+    private static Brush HighContrastForeground =>
+        s_highContrastForeground ??=
+            Application.Current.Resources["TextFillColorPrimaryBrush"] as Brush ?? s_transparent;
+
+    internal static Brush DepartmentTint(string? department) =>
+        IsHighContrast ? s_transparent
+        : department is not null && s_departmentTints.TryGetValue(department, out var b) ? b
+        : s_fallbackTint;
+
+    internal static Brush DepartmentDot(string? department) =>
+        IsHighContrast ? HighContrastForeground
+        : department is not null && s_departmentDots.TryGetValue(department, out var b) ? b
+        : s_fallbackDot;
+
+    private static Dictionary<string, SolidColorBrush> BuildDepartmentBrushes(byte alpha) => new(StringComparer.Ordinal)
+    {
+        ["Marketing"]   = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xA8, 0x55, 0xF7)), // purple
+        ["Product"]     = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x0E, 0xA5, 0xE9)), // blue
+        ["Finance"]     = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x22, 0xC5, 0x5E)), // green
+        ["Design"]      = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xEC, 0x48, 0x99)), // pink
+        ["Sales"]       = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x14, 0xB8, 0xA6)), // teal
+        ["HR"]          = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xF5, 0x9E, 0x0B)), // amber
+        ["Engineering"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x63, 0x66, 0xF1)), // indigo
+    };
 }
 
-PeopleTable.ItemsSource = People;
-
-private void OnDatePickerLoaded(object sender, RoutedEventArgs e)
+// Converter classes must be `partial` or the build emits CsWinRT1028.
+public sealed partial class DepartmentChipTintConverter : IValueConverter
 {
-    if (sender is DatePicker datePicker)
+    public object Convert(object value, Type targetType, object parameter, string language) =>
+        ChipBrushes.DepartmentTint(value as string);
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) =>
+        throw new NotImplementedException();
+}
+
+// The checkbox is two-way bound, so nothing commits it by hand. The page only
+// observes the model to keep a "rows checked" readout honest - proof the binding
+// round-trips rather than merely looking right. Handlers attached in Loaded are
+// detached in Unloaded.
+private void OnPageLoaded(object sender, RoutedEventArgs e)
+{
+    foreach (var person in People)
     {
-        datePicker.MinYear = new DateTimeOffset(new DateTime(2010, 1, 1));
-        datePicker.MaxYear = new DateTimeOffset(DateTime.Now.AddYears(2));
+        person.PropertyChanged += OnPersonChanged;
+    }
+
+    UpdateCheckedCount();
+}
+
+private void OnPageUnloaded(object sender, RoutedEventArgs e)
+{
+    foreach (var person in People)
+    {
+        person.PropertyChanged -= OnPersonChanged;
     }
 }
 
-private void OnDepartmentComboBoxLoaded(object sender, RoutedEventArgs e)
-{
-    if (sender is ComboBox comboBox)
-    {
-        comboBox.ItemsSource = PersonData.Departments;
-    }
-}
+private void UpdateCheckedCount() =>
+    CheckedCountText.Text = string.Format(
+        CultureInfo.CurrentCulture, "{0:N0} of {1:N0}", People.Count(p => p.IsActive), People.Count);
 
+// A Flyout declared in a DataTemplate has no XamlRoot on WinUI 3 desktop, so
+// FlyoutBase.ShowAttachedFlyout silently no-ops. Resolve the attached flyout,
+// set its XamlRoot, and ShowAt the element instead.
 private void OnDetailsButtonClick(object sender, RoutedEventArgs e)
 {
     if (sender is not FrameworkElement element)
@@ -29,9 +95,6 @@ private void OnDetailsButtonClick(object sender, RoutedEventArgs e)
         return;
     }
 
-    // A Flyout declared in a DataTemplate has no XamlRoot on WinUI 3 desktop,
-    // so FlyoutBase.ShowAttachedFlyout silently no-ops. Resolve the attached
-    // flyout, set its XamlRoot, and ShowAt the element instead.
     var flyout = FlyoutBase.GetAttachedFlyout(element);
     if (flyout is null)
     {

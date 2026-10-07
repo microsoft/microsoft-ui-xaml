@@ -1,28 +1,32 @@
-<!-- Density lives on TableStyle; IsReadOnly is a table-level DP. v1 has no
-     built-in cell editing, so the editable TextBox cells bind their IsReadOnly
-     to a shared ReadOnlyState the page mirrors TableView.IsReadOnly into. -->
-
-<Page.Resources>
-    <local:ReadOnlyState x:Key="ReadOnlyState"/>
-
-    <DataTemplate x:Key="FirstNameCell">
-        <TextBox Text="{Binding FirstName, Mode=TwoWay}"
-                 IsReadOnly="{Binding IsReadOnly, Source={StaticResource ReadOnlyState}}"
-                 BorderThickness="0" Background="Transparent"/>
-    </DataTemplate>
-</Page.Resources>
+<!-- Density is a table-level DP: it presets row height and built-in cell
+     padding. Plain text columns show the effect most clearly, so this page
+     uses no template cells at all. Grouping is demonstrated alongside it
+     because a group header has its own height. -->
 
 <tv:TableView x:Name="DemoTable" SelectionMode="Single">
-    <tv:TableViewTextColumn     Header="Name"       Binding="{Binding FullName}"/>
-    <tv:TableViewTemplateColumn Header="First name" SortMemberPath="FirstName"
-                                 CellTemplate="{StaticResource FirstNameCell}"/>
-    <!-- Last name / Role / Email columns follow the same editable pattern -->
+    <tv:TableViewTextColumn Header="Name"       Binding="{Binding FullName}"   CanSort="False"/>
+    <tv:TableViewTextColumn Header="First name" Binding="{Binding FirstName}"  SortMemberPath="FirstName"/>
+    <tv:TableViewTextColumn Header="Last name"  Binding="{Binding LastName}"   SortMemberPath="LastName"/>
+    <tv:TableViewTextColumn Header="Role"       Binding="{Binding Role}"       SortMemberPath="Role"/>
+    <tv:TableViewTextColumn Header="Department" Binding="{Binding Department}" SortMemberPath="Department"/>
+    <tv:TableViewTextColumn Header="Email"      Binding="{Binding Email}"      SortMemberPath="Email" Width="*"/>
 </tv:TableView>
 
 <!-- Density picker -->
-<RadioButton Content="Compact"     Tag="Compact"     GroupName="Density" Checked="OnDensityChecked"/>
-<RadioButton Content="Standard"    Tag="Standard"    GroupName="Density" IsChecked="True" Checked="OnDensityChecked"/>
-<RadioButton Content="Comfortable" Tag="Comfortable" GroupName="Density" Checked="OnDensityChecked"/>
+<muxc:RadioButtons SelectedIndex="1" SelectionChanged="OnDensitySelectionChanged">
+    <RadioButton Content="Compact"            Tag="Compact"/>
+    <RadioButton Content="Standard (default)" Tag="Standard"/>
+    <RadioButton Content="Comfortable"        Tag="Comfortable"/>
+</muxc:RadioButtons>
 
-<!-- Read-only toggle -->
-<ToggleSwitch Header="IsReadOnly" Toggled="OnReadOnlyToggled"/>
+<!-- Group by + expansion. Expand all / Collapse all are meaningless without a
+     group key, so they ship disabled and the page enables them on selection. -->
+<ComboBox Header="Group by" SelectedIndex="0" SelectionChanged="OnGroupByChanged">
+    <ComboBoxItem Content="None"       Tag="none"/>
+    <ComboBoxItem Content="Department" Tag="Department"/>
+    <ComboBoxItem Content="Role"       Tag="Role"/>
+</ComboBox>
+<Button x:Name="ExpandAllButton"   Content="Expand all"   Click="OnExpandAllGroupsClick"
+        IsEnabled="False" ToolTipService.ToolTip="Available once a Group by key is selected."/>
+<Button x:Name="CollapseAllButton" Content="Collapse all" Click="OnCollapseAllGroupsClick"
+        IsEnabled="False" ToolTipService.ToolTip="Available once a Group by key is selected."/>

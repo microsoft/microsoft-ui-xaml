@@ -6,11 +6,38 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
-    xmlns:controls="using:TableViewSampleApp.Controls">
+    xmlns:controls="using:TableViewSampleApp.Controls"
+    xmlns:local="using:TableViewSampleApp.Pages"
+    xmlns:models="using:TableViewSampleApp.Models">
+
+    <Page.Resources>
+        <local:RowFieldNameConverter x:Key="RowFieldName"/>
+
+        <!-- Boolean, so the cell editor is a CheckBox: TwoWay against a property that
+             raises PropertyChanged, left tab-reachable, and given a per-row accessible
+             name so fifty checkboxes do not all announce "Active". -->
+        <DataTemplate x:Key="ActiveCell" x:DataType="models:Person">
+            <CheckBox
+                Margin="12,0,0,0"
+                MinWidth="0"
+                IsChecked="{Binding IsActive, Mode=TwoWay}"
+                AutomationProperties.Name="{Binding Converter={StaticResource RowFieldName}, ConverterParameter=Active}"/>
+        </DataTemplate>
+
+        <!-- A date value, so the cell editor is a DatePicker. This is the column the
+             Actions rail adds and removes at runtime, which proves a templated editor
+             column survives the same add / remove / reorder path a text column does. -->
+        <DataTemplate x:Key="JoinDateCell" x:DataType="models:Person">
+            <DatePicker
+                Margin="8,2"
+                Date="{Binding JoinDate, Mode=TwoWay}"
+                AutomationProperties.Name="{Binding Converter={StaticResource RowFieldName}, ConverterParameter=Join date}"/>
+        </DataTemplate>
+    </Page.Resources>
 
     <controls:SamplePresenter
-        Header="Dynamic columns"
-        Description="Add, remove, show, and hide columns at runtime by mutating the Columns collection. Hiding a column removes its TableViewColumn from the vector and re-inserting the same instance restores it at its original slot — the column keeps its width because the object is reused, not rebuilt."
+        Header="Column lifecycle"
+        Description="The whole life of a column, driven from code (absorbs the former &quot;Column reorder + autosize&quot; page): add one, remove one, hide and show one with TableViewColumn.Visibility, and reorder by moving the instance inside the observable Columns vector. A column keeps its own width wherever it lands, because the object is reused rather than rebuilt. The shaping selector reshapes the rows underneath at the same time, so you can confirm group headers survive a column-vector mutation."
         SourceCaption="DynamicColumnsPage.xaml.cs (excerpt)"
         SourceSnippet="DynamicColumns.cs.txt"
         StretchExample="True">
@@ -20,38 +47,82 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Toggle the checkboxes to show or hide each column, and add or remove the Tenure column by mutating the Columns collection." MinHeight="104"/>
+                <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Pick a column, then move it left or right. Toggle the checkboxes to hide and show columns, and add or remove the Join date column (a templated DatePicker editor). Then switch shaping to Grouped and repeat — the column order and the group headers are independent." MinHeight="104"/>
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
-                    <tv:TableView x:Name="DynamicTable" AutomationProperties.AutomationId="DynamicTable" AutomationProperties.Name="People with dynamic columns" VerticalAlignment="Stretch" MinHeight="320">
+                    <tv:TableView x:Name="DynamicTable" AutomationProperties.AutomationId="DynamicTable" AutomationProperties.Name="People with dynamic columns" SelectionMode="Single" VerticalAlignment="Stretch" MinHeight="320">
                         <tv:TableView.Columns>
                             <tv:TableViewTextColumn x:Name="ColFirstName"  Header="First name" Width="160" Binding="{Binding FirstName}"  SortMemberPath="FirstName"/>
                             <tv:TableViewTextColumn x:Name="ColLastName"   Header="Last name"  Width="160" Binding="{Binding LastName}"   SortMemberPath="LastName"/>
                             <tv:TableViewTextColumn x:Name="ColDepartment" Header="Department" Width="140" Binding="{Binding Department}" SortMemberPath="Department"/>
                             <tv:TableViewTextColumn x:Name="ColRole"       Header="Role"       Width="200" Binding="{Binding Role}"       SortMemberPath="Role"/>
                             <tv:TableViewTextColumn x:Name="ColSalary"     Header="Salary"     Width="100" Binding="{Binding Salary}"     SortMemberPath="Salary"/>
+                            <tv:TableViewTemplateColumn x:Name="ColActive" Header="Active" Width="80"
+                                                        CellTemplate="{StaticResource ActiveCell}"
+                                                        HeaderToolTip="Whether the person is currently on staff. Editable."/>
                         </tv:TableView.Columns>
                     </tv:TableView>
                 </Border>
+                <muxc:InfoBar Grid.Row="2" IsOpen="True" IsClosable="False" Severity="Informational" Title="What to look for" Message="When a column moves, its width moves with it — the order changes, but each column keeps what belongs to it. Hiding a column and bringing it back restores it at its canonical slot, still the same width."/>
             </Grid>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Column visibility" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock Text="Show / hide each column by removing or re-inserting its TableViewColumn. The canonical order is preserved when a column comes back." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                <CheckBox Content="First name"  Tag="0" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisFirstNameCheckBox" HorizontalAlignment="Stretch"/>
-                <CheckBox Content="Last name"   Tag="1" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisLastNameCheckBox" HorizontalAlignment="Stretch"/>
-                <CheckBox Content="Department"  Tag="2" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisDepartmentCheckBox" HorizontalAlignment="Stretch"/>
-                <CheckBox Content="Role"        Tag="3" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisRoleCheckBox" HorizontalAlignment="Stretch"/>
-                <CheckBox Content="Salary"      Tag="4" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisSalaryCheckBox" HorizontalAlignment="Stretch"/>
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"
+                           Text="Flat leaves the source unshaped. Grouped calls TableViewSource.GroupBy on the same source instance, so selection, scroll offset and group expansion survive the reshape."/>
+                <ComboBox x:Name="ShapingModeSelector"
+                          AutomationProperties.AutomationId="ShapingModeSelector"
+                          Header="Shaping mode"
+                          SelectedIndex="0"
+                          SelectionChanged="OnShapingModeChanged"
+                          HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Flat" Tag="flat"/>
+                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                    <!-- Hierarchical rows are not available in this release. Shown disabled so the
+                         shape of the feature is visible; re-enable when the control ships support
+                         (TableViewSource exposes only Filter / GroupBy / Sort today). -->
+                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                </ComboBox>
+                <ComboBox x:Name="GroupKeyCombo" Header="Group by" IsEnabled="False" SelectedIndex="0"
+                          SelectionChanged="OnGroupKeyChanged"
+                          AutomationProperties.AutomationId="GroupKeyCombo"
+                          AutomationProperties.Name="Group key"
+                          ToolTipService.ToolTip="Available once Grouped mode is selected."
+                          HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Role" Tag="Role"/>
+                    <ComboBoxItem Content="Active status" Tag="Active"/>
+                </ComboBox>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Column collection" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Column visibility" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock Text="Show / hide each column with TableViewColumn.Visibility. The canonical order is preserved when a column comes back." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <CheckBox x:Name="VisFirstNameCheckBox"  Content="First name"  Tag="0" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisFirstNameCheckBox" HorizontalAlignment="Stretch"/>
+                <CheckBox x:Name="VisLastNameCheckBox"   Content="Last name"   Tag="1" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisLastNameCheckBox" HorizontalAlignment="Stretch"/>
+                <CheckBox x:Name="VisDepartmentCheckBox" Content="Department"  Tag="2" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisDepartmentCheckBox" HorizontalAlignment="Stretch"/>
+                <CheckBox x:Name="VisRoleCheckBox"       Content="Role"        Tag="3" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisRoleCheckBox" HorizontalAlignment="Stretch"/>
+                <CheckBox x:Name="VisSalaryCheckBox"     Content="Salary"      Tag="4" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisSalaryCheckBox" HorizontalAlignment="Stretch"/>
+                <CheckBox x:Name="VisActiveCheckBox"     Content="Active"      Tag="5" IsChecked="True" Checked="OnColumnToggle" Unchecked="OnColumnToggle" AutomationProperties.AutomationId="VisActiveCheckBox" HorizontalAlignment="Stretch"/>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <ComboBox x:Name="ColumnPicker" AutomationProperties.AutomationId="ColumnPicker" Header="Column to move" SelectedIndex="0" HorizontalAlignment="Stretch"/>
                 <StackPanel Spacing="8">
-                    <Button x:Name="AddTenureButton" AutomationProperties.AutomationId="AddTenureButton" Content="Add Tenure column" Click="OnAddTenureClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="RemoveTenureButton" AutomationProperties.AutomationId="RemoveTenureButton" Content="Remove Tenure column" Click="OnRemoveTenureClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="AutosizeButton" AutomationProperties.AutomationId="AutosizeButton" Content="Autosize all columns" Click="OnAutosizeClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="MoveLeftButton" AutomationProperties.AutomationId="MoveLeftButton" Content="Move left" Click="OnMoveLeftClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="MoveRightButton" AutomationProperties.AutomationId="MoveRightButton" Content="Move right" Click="OnMoveRightClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="AddJoinDateColumnButton" AutomationProperties.AutomationId="AddJoinDateColumnButton" Content="Add Join date column" Click="OnAddJoinDateColumnClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="RemoveJoinDateColumnButton" AutomationProperties.AutomationId="RemoveJoinDateColumnButton" Content="Remove Join date column" Click="OnRemoveJoinDateColumnClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="ResetButton" AutomationProperties.AutomationId="ResetButton" Content="Reset order and visibility" Click="OnResetClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="ExpandAllButton" AutomationProperties.AutomationId="ExpandAllButton" Content="Expand all groups" Click="OnExpandAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="CollapseAllButton" AutomationProperties.AutomationId="CollapseAllButton" Content="Collapse all groups" Click="OnCollapseAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="ReassignRowButton" AutomationProperties.AutomationId="ReassignRowButton" Content="Move first row to another group" Click="OnReassignRowClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="RemoveRowButton" AutomationProperties.AutomationId="RemoveRowButton" Content="Remove first row" Click="OnRemoveRowClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                 </StackPanel>
+
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                 <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="StatusText" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="StatusText" TextWrapping="Wrap"/>
             </StackPanel>

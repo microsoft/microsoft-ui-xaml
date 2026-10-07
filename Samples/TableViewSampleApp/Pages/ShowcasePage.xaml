@@ -174,29 +174,6 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Mode" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock
-                    Text="Switch the source between a flat list and Department-grouped rows."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <muxc:RadioButtons
-                    x:Name="ShowcaseModeRadioButtons"
-                    AutomationProperties.Name="Mode"
-                    SelectedIndex="0"
-                    SelectionChanged="OnModeSelectionChanged">
-                    <RadioButton
-                        x:Name="FlatModeRadio"
-                        AutomationProperties.AutomationId="ShowcaseModeFlatRadio"
-                        Content="Flat"
-                        Tag="Flat"/>
-                    <RadioButton
-                        x:Name="GroupedModeRadio"
-                        AutomationProperties.AutomationId="ShowcaseModeGroupedRadio"
-                        Content="Grouped"
-                        Tag="Grouped"/>
-                </muxc:RadioButtons>
-
-
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Row count" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                 <TextBlock
                     Text="Flat mode only — grouped mode reuses the same rows grouped by Department."
@@ -296,6 +273,89 @@
                     StepFrequency="50"
                     Value="700"/>
 
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Flat leaves the source unshaped. Grouped calls TableViewSource.GroupBy(keySelector, groupIdentitySelector) on the SAME source instance, so selection, scroll offset and group expansion survive the reshape."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <ComboBox
+                    x:Name="ShapingModeSelector"
+                    AutomationProperties.Name="Shaping mode"
+                    AutomationProperties.AutomationId="ShapingModeSelector"
+                    Header="Shaping mode"
+                    SelectedIndex="0"
+                    HorizontalAlignment="Stretch"
+                    SelectionChanged="OnModeSelectionChanged">
+                    <ComboBoxItem Content="Flat" Tag="flat" AutomationProperties.AutomationId="ShowcaseModeFlatItem"/>
+                    <ComboBoxItem Content="Grouped" Tag="grouped" AutomationProperties.AutomationId="ShowcaseModeGroupedItem"/>
+                    <!-- Hierarchical rows are not available in this release. The options stay
+                         VISIBLE and disabled so the full shape of the shaping axis is honest
+                         signposting rather than a silent omission; re-enable them when the
+                         control ships hierarchy support. -->
+                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                </ComboBox>
+                <ComboBox
+                    x:Name="ShapingGroupKeyCombo"
+                    AutomationProperties.AutomationId="ShowcaseShapingGroupKeyCombo"
+                    AutomationProperties.Name="Group key"
+                    Header="Group by"
+                    SelectedIndex="0"
+                    IsEnabled="False"
+                    ToolTipService.ToolTip="Available once Grouped mode is selected."
+                    HorizontalAlignment="Stretch"
+                    SelectionChanged="OnShapingGroupKeyChanged">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Role" Tag="Role"/>
+                    <ComboBoxItem Content="Active status" Tag="Active"/>
+                </ComboBox>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Sorting a header while Grouped sorts WITHIN each group. The mutation actions rewrite a row's group key or its sorted Salary, then re-apply the shaping, so you can watch a row move between groups or re-position under an active sort."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"/>
+                <StackPanel Spacing="8">
+                    <Button x:Name="ExpandAllButton"
+                            AutomationProperties.AutomationId="ShowcaseExpandAllButton"
+                            Content="Expand all groups"
+                            IsEnabled="False"
+                            ToolTipService.ToolTip="Available once Grouped mode is selected."
+                            Click="OnExpandAllClick"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="CollapseAllButton"
+                            AutomationProperties.AutomationId="ShowcaseCollapseAllButton"
+                            Content="Collapse all groups"
+                            IsEnabled="False"
+                            ToolTipService.ToolTip="Available once Grouped mode is selected."
+                            Click="OnCollapseAllClick"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="MoveGroupButton"
+                            AutomationProperties.AutomationId="ShowcaseMoveSelectedButton"
+                            Content="Move selected row to next group"
+                            IsEnabled="False"
+                            ToolTipService.ToolTip="Select a row first."
+                            Click="OnMoveSelectedGroupClick"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="BumpSalaryButton"
+                            AutomationProperties.AutomationId="ShowcaseBumpSalaryButton"
+                            Content="Double selected row's salary"
+                            IsEnabled="False"
+                            ToolTipService.ToolTip="Select a row first."
+                            Click="OnBumpSalaryClick"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="RemoveRowButton"
+                            AutomationProperties.AutomationId="ShowcaseRemoveSelectedButton"
+                            Content="Remove selected row"
+                            IsEnabled="False"
+                            ToolTipService.ToolTip="Select a row first."
+                            Click="OnRemoveSelectedClick"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                </StackPanel>
+
+
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                 <Grid ColumnSpacing="12" RowSpacing="4">
                     <Grid.ColumnDefinitions>
@@ -303,6 +363,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -324,7 +385,19 @@
 
                     <TextBlock Grid.Row="4" Grid.Column="0" Text="Columns" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
                     <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="4" Grid.Column="1" x:Name="ColumnsReadoutText" Text="" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseColumnsReadoutText" TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="5" Grid.Column="1" x:Name="LastActionText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseLastActionText" TextWrapping="Wrap"/>
                 </Grid>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="What to look for" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <muxc:InfoBar
+                    AutomationProperties.AutomationId="ShowcaseWhatToLookForInfoBar"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="What to look for"
+                    Message="Select a row, switch to Grouped, and the selection survives - the source is reshaped in place, not rebuilt. Sort by Salary while grouped and the rows order WITHIN each department band; then double the selected row's salary and watch it re-position inside its own band rather than jumping to the top of the table."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
 

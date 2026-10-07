@@ -24,6 +24,7 @@ public sealed partial class TextWrapPage : Page, INotifyPropertyChanged
 {
     private readonly List<WeakReference<TextBlock>> _bioCells = new();
     private double _columnWidth = 360;
+    private int _maxLines;
     private string _columnWidthText = string.Empty;
     private string _statusText = string.Empty;
 
@@ -57,8 +58,7 @@ public sealed partial class TextWrapPage : Page, INotifyPropertyChanged
 
         DemoTable.ItemsSource = People;
         BioColumn.Width = new GridLength(_columnWidth);
-        GetTextWrapState().TextWrapping = TextWrapping.Wrap;
-        GetTextWrapState().TextTrimming = TextTrimming.None;
+        ApplyTextState();
         UpdateStatus();
 
         Loaded += (_, _) => QueueStatusUpdate();
@@ -99,10 +99,34 @@ public sealed partial class TextWrapPage : Page, INotifyPropertyChanged
             return;
         }
 
-        var state = GetTextWrapState();
-        state.TextWrapping = WrapToggle.IsOn ? TextWrapping.Wrap : TextWrapping.NoWrap;
-        state.TextTrimming = WrapToggle.IsOn ? TextTrimming.None : TextTrimming.CharacterEllipsis;
+        ApplyTextState();
         QueueStatusUpdate();
+    }
+
+    /// <summary>
+    /// Single owner of the shared <see cref="TextWrapState"/>. Both the wrap toggle and the
+    /// max-lines picker funnel through here so neither overwrites the other's contribution, and
+    /// every value lands on the state object the cell <c>DataTemplate</c> binds to - which is what
+    /// makes the setting survive row recycling.
+    /// </summary>
+    private void ApplyTextState()
+    {
+        var wrapOn = WrapToggle?.IsOn ?? true;
+        var state = GetTextWrapState();
+
+        state.TextWrapping = wrapOn ? TextWrapping.Wrap : TextWrapping.NoWrap;
+
+        // TextBlock.MaxLines only clamps text that actually wraps, so it is deliberately not
+        // applied in NoWrap mode.
+        state.MaxLines = wrapOn ? _maxLines : 0;
+        state.TextTrimming = !wrapOn || _maxLines > 0
+            ? TextTrimming.CharacterEllipsis
+            : TextTrimming.None;
+
+        if (MaxLinesComboBox is not null)
+        {
+            MaxLinesComboBox.IsEnabled = wrapOn;
+        }
     }
 
     private void OnColumnWidthChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
@@ -118,17 +142,17 @@ public sealed partial class TextWrapPage : Page, INotifyPropertyChanged
     private void OnMaxLinesSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (MaxLinesComboBox?.SelectedItem is not ComboBoxItem item ||
-            item.Tag is not string tag ||
-            !int.TryParse(tag, out var maxLines))
+            !int.TryParse(
+                item.Tag?.ToString(),
+                System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var maxLines))
         {
             return;
         }
 
-        var state = GetTextWrapState();
-        state.MaxLines = maxLines;
-        state.TextTrimming = maxLines == 0 && state.TextWrapping == TextWrapping.Wrap
-            ? TextTrimming.None
-            : TextTrimming.CharacterEllipsis;
+        _maxLines = maxLines;
+        ApplyTextState();
         QueueStatusUpdate();
     }
 
@@ -167,10 +191,14 @@ public sealed partial class TextWrapPage : Page, INotifyPropertyChanged
 
         var cellHeights = GetBioCellHeights();
         var rowHeights = FindRealizedElementHeights(DemoTable, "Row");
-        var maxLines = state.MaxLines == 0 ? "unlimited" : state.MaxLines.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var wrapOn = state.TextWrapping == TextWrapping.Wrap;
+        var maxLines = _maxLines == 0
+            ? "unlimited"
+            : _maxLines.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var maxLinesNote = wrapOn ? string.Empty : " (ignored while TextWrapping is NoWrap)";
 
         StatusText =
-            $"Wrapping: {state.TextWrapping} · Bio width: {_columnWidth:N0}px · MaxLines: {maxLines}\n" +
+            $"Wrapping: {state.TextWrapping} · Bio width: {_columnWidth:N0}px · MaxLines: {maxLines}{maxLinesNote}\n" +
             $"Realized Bio TextBlock heights: {FormatHeights(cellHeights)}\n" +
             $"Realized row-like element heights: {FormatHeights(rowHeights)}";
     }

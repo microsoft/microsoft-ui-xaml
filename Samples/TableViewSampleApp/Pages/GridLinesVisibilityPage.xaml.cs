@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -22,29 +21,25 @@ namespace TableViewSampleApp.Pages;
 /// for WPF DataGrid parity. The same DP is exercised across flat and grouped
 /// modes — and against both default theme banding and a custom row background —
 /// so reviewers can verify the lines stay correct through group headers and tinted rows.
+///
+/// The grouped mode is real grouping: one TableViewSource is reshaped in place
+/// with GroupBy / ClearGroupBy, so the group header bands that the grid lines
+/// have to coexist with are actually present.
 /// </summary>
 public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChanged
 {
-    private enum LayoutMode
-    {
-        Flat,
-        Grouped,
-    }
+    private readonly ObservableCollection<Person> _rows = new();
 
-    private static readonly string[] s_curatedDepartments =
-    {
-        "Marketing",
-        "Sales",
-        "Design",
-        "Product",
-        "Finance",
-    };
+    private TableViewSource? _source;
 
-    private readonly ObservableCollection<Person> _flatRows = new();
-    private readonly IReadOnlyList<Person> _groupedPeople;
-    private readonly List<DepartmentGroup> _groupedRows;
+    // Requested shaping mode versus the mode actually applied to the source.
+    // GroupBy fails fast, so these can differ; every readout and every
+    // enable/disable guard reads _appliedMode.
+    private string _mode = "flat";
+    private string _appliedMode = "flat";
+    private string _groupKey = "Department";
+    private bool _allGroupsCollapsed;
 
-    private LayoutMode _mode = LayoutMode.Flat;
     private TableViewGridLinesVisibility _lines = TableViewGridLinesVisibility.All;
     private string _statusText = string.Empty;
 
@@ -52,19 +47,18 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
     {
         foreach (var person in PersonData.Take(40))
         {
-            _flatRows.Add(person);
+            _rows.Add(person);
         }
-
-        var curated = BuildCuratedPeople();
-        _groupedPeople = curated;
-        _groupedRows = BuildGroupedView(_groupedPeople);
 
         InitializeComponent();
 
         DemoTable.HeadersVisibility = TableViewHeadersVisibility.Column;
-        ApplyMode(LayoutMode.Flat);
+
+        _source = TableViewSource.From(_rows);
+        DemoTable.ItemsSource = _source;
+
+        ApplyShaping();
         ApplyBanding();
-        UpdateStatus();
     }
 
     public string StatusText
@@ -101,24 +95,6 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
         UpdateStatus();
     }
 
-    private void OnModeSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (DemoTable is null ||
-            sender is not RadioButtons { SelectedItem: FrameworkElement { Tag: string tag } })
-        {
-            return;
-        }
-
-        if (!Enum.TryParse<LayoutMode>(tag, ignoreCase: false, out var mode))
-        {
-            Debug.Fail($"GridLinesVisibilityPage: unrecognised mode Tag '{tag}'.");
-            return;
-        }
-
-        ApplyMode(mode);
-        UpdateStatus();
-    }
-
     private void OnBandingSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (DemoTable is null)
@@ -128,22 +104,6 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
 
         ApplyBanding();
         UpdateStatus();
-    }
-
-    private void ApplyMode(LayoutMode mode)
-    {
-        // Reachable during InitializeComponent if a mode RadioButton has IsChecked="True"
-        // in XAML (Checked raises synchronously). DemoTable lives in the Example slot and is
-        // created before the Options radios, but guard defensively; the ctor re-applies.
-        if (DemoTable is null) return;
-
-        _mode = mode;
-
-        DemoTable.ItemsSource = _mode switch
-        {
-            LayoutMode.Grouped => TableViewSource.From(_groupedPeople),
-            _ => TableViewSource.From(_flatRows),
-        };
     }
 
     private void ApplyBanding()
@@ -159,7 +119,180 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
         DemoTable.Style = null;
     }
 
-    private void UpdateStatus()
+    // ----- Shaping -----
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_source is null ||
+            sender is not ComboBox { SelectedItem: ComboBoxItem { Tag: string tag } })
+        {
+            return;
+        }
+
+        _mode = tag;
+        ApplyShaping();
+    }
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_source is null || GroupKeyCombo?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        {
+            return;
+        }
+
+        _groupKey = tag;
+        // Re-applying with the same mode proves the grouped state survives a key change.
+        ApplyShaping();
+    }
+
+    private void ApplyShaping()
+    {
+        if (_source is null)
+        {
+            return;
+        }
+
+        // Reshape IN PLACE: Filter/GroupBy mutate and return the same instance,
+        // so the source is never rebuilt per change.
+        if (_mode != "grouped")
+        {
+            _source.ClearGroupBy();
+        }
+        else
+        {
+            var key = _groupKey;
+            // The two delegates receive DIFFERENT things despite both parameters
+            // being named `item`:
+            //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
+            //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
+            // An item-typed identity lambda returns empty, which is a fail-fast,
+            // so grouping would silently never apply.
+            _source.GroupBy(
+                item => (object)GroupValue(item, key),
+                groupKey => groupKey?.ToString() ?? "(none)");
+        }
+
+        // case "hierarchy":
+        // case "groupedhierarchy":
+        //     Hierarchical rows are not available in this release: neither
+        //     TableViewSource.idl nor TableView.idl exposes a hierarchy verb
+        //     (the only shaping verbs are Filter / GroupBy / Sort and their
+        //     Clear* counterparts). When the control ships hierarchy support,
+        //     apply it to this same source here, alongside the GroupBy stage
+        //     above so the two compose, then set _appliedMode as below.
+
+        _appliedMode = _mode;
+        _allGroupsCollapsed = false;
+
+        if (_appliedMode == "grouped")
+        {
+            DemoTable.ExpandAllGroups();
+        }
+
+        UpdateShapingGates();
+        UpdateStatus();
+    }
+
+    private void UpdateShapingGates()
+    {
+        if (GroupKeyCombo is null)
+        {
+            return;
+        }
+
+        var grouped = _appliedMode == "grouped";
+
+        GroupKeyCombo.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        ReassignRowButton.IsEnabled = grouped;
+    }
+
+    // ----- Actions -----
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        if (_appliedMode != "grouped") return;
+
+        DemoTable.ExpandAllGroups();
+        _allGroupsCollapsed = false;
+        UpdateStatus("Expanded all groups");
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        if (_appliedMode != "grouped") return;
+
+        DemoTable.CollapseAllGroups();
+        _allGroupsCollapsed = true;
+        UpdateStatus("Collapsed all groups");
+    }
+
+    private void OnReassignRowClick(object sender, RoutedEventArgs e)
+    {
+        if (_appliedMode != "grouped" || _rows.Count == 0) return;
+
+        var person = _rows[0];
+        var before = GroupValue(person, _groupKey);
+
+        if (_groupKey == "Active")
+        {
+            person.IsActive = !person.IsActive;
+        }
+        else
+        {
+            person.Department = PersonData.Departments
+                .FirstOrDefault(d => !string.Equals(d, person.Department, StringComparison.Ordinal))
+                ?? person.Department;
+        }
+
+        UpdateStatus($"Moved \"{person.FullName}\" from {before} to {GroupValue(person, _groupKey)}");
+    }
+
+    private void OnRemoveRowClick(object sender, RoutedEventArgs e)
+    {
+        if (_rows.Count == 0)
+        {
+            UpdateStatus("Remove skipped — no rows left");
+            return;
+        }
+
+        var person = _rows[0];
+        _rows.RemoveAt(0);
+        UpdateStatus($"Removed \"{person.FullName}\" — watch the row separator above it close up");
+    }
+
+    // ----- Helpers -----
+    //
+    // GroupValue never returns the empty string: an empty group identity is a
+    // fail-fast in GroupBy, so a blank property has to be coalesced.
+
+    private static string GroupValue(object item, string key)
+    {
+        if (item is not Person person)
+        {
+            return "(none)";
+        }
+
+        var value = key switch
+        {
+            "Role" => person.Role,
+            "Active" => person.IsActive ? "Active" : "Inactive",
+            _ => person.Department,
+        };
+
+        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+    }
+
+    private static string ModeLabel(string mode) => mode switch
+    {
+        "grouped" => "Grouped",
+        "hierarchy" => "Hierarchy",
+        "groupedhierarchy" => "Grouped hierarchy",
+        _ => "Flat",
+    };
+
+    private void UpdateStatus(string? message = null)
     {
         var banding = CustomBandingRadio is not null && CustomBandingRadio.IsChecked == true ? "custom banding" : "theme banding";
         var lines = _lines switch
@@ -171,50 +304,18 @@ public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChang
             _ => _lines.ToString(),
         };
 
-        StatusText = _mode switch
-        {
-            LayoutMode.Flat    => $"Flat · {_flatRows.Count:N0} rows · {lines} · {banding}",
-            LayoutMode.Grouped => $"Grouped · {_groupedRows.Count:N0} departments · {_groupedRows.Sum(g => g.Count):N0} people · {lines} · {banding}",
-            _ => string.Empty,
-        };
+        // Readouts describe the APPLIED mode, never the requested one.
+        var key = _groupKey;
+        var shaping = _appliedMode == "grouped"
+            ? $"{ModeLabel(_appliedMode)} by {key} · {_rows.Select(p => GroupValue(p, key)).Distinct(StringComparer.Ordinal).Count():N0} groups · {(_allGroupsCollapsed ? "all collapsed" : "all expanded")}"
+            : ModeLabel(_appliedMode);
+
+        var prefix = message is null ? string.Empty : $"{message}. ";
+        StatusText = $"{prefix}{shaping} · {_rows.Count:N0} rows · {lines} · {banding}";
     }
-
-    private static IReadOnlyList<Person> BuildCuratedPeople()
-    {
-        return s_curatedDepartments
-            .SelectMany(department => PersonData.All
-                .Where(p => string.Equals(p.Department, department, StringComparison.Ordinal))
-                .Take(8))
-            .ToList();
-    }
-
-    private static List<DepartmentGroup> BuildGroupedView(IEnumerable<Person> people)
-    {
-        return s_curatedDepartments
-            .Select(department => new DepartmentGroup(department, people.Where(p => string.Equals(p.Department, department, StringComparison.Ordinal))))
-            .Where(group => group.Count > 0)
-            .ToList();
-    }
-
-    private static string PersonIdentity(object item) => item is Person person ? person.Email : string.Empty;
-
-    private static string GroupIdentity(object key) => key?.ToString() ?? string.Empty;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged([CallerMemberName] string? name = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-
-    public sealed class DepartmentGroup : List<Person>
-    {
-        public DepartmentGroup(string department, IEnumerable<Person> people) : base(people)
-        {
-            Department = department;
-        }
-
-        public string Department { get; }
-
-        public override string ToString() => Department;
-    }
-
 }

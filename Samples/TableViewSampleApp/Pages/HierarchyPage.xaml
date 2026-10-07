@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.HierarchyPage"
+    NavigationCacheMode="Disabled"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:controls="using:TableViewSampleApp.Controls">
+
+    <controls:SamplePresenter
+        Header="Hierarchy"
+        Description="Placeholder. Hierarchical rows are not available in this release, so this page demonstrates nothing — it exists to describe the axis the gallery will cover once the feature ships. Hierarchy is a separate shaping axis from grouping: grouping buckets rows under a computed key, while hierarchy renders a parent/child relationship that already exists in the data, with expand and collapse on each parent row rather than on a group header. The two are expected to compose, so a grouped hierarchy — groups at the outer level, parent/child nesting inside each group — is part of the intended design. Nothing on this page calls a hierarchy API, because no such API exists in this release.">
+
+        <controls:SamplePresenter.Example>
+            <StackPanel Spacing="12">
+                <muxc:InfoBar
+                    IsOpen="True"
+                    IsClosable="False"
+                    Severity="Informational"
+                    Title="Not available in this release"
+                    Message="Hierarchical rows are in development on a separate branch and are not part of this release. This page is a placeholder: there is no working demo here, and the options below are shown disabled so the intended shape of the feature is visible without pretending it works."
+                    AutomationProperties.AutomationId="HierarchyUnavailableInfoBar"/>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="What the feature will cover" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"
+                    Text="Parent and child rows drawn from a relationship in the data itself, rather than from a key selector. Each parent row carries its own expand / collapse affordance, so the expanded state is per row rather than per group, and a child row keeps its own cells and selection behaviour instead of being folded into a header."/>
+                <TextBlock
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"
+                    Text="Expand and collapse are expected to be reachable from the keyboard on the focused parent row and to report an expand/collapse state to UI Automation, the way group headers already do today on the Grouped rows page."/>
+                <TextBlock
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"
+                    Text="Grouping combined with hierarchy: groups at the outer level with parent/child nesting inside each group, so the two axes compose rather than exclude each other. Until that lands, the grouping pages in this gallery show the grouping axis on its own."/>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Available today instead" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"
+                    Text="The Grouped rows page covers the grouping axis end to end: group headers with counts, a custom group header template, and expand / collapse across all groups. The Density, Cell editing, and Cell templating pages each show grouping applied alongside another feature."/>
+            </StackPanel>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Intended options" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"
+                    Text="Shown disabled on purpose. These are not dead controls: they are deliberately unavailable in this release, and each one says so in its tooltip."/>
+                <ToggleSwitch
+                    Header="Hierarchy"
+                    OffContent="Flat"
+                    OnContent="Nested"
+                    IsEnabled="False"
+                    ToolTipService.ToolTip="Hierarchical rows are not available in this release."
+                    AutomationProperties.AutomationId="HierarchyToggle"
+                    AutomationProperties.Name="Hierarchy"
+                    AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                <Button
+                    Content="Expand all rows"
+                    IsEnabled="False"
+                    ToolTipService.ToolTip="Hierarchical rows are not available in this release."
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    AutomationProperties.AutomationId="HierarchyExpandAllButton"
+                    AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                <Button
+                    Content="Collapse all rows"
+                    IsEnabled="False"
+                    ToolTipService.ToolTip="Hierarchical rows are not available in this release."
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    AutomationProperties.AutomationId="HierarchyCollapseAllButton"
+                    AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Availability" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock
+                        AutomationProperties.LiveSetting="Polite"
+                        Grid.Row="0" Grid.Column="1"
+                        Text="Not available in this release"
+                        Style="{StaticResource StatusReadoutValueStyle}"
+                        TextWrapping="Wrap"
+                        AutomationProperties.AutomationId="HierarchyAvailabilityText"/>
+                </Grid>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+
+    </controls:SamplePresenter>
+</Page>

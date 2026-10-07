@@ -1,57 +1,83 @@
+private readonly ObservableCollection<Person> _people = new();
+
+// Reshaped IN PLACE: GroupBy / ClearGroupBy / Sort mutate and return the same TableViewSource
+// (TableViewSource.cpp:49-50). Rebuilding the source per change - which this page used to do -
+// drops selection, scroll offset and group expansion on every toggle.
+private TableViewSource? _source;
+private string _mode = "flat";          // requested
+private string _appliedMode = "flat";   // applied - every readout and guard reads THIS
+private string _groupKey = "Department";
+
 private void ApplyCurrentSource()
 {
-    PeopleTable.ItemsSource = ApplyActiveSort(TableViewSource.From(_people));
+    if (_source is null)
+    {
+        _source = TableViewSource.From(_people);
+        PeopleTable.ItemsSource = _source;
+    }
+
+    switch (_mode)
+    {
+        case "grouped":
+            var key = _groupKey;
+            // The two delegates receive DIFFERENT things despite both parameters being named
+            // `item`: TableViewKeySelector gets the ROW ITEM, TableViewIdentitySelector gets
+            // the GROUP KEY (TableViewSource.idl:12-16). The old item-typed identity lambda
+            // here could return the empty string, which is an E_INVALIDARG fail-fast.
+            _source.GroupBy(
+                item => (object)GroupValue(item, key),
+                groupKey => groupKey?.ToString() ?? "(none)");
+            break;
+
+        // case "hierarchy":
+        // case "groupedhierarchy":
+        //     Hierarchical rows are not available in this release, and no hierarchy API
+        //     exists on TableViewSource or TableView yet, so there is deliberately no call
+        //     written here to copy. When the control ships hierarchy support, apply it to
+        //     this same source instance alongside the GroupBy stage above so the two compose.
+        //     break;
+
+        default:
+            _source.ClearGroupBy();
+            break;
+    }
+
+    _appliedMode = _mode;   // set ONLY after the shaping call returns
+
+    ApplyActiveSort(_source);
 }
 
-private TableViewSource ApplyActiveSort(TableViewSource source)
+private void ApplyActiveSort(TableViewSource source)
 {
+    // Clear first: the keySelector Sort overload declares an ANONYMOUS axis, so re-declaring
+    // one without clearing would stack a second axis rather than replace the first.
+    source.ClearSort();
+
     var sortColumn = SampleShape.ActiveSortColumn(PeopleTable);
     if (sortColumn is null ||
         SampleShape.ActiveSortDirection(PeopleTable) == SortDirection.None ||
         string.IsNullOrEmpty(sortColumn.SortMemberPath))
     {
-        return source;
+        return;
     }
 
-    return source.Sort(
-        item => SortKey(item, sortColumn.SortMemberPath),
-        SampleShape.ActiveSortDirection(PeopleTable));
+    var path = sortColumn.SortMemberPath;
+    source.Sort(item => SortKey(item, path), SampleShape.ActiveSortDirection(PeopleTable));
+}
+
+// Doubles the selected row's Salary, then re-applies the sort axis so a row sorted on Salary
+// visibly re-positions. Sorting while Grouped sorts WITHIN each group.
+private void OnBumpSalaryClick(object sender, RoutedEventArgs e)
+{
+    if (PeopleTable.SelectedItem is not Person selected) { return; }
+
+    selected.Salary = Math.Round(selected.Salary * 2, 0);
+    ApplyCurrentSource();
+    UpdateStatus();
 }
 
 // ----- Selection -----
-// Row-scoped and single-item: SelectedItem and SelectedIndex are read-only
-// projections that stay coherent with each other. Drive selection through
-// Select / Deselect / DeselectAll.
-private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
-{
-    SelectionCountText.Text = PeopleTable.SelectedItem is null
-        ? "No rows selected"
-        : "1 row selected";
-}
-
+// Row-scoped and single-item: SelectedItem and SelectedIndex are read-only projections that
+// stay coherent with each other. Drive selection through Select / Deselect / DeselectAll.
 PeopleTable.Select(0);
 PeopleTable.DeselectAll();
-
-// ----- Sorting -----
-// Sorted fires after the sort has been applied and the header chevron published.
-// The state lives on the COLUMN, not on the table, and sorting is single-column,
-// so at most one column is ever anything but None.
-private void OnPeopleTableSorted(TableView sender, TableViewSortedEventArgs args)
-{
-    // args.Column is null when the sort was cleared.
-    var active = PeopleTable.Columns
-        .FirstOrDefault(c => c.SortDirection != SortDirection.None);
-
-    SortReadoutText.Text = active is null
-        ? "(none)"
-        : $"{active.Header} {active.SortDirection}";
-}
-
-// ----- Columns -----
-// HeadersVisibility toggles the column-header strip. Email / Role are removed
-// from the Columns vector and the same instances are inserted back in canonical
-// order, so their Width and sort state stay with the column object.
-PeopleTable.HeadersVisibility = TableViewHeadersVisibility.None;
-PeopleTable.Columns.Remove(EmailColumn);
-PeopleTable.Columns.Insert(5, EmailColumn);
-PeopleTable.SelectionMode = TableViewSelectionMode.None;

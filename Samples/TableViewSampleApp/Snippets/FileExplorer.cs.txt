@@ -1,80 +1,86 @@
 private readonly FileSystemBrowser _browser = new();
-private readonly Stack<string> _history = new();
-private string _currentDir = string.Empty;
-
 public ObservableCollection<FileSystemEntry> Entries { get; } = new();
 
-private void Navigate(string directoryPath, bool addToHistory)
-{
-    string fullPath;
-    try
-    {
-        fullPath = Path.GetFullPath(Environment.ExpandEnvironmentVariables(directoryPath));
-    }
-    catch
-    {
-        return;
-    }
-
-    if (!Directory.Exists(fullPath))
-    {
-        return;
-    }
-
-    if (addToHistory && !string.IsNullOrEmpty(_currentDir) && !PathsEqual(_currentDir, fullPath))
-    {
-        _history.Push(_currentDir);
-    }
-
-    _currentDir = fullPath;
-    RefreshEntries();
-}
+// Reshaped IN PLACE: Filter / GroupBy mutate and return the same TableViewSource
+// (TableViewSource.cpp:49-50). Built ONCE over Entries, so a shaping change never re-enters
+// FileSystemBrowser.GetEntries and never touches the file system.
+private TableViewSource? _source;
+private string _mode = "flat";          // requested
+private string _appliedMode = "flat";   // applied
+private string _groupKey = "Type";
 
 private void RefreshEntries()
 {
+    // The ONLY path that hits the disk. Back / Up / Refresh / Enter reach it; shaping does not.
     var entries = ApplyActiveSort(_browser.GetEntries(_currentDir)).ToList();
     Entries.Clear();
-    foreach (var entry in entries)
+    foreach (var entry in entries) { Entries.Add(entry); }
+
+    if (_source is null)
     {
-        Entries.Add(entry);
+        _source = TableViewSource.From(Entries);
+        FileTable.ItemsSource = _source;
     }
 
-    FileTable.ItemsSource = Entries;
+    ApplyShaping();
     FileTable.DeselectAll();
     AddressBar.Text = _currentDir;
-    RefreshSelectionText();
 }
 
-private IEnumerable<FileSystemEntry> ApplyActiveSort(IEnumerable<FileSystemEntry> source)
+private void ApplyShaping()
 {
-    IOrderedEnumerable<FileSystemEntry> ordered = source.OrderByDescending(entry => entry.IsFolder);
-    var column = SampleShape.ActiveSortColumn(FileTable);
-    if (column is null ||
-        SampleShape.ActiveSortDirection(FileTable) == SortDirection.None ||
-        string.IsNullOrEmpty(column.SortMemberPath) ||
-        !s_keySelectors.TryGetValue(column.SortMemberPath, out var keySelector))
+    switch (_filter)
     {
-        return ordered;
+        case "folders": _source.Filter(item => item is FileSystemEntry { IsFolder: true }); break;
+        case "files":   _source.Filter(item => item is FileSystemEntry { IsFolder: false }); break;
+        case "none":    _source.Filter(_ => false); break;   // filter down to zero rows
+        default:        _source.ClearFilter(); break;
     }
 
-    return SampleShape.ActiveSortDirection(FileTable) == SortDirection.Descending
-        ? ordered.ThenByDescending(keySelector)
-        : ordered.ThenBy(keySelector);
-}
-
-private void OnRowDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-{
-    if (FileTable.SelectedItem is FileSystemEntry { IsFolder: true } entry)
+    switch (_mode)
     {
-        Navigate(entry.FullPath, addToHistory: true);
+        case "grouped":
+            var key = _groupKey;
+            // TableViewKeySelector receives the ROW ITEM; TableViewIdentitySelector receives
+            // the GROUP KEY (TableViewSource.idl:12-16). An item-typed identity lambda
+            // returns an empty identity and fails fast with E_INVALIDARG.
+            _source.GroupBy(
+                item => (object)GroupValue(item, key),
+                groupKey => groupKey?.ToString() ?? "(none)");
+            break;
+
+        // case "hierarchy":
+        // case "groupedhierarchy":
+        //     Hierarchical rows are not available in this release, and no hierarchy API
+        //     exists on TableViewSource or TableView yet, so there is deliberately no call
+        //     written here to copy. When the control ships hierarchy support, apply it to
+        //     this same source instance alongside the GroupBy stage above so the two compose
+        //     - folder rows parenting their children is the natural shape for this page.
+        //     break;
+
+        default:
+            _source.ClearGroupBy();
+            break;
     }
+
+    _appliedMode = _mode;   // set ONLY after the shaping call returns
+
+    UpdateShapingUi();
+    RefreshStatusText();
 }
 
-private void RefreshSelectionText()
+// Explorer's own grouping is by type / date modified / size, so item type is the natural key.
+// Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
+private static string GroupValue(object item, string key)
 {
-    var selectedItems = FileTable.SelectedItem is FileSystemEntry selected
-        ? new List<FileSystemEntry> { selected }
-        : new List<FileSystemEntry>();
-    var totalSize = selectedItems.Where(entry => !entry.IsFolder).Sum(entry => entry.Size);
-    SelectionText.Text = $"{selectedItems.Count} selected ({FileSystemEntry.FormatSize(totalSize)})";
+    if (item is not FileSystemEntry entry) { return "(none)"; }
+
+    var value = key switch
+    {
+        "Kind"     => entry.IsFolder ? "Folders" : "Files",
+        "Modified" => ModifiedBucket(entry.DateModified),
+        _          => entry.IsFolder ? "File folder" : entry.TypeDisplay,
+    };
+
+    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
 }

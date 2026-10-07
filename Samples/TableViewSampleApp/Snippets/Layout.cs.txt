@@ -1,65 +1,29 @@
-private void ApplySelectedMode()
-{
-    WidthsTable.Columns.Clear();
-    PlaygroundPanel.Visibility =
-        ModeSelector.SelectedItem as string == "Playground"
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+// Column layout & sizing: one page covers width intent, the clamp, and both
+// resize gates (this page absorbed the former "Column resize" sample).
 
-    switch (ModeSelector.SelectedItem as string)
-    {
-        case "Playground":
-            BuildPlaygroundColumns();
-            PopulateColumnCombo();
-            SetActiveColumn(WidthsTable.Columns[0] as TableViewTextColumn);
-            ModeDescription.Text = "Playground — pick a column and tweak MinWidth, Width, and MaxWidth live while watching ActualWidth clamp.";
-            break;
-
-        case "Pixel":
-            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Px(180)));
-            WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Px(180)));
-            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Px(320)));
-            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Px(220)));
-            WidthsTable.Columns.Add(Text("Role", nameof(Person.Role), Px(260)));
-            WidthsTable.Columns.Add(Text("Join date", nameof(Person.JoinDateText), Px(180)));
-            WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Px(520)));
-            ModeDescription.Text = "All Pixel columns — every column has a fixed GridUnitType.Pixel width, independent of content. Their combined width exceeds a narrow window, so the body scrolls horizontally and the sticky header stays in sync.";
-            break;
-
-        case "Auto":
-            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Auto()));
-            WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Auto()));
-            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Auto()));
-            WidthsTable.Columns.Add(Text("Role", nameof(Person.Role), Auto()));
-            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Auto()));
-            ModeDescription.Text = "All Auto columns — every column sizes to the widest realized header or cell content.";
-            break;
-
-        case "Star":
-            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Star(1)));
-            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Star(1)));
-            WidthsTable.Columns.Add(Text("Role", nameof(Person.Role), Star(2)));
-            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Star(3)));
-            ModeDescription.Text = "All Star columns — every column shares remaining width by factor.";
-            break;
-
-        case "Mixed":
-            WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Auto()));
-            WidthsTable.Columns.Add(Text("Role", nameof(Person.Role), Px(160)));
-            WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Star(1)));
-            WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Star(2)));
-            WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Star(3)));
-            ModeDescription.Text = "Mixed columns — Auto and fixed Pixel columns are sized first, then Star columns split the remaining width.";
-            break;
-    }
-
-    UpdateLabelsAndReadout();
-}
-
+// Width intent. Pixel is fixed, Auto sizes to realized content, Star shares
+// what is left by factor, and a Mixed layout resolves Auto + Pixel first.
 private static GridLength Auto() => new(1, GridUnitType.Auto);
 private static GridLength Star(double factor = 1) => new(factor, GridUnitType.Star);
 private static GridLength Px(double px) => new(px, GridUnitType.Pixel);
 
+// Per-column opt-out of the resize gripper. Programmatic Width still applies,
+// which is why every mode keeps one locked column to compare against.
+private static TableViewTextColumn LockedRole(GridLength width)
+{
+    var column = Text("Role (locked)", nameof(Person.Role), width);
+    column.CanResize = false;
+    return column;
+}
+
+// Table-level gate: turns every gripper off at once.
+private void ApplyCanUserResizeColumns()
+{
+    WidthsTable.CanUserResizeColumns = CanUserResizeColumnsCheckBox.IsChecked == true;
+}
+
+// MinWidth / MaxWidth clamp the rendered result. Width is the request;
+// ActualWidth is what the control actually gave the column.
 private void OnWidthSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
 {
     if (_suppressSliderHandlers || _activeColumn is null)
@@ -68,5 +32,31 @@ private void OnWidthSliderChanged(object sender, RangeBaseValueChangedEventArgs 
     }
 
     _activeColumn.Width = new GridLength(e.NewValue);
+    UpdateLabelsAndReadout();
+}
+
+private void UpdateLabelsAndReadout()
+{
+    if (_activeColumn is not null)
+    {
+        WidthReadoutText.Text =
+            $"{_activeColumn.Width.Value:0} ({_activeColumn.Width.GridUnitType}) / {_activeColumn.ActualWidth:0}";
+    }
+
+    ResizeStateText.Text =
+        $"CanUserResizeColumns={WidthsTable.CanUserResizeColumns} · CanResize={_activeColumn?.CanResize}";
+}
+
+// The gallery's single autosize implementation: asking for GridUnitType.Auto
+// is how an app says "size this column from realized content".
+private static void Autosize(TableViewColumn column) => column.Width = new GridLength(1, GridUnitType.Auto);
+
+private void OnAutosizeAllClick(object sender, RoutedEventArgs e)
+{
+    foreach (var column in WidthsTable.Columns)
+    {
+        Autosize(column);
+    }
+
     UpdateLabelsAndReadout();
 }

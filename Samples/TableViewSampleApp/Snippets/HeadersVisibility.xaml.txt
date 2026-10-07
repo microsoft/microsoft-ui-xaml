@@ -1,17 +1,54 @@
-<!-- TableStyle.HeadersVisibility controls the TableView header surfaces:
-     Column  => column headers visible (default)
-     None    => headers hidden; the body row band occupies the freed top edge -->
-
-<StackPanel Orientation="Horizontal" Spacing="18">
-    <RadioButton Content="Column" Tag="Column" GroupName="HeadersVisibility" IsChecked="True" Checked="OnHeadersVisibilityChecked"/>
-    <RadioButton Content="None"   Tag="None"   GroupName="HeadersVisibility" Checked="OnHeadersVisibilityChecked"/>
-</StackPanel>
-
+<!-- HeadersVisibility gates the COLUMN header strip. Group header bands are a
+     separate surface and are not affected by it. -->
 <tv:TableView x:Name="DemoTable"
-               SelectionMode="Single">
-    <tv:TableViewTextColumn Header="Column 1" Binding="{Binding Value1}"/>
-    <tv:TableViewTextColumn Header="Column 2" Binding="{Binding Value2}"/>
-    <tv:TableViewTextColumn Header="Column 3" Binding="{Binding Value3}"/>
-    <tv:TableViewTextColumn Header="Column 4" Binding="{Binding Value4}"/>
-    <tv:TableViewTextColumn Header="Column 5" Binding="{Binding Value5}"/>
+               HeadersVisibility="Column"
+               SelectionMode="Single"
+               AutomationProperties.AutomationId="HeadersVisibilityTable"
+               AutomationProperties.Name="Support tickets">
+    <tv:TableViewTextColumn Header="Ticket"  Binding="{Binding TicketId}" CanSort="False"
+                             HeaderToolTip="Incident number, unique per ticket."/>
+    <tv:TableViewTextColumn Header="Summary" Binding="{Binding Summary}"  CanSort="False"/>
+    <tv:TableViewTextColumn Header="Queue"   Binding="{Binding Queue}"    CanSort="False"
+                             HeaderToolTip="Team that owns the ticket."/>
+    <!-- A constrained vocabulary gets a ComboBox cell editor, not free text. -->
+    <tv:TableViewTemplateColumn Header="Priority" CanSort="False"
+                                 CellTemplate="{StaticResource PriorityCell}"
+                                 HeaderToolTip="Urgency: Sev 1 is the most urgent. Editable."/>
+    <tv:TableViewTextColumn Header="Assignee" Binding="{Binding Assignee}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Due"      Binding="{Binding DueText}"  CanSort="False"
+                             HeaderToolTip="Date the ticket breaches its service-level agreement."/>
+    <!-- A boolean gets a CheckBox cell editor. -->
+    <tv:TableViewTemplateColumn Header="Resolved" CanSort="False"
+                                 CellTemplate="{StaticResource ResolvedCell}"
+                                 HeaderToolTip="Checked once the ticket is closed. Editable."/>
 </tv:TableView>
+
+<!-- Cell editors are REAL editors: TwoWay against a property that raises
+     PropertyChanged (so the value survives row recycling), IsTabStop left at
+     its default so they are keyboard reachable, and a per-row accessible name
+     so twenty of them do not announce identically. -->
+<DataTemplate x:Key="PriorityCell" x:DataType="local:SupportTicket">
+    <ComboBox ItemsSource="{x:Bind PriorityOptions}"
+              SelectedItem="{x:Bind Priority, Mode=TwoWay}"
+              AutomationProperties.Name="{x:Bind PriorityAutomationName, Mode=OneWay}"/>
+</DataTemplate>
+
+<DataTemplate x:Key="ResolvedCell" x:DataType="local:SupportTicket">
+    <CheckBox IsChecked="{x:Bind IsResolved, Mode=TwoWay}"
+              AutomationProperties.Name="{x:Bind ResolvedAutomationName, Mode=OneWay}"/>
+</DataTemplate>
+
+<!-- The shaping selector is a ComboBox on every page in this gallery. The two
+     hierarchy entries stay visible but disabled, with a tooltip saying why. -->
+<ComboBox x:Name="ShapingModeSelector"
+          Header="Shaping mode"
+          SelectedIndex="0"
+          SelectionChanged="OnShapingModeChanged"
+          HorizontalAlignment="Stretch">
+    <ComboBoxItem Content="Flat" Tag="flat"/>
+    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+</ComboBox>

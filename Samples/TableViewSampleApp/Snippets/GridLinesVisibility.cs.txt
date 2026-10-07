@@ -1,19 +1,76 @@
-private void OnGridLinesVisibilityChecked(object sender, RoutedEventArgs e)
+// GridLinesVisibility is a single DP. Case-sensitive parse on purpose, so a
+// typo in the Tag trips Debug.Fail rather than silently defaulting.
+if (!Enum.TryParse<TableViewGridLinesVisibility>(tag, ignoreCase: false, out var value))
 {
-    if (sender is RadioButton rb && rb.Tag is string tag &&
-        Enum.TryParse<TableViewGridLinesVisibility>(tag, out var v))
+    Debug.Fail($"GridLinesVisibilityPage: unrecognised grid-lines Tag '{tag}'.");
+    return;
+}
+
+_lines = value;
+DemoTable.GridLinesVisibility = value;
+
+// The grouped mode is REAL grouping. An earlier version of this page bound a
+// pre-bucketed flat list and never called GroupBy, so there were no group
+// header bands for the grid lines to be checked against at all.
+_source = TableViewSource.From(_rows);
+DemoTable.ItemsSource = _source;
+
+private void ApplyShaping()
+{
+    // Reshape IN PLACE: GroupBy / ClearGroupBy mutate and return the SAME
+    // instance, so the rows are never rebuilt and the grid lines are the only
+    // thing that changes.
+    if (_mode != "grouped")
     {
-        DemoTable.GridLinesVisibility = v;
+        _source.ClearGroupBy();
+    }
+    else
+    {
+        var key = _groupKey;
+        // The two delegates receive DIFFERENT things despite both parameters
+        // being named `item`:
+        //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
+        //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
+        // An item-typed identity lambda returns empty, which is a fail-fast, so
+        // grouping would silently never apply — exactly the failure this page
+        // used to ship.
+        _source.GroupBy(
+            item => (object)GroupValue(item, key),
+            groupKey => groupKey?.ToString() ?? "(none)");
+    }
+
+    // case "hierarchy":
+    // case "groupedhierarchy":
+    //     Hierarchical rows are not available in this release: neither
+    //     TableViewSource.idl nor TableView.idl exposes a hierarchy verb (the
+    //     only shaping verbs are Filter / GroupBy / Sort and their Clear*
+    //     counterparts). When the control ships hierarchy support, apply it to
+    //     this same source here, alongside the GroupBy stage above so the two
+    //     compose, then set _appliedMode as below.
+
+    // Set ONLY after the shaping call returns. Every readout and guard on this
+    // page reads _appliedMode, so a failed GroupBy can never be reported as
+    // "Grouped".
+    _appliedMode = _mode;
+
+    if (_appliedMode == "grouped")
+    {
+        DemoTable.ExpandAllGroups();
     }
 }
 
-private void OnBandingRadioChecked(object sender, RoutedEventArgs e)
+// Never the empty string: "" is not a usable group identity and GroupBy fails
+// fast on it.
+private static string GroupValue(object item, string key)
 {
-    if (CustomBandingRadio.IsChecked == true)
-    {
-        DemoTable.Style = (Style)Resources["CustomBandingTableViewStyle"];
-        return;
-    }
+    if (item is not Person person) return "(none)";
 
-    DemoTable.Style = null;
+    var value = key switch
+    {
+        "Role" => person.Role,
+        "Active" => person.IsActive ? "Active" : "Inactive",
+        _ => person.Department,
+    };
+
+    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
 }

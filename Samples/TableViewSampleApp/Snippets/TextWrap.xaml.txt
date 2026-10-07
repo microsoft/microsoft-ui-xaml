@@ -29,9 +29,18 @@
 <tv:TableView x:Name="DemoTable" SelectionMode="Single">
     <tv:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
     <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" SortMemberPath="Bio" CellTemplate="{StaticResource BioCell}" CanSort="False"/>
-    <tv:TableViewTextColumn Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
-    <tv:TableViewTemplateColumn Header="Image" Width="{StaticResource ColWidthAvatar}" SortMemberPath="Initial" CellTemplate="{StaticResource AvatarCell}" CanSort="False"/>
+    <!-- Role is star-sized so it absorbs leftover width; Bio stays explicit because the slider drives it. -->
+    <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="180" Binding="{Binding Role}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Image" Width="100" MinWidth="100" SortMemberPath="Initial" CellTemplate="{StaticResource AvatarCell}" CanSort="False"/>
 </tv:TableView>
 
 <ToggleSwitch Header="TextWrapping" IsOn="True" OnContent="Wrap" OffContent="NoWrap" Toggled="OnWrapToggled"/>
 <Slider Minimum="220" Maximum="520" StepFrequency="20" Value="360" ValueChanged="OnColumnWidthChanged"/>
+
+<!-- Disabled by ApplyTextState while TextWrapping is NoWrap, where MaxLines is a no-op. -->
+<ComboBox x:Name="MaxLinesComboBox" SelectedIndex="0" SelectionChanged="OnMaxLinesSelectionChanged"
+          ToolTipService.ToolTip="Applies only when TextWrapping is Wrap — MaxLines has no effect on a single, non-wrapping line.">
+    <ComboBoxItem Content="Unlimited" Tag="0"/>
+    <ComboBoxItem Content="2 lines + trimming" Tag="2"/>
+    <ComboBoxItem Content="3 lines + trimming" Tag="3"/>
+</ComboBox>

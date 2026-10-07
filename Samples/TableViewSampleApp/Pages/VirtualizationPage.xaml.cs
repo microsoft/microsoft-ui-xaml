@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Media;
 // Tabular aliases keep the sample code concise.
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
@@ -26,6 +27,16 @@ public sealed partial class VirtualizationPage : Page
 {
     private readonly DispatcherTimer _sampler = new() { Interval = System.TimeSpan.FromMilliseconds(500) };
     private int _peakRealized;
+    private TableViewSource? _source;
+
+    // Requested shaping, straight off the pickers.
+    private string _shapingMode = "flat";
+    private string _groupKey = "Department";
+
+    // Mirror the request only once GroupBy / ClearGroupBy has actually returned, so no
+    // readout and no enable/disable guard can claim a grouping the source never took.
+    private string _appliedMode = "flat";
+    private string _appliedGroupKey = "none";
 
     public VirtualizationPage()
     {
@@ -73,11 +84,141 @@ public sealed partial class VirtualizationPage : Page
         }
     }
 
+    // ----- Shaping: Flat / Grouped -----
+    //
+    // ShapingModeSelector's XAML SelectedIndex raises SelectionChanged during
+    // InitializeComponent, before GroupBySelector, the Expand/Collapse buttons and the
+    // readouts below it exist; _source may not exist yet either. Every member touched
+    // from here is null-guarded; OnPageLoaded re-runs UpdateReadout once all are wired.
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ShapingModeSelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        {
+            return;
+        }
+
+        _shapingMode = tag;
+        ApplyGrouping();
+        UpdateReadout();
+    }
+
+    private void OnGroupByChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (GroupBySelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        {
+            return;
+        }
+
+        _groupKey = tag;
+        ApplyGrouping();
+        UpdateReadout();
+    }
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        if (_appliedMode != "grouped")
+        {
+            return;
+        }
+
+        PeopleTable?.ExpandAllGroups();
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        if (_appliedMode != "grouped")
+        {
+            return;
+        }
+
+        PeopleTable?.CollapseAllGroups();
+    }
+
+    /// <summary>
+    /// Grouping over a virtualized set. This is the pairing worth watching: group headers
+    /// are realized alongside rows, so "Realized rows" should still track the viewport
+    /// rather than the group count. Reshapes the existing <see cref="TableViewSource"/>
+    /// in place: GroupBy / ClearGroupBy mutate and return the same instance, so the
+    /// source is never rebuilt for a shaping change.
+    /// </summary>
+    private void ApplyGrouping()
+    {
+        if (_source is null)
+        {
+            return;
+        }
+
+        if (_shapingMode != "grouped")
+        {
+            _source.ClearGroupBy();
+            _appliedMode = "flat";
+            _appliedGroupKey = "none";
+        }
+        else
+        {
+            var key = _groupKey;
+            // The two delegates do NOT receive the same thing: the key selector is handed the
+            // row item, while the identity selector is handed the group KEY this selector just
+            // returned (TableViewSource.idl). Testing the argument against the row type here
+            // would yield an empty identity, which fails fast with E_INVALIDARG.
+            _source.GroupBy(
+                item => (object)GroupValue(item, key),
+                groupKey => groupKey?.ToString() ?? "(none)");
+
+            // Only now is grouping genuinely applied; every readout reads these, never the
+            // requested _shapingMode / _groupKey.
+            _appliedMode = "grouped";
+            _appliedGroupKey = key;
+        }
+
+        // case "hierarchy":
+        // case "groupedhierarchy":
+        //     Hierarchical (tree) rows are not available in this release, which is why the two
+        //     matching ComboBoxItems ship disabled with a tooltip rather than hidden. No
+        //     hierarchy verb exists on TableViewSource or TableView today — the only trace in
+        //     the control source is TableViewRowInfo.h, which reserves row metadata "when
+        //     hierarchical (tree) rows land" — so this stub stays prose rather than naming a
+        //     member that does not exist. When hierarchy ships, apply it to this same source
+        //     here, alongside the GroupBy stage above so grouping and hierarchy compose instead
+        //     of replacing one another, and set the applied-mode field only after it returns.
+
+        if (GroupBySelector is not null)
+        {
+            GroupBySelector.IsEnabled = _appliedMode == "grouped";
+        }
+
+        _peakRealized = 0;
+    }
+
+    // Never returns the empty string: an empty group identity is an E_INVALIDARG fail-fast.
+    private static string GroupValue(object item, string key)
+    {
+        if (item is not NumberedPerson p)
+        {
+            return "(none)";
+        }
+
+        var value = key switch
+        {
+            "Department" => p.Department,
+            "Role" => p.Role,
+            _ => null,
+        };
+
+        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+    }
+
     private void ApplyInMemoryAsActive()
     {
         if (PeopleTable != null)
         {
-            PeopleTable.ItemsSource = People;
+            // SizeSelector's XAML SelectedIndex raises SelectionChanged during
+            // InitializeComponent, so ApplyRowCount has usually already built the
+            // projection and assigned it. Overwriting it with the raw collection here
+            // would orphan _source, and every later GroupBy would mutate a projection the
+            // table no longer renders.
+            PeopleTable.ItemsSource = (object?)_source ?? People;
         }
         if (SizeSelector != null) SizeSelector.IsEnabled = true;
         if (SourceModeText != null) SourceModeText.Text = "In-memory";
@@ -109,7 +250,11 @@ public sealed partial class VirtualizationPage : Page
         _peakRealized = 0;
         if (PeopleTable != null)
         {
-            PeopleTable.ItemsSource = People;
+            // Wrap in a TableViewSource so grouping can be applied without rebuilding the
+            // data. Filter/GroupBy mutate the projection in place and return it.
+            _source = TableViewSource.From(People);
+            ApplyGrouping();
+            PeopleTable.ItemsSource = _source;
         }
     }
 
@@ -167,6 +312,12 @@ public sealed partial class VirtualizationPage : Page
         if (RealizedRowsText != null) RealizedRowsText.Text = realized.ToString("N0");
         if (PeakRealizedText != null) PeakRealizedText.Text = _peakRealized.ToString("N0");
         if (RowHeightText != null) RowHeightText.Text = rowHeight > 0 ? $"{rowHeight:F0} px" : "—";
+
+        var grouped = _appliedMode == "grouped";
+        if (GroupedByText != null) GroupedByText.Text = grouped ? _appliedGroupKey : "(none)";
+        if (ExpandAllButton != null) ExpandAllButton.IsEnabled = grouped;
+        if (CollapseAllButton != null) CollapseAllButton.IsEnabled = grouped;
+
         if (RealizedShareText != null)
         {
             RealizedShareText.Text = total > 0

@@ -24,3 +24,19 @@
          invents a tooltip. -->
     <tv:TableViewTextColumn Header="Department" Binding="{Binding Department}" Width="140" />
 </tv:TableView>
+
+<!-- The shaping selector is a ComboBox on every page in this gallery. A reshape
+     leaves the COLUMNS alone, so every HeaderToolTip and CellToolTipBinding
+     survives it. The two hierarchy entries stay visible but disabled. -->
+<ComboBox x:Name="ShapingModeSelector"
+          Header="Shaping mode"
+          SelectedIndex="0"
+          SelectionChanged="OnShapingModeChanged"
+          HorizontalAlignment="Stretch">
+    <ComboBoxItem Content="Flat" Tag="flat"/>
+    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+</ComboBox>

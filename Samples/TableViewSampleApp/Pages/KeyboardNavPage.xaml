@@ -8,9 +8,32 @@
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
+    <Page.Resources>
+        <!-- Fixture templates. No compensating TableViewTextColumn in either
+             template-only scenario: Button peers supply intrinsic names and only
+             the explicit case sets Name. That asymmetry IS the thing under
+             assessment, so do not "fix" it by naming the intrinsic buttons. -->
+        <DataTemplate x:Key="IntrinsicRecordTemplate">
+            <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch">
+                <TextBlock Text="{Binding DisplayText}" TextWrapping="Wrap"/>
+            </Button>
+        </DataTemplate>
+        <DataTemplate x:Key="ExplicitRecordTemplate">
+            <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch"
+                    AutomationProperties.Name="{Binding ExplicitName}">
+                <TextBlock Text="{Binding DisplayText}" TextWrapping="Wrap"/>
+            </Button>
+        </DataTemplate>
+        <DataTemplate x:Key="DepartmentTemplate">
+            <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch">
+                <TextBlock Text="{Binding Department}" TextWrapping="Wrap"/>
+            </Button>
+        </DataTemplate>
+    </Page.Resources>
+
     <controls:SamplePresenter
         Header="Keyboard navigation + accessibility"
-        Description="Arrow keys, Tab, Home / End, and Page Up / Page Down move the focus across cells. The grid also exposes its structure to UI Automation, so Narrator and other assistive tools can announce rows and report the table's dimensions."
+        Description="Arrow keys, Tab, Home / End, and Page Up / Page Down move the focus across cells, and the grid exposes its structure to UI Automation so Narrator can announce rows and report the table's dimensions. The second half of the page is a deterministic assessment fixture: a fixed 24-record dataset with mutate / remove / restore / reset operations that hold automation invariants still while you compare what the provider reports across four column shapes."
         SourceCaption="KeyboardNavPage.xaml (excerpt)"
         SourceSnippet="KeyboardNav.xaml.txt"
         AdditionalSnippetCaption="KeyboardNavPage.xaml.cs (excerpt)"
@@ -25,7 +48,9 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
+
                 <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Keyboard-only route: Tab until &quot;Before table&quot; has focus, then Tab into the table. Use Up/Down, Page Up/Page Down, and Ctrl+Home/Ctrl+End to move between rows; once a cell has focus, Left/Right move across cells and Home/End jump to the first/last cell of that row. Tab again to reach &quot;After table&quot;; Shift+Tab goes back the same way."/>
                 <Button Grid.Row="1" Content="Before table" HorizontalAlignment="Left"
                         AutomationProperties.AutomationId="KeyboardNavBeforeTable"
@@ -38,7 +63,7 @@
                         <tv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}" CanSort="False"/>
                         <tv:TableViewTextColumn Header="Email"      Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" CanSort="False"/>
                         <tv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Role"       Width="*" MinWidth="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
                     </tv:TableView>
                 </Border>
                 <Button Grid.Row="3" Content="After table" HorizontalAlignment="Left"
@@ -46,6 +71,54 @@
                         AutomationProperties.Name="After table"
                         AutomationProperties.HelpText="Focus sentinel placed immediately after the table so tab order out of the table can be verified."/>
                 <muxc:InfoBar Grid.Row="4" IsOpen="True" IsClosable="False" Severity="Informational" Title="Accessibility" Message="TableView ships UI Automation support out of the box: assistive tools such as Narrator can announce each row's position in the grid, and the grid reports its dimensions and orientation to automation clients. Expected table Name: Keyboard navigation people; AutomationId: PeopleTable. The status readout on the right mirrors those same values."/>
+
+                <!-- Deterministic assessment fixture. A bounded viewport makes record 24
+                     an offscreen candidate; its actual visibility must be checked, not
+                     inferred from its source index. -->
+                <StackPanel Grid.Row="5" Spacing="12">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Assessment fixture" Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock
+                        Text="A small, synthetic assessment fixture, not an automated accessibility result. Reset before each scenario. Use Narrator and an external UIA inspector to record actual names, patterns, focus, events, and contrast; the readout in the options rail reports app/model state only. Press Home once focus is within the table to reach its first row. Ctrl+Up/Down move without selecting; Space selects the focused data row in Single mode. Do not expect Tab or Left/Right to be spreadsheet cell navigation."
+                        Style="{StaticResource SectionDescriptionTextStyle}"
+                        TextWrapping="Wrap"/>
+                    <Button Content="Before fixture table" HorizontalAlignment="Left"
+                            AutomationProperties.AutomationId="A11yBeforeTable"
+                            AutomationProperties.Name="Before fixture table"
+                            AutomationProperties.HelpText="Focus sentinel placed immediately before the fixture table."/>
+                    <Border Style="{StaticResource TableHostBorderStyle}" Padding="0">
+                        <tv:TableView
+                            x:Name="AssessmentTable"
+                            AutomationProperties.AutomationId="A11yTable"
+                            AutomationProperties.Name="Accessibility regression records"
+                            SelectionMode="Single"
+                            SelectionChanged="OnTableSelectionChanged"
+                            BeginningEdit="OnBeginningEdit"
+                            CellEditEnding="OnCellEditEnding"
+                            IsReadOnly="True"
+                            Height="360"/>
+                    </Border>
+                    <Button Content="After fixture table" HorizontalAlignment="Left"
+                            AutomationProperties.AutomationId="A11yAfterTable"
+                            AutomationProperties.Name="After fixture table"
+                            AutomationProperties.HelpText="Focus sentinel placed immediately after the fixture table."/>
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Expected observations — verify at runtime"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock x:Name="ExpectedObservationsText" TextWrapping="Wrap"
+                               AutomationProperties.LiveSetting="Polite"
+                               AutomationProperties.AutomationId="A11yExpectedObservations"/>
+                    <TextBlock
+                        Text="For template-only rows, query a row's Name before expanding its children, then query it again afterward. Record missing or changed content names: peer creation can affect the provider's name composition. This fixture does not repair those results."
+                        Style="{StaticResource SectionDescriptionTextStyle}"
+                        TextWrapping="Wrap"/>
+                    <TextBlock
+                        Text="Grouping uses TableViewSource.GroupBy on Department. Inspect group header ExpandCollapse and row positions within groups; group headers are not selectable data records. Re-query providers after reshapes. Source count is not the grouped UIA grid row count."
+                        Style="{StaticResource SectionDescriptionTextStyle}"
+                        TextWrapping="Wrap"/>
+                    <TextBlock
+                        Text="For real high contrast, follow Theme &amp; settings → Windows accessibility assessment. Test normal, selected, keyboard-focused, editing, read-only, and disabled states. App Light/Dark is not a Windows Contrast theme. Increase Windows Text size and verify these instructions, options, focus targets, and table remain reachable."
+                        Style="{StaticResource SectionDescriptionTextStyle}"
+                        TextWrapping="Wrap"/>
+                </StackPanel>
             </Grid>
         </controls:SamplePresenter.Example>
 
@@ -73,7 +146,8 @@
                     <TextBlock Grid.Row="7" Grid.Column="0" Text="Enter / Space" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
                     <TextBlock Grid.Row="7" Grid.Column="1" Text="sorts by the focused column header" Style="{StaticResource StatusReadoutLabelStyle}"/>
                 </Grid>
-                <TextBlock Text="Tab and Shift+Tab traverse ordinary focus stops: the &quot;Before table&quot; button, the table, then the &quot;After table&quot; button. Sorting is disabled on this page's columns, so Enter and Space on a header have no visible effect here." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <TextBlock Text="Tab and Shift+Tab traverse ordinary focus stops: the &quot;Before table&quot; button, the table, then the &quot;After table&quot; button. Sorting is disabled on the top table's columns, so Enter and Space on a header have no visible effect there." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                 <Grid ColumnSpacing="12" RowSpacing="4">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -87,6 +161,66 @@
                     <TextBlock Grid.Row="3" Grid.Column="0" Text="UIA RowOrColumnMajor" Style="{StaticResource StatusReadoutLabelStyle}"/>
                     <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="1" x:Name="MajorText" Text="RowMajor" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="MajorText"/>
                 </Grid>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Fixture setup" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <ComboBox x:Name="ScenarioSelector" Header="Assessment scenario"
+                          AutomationProperties.AutomationId="A11yScenarioSelector"
+                          HorizontalAlignment="Stretch" SelectedIndex="0"
+                          SelectionChanged="OnScenarioChanged">
+                    <ComboBoxItem Content="Text columns" Tag="Text"/>
+                    <ComboBoxItem Content="Template-only: intrinsic" Tag="Intrinsic"/>
+                    <ComboBoxItem Content="Template-only: explicit" Tag="Explicit"/>
+                    <ComboBoxItem Content="Unlabeled table" Tag="Unlabeled"/>
+                </ComboBox>
+                <Button Content="Reset fixture" Click="OnResetClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="A11yReset"/>
+                <TextBlock Text="Reset: 24 original objects/values, text columns, named table, Single selection with nothing selected, flat, enabled, and read-only."
+                           Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <ToggleSwitch x:Name="GroupingToggle" Header="Group by department"
+                              AutomationProperties.AutomationId="A11yGroupingToggle"
+                              Toggled="OnGroupingToggled"/>
+                <ToggleSwitch x:Name="EditingToggle" Header="Allow text editing"
+                              AutomationProperties.AutomationId="A11yEditingToggle"
+                              Toggled="OnEditingToggled"/>
+                <ToggleSwitch x:Name="EnabledToggle" Header="Enable table" IsOn="True"
+                              AutomationProperties.AutomationId="A11yEnabledToggle"
+                              Toggled="OnEnabledToggled"/>
+                <ComboBox x:Name="SelectionModeSelector" Header="Selection mode"
+                          AutomationProperties.AutomationId="A11ySelectionMode"
+                          HorizontalAlignment="Stretch" SelectedIndex="0"
+                          SelectionChanged="OnSelectionModeChanged">
+                    <ComboBoxItem Content="Single" Tag="Single"/>
+                    <ComboBoxItem Content="None" Tag="None"/>
+                </ComboBox>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Edit from the table" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="In Text columns or Unlabeled table, enable editing. Focus a data row and press F2, or double-click a text cell. Enter commits; Esc cancels. No public BeginEdit/current-cell API is used. Leaving the editor can commit before an options button runs, so test cancellation with Esc inside the editor. Template buttons only log their Click event; they are not editors."
+                    Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <Button Content="Call CommitEdit" Click="OnCommitEditClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="A11yCommitEdit"/>
+                <Button Content="Call CancelEdit" Click="OnCancelEditClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="A11yCancelEdit"/>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Data mutation setup" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Select a data row using the fixture table. Mutation toggles its text and Department in place. Record 24 is a fixed source object: return to Home and confirm it is offscreen before using its buttons. Removal does not force a replacement selection; restore reuses removed objects without selecting them. These buttons are setup, not evidence of UIA operations."
+                    Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <Button Content="Mutate selected" Click="OnMutateSelectedClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="A11yMutateSelected"/>
+                <Button Content="Remove selected" Click="OnRemoveSelectedClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="A11yRemoveSelected"/>
+                <Button Content="Mutate record 24" Click="OnMutateLastClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="A11yMutateLast"/>
+                <Button Content="Remove record 24" Click="OnRemoveLastClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="A11yRemoveLast"/>
+                <Button Content="Restore removed" Click="OnRestoreClick" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="A11yRestoreRemoved"/>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="App/model readout — not UIA" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock x:Name="ModelStatusText" TextWrapping="Wrap"
+                           AutomationProperties.LiveSetting="Polite"
+                           AutomationProperties.AutomationId="A11yModelStatus"/>
             </StackPanel>
         </controls:SamplePresenter.Options>
 

@@ -25,6 +25,14 @@ public sealed partial class SamplePresenter : UserControl
     private const double OptionsColumnWidth = 320;
     private const double WideLayoutMinWidth = 900;
 
+    // Title + description + spacing + the Example row's own MinHeight of 320. What is
+    // left of the pinned grid after this is what the Source expander may occupy.
+    private const double ExampleMinBlockHeight = 430;
+
+    // Never squeeze the source content below this; if the window is too short for even
+    // one code block, the scroller inside it takes over.
+    private const double MinSourceHeight = 160;
+
     public SamplePresenter()
     {
         InitializeComponent();
@@ -285,10 +293,21 @@ public sealed partial class SamplePresenter : UserControl
             // Floor at 0 so a tiny window doesn't pass a negative Height; the outer
             // ScrollViewer takes over in that edge case.
             OuterGrid.Height = target > 0 ? target : 0;
+
+            // Cap the source content to whatever the pinned grid can actually spare once
+            // the Example row has its MinHeight and the page chrome is accounted for.
+            // Without the cap the expander's Auto row asks for the full height of both
+            // code blocks, overflows the pin, and is clipped with no way to scroll to it.
+            if (SourceContentScroller is not null)
+            {
+                var spare = target - ExampleMinBlockHeight;
+                SourceContentScroller.MaxHeight = spare > MinSourceHeight ? spare : MinSourceHeight;
+            }
         }
         else
         {
             OuterGrid.ClearValue(HeightProperty);
+            SourceContentScroller?.ClearValue(MaxHeightProperty);
         }
     }
 

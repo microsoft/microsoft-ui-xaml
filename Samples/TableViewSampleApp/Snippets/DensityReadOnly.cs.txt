@@ -1,20 +1,62 @@
-private void OnDensityChecked(object sender, RoutedEventArgs e)
+private TableViewSource? _source;
+private string _groupKey = "none";
+
+// TableViewSource.From(...) once; everything after this reshapes it in place.
+_source = TableViewSource.From(People);
+DemoTable.ItemsSource = _source;
+DemoTable.Density = TableViewDensity.Standard;
+
+private void OnDensitySelectionChanged(object sender, SelectionChangedEventArgs e)
 {
-    if (sender is FrameworkElement { Tag: string tag } &&
+    if (sender is RadioButtons { SelectedItem: FrameworkElement { Tag: string tag } } &&
         Enum.TryParse<TableViewDensity>(tag, out var density))
     {
-        // Density is applied through the bundled TableStyle.
-        EnsureTableStyle().Density = density;
+        DemoTable.Density = density;   // table-level DP: row height + cell padding
     }
 }
 
-private void OnReadOnlyToggled(object sender, RoutedEventArgs e)
+/// Filter / GroupBy mutate and return the SAME TableViewSource instance, so the
+/// source is reshaped rather than rebuilt. Rebuilding would drop selection,
+/// scroll offset and group expansion.
+private void ApplyGrouping()
 {
-    var isReadOnly = ReadOnlyToggle.IsOn;
-    DemoTable.IsReadOnly = isReadOnly;                       // real table-level DP
-    GetReadOnlyState().IsReadOnly = isReadOnly;             // mirror into editable cells
+    var grouped = _groupKey != "none";
+    if (grouped)
+    {
+        var key = _groupKey;
+        // The delegate types differ: TableViewKeySelector returns Object and
+        // TableViewIdentitySelector returns String, so the cast is required.
+        // The key selector receives the ITEM; the identity selector receives the
+        // group KEY the first one produced, so it only has to stringify it.
+        _source.GroupBy(
+            item => (object)GroupValue(item, key),
+            groupKey => groupKey?.ToString() ?? "(none)");
+    }
+    else
+    {
+        _source.ClearGroupBy();
+    }
+
+    // Expand all / Collapse all only mean something while grouped.
+    ExpandAllButton.IsEnabled = grouped;
+    CollapseAllButton.IsEnabled = grouped;
+
+    if (grouped)
+    {
+        DispatcherQueue.TryEnqueue(() => DemoTable?.ExpandAllGroups());
+    }
 }
 
-private ReadOnlyState GetReadOnlyState() => (ReadOnlyState)Resources["ReadOnlyState"];
+private static string GroupValue(object item, string key)
+{
+    if (item is not Person person)
+    {
+        return "(none)";
+    }
 
-private TableStyle EnsureTableStyle() => DemoTable.TableStyle ??= new TableStyle();
+    var value = key switch { "Role" => person.Role, _ => person.Department };
+    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+}
+
+private void OnExpandAllGroupsClick(object sender, RoutedEventArgs e) => DemoTable.ExpandAllGroups();
+private void OnCollapseAllGroupsClick(object sender, RoutedEventArgs e) => DemoTable.CollapseAllGroups();

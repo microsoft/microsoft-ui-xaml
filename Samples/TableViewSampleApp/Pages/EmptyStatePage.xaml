@@ -69,7 +69,7 @@
                     IsClosable="False"
                     Severity="Informational"
                     Title="Try it"
-                    Message="Switch the data source to Empty to clear ItemsSource — the EmptyTemplate takes over the row area. Switch back to Populated to restore the rows."
+                    Message="Switch the data source to clear the rows — either by nulling ItemsSource or by emptying a source that stays attached. The EmptyTemplate takes over the row area either way. Then try the same while shaping is Grouped."
                     MinHeight="104"/>
                 <Border
                     Grid.Row="1"
@@ -107,8 +107,48 @@
                         SelectedIndex="0"
                         SelectionChanged="OnDataSourceSelectionChanged">
                         <RadioButton Content="Populated" Tag="Populated" AutomationProperties.AutomationId="EmptyStatePopulatedRadio"/>
-                        <RadioButton Content="Empty (null)" Tag="Empty" AutomationProperties.AutomationId="EmptyStateEmptyRadio"/>
+                        <RadioButton Content="Empty (null ItemsSource)" Tag="Null" AutomationProperties.AutomationId="EmptyStateEmptyRadio"/>
+                        <RadioButton Content="Empty (source with 0 rows)" Tag="ZeroRows" AutomationProperties.AutomationId="EmptyStateZeroRowsRadio"/>
                     </muxc:RadioButtons>
+                </StackPanel>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"
+                           Text="Flat leaves the source unshaped. Grouped calls TableViewSource.GroupBy on the same source instance, so selection, scroll offset and group expansion survive the reshape. Grouping an empty set is the interesting case: the empty template has to win over an empty group band."/>
+                <ComboBox x:Name="ShapingModeSelector"
+                          AutomationProperties.AutomationId="ShapingModeSelector"
+                          Header="Shaping mode"
+                          SelectedIndex="0"
+                          SelectionChanged="OnShapingModeChanged"
+                          HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Flat" Tag="flat"/>
+                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                    <!-- Hierarchical rows are not available in this release. Shown disabled so the
+                         shape of the feature is visible; re-enable when the control ships support
+                         (TableViewSource exposes only Filter / GroupBy / Sort today). -->
+                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                </ComboBox>
+                <ComboBox x:Name="GroupKeyCombo" Header="Group by" IsEnabled="False" SelectedIndex="0"
+                          SelectionChanged="OnGroupKeyChanged"
+                          AutomationProperties.AutomationId="GroupKeyCombo"
+                          AutomationProperties.Name="Group key"
+                          ToolTipService.ToolTip="Available once Grouped mode is selected."
+                          HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Role" Tag="Role"/>
+                    <ComboBoxItem Content="Active status" Tag="Active"/>
+                </ComboBox>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <StackPanel Spacing="8">
+                    <Button x:Name="RemoveAllRowsButton" Content="Remove every row" Click="OnRemoveAllRowsClick" AutomationProperties.AutomationId="RemoveAllRowsButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="RestoreRowsButton" Content="Restore the rows" Click="OnRestoreRowsClick" IsEnabled="False" AutomationProperties.AutomationId="RestoreRowsButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="ExpandAllButton" Content="Expand all groups" Click="OnExpandAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." AutomationProperties.AutomationId="ExpandAllButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="CollapseAllButton" Content="Collapse all groups" Click="OnCollapseAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." AutomationProperties.AutomationId="CollapseAllButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="ReassignRowButton" Content="Move first row to another group" Click="OnReassignRowClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." AutomationProperties.AutomationId="ReassignRowButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                 </StackPanel>
 
                 <muxc:InfoBar AutomationProperties.LiveSetting="Polite"

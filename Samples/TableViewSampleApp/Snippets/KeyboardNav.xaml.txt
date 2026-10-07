@@ -1,5 +1,43 @@
-<tv:TableView x:Name="PeopleTable" SelectionMode="Single" SelectionChanged="OnSelectionChanged">
-    <tv:TableViewTextColumn Header="#"          Binding="{Binding Number}" CanSort="False"/>
+<!-- Keyboard navigation half: focus sentinels either side of the table make
+     tab order in and out verifiable without a mouse. -->
+<Button Content="Before table" AutomationProperties.AutomationId="KeyboardNavBeforeTable"/>
+
+<tv:TableView x:Name="PeopleTable" SelectionMode="Single" SelectionChanged="OnSelectionChanged"
+              AutomationProperties.Name="Keyboard navigation people"
+              AutomationProperties.AutomationId="PeopleTable">
+    <tv:TableViewTextColumn Header="#"          Binding="{Binding Number}"    CanSort="False"/>
     <tv:TableViewTextColumn Header="First name" Binding="{Binding FirstName}" CanSort="False"/>
-    <tv:TableViewTextColumn Header="Last name"  Binding="{Binding LastName}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Last name"  Binding="{Binding LastName}"  CanSort="False"/>
+    <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="{StaticResource ColWidthLongName}"
+                            Binding="{Binding Role}" CanSort="False"/>
 </tv:TableView>
+
+<Button Content="After table" AutomationProperties.AutomationId="KeyboardNavAfterTable"/>
+
+<!-- Assessment fixture half. The templates are the fixture: the intrinsic one
+     deliberately supplies NO AutomationProperties.Name so the provider must
+     compose a name from displayed content, and the explicit one supplies a name
+     that differs from the displayed text. That asymmetry is what is under
+     assessment - do not "fix" the intrinsic template by naming it. -->
+<DataTemplate x:Key="IntrinsicRecordTemplate">
+    <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch">
+        <TextBlock Text="{Binding DisplayText}" TextWrapping="Wrap"/>
+    </Button>
+</DataTemplate>
+
+<DataTemplate x:Key="ExplicitRecordTemplate">
+    <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{Binding ExplicitName}">
+        <TextBlock Text="{Binding DisplayText}" TextWrapping="Wrap"/>
+    </Button>
+</DataTemplate>
+
+<!-- Columns are built in code so one fixture table can switch between the four
+     scenarios without re-creating the control or the 24 source objects. -->
+<tv:TableView x:Name="AssessmentTable"
+              AutomationProperties.AutomationId="A11yTable"
+              AutomationProperties.Name="Accessibility regression records"
+              SelectionMode="Single" IsReadOnly="True" Height="360"
+              SelectionChanged="OnTableSelectionChanged"
+              BeginningEdit="OnBeginningEdit"
+              CellEditEnding="OnCellEditEnding"/>

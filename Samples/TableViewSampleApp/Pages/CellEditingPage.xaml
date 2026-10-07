@@ -11,7 +11,7 @@
 
     <controls:SamplePresenter
         Header="Cell editing"
-        Description="Built-in in-place editing of TableViewTextColumn cells. Set TableView.IsReadOnly = false, then double-tap a cell (or press F2 on the focused row) to edit it in place; Enter or Tab commits the edit back to the bound model, Esc cancels. This is the framework editing path — unlike the Density &amp; read-only page, no editable TextBox template cells are needed: the plain text columns become editable on their own. Every committed edit writes straight to the Person model (INotifyPropertyChanged), shown live in the edit log."
+        Description="Built-in in-place editing of TableViewTextColumn cells, and the table-level read-only gate that governs it. TableView.IsReadOnly is a single switch for the whole table: with IsReadOnly = false, double-tap a cell (or press F2 on the focused row) to edit it in place — Enter or Tab commits the edit back to the bound model, Esc cancels. Set IsReadOnly = true and every cell locks at once; no per-column or per-cell opt-out is involved, and no editable TextBox template cells are needed because the plain text columns become editable on their own. Every committed edit writes straight to the Person model (INotifyPropertyChanged), shown live in the edit log. Grouping is enabled here too, because committing an edit inside a grouped projection is a distinct code path worth exercising."
         StretchExample="True">
 
         <controls:SamplePresenter.Example>
@@ -26,7 +26,7 @@
                     IsClosable="False"
                     Severity="Informational"
                     Title="Try it"
-                    Message="Double-tap any Name / Role / Department / Email cell (or select a row and press F2) to edit it. Enter or Tab commits, Esc cancels. Flip Read-only on to lock every cell. Requires a Tabular control build that includes in-place editing."
+                    Message="Double-tap any Name / Role / Department / Email cell (or select a row and press F2) to edit it. Enter or Tab commits, Esc cancels. Flip IsReadOnly on and every cell in the table locks at once — it is a table-level gate, not a per-column one. Group the rows and edit inside a group to exercise editing over a grouped projection. Requires a Tabular control build that includes in-place editing."
                     MinHeight="104"/>
                 <Border
                     Grid.Row="1"
@@ -38,6 +38,7 @@
                         AutomationProperties.Name="Editable people"
                         AutomationProperties.AutomationId="CellEditingTable"
                         SelectionMode="Single"
+                        SelectionChanged="OnTableSelectionChanged"
                         IsReadOnly="False"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
@@ -56,16 +57,111 @@
                 <StackPanel Spacing="4" AutomationProperties.Name="Editing options">
                     <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Editing" Style="{StaticResource SectionHeaderTextStyle}"/>
                     <TextBlock
-                        Text="Toggle table-level IsReadOnly to lock or unlock in-place editing of the text columns."
+                        Text="IsReadOnly is a table-level gate: one switch locks or unlocks in-place editing for every text column at once."
                         Style="{StaticResource SectionDescriptionTextStyle}"
                         TextWrapping="Wrap"/>
                     <ToggleSwitch
                         x:Name="ReadOnlyToggle"
                         Header="IsReadOnly"
-                        OnContent="On (cells locked)"
-                        OffContent="Off (cells editable)"
+                        OnContent="On (whole table locked)"
+                        OffContent="Off (whole table editable)"
                         Toggled="OnReadOnlyToggled"
                         AutomationProperties.AutomationId="CellEditingReadOnlyToggle"/>
+                </StackPanel>
+
+                <StackPanel Spacing="4" AutomationProperties.Name="Shaping options">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock
+                        Text="TableViewSource.GroupBy reshapes the same source in place, so an edit committed inside a group lands on the same Person instance the flat view shows. Hierarchy is a separate shaping axis and is not available in this release."
+                        Style="{StaticResource SectionDescriptionTextStyle}"
+                        TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="ShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. The options stay
+                             visible but disabled so the shape of the feature is discoverable;
+                             re-enable them when the control ships hierarchy support, and uncomment
+                             the matching branch in ApplyGrouping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="CellEditingGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        SelectionChanged="OnGroupKeyChanged"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Department" Tag="Department"/>
+                        <ComboBoxItem Content="Role" Tag="Role"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="CellEditingExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllGroupsClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="CellEditingCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllGroupsClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Spacing="4" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock
+                        Text="Editing operations driven from outside the table, including the case the gallery otherwise never reaches: editing the value the table is currently grouped on."
+                        Style="{StaticResource SectionDescriptionTextStyle}"
+                        TextWrapping="Wrap"/>
+                    <Button
+                        x:Name="EditGroupedValueButton"
+                        Content="Edit the grouped-on value of the selected row"
+                        Click="OnEditGroupedValueClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Select a row first."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="CellEditingEditGroupedValueButton"
+                        AutomationProperties.HelpText="Commits a model edit to the property the table is grouped on, so the row re-groups and the edit is recorded in the log."/>
+                    <Button
+                        x:Name="CommitEditButton"
+                        Content="Commit the open edit"
+                        Click="OnCommitEditClick"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="CellEditingCommitEditButton"
+                        AutomationProperties.HelpText="Calls TableView.CommitEdit and reports what it returned."/>
+                    <Button
+                        x:Name="CancelEditButton"
+                        Content="Cancel the open edit"
+                        Click="OnCancelEditClick"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="CellEditingCancelEditButton"
+                        AutomationProperties.HelpText="Calls TableView.CancelEdit and reports what it returned. Esc inside the editor does the same."/>
+                    <Button
+                        x:Name="ClearLogButton"
+                        Content="Clear the edit log"
+                        Click="OnClearLogClick"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        AutomationProperties.AutomationId="CellEditingClearLogButton"/>
                 </StackPanel>
 
                 <StackPanel Spacing="4" AutomationProperties.Name="Edit log">

@@ -138,17 +138,31 @@
                     <TextBlock Text="Source" FontWeight="SemiBold"/>
                 </StackPanel>
             </Expander.Header>
-            <StackPanel Spacing="12">
-                <local:CodeBlock
-                    x:Name="SourceCodeBlock"
-                    Caption="{x:Bind SourceCaption, Mode=OneWay}"
-                    Code="{x:Bind SourceXaml, Mode=OneWay}"/>
-                <local:CodeBlock
-                    x:Name="AdditionalSourceCodeBlock"
-                    Caption="{x:Bind AdditionalSnippetCaption, Mode=OneWay}"
-                    Code="{x:Bind AdditionalSourceCode, Mode=OneWay}"
-                    Visibility="{x:Bind AdditionalSourceVisibility, Mode=OneWay}"/>
-            </StackPanel>
+            <!--
+                The source content is bounded and scrolls internally. The grid is pinned to
+                the viewport when StretchExample is on, so an unbounded Auto row here just
+                overflows the pin and gets clipped with no way to reach the rest. Capping it
+                (MaxHeight set from ApplyStretchSizing) keeps the page itself non-scrolling
+                and lets the Example row shrink to its MinHeight as designed.
+            -->
+            <ScrollViewer
+                x:Name="SourceContentScroller"
+                VerticalScrollMode="Auto"
+                VerticalScrollBarVisibility="Auto"
+                HorizontalScrollMode="Disabled"
+                HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="12">
+                    <local:CodeBlock
+                        x:Name="SourceCodeBlock"
+                        Caption="{x:Bind SourceCaption, Mode=OneWay}"
+                        Code="{x:Bind SourceXaml, Mode=OneWay}"/>
+                    <local:CodeBlock
+                        x:Name="AdditionalSourceCodeBlock"
+                        Caption="{x:Bind AdditionalSnippetCaption, Mode=OneWay}"
+                        Code="{x:Bind AdditionalSourceCode, Mode=OneWay}"
+                        Visibility="{x:Bind AdditionalSourceVisibility, Mode=OneWay}"/>
+                </StackPanel>
+            </ScrollViewer>
         </Expander>
     </Grid>
     </ScrollViewer>

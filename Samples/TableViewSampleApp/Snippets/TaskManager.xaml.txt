@@ -1,7 +1,10 @@
 <Page.Resources>
     <DataTemplate x:Key="NameCellTemplate" x:DataType="models:ProcessItem">
         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
-            <Image Source="{x:Bind IconPath, Mode=OneWay}" Width="16" Height="16" Visibility="{x:Bind HasIcon, Mode=OneWay}"/>
+            <!-- No <Image Source="{x:Bind IconPath}"/> here. ProcessItem.IconPath is never
+                 assigned by the sample data, and x:Bind of an EMPTY string to Image.Source throws
+                 while the generated Bindings_Update runs, which aborts the rest of this template's
+                 bindings - that is what left the whole Name column blank. Rows carry a glyph. -->
             <FontIcon Glyph="{x:Bind IconGlyph, Mode=OneWay}" FontSize="14" Visibility="{x:Bind HasGlyph, Mode=OneWay}"/>
             <TextBlock Text="{x:Bind Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
         </StackPanel>
@@ -53,9 +56,18 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <ComboBox x:Name="ViewModeCombo" SelectedIndex="0" SelectionChanged="OnViewModeChanged">
-            <ComboBoxItem Content="Grouped by category"/>
-            <ComboBoxItem Content="Flat list"/>
+        <!-- The shaping selector lives in the Options rail and is a ComboBox on every page in
+             this gallery. It replaced a DEAD "Grouped by category" picker whose handler was an
+             empty `if (mode == 0) { }` branch. Hierarchy is not available in this release, so its
+             two options ship visible but disabled with a tooltip - never as enabled no-ops. -->
+        <ComboBox x:Name="ShapingModeSelector" Header="Shaping mode" SelectedIndex="0"
+                  SelectionChanged="OnShapingModeChanged" HorizontalAlignment="Stretch">
+            <ComboBoxItem Content="Flat"              Tag="flat"/>
+            <ComboBoxItem Content="Grouped"           Tag="grouped"/>
+            <ComboBoxItem Content="Hierarchy"         Tag="hierarchy"        IsEnabled="False"
+                          ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+            <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                          ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
         </ComboBox>
         <AutoSuggestBox x:Name="SearchBox"
                         Grid.Column="1"

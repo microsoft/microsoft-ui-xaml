@@ -88,9 +88,41 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Cell tooltips" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}"/>
                 <TextBlock
-                    Text="Clearing the binding retracts the tooltip; there is no separate remove call."
+                    Style="{StaticResource SectionDescriptionTextStyle}"
+                    TextWrapping="Wrap"
+                    Text="Flat leaves the source unshaped. Grouped calls TableViewSource.GroupBy on the same source instance, so selection, scroll offset and group expansion survive the reshape. Group header bands are not cells, so they never acquire a cell tooltip."/>
+                <ComboBox x:Name="ShapingModeSelector"
+                          AutomationProperties.AutomationId="ShapingModeSelector"
+                          Header="Shaping mode"
+                          SelectedIndex="0"
+                          SelectionChanged="OnShapingModeChanged"
+                          HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Flat" Tag="flat"/>
+                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                    <!-- Hierarchical rows are not available in this release. Shown disabled so the
+                         shape of the feature is visible; re-enable when the control ships support
+                         (TableViewSource exposes only Filter / GroupBy / Sort today). -->
+                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
+                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                </ComboBox>
+                <ComboBox x:Name="GroupKeyCombo" Header="Group by" IsEnabled="False" SelectedIndex="0"
+                          SelectionChanged="OnGroupKeyChanged"
+                          AutomationProperties.AutomationId="GroupKeyCombo"
+                          AutomationProperties.Name="Group key"
+                          ToolTipService.ToolTip="Available once Grouped mode is selected."
+                          HorizontalAlignment="Stretch">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Role" Tag="Role"/>
+                    <ComboBoxItem Content="Active status" Tag="Active"/>
+                </ComboBox>
+
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <TextBlock
+                    Text="Clearing a binding retracts the tooltip; there is no separate remove call. Header tooltips are changed in place on one column and retracted on another, to exercise both update paths."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
                 <StackPanel Spacing="8">
@@ -100,19 +132,23 @@
                     <Button Content="Mutate role" Click="OnMutateClick"
                             AutomationProperties.AutomationId="MutateRoleButton"
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                </StackPanel>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Header tooltips" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Changed in place on one column and retracted on another, to exercise both update paths."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <StackPanel Spacing="8">
                     <Button Content="Change header tooltips" Click="OnMutateHeadersClick"
                             AutomationProperties.AutomationId="MutateHeaderToolTipsButton"
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                     <Button Content="What is attached?" Click="OnInspectClick"
                             AutomationProperties.AutomationId="InspectToolTipsButton"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="ExpandAllButton" Content="Expand all groups" Click="OnExpandAllClick"
+                            IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected."
+                            AutomationProperties.AutomationId="ExpandAllButton"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="CollapseAllButton" Content="Collapse all groups" Click="OnCollapseAllClick"
+                            IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected."
+                            AutomationProperties.AutomationId="CollapseAllButton"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    <Button x:Name="ReassignRowButton" Content="Move first row to another group" Click="OnReassignRowClick"
+                            IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected."
+                            AutomationProperties.AutomationId="ReassignRowButton"
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                 </StackPanel>
 
@@ -123,6 +159,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -138,8 +175,14 @@
                                Style="{StaticResource StatusReadoutValueStyle}"
                                AutomationProperties.AutomationId="RevisionText"/>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Per column" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="1" x:Name="InspectText" Text="(press &quot;What is attached?&quot;)"
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="1" x:Name="ShapingText" Text="Flat (no grouping)"
+                               Style="{StaticResource StatusReadoutValueStyle}"
+                               AutomationProperties.AutomationId="ShapingText"
+                               TextWrapping="Wrap"/>
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Per column" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="1" x:Name="InspectText" Text="(press &quot;What is attached?&quot;)"
                                Style="{StaticResource StatusReadoutValueStyle}"
                                AutomationProperties.AutomationId="InspectText"
                                TextWrapping="Wrap"/>

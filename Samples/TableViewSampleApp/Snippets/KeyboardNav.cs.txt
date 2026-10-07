@@ -1,2 +1,76 @@
+// Keyboard navigation readout: row count comes from the bound source, column
+// count from the control's Columns collection.
 RowCountText.Text = People.Count.ToString();
 ColumnCountText.Text = PeopleTable.Columns.Count.ToString();
+
+// ---- assessment fixture ----------------------------------------------------
+//
+// The fixture's value is determinism: the same 24 objects, in the same order,
+// under every scenario. Reset restores values AND membership without creating
+// new objects, so a UIA inspector can be left open across a reset.
+private readonly AccessibilityFixtureData _data = new();
+private TableViewSource? _source;
+
+private void ResetFixture()
+{
+    if (!CloseEditForSetup()) return;
+
+    _updating = true;
+    try
+    {
+        AssessmentTable.DeselectAll();
+        AssessmentTable.ItemsSource = null;
+        _data.Reset();                       // original values + membership, same objects
+        AssessmentTable.IsReadOnly = true;
+        AssessmentTable.SelectionMode = TableViewSelectionMode.Single;
+        ConfigureColumns();                  // swaps text columns vs template columns
+        _source = TableViewSource.From(_data.Rows);
+        AssessmentTable.ItemsSource = _source;
+    }
+    finally
+    {
+        _updating = false;
+    }
+}
+
+// Department is a reference-type (string) key, so the two-selector GroupBy
+// overload is required: the built-in value-type identity does not cover it and
+// the single-selector form would fail fast at projection time.
+private void OnGroupingToggled(object sender, RoutedEventArgs e)
+{
+    if (_updating || _source is null || !CloseEditForSetup()) return;
+
+    if (GroupingToggle.IsOn)
+    {
+        _source.GroupBy(GroupKeySelector, GroupIdentity);
+    }
+    else
+    {
+        _source.ClearGroupBy();
+    }
+}
+
+private static object GroupKeySelector(object item) => ((AccessibilityRow)item).Department;
+
+private static string GroupIdentity(object key)
+{
+    var identity = key?.ToString();
+    return string.IsNullOrWhiteSpace(identity) ? "(none)" : identity;
+}
+
+// Mutate / Remove / Restore are null- and foreign-record-guarded inside
+// AccessibilityFixtureData; they return false rather than throwing, so a
+// mis-click during an assessment cannot corrupt the fixture.
+private void OnMutateSelectedClick(object sender, RoutedEventArgs e)
+{
+    var row = AssessmentTable.SelectedItem as AccessibilityRow;
+    SetAction(_data.Mutate(row)
+        ? $"Mutated selected record {row!.Id} in place."
+        : "No present data record is selected; select one in the table first.");
+}
+
+private void OnRestoreClick(object sender, RoutedEventArgs e) =>
+    SetAction($"Restored {_data.RestoreRemoved()} original objects in source order; edited values retained.");
+
+// Row handlers are attached in Loaded and detached in Unloaded.
+foreach (var row in _data.OriginalRows) row.PropertyChanged += OnRowPropertyChanged;

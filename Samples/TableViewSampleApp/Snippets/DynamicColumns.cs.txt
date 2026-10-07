@@ -1,19 +1,86 @@
-// This demo shows / hides existing columns with TableViewColumn.Visibility, then
-// grows and shrinks the Columns vector for columns that are added at runtime.
+// Column lifecycle: add, remove, hide, show and reorder through the observable
+// Columns vector, over a source that can be reshaped underneath at the same time.
+// (This page absorbed the former "Column reorder + autosize" sample.)
 
-private void SetColumnVisible(int canonicalIndex, bool visible)
+// One source, reshaped in place. Filter / GroupBy mutate and return the SAME
+// instance, so the source is never rebuilt per change.
+_source = TableViewSource.From(People);
+DynamicTable.ItemsSource = _source;
+
+private void ApplyShaping()
 {
-    var column = _canonical[canonicalIndex];
-    column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+    if (_mode != "grouped")
+    {
+        _source.ClearGroupBy();
+    }
+    else
+    {
+        var key = _groupKey;
+        // The two delegates receive DIFFERENT things despite both parameters
+        // being named `item`:
+        //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
+        //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
+        // An item-typed identity lambda returns empty, which is a fail-fast, so
+        // grouping would silently never apply.
+        _source.GroupBy(
+            item => (object)GroupValue(item, key),
+            groupKey => groupKey?.ToString() ?? "(none)");
+    }
 
-    UpdateStatus();
+    // case "hierarchy":
+    // case "groupedhierarchy":
+    //     Hierarchical rows are not available in this release: neither
+    //     TableViewSource.idl nor TableView.idl exposes a hierarchy verb (the
+    //     only shaping verbs are Filter / GroupBy / Sort and their Clear*
+    //     counterparts). When the control ships hierarchy support, apply it to
+    //     this same source here, alongside the GroupBy stage above so the two
+    //     compose, then set _appliedMode as below.
+
+    // Set ONLY after the shaping call returns: GroupBy fails fast, and every
+    // readout and enable/disable guard on this page reads _appliedMode.
+    _appliedMode = _mode;
 }
 
-// Add / remove an extra column.
-DynamicTable.Columns.Add(new TableViewTextColumn
+// GroupValue never returns the empty string — an empty group identity is a
+// fail-fast in GroupBy, so a blank property is coalesced to a real bucket label.
+private static string GroupValue(object item, string key)
 {
-    Header = "Tenure",
-    Width = new GridLength(120),
-    Binding = new Binding { Path = new PropertyPath("JoinDateText") },
-    SortMemberPath = "JoinDate",
+    if (item is not Person person) return "(none)";
+
+    var value = key switch
+    {
+        "Role" => person.Role,
+        "Active" => person.IsActive ? "Active" : "Inactive",
+        _ => person.Department,
+    };
+
+    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+}
+
+// Reorder: moving the entry in the observable Columns vector IS the reorder.
+// The instance is reused, so its width travels with it.
+private void MoveSelected(int direction)
+{
+    var column = SelectedColumn();
+    int from = DynamicTable.Columns.IndexOf(column);
+    int to = from + direction;
+    if (from < 0 || to < 0 || to >= DynamicTable.Columns.Count) return;
+
+    DynamicTable.Columns.RemoveAt(from);
+    DynamicTable.Columns.Insert(to, column);
+}
+
+// Show / hide is a property on the column, not a vector mutation, so the
+// canonical order is preserved when a column comes back.
+private void SetColumnVisible(int canonicalIndex, bool visible) =>
+    _canonical[canonicalIndex].Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+
+// Add / remove grows and shrinks the vector. A templated EDITOR column goes
+// through exactly the same path a text column does.
+DynamicTable.Columns.Add(new TableViewTemplateColumn
+{
+    Header = "Join date",
+    Width = new GridLength(220),
+    CellTemplate = (DataTemplate)Resources["JoinDateCell"],
+    HeaderToolTip = "Date the person joined. Editable.",
 });

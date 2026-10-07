@@ -1,3 +1,9 @@
+<!-- Width intent. The columns themselves are built in code so the page can
+     rebuild them per mode; the table is declared empty. -->
+<tv:TableView x:Name="WidthsTable"
+               SelectionMode="Single"
+               AutomationProperties.AutomationId="WidthsTable"/>
+
 <muxc:RadioButtons x:Name="ModeSelector"
                    SelectionChanged="OnModeChanged"
                    AutomationProperties.Name="Column width strategy">
@@ -8,23 +14,21 @@
     <x:String>Mixed</x:String>
 </muxc:RadioButtons>
 
-<TextBlock x:Name="ModeDescription"
-           AutomationProperties.AutomationId="ModeDescription"/>
+<!-- Table-level resize gate. The "Role (locked)" column additionally sets
+     CanResize="False" for itself, so both gates are visible side by side. -->
+<CheckBox x:Name="CanUserResizeColumnsCheckBox"
+          Content="TableView.CanUserResizeColumns"
+          IsChecked="True"
+          Checked="OnCanUserResizeColumnsChanged"
+          Unchecked="OnCanUserResizeColumnsChanged"
+          AutomationProperties.AutomationId="CanUserResizeColumnsCheckBox"/>
 
-<muxc:InfoBar IsOpen="True"
-              IsClosable="False"
-              Severity="Informational"
-              Title="Horizontal scrolling"
-              Message="Select Pixel mode, then scroll horizontally to validate that the sticky header tracks the body."/>
-
-<tv:TableView x:Name="WidthsTable"
-               SelectionMode="Single"
-               AutomationProperties.AutomationId="WidthsTable"/>
+<ComboBox x:Name="ColumnCombo"
+          SelectionChanged="OnColumnComboChanged"
+          AutomationProperties.Name="Column to adjust"
+          HorizontalAlignment="Stretch"/>
 
 <StackPanel x:Name="PlaygroundPanel">
-    <ComboBox x:Name="ColumnCombo"
-              SelectionChanged="OnColumnComboChanged"
-              AutomationProperties.Name="Column to adjust"/>
     <Slider x:Name="MinWidthSlider"
             ValueChanged="OnMinWidthSliderChanged"
             AutomationProperties.AutomationId="MinWidthSlider"/>
@@ -35,3 +39,10 @@
             ValueChanged="OnMaxWidthSliderChanged"
             AutomationProperties.AutomationId="MaxWidthSlider"/>
 </StackPanel>
+
+<!-- Actions: autosize one column, autosize all, force a width down to 80 px
+     to watch ActualWidth refuse to follow, and rebuild the mode's declared widths. -->
+<Button Content="Autosize selected column" Click="OnAutosizeSelectedClick"/>
+<Button Content="Autosize all columns" Click="OnAutosizeAllClick"/>
+<Button Content="Force selected width to 80 px" Click="OnClampSelectedClick"/>
+<Button Content="Reset widths for this mode" Click="OnResetWidthsClick"/>

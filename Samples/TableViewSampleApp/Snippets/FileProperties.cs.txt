@@ -1,55 +1,82 @@
-private void PopulateFiles()
-{
-    var files = EnumerateFiles(AppContext.BaseDirectory);
-    if (files.Count < 1)
-    {
-        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        if (!string.IsNullOrWhiteSpace(userProfile))
-        {
-            files = EnumerateFiles(userProfile);
-        }
-    }
-
-    FileList.ItemsSource = files;
-    if (files.Count > 0)
-    {
-        FileList.SelectedIndex = 0;
-    }
-}
-
-private void OnFileSelectionChanged(object sender, SelectionChangedEventArgs e)
-{
-    if (FileList.SelectedItem is FileInfo file)
-    {
-        ShowFileProperties(file);
-    }
-}
-
 private void ShowFileProperties(FileInfo file)
 {
-    var entries = BuildEntries(file);
-    PropTable.ItemsSource = TableViewSource.From(entries);
+    // One source per selected file (the items collection genuinely changes); shaping is then
+    // applied IN PLACE on it. Changing the shaping mode never re-reads the file.
+    _entries = BuildEntries(file);
+    _source = TableViewSource.From(_entries);
+    PropTable.ItemsSource = _source;
+    ApplyShaping();
     SelectedFileText.Text = file.Name;
-
-    var sectionCount = entries.Select(entry => entry.Section).Distinct(StringComparer.Ordinal).Count();
-    StatusText.Text = string.Format(
-        CultureInfo.CurrentCulture,
-        "{0} properties across {1} sections",
-        entries.Count,
-        sectionCount);
 }
 
-private static List<FilePropertyEntry> BuildEntries(FileInfo file)
+private void ApplyShaping()
 {
-    return new List<FilePropertyEntry>
+    switch (_filter)
     {
-        new("Description", "Title"),
-        new("Description", "Subject"),
-        new("Origin", "Content created", SafeRead(() => file.CreationTime.ToString("g", CultureInfo.CurrentCulture))),
-        new("Origin", "Date last saved", SafeRead(() => file.LastWriteTime.ToString("g", CultureInfo.CurrentCulture))),
-        new("File", "Name", SafeRead(() => file.Name)),
-        new("File", "Item type", SafeRead(() => GetFileType(file.Extension))),
-        new("File", "Folder path", SafeRead(() => file.DirectoryName ?? string.Empty)),
-        new("File", "Size", SafeRead(() => FormatSize(file.Length))),
+        case "filled":
+            _source.Filter(item => item is FilePropertyEntry e && !string.IsNullOrWhiteSpace(e.Value));
+            break;
+        case "none":
+            _source.Filter(_ => false);     // filter down to zero rows
+            break;
+        default:
+            _source.ClearFilter();
+            break;
+    }
+
+    switch (_mode)
+    {
+        case "grouped":
+            var key = _groupKey;
+            // TableViewKeySelector receives the ROW ITEM; TableViewIdentitySelector receives
+            // the GROUP KEY (TableViewSource.idl:12-16). Keying the identity lambda off the
+            // item would yield an empty identity and fail fast with E_INVALIDARG.
+            _source.GroupBy(
+                item => (object)GroupValue(item, key),
+                groupKey => groupKey?.ToString() ?? "(none)");
+            break;
+
+        // case "hierarchy":
+        // case "groupedhierarchy":
+        //     Hierarchical rows are not available in this release, and no hierarchy API
+        //     exists on TableViewSource or TableView yet, so there is deliberately no call
+        //     written here to copy. When the control ships hierarchy support, apply it to
+        //     this same source instance alongside the GroupBy stage above so the two compose.
+        //     break;
+
+        default:
+            _source.ClearGroupBy();
+            break;
+    }
+
+    _appliedMode = _mode;   // set ONLY after the shaping call returns
+
+    UpdateShapingUi();
+    UpdateStatusText();
+}
+
+// The rows are already sectioned - Description / Origin / File - which is exactly how a real
+// properties dialog is laid out, so Section is the natural group key.
+// Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
+private static string GroupValue(object item, string key)
+{
+    if (item is not FilePropertyEntry entry) { return "(none)"; }
+
+    var value = key switch
+    {
+        "Filled" => string.IsNullOrWhiteSpace(entry.Value) ? "Empty" : "Has a value",
+        _ => entry.Section,
     };
+
+    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+}
+
+// Rewrites the row's Section, then re-applies GroupBy so the row moves between sections.
+private void OnMoveSelectedSectionClick(object sender, RoutedEventArgs e)
+{
+    if (PropTable.SelectedItem is not FilePropertyEntry selected) { return; }
+
+    var index = Array.IndexOf(s_sections, selected.Section);
+    selected.Section = s_sections[(index + 1 + s_sections.Length) % s_sections.Length];
+    ApplyShaping();
 }

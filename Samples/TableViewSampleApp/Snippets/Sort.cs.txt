@@ -19,3 +19,103 @@ private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
 TeamsTable.SortByColumn(PointsColumn, SortDirection.Descending);
 TeamsTable.ToggleSortDirection(PointsColumn);
 TeamsTable.ClearSort();
+
+// ----- Sorting COMBINED with grouping -----
+//
+// The source is reshaped IN PLACE: GroupBy / ClearGroupBy mutate and return the
+// same TableViewSource, so the active sort, selection, scroll offset and group
+// expansion all survive a shaping change. Rebuilding the source would drop them.
+private void ApplyGrouping()
+{
+    var requestedKey = _shapingMode == "grouped" ? _groupKey : "none";
+
+    if (requestedKey == "none")
+    {
+        _source.ClearGroupBy();
+        _appliedGroupKey = "none";
+    }
+    else
+    {
+        var key = requestedKey;
+        // The two delegates do NOT receive the same thing, despite both parameters
+        // being named `item` in the IDL:
+        //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
+        //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
+        // Passing an item-typed lambda as the identity selector yields an empty
+        // identity, which is an E_INVALIDARG fail-fast: GroupBy throws and the
+        // grouping silently never applies.
+        _source.GroupBy(
+            item => (object)GroupValue(item, key),
+            groupKey => groupKey?.ToString() ?? "(none)");
+
+        // Set ONLY after the call returns, so no readout can claim a grouping
+        // the source never took.
+        _appliedGroupKey = key;
+    }
+
+    // case "hierarchy":
+    // case "groupedhierarchy":
+    //     Hierarchical (tree) rows are not available in this release, which is why
+    //     those two ComboBoxItems ship disabled with a tooltip. No hierarchy verb
+    //     exists on TableViewSource or TableView today, so this stub is prose
+    //     rather than a fabricated call. When hierarchy ships, apply it to this
+    //     same source here, alongside the GroupBy stage so the two compose.
+
+    var grouped = _appliedGroupKey != "none";
+    ExpandAllButton.IsEnabled = grouped;      // gated on the APPLIED key, never the requested one
+    CollapseAllButton.IsEnabled = grouped;
+    GroupBySelector.IsEnabled = grouped;
+}
+
+// Never returns the empty string: an empty group identity is a fail-fast.
+private static string GroupValue(object item, string key)
+{
+    if (item is not LeagueTeam team)
+    {
+        return "(none)";
+    }
+
+    var value = key switch
+    {
+        "Standing" => SortChipPalette.Band(team.Points),
+        _ => string.IsNullOrWhiteSpace(team.Group) ? "(none)" : $"Group {team.Group}",
+    };
+
+    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+}
+
+// Bulk expansion. Individual groups expand/collapse through the group header
+// itself (or its ExpandCollapse automation pattern); these are the programmatic
+// bulk counterparts and no-op when the source is not grouped.
+TeamsTable.ExpandAllGroups();
+TeamsTable.CollapseAllGroups();
+
+// ----- Templated cell brushes -----
+//
+// Cached once into static readonly fields and shared; Convert NEVER allocates.
+// HighContrast falls back to a transparent tint plus TextFillColorPrimaryBrush so
+// the user's guaranteed contrast pair survives.
+internal static class SortChipPalette
+{
+    private static readonly bool s_highContrast =
+        new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
+
+    private static readonly SolidColorBrush s_transparent = new(Colors.Transparent);
+    private static readonly SolidColorBrush s_ink =
+        Application.Current.Resources["TextFillColorPrimaryBrush"] as SolidColorBrush
+        ?? new SolidColorBrush(Colors.Gray);
+
+    internal static Brush Tint(string band) => s_highContrast
+        ? s_transparent
+        : s_tints.TryGetValue(band, out var brush) ? brush : s_transparent;
+}
+
+// Converter classes must be `partial`, or the build emits CsWinRT1028.
+public sealed partial class SortStandingTintConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+        => SortChipPalette.Tint(SortChipPalette.Band(value));
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        => throw new NotSupportedException();
+}

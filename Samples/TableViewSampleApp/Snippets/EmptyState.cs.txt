@@ -1,9 +1,74 @@
-private void OnDataSourceChecked(object sender, RoutedEventArgs e)
+// EmptyTemplate covers BOTH ways of being empty: a null ItemsSource, and a
+// live source that holds no items.
+_source = TableViewSource.From(Rows);
+DemoTable.ItemsSource = _source;
+
+switch (tag)
 {
-    if (sender is FrameworkElement { Tag: string tag })
+    case "Null":
+        // Null resolves to zero rows, so the control swaps in EmptyTemplate.
+        _sourceAttached = false;
+        DemoTable.ItemsSource = null;
+        break;
+
+    case "ZeroRows":
+        // The other way: the shaped source stays attached and is emptied.
+        _sourceAttached = true;
+        DemoTable.ItemsSource = _source;
+        Rows.Clear();
+        break;
+
+    default:
+        _sourceAttached = true;
+        DemoTable.ItemsSource = _source;
+        if (Rows.Count == 0) RefillRows();
+        break;
+}
+
+private void ApplyShaping()
+{
+    // Reshape IN PLACE: GroupBy / ClearGroupBy mutate and return the SAME
+    // instance. Grouping an empty set is legal — the projection simply yields
+    // no groups, and the EmptyTemplate has to win over an empty group band.
+    if (_mode != "grouped")
     {
-        // Null ItemsSource resolves to zero rows, so the control swaps in
-        // EmptyTemplate; restoring the collection brings the rows back.
-        DemoTable.ItemsSource = tag == "Populated" ? Rows : null;
+        _source.ClearGroupBy();
     }
+    else
+    {
+        var key = _groupKey;
+        // The two delegates receive DIFFERENT things despite both parameters
+        // being named `item`:
+        //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
+        //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
+        // An item-typed identity lambda returns empty, which is a fail-fast, so
+        // grouping would silently never apply.
+        _source.GroupBy(
+            item => (object)GroupValue(item, key),
+            groupKey => groupKey?.ToString() ?? "(none)");
+    }
+
+    // case "hierarchy":
+    // case "groupedhierarchy":
+    //     Hierarchical rows are not available in this release: neither
+    //     TableViewSource.idl nor TableView.idl exposes a hierarchy verb (the
+    //     only shaping verbs are Filter / GroupBy / Sort and their Clear*
+    //     counterparts). When the control ships hierarchy support, apply it to
+    //     this same source here, alongside the GroupBy stage above so the two
+    //     compose, then set _appliedMode as below.
+
+    // Set ONLY after the shaping call returns; all readouts read _appliedMode.
+    _appliedMode = _mode;
+}
+
+// Expand / collapse only make sense once grouping is applied AND there is
+// something to expand, so they are disabled (with a tooltip) otherwise.
+private void UpdateShapingGates()
+{
+    var grouped = _appliedMode == "grouped";
+    var hasRows = _sourceAttached && Rows.Count > 0;
+
+    GroupKeyCombo.IsEnabled = grouped;
+    ExpandAllButton.IsEnabled = grouped && hasRows;
+    CollapseAllButton.IsEnabled = grouped && hasRows;
 }
