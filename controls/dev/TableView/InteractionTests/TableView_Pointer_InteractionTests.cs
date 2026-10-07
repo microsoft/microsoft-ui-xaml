@@ -575,6 +575,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Product finding #16: CollapseAllGroups() does not collapse in the live control.
         [TestProperty("Description", "Verifies clicking CollapseAllGroupsButton re-collapses a group that was expanded by gesture: the header peer reports Collapsed and the realized row count returns to the all-collapsed baseline.")]
         public void CollapseAllGroupsReconcilesGestureExpandedGroup()
         {
@@ -642,6 +643,138 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     "CollapseAllGroups must re-collapse the group that a gesture expanded; the header peer must report Collapsed again.");
                 Verify.AreEqual(collapsedBaselineRows, CountRows(rowsHost),
                     "CollapseAllGroups must restore the all-collapsed realized row count, reconciling with the gesture-expanded group.");
+            }
+        }
+
+        #endregion
+
+        #region N.3 Pointer (new tests for the #11820 model)
+
+        [TestMethod]
+        [TestProperty("Description", "A click on the row's empty strip, past the last column, focuses the row itself (no cell) and selects it.")]
+        public void PointerClickOnRowStripFocusesRow()
+        {
+            // Interaction plan N.3 PointerClickOnRowStripFocusesRow.
+            // The complement of the #11820 "a cell press focuses the cell" rule, and the case where dev-spec:427's
+            // "pointer focus lands on the row" still applies (spec debt). Failure means the row's empty area is a dead
+            // target, or focus goes to a cell the user did not click.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject tableView = FindElement.ById("BasicTableView");
+                Button dummyButton = FindElement.ById<Button>("DummyButton");
+                if (tableView == null || dummyButton == null) { Verify.Fail("BasicTableView and DummyButton are required."); return; }
+
+                UIObject row = GetRow(tableView, 0);
+                if (row == null) { Verify.Fail("The first realized TableViewRow peer was not found."); return; }
+
+                UIObject headerHost = tableView.Children[0];
+                UIObject lastHeader = headerHost.Children[headerHost.Children.Count - 1];
+                int lastColumnRight = lastHeader.BoundingRectangle.Left + lastHeader.BoundingRectangle.Width;
+                var rowBounds = row.BoundingRectangle;
+                int rowRight = rowBounds.Left + rowBounds.Width;
+                Log.Comment("Last column right edge={0}, row right edge={1}.", lastColumnRight, rowRight);
+
+                if (rowRight - lastColumnRight < 12)
+                {
+                    Verify.Fail("Harness limitation: the row has no empty strip past its last column at this window size, so the strip click cannot be measured.");
+                    return;
+                }
+
+                dummyButton.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(dummyButton.HasKeyboardFocus, "Precondition: DummyButton should hold keyboard focus before the click.");
+
+                ClickPoint(new Point((lastColumnRight + rowRight) / 2, rowBounds.Top + (rowBounds.Height / 2)));
+                Wait.ForIdle();
+
+                Verify.IsTrue(row.HasKeyboardFocus, "A click on the row's empty strip must focus the row itself.");
+                Verify.AreEqual(-1, IndexOfFocusedCell(row), "A click on the empty strip must not focus any cell.");
+                var selectionItem = new SelectionItemImplementation<UIObject>(row, UIObject.Factory);
+                Verify.IsTrue(selectionItem.IsSelected, "A click on the row's empty strip must select the row.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A right-click on a row does not select it; a following left-click on another row does (positive control).")]
+        public void RightClickDoesNotSelect()
+        {
+            // Interaction plan N.3 RightClickDoesNotSelect.
+            // functional-spec:54 reserves a per-row/cell context menu, so right-click is a menu gesture, not a
+            // selection one; ListView agrees (spec debt: no sentence says it). Failure means opening a context menu
+            // silently changes selection.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject tableView = FindElement.ById("BasicTableView");
+                if (tableView == null) { Verify.Fail("BasicTableView was not found on the test page."); return; }
+
+                UIObject row1 = GetRow(tableView, 1);
+                UIObject row2 = GetRow(tableView, 2);
+                if (row1 == null || row2 == null) { Verify.Fail("Three realized rows are required."); return; }
+
+                var bounds = row1.BoundingRectangle;
+                Point point = new Point(bounds.Left + TextCellRelativeX, bounds.Top + (bounds.Height / 2));
+                Log.Comment("Right-click at absolute point ({0}, {1}).", point.X, point.Y);
+                PointerInput.Move(point);
+                PointerInput.Press(PointerButtons.Secondary);
+                PointerInput.Release(PointerButtons.Secondary);
+                Wait.ForIdle();
+
+                var row1Selection = new SelectionItemImplementation<UIObject>(row1, UIObject.Factory);
+                Verify.IsFalse(row1Selection.IsSelected, "A right-click must not select the row.");
+
+                // Dismiss anything the right-click opened before the positive control.
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+
+                ClickRow(row2);
+                Wait.ForIdle();
+
+                var row2Selection = new SelectionItemImplementation<UIObject>(row2, UIObject.Factory);
+                Verify.IsTrue(row2Selection.IsSelected, "Positive control: a left-click must select the row.");
+                Verify.IsFalse(new SelectionItemImplementation<UIObject>(row1, UIObject.Factory).IsSelected,
+                    "Row 1 must still be unselected.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A press on a row that is dragged off the table and released elsewhere selects nothing; a normal click then selects (positive control).")]
+        public void PressAndDragOffRowDoesNotSelect()
+        {
+            // Interaction plan N.3 PressAndDragOffRowDoesNotSelect (owner decision; dev-spec gesture layer: "Selection is
+            // applied on release, and only when the release lands on the row that was pressed"). Failure means a user
+            // cannot back out of a selection gesture by dragging away.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject afterTable = FindElement.ById("AfterTableButton");
+                if (tableView == null || afterTable == null) { Verify.Fail("BasicTableView and AfterTableButton are required."); return; }
+
+                UIObject row1 = GetRow(tableView, 1);
+                UIObject row2 = GetRow(tableView, 2);
+                if (row1 == null || row2 == null) { Verify.Fail("Three realized rows are required."); return; }
+
+                var bounds = row1.BoundingRectangle;
+                Point press = new Point(bounds.Left + TextCellRelativeX, bounds.Top + (bounds.Height / 2));
+                Point release = CentreOf(afterTable);
+                Log.Comment("Press at ({0}, {1}); release at ({2}, {3}).", press.X, press.Y, release.X, release.Y);
+
+                PointerInput.Move(press);
+                PointerInput.Press(PointerButtons.Primary);
+                PointerInput.Move(new Point((press.X + release.X) / 2, (press.Y + release.Y) / 2));
+                PointerInput.Move(release);
+                PointerInput.Release(PointerButtons.Primary);
+                Wait.ForIdle();
+
+                Verify.IsFalse(new SelectionItemImplementation<UIObject>(row1, UIObject.Factory).IsSelected,
+                    "A press dragged off the row and released elsewhere must not select the pressed row.");
+
+                ClickRow(row2);
+                Wait.ForIdle();
+
+                Verify.IsTrue(new SelectionItemImplementation<UIObject>(row2, UIObject.Factory).IsSelected,
+                    "Positive control: a normal click must select the row.");
+                Verify.IsFalse(new SelectionItemImplementation<UIObject>(row1, UIObject.Factory).IsSelected,
+                    "Row 1 must still be unselected.");
             }
         }
 

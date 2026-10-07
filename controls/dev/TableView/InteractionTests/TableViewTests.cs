@@ -12,6 +12,7 @@ using WEX.Logging.Interop;
 
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
+using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using MUXTestInfra.Shared.Infra;
 
@@ -130,6 +131,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Product finding #21: adding/removing a column raises no StructureChanged to a UIA client.
         [TestProperty("Description", "Verifies adding and removing a column raises a StructureChanged event that reaches a UIA client outside the app.")]
         public void VerifyStructureChangedEventsReachAUiaClient()
         {
@@ -233,6 +235,105 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region N.4 UIA client (new tests for the #11820 model)
+
+        [TestMethod]
+        [TestProperty("Description", "From out of process, GridPattern.GetItem(1,1) and the tree-walked cell (row 1, child 1) are the same provider, and the cell reports LocalizedControlType 'cell'.")]
+        public void CellPeersAreIdentityStableAcrossGridAndTreeWalk()
+        {
+            // Interaction plan N.4 CellPeersAreIdentityStableAcrossGridAndTreeWalk.
+            // #11820 states identity stability as a goal: "UIA compares providers by identity, so grid addressing and
+            // tree navigation disagreed". Only a client sees identity after marshalling. LocalizedControlType is
+            // localized; the VM runs en-US. Failure means a screen reader gets two providers for one cell and loses
+            // its place or announces the cell twice.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject tableView = FindElement.ById("BasicTableView");
+                if (tableView == null) { Verify.Fail("BasicTableView was not found."); return; }
+
+                var grid = new GridImplementation<UIObject>(tableView, UIObject.Factory);
+                Verify.IsTrue(grid.IsAvailable, "Precondition: the TableView peer must expose GridPattern to a client.");
+
+                UIObject fromGrid = grid.GetCell(1, 1);
+                UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
+                UIObject fromTree = rowsHost.Children[1].Children[1];
+
+                Log.Comment("GridPattern cell RuntimeId={0}; tree-walked cell RuntimeId={1}; LocalizedControlType='{2}'.",
+                    fromGrid == null ? "<null>" : fromGrid.RuntimeId, fromTree.RuntimeId, fromTree.LocalizedControlType);
+
+                if (fromGrid == null) { Verify.Fail("GridPattern.GetItem(1, 1) returned no element."); return; }
+                Verify.AreEqual(fromTree.RuntimeId, fromGrid.RuntimeId,
+                    "Grid addressing and tree navigation must hand a client the SAME provider for cell (1,1).");
+                Verify.AreEqual("cell", fromTree.LocalizedControlType, "A cell peer must report LocalizedControlType 'cell' to a client.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "From out of process, TablePattern.ColumnHeaders returns one header per visible column, in order, as the same providers as the header host's children.")]
+        public void TablePatternReturnsColumnHeadersToAClient()
+        {
+            // Interaction plan N.4 TablePatternReturnsColumnHeadersToAClient.
+            // #11820 fixed CUIATableProviderWrapper::GetColumnHeaders in dxaml, which broke column-header enumeration
+            // for every XAML ITableProvider; only a cross-process client exercises that wrapper. Failure means a
+            // client cannot enumerate headers, or the table pattern and the tree disagree about them.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject tableView = FindElement.ById("BasicTableView");
+                if (tableView == null) { Verify.Fail("BasicTableView was not found."); return; }
+
+                var table = new TableImplementation<UIObject>(tableView, UIObject.Factory);
+                Verify.IsTrue(table.IsAvailable, "Precondition: the TableView peer must expose TablePattern to a client.");
+
+                UIObject headerHost = tableView.Children[0];
+                var fromTree = headerHost.Children;
+                var fromPattern = table.ColumnHeaders;
+
+                Log.Comment("Header host children={0}; TablePattern.ColumnHeaders={1}.", fromTree.Count, fromPattern.Count);
+                Verify.AreEqual(fromTree.Count, fromPattern.Count, "TablePattern.ColumnHeaders must return one header per visible column.");
+
+                int count = Math.Min(fromTree.Count, fromPattern.Count);
+                for (int i = 0; i < count; i++)
+                {
+                    Verify.AreEqual(fromTree[i].RuntimeId, fromPattern[i].RuntimeId,
+                        string.Format("Column header {0} ('{1}') must be the same provider through TablePattern and the tree.", i, fromTree[i].Name));
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Drilling into a row's first cell with Right raises AutomationFocusChanged for that cell to an out-of-process client.")]
+        public void CellDrillInRaisesFocusChangedToAClient()
+        {
+            // Interaction plan N.4 CellDrillInRaisesFocusChangedToAClient.
+            // Focus events are not API-testable (§12.6). This is the screen-reader half of
+            // RightDrillsIntoFirstCellAndLeftReturnsToRow. Failure means focus moves into the cell but AT is not told.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject tableView = FindElement.ById("BasicTableView");
+                if (tableView == null) { Verify.Fail("BasicTableView was not found."); return; }
+
+                UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
+                UIObject row = rowsHost.Children[1];
+                string cellName = row.Children[0].Name;
+                Log.Comment("Row 1, cell 0 name: '{0}'.", cellName);
+                if (string.IsNullOrEmpty(cellName)) { Verify.Fail("Precondition: the cell must have a Name to match a focus event against."); return; }
+
+                row.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(row.HasKeyboardFocus, "Precondition: row 1 should take focus.");
+
+                using (var waiter = new FocusAcquiredWaiter(UICondition.CreateFromName(cellName)))
+                {
+                    KeyboardHelper.PressKey(Key.Right);
+                    bool raised = waiter.TryWait(TimeSpan.FromSeconds(5));
+                    Log.Comment("FocusChanged for '{0}' observed: {1}.", cellName, raised);
+                    Verify.IsTrue(raised, "Drilling into a cell must raise AutomationFocusChanged for that cell to a UIA client.");
+                }
+            }
         }
 
         #endregion

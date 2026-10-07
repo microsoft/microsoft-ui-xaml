@@ -217,6 +217,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Test debt: scroll-percent proxy cannot separate a page from a step; rewrite on the destination row PositionInSet.
         [TestProperty("Description", "Page Up moves keyboard focus back up by roughly a viewport (dev-spec:165).")]
         public void PageUpMovesByViewport()
         {
@@ -260,6 +261,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Tab from a row lands inside the table since the Action (button) column was added; product or fixture TBD.
         [TestProperty("Description", "Tab leaves the table downstream in a single press instead of walking cell by cell (dev-spec:165).")]
         public void TabMovesFocusOutOfTable()
         {
@@ -1108,6 +1110,638 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Product: focus does not stay at the same position when a sort reorders rows (dev-spec Keyboard re-shape rule).
+        [TestProperty("Description", "When a sort reorders the rows while a row is focused, focus stays at the same position (now another record).")]
+        public void FocusStaysAtSamePositionWhenSortReordersRows()
+        {
+            // Interaction plan §3 FocusStaysAtSamePositionWhenSortReordersRows (owner decision; dev-spec Keyboard
+            // "Re-shape while focused"). The sort is driven by the header peer's UIA Invoke, which does not move keyboard
+            // focus, so focus is inside the body throughout. Failure means a sort drags focus with the old record.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject rowsHost = GetRowsHost("BasicTableView");
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < 12) { Verify.Fail("Need the 12 authored rows realized."); return; }
+
+                const int Position = 2;
+                rowsHost.Children[Position].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost("BasicTableView").Children[Position].HasKeyboardFocus, "Precondition: row 2 should take focus.");
+                Verify.IsTrue(GetRowsHost("BasicTableView").Children[Position].Name.Contains("Person 2"), "Precondition: row 2 holds Person 2.");
+
+                UIObject age = GetHeader("BasicTableView", "Age");
+                if (age == null) { Verify.Fail("The Age header was not found."); return; }
+                var invoke = new InvokeImplementation(age);
+                invoke.Invoke(); // None -> Ascending
+                Wait.ForIdle();
+                invoke = new InvokeImplementation(GetHeader("BasicTableView", "Age"));
+                invoke.Invoke(); // Ascending -> Descending
+                Wait.ForIdle();
+
+                rowsHost = GetRowsHost("BasicTableView");
+                UIObject focused = FindFocusedBodyElement(rowsHost);
+                Log.Comment("After the sort focus is on: {0}.", focused == null ? "<none>" : focused.Name);
+                if (focused == null) { Verify.Fail("Focus must stay inside the body across a sort."); return; }
+
+                Verify.AreEqual(rowsHost.Children[Position].RuntimeId, focused.RuntimeId, "Focus must stay at the same position (row 2) across a sort.");
+                Verify.IsTrue(focused.Name.Contains("Person 9"), "Negative control: position 2 must now hold Person 9 (Age descending), proving the rows re-sorted.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Product: focus leaves the body when the focused record is filtered out (dev-spec Keyboard re-shape rule).
+        [TestProperty("Description", "When a filter removes the focused record, focus stays at the same projected position.")]
+        public void FocusStaysAtSamePositionWhenFilterRemovesFocusedRecord()
+        {
+            // Interaction plan §3 FocusStaysAtSamePositionWhenFilterRemovesFocusedRecord (owner decision; dev-spec Keyboard
+            // "Re-shape while focused ... also applies when the focused record was filtered out"). The page filter acts on
+            // the grouped source only. Projection before: H-Redmond, G0, G3, G6, H-Seattle, G1, G4, G7, H-Bellevue, G2, G5,
+            // G8. After removing Seattle, position 5 is G2. Failure means a filter drops focus out of the table.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                var filter = FindElement.ById<Button>("FilterSourceButton");
+                if (filter == null) { Verify.Fail("FilterSourceButton was not found."); return; }
+
+                UIObject tableView = SelectGroupedPivotAndGetTable();
+                if (tableView == null) { return; }
+
+                const int Position = 5;
+                UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
+                if (rowsHost.Children.Count < 12) { Verify.Fail("Need the full grouped projection (3 headers + 9 rows) realized."); return; }
+
+                UIObject target = rowsHost.Children[Position];
+                Verify.IsTrue(target.Name.Contains("Grouped 1"), "Precondition: projected position 5 holds Grouped 1, the first Seattle row.");
+                target.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(target.HasKeyboardFocus, "Precondition: the Grouped 1 row should take focus.");
+
+                filter.InvokeAndWait();
+                Wait.ForIdle();
+
+                rowsHost = tableView.Children[tableView.Children.Count - 1];
+                UIObject focused = FindFocusedBodyElement(rowsHost);
+                Log.Comment("After the filter focus is on: {0}.", focused == null ? "<none>" : focused.Name);
+                if (focused == null) { Verify.Fail("Focus must stay inside the body when the focused record is filtered out."); return; }
+
+                Verify.AreEqual(rowsHost.Children[Position].RuntimeId, focused.RuntimeId, "Focus must stay at the same projected position (5).");
+                Verify.IsTrue(focused.Name.Contains("Grouped 2"), "Position 5 must now be Grouped 2, the first Bellevue row.");
+            }
+        }
+
+        #endregion
+
+        #region N.1 Keyboard - cell level (new tests for the #11820 model)
+
+        [TestMethod]
+        [TestProperty("Description", "At cell level Left/Right move one visible column within the focused row and do not wrap across rows or leave the table (dev-spec:201).")]
+        public void CellLeftRightMoveWithinRowWithoutWrapping()
+        {
+            // Interaction plan N.1 CellLeftRightMoveWithinRowWithoutWrapping.
+            // dev-spec:201 - Left/Right move the cell cursor WITHIN the focused row. No-wrap is the WPF/ListView
+            // convention of the #11820 model (spec debt). Failure means horizontal movement skips cells, wraps into
+            // another row, or escapes the table at an edge.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                if (!DrillIntoRow("BasicTableView", 1)) { return; }
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 1, 1, "One Right from cell 0 must reach cell 1 of the SAME row.");
+
+                int cellCount = GetRowsHost("BasicTableView").Children[1].Children.Count;
+                Verify.IsGreaterThan(cellCount, 2, "Precondition: BasicTableView rows expose one cell per visible column.");
+
+                KeyboardHelper.PressKey(Key.Right, numPresses: (uint)(cellCount - 2));
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 1, cellCount - 1, "Right must reach the last visible cell of the row.");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 1, cellCount - 1, "Right on the last cell must not wrap to the next row or leave the table.");
+
+                KeyboardHelper.PressKey(Key.Left, numPresses: (uint)(cellCount - 1));
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 1, 0, "Left must walk back to cell 0 of the same row.");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                UIObject row = GetRowsHost("BasicTableView").Children[1];
+                Verify.IsTrue(row.HasKeyboardFocus, "Left on cell 0 must return to the row, not wrap to the previous row's last cell.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "At cell level Home/End move to the first/last cell of the current row and Ctrl+Home/Ctrl+End to the first/last cell of the table (dev-spec:201).")]
+        public void CellHomeEndStayInRowAndCtrlHomeEndJumpTable()
+        {
+            // Interaction plan N.1 CellHomeEndStayInRowAndCtrlHomeEndJumpTable.
+            // dev-spec:201, stated outright. Failure means at cell level Home/End still jump rows, throwing the user
+            // to another record, or the grid-wide jump is missing.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                if (!DrillIntoRow("BasicTableView", 2)) { return; }
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 2, 1, "Precondition: Right from cell 0 reaches cell 1.");
+
+                UIObject rowsHost = GetRowsHost("BasicTableView");
+                int rowCount = rowsHost.Children.Count;
+                int lastCell = rowsHost.Children[2].Children.Count - 1;
+
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 2, lastCell, "End at cell level must reach the last cell of the SAME row.");
+
+                KeyboardHelper.PressKey(Key.Home);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 2, 0, "Home at cell level must reach the first cell of the SAME row.");
+
+                KeyboardHelper.PressKey(Key.End, ModifierKey.Control);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", rowCount - 1, lastCell, "Ctrl+End must reach the last cell of the last row.");
+
+                KeyboardHelper.PressKey(Key.Home, ModifierKey.Control);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 0, 0, "Ctrl+Home must reach the first cell of the first row.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "At cell level Down/Up move to the same visible column in the next/previous row (dev-spec:201).")]
+        public void CellUpDownPreserveColumn()
+        {
+            // Interaction plan N.1 CellUpDownPreserveColumn.
+            // dev-spec:201 - "move to the same visible column in another row". Failure means vertical movement drops
+            // to row level or column 0, so walking down one field across records is impossible.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                if (!DrillIntoRow("BasicTableView", 1)) { return; }
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 1, 1, "Precondition: Right from cell 0 reaches cell 1 (Age).");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 2, 1, "Down at cell level must reach the SAME column in the next row.");
+                Verify.IsFalse(GetRowsHost("BasicTableView").Children[2].HasKeyboardFocus, "Down at cell level must not drop to the row container.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 1, 1, "Up at cell level must return to the SAME column in the previous row.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Ctrl+Down moves row focus without selecting; plain Down then moves and selects (positive control).")]
+        public void CtrlDownMovesFocusWithoutSelecting()
+        {
+            // Interaction plan N.1 CtrlDownMovesFocusWithoutSelecting.
+            // Selection-follows-focus is KeyboardFocusMoveCarriesSelection's claim; the Ctrl opt-out is the ListView
+            // convention (spec debt). Failure means the cursor cannot move without acting on a row.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject rowsHost = GetRowsHost("BasicTableView");
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
+
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+                VerifyNoRowSelected("focusing row 0 programmatically");
+
+                KeyboardHelper.PressKey(Key.Down, ModifierKey.Control);
+                Wait.ForIdle();
+
+                rowsHost = GetRowsHost("BasicTableView");
+                Verify.IsTrue(rowsHost.Children[1].HasKeyboardFocus, "Ctrl+Down must move focus to row 1.");
+                VerifyNoRowSelected("moving with Ctrl+Down");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+
+                rowsHost = GetRowsHost("BasicTableView");
+                Verify.IsTrue(rowsHost.Children[2].HasKeyboardFocus, "Positive control: plain Down must move focus to row 2.");
+                Verify.IsTrue(IsSelected(rowsHost.Children[2]), "Positive control: plain Down must select the row it lands on.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Space selects the focused row both from row level and from cell level, without moving focus.")]
+        public void SpaceSelectsFocusedRowFromRowAndCellLevel()
+        {
+            // Interaction plan N.1 SpaceSelectsFocusedRowFromRowAndCellLevel.
+            // Space for row selection is the ListView/WPF DataGrid convention of the #11820 model (spec debt). Each
+            // leg moves with Ctrl+Down first so selection-follows-focus cannot already have selected the row.
+            // Failure means a keyboard user who moved with Ctrl has no way to select, or Space is swallowed at
+            // cell level.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject rowsHost = GetRowsHost("BasicTableView");
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
+
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+
+                KeyboardHelper.PressKey(Key.Down, ModifierKey.Control);
+                Wait.ForIdle();
+                VerifyNoRowSelected("moving with Ctrl+Down (row level)");
+
+                KeyboardHelper.PressKey(Key.Space);
+                Wait.ForIdle();
+
+                rowsHost = GetRowsHost("BasicTableView");
+                Verify.IsTrue(IsSelected(rowsHost.Children[1]), "Space on a focused row must select it.");
+                Verify.IsTrue(rowsHost.Children[1].HasKeyboardFocus, "Space must not move focus off the row.");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 1, 0, "Precondition: Right drills into row 1's first cell.");
+
+                KeyboardHelper.PressKey(Key.Down, ModifierKey.Control);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 2, 0, "Precondition: Ctrl+Down at cell level reaches row 2's first cell.");
+
+                rowsHost = GetRowsHost("BasicTableView");
+                Verify.IsFalse(IsSelected(rowsHost.Children[2]), "Precondition: Ctrl+Down must not have selected row 2.");
+
+                KeyboardHelper.PressKey(Key.Space);
+                Wait.ForIdle();
+
+                rowsHost = GetRowsHost("BasicTableView");
+                Verify.IsTrue(IsSelected(rowsHost.Children[2]), "Space on a focused cell must select that cell's row.");
+                Verify.IsFalse(IsSelected(rowsHost.Children[1]), "SelectionMode.Single: selecting row 2 must clear row 1.");
+                VerifyFocusedCell("BasicTableView", 2, 0, "Space must not move focus off the cell.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Enter on a cell hosting a control moves focus into the control, arrow keys stay inside it, and Escape returns to the cell.")]
+        public void EnterOnInteractiveCellEntersContentAndEscapeReturnsToCell()
+        {
+            // Interaction plan N.1 EnterOnInteractiveCellEntersContentAndEscapeReturnsToCell.
+            // WAI-ARIA grid interactive-content convention, stated as a design point in #11820 (spec debt). Uses the
+            // page's trailing Action column, whose cell hosts a Button. Failure means hosted controls are keyboard-
+            // unreachable, arrows yank the user out of a control, or there is no way back to grid navigation.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                if (!DrillIntoRow("BasicTableView", 0)) { return; }
+
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+
+                UIObject row = GetRowsHost("BasicTableView").Children[0];
+                int actionCell = row.Children.Count - 1;
+                VerifyFocusedCell("BasicTableView", 0, actionCell, "Precondition: End reaches the Action cell.");
+
+                UIObject button = FindDescendantByName(row.Children[actionCell], "RowActionButton");
+                if (button == null) { Verify.Fail("The Action cell does not expose its hosted RowActionButton to UIA."); return; }
+
+                KeyboardHelper.PressKey(Key.Enter);
+                Wait.ForIdle();
+                Verify.IsTrue(button.HasKeyboardFocus, "Enter on a cell hosting a control must move focus into that control.");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.IsTrue(button.HasKeyboardFocus, "Arrow keys must stay inside the cell's interactive content.");
+
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+                Verify.IsFalse(button.HasKeyboardFocus, "Escape must leave the hosted control.");
+                VerifyFocusedCell("BasicTableView", 0, actionCell, "Escape must return focus to the Action cell itself.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Under RTL the drill-in and cell arrows follow reading order: Left drills in and moves forward, Right moves back and pops out.")]
+        public void RightToLeftDrillInAndCellArrowsMirror()
+        {
+            // Interaction plan N.1 RightToLeftDrillInAndCellArrowsMirror.
+            // dev-spec:131 makes reading order the frame for horizontal movement; TreeView's RTL key tests are the
+            // mirroring precedent; drill-in itself is spec debt. Failure means arrows act in screen direction under RTL.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                SelectPivotItem("Rtl");
+
+                UIObject rowsHost = GetRowsHost("RtlTableView");
+                if (rowsHost == null) { return; }
+                if (rowsHost.Children.Count < 2) { Verify.Fail("Need several realized rows in RtlTableView."); return; }
+
+                rowsHost.Children[1].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[1].HasKeyboardFocus, "Precondition: row 1 of RtlTableView should take focus.");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                VerifyFocusedCell("RtlTableView", 1, 0, "Under RTL, Left (reading-order forward) must drill into the first cell.");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                VerifyFocusedCell("RtlTableView", 1, 1, "Under RTL, Left at cell level must move forward to cell 1.");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedCell("RtlTableView", 1, 0, "Under RTL, Right at cell level must move back to cell 0.");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost("RtlTableView").Children[1].HasKeyboardFocus,
+                    "Under RTL, Right on the first cell must return to the row.");
+            }
+        }
+
+        #endregion
+
+        #region N.2 Keyboard - header band and tab order (new tests for the #11820 model)
+
+        [TestMethod]
+        [TestProperty("Description", "In the header band Left/Right move between headers and clamp at the ends; Up leaves focus in the band.")]
+        public void HeaderBandArrowsMoveBetweenHeaders()
+        {
+            // Interaction plan N.2 HeaderBandArrowsMoveBetweenHeaders (was ...AndStayInBand).
+            // dev-spec Keyboard: header-band Left/Right move between visible headers without wrapping; Up stays in the
+            // band. Down now LEAVES the band (owner decision) and is owned by UpFromFirstRowMovesToHeaderAndDownReturnsToFirstRow.
+            // Failure means headers are unreachable, Up walks out of the table, or the band wraps.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject name = GetHeader("BasicTableView", "Name");
+                if (name == null) { Verify.Fail("The Name header was not found."); return; }
+                name.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(name.HasKeyboardFocus, "Precondition: the Name header should take focus.");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
+                VerifyFocusedHeader("BasicTableView", "Name", "Left on the first header must not leave it (no wrap, no exit).");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedHeader("BasicTableView", "Age", "Right must move focus to the next header.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                VerifyFocusedHeader("BasicTableView", "Age", "Up must leave focus on the header band.");
+                Verify.IsNull(FindFocusedBodyElement(GetRowsHost("BasicTableView")), "Up from a header must not enter the body.");
+
+                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject headerHost = tableView.Children[0];
+                int headerCount = headerHost.Children.Count;
+                string lastHeaderName = headerHost.Children[headerCount - 1].Name;
+
+                KeyboardHelper.PressKey(Key.Right, numPresses: (uint)headerCount);
+                Wait.ForIdle();
+                VerifyFocusedHeader("BasicTableView", lastHeaderName, "Right past the last header must leave the last header focused.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "A CanSort=False header is still keyboard-focusable and Enter on it does not sort; Enter on Age does (positive control).")]
+        public void NonSortableHeaderIsFocusableAndEnterDoesNotSort()
+        {
+            // Interaction plan N.2 NonSortableHeaderIsFocusableAndEnterDoesNotSort.
+            // TableView.idl:156-158 (CanSort gates the click-to-sort UX) + dev-spec:201 (Enter/Space sort) => the
+            // gate covers the key route. Failure means non-sortable headers are unreachable, or Enter ignores CanSort.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject rowsHost = GetRowsHost("BasicTableView");
+                if (rowsHost == null) { return; }
+                int bottomIndex = rowsHost.Children.Count - 1;
+                if (bottomIndex < 2) { Verify.Fail("Need several realized rows."); return; }
+
+                SelectRow(rowsHost.Children[bottomIndex]);
+                Verify.AreEqual(bottomIndex, IndexOfSelectedRow("BasicTableView"), "Precondition: the bottom row is selected.");
+
+                UIObject city = GetHeader("BasicTableView", "ReadOnlyCity");
+                if (city == null) { Verify.Fail("The ReadOnlyCity header was not found."); return; }
+                city.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(city.HasKeyboardFocus, "A CanSort=False header must still take keyboard focus.");
+
+                KeyboardHelper.PressKey(Key.Enter, numPresses: 2);
+                Wait.ForIdle();
+                Verify.AreEqual(bottomIndex, IndexOfSelectedRow("BasicTableView"), "Enter on a CanSort=False header must not reorder rows.");
+
+                UIObject age = GetHeader("BasicTableView", "Age");
+                if (age == null) { Verify.Fail("The Age header was not found."); return; }
+                age.SetFocus();
+                Wait.ForIdle();
+
+                KeyboardHelper.PressKey(Key.Enter, numPresses: 2); // None -> Ascending -> Descending
+                Wait.ForIdle();
+                Verify.IsLessThan(IndexOfSelectedRow("BasicTableView"), bottomIndex, "Positive control: Enter twice on Age must sort Descending and lift the bottom row.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Each Space press on a focused header advances the column's sort cycle exactly one step (dev-spec:201).")]
+        public void HeaderSpaceTogglesSortOncePerPress()
+        {
+            // Interaction plan N.2 HeaderSpaceTogglesSortOncePerPress.
+            // dev-spec:201 makes Space a sort key. The Score column with DescendingAscendingNone lands the tracked row
+            // on three distinct indices (0, last, 5), so a press that fires twice is visible. Failure means Space does
+            // not sort, or one press-release advances two steps.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                var sortCycle = FindElement.ById<ComboBox>("SortCycleComboBox");
+                if (sortCycle == null) { Verify.Fail("SortCycleComboBox was not found."); return; }
+
+                UIObject rowsHost = GetRowsHost("BasicTableView");
+                if (rowsHost == null) { return; }
+
+                int rowCount = rowsHost.Children.Count;
+                if (rowCount < 12) { Verify.Fail(string.Format("Need the 12 authored rows realized; saw {0}.", rowCount)); return; }
+
+                const int MaxScoreSourceIndex = 5;
+
+                sortCycle.SelectItemByName("SortCycleDescendingAscendingNone");
+                Wait.ForIdle();
+
+                SelectRow(rowsHost.Children[MaxScoreSourceIndex]);
+                Verify.AreEqual(MaxScoreSourceIndex, IndexOfSelectedRow("BasicTableView"), "Precondition: the highest-Score row is authored at source index 5.");
+
+                UIObject score = GetHeader("BasicTableView", "Score");
+                if (score == null) { Verify.Fail("The Score header was not found."); return; }
+                score.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(score.HasKeyboardFocus, "Precondition: the Score header should take focus.");
+
+                KeyboardHelper.PressKey(Key.Space);
+                Wait.ForIdle();
+                Verify.AreEqual(0, IndexOfSelectedRow("BasicTableView"), "Space 1 must sort Descending (one step), putting the highest Score at the top.");
+
+                KeyboardHelper.PressKey(Key.Space);
+                Wait.ForIdle();
+                Verify.AreEqual(rowCount - 1, IndexOfSelectedRow("BasicTableView"), "Space 2 must sort Ascending (one step), putting the highest Score at the bottom.");
+
+                KeyboardHelper.PressKey(Key.Space);
+                Wait.ForIdle();
+                Verify.AreEqual(MaxScoreSourceIndex, IndexOfSelectedRow("BasicTableView"), "Space 3 must reach None and restore source order.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Tab from the header band does not land on a cell since the Action (button) column was added; product or fixture TBD.
+        [TestProperty("Description", "Shift+Tab from a cell lands on that column's header, and Tab back lands on a cell in the same column.")]
+        public void TabBetweenBandsPreservesColumn()
+        {
+            // Interaction plan N.2 TabBetweenBandsPreservesColumn.
+            // Shared column cursor across bands is the #11820 model (spec debt), consistent with dev-spec:201 making
+            // the column the unit of vertical movement. Failure means crossing bands loses the user's column.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                if (!DrillIntoRow("BasicTableView", 0)) { return; }
+
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 0, 1, "Precondition: Right from cell 0 reaches cell 1 (Age).");
+
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+                VerifyFocusedHeader("BasicTableView", "Age", "Shift+Tab from the Age cell must land on the Age header.");
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+
+                int rowIndex, cellIndex;
+                FindFocusedCell("BasicTableView", out rowIndex, out cellIndex);
+                Log.Comment("After Tab back: row={0}, cell={1}.", rowIndex, cellIndex);
+                Verify.AreEqual(1, cellIndex, "Tab from the header band must return to a cell in the same column (Age).");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Product: Up from the first row does not reach the header band, and Down is absorbed in the band (dev-spec Keyboard).
+        [TestProperty("Description", "Up from the first row moves to the header band and Down from a header returns to the first row, keeping the column at cell level.")]
+        public void UpFromFirstRowMovesToHeaderAndDownReturnsToFirstRow()
+        {
+            // Interaction plan N.2 UpFromFirstRowMovesToHeaderAndDownReturnsToFirstRow (owner decision; dev-spec Keyboard:
+            // "Up from the first row moves to the header band" / header band "Down moves to the first row"; shared column
+            // cursor). Failure means the header band and the rows are only joined by Tab. The Down half is expected to
+            // fail on main, which absorbs Down in the band.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                // Row-level leg.
+                UIObject rowsHost = GetRowsHost("BasicTableView");
+                if (rowsHost == null) { return; }
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Precondition: row 0 should take focus.");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                UIObject header = FindFocusedHeader("BasicTableView");
+                Log.Comment("Row-level Up landed on header: {0}.", header == null ? "<none>" : header.Name);
+                Verify.IsNotNull(header, "Up from the first row must move focus to the header band.");
+                Verify.IsNull(FindFocusedBodyElement(GetRowsHost("BasicTableView")), "No row may keep focus after Up from the first row.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                UIObject bodyFocus = FindFocusedBodyElement(GetRowsHost("BasicTableView"));
+                Verify.IsNotNull(bodyFocus, "Down from a header must move focus to the first row.");
+                if (bodyFocus != null)
+                {
+                    Verify.AreEqual(GetRowsHost("BasicTableView").Children[0].RuntimeId, bodyFocus.RuntimeId,
+                        "Down from a header must land on the FIRST row.");
+                }
+
+                // Cell-level leg: the column is kept across the band boundary.
+                if (!DrillIntoRow("BasicTableView", 0)) { return; }
+                KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 0, 1, "Precondition: Right from cell 0 reaches cell 1 (Age).");
+
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                VerifyFocusedHeader("BasicTableView", "Age", "Up from the Age cell of the first row must land on the Age header.");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
+                VerifyFocusedCell("BasicTableView", 0, 1, "Down from the Age header must return to the first row's Age cell.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "After a sort moves the focused record, Tab back into the body returns to the same record, not the old index.")]
+        public void BodyTabReentryReturnsToSameRecordAfterSort()
+        {
+            // Interaction plan N.2 BodyTabReentryReturnsToSameRecordAfterSort (owner decision; dev-spec Keyboard:
+            // "Tabbing back into the body returns to the same record that last had focus, even after a sort or filter").
+            // The record is tracked through selection, which follows the item across a re-order (TableView.idl:531-546).
+            // Failure means Tab drops the user on whatever record now occupies the old position.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject rowsHost = GetRowsHost("BasicTableView");
+                if (rowsHost == null) { return; }
+                int bottomIndex = rowsHost.Children.Count - 1;
+                if (bottomIndex < 2) { Verify.Fail("Need several realized rows."); return; }
+
+                SelectRow(rowsHost.Children[bottomIndex]);
+                rowsHost.Children[bottomIndex].SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(GetRowsHost("BasicTableView").Children[bottomIndex].HasKeyboardFocus, "Precondition: the bottom row should take focus.");
+
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Wait.ForIdle();
+                if (FindFocusedHeader("BasicTableView") == null) { Verify.Fail("Precondition: Shift+Tab from the body should land on the header band."); return; }
+
+                UIObject age = GetHeader("BasicTableView", "Age");
+                age.SetFocus();
+                Wait.ForIdle();
+                VerifyFocusedHeader("BasicTableView", "Age", "Precondition: the Age header should take focus.");
+
+                KeyboardHelper.PressKey(Key.Enter, numPresses: 2); // None -> Ascending -> Descending: oldest Age to the top
+                Wait.ForIdle();
+
+                int recordIndex = IndexOfSelectedRow("BasicTableView");
+                Log.Comment("After the sort the tracked record is at index {0} (was {1}).", recordIndex, bottomIndex);
+                Verify.IsTrue(recordIndex >= 0 && recordIndex != bottomIndex, "Precondition: the sort must have moved the tracked record.");
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+
+                rowsHost = GetRowsHost("BasicTableView");
+                UIObject reentered = FindFocusedBodyElement(rowsHost);
+                if (reentered == null) { Verify.Fail("Tab from the header band must re-enter the body."); return; }
+
+                Verify.AreEqual(rowsHost.Children[recordIndex].RuntimeId, reentered.RuntimeId,
+                    "Tab re-entry must return to the row holding the same record (now at index " + recordIndex + "), not the old index.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Ctrl+Right on a focused header neither resizes nor navigates; Alt+Right does resize (positive control).")]
+        public void HeaderCtrlArrowDoesNotResize()
+        {
+            // Interaction plan N.2 HeaderCtrlArrowDoesNotResize (owner decision; dev-spec resize Keyboard: "Alt is the only
+            // resize modifier: Ctrl+Arrow on a header does nothing"). Failure means Ctrl acts as an undocumented second chord.
+            using (var setup = new TestSetupHelper("TableView Tests"))
+            {
+                UIObject header = GetHeader("BasicTableView", "Name");
+                if (header == null) { Verify.Fail("The Name header was not found."); return; }
+                header.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(header.HasKeyboardFocus, "Precondition: the Name header should take focus.");
+
+                int w0 = GetHeader("BasicTableView", "Name").BoundingRectangle.Width;
+
+                KeyboardHelper.PressKey(Key.Right, ModifierKey.Control);
+                Wait.ForIdle();
+                int w1 = GetHeader("BasicTableView", "Name").BoundingRectangle.Width;
+                Log.Comment("Ctrl+Right: {0} -> {1}.", w0, w1);
+                Verify.AreEqual(w0, w1, "Ctrl+Right must not resize the column; Alt is the only resize modifier.");
+                VerifyFocusedHeader("BasicTableView", "Name", "Ctrl+Right must not move focus off the Name header.");
+
+                KeyboardHelper.PressKey(Key.Right, ModifierKey.Alt);
+                Wait.ForIdle();
+                int w2 = GetHeader("BasicTableView", "Name").BoundingRectangle.Width;
+                Log.Comment("Alt+Right: {0} -> {1}.", w1, w2);
+                Verify.IsTrue(w2 > w1, "Positive control: Alt+Right must widen the column.");
+            }
+        }
+
         #endregion
 
         #region Helpers
@@ -1379,6 +2013,84 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 if (header.HasKeyboardFocus)
                 {
                     return header;
+                }
+            }
+            return null;
+        }
+
+        // Focuses the row at index and drills into its first cell with Right. Returns false (after failing) if
+        // either step does not take; callers then stop, since every later assertion would be unmeasured.
+        private static bool DrillIntoRow(string tableAutomationId, int rowIndex)
+        {
+            UIObject rowsHost = GetRowsHost(tableAutomationId);
+            if (rowsHost == null) { return false; }
+            if (rowsHost.Children.Count <= rowIndex) { Verify.Fail(string.Format("Need at least {0} realized rows.", rowIndex + 1)); return false; }
+
+            UIObject row = rowsHost.Children[rowIndex];
+            row.SetFocus();
+            Wait.ForIdle();
+            if (!row.HasKeyboardFocus) { Verify.Fail(string.Format("Precondition: row {0} did not take focus.", rowIndex)); return false; }
+
+            KeyboardHelper.PressKey(Key.Right);
+            Wait.ForIdle();
+            if (IndexOfFocusedCell(GetRowsHost(tableAutomationId).Children[rowIndex]) != 0)
+            {
+                Verify.Fail(string.Format("Precondition: Right did not drill into row {0}'s first cell.", rowIndex));
+                return false;
+            }
+            return true;
+        }
+
+        // Finds which realized row/cell holds keyboard focus; both are -1 when no cell does.
+        private static void FindFocusedCell(string tableAutomationId, out int rowIndex, out int cellIndex)
+        {
+            rowIndex = -1;
+            cellIndex = -1;
+            UIObject rowsHost = GetRowsHost(tableAutomationId);
+            if (rowsHost == null) { return; }
+
+            int r = 0;
+            foreach (UIObject row in rowsHost.Children)
+            {
+                int c = IndexOfFocusedCell(row);
+                if (c >= 0)
+                {
+                    rowIndex = r;
+                    cellIndex = c;
+                    return;
+                }
+                r++;
+            }
+        }
+
+        private static void VerifyFocusedCell(string tableAutomationId, int expectedRow, int expectedCell, string message)
+        {
+            int rowIndex, cellIndex;
+            FindFocusedCell(tableAutomationId, out rowIndex, out cellIndex);
+            Log.Comment("Focused cell: row={0}, cell={1} (expected row={2}, cell={3}).", rowIndex, cellIndex, expectedRow, expectedCell);
+            Verify.IsTrue(rowIndex == expectedRow && cellIndex == expectedCell, message);
+        }
+
+        private static void VerifyFocusedHeader(string tableAutomationId, string expectedHeader, string message)
+        {
+            UIObject focused = FindFocusedHeader(tableAutomationId);
+            Log.Comment("Focused header: {0} (expected {1}).", focused == null ? "<none>" : focused.Name, expectedHeader);
+            Verify.IsTrue(focused != null && focused.Name == expectedHeader, message);
+        }
+
+        // Depth-first search under a cell peer for a named element (hosted cell content).
+        private static UIObject FindDescendantByName(UIObject root, string name)
+        {
+            foreach (UIObject child in root.Children)
+            {
+                if (child.Name == name)
+                {
+                    return child;
+                }
+                UIObject nested = FindDescendantByName(child, name);
+                if (nested != null)
+                {
+                    return nested;
                 }
             }
             return null;

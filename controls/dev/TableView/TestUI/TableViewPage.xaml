@@ -132,6 +132,15 @@
                             </DataTemplate>
                         </controls:TableViewTemplateColumn.CellEditingTemplate>
                     </controls:TableViewTemplateColumn>
+                    <controls:TableViewTemplateColumn Header="Action" Width="120">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <Button Content="Open"
+                                        AutomationProperties.Name="RowActionButton"
+                                        VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                    </controls:TableViewTemplateColumn>
                 </controls:TableView>
             </Grid>
 

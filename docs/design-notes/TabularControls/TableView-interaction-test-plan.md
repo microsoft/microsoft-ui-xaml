@@ -214,6 +214,33 @@ no longer fail-fasts, so #13 is gone for MITA).
 source branch, so TAEF never ran it (57 discovered, 58 written). The attribute is now added, and the test is otherwise
 unchanged.
 
+### Run 2 on `main`, and the tests now marked Ignore
+
+This was a full `*TableView*` run on `winui-test2` after the rewrites and the new tests: **432 total, 417 passed, 15
+failed**. All 15 failures are now `[TestProperty("Ignore", "True")]`, each with an inline reason.
+
+- **Open product findings:**
+  - `VerifyStructureChangedEventsReachAUiaClient` (#21)
+  - `GroupHeaderKeepsFocusAcrossCollapseWhenFocusedThroughUia` (#15)
+  - `PointerResizeEscapeCancelsResize` (#17)
+  - `RightToLeftResizeMirrors` (#19)
+  - `CollapseAllGroupsReconcilesGestureExpandedGroup` (#16)
+- **Unobservable at this tier (#20):** `HorizontalScrollKeepsHeaderAligned`, `FrozenColumnStaysPinnedUnderPointerScroll`.
+- **Test debt:** `PageUpMovesByViewport`, because the scroll-percent proxy is unreliable. `PageDownMovesByViewport`
+  passed in this run and failed in the baseline.
+- **Product not yet at the decided behaviour:**
+  - `UpFromFirstRowMovesToHeaderAndDownReturnsToFirstRow`
+  - `FocusStaysAtSamePositionWhenSortReordersRows`: focus landed on `Person 1`, neither the old position nor the old
+    record.
+  - `FocusStaysAtSamePositionWhenFilterRemovesFocusedRecord`: focus left the body.
+  - `VerifyGroupedRowPeerPositionInSetIsRelativeToItsGroup`: the values are flat.
+  - `VerifyGroupHeaderPeerReportsNoLevelAndAppSetLevelWins`: Level is 1.
+- **Product or fixture, not yet determined:** `TabMovesFocusOutOfTable` and the Tab-back half of
+  `TabBetweenBandsPreservesColumn`.
+  - `TabMovesFocusOutOfTable` passed in the baseline and broke once the `Action` column added a `Button` to every row.
+  - The probable cause is the hosted button acting as its own tab stop, which contradicts the single body tab stop the
+    dev spec describes.
+
 ---
 
 ## Run status and open failures (interaction tier)
@@ -918,7 +945,7 @@ converted as each category comes up for review** — do not add a new item in th
   - **Remarks:** **Spec gap, recorded deliberately.** `dev-spec:165` says unhandled arrows "move focus between rows" and
     says nothing about selection; the assertion's authority is the owner's design decision, not the document, and the
     dev spec should be amended to state it. Replaces `ArrowKeysMoveFocusWithoutChangingSelection`, which asserted the
-    opposite reading of the same silence — note that the reference PR `!15971489` takes that opposite position, so this
+    opposite reading of the same silence — note that the earlier prototype takes that opposite position, so this
     is a genuine design difference and not an oversight. **Now proven in the product**, which imposes a rule on every
     other test in this document: an assertion that "nothing is selected" must be made **before** any navigation key,
     because navigation keys are entitled to select. Uses the `TryGetIsSelected` helper, which fails loudly when neither
@@ -1051,8 +1078,8 @@ A second crash was found and fixed on the way: `FindElement.*` called **after** 
 **Considered against the other controls' keyboard suites and deliberately not written:**
 
 - **Gamepad / D-pad navigation.** TreeView drives `GamepadHelper.PressButton` with `DPadLeft` and `LeftThumbstickLeft`
-  alongside its key tests. Rejected here: `dev-spec:165` describes `KeyDown` routing only, and TableView states no gamepad
-  or XY-focus contract. Adding one would assert a behaviour no document claims. Revisit if the spec grows a gamepad story.
+  alongside its key tests. **Rejected — out of scope by owner decision (2026-10-07):** TableView does not support
+  gamepad, D-pad or XY-focus navigation, and the dev-spec *Keyboard* section now says so. Not to be re-proposed.
 - **Fast repeated keystrokes.** ItemsView keeps a whole family (`KeyDownInItemsViewAndLinedFlowLayoutWithFastKeystrokes`,
   `KeyPageDownIn…`) because rapid repeat races element realization — a real risk for a virtualized table too. Deferred,
   not rejected: it was originally blocked behind the Page Down crash, which turned out to be the Pivot and is gone.
@@ -1282,11 +1309,43 @@ that access-violates, not the click. See the run-status section for the isolatio
   no visual state to log, no UIA property, nothing short of a pixel comparison — and a pixel comparison would be testing
   XAML's focus-visual rendering, not TableView (step 2.3). The part TableView actually owns is that a row can take
   keyboard focus, and §1 asserts that in every navigation test.
-- **`FocusReanchorsAcrossReshape`.** Deferred as a **spec gap**, not as work. Neither spec says where focus goes when a
-  re-shape moves or drops the focused row; `dev-spec:25` puts the grouped/hierarchical focus model in a later release.
-  What *is* stated — selection tracks the item across a re-shape (`TableView.idl:531-546`) — is already covered by API
-  §8's `VerifySelectionReanchorsAcrossAReshape`. Writing a focus expectation here would invent a contract and then
-  enshrine whatever the control happens to do, which step 5 exists to prevent. Raise it against the spec first.
+- ~~`FocusReanchorsAcrossReshape`~~. Previously deferred as a spec gap. **Resolved by owner decision (2026-10-07)** and
+  now in the dev-spec *Keyboard* section: when a sort or filter re-shapes the rows while focus is inside the body, focus
+  stays at the same **position** (the same projected row index), including when the focused record was filtered out.
+  This deliberately differs from Tab **re-entry**, which returns to the same *record*
+  (`BodyTabReentryReturnsToSameRecordAfterSort`). Written as two tests:
+
+- [x] `FocusStaysAtSamePositionWhenSortReordersRows` — **Status:** written, built, not run.
+  - **Description:** Focuses row 2 of `BasicTableView` (record `Person 2`). Sorts by `Age` Descending through the `Age`
+    header peer's **UIA Invoke** pattern, invoked twice. UIA Invoke does not move keyboard focus, so focus stays in the
+    body during the sort. Then reads which row has focus.
+  - **Expected result:**
+    - The row at position 2 has focus.
+    - That row now holds a different record: `Person 9`, the third-oldest. Its name contains `Person 9` and not
+      `Person 2`.
+  - **Failure means:** a sort drags keyboard focus along with the previously focused record, so the user's place in the
+    list jumps without any input from them. Or focus is lost from the body entirely.
+  - **Remarks:**
+    - Owner decision, stated in the dev-spec *Keyboard* "Re-shape while focused" bullet.
+    - Driving the sort by UIA Invoke rather than a header key or click is what keeps focus in the body. Both gestures
+      would move focus to the header.
+    - The record check is the negative control that tells "stayed at the position" from "nothing re-sorted".
+- [x] `FocusStaysAtSamePositionWhenFilterRemovesFocusedRecord` — **Status:** written, built, not run.
+  - **Description:** On the grouped table, the projection is `Redmond` (0, 3, 6), `Seattle` (1, 4, 7), `Bellevue`
+    (2, 5, 8). Focuses `Grouped 1`, the first `Seattle` row at projected position 5. Invokes `FilterSourceButton` through
+    UIA Invoke, which removes every `Seattle` row. Then reads which rows-host child has focus.
+  - **Expected result:**
+    - The element at projected position 5 has focus. After the filter that is the `Grouped 2` data row, the first
+      `Bellevue` row.
+    - `Grouped 1` is no longer present.
+  - **Failure means:** filtering out the focused record drops keyboard focus out of the table, or jumps it to an
+    arbitrary place, so the user must Tab back in and find their place again.
+  - **Remarks:**
+    - Owner decision, stated in the same dev-spec bullet ("also applies when the focused record was filtered out").
+    - The page's filter acts only on the grouped source, which is why this leg runs on `GroupedTableView`.
+    - The expected element is derived from the page fixture (`Cities[i % 3]`, nine items), not from the product.
+    - **Watch:** grouped tests have previously crashed in teardown (`0xC0000420`). If that recurs, read the
+      assertions, not the verdict.
 
 ## 4. Group header input
 
@@ -1333,7 +1392,7 @@ that access-violates, not the click. See the run-status section for the isolatio
     Row counts are **not** asserted here — the re-entrant mutation deliberately double-toggles, and
     `GroupHeaderActivationExpandsAndCollapsesRows` already owns the reshape claim.
 
-**PR parity for §4: nothing owed.** The reference PR's interaction files are `TableViewTests.cs` (19),
+**PR parity for §4: nothing owed.** The earlier prototype's interaction files are `TableViewTests.cs` (19),
 `ColumnResizeGripperTests.cs` (2) and `SortIndicator_InteractionTests.cs` (8) — none of them touches a group header, so
 this section has no PR-side gap to close.
 
@@ -1992,7 +2051,7 @@ plan. Evidence:
 
 ---
 
-# Appendix: interaction tests in PR `!15971489` (reference only)
+# Appendix: interaction tests in the earlier prototype (reference only)
 
 The PR's split was 196 API tests to 29 interaction tests — almost exactly the ratio this plan lands on, which is some
 evidence the admission rule above is neither too strict nor too loose. The API-side appendix lives in the API plan.
@@ -2047,81 +2106,386 @@ repo's `SortIndicator` is internal and has no independent activation surface.
 # Proposed new tests (unblocked by the new model)
 
 These were ruled out, or simply not imaginable, under the old intent: row-only navigation, a single tab stop, header
-arrows as resize, pointer focus on the row, and findings #13 and #22 forbidding any descent into a row. Each one targets a
-gesture route added or exposed by the changes summarised in **Intent review against current `main`**. Nothing here is
-written yet.
+arrows as resize, pointer focus on the row, and findings #13 and #22 forbidding any descent into a row. Each targets a
+gesture or client route that the changes summarised in **Intent review against current `main`** added or exposed.
 
-**Keyboard — cell level (treegrid)**
+Every item went through AGENTS.md steps 1–4 before any code was written:
 
-- ~~`RightDrillsIntoFirstCellAndLeftPopsBackToRow`~~ — folded into the rewritten §1
-  `RightDrillsIntoFirstCellAndLeftReturnsToRow` (dropped as a separate item: same route, same assertions).
-- `CellLeftRightMoveWithinRowWithoutWrapping`: Right/Left step one visible column; at the last/first cell the key is
-  consumed and focus stays put.
-- `CellHomeEndMoveWithinRowAndCtrlHomeEndJumpTable`: at cell level, Home/End go to the first/last cell of the same row
-  (not row 0/last row); Ctrl+Home/Ctrl+End go to cell (0,0) and to the last cell of the last row.
-- `CellUpDownPreserveColumn`: from cell (r, c), Down/Up/PageDown land on column c of another row, not on the row container.
-- `CtrlArrowMovesFocusWithoutSelecting`: Ctrl+Down moves focus to the next row and leaves selection where it was. This is
-  the opt-out that `KeyboardFocusMoveCarriesSelection` never covered.
-- `SpaceSelectsFocusedRowFromRowAndCellLevel`: with `SelectionMode.Single`, after Ctrl+Down (so nothing is selected),
-  Space selects the focused row. Repeat from a focused cell.
-- `EnterOnTemplateCellEntersContentAndEscapeReturnsToCell`: on a template cell that hosts a focusable control, Enter moves
-  focus into the control, arrow keys stay inside it, and Escape returns focus to the cell. A first Escape that the hosted
-  control handles itself (for example a ComboBox) must not leave the cell.
-- `RtlDrillInAndCellArrowsMirror`: under RTL, Left drills in from the row and Right pops back out, and cell Left/Right
-  mirror too.
+- Step 1 (tier) and step 2 (redundancy) decided which items are kept, moved to the API plan, or dropped.
+- Steps 3–4 produced the four fields below.
 
-**Keyboard — header band and tab order**
+Items whose only source would be the implementation are marked `(needs spec decision)` and are **not written**.
 
-- `HeaderBandIsOneTabStopAndArrowsNavigateHeaders`: Tab into the band focuses one header; Left/Right move between visible
-  headers and clamp at both ends; Up/Down are absorbed; the next Tab leaves the band for the body.
-- `NonSortableHeaderIsStillFocusableAndEnterDoesNothing`: `ReadOnlyCity` (`CanSort=False`) is reachable by arrow keys,
-  and Enter on it leaves row order unchanged.
-- `HeaderSpaceTogglesSortOnKeyUpOnly`: Space sorts once per press-release. A held Space (auto-repeat) produces exactly
-  one sort.
-- `HeaderAltShiftArrowUsesLargeStep` and `HeaderCtrlArrowIsResizeAlias`: pin the rest of the resize chord contract.
-- `TabBetweenBandsPreservesColumn`: focus a cell in column 2, Shift+Tab to the header band, and the column 2 header has
-  focus; Tab back to the body and column 2 is the current cell.
-- `BodyTabReentryReturnsToRememberedItemAfterSort`: focus row k, Tab out, sort, Tab back in. Focus lands on the row
-  holding the same **item**, not on index k (`ResolveFocusEntryRow`).
-- `UpFromFirstRowBehaviour`: **spec question first.** Up from row 0 is not consumed (`OnKeyDownForNavigation` leaves it to
-  XAML directional navigation) while Down from a header is absorbed. Decide whether that asymmetry is intended before
-  writing an expectation.
+**Status of the written items: written and built, not yet run.** The test page gained one column for §N.6. See
+**Fixture change** at the end of this section.
 
-**Pointer**
+**Spec debt resolved (owner decision, 2026-10-07).** `TableView-dev-spec.md` was updated to the #11820 model:
 
-- `PointerClickOnCellFocusesThatCell`: the focused cell peer's `GridItem.Column` equals the column under the pointer.
-  Repeat for two different columns.
-- `PointerClickOnRowStripFocusesRow`: a click past the last column (the row's empty strip) focuses the row, not a cell.
-- `RightClickDoesNotSelect`: a right-button press does not select (the `IsLeftButtonPressed` gate). This guards the
-  context-menu scenario.
-- `PressAndDragOffRowDoesNotSelect`: selection is applied on release, so pressing a row and releasing elsewhere leaves
-  selection unchanged. **Spec question first**: confirm release-outside semantics before writing.
+| Spec section | Now states |
+| --- | --- |
+| Resize *Keyboard* | `Alt+Arrow` resize. `Alt` is the only modifier. |
+| *Keyboard* | Two tab stops with a shared column cursor; drill-in; header-band arrows. `Up` from row 0 moves to the header band and `Down` from a header moves to row 0. Selection, `Space` and `Ctrl`. `Enter`/`Escape` into cell content. Tab re-entry returns to the same record. |
+| Gesture layer | Pointer focus lands on the pressed cell (the row's empty strip focuses the row). Selection applies on release on the pressed row only. Right-click never selects. |
+| Accessibility | The group header computes no `Level`. |
 
-**UIA client (out-of-proc), no longer blocked by #13/#22**
+Every "spec debt" remark in this document is now backed by that text and should be read as **resolved**. The remarks
+are kept so the history of each expectation stays visible.
 
-- `RowPeersExposeNameAndFlatPositionInSet`: through a client, every realized row has a non-empty `Name`, and
-  `PositionInSet`/`SizeOfSet` match the item index and count. In the grouped table, the values are flat over group
-  headers and rows.
-- `CellPeersAreIdentityStableAcrossGridAndTreeWalk`: `GridPattern.GetItem(r,c)` and the tree-walked cell for (r,c)
-  compare equal through `IUIAutomation::CompareElements`, and the cell reports `LocalizedControlType="cell"`.
-- `TablePatternGetColumnHeadersReturnsAllColumns`: a client calls `GetColumnHeaders` and gets every column, including
-  columns scrolled out of view. Synthetic `AutomationId` values follow `TableViewColumnHeader_<n>`.
-- `GroupHeaderReportsLevelToAClient`: group header `Level` is 1 for single-level grouping. Unknown values read 0, not -1.
-- `RowsStayExposedAfterGroupCollapseAndExpand`: collapse and then expand a group; the client again sees the group's row
-  peers with cell children.
-- `DescendantFindFirstOnWideTableCompletesQuickly`: `FindFirst(Descendants, PropertyCondition)` over a wide table
-  returns within a bounded time. This guards the hang that #11820 fixed.
-- `KeyboardResizeRaisesWidthNotification`: Alt+Right on a header raises a UIA `Notification` event (activity id
-  `TableViewColumnWidthChangedActivityId`) that a client receives. Events are not API-testable (§12.6).
-- `CellFocusRaisesFocusChangedToAClient`: drilling into a cell raises `AutomationFocusChanged` on the cell peer, which
-  is the screen-reader path for the new cell level.
+**Shared authority for the cell-aware items.**
+- `dev-spec:201` states the cell-level keys:
+  - `Left`/`Right` move the cell cursor within the focused row.
+  - `Home`/`End` move to the first/last cell of the current row once a cell has focus.
+  - `Ctrl+Home`/`Ctrl+End` move to the first/last cell of the table.
+  - `Up`/`Down`/`PageUp`/`PageDown` move to the same visible column in another row.
+  - `Enter`/`Space` on a focused header sort.
+- Where an item relies on more than that sentence, its remarks say so. The extra sources are the WAI-ARIA grid and
+  treegrid keyboard conventions that #11820 adopted, and ListView/WPF DataGrid platform conventions. Each such item was
+  recorded as **spec debt** against `dev-spec:201`, which the update above resolves.
 
-**Harness simplifications now available (not new tests)**
+## N.1 Keyboard — cell level
+
+- [x] `CellLeftRightMoveWithinRowWithoutWrapping` — **Status:** written, built, not run.
+  - **Description:** Focuses row 1 of `BasicTableView` and presses `Right` to drill in (cell 0). Presses `Right` once
+    and reads the focused cell. Presses `Right` until the last visible cell, then once more. Presses `Left` back to
+    cell 0, then `Left` once more.
+  - **Expected result:**
+    - One `Right` from cell 0 focuses cell 1 **of the same row**.
+    - At the last cell, a further `Right` leaves focus on the last cell. It does not wrap to row 2 and does not leave
+      the table.
+    - From cell 1, `Left` reaches cell 0.
+    - A further `Left` on cell 0 returns to the row (see §1 `RightDrillsIntoFirstCellAndLeftReturnsToRow`), not to the
+      previous row's last cell.
+  - **Failure means:** horizontal movement either skips cells, wraps across rows (a screen-reader user loses their
+    row), or escapes the table at the edge.
+  - **Remarks:** `dev-spec:201` states Left/Right move "within the focused row". No-wrap is the WPF/ListView convention
+    named in the #11820 keyboard model, and **spec debt**: the dev spec does not say "no wrap" outright.
+- [x] `CellHomeEndStayInRowAndCtrlHomeEndJumpTable` — **Status:** written, built, not run.
+  - **Description:** Drills into row 2 and moves to cell 1. Presses `End`, then `Home`, then `Ctrl+End`, then
+    `Ctrl+Home`, reading the focused row and cell after each key.
+  - **Expected result:**
+    - `End` → row 2, last cell.
+    - `Home` → row 2, cell 0.
+    - `Ctrl+End` → last row, last cell.
+    - `Ctrl+Home` → row 0, cell 0.
+  - **Failure means:** at cell level `Home`/`End` still act as row-level "first/last row" keys, so a user in the middle
+    of a row is thrown to another record. Or the grid-wide jump is missing.
+  - **Remarks:** `dev-spec:201`, stated outright. This is the one place where the same key means different things at
+    row level and cell level, and that is why it needs a test of its own: §1 `HomeKeyMovesToFirstRow` covers row level
+    only.
+- [x] `CellUpDownPreserveColumn` — **Status:** written, built, not run.
+  - **Description:** Drills into row 1, moves to cell 1 (`Age`), presses `Down`, then `Up`.
+  - **Expected result:**
+    - After `Down`, row 2's cell 1 has focus. The row container does not.
+    - After `Up`, row 1's cell 1 has focus.
+  - **Failure means:** vertical movement drops the user back to row level or to column 0, so walking down a column (the
+    common "read this field for each record" task) is impossible.
+  - **Remarks:** `dev-spec:201`: "move to the same visible column in another row". The row-level Up/Down tests in §1
+    start from a row container and cannot see this.
+- [x] `CtrlDownMovesFocusWithoutSelecting` — **Status:** written, built, not run.
+  - **Description:** Focuses row 0 with nothing selected and presses `Ctrl+Down`. Reads focus and selection on rows 0
+    and 1. Then presses plain `Down`.
+  - **Expected result:**
+    - After `Ctrl+Down`, row 1 has focus and **no** row is selected.
+    - After plain `Down`, row 2 has focus and **is** selected (positive control).
+  - **Failure means:** there is no way to move the keyboard cursor without dragging selection along, so a keyboard user
+    cannot move to a row without acting on it.
+  - **Remarks:** selection-follows-focus is asserted by §1 `KeyboardFocusMoveCarriesSelection`. The `Ctrl` opt-out is
+    the ListView convention, and **spec debt**: `functional-spec:53` names "multi selection (Ctrl/Shift)" but not the
+    single-selection Ctrl-move. The positive-control leg stops a table that never selects from passing.
+- [x] `SpaceSelectsFocusedRowFromRowAndCellLevel` — **Status:** written, built, not run.
+  - **Description:** Focuses row 0, presses `Ctrl+Down` (row 1 focused, nothing selected), then `Space`. Then drills
+    into row 1 (`Right`), presses `Ctrl+Down` (row 2, cell 0) and `Space`.
+  - **Expected result:**
+    - After the first `Space`, row 1 is selected.
+    - After the second, row 2 is selected and row 1 is not (`SelectionMode.Single`).
+    - Focus stays where it was in both cases: row 1 itself, then row 2's cell 0.
+  - **Failure means:** a keyboard user who moved with `Ctrl` has no key to select the focused row. Or `Space` at cell
+    level is swallowed by the cell and selection is unreachable from the cell cursor.
+  - **Remarks:** **Spec debt.** No spec sentence names `Space` for row selection; it is the ListView/WPF DataGrid
+    convention adopted by #11820. Starting each leg with `Ctrl+Down` is what makes the `Space` observable: without it,
+    selection-follows-focus would already have selected the row.
+- [x] `EnterOnInteractiveCellEntersContentAndEscapeReturnsToCell` — **Status:** written, built, not run. Needs the
+      `Action` column (see **Fixture change**).
+  - **Description:** Drills into row 0 and presses `End` to reach the `Action` cell, which hosts a `Button`. Presses
+    `Enter`, then `Right`, then `Escape`.
+  - **Expected result:**
+    - After `Enter`, the cell's hosted button has keyboard focus.
+    - After `Right`, the button still has focus: arrow keys stay inside interactive content.
+    - After `Escape`, the `Action` cell itself has focus again.
+  - **Failure means:** controls hosted in a cell are unreachable from the keyboard, arrow keys yank the user out of a
+    control they are operating, or there is no way back to grid navigation.
+  - **Remarks:** **Spec debt.** None of the specs states this. The source is the WAI-ARIA grid "interactive content"
+    convention, stated as a design point in #11820 ("Adds `Enter` to enter cell content, `Escape` to leave it"; "Keep
+    arrow keys inside the cell"). The `Action` column is a template column with a focusable control, which is the
+    case the convention exists for.
+- [x] `RightToLeftDrillInAndCellArrowsMirror` — **Status:** written, built, not run.
+  - **Description:** On the `Rtl` pivot, focuses row 1 of `RtlTableView`. Presses `Left`, then `Left` again, then
+    `Right`, then `Right` again.
+  - **Expected result:**
+    - The first `Left` drills in to cell 0.
+    - The second `Left` moves to cell 1.
+    - The first `Right` returns to cell 0.
+    - The second `Right` returns to the row.
+  - **Failure means:** under RTL the arrows act in screen direction, not reading order. Drill-in then needs the "back"
+    key, and cell movement runs against the visual layout.
+  - **Remarks:** `dev-spec:131` makes reading order the frame for horizontal movement. TreeView's RTL key tests are the
+    precedent for mirroring arrows. Drill-in itself is spec debt, as in §1.
+
+## N.2 Keyboard — header band and tab order
+
+- [x] `HeaderBandArrowsMoveBetweenHeaders` (was `HeaderBandArrowsMoveBetweenHeadersAndStayInBand`) — **Status:**
+      written, built, not run. Revised after the owner decided that `Down` from a header moves to the first row.
+  - **Description:** Focuses the `Name` header and presses `Left`, `Right`, `Up`. Then presses `Right` until the last
+    header has focus, and once more.
+  - **Expected result:**
+    - `Left` on the first header leaves `Name` focused.
+    - `Right` moves focus to `Age`.
+    - `Up` leaves focus on `Age` and focuses no row.
+    - At the last header, a further `Right` leaves the last header focused.
+  - **Failure means:** some headers are unreachable by keyboard, `Up` walks out of the table, or the band wraps.
+  - **Remarks:** the updated *Keyboard* section of the dev spec says header-band `Left`/`Right` move between visible
+    headers without wrapping, and `Up` stays in the band. Making every header reachable is the reason the band exists:
+    Narrator needs to read headers that have no command. `Down` was removed from this test, because it now **leaves**
+    the band; `UpFromFirstRowMovesToHeaderAndDownReturnsToFirstRow` owns it.
+- [x] `NonSortableHeaderIsFocusableAndEnterDoesNotSort` — **Status:** written, built, not run.
+  - **Description:** Selects the bottom row and focuses the `ReadOnlyCity` header (`CanSort="False"`). Presses `Enter`
+    twice and reads the selected row's index. Then focuses `Age` and presses `Enter` twice (positive control).
+  - **Expected result:**
+    - `ReadOnlyCity` takes keyboard focus.
+    - Its two `Enter`s leave the selected row at the bottom index.
+    - `Age`'s two `Enter`s move it up.
+  - **Failure means:** either non-sortable columns are unreachable (their header cannot be read by keyboard or AT), or
+    the keyboard sort route ignores the per-column `CanSort` gate that the click route honours.
+  - **Remarks:** `TableView.idl:156-158` makes `CanSort` the per-column opt-out "for the click-to-sort UX". `dev-spec:201`
+    extends sorting to `Enter`/`Space`, so the gate applies to both. The positive control is load-bearing.
+- [x] `HeaderSpaceTogglesSortOncePerPress` — **Status:** written, built, not run.
+  - **Description:** Sets `Score`'s cycle to `DescendingAscendingNone` and selects the highest-`Score` row (source
+    index 5). Focuses the `Score` header and presses `Space` three times, reading the tracked row's index after each
+    press.
+  - **Expected result:** after press 1 the index is `0` (Descending), after press 2 it is the last index (Ascending), and
+    after press 3 it is `5` (None).
+  - **Failure means:** `Space` is not a sort key, or one press-release sorts twice (key-down and key-up both acting),
+    which would skip a step of the cycle.
+  - **Remarks:** `dev-spec:201` makes `Space` a sort key. The three distinct indices are what make a double-fire visible:
+    two steps per press would put the row at the last index after press 1. This mirrors
+    `HeaderClicksFollowTheColumnSortCycle` for the key route, per the one-test-per-route rule.
+- [x] `TabBetweenBandsPreservesColumn` — **Status:** written, built, not run.
+  - **Description:** Drills into row 0 and moves to cell 1 (`Age`). Presses `Shift+Tab` and reads the focused header.
+    Presses `Tab` and reads the focused cell.
+  - **Expected result:**
+    - After `Shift+Tab`, the `Age` header has focus.
+    - After `Tab`, a cell in visible column 1 has focus.
+  - **Failure means:** crossing between the header band and the body loses the user's column, so checking a header
+    (its sort, its name) and returning costs a walk back across the row.
+  - **Remarks:** **Spec debt.** That the two bands share one column cursor is the #11820 model, not spec text. It does
+    follow from `dev-spec:201` making columns, not cells, the unit of vertical movement.
+- [x] `UpFromFirstRowMovesToHeaderAndDownReturnsToFirstRow` (was `UpFromFirstRowBehaviour`, needs spec decision) —
+      **Status:** written, built, not run.
+  - **Description:** Two legs.
+    - Row level: focuses row 0, presses `Up`, reads which header has focus, then presses `Down`.
+    - Cell level: drills into row 0, moves to cell 1 (`Age`), presses `Up`, then `Down`.
+  - **Expected result:**
+    - Row level: after `Up`, a header of `BasicTableView` has focus and no row does. After `Down`, row 0 has focus,
+      either the row itself or one of its cells.
+    - Cell level: after `Up`, the `Age` header has focus. After `Down`, row 0's `Age` cell (index 1) has focus.
+  - **Failure means:** the header band and the rows are only connected through Tab, so a keyboard user walking up the
+    grid hits a wall at row 0, and one exploring the headers cannot step straight down into the data.
+  - **Remarks:**
+    - The owner decided this and the updated dev-spec *Keyboard* section states it: "`Up` from the first row moves to
+      the header band", and "`Down` moves to the first row".
+    - The column is preserved in the cell-level leg because the two bands share one column cursor (same section).
+    - The row-level leg deliberately does not name the header. With no column chosen, the band enters at its
+      remembered column or the first header.
+    - On the `main` baseline the product **absorbs** `Down` in the header band (`TryHandleHeaderVerticalKey`), so the
+      `Down` half is expected to fail until the product follows the spec.
+- [x] `BodyTabReentryReturnsToSameRecordAfterSort` (was `BodyTabReentryReturnsToRememberedItemAfterSort`, needs spec
+      decision) — **Status:** written, built, not run.
+  - **Description:** Selects the bottom row (the oldest `Age`) and focuses it. Presses `Shift+Tab` into the header band,
+    moves to the `Age` header with `Right`, and presses `Enter` twice to sort `Age` Descending. That moves the record to
+    the top. Presses `Tab` back into the body.
+  - **Expected result:** the row that takes focus on re-entry is the row holding the same record, i.e. the selected row,
+    now at index 0. It is not the row at the old index.
+  - **Failure means:** after a sort, Tab drops the user on whatever record now occupies the old position, so they lose
+    their place in the data without having moved.
+  - **Remarks:**
+    - The owner decided this and the updated dev-spec *Keyboard* section states: "Tabbing back into the body returns
+      to the same record that last had focus, even after a sort or filter has moved it".
+    - The record is tracked through **selection**, which follows the item across a re-order (`TableView.idl:531-546`).
+      The same technique is used by the sort tests.
+    - All 12 rows are realized, so the "record no longer realized" fallback is out of scope.
+- [x] `HeaderCtrlArrowDoesNotResize` (was `HeaderCtrlArrowIsResizeAlias`, needs spec decision) — **Status:** written,
+      built, not run.
+  - **Description:** Focuses the `Name` header and presses `Ctrl+Right`, reading `Name`'s width and the focused header.
+    Then presses `Alt+Right` (positive control).
+  - **Expected result:**
+    - After `Ctrl+Right`, `Name`'s width is unchanged and `Name` still has focus.
+    - After `Alt+Right`, the width grows.
+  - **Failure means:** `Ctrl` is acting as a second, undocumented resize chord (or as navigation), which conflicts with
+    the documented `Alt`-only binding.
+  - **Remarks:** the owner decided `Alt` is the only resize modifier. The dev-spec resize *Keyboard* paragraph now says
+    "`Ctrl+Arrow` on a header does nothing", and the stale "Ctrl is accepted as an alias" comment in
+    `TableView_Keyboard.cpp` was corrected. The `Alt` leg is the positive control that proves the measurement can see
+    a resize.
+
+## N.3 Pointer
+
+- [x] `PointerClickOnRowStripFocusesRow` — **Status:** written, built, not run.
+  - **Description:** Parks focus on `DummyButton`. Clicks row 0 at a point to the right of the last column header's
+    trailing edge, inside the row's bounds.
+  - **Expected result:**
+    - The row peer has keyboard focus.
+    - No cell of row 0 has focus.
+    - Row 0 is selected.
+  - **Failure means:** a click on the row's empty area does nothing, so the row is not a usable target. Or focus goes to
+    an arbitrary cell the user did not click.
+  - **Remarks:** **Spec debt.** This is the complement of the #11820 "a cell press focuses the cell" rule, and the
+    remaining case where `dev-spec:427`'s "pointer focus lands on the row" still applies. Precondition: if the row has
+    no empty strip at this window size, the test fails as a harness limitation and does not measure anything.
+- [x] `RightClickDoesNotSelect` — **Status:** written, built, not run.
+  - **Description:** Right-clicks row 1 of `BasicTableView` inside the `Age` column, then left-clicks row 2 as a positive
+    control.
+  - **Expected result:**
+    - After the right-click, no row is selected.
+    - After the left-click, row 2 is selected.
+  - **Failure means:** opening a context menu silently changes selection, so the menu acts on a row the user did not
+    choose.
+  - **Remarks:** `functional-spec:54` reserves a per-row/cell context menu, which makes right-click a menu gesture, not
+    a selection gesture. The ListView convention agrees. **Spec debt**: no sentence says "right-click does not select".
+- [x] `PressAndDragOffRowDoesNotSelect` (was needs spec decision) — **Status:** written, built, not run.
+  - **Description:** Presses the primary button on row 1 inside the `Age` column, moves the pointer onto
+    `AfterTableButton` (outside the table), and releases. Then clicks row 2 normally (positive control).
+  - **Expected result:**
+    - After the dragged-off release, no row is selected.
+    - After the normal click, row 2 is selected.
+  - **Failure means:** a user who presses a row and then changes their mind by dragging away still selects it, so there
+    is no way to back out of a selection gesture.
+  - **Remarks:** the owner decided this. The updated dev-spec gesture-layer text says: "Selection is applied on
+    release, and only when the release lands on the row that was pressed. A press that is dragged off and released
+    elsewhere selects nothing."
+
+## N.4 UIA client (out of process)
+
+Step 1 moved several items to the **API tier**, because each asserts a peer *value* that an in-proc test reads just as
+well. They are defined below and implemented in `controls\dev\TableView\APITests\TableView_AutomationPeer_APITests.cs`,
+in a new block "12.6 Set metadata, names and re-exposure (#11820)". **Status:** written, built, not run.
+
+- [x] `VerifyRowPeerPositionInSetAndSizeOfSetAreOneBasedOverRows`
+  - **Description:** On an ungrouped three-row table, reads `GetPositionInSet()` and `GetSizeOfSet()` from each row
+    peer.
+  - **Expected result:** the rows report positions `1`, `2`, `3`, and every row reports size `3`.
+  - **Failure means:** a screen reader cannot say "row *i* of *n*", which the API spec promises even for virtualized
+    rows. Or it reports `0`/`-1` ("not specified") for a value the control can resolve.
+  - **Remarks:** `api-spec:884` says "Rows report `PositionInSet` / `SizeOfSet`". UIA set properties are 1-based, and
+    `dev-spec:213` reserves `0` for "cannot be resolved", which is never the case for a realized row of a flat table.
+- [x] `VerifyGroupedRowPeerPositionInSetIsRelativeToItsGroup`
+  - **Description:** Groups five rows by role into `Designer` (2 rows) and `Engineer` (3 rows). Reads each data row
+    peer's `PositionInSet` and `SizeOfSet` in projection order.
+  - **Expected result:**
+    - Designer rows: positions `1`, `2`, size `2`.
+    - Engineer rows: positions `1`, `2`, `3`, size `3`.
+    - Group-header bands are not counted.
+  - **Failure means:** under grouping, AT announces a row's position in the whole flattened list, or counts header bands
+    as rows, so "row 2 of 3" means nothing to the user.
+  - **Remarks:** `api-spec:884` says "When the source is grouped, both values are **relative to the containing group**
+    and exclude the group-header bands, matching `ItemsControlAutomationPeer`." The #11820 PR description said "flat".
+    **The owner confirmed within-group announcement (2026-10-07)**, so the PR text is superseded.
+- [x] `VerifyAppSetPositionInSetAndSizeOfSetWinOnRowPeer`
+  - **Description:** Sets `AutomationProperties.PositionInSet = 7` and `SizeOfSet = 42` on row 0's container. Reads its
+    peer.
+  - **Expected result:** the peer reports `7` and `42`.
+  - **Failure means:** an app that knows the true position of a row in a paged or remote data set cannot correct what AT
+    announces.
+  - **Remarks:** stated outright in `api-spec:884` and `dev-spec:213`: "an app-set `AutomationProperties` value always
+    wins over the computed one".
+- [x] `VerifyRowPeerNameComposesVisibleCellTextAndExplicitNameWins`
+  - **Description:** Reads row 0's peer name. Collapses the `Role` column and reads it again. Then sets
+    `AutomationProperties.Name` on the row and reads it a third time.
+  - **Expected result:**
+    - The first name contains `Asha` and `Designer`.
+    - After the collapse, the name still contains `Asha` but not `Designer`.
+    - After the explicit set, the name is exactly the authored string.
+  - **Failure means:** a row announces nothing (finding #22's `NameNotNull` failures) or text from cells the user cannot
+    see. Or an app's own label is overridden.
+  - **Remarks:** `api-spec:884` says rows "compose their name from their visible cells", and `api-spec:886` says "Row and
+    group names honor explicit `AutomationProperties.Name`". The test asserts containment, not the exact composed
+    string, because the separator is a localized resource.
+- [x] `VerifyGroupHeaderPeerReportsNoLevelAndAppSetLevelWins` (was `VerifyGroupHeaderPeerLevelIsOneAndAppSetLevelWins`)
+  - **Description:** On a grouped table, reads the first group header peer's `GetLevel()`. Then sets
+    `AutomationProperties.Level = 3` on the header and reads it again.
+  - **Expected result:** the computed level is `0` ("not specified"), and the app-set level is `3`.
+  - **Failure means:** AT announces a nesting level for single-level grouping, which implies a hierarchy that does not
+    exist. Or an app that does need a level cannot set one.
+  - **Remarks:** **The owner decided that the band should not announce `Level` (2026-10-07).** The dev-spec
+    accessibility list now says the group header peer "computes **no** `Level` … reports `0` unless the app sets
+    `AutomationProperties.Level`". The app-set half is `dev-spec:213` ("an app-set `AutomationProperties` value
+    always wins"). This replaces the earlier derived expectation of `1`.
+- [x] `VerifyGroupRowsAreReexposedAfterCollapseAndExpand`
+  - **Description:** On the five-row grouped table, collapses the first group and then expands it through the group
+    header's `IExpandCollapseProvider`, settling after each step. Walks the `TableView` peer's descendants and counts
+    row peers, along with each row peer's cell children.
+  - **Expected result:** after the expand, the number of row peers reachable from the table peer equals the number of
+    data rows (5), and each row peer has one cell child per visible column (3).
+  - **Failure means:** after a collapse and expand, the group's rows silently vanish from the UIA tree. Narrator then
+    reports "no items in view" for rows the user can see. This is the #11820 defect where cached peers outlived the
+    containers they described.
+  - **Remarks:** `dev-spec:205` says a row peer exposes its cell peers as children, and `api-spec:894` says tree
+    enumeration connects every cell to its row. The collapse and expand go through the provider (`RequestExpansion`),
+    which is the input-free route `GetExpandCollapseProvider` documents.
+
+The items kept in this section can only be seen across the process boundary: provider identity as a client compares it,
+the dxaml `ITableProvider` wrapper that #11820 fixed, and focus events.
+
+- [x] `CellPeersAreIdentityStableAcrossGridAndTreeWalk` — **Status:** written, built, not run.
+  - **Description:** From out of process, reads `GridPattern.GetItem(1, 1)` on `BasicTableView`, then walks rows host →
+    row 1 → child 1. Compares the two elements' `RuntimeId` and reads the cell's `LocalizedControlType`.
+  - **Expected result:**
+    - The two `RuntimeId`s are equal.
+    - The cell's `LocalizedControlType` is `cell`.
+  - **Failure means:** grid addressing and tree navigation hand a client two different providers for the same cell. A
+    screen reader then loses its place, or announces the cell twice.
+  - **Remarks:** #11820 states identity stability as a goal ("UIA compares providers by identity, so grid addressing and
+    tree navigation disagreed"). The API tier can show in-proc peer identity but not what a client compares after
+    marshalling. `LocalizedControlType` is localized, which makes the `cell` assertion locale-dependent. The VM runs
+    en-US.
+- [x] `TablePatternReturnsColumnHeadersToAClient` — **Status:** written, built, not run.
+  - **Description:** From out of process, reads `TablePattern.ColumnHeaders` on `BasicTableView` and compares it with
+    the header host's children by `RuntimeId`, in order.
+  - **Expected result:** one header per visible column, in visible order, each with the same `RuntimeId` as the
+    corresponding header-host child.
+  - **Failure means:** a client cannot enumerate column headers. This was the `CUIATableProviderWrapper::GetColumnHeaders`
+    defect that #11820 fixed for **every** XAML `ITableProvider`. Or the table pattern and the tree disagree about which
+    element is a column's header.
+  - **Remarks:** the defect lived in the dxaml wrapper, which only a cross-process client exercises. The API tier calls
+    the controls-layer `GetColumnHeaders` directly and could not have seen it.
+- [x] `CellDrillInRaisesFocusChangedToAClient` — **Status:** written, built, not run.
+  - **Description:** Focuses row 1, reads cell 0's `Name`, arms a `FocusAcquiredWaiter` for that name, and presses
+    `Right`.
+  - **Expected result:** the waiter fires within 5s, meaning a client receives `AutomationFocusChanged` for the cell.
+  - **Failure means:** keyboard focus moves into the cell but assistive technology is not told, so Narrator stays
+    silent or keeps reading the row.
+  - **Remarks:** focus events are not API-testable (§12.6). This is the screen-reader half of
+    `RightDrillsIntoFirstCellAndLeftReturnsToRow`.
+- `KeyboardResizeRaisesWidthNotification` **(deferred: infrastructure)**. `MUXTestInfra` has no UIA `Notification`
+  event waiter. The interop type `IUIAutomationNotificationEventHandler` exists, so a waiter can be built. Write this
+  once it is.
+- `DescendantFindFirstOnWideTableCompletesQuickly` **(deferred: fixture)**. The hang #11820 fixed needs a wide table
+  (17 columns) to be measurable. The test page's widest table has 5 columns, which makes a timing assertion meaningless.
+
+## N.5 Harness simplifications now available (not new tests)
 
 - §1 `PageDownMovesByViewport` / `PageUpMovesByViewport` can assert the destination row's `PositionInSet` directly,
-  instead of inferring travel from `VerticalScrollPercent` (the weakness their remarks call out).
-- The §3/§4/§5 page readouts (`EditColumnReportTextBlock`, `EditorProbeTextBlock`, the state logs) existed only because
-  cell and editor peers were unreachable. The editor's cell peer `Value` and the cell's own focus can now be read
-  directly. The readouts can stay as an independent data-side check, but they are no longer the only channel.
-- The prohibitions on `FindElement.ById` and `ElementCache.Refresh()` after a grouped table is realized (§1, §7.0, §9.0)
-  should be re-tested. They were consequences of #13.
+  replacing the scroll-percent proxy. Their baseline failure makes this the next change to them.
+- The §3/§4/§5 page readouts can be supplemented by cell and editor peers, which are now reachable.
+- The `FindElement.ById` / `ElementCache.Refresh()` prohibitions (§1, §7.0, §9.0) should be re-tested. They were
+  consequences of #13.
+
+## Fixture change
+
+`BasicTableView` gains a trailing `TableViewTemplateColumn Header="Action"` (`Width="120"`) whose cell hosts a `Button`
+(`AutomationProperties.Name="RowActionButton"`). It is needed by
+`EnterOnInteractiveCellEntersContentAndEscapeReturnsToCell`: no existing column hosts a focusable control.
+
+The column is appended **last**, so no existing test's column offsets move. These still hold:
+- Row-relative x for Name 0–160, Age 160–260, ReadOnlyCity 260–420, Score 420–520, Template 520–720.
+- Header index 0 for `Name`.
+- The first five cell indices.
