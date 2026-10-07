@@ -524,6 +524,21 @@
     "confidence": "high",
     "match": ["TeachingTip", "coachmark", "teaching callout"]
   },
+  "area-TableView": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["TableView", "Table", "DataGrid"]
+  },
+  "area-Charting": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["Charts", "Charting", "Graphs"]
+  },
+  "area-Inking": {
+    "team": "team-Controls",
+    "confidence": "high",
+    "match": ["Ink", "Inking", "Pen", "Handwrite"]
+  },
   "area-Templates": {
     "team": "team-Controls",
     "confidence": "low",
