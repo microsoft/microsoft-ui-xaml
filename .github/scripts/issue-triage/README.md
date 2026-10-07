@@ -66,9 +66,9 @@ Ownership changes are reviewed in pull requests, like other configuration
 changes. The workflow uses the checked-in `area-team-map.json` immediately;
 there is no separate mapping approval or activation step.
 
-The team-maintained configuration covers all 123 area labels. It contains 121
-default owners; `area-External` and `area-Performance` deliberately have no
-default owner. It also provides keyword guidance, ownership confidence, and nine
+The team-maintained configuration maps area labels to their default owners;
+`area-External` and `area-Performance` deliberately have no default owner.
+It also provides keyword guidance, ownership confidence, and nine
 conditional routes: eight declared override rules and the explicit
 AnimatedVisualPlayer compositor case. Teams are derived from this configuration,
 never accepted as arbitrary model output.

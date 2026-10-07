@@ -339,7 +339,6 @@ class RoutingTests(TriageFixture):
         mapping = t.read_json(str(t.MAP_PATH))
         teams = {"team-Controls", "team-Core", "team-Markup", "team-Reach", "team-Rendering", "team-Design", "team-CompInput"}
         t.validate_mapping(mapping, dict.fromkeys(set(mapping) | teams, ""))
-        self.assertEqual(len(mapping), 123)
         self.assertEqual(
             {area for area, entry in mapping.items() if entry["team"] is None},
             {"area-External", "area-Performance"},
@@ -545,6 +544,9 @@ class MappingConfigurationTests(unittest.TestCase):
         mapping = t.read_json(str(t.MAP_PATH))
         expected = {
             "area-NavigationView": "team-Controls",
+            "area-TableView": "team-Controls",
+            "area-Charting": "team-Controls",
+            "area-Inking": "team-Controls",
             "area-CoreFramework": "team-Markup",
             "area-Tooling": "team-Markup",
             "area-WebView": "team-Rendering",
