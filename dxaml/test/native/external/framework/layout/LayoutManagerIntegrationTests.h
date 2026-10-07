@@ -26,7 +26,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             //
             BEGIN_TEST_METHOD(ValidateEffectiveViewportChanged)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that the EffectiveViewportChanged event fires correctly.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(ValidateEffectiveViewportChangedUnregistration)

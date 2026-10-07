@@ -56,7 +56,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateSlideNavigationThemeTransition)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in test process
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateDrillInNavigationThemeTransition)
@@ -73,25 +73,25 @@ public:
 
     BEGIN_TEST_METHOD(EdgeUIThemeTransition)
         TEST_METHOD_PROPERTY(L"Description", L"Tests the EdgeUIThemeTransition using multiple Edge properties.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(PaneThemeTransition)
         TEST_METHOD_PROPERTY(L"Description", L"Tests the PaneThemeTransition using multiple Edge properties.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ContentThemeTransition)
         TEST_METHOD_PROPERTY(L"Description", L"Tests the ContentThemeTransition using multiple horizontal/vertical offsets.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateContentOverride)
         TEST_METHOD_PROPERTY(L"Description", L"Validate Frame's content theme will override the page default")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // MockDComp crash
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 private:
     void TestThemeTransitionXaml(Platform::String^ path);
