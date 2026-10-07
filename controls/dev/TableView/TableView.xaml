@@ -125,12 +125,10 @@
             <Setter.Value>
                 <ControlTemplate TargetType="controls:TableViewRow">
                     <Grid>
-                        <Border x:Name="PART_RootBorder"
-                                Grid.Row="0"
-                                Grid.Column="0"
-                                Background="{TemplateBinding Background}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Padding="{TemplateBinding Padding}">
+                        <!-- State groups belong on the TEMPLATE ROOT: VisualStateManager resolves
+                             them from the root's attached property, so hosting them on an inner
+                             element disables every state silently - no parse error and no warning,
+                             just a row that never paints its selected / hover / pressed visuals. -->
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -240,6 +238,12 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
+                        <Border x:Name="PART_RootBorder"
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
                         <Grid>
                             <!-- Cell host. TableViewRow populates PART_CellsHost with one cell wrapper
                                  per TableViewColumn, in Columns order, laid out left-to-right.
@@ -331,14 +335,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="controls:TableViewGroupHeader">
                     <Grid>
-                        <Border x:Name="PART_Root"
-                                Grid.Row="0"
-                                Grid.Column="0"
-                                Background="{TemplateBinding Background}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Padding="{TemplateBinding Padding}"
-                                HorizontalAlignment="Stretch">
-
+                        <!-- See TableViewRow: state groups must sit on the template root. -->
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
@@ -389,6 +386,13 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
+                        <Border x:Name="PART_Root"
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalAlignment="Stretch">
                         <Grid ColumnSpacing="6">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />

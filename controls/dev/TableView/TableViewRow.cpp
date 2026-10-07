@@ -1358,11 +1358,10 @@ void TableViewRow::RefreshGridLines()
     const auto children = host.Children();
     const uint32_t childCount = children.Size();
     uint32_t lastVisibleCell = childCount;
+    // The cell wrapper is a composed Grid. Border is sealed and cannot host a custom
+    // automation peer, so both loops in RefreshGridLines must cast cell wrappers to Grid.
     for (uint32_t i = childCount; i > 0; --i)
     {
-        // The cell wrapper is a composed Grid in this revision, not the Border it was when
-        // the terminal-gridline work was authored; a Border cast here never matches, so the
-        // last visible cell would never resolve and terminal suppression would not apply.
         if (auto cellWrapper = children.GetAt(i - 1).try_as<winrt::Grid>())
         {
             const auto column = cellWrapper.Tag().try_as<winrt::TableViewColumn>();
