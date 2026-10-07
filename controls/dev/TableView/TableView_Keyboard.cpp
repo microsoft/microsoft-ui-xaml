@@ -1267,10 +1267,7 @@ bool TableView::FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, 
     }
 
     auto frameworkElement = element.try_as<winrt::FrameworkElement>();
-    if (frameworkElement)
-    {
-        frameworkElement.StartBringIntoView();
-    }
+    BringRowElementIntoView(element);
 
     if (element.try_as<winrt::Control>())
     {
@@ -1307,6 +1304,11 @@ bool TableView::FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, 
                         {
                             if (auto element = repeater.GetOrCreateElement(rowIndex))
                             {
+                                // The eager call above ran while the row was still unrealized, so the
+                                // scroller had nothing to scroll to and dropped it. Now that the row
+                                // is realized and parented, ask again.
+                                strongThis->BringRowElementIntoView(element);
+
                                 if (cellLevel)
                                 {
                                     strongThis->FocusRealizedRowCell(element, targetColumn);
@@ -1332,6 +1334,18 @@ bool TableView::FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, 
             : FocusRowContainerInternal(element);
     }
     return false;
+}
+
+// Scrolls a row element into the body viewport. Animation is off so a held arrow key does not
+// queue overlapping scroll animations.
+void TableView::BringRowElementIntoView(winrt::UIElement const& element)
+{
+    if (auto const frameworkElement = element.try_as<winrt::FrameworkElement>())
+    {
+        winrt::BringIntoViewOptions options;
+        options.AnimationDesired(false);
+        frameworkElement.StartBringIntoView(options);
+    }
 }
 
 // Focuses an already-realized container at row level; group headers have no cell level.

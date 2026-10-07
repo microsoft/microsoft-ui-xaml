@@ -993,6 +993,7 @@ private:
     // Focus helpers and pre-key anchors for the row/group-header levels.
     bool FocusRowContainerInternal(winrt::UIElement const& element);
     bool FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel);
+    void BringRowElementIntoView(winrt::UIElement const& element);
     int32_t GetFocusedRowContainerIndex() const;
     int32_t GetFocusedGroupHeaderIndex() const;
     int32_t m_navAnchorRowContainer{ -1 };
