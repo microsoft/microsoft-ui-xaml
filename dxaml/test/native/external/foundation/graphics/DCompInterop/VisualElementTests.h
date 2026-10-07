@@ -26,12 +26,12 @@ public:
 
     BEGIN_TEST_METHOD(BasicTest)
         TEST_METHOD_PROPERTY(L"Description", L"Creates a VisualInteractionSource from a UIElement")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(InteractionTrackerTest)
         TEST_METHOD_PROPERTY(L"Description", L"Exercises basic InteractionTracker scenario with UIElement as the source")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 };
 

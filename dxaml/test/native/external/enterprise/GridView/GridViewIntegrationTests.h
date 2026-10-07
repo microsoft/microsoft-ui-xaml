@@ -39,18 +39,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(AnimateGridViewInScrollViewerWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Navigates through items, header and footer, nested in ScrollViewer, with the gamepad left and right buttons.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateNavigationDoesNotHorizontallyWrapWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Navigates through a GridView with the gamepad buttons and validates that we do not wrap around when we reach the horizontal edge of the GridView.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF: Multiple XY focus failures in WPF mode
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateNavigationDoesNotVerticallyWrapWithGamepad)
             TEST_METHOD_PROPERTY(L"Description", L"Navigates through a GridView with the gamepad buttons and validates that we do not wrap around when we reach the vertical edge of the GridView.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // WPF: Multiple XY focus failures in WPF mode
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(BringItemIntoShrunkViewWithGamepad)

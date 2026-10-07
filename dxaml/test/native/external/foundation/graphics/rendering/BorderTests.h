@@ -85,7 +85,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(NineGridOptimizationLayoutRounding)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // SetWindowSizeOverrideWithWindowScale doesn't work in islands mode
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     TEST_METHOD(AllBorderBorder)

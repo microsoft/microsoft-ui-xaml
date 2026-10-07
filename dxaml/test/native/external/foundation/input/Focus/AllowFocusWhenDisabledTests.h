@@ -34,7 +34,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(ControlReceivesAllowFocusWhenDisabledThroughInheritance)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that when a parent element has AllowFocusWhenDisabled false, it propagates to its children.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Intermittent test timeout
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AllowFocusWhenDisabledPropertyDefault)
@@ -78,7 +78,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(SupportAllowFocusWhenDisabledOnSlider)
                 TEST_METHOD_PROPERTY(L"Description", L"Check visual state when focusing on Slider control with AllowFocusWhenDisabled property is set")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // [DCPP-test] WPF tests are failing with AnimationIdle timeout during test cleanup
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(SupportAllowFocusWhenDisabledOnRepeatButton)
@@ -91,7 +91,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(SupportAllowFocusWhenDisabledOnAutoSuggestBox)
                 TEST_METHOD_PROPERTY(L"Description", L"Check visual state when focusing on AutoSuggestBox control with AllowFocusWhenDisabled property is set")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Input pane can't initialize with lifted islands
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(AllowUiaFocusWhenElementDisabled)

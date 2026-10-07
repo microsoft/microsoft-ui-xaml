@@ -27,76 +27,84 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TEST_METHOD_CLEANUP(TestCleanup)
 
         BEGIN_TEST_METHOD(CanInstantiate)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully create a SemanticZoom.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanEnterAndLeaveLiveTree)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully add/remove a SemanticZoom from the live tree.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanZoomOutToKeysList)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully zoom out to the view showing list of group keys.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanZoomInToKey)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully zoom in to a list of items grouped by a key.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(CanSetAndGetProperties)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully set and get SemanticZom specific properties.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SezoBasicWithDefaultTemplateGrouped)
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SezoBasicWithSezoTemplateGrouped)
             TEST_METHOD_PROPERTY(L"Description", L"Validates Sezo with Sezo template")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
-        TEST_METHOD(SezoBasicWithDefaultTemplateUnGrouped)
+        BEGIN_TEST_METHOD(SezoBasicWithDefaultTemplateUnGrouped)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SezoBasicWithSezoTemplateUnGrouped)
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Description", L"Validates Sezo with Sezo template")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SezoZovItemHitTestableWhenGroupIsEmpty)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we dont stomp on IsHitTestVisible property on Zoomed out view gridview item if group is empty")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateToggleActiveViewWithKeyboard)
             TEST_METHOD_PROPERTY(L"Description", L"Validates Sezo can be activated with Enter key on header or gamepad A")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateToggleActiveViewWithGamePad)
             TEST_METHOD_PROPERTY(L"Description", L"Validates Sezo can be activated with Enter key on header or gamepad A")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
 
         BEGIN_TEST_METHOD(ValidateToggleActiveViewWithHeaderTap)
             TEST_METHOD_PROPERTY(L"Description", L"Validates Sezo can be activated with tapping on header")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SwitchActiveViewUsingUiaInvokePatternOnListView)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that ListView in Semantic Zoom can switch views using UIAutomation's Invoke Pattern.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SwitchActiveViewUsingUiaInvokePatternOnGridView)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that GridView in Semantic Zoom can switch views using UIAutomation's Invoke Pattern.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SetSkipFocusSubtreeOnEnteringVisualTree)
             TEST_METHOD_PROPERTY(L"Description", L"Ensure SkipFocusSubTree is set correctly when SemanticZoom leaves and enter the visual tree.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
     private:

@@ -93,6 +93,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
 
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void AnimationTimeout()
         {
             XamlRoot xamlRoot = null;
@@ -134,6 +135,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
 
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void InfiniteAnimation()
         {
             XamlRoot xamlRoot = null;

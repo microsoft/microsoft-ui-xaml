@@ -34,12 +34,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateHeaderStretchInItemsStackPanel)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the header stretches when inline for ItemsStackPanel - converged behavior")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateHeaderStretchInItemsWrapGrid)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the header stretches when inline for ItemsWrapGrid - converged behavior")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
         //
         // Platform:Desktop
@@ -63,7 +63,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(StickyGroupHeadersListHeaderResized)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that sticky header clip is updated when the List Header size changes")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 

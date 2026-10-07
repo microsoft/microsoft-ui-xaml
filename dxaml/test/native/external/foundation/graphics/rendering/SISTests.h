@@ -76,7 +76,7 @@ public:
     BEGIN_TEST_METHOD(RegenerateVisual)
         TEST_METHOD_PROPERTY(L"Description", L"Tests that a SIS doesn't regenerate its SpriteVisual unless the surface changes.")
         TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // MockDComp isn't injected on OneCore, so we can't count the number of sprite visuals cleaned up
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Mismatched redraw count
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(OfferReclaimChangeSFReleaseBeforeReclaim)
