@@ -6,7 +6,7 @@
     <MinimalCoreWin>true</MinimalCoreWin>
     <ProjectGuid>{76c98d2a-8b64-4088-bec3-18afb55d6bc4}</ProjectGuid>
     <ProjectName>ChartAppCppPackaged</ProjectName>
-    <RootNamespace>ChartAppCppPackaged</RootNamespace>
+    <RootNamespace>ChartsSample</RootNamespace>
     <!--
       $(TargetName) should be same as $(RootNamespace) so that the produced binaries (.exe/.pri/etc.)
       have a name that matches the .winmd
@@ -97,6 +97,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
       <WarningLevel>Level4</WarningLevel>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\ChartAppCppUnpackaged;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -119,13 +120,16 @@
     <ClInclude Include="App.xaml.h">
       <DependentUpon>App.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="MainWindow.xaml.h">
+    <ClInclude Include="..\ChartAppCppUnpackaged\MainWindow.xaml.h">
+      <Link>MainWindow.xaml.h</Link>
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml" />
-    <Page Include="MainWindow.xaml" />
+    <Page Include="..\ChartAppCppUnpackaged\MainWindow.xaml">
+      <Link>MainWindow.xaml</Link>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -134,13 +138,15 @@
     <ClCompile Include="App.xaml.cpp">
       <DependentUpon>App.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="MainWindow.xaml.cpp">
+    <ClCompile Include="..\ChartAppCppUnpackaged\MainWindow.xaml.cpp">
+      <Link>MainWindow.xaml.cpp</Link>
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="MainWindow.idl">
+    <Midl Include="..\ChartAppCppUnpackaged\MainWindow.idl">
+      <Link>MainWindow.idl</Link>
       <SubType>Code</SubType>
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Midl>
