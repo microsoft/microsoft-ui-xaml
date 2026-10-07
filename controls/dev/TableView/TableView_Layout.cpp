@@ -35,26 +35,6 @@
 
 namespace
 {
-    double NonNegativeFiniteOrZero(double value)
-    {
-        return std::isfinite(value) && value >= 0.0 ? value : 0.0;
-    }
-
-    double NonNegativeFiniteOrDefault(double value)
-    {
-        return std::isfinite(value) && value >= 0.0 ? value : c_widthDefault.Value;
-    }
-
-    double MaxWidthForColumn(winrt::TableViewColumn const& column, double minWidth)
-    {
-        const double maxWidth = column.MaxWidth();
-        if (std::isfinite(maxWidth) && maxWidth >= 0.0)
-        {
-            return std::max(minWidth, maxWidth);
-        }
-        return std::numeric_limits<double>::infinity();
-    }
-
     double MinWidthForStarFactor(winrt::TableViewColumn const& column, double factor)
     {
         if (factor > 0.0)

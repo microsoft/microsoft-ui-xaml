@@ -124,7 +124,7 @@ public:
     // reports an empty token, so a consumer can tell "an axis I do not own exists" from "only mine
     // exists".
     std::vector<ActiveSortAxisInfo> ActiveSortAxisInfos() const;
-    bool HasActiveSortAxes() const noexcept { return m_pipeline.HasActiveSort(); }
+    bool HasActiveSort() const;
 
     // -- projection -----------------------------------------------------------------------
     // Name this engine uses to prefix caller-facing diagnostics. Layer 2 must not hardcode a
@@ -152,7 +152,7 @@ private:
     void OnSourceCollectionChanged();
     void OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void OnSourceVectorChanged(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
-    bool ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
+    void ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void ApplyIncrementalVectorChange(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
     bool TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     bool TryReshapeStaleSortedFlatProjection();
@@ -189,7 +189,6 @@ private:
     }
     // Confirm every row in the set a rebuild is about to publish has a usable, distinct identity.
     bool ValidateRowIdentities(std::vector<winrt::IInspectable> const& rows, wchar_t const*& reason) const;
-    bool HasActiveSort() const;
     bool IsSourceMutable() const;
     bool TryGetRequiredRowIdentity(winrt::IInspectable const& item, winrt::hstring& identity, wchar_t const*& reason) const;
     bool TryGetGroupIdentity(winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason) const;
@@ -235,10 +234,10 @@ private:
     std::unordered_map<winrt::hstring, uint32_t> m_flatRowIdentityToIndex;
     // Sorted flat projections must repair sort-key mutations on the next collection change, but
     // scanning every already-sorted append is too expensive. Track observable rows with
-    // INotifyPropertyChanged and use the scan only after such a notification, or always when any
-    // projected row cannot be observed.
+    // INotifyPropertyChanged and use the full scan only after such a notification; rows that
+    // cannot be observed get a local insertion-neighbourhood check on Add.
     std::vector<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged::PropertyChanged_revoker> m_flatItemPropertyChangedRevokers;
-    bool m_sortedFlatProjectionMayBeStale{ false };
+    std::atomic<bool> m_sortedFlatProjectionMayBeStale{ false };
     bool m_flatItemsMayChangeSortWithoutNotification{ false };
     // Guards re-entrant Refresh (a source notification arriving while a rebuild's ReplaceAll is
     // already mutating the projection).

@@ -9,12 +9,38 @@
 #include "TableViewColumn.g.h"
 #include "TableViewColumn.properties.h"
 
+#include <algorithm>
+#include <cmath>
 #include <cstdint>
+#include <limits>
 
 // Default pixel width and fallback for unresolved Auto values (and Star before the owning
 // TableView has a viewport to resolve against); keep in sync with ActualWidth's
 // MUX_DEFAULT_VALUE("120.0") in TableView.idl.
 static constexpr winrt::GridLength c_widthDefault{ 120.0, winrt::GridUnitType::Pixel };
+
+static inline double NonNegativeFiniteOrZero(double value)
+{
+    return std::isfinite(value) && value >= 0.0 ? value : 0.0;
+}
+
+static inline double NonNegativeFiniteOrDefault(double value)
+{
+    return std::isfinite(value) && value >= 0.0 ? value : c_widthDefault.Value;
+}
+
+static inline double MaxWidthForColumn(winrt::TableViewColumn const& column, double minWidth)
+{
+    const double maxWidth = column.MaxWidth();
+    if (std::isnan(maxWidth) || maxWidth == std::numeric_limits<double>::infinity())
+    {
+        return std::numeric_limits<double>::infinity();
+    }
+
+    // A negative MaxWidth is a malformed finite bound. Treat it as zero so it still clamps to
+    // MinWidth; only NaN and positive infinity mean there is no upper bound.
+    return std::max(minWidth, std::max(0.0, maxWidth));
+}
 
 class TableViewColumn :
     public ReferenceTracker<TableViewColumn, winrt::implementation::TableViewColumnT, winrt::composable>,

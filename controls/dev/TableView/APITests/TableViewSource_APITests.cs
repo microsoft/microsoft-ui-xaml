@@ -1496,6 +1496,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a filter-key INPC change followed by Add rebuilds a filtered+sorted projection in source order.")]
+        public void VerifyFilterAndSortAfterFilterKeyPropertyChangeAndAdd()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>
+                {
+                    new ShapedPerson("A", "Engineer", "60"),
+                    new ShapedPerson("B", "Engineer", "70"),
+                    new ShapedPerson("C", "Engineer", "80"),
+                };
+
+                tableView = CreateShapedTable(
+                    TableViewSource
+                        .From(items)
+                        .Filter(o => int.Parse(Person(o).DepartmentName) > 50)
+                        .Sort("DepartmentName", SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "A", "B", "C" }, "baseline");
+
+                items[0].DepartmentName = "10";
+                VerifyProjection(tableView, new List<string> { "A", "B", "C" },
+                    "INPC-only filter-key changes keep the existing projection until a collection change");
+
+                items.Add(new ShapedPerson("D", "Engineer", "90"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "B", "C", "D" },
+                    "filtered+sorted collection changes must rebuild from current source contents");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a group key change follows the same deferred re-shape rule.")]
         public void VerifyGroupKeyPropertyChangeFollowsTheSameInvariant()
         {

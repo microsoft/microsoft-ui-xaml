@@ -403,6 +403,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyElementThemeDictionaryBeatsFartherApplicationResource()
+        {
+            var fartherAppColor = Color.FromArgb(0xFF, 0x66, 0x22, 0xAA);
+            var nearerElementThemeColor = Color.FromArgb(0xFF, 0x11, 0xCC, 0x77);
+            TableView tableView = null;
+            Grid host = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceGridLineBrush", new SolidColorBrush(fartherAppColor));
+
+                tableView = CreateThemingTable();
+                host = new Grid { RequestedTheme = ElementTheme.Light };
+                host.Resources = new ResourceDictionary();
+                host.Resources.ThemeDictionaries["Light"] = new ResourceDictionary
+                {
+                    ["TabularSurfaceGridLineBrush"] = new SolidColorBrush(nearerElementThemeColor),
+                };
+                host.Children.Add(tableView);
+
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var actual = RequireCellSeparatorColor(tableView, "with a nearer element theme dictionary and a farther app resource");
+
+                    Verify.AreEqual(nearerElementThemeColor, actual,
+                        "A nearer element-scoped ThemeDictionaries entry must win over a farther plain Application.Resources entry.");
+                });
+            }
+            finally
+            {
+                // Application.Resources is UI-thread affine; a finally block runs on the test thread.
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGridLineBrush"));
+            }
+        }
+
+        [TestMethod]
         public void VerifyGridLineBrushSameColorOverrideKeepsObjectAndOpacity()
         {
             var themeColor = Color.FromArgb(0x29, 0x00, 0x00, 0x00);
@@ -518,6 +562,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ClearApplicationResource("ResizeGripperSeparatorThickness");
                 });
             }
+        }
+
+        [TestMethod]
+        public void VerifyResizeGripperDefaultSeparatorBrushesResolve()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var resources = new TabularControlsResources();
+
+                var light = RequireBrush(resources, "Light", "ResizeGripperSeparatorBrush");
+                Verify.AreEqual(Color.FromArgb(0xFF, 0x76, 0xB9, 0xED), light.Color,
+                    "The Light default ResizeGripperSeparatorBrush must inline AccentFillColorDefault's SystemAccentColorLight2 value.");
+
+                var dark = RequireBrush(resources, "Default", "ResizeGripperSeparatorBrush");
+                Verify.AreEqual(Color.FromArgb(0xFF, 0x42, 0x9C, 0xE3), dark.Color,
+                    "The Default/Dark ResizeGripperSeparatorBrush must inline AccentFillColorDefault's SystemAccentColorDark1 value.");
+
+                var highContrast = RequireBrush(resources, "HighContrast", "ResizeGripperSeparatorBrush");
+                var systemColors = CollectSystemColors();
+                Verify.IsGreaterThan(systemColors.Count, 0,
+                    "SystemColor* resources must resolve from the application resources before validating HighContrast.");
+                Verify.IsTrue(systemColors.Contains(highContrast.Color),
+                    "The HighContrast default ResizeGripperSeparatorBrush must resolve through a system colour, not a hardcoded accent or cross-dictionary StaticResource alias.");
+            });
         }
 
         // If the sort glyph cannot be themed it may end up invisible against a customised header

@@ -99,9 +99,6 @@
     <Page Include="$(MSBuildThisFileDirectory)TableView_themeresources.xaml">
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TableView_themeresources.xaml">
-      <Type>ThemeResourcesPerf2026</Type>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)TableViewSource.idl" />

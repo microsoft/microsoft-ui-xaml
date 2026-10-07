@@ -33,7 +33,9 @@ runtimeclass ResizeGripperDragCompletedEventArgs
 //   Visual state groups: CommonStates      - Normal, PointerOver, Pressed, Disabled.
 //                        OrientationStates - Horizontal, Vertical; follows DragOrientation.
 //   Styling keys:        ResizeGripperSeparatorBrush, ResizeGripperSeparatorThickness,
-//                        ResizeGripperSeparatorThicknessVertical.
+//                        ResizeGripperSeparatorThicknessMirrored,
+//                        ResizeGripperSeparatorThicknessVertical. Defaults live in
+//                        ResizeGripper_themeresources.xaml.
 [MUX_INTERNAL]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]

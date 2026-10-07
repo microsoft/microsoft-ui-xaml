@@ -112,16 +112,18 @@ namespace
             return false;
         }
 
-        if (auto const localEntries = dict.try_as<winrt::IVector<winrt::IKeyValuePair<winrt::IInspectable, winrt::IInspectable>>>())
+        const auto boxedKeyName = winrt::unbox_value_or<winrt::hstring>(boxedKey, L"");
+        if (boxedKeyName.empty())
         {
-            const auto size = localEntries.Size();
-            for (uint32_t i = 0; i < size; ++i)
+            return false;
+        }
+
+        for (auto&& kvp : dict)
+        {
+            const auto localKeyName = winrt::unbox_value_or<winrt::hstring>(kvp.Key(), L"");
+            if (!localKeyName.empty() && localKeyName == boxedKeyName)
             {
-                if (winrt::unbox_value_or<winrt::hstring>(localEntries.GetAt(i).Key(), L"") ==
-                    winrt::unbox_value_or<winrt::hstring>(boxedKey, L""))
-                {
-                    return true;
-                }
+                return true;
             }
         }
 
@@ -135,9 +137,15 @@ namespace
             return nullptr;
         }
 
+        const auto found = dict.TryLookup(boxedKey);
+        if (!found)
+        {
+            return nullptr;
+        }
+
         if (ContainsLocalKey(dict, boxedKey))
         {
-            return dict.TryLookup(boxedKey);
+            return found;
         }
 
         if (auto merged = dict.MergedDictionaries())
@@ -172,6 +180,10 @@ namespace
                 {
                     return found;
                 }
+                if (auto found = LookupInThemeDictionaries(resources, themeKey, boxedKey))
+                {
+                    return found;
+                }
             }
             walker = walker.Parent().try_as<winrt::FrameworkElement>();
         }
@@ -184,37 +196,10 @@ namespace
             {
                 return found;
             }
-        }
-
-        walker = start;
-        while (walker)
-        {
-            if (auto resources = walker.Resources())
+            if (auto found = LookupInThemeDictionaries(appResources, themeKey, boxedKey))
             {
-                if (auto found = LookupInThemeDictionaries(resources, themeKey, boxedKey))
-                {
-                    return found;
-                }
+                return found;
             }
-            walker = walker.Parent().try_as<winrt::FrameworkElement>();
-        }
-
-        if (auto found = LookupInThemeDictionaries(appResources, themeKey, boxedKey))
-        {
-            return found;
-        }
-
-        walker = start;
-        while (walker)
-        {
-            if (auto resources = walker.Resources())
-            {
-                if (auto found = resources.TryLookup(boxedKey))
-                {
-                    return found;
-                }
-            }
-            walker = walker.Parent().try_as<winrt::FrameworkElement>();
         }
 
         if (appResources)
@@ -2802,12 +2787,8 @@ void TableView::AppendResizeGripperVisual(
         }
 
         state->didDelta = true;
-        // std::max mirrors TableViewColumn::UpdateActualWidth, so a column whose MaxWidth is below
-        // its MinWidth cannot make Width and ActualWidth disagree.
-        double lo = (std::isfinite(col.MinWidth()) && col.MinWidth() >= 0.0) ? col.MinWidth() : 0.0;
-        double hi = (std::isfinite(col.MaxWidth()) && col.MaxWidth() >= 0.0)
-            ? std::max(lo, col.MaxWidth())
-            : std::numeric_limits<double>::infinity();
+        double lo = NonNegativeFiniteOrZero(col.MinWidth());
+        double hi = MaxWidthForColumn(col, lo);
 
         // The upper bound never falls below the width the drag started from, so a table that
         // already overflows can still shrink.

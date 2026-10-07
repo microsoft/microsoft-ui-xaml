@@ -95,8 +95,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies NaN and infinite MinWidth/MaxWidth values never resolve into a non-finite ActualWidth.")]
-        [TestProperty("data:Constraint", "{MinNaN, MaxNaN, MaxPositiveInfinity, MinNegativeInfinity}")]
+        [TestProperty("Description", "Verifies malformed MinWidth/MaxWidth values never resolve into a non-finite ActualWidth.")]
+        [TestProperty("data:Constraint", "{MinNaN, MinNegative, MaxNaN, MaxNegative, MaxNegativeInfinity, MaxPositiveInfinity, MinNegativeInfinity}")]
         public void VerifyNonFiniteWidthConstraintsDoNotCorruptActualWidth()
         {
             VerifyNonFiniteWidthConstraint(((string)TestContext.DataRow["Constraint"]).Trim());
@@ -111,9 +111,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void VerifyNonFiniteWidthConstraint(string constraint)
         {
-            Log.Comment($"Non-finite constraint under test: {constraint}.");
+            Log.Comment($"Width constraint under test: {constraint}.");
 
             const double AuthoredWidth = 200.0;
+            const double DefaultMinWidth = 20.0;
 
             TableView tableView = null;
             TableViewColumn column = null;
@@ -139,8 +140,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     case "MinNaN":
                         column.MinWidth = double.NaN;
                         break;
+                    case "MinNegative":
+                        column.MinWidth = -5.0;
+                        break;
                     case "MaxNaN":
                         column.MaxWidth = double.NaN;
+                        break;
+                    case "MaxNegative":
+                        column.MaxWidth = -5.0;
+                        break;
+                    case "MaxNegativeInfinity":
+                        column.MaxWidth = double.NegativeInfinity;
                         break;
                     case "MaxPositiveInfinity":
                         column.MaxWidth = double.PositiveInfinity;
@@ -170,11 +180,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(double.IsInfinity(actual), "ActualWidth is a resolved pixel value and can never be infinite.");
                 Verify.IsGreaterThanOrEqual(actual, 0.0, "A resolved width can never be negative.");
 
-                if (constraint == "MaxPositiveInfinity")
+                if (constraint == "MaxPositiveInfinity" || constraint == "MaxNaN")
                 {
-                    // MaxWidth defaults to infinity in the IDL, so setting it explicitly is a no-op.
+                    // MaxWidth defaults to an unbounded value in the IDL, so setting it to an
+                    // unbounded malformed value is a no-op.
                     Verify.AreEqual(AuthoredWidth, actual,
-                        "An infinite MaxWidth is the documented default and must leave the authored width alone.");
+                        "An unbounded MaxWidth must leave the authored width alone.");
+                }
+                else if (constraint == "MaxNegative" || constraint == "MaxNegativeInfinity")
+                {
+                    Verify.AreEqual(DefaultMinWidth, actual,
+                        "A negative MaxWidth is treated as a zero upper bound, then clamped up to MinWidth.");
+                }
+                else if (constraint == "MinNegative" || constraint == "MinNegativeInfinity" || constraint == "MinPositiveInfinity")
+                {
+                    Verify.AreEqual(AuthoredWidth, actual,
+                        "A malformed MinWidth is treated as zero and must leave a valid authored width alone.");
                 }
 
                 // A poisoned width propagates into Measure, so the rows are the real casualty.
@@ -188,6 +209,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             });
         }
+
+        // Do not add authored Width rows for invalid GridLength values such as NaN, infinity, or a
+        // negative pixel value. TableViewColumn.Width is a GridLength dependency property, so the
+        // malformed struct is handed to the framework's property/layout pipeline before TableView
+        // can normalize it; these inputs assert in CoreMessagingXP.dll instead of producing a
+        // TableView-observable ActualWidth.
 
         [TestMethod]
         [TestProperty("Description", "Verifies a zero-sized host neither crashes star distribution nor permanently poisons resolved widths.")]
