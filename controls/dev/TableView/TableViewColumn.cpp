@@ -36,6 +36,12 @@ namespace
         }
         return false;
     }
+
+    double NonNegativeFiniteOrDefault(double value)
+    {
+        return std::isfinite(value) && value >= 0.0 ? value : c_widthDefault.Value;
+    }
+
 }
 
 TableViewColumn::TableViewColumn()
@@ -496,7 +502,7 @@ void TableViewColumn::UpdateActualWidth()
     const auto width = Width();
     const double widthPixels =
         width.GridUnitType == winrt::GridUnitType::Pixel
-            ? width.Value
+            ? NonNegativeFiniteOrDefault(width.Value)
             : c_widthDefault.Value;
 
     // Reject non-finite / negative bounds the same way the resize path does (TableView.cpp), so a

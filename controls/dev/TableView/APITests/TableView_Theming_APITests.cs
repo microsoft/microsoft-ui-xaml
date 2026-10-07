@@ -315,7 +315,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // overriding afterwards tests the invalidation path, which is
         // VerifyThemeChangeAfterLoadReResolvesRowsAndHeaders' job.
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product bug: LookupElementResource resolves merged theme dictionaries before app-scope keys, so app overrides lose. Re-enable with the lookup-precedence fix.
         public void VerifyGridLineBrushOverrideChangesRenderedSeparators()
         {
             var expected = Color.FromArgb(0xFF, 0xFF, 0x00, 0x99);
@@ -365,11 +364,105 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifyGridLineBrushAppOverrideWinsInsideElementTheme()
+        {
+            var expected = Color.FromArgb(0xFF, 0x66, 0x22, 0xAA);
+            TableView tableView = null;
+            Grid host = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceGridLineBrush", new SolidColorBrush(expected));
+
+                tableView = CreateThemingTable();
+                host = new Grid { RequestedTheme = ElementTheme.Light };
+                host.Children.Add(tableView);
+
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var actual = RequireCellSeparatorColor(tableView, "with an app override inside a Light subtree");
+
+                    Verify.AreEqual(expected, actual,
+                        "A direct app-scope TabularSurfaceGridLineBrush override must win even when the table is inside an element-scoped theme.");
+                });
+            }
+            finally
+            {
+                // Application.Resources is UI-thread affine; a finally block runs on the test thread.
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGridLineBrush"));
+            }
+        }
+
+        [TestMethod]
+        public void VerifyGridLineBrushSameColorOverrideKeepsObjectAndOpacity()
+        {
+            var themeColor = Color.FromArgb(0x29, 0x00, 0x00, 0x00);
+            SolidColorBrush expectedBrush = null;
+            TableView tableView = null;
+            Grid host = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                expectedBrush = new SolidColorBrush(themeColor) { Opacity = 0.42 };
+                SetApplicationResource("TabularSurfaceGridLineBrush", expectedBrush);
+
+                tableView = CreateThemingTable();
+                host = new Grid { RequestedTheme = ElementTheme.Light };
+                host.Children.Add(tableView);
+
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
+                    if (row == null)
+                    {
+                        Verify.Fail("The TableView should realize at least one row.");
+                        return;
+                    }
+
+                    var wrapper = GetRowCell(row, 0);
+                    var brush = wrapper.BorderBrush as SolidColorBrush;
+                    if (brush == null)
+                    {
+                        Verify.Fail("A cell wrapper should carry a SolidColorBrush vertical separator when GridLinesVisibility includes Vertical.");
+                        return;
+                    }
+
+                    Verify.AreEqual(themeColor, brush.Color,
+                        "The override deliberately uses the same color as the Light theme default.");
+                    Verify.AreEqual(expectedBrush.Opacity, brush.Opacity,
+                        "A direct app-scope brush override must not be discarded just because its Color equals the theme default.");
+                    Verify.AreSame(expectedBrush, brush,
+                        "The rendered separator must keep the exact app-scope brush object so non-color brush properties are preserved.");
+                });
+            }
+            finally
+            {
+                // Application.Resources is UI-thread affine; a finally block runs on the test thread.
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGridLineBrush"));
+            }
+        }
+
         // TableView-dev-spec.md:123 names both keys as part of what "the primitive owns", which makes
         // them a published surface rather than an internal detail. If they are inert a host cannot match
         // the separator to its design language.
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product bug: ResizeGripper styling keys live in its default-style page, so app-scope overrides cannot win. Re-enable once they move to a themeresources dictionary.
         public void VerifyResizeGripperSeparatorResourcesApply()
         {
             var expectedColor = Color.FromArgb(0xFF, 0x00, 0xCC, 0x44);
@@ -815,7 +908,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         //
         // Also guards the cache - override before load, since the resolved value is cached per instance.
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product bug: LookupElementResource resolves merged theme dictionaries before app-scope keys, so app overrides lose. Re-enable with the lookup-precedence fix.
         public void VerifyDensityResourceOverrideWins()
         {
             const double overriddenMinHeight = 71.0;

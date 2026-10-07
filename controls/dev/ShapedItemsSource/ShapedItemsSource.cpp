@@ -180,7 +180,7 @@ void ShapedItemsSource::ApplyShapingChange()
 // also does NOT preserve realized containers — ReplaceAll is still a Reset, so the repeater
 // re-realizes exactly as it would after a Refresh. Preserving containers across a re-order would
 // require emitting Move notifications instead.
-bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta)
+bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta, bool allowDuringIncrementalChange)
 {
     // Only a pure re-order is safe to do against rows already in hand. Anything touching
     // membership or bucketing needs the source, the group cache and the projection swap that
@@ -203,7 +203,7 @@ bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta
     }
 
     // A rebuild is already going to run and will subsume this change.
-    if (m_isRefreshing || m_isApplyingIncrementalChange || m_pendingRefresh)
+    if (m_isRefreshing || (!allowDuringIncrementalChange && m_isApplyingIncrementalChange) || m_pendingRefresh)
     {
         return false;
     }
@@ -237,6 +237,7 @@ bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta
 
     m_rows.ReplaceAll(m_shapingState.Items);
     RebuildFlatRowIdentityTracking(m_shapingState.Items);
+    RebuildFlatItemPropertyChangedTracking(m_shapingState.Items);
     return true;
 }
 
@@ -247,6 +248,7 @@ void ShapedItemsSource::InvalidateShapingState()
     m_shapingState.Items.clear();
     m_shapingState.Buckets.clear();
     m_shapingState.IsGrouped = false;
+    ClearFlatItemPropertyChangedTracking();
 }
 
 void ShapedItemsSource::SubscribeToSourceCollectionChanges()
@@ -355,7 +357,7 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
     {
         m_isApplyingIncrementalChange = true;
         auto guard = wil::scope_exit([this]() noexcept { m_isApplyingIncrementalChange = false; });
-        ApplyIncrementalChange(args);
+        (void)ApplyIncrementalChange(args);
     }
 
     // A notification re-entered while we were applying: now that the projection/identity
@@ -396,15 +398,8 @@ void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collec
     }
 }
 
-void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+bool ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
-
-    // Every path below either mutates m_rows without going through Refresh or falls back to
-    // Refresh. The first leaves the retained layer-1 membership describing a projection that no
-    // longer exists, so drop it up front rather than at each of the mutation sites; Refresh
-    // repopulates it, and the in-place shaping path refuses to run without it.
-    InvalidateShapingState();
-
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
 
     // A rebuild in flight, a grouped projection, or a not-yet-materialized projection -> full
@@ -412,7 +407,7 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
     if (m_isRefreshing || m_groupSelector || !m_rows || m_kind == ProjectionKind::None)
     {
         Refresh();
-        return;
+        return false;
     }
 
     // SORTED flat projection (the Task Manager scenario): a single-item Add/Remove/Replace is
@@ -426,17 +421,31 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
     // sources.
     if (HasActiveSort())
     {
+        const bool canTrySortedIncremental =
+            (args.Action() == NotifyCollectionChangedAction::Add &&
+                args.NewItems() && args.NewItems().Size() == 1) ||
+            (args.Action() == NotifyCollectionChangedAction::Remove &&
+                args.OldItems() && args.OldItems().Size() == 1) ||
+            (args.Action() == NotifyCollectionChangedAction::Replace &&
+                args.OldItems() && args.OldItems().Size() == 1 &&
+                args.NewItems() && args.NewItems().Size() == 1) ||
+            (args.Action() == NotifyCollectionChangedAction::Move &&
+                args.NewItems() && args.NewItems().Size() == 1);
+
         // Only take the in-place sorted fast-path when a shaped flat projection is active
         // (a Flat projection). After a safe-degrade (an Unshaped projection leaves an UNSORTED
         // mirror in m_rows while a sort is still configured), a binary-search insert would splice
         // into an unsorted list at a bogus index, so fall through to a full Refresh() that
         // re-shapes (or re-degrades) coherently.
-        if (m_kind == ProjectionKind::Flat && TryApplyIncrementalSortedChange(args))
+        if (canTrySortedIncremental &&
+            m_kind == ProjectionKind::Flat &&
+            TryReshapeStaleSortedFlatProjection() &&
+            TryApplyIncrementalSortedChange(args))
         {
-            return;
+            return true;
         }
         Refresh();
-        return;
+        return false;
     }
 
     // Filter-only (no sort): the projection is source-order-among-kept, so an incremental insert
@@ -444,8 +453,15 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
     if (m_pipeline.HasFilter())
     {
         Refresh();
-        return;
+        return false;
     }
+
+    // Every remaining path either mutates m_rows without going through Refresh or falls back to
+    // Refresh. The first leaves the retained layer-1 membership describing a projection that no
+    // longer exists, so drop it before the mutation sites; Refresh repopulates it, and the
+    // in-place shaping path refuses to run without it. The sorted path above keeps the retained
+    // state in lockstep instead, because it needs that state to repair stale sort keys.
+    InvalidateShapingState();
 
     // UNSHAPED flat projection: mirrors the source 1:1, so a single-item change maps directly
     // to the same index in the projection observable. When stable row metadata is active, keep
@@ -477,7 +493,7 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
                     }
                 }
                 m_rows.InsertAt(index, item);
-                return;
+                return true;
             }
         }
         break;
@@ -503,7 +519,7 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
                     ShiftTrackedFlatRowIndicesForRemove(index);
                 }
                 m_rows.RemoveAt(index);
-                return;
+                return true;
             }
         }
         break;
@@ -549,7 +565,7 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
                     }
                 }
                 m_rows.SetAt(index, newItem);
-                return;
+                return true;
             }
         }
         break;
@@ -559,6 +575,7 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
 
     // Move / Reset / multi-item / out-of-range: atomic full rebuild.
     Refresh();
+    return false;
 }
 
 void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
@@ -694,6 +711,262 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
     Refresh();
 }
 
+bool ShapedItemsSource::TryReshapeStaleSortedFlatProjection()
+{
+    if (!HasActiveSortAxes() ||
+        m_kind != ProjectionKind::Flat ||
+        m_groupSelector ||
+        m_projectedAsGrouped ||
+        !m_rows)
+    {
+        return true;
+    }
+
+    // Keep sorted bulk appends on the original logarithmic placement path. Rows that implement
+    // INotifyPropertyChanged dirty this bit when any property changes; rows that cannot be
+    // observed keep the conservative validation scan because arbitrary sort selectors can read
+    // mutable state without telling us.
+    if (!m_sortedFlatProjectionMayBeStale && !m_flatItemsMayChangeSortWithoutNotification)
+    {
+        return true;
+    }
+
+    if (IsFlatProjectionSorted())
+    {
+        m_sortedFlatProjectionMayBeStale = false;
+        return true;
+    }
+
+    ShapingHelpers::ShapingDelta delta;
+    delta.SortChanged = true;
+    delta.RequiredWork = ShapingHelpers::ShapingWork::ReSortWithinBuckets;
+    if (!TryApplyShapingDeltaInPlace(delta, true /* allowDuringIncrementalChange */))
+    {
+        return false;
+    }
+
+    m_sortedFlatProjectionMayBeStale = false;
+    return true;
+}
+
+bool ShapedItemsSource::IsFlatProjectionSorted() const
+{
+    if (!m_rows || m_rows.Size() < 2)
+    {
+        return true;
+    }
+
+    for (uint32_t i = 1; i < m_rows.Size(); ++i)
+    {
+        if (m_pipeline.CompareItemToRow(m_rows.GetAt(i - 1), m_rows.GetAt(i)) > 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ShapedItemsSource::TryGetFilteredSourceIndexFromSourceIndex(int32_t sourceIndex, uint32_t& filteredIndex) const
+{
+    if (sourceIndex < 0)
+    {
+        return false;
+    }
+
+    uint32_t sourceCount = 0;
+    if (!TryGetSourceItemCount(sourceCount) || static_cast<uint32_t>(sourceIndex) >= sourceCount)
+    {
+        return false;
+    }
+
+    if (!m_pipeline.HasFilter())
+    {
+        filteredIndex = static_cast<uint32_t>(sourceIndex);
+        return static_cast<size_t>(filteredIndex) <= m_shapingState.FilteredSource.size();
+    }
+
+    filteredIndex = 0;
+    for (uint32_t i = 0; i < static_cast<uint32_t>(sourceIndex); ++i)
+    {
+        winrt::IInspectable item{ nullptr };
+        if (!m_sourceAccessor.TryGetAt(i, item))
+        {
+            return false;
+        }
+        if (m_pipeline.PassesFilter(item))
+        {
+            ++filteredIndex;
+        }
+    }
+    return static_cast<size_t>(filteredIndex) <= m_shapingState.FilteredSource.size();
+}
+
+bool ShapedItemsSource::TryGetFilteredSourceIndex(winrt::IInspectable const& item, uint32_t& filteredIndex) const
+{
+    winrt::hstring identity;
+    wchar_t const* reason = nullptr;
+    if (!TryGetRequiredRowIdentity(item, identity, reason))
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < m_shapingState.FilteredSource.size(); ++i)
+    {
+        winrt::hstring rowIdentity;
+        wchar_t const* rowReason = nullptr;
+        if (TryGetRequiredRowIdentity(m_shapingState.FilteredSource[i], rowIdentity, rowReason) &&
+            rowIdentity == identity)
+        {
+            filteredIndex = static_cast<uint32_t>(i);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ShapedItemsSource::TryInsertIntoRetainedFilteredSource(winrt::IInspectable const& item, int32_t sourceIndex)
+{
+    if (!m_shapingState.HasProjection || m_shapingState.IsGrouped)
+    {
+        return false;
+    }
+
+    uint32_t filteredIndex = 0;
+    if (!TryGetFilteredSourceIndexFromSourceIndex(sourceIndex, filteredIndex))
+    {
+        return false;
+    }
+
+    m_shapingState.FilteredSource.insert(m_shapingState.FilteredSource.begin() + filteredIndex, item);
+    return true;
+}
+
+bool ShapedItemsSource::TryRemoveFromRetainedFilteredSource(winrt::IInspectable const& item)
+{
+    if (!m_shapingState.HasProjection || m_shapingState.IsGrouped)
+    {
+        return false;
+    }
+
+    uint32_t filteredIndex = 0;
+    if (!TryGetFilteredSourceIndex(item, filteredIndex))
+    {
+        return false;
+    }
+
+    m_shapingState.FilteredSource.erase(m_shapingState.FilteredSource.begin() + filteredIndex);
+    return true;
+}
+
+bool ShapedItemsSource::TryMoveWithinRetainedFilteredSource(winrt::IInspectable const& item, int32_t sourceIndex)
+{
+    if (!m_shapingState.HasProjection || m_shapingState.IsGrouped)
+    {
+        return false;
+    }
+
+    uint32_t oldFilteredIndex = 0;
+    if (!TryGetFilteredSourceIndex(item, oldFilteredIndex))
+    {
+        return false;
+    }
+
+    m_shapingState.FilteredSource.erase(m_shapingState.FilteredSource.begin() + oldFilteredIndex);
+
+    uint32_t newFilteredIndex = 0;
+    if (!TryGetFilteredSourceIndexFromSourceIndex(sourceIndex, newFilteredIndex))
+    {
+        return false;
+    }
+
+    m_shapingState.FilteredSource.insert(m_shapingState.FilteredSource.begin() + newFilteredIndex, item);
+    return true;
+}
+
+winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged::PropertyChanged_revoker ShapedItemsSource::TrackFlatItemPropertyChanged(winrt::IInspectable const& item)
+{
+    if (!item)
+    {
+        m_flatItemsMayChangeSortWithoutNotification = true;
+        return {};
+    }
+
+    if (auto propertyChangedItem = item.try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>())
+    {
+        auto weakThis = weak_from_this();
+        return propertyChangedItem.PropertyChanged(winrt::auto_revoke,
+            [weakThis](auto&&, auto&&)
+            {
+                if (auto strongThis = weakThis.lock())
+                {
+                    if (strongThis->HasActiveSortAxes() &&
+                        strongThis->m_kind == ProjectionKind::Flat &&
+                        !strongThis->m_groupSelector &&
+                        !strongThis->m_projectedAsGrouped)
+                    {
+                        strongThis->m_sortedFlatProjectionMayBeStale = true;
+                    }
+                }
+            });
+    }
+
+    m_flatItemsMayChangeSortWithoutNotification = true;
+    return {};
+}
+
+void ShapedItemsSource::ClearFlatItemPropertyChangedTracking()
+{
+    m_flatItemPropertyChangedRevokers.clear();
+    m_sortedFlatProjectionMayBeStale = false;
+    m_flatItemsMayChangeSortWithoutNotification = false;
+}
+
+void ShapedItemsSource::RebuildFlatItemPropertyChangedTracking(std::vector<winrt::IInspectable> const& rows)
+{
+    ClearFlatItemPropertyChangedTracking();
+
+    if (!HasActiveSortAxes())
+    {
+        return;
+    }
+
+    m_flatItemPropertyChangedRevokers.reserve(rows.size());
+    for (auto const& item : rows)
+    {
+        m_flatItemPropertyChangedRevokers.push_back(TrackFlatItemPropertyChanged(item));
+    }
+}
+
+void ShapedItemsSource::InsertFlatItemPropertyChangedTracking(uint32_t index, winrt::IInspectable const& item)
+{
+    if (!HasActiveSortAxes())
+    {
+        return;
+    }
+
+    auto revoker = TrackFlatItemPropertyChanged(item);
+    if (index <= m_flatItemPropertyChangedRevokers.size())
+    {
+        m_flatItemPropertyChangedRevokers.insert(m_flatItemPropertyChangedRevokers.begin() + index, std::move(revoker));
+    }
+    else
+    {
+        m_flatItemsMayChangeSortWithoutNotification = true;
+    }
+}
+
+void ShapedItemsSource::RemoveFlatItemPropertyChangedTracking(uint32_t index)
+{
+    if (index < m_flatItemPropertyChangedRevokers.size())
+    {
+        m_flatItemPropertyChangedRevokers.erase(m_flatItemPropertyChangedRevokers.begin() + index);
+    }
+    else
+    {
+        m_flatItemsMayChangeSortWithoutNotification = true;
+    }
+}
+
 bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
 
@@ -735,6 +1008,11 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
             return false; // source order decides this position -> full rebuild
         }
 
+        if (!TryInsertIntoRetainedFilteredSource(item, args.NewStartingIndex()))
+        {
+            return false;
+        }
+
         if (identityRequired)
         {
             winrt::hstring identity;
@@ -753,9 +1031,13 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
                 return false; // stale identity/index map -> full rebuild will reseed it
             }
             m_rows.InsertAt(placement.Index, item);
+            m_shapingState.Items.insert(m_shapingState.Items.begin() + placement.Index, item);
+            InsertFlatItemPropertyChangedTracking(placement.Index, item);
             return true;
         }
         m_rows.InsertAt(placement.Index, item);
+        m_shapingState.Items.insert(m_shapingState.Items.begin() + placement.Index, item);
+        InsertFlatItemPropertyChangedTracking(placement.Index, item);
         return true;
     };
 
@@ -782,10 +1064,16 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
             {
                 return false;
             }
+            if (!TryRemoveFromRetainedFilteredSource(item))
+            {
+                return false;
+            }
             m_flatRowIdentities.erase(identity);
             m_flatRowIdentityToIndex.erase(identity);
             ShiftTrackedFlatRowIndicesForRemove(index);
             m_rows.RemoveAt(index);
+            m_shapingState.Items.erase(m_shapingState.Items.begin() + index);
+            RemoveFlatItemPropertyChangedTracking(index);
             return true;
         }
 
@@ -844,6 +1132,10 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
         uint32_t index = 0;
         if (!TryGetRequiredRowIdentity(moved, identity, reason) ||
             !TryGetTrackedFlatRowIndex(identity, index))
+        {
+            return false;
+        }
+        if (!TryMoveWithinRetainedFilteredSource(moved, args.NewStartingIndex()))
         {
             return false;
         }
@@ -1124,6 +1416,7 @@ void ShapedItemsSource::RebuildFlat(std::vector<winrt::IInspectable>& rows)
     // Seed the identity tracking that the incremental fast-path maintains, so it can detect
     // duplicate/empty identities and locate sorted removes without O(n) WinRT IndexOf scans.
     RebuildFlatRowIdentityTracking(rows);
+    RebuildFlatItemPropertyChangedTracking(rows);
 
     // Releasing any prior grouped projection: switching grouped->flat must not retain the stale
     // group observable/cache. They are rebuilt from scratch by RebuildGrouped on the next GroupBy,
@@ -1327,4 +1620,3 @@ winrt::hstring ShapedItemsSource::Diagnostic(std::wstring_view text) const
 {
     return m_diagnosticName + L": " + winrt::hstring{ text };
 }
-

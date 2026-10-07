@@ -834,6 +834,32 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     UpdateGroupHeaderWidth(header);
 }
 
+void TableView::OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (args.OldValue() == args.NewValue())
+    {
+        return;
+    }
+
+    if (auto repeater = m_rowsRepeater.get())
+    {
+        const auto childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
+        for (int32_t i = 0; i < childCount; ++i)
+        {
+            if (auto header = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::TableViewGroupHeader>())
+            {
+                const auto index = repeater.GetElementIndex(header);
+                if (index < 0)
+                {
+                    continue;
+                }
+
+                PrepareGroupHeaderElement(header, index);
+            }
+        }
+    }
+}
+
 void TableView::ClearGroupHeaderElement(winrt::TableViewGroupHeader const& header)
 {
     if (!header)

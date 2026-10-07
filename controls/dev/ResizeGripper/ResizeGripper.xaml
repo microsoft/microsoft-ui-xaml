@@ -4,32 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:privatecontrols="using:Microsoft.UI.Private.Controls">
 
-    <!-- Kept in the default-style page, not a separate *_themeresources.xaml: theme-XBF emission is
-         off for the Tabular binary, so only this page reaches a consumer through generic.xaml. A
-         separate page would force every host app to merge it by hand or the template's ThemeResource
-         lookups fail and inflating a header throws. -->
-    <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="ResizeGripperSeparatorBrush" ResourceKey="AccentFillColorDefaultBrush" />
-        </ResourceDictionary>
-        <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="ResizeGripperSeparatorBrush" ResourceKey="AccentFillColorDefaultBrush" />
-        </ResourceDictionary>
-        <!-- Not the accent brush: under High Contrast it resolves to the window background, which
-             would make the separator invisible. Highlight is the HC colour for an active affordance. -->
-        <ResourceDictionary x:Key="HighContrast">
-            <StaticResource x:Key="ResizeGripperSeparatorBrush" ResourceKey="SystemColorHighlightColorBrush" />
-        </ResourceDictionary>
-    </ResourceDictionary.ThemeDictionaries>
-
-    <Thickness x:Key="ResizeGripperSeparatorThickness">0,0,2,0</Thickness>
-    <!-- Horizontal grippers sit on their host's logical trailing edge, which is the LEFT edge under
-         RTL. The gripper's subtree is not auto-mirrored (its host arranges it at explicit physical
-         coordinates and it mirrors its own drag axis by hand), so a right-sided thickness would draw
-         the separator a full gripper width inboard of the column edge instead of on it. -->
-    <Thickness x:Key="ResizeGripperSeparatorThicknessMirrored">2,0,0,0</Thickness>
-    <Thickness x:Key="ResizeGripperSeparatorThicknessVertical">0,0,0,2</Thickness>
-
     <Style TargetType="privatecontrols:ResizeGripper">
         <!-- A pointer affordance by default: a host that wants it focusable sets IsTabStop="True"
              and the gripper handles its own arrow keys. TableView keeps focus on the header cell,

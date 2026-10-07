@@ -374,7 +374,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product regression: the template root became a wrapper Grid, so VisualStateGroups are no longer on the root and VisualStateManager.GoToState never changes state. Re-enable once the groups are back on the template root.
         [TestProperty("Description", "Verifies a recycled row does not carry the selection visual of the row it previously hosted.")]
         public void VerifyRecycledRowDoesNotInheritPreviousSelectionVisual()
         {
@@ -636,7 +635,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class TableViewRowVisualStateTests : TableViewApiTestBase
     {
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product regression: the template root became a wrapper Grid, so VisualStateGroups are no longer on the root and VisualStateManager.GoToState never changes state. Re-enable once the groups are back on the template root.
         [TestProperty("Description", "Verifies selection enters the Selected state and that disabling a selected row gives SelectedDisabled.")]
         public void VerifyRowSelectedVisualStateAndDisabledPrecedence()
         {

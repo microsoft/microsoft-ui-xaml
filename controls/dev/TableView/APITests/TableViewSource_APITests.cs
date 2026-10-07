@@ -1406,7 +1406,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product bug: the sorted flat path applies a later collection change as an incremental insert, so a stale row is never re-shaped. Re-enable once that path re-shapes.
         [TestProperty("Description", "Verifies an INotifyPropertyChanged-only sort key change defers the move until the next collection change.")]
         public void VerifySortKeyPropertyChangeDoesNotMoveTheRowUntilACollectionChange()
         {

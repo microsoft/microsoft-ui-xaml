@@ -102,12 +102,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyNonFiniteWidthConstraint(((string)TestContext.DataRow["Constraint"]).Trim());
         }
 
-        // Split out of the data-driven test above so it can be ignored on its own: an infinite MinWidth
-        // reaches layout as the column floor with no finite guard and crashes the test host, which also
-        // skips assembly cleanup for every test after it.
         [TestMethod]
         [TestProperty("Description", "Verifies an infinite MinWidth never resolves into a non-finite ActualWidth.")]
-        [TestProperty("Ignore", "True")] // Product bug: MinWidth = +Infinity crashes layout. Re-enable once the column floor is clamped to a finite value.
         public void VerifyInfiniteMinWidthDoesNotCorruptActualWidth()
         {
             VerifyNonFiniteWidthConstraint("MinPositiveInfinity");

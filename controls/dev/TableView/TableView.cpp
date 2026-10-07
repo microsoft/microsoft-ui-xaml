@@ -105,6 +105,55 @@ namespace
         return nullptr;
     }
 
+    bool ContainsLocalKey(winrt::ResourceDictionary const& dict, winrt::IInspectable const& boxedKey)
+    {
+        if (!dict)
+        {
+            return false;
+        }
+
+        if (auto const localEntries = dict.try_as<winrt::IVector<winrt::IKeyValuePair<winrt::IInspectable, winrt::IInspectable>>>())
+        {
+            const auto size = localEntries.Size();
+            for (uint32_t i = 0; i < size; ++i)
+            {
+                if (winrt::unbox_value_or<winrt::hstring>(localEntries.GetAt(i).Key(), L"") ==
+                    winrt::unbox_value_or<winrt::hstring>(boxedKey, L""))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    winrt::IInspectable LookupDirectKeyOnly(winrt::ResourceDictionary const& dict, winrt::IInspectable const& boxedKey)
+    {
+        if (!dict)
+        {
+            return nullptr;
+        }
+
+        if (ContainsLocalKey(dict, boxedKey))
+        {
+            return dict.TryLookup(boxedKey);
+        }
+
+        if (auto merged = dict.MergedDictionaries())
+        {
+            for (uint32_t i = merged.Size(); i-- > 0;)
+            {
+                if (auto found = LookupDirectKeyOnly(merged.GetAt(i), boxedKey))
+                {
+                    return found;
+                }
+            }
+        }
+
+        return nullptr;
+    }
+
     winrt::IInspectable LookupElementResource(winrt::FrameworkElement const& start, std::wstring_view key, bool highContrast = false)
     {
         const auto boxedKey = winrt::box_value(winrt::hstring{ key });
@@ -119,10 +168,47 @@ namespace
         {
             if (auto resources = walker.Resources())
             {
+                if (auto found = LookupDirectKeyOnly(resources, boxedKey))
+                {
+                    return found;
+                }
+            }
+            walker = walker.Parent().try_as<winrt::FrameworkElement>();
+        }
+
+        winrt::ResourceDictionary appResources{ nullptr };
+        if (auto app = winrt::Application::Current())
+        {
+            appResources = app.Resources();
+            if (auto found = LookupDirectKeyOnly(appResources, boxedKey))
+            {
+                return found;
+            }
+        }
+
+        walker = start;
+        while (walker)
+        {
+            if (auto resources = walker.Resources())
+            {
                 if (auto found = LookupInThemeDictionaries(resources, themeKey, boxedKey))
                 {
                     return found;
                 }
+            }
+            walker = walker.Parent().try_as<winrt::FrameworkElement>();
+        }
+
+        if (auto found = LookupInThemeDictionaries(appResources, themeKey, boxedKey))
+        {
+            return found;
+        }
+
+        walker = start;
+        while (walker)
+        {
+            if (auto resources = walker.Resources())
+            {
                 if (auto found = resources.TryLookup(boxedKey))
                 {
                     return found;
@@ -131,16 +217,9 @@ namespace
             walker = walker.Parent().try_as<winrt::FrameworkElement>();
         }
 
-        if (auto app = winrt::Application::Current())
+        if (appResources)
         {
-            if (auto resources = app.Resources())
-            {
-                if (auto found = LookupInThemeDictionaries(resources, themeKey, boxedKey))
-                {
-                    return found;
-                }
-                return resources.TryLookup(boxedKey);
-            }
+            return appResources.TryLookup(boxedKey);
         }
         return nullptr;
     }

@@ -243,21 +243,19 @@ inline int32_t CountVisibleColumns(winrt::IVector<winrt::TableViewColumn> const&
     return count;
 }
 
-// Returns the text a cell displays: the column-generated TextBlock's text, else the content's own
-// computed UIA name. Shared so a cell's name and the row name composed from its cells agree.
-//
-// allowPeerCreation gates the fallback: CreatePeerForElement does not just read a name, it creates
-// and permanently attaches a peer. Worth it for a cell naming itself; not for the row name, which
-// walks every cell on every name query, so it passes false and skips template content.
-inline winrt::hstring GetCellContentName(
-    winrt::FrameworkElement const& content, bool allowPeerCreation, uint32_t depth, uint32_t& remaining)
-{
-    if (!content || content.Visibility() != winrt::Visibility::Visible || depth == 0 || remaining == 0)
-    {
-        return {};
-    }
-    --remaining;
+constexpr int32_t c_maxCellContentChildrenPerLevel = 32;
 
+inline bool ShouldWalkCellContentSubtree(winrt::FrameworkElement const& content)
+{
+    return content &&
+        (content.try_as<winrt::ContentPresenter>() ||
+            content.try_as<winrt::Panel>() ||
+            content.try_as<winrt::Border>());
+}
+
+inline winrt::hstring GetExplicitCellContentName(
+    winrt::FrameworkElement const& content, bool allowPeerCreation)
+{
     if (auto const name = winrt::AutomationProperties::GetName(content); !name.empty())
     {
         return name;
@@ -274,6 +272,28 @@ inline winrt::hstring GetCellContentName(
                 return name;
             }
         }
+    }
+    return {};
+}
+
+// Returns the text a cell displays: the column-generated TextBlock's text, else the content's own
+// computed UIA name. Shared so a cell's name and the row name composed from its cells agree.
+//
+// allowPeerCreation gates the fallback: CreatePeerForElement does not just read a name, it creates
+// and permanently attaches a peer. Worth it for a cell naming itself; not for the row name, which
+// walks every cell on every name query, so it passes false and only reads already-realized content.
+inline winrt::hstring GetCellContentName(
+    winrt::FrameworkElement const& content, bool allowPeerCreation, uint32_t depth, uint32_t& remaining)
+{
+    if (!content || content.Visibility() != winrt::Visibility::Visible || depth == 0 || remaining == 0)
+    {
+        return {};
+    }
+    --remaining;
+
+    if (auto const name = GetExplicitCellContentName(content, allowPeerCreation); !name.empty())
+    {
+        return name;
     }
     if (auto const textBlock = content.try_as<winrt::TextBlock>())
     {
@@ -298,14 +318,15 @@ inline winrt::hstring GetCellContentName(
 
     // A named control describes its own content; do not repeat its inner interactive labels.
     // Only traverse layout wrappers, and bound the work of each cell-name query.
-    if (presenter || content.try_as<winrt::Panel>() || content.try_as<winrt::Border>())
+    if (ShouldWalkCellContentSubtree(content))
     {
         const auto count = winrt::VisualTreeHelper::GetChildrenCount(content);
-        for (int32_t i = 0; i < count && remaining > 0; ++i)
+        for (int32_t i = 0; i < count && i < c_maxCellContentChildrenPerLevel && remaining > 0; ++i)
         {
             if (auto const child = winrt::VisualTreeHelper::GetChild(content, i).try_as<winrt::FrameworkElement>())
             {
-                if (auto const name = GetCellContentName(child, allowPeerCreation, depth - 1, remaining); !name.empty())
+                if (auto const name = GetCellContentName(child, allowPeerCreation, depth - 1, remaining);
+                    !name.empty())
                 {
                     return name;
                 }
@@ -367,9 +388,8 @@ inline bool ContainsFocusableElement(
         return true;
     }
 
-    constexpr int32_t maxChildrenPerLevel = 32;
     auto const childCount = winrt::VisualTreeHelper::GetChildrenCount(element);
-    for (int32_t i = 0; i < childCount && i < maxChildrenPerLevel && *budget > 0; ++i)
+    for (int32_t i = 0; i < childCount && i < c_maxCellContentChildrenPerLevel && *budget > 0; ++i)
     {
         if (auto const child = winrt::VisualTreeHelper::GetChild(element, i).try_as<winrt::UIElement>())
         {
@@ -429,9 +449,8 @@ inline void SetCellContentAccessibilityViewRaw(winrt::FrameworkElement const& ro
 
     SetAccessibilityViewIfNeeded(root, winrt::AccessibilityView::Raw);
 
-    constexpr int32_t maxChildrenPerLevel = 32;
     auto const childCount = winrt::VisualTreeHelper::GetChildrenCount(root);
-    for (int32_t i = 0; i < childCount && i < maxChildrenPerLevel; ++i)
+    for (int32_t i = 0; i < childCount && i < c_maxCellContentChildrenPerLevel; ++i)
     {
         if (auto const child = winrt::VisualTreeHelper::GetChild(root, i).try_as<winrt::FrameworkElement>())
         {
@@ -453,9 +472,8 @@ inline void SetInteractiveCellContentAccessibilityViewContent(winrt::FrameworkEl
         return;
     }
 
-    constexpr int32_t maxChildrenPerLevel = 32;
     auto const childCount = winrt::VisualTreeHelper::GetChildrenCount(root);
-    for (int32_t i = 0; i < childCount && i < maxChildrenPerLevel; ++i)
+    for (int32_t i = 0; i < childCount && i < c_maxCellContentChildrenPerLevel; ++i)
     {
         if (auto const child = winrt::VisualTreeHelper::GetChild(root, i).try_as<winrt::FrameworkElement>())
         {
