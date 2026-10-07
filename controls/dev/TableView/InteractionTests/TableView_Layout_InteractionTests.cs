@@ -16,6 +16,9 @@ using MUXTestInfra.Shared.Infra;
 
 using Point = System.Drawing.Point;
 
+using static Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.TableViewInteractionTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
+
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // TableView layout interaction tests — interaction plan sections 6 (pointer resize), 7 (scrolling and
@@ -59,6 +62,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+            RestartAppIfLongRunning();
         }
 
         #region 6. Pointer resize
@@ -73,11 +77,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // API 4.x proves ResizeGripper.BeginDrag/TryDrag/EndDrag drive that write; this test proves a
             // real pointer drag on the gripper reaches it. A failure means gripper hit-testing, pointer
             // capture, or the manipulation->TryDrag handler is broken even though the width engine is fine.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 // Basic pivot is selected by default; its TableView authors CanUserResizeColumns="True"
                 // and every column defaults CanResize="true" (TableView.idl:140, :469).
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {
                     Verify.Fail("BasicTableView was not found on the test page.");
@@ -124,9 +128,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // cancelled drag must return the header to ~160 regardless of how far the pointer travelled.
             // A failure means Escape does not reach the gripper's cancel path, or the host applied the drag
             // delta permanently instead of reverting to the authored value.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {
                     Verify.Fail("BasicTableView was not found on the test page.");
@@ -175,9 +179,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // a normal resize works again after the reload - identical to PointerResizeDragChangesColumnWidth.
             // StatusTextBlock ("Unloaded"/"Reloaded") is page state used only as a timing story; it is never
             // asserted - the assertion is the width change of the reloaded control.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {
                     Verify.Fail("BasicTableView was not found on the test page.");
@@ -191,7 +195,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     return;
                 }
 
-                UIObject unloadButton = FindElement.ById("DelayedUnloadButton");
+                UIObject unloadButton = FindElement.ById(DelayedUnloadButton);
                 if (unloadButton == null)
                 {
                     Verify.Fail("DelayedUnloadButton was not found on the test page.");
@@ -224,7 +228,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 // The old UIObject is stale after the remove/add; re-query the reloaded control.
-                UIObject reloaded = FindElement.ById("BasicTableView");
+                UIObject reloaded = FindElement.ById(BasicTable);
                 if (reloaded == null)
                 {
                     Verify.Fail("BasicTableView did not come back after the delayed reload.");
@@ -244,7 +248,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 DragColumnBoundary(reloadedHeader, 80, cancelWithEscape: false);
                 Wait.ForIdle();
 
-                double widthAfter = FindColumnHeader(FindElement.ById("BasicTableView"), "Name").BoundingRectangle.Width;
+                double widthAfter = FindColumnHeader(FindElement.ById(BasicTable), "Name").BoundingRectangle.Width;
 
                 Log.Comment("After mid-drag unload/reload: Name width before={0}, after normal resize={1}.", widthBefore, widthAfter);
 
@@ -273,15 +277,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // cells". Reading an individual cell's x requires descending into a row peer, which crashes the
             // app, so the cell half is unreachable out-of-proc. This asserts the header tracks the body scroll,
             // which is the observable half.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                if (!SelectPivotItem("Scrolling"))
+                if (!SelectPivotItem(ScrollingPivotItem))
                 {
                     Verify.Fail("Could not select the 'Scrolling' pivot item.");
                     return;
                 }
 
-                UIObject tableView = FindElement.ById("ScrollingTableView");
+                UIObject tableView = FindElement.ById(ScrollingTable);
                 if (tableView == null)
                 {
                     Verify.Fail("ScrollingTableView was not found on the test page.");
@@ -350,15 +354,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Derives from TableView-dev-spec.md "Sticky headers" / header/body layout: the header band is a
             // separate scroller from the body, so vertical body scroll must not move the header down or off.
             // A failure means the header participates in vertical scrolling and slides away from the top.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                if (!SelectPivotItem("Scrolling"))
+                if (!SelectPivotItem(ScrollingPivotItem))
                 {
                     Verify.Fail("Could not select the 'Scrolling' pivot item.");
                     return;
                 }
 
-                UIObject tableView = FindElement.ById("ScrollingTableView");
+                UIObject tableView = FindElement.ById(ScrollingTable);
                 if (tableView == null)
                 {
                     Verify.Fail("ScrollingTableView was not found on the test page.");
@@ -415,15 +419,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // FrozenEdge="Leading" on the Scrolling table (TableView.idl:150). API 4.x sets the offset directly
             // via ChangeView; this test drives real wheel and drag so the frozen layout runs off the input
             // path. A failure means frozen pinning is applied only from the programmatic scroll path.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                if (!SelectPivotItem("Scrolling"))
+                if (!SelectPivotItem(ScrollingPivotItem))
                 {
                     Verify.Fail("Could not select the 'Scrolling' pivot item.");
                     return;
                 }
 
-                UIObject tableView = FindElement.ById("ScrollingTableView");
+                UIObject tableView = FindElement.ById(ScrollingTable);
                 if (tableView == null)
                 {
                     Verify.Fail("ScrollingTableView was not found on the test page.");
@@ -500,15 +504,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // (-x) - the mirror of the LTR rightward widen proven by PointerResizeDragChangesColumnWidth. The
             // sign is the whole point: a failure means the primitive did not mirror the horizontal axis and a
             // leftward drag shrinks (or does nothing to) the column under RTL.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                if (!SelectPivotItem("Rtl"))
+                if (!SelectPivotItem(RtlPivotItem))
                 {
                     Verify.Fail("Could not select the 'Rtl' pivot item.");
                     return;
                 }
 
-                UIObject tableView = FindElement.ById("RtlTableView");
+                UIObject tableView = FindElement.ById(RtlTable);
                 if (tableView == null)
                 {
                     Verify.Fail("RtlTableView was not found on the test page.");
@@ -604,15 +608,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // reading order, so under RTL the forward chord is Alt+LEFT. The Alt+Arrow chord is the #11820 model
             // (spec debt: dev-spec:135 still says bare Left/Right). Focus is re-checked so a chord that navigates
             // instead of resizing cannot pass on a clipped header rectangle.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                if (!SelectPivotItem("Rtl"))
+                if (!SelectPivotItem(RtlPivotItem))
                 {
                     Verify.Fail("Could not select the 'Rtl' pivot item.");
                     return;
                 }
 
-                UIObject tableView = FindElement.ById("RtlTableView");
+                UIObject tableView = FindElement.ById(RtlTable);
                 if (tableView == null)
                 {
                     Verify.Fail("RtlTableView was not found on the test page.");
@@ -670,74 +674,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         #endregion
 
         // ---- helpers ---------------------------------------------------------------------------------
-
-        // Returns the header peer for the named column, or null. Enumerating the header host's children and
-        // reading a header peer's .Name/.BoundingRectangle is the measured-safe descent (finding #13); this
-        // never touches a row peer's children.
-        private static UIObject FindColumnHeader(UIObject tableView, string headerText)
-        {
-            UIObject headerHost = tableView.Children[0];
-            foreach (UIObject child in headerHost.Children)
-            {
-                if (child.Name == headerText)
-                {
-                    return child;
-                }
-            }
-
-            return null;
-        }
-
-        // Presses just inside the column's reading-order trailing edge (where the ResizeGripper straddles the
-        // boundary with the next column) and drags reading-order-forward by widenBy pixels so the column
-        // WIDENS, optionally cancelling with Escape mid-gesture, then releases. LTR only - under RTL, use
-        // DragAtAbsoluteX against a boundary measured from the two adjacent headers, because which side of the
-        // boundary the gripper band occupies is exactly what the RTL test has to discover rather than assume.
-        //
-        // dev-spec:131 - "the primitive normalizes to a logical delta, so positive always grows in reading
-        // order ... only the horizontal axis mirrors under RTL." Under LTR reading order runs left->right, so
-        // the trailing edge is the header's screen-right edge and a widening drag moves right (+x).
-        //
-        // Absolute points are used for the moves because the header's own bounding rectangle changes as the
-        // column resizes, so a relative-to-center offset would drift during the drag.
-        private static void DragColumnBoundary(UIObject header, int widenBy, bool cancelWithEscape)
-        {
-            var bounds = header.BoundingRectangle;
-
-            int grabOffsetX = (bounds.Width / 2) - 1;
-            int startX = bounds.Left + bounds.Width - 1;
-            int y = bounds.Top + (bounds.Height / 2);
-
-            InputHelper.LeftMouseButtonDown(header, grabOffsetX, 0);
-
-            // Move in a couple of steps so the manipulation is recognized past the 0.5 DIP deadband.
-            InputHelper.MoveMouse(new Point(startX + (widenBy / 2), y));
-            InputHelper.MoveMouse(new Point(startX + widenBy, y));
-
-            if (cancelWithEscape)
-            {
-                KeyboardHelper.PressKey(Key.Escape);
-            }
-
-            InputHelper.LeftMouseButtonUp();
-            Wait.ForIdle();
-        }
-
-        // WHEEL MUST BE DRIVEN FROM AN ABSOLUTE POINT, never from a UIObject. InputHelper.Pan and
-        // InputHelper.RotateWheel resolve their anchor with IUIAutomationElement::GetClickablePoint, and that
-        // call access-violates the app (0xC0000005 in Microsoft.UI.Xaml.dll) on a TableView peer because UIA
-        // computes the point by walking into the rows - the same peer fault as findings #13/#14. Measured:
-        // every §7 test crashed the app inside InputHelper.Pan before this was rewritten.
-        //
-        // Scrolling here is driven by the WHEEL, not by a pan. SinglePointGesture.Current drives the MOUSE, so
-        // a press-and-drag inside the body is a drag-SELECT, not a pan - measured: it moved the offsets not at
-        // all (ScrollCity Left 805 -> 805). Touch panning is available via InputHelper.Pan, but only against a
-        // UIObject, which is exactly the crashing call. The wheel needs no peer and no touch engagement.
-        private static Point CentreOf(UIObject element)
-        {
-            var bounds = element.BoundingRectangle;
-            return new Point(bounds.Left + (bounds.Width / 2), bounds.Top + (bounds.Height / 2));
-        }
 
         // Presses at an ABSOLUTE screen x on the header band and drags dx pixels horizontally, releasing at the
         // end. anchorHeader only supplies the peer to press through and the y centre - the x comes from the
@@ -827,27 +763,5 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return true;
         }
 
-        // Reads the page's PART_BodyScroller offset readout, formatted "H=<h>;V=<v>".
-        private static string ReadScrollOffsets()
-        {
-            var readout = FindElement.ById<TextBlock>("ScrollOffsetTextBlock");
-            return readout == null ? "<no readout>" : readout.DocumentText;
-        }
-
-        // Selects a Pivot item by invoking the page's GoTo* button, found by AutomationId.        // Not by header name: a name-based UIA search makes the provider compute names for realized
-        // TableViewRow peers, which manufactures cell peers and trips finding #13 (0xC0000420).
-        // Returns false if the button could not be found.
-        private static bool SelectPivotItem(string headerText)
-        {
-            var goTo = FindElement.ById<Button>("GoTo" + headerText + "Button");
-            if (goTo == null)
-            {
-                return false;
-            }
-
-            goTo.InvokeAndWait();
-            Wait.ForIdle();
-            return true;
-        }
     }
 }

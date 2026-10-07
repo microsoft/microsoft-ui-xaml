@@ -16,6 +16,9 @@ using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using MUXTestInfra.Shared.Infra;
 
+using static Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.TableViewInteractionTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
+
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // TableView interaction tests. See docs\design-notes\TabularControls\TableView-interaction-test-plan.md.
@@ -40,6 +43,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+            RestartAppIfLongRunning();
         }
 
         #region 0. Page load
@@ -48,9 +52,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a TableView authored in compiled markup loads and renders its authored column headers and rows.")]
         public void TestPageLoadsAndRendersStaticTable()
         {
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {
                     Verify.Fail("The TableView authored in compiled markup was not found on the test page.");
@@ -93,7 +97,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // the app fail-fasts with 0xC0000420 before any result is reported. This is the same root cause as
             // VerifyTableIsNavigableByAUiaClient below, reached by a different client - which is itself the
             // finding's significance: it is not one test's unusual walk, it is any conforming UIA client.
-            using (var setup = new TestSetupHelper("TableView-Axe"))
+            using (var setup = new TestSetupHelper(AxePageName))
             {
                 AxeTestHelper.TestForAxeIssues();
             }
@@ -103,9 +107,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a UIA client outside the app can walk from the TableView down to a cell.")]
         public void VerifyTableIsNavigableByAUiaClient()
         {
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {
                     Verify.Fail("The TableView was not found on the test page.");
@@ -148,11 +152,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Failure means: assistive technology never learns the grid changed shape. It keeps reading the old
             //   column set, and a screen-reader user is told about a column that is gone or never hears about
             //   one that appeared.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
-                var addColumn = FindElement.ById<Button>("AddColumnButton");
-                var removeColumn = FindElement.ById<Button>("RemoveColumnButton");
+                UIObject tableView = FindElement.ById(BasicTable);
+                var addColumn = FindElement.ById<Button>(AddColumnButton);
+                var removeColumn = FindElement.ById<Button>(RemoveColumnButton);
                 if (tableView == null || addColumn == null || removeColumn == null)
                 {
                     Verify.Fail("BasicTableView, AddColumnButton and/or RemoveColumnButton were not found on the test page.");
@@ -221,22 +225,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // Returns the header peer for the named column, or null. Enumerating the header host's children is the
-        // measured-safe descent; this never asks a row peer for its children (finding #13).
-        private static UIObject FindColumnHeader(UIObject tableView, string headerText)
-        {
-            UIObject headerHost = tableView.Children[0];
-            foreach (UIObject child in headerHost.Children)
-            {
-                if (child.Name == headerText)
-                {
-                    return child;
-                }
-            }
-
-            return null;
-        }
-
         #endregion
 
         #region N.4 UIA client (new tests for the #11820 model)
@@ -250,9 +238,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // tree navigation disagreed". Only a client sees identity after marshalling. LocalizedControlType is
             // localized; the VM runs en-US. Failure means a screen reader gets two providers for one cell and loses
             // its place or announces the cell twice.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null) { Verify.Fail("BasicTableView was not found."); return; }
 
                 var grid = new GridImplementation<UIObject>(tableView, UIObject.Factory);
@@ -280,9 +268,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // #11820 fixed CUIATableProviderWrapper::GetColumnHeaders in dxaml, which broke column-header enumeration
             // for every XAML ITableProvider; only a cross-process client exercises that wrapper. Failure means a
             // client cannot enumerate headers, or the table pattern and the tree disagree about them.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null) { Verify.Fail("BasicTableView was not found."); return; }
 
                 var table = new TableImplementation<UIObject>(tableView, UIObject.Factory);
@@ -311,9 +299,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Interaction plan N.4 CellDrillInRaisesFocusChangedToAClient.
             // Focus events are not API-testable (§12.6). This is the screen-reader half of
             // RightDrillsIntoFirstCellAndLeftReturnsToRow. Failure means focus moves into the cell but AT is not told.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null) { Verify.Fail("BasicTableView was not found."); return; }
 
                 UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];

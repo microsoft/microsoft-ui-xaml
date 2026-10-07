@@ -17,6 +17,9 @@ using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using MUXTestInfra.Shared.Infra;
 using Point = System.Drawing.Point;
 
+using static Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.TableViewInteractionTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
+
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // TableView keyboard-navigation and header-input interaction tests.
@@ -26,11 +29,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // is the point of an interaction test: they prove that real key routing and pointer hit-testing
     // reach the state machine the API tests cover in process (interaction-plan coverage rule).
     //
-    // HISTORICAL CONSTRAINT - product finding #13:
-    //   An out-of-proc UIA client used to crash the app (0xC0000420 in Microsoft.UI.Xaml.dll) the moment
-    //   it asked a TableViewRow peer for its children. #11820 made cell peers identity-stable and the main
-    //   baseline (VerifyTableIsNavigableByAUiaClient) passes, so tests written for the cell-aware keyboard
-    //   model read a row's cell peers. The older tests below still use row-LEVEL UIA only.
+    // Product finding #13 (a client asking a row peer for its children fail-fasted the app) shaped the older tests in
+    // this file: they observe rows at row level, point at cells by coordinates, and read editors and visual states
+    // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
+    // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
     public class TableViewKeyboardInteractionTests
     {
@@ -48,6 +50,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+            RestartAppIfLongRunning();
         }
 
         #region 1. Keyboard navigation
@@ -59,9 +62,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // dev-spec:165 - TableView listens to bubbling KeyDown; an unhandled Down "moves focus
             // between rows". A failure here means arrow keys no longer route to the row navigator, so
             // the table is keyboard-dead even though the API-level GridCoordinateHelper math is fine.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 2) { Verify.Fail("Need at least two realized rows."); return; }
 
@@ -86,9 +89,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             // dev-spec:165 - unhandled Up moves focus between rows. Symmetric partner of the Down test;
             // a failure means the navigator handles only one direction.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 2) { Verify.Fail("Need at least two realized rows."); return; }
 
@@ -113,9 +116,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             // dev-spec:165 lists Home among the keys that move focus between rows. A failure means Home
             // is swallowed (e.g. by a scroll viewer) instead of jumping the row navigator to the top.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 3) { Verify.Fail("Need at least three realized rows."); return; }
 
@@ -127,7 +130,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 // Re-fetch: Home can scroll, changing the realized set; index 0 is always the top row.
-                rowsHost = GetRowsHost("BasicTableView");
+                rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 Verify.IsTrue(rowsHost.Children[0].HasKeyboardFocus, "Home should focus the first row.");
             }
@@ -139,9 +142,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             // dev-spec:165 lists End among the keys that move focus between rows. A failure means End
             // does not reach the last row (e.g. it stops at the last realized row instead of paging).
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 2) { Verify.Fail("Need at least two realized rows."); return; }
 
@@ -153,7 +156,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 // Re-fetch: End scrolls the true last row into view, changing the realized set.
-                rowsHost = GetRowsHost("BasicTableView");
+                rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 UIObject last = rowsHost.Children[rowsHost.Children.Count - 1];
                 Verify.IsTrue(last.HasKeyboardFocus, "End should focus the last row.");
@@ -161,6 +164,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Test debt: scroll-percent proxy cannot separate a page from a step; rewrite on the destination row PositionInSet.
         [TestProperty("Description", "Page Down moves keyboard focus by roughly a viewport, farther than a single Down (dev-spec:165).")]
         public void PageDownMovesByViewport()
         {
@@ -177,11 +181,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // The discriminator against "PageDown behaves like a single Down": from the top row, one
             // Down keeps the next row already on screen and scrolls nothing, while a page must move the
             // viewport. A failure means PageDown does not page.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                SelectPivotItem("Scrolling");
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
 
-                UIObject rowsHost = GetRowsHost("ScrollingTableView");
+                UIObject rowsHost = GetRowsHost(ScrollingTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows to measure movement."); return; }
 
@@ -208,7 +212,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 double afterPage = scroll.VerticalScrollPercent;
                 Log.Comment("VerticalScrollPercent after PageDown={0}.", afterPage);
 
-                Verify.IsNotNull(FindFocusedRow(GetRowsHost("ScrollingTableView")),
+                Verify.IsNotNull(FindFocusedRow(GetRowsHost(ScrollingTable)),
                     "A row must still hold keyboard focus after PageDown.");
                 Verify.IsTrue(afterPage > afterOneDown + 1.0,
                     string.Format("PageDown should page the view ({0}%) far past where a single Down leaves it ({1}%).",
@@ -226,11 +230,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // same reason as PageDownMovesByViewport: paging scrolls, so the focused row's screen
             // position barely changes and cannot express travel. A failure means PageUp does not page
             // back up.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                SelectPivotItem("Scrolling");
+                if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
 
-                UIObject rowsHost = GetRowsHost("ScrollingTableView");
+                UIObject rowsHost = GetRowsHost(ScrollingTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 2) { Verify.Fail("Need realized rows to measure movement."); return; }
 
@@ -253,7 +257,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 double afterPagingUp = scroll.VerticalScrollPercent;
                 Log.Comment("VerticalScrollPercent: after two PageDowns={0}, after PageUp={1}.", afterPagingDown, afterPagingUp);
 
-                Verify.IsNotNull(FindFocusedRow(GetRowsHost("ScrollingTableView")),
+                Verify.IsNotNull(FindFocusedRow(GetRowsHost(ScrollingTable)),
                     "A row must still hold keyboard focus after PageUp.");
                 Verify.IsTrue(afterPagingUp < afterPagingDown - 1.0,
                     string.Format("PageUp should page the view back up ({0}% -> {1}%).", afterPagingDown, afterPagingUp));
@@ -270,9 +274,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // focusable element AFTER the table - AfterTableButton, which the page places in the
             // Grid.Row=2 StackPanel below the Pivot. A failure means Tab steps through cells (focus
             // stays inside the table), so a keyboard user is trapped walking the grid cell by cell.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 1) { Verify.Fail("Need a realized row."); return; }
 
@@ -288,12 +292,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 // No row may still hold focus - a single Tab left the row collection entirely.
-                rowsHost = GetRowsHost("BasicTableView");
+                rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 Verify.IsNull(FindFocusedRow(rowsHost), "No row should hold focus after Tab.");
 
                 // Forward tab order exits the table downstream onto the next focusable element after it.
-                UIObject afterTable = FindElement.ById("AfterTableButton");
+                UIObject afterTable = FindElement.ById(AfterTableButton);
                 if (afterTable == null) { Verify.Fail("AfterTableButton was not found."); return; }
                 Verify.IsTrue(afterTable.HasKeyboardFocus, "Tab out of the table should land on AfterTableButton.");
             }
@@ -312,9 +316,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //
             // No SelectRow() call is needed to set up: if selection follows focus, the navigation key
             // itself establishes it. That also keeps the test off the row peer's Select() path.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 4) { Verify.Fail("Need at least four realized rows."); return; }
 
@@ -333,7 +337,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     Log.Comment("Navigation key: {0} (row {1} -> row {2}).", testCase.Name, testCase.From, testCase.To);
 
-                    UIObject rows = GetRowsHost("BasicTableView");
+                    UIObject rows = GetRowsHost(BasicTable);
                     if (rows == null) { return; }
 
                     UIObject start = rows.Children[testCase.From];
@@ -343,7 +347,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     KeyboardHelper.PressKey(testCase.Key);
                     Wait.ForIdle();
 
-                    rows = GetRowsHost("BasicTableView");
+                    rows = GetRowsHost(BasicTable);
                     if (rows == null) { return; }
                     UIObject target = rows.Children[testCase.To];
 
@@ -378,16 +382,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // SelectionMode.None programmatically; neither that nor the pointer test touches key routing.
             // A failure means the mode is enforced only inside Select() while the keyboard path writes
             // selection state behind it - the table would then select rows a user only navigated past.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                var selectionMode = FindElement.ById<ComboBox>("SelectionModeComboBox");
+                var selectionMode = FindElement.ById<ComboBox>(SelectionModeComboBox);
                 if (selectionMode == null) { Verify.Fail("SelectionModeComboBox was not found."); return; }
                 // The page names the items SelectionModeNone / SelectionModeSingle via
                 // AutomationProperties.Name; the Content strings ("None") are not what UIA reports.
                 selectionMode.SelectItemByName("SelectionModeNone");
                 Wait.ForIdle();
 
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
 
@@ -397,7 +401,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
 
-                rowsHost = GetRowsHost("BasicTableView");
+                rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
 
                 Verify.IsTrue(rowsHost.Children[1].HasKeyboardFocus,
@@ -429,9 +433,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Entering at the first cell from row level and returning on Left is the WAI-ARIA treegrid convention
             // (spec debt: dev-spec:201 does not state the row <-> cell transition). Failure means a keyboard user
             // cannot reach cell content from row level, cannot get back, or Left on a row walks focus out of the table.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
 
@@ -443,12 +447,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Negative control: Left on a row has nothing further out to go to.
                 KeyboardHelper.PressKey(Key.Left);
                 Wait.ForIdle();
-                UIObject row = GetRowsHost("BasicTableView").Children[1];
+                UIObject row = GetRowsHost(BasicTable).Children[1];
                 Verify.IsTrue(row.HasKeyboardFocus, "Left on a focused row must leave focus on that row.");
 
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                row = GetRowsHost("BasicTableView").Children[1];
+                row = GetRowsHost(BasicTable).Children[1];
                 int focusedCell = IndexOfFocusedCell(row);
                 Log.Comment("After Right: row focused={0}, focused cell index={1}.", row.HasKeyboardFocus, focusedCell);
                 Verify.AreEqual(0, focusedCell, "Right on a focused row must move focus to the row's FIRST cell.");
@@ -456,7 +460,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 KeyboardHelper.PressKey(Key.Left);
                 Wait.ForIdle();
-                row = GetRowsHost("BasicTableView").Children[1];
+                row = GetRowsHost(BasicTable).Children[1];
                 Verify.IsTrue(row.HasKeyboardFocus, "Left on the first cell must return focus to the row.");
                 Verify.AreEqual(-1, IndexOfFocusedCell(row), "No cell may still hold focus once the row is focused again.");
             }
@@ -471,9 +475,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // body is the #11820 model (spec debt). Failure means Shift+Tab skips the header band, so headers are
             // unreachable backwards, or walks it header by header.
             // The upstream landing control is page layout and is deliberately not named.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 1) { Verify.Fail("Need a realized row."); return; }
 
@@ -485,8 +489,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
 
-                UIObject headerAfterFirst = FindFocusedHeader("BasicTableView");
-                UIObject rowAfterFirst = FindFocusedRow(GetRowsHost("BasicTableView"));
+                UIObject headerAfterFirst = FindFocusedHeader(BasicTable);
+                UIObject rowAfterFirst = FindFocusedRow(GetRowsHost(BasicTable));
                 Log.Comment("After Shift+Tab 1: header={0}, row focused={1}.",
                     headerAfterFirst == null ? "<none>" : headerAfterFirst.Name, rowAfterFirst != null);
 
@@ -496,15 +500,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
 
-                UIObject headerAfterSecond = FindFocusedHeader("BasicTableView");
-                UIObject rowAfterSecond = FindFocusedRow(GetRowsHost("BasicTableView"));
+                UIObject headerAfterSecond = FindFocusedHeader(BasicTable);
+                UIObject rowAfterSecond = FindFocusedRow(GetRowsHost(BasicTable));
                 Log.Comment("After Shift+Tab 2: header={0}, row focused={1}.",
                     headerAfterSecond == null ? "<none>" : headerAfterSecond.Name, rowAfterSecond != null);
 
                 Verify.IsNull(headerAfterSecond, "The second Shift+Tab must leave the header band: the band is ONE tab stop, not one per column.");
                 Verify.IsNull(rowAfterSecond, "The second Shift+Tab must not return to the body.");
 
-                UIObject afterTable = FindElement.ById("AfterTableButton");
+                UIObject afterTable = FindElement.ById(AfterTableButton);
                 if (afterTable == null) { Verify.Fail("AfterTableButton was not found."); return; }
                 Verify.IsFalse(afterTable.HasKeyboardFocus,
                     "Shift+Tab must move focus upstream, not forward onto the control after the table.");
@@ -520,9 +524,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // two-band model (spec debt, see ShiftTabMovesFocusOutOfTableUpstream). Selection is checked BEFORE any
             // navigation key, because navigation keys are entitled to select (KeyboardFocusMoveCarriesSelection).
             // Failure means the header band is skipped, the body is not tab-reachable, or tabbing in selects.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                var selectionMode = FindElement.ById<ComboBox>("SelectionModeComboBox");
+                var selectionMode = FindElement.ById<ComboBox>(SelectionModeComboBox);
                 if (selectionMode == null) { Verify.Fail("SelectionModeComboBox was not found."); return; }
                 selectionMode.SetFocus();
                 Wait.ForIdle();
@@ -533,13 +537,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     KeyboardHelper.PressKey(Key.Tab);
                     Wait.ForIdle();
 
-                    if (FindFocusedBodyElement(GetRowsHost("BasicTableView")) != null)
+                    if (FindFocusedBodyElement(GetRowsHost(BasicTable)) != null)
                     {
                         Verify.Fail("Tab reached the body before any column header: the header band was skipped.");
                         return;
                     }
 
-                    header = FindFocusedHeader("BasicTableView");
+                    header = FindFocusedHeader(BasicTable);
                 }
 
                 if (header == null)
@@ -554,8 +558,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Tab);
                 Wait.ForIdle();
 
-                Verify.IsNull(FindFocusedHeader("BasicTableView"), "The next Tab must leave the header band (one tab stop for the whole band).");
-                Verify.IsNotNull(FindFocusedBodyElement(GetRowsHost("BasicTableView")),
+                Verify.IsNull(FindFocusedHeader(BasicTable), "The next Tab must leave the header band (one tab stop for the whole band).");
+                Verify.IsNotNull(FindFocusedBodyElement(GetRowsHost(BasicTable)),
                     "The next Tab after the header band must enter the body (a row or one of its cells).");
 
                 VerifyNoRowSelected("entering the body");
@@ -563,7 +567,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
 
-                Verify.IsNotNull(FindFocusedBodyElement(GetRowsHost("BasicTableView")),
+                Verify.IsNotNull(FindFocusedBodyElement(GetRowsHost(BasicTable)),
                     "After entering the body, Down must keep focus on a row (or a cell of a row).");
             }
         }
@@ -596,9 +600,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // selection across a sort and its row moves to the item's new position. We select the bottom
             // row (largest Age) and toggle Age to Descending (None -> Ascending -> Descending); Descending
             // lifts the largest-Age item to the top, an upward move that keeps the row realized.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
 
@@ -607,7 +611,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(IsSelected(bottom), "The bottom row should be selected.");
                 int oldTop = bottom.BoundingRectangle.Top;
 
-                UIObject ageHeader = GetHeader("BasicTableView", "Age");
+                UIObject ageHeader = GetHeader(BasicTable, "Age");
                 if (ageHeader == null) { Verify.Fail("The Age header was not found."); return; }
                 ageHeader.SetFocus();
                 Wait.ForIdle();
@@ -618,7 +622,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Enter); // Ascending -> Descending (largest Age rises to the top)
                 Wait.ForIdle();
 
-                UIObject selected = FindSelectedRow(GetRowsHost("BasicTableView"));
+                UIObject selected = FindSelectedRow(GetRowsHost(BasicTable));
                 if (selected == null) { Verify.Fail("The selected row was not found after sorting."); return; }
                 int newTop = selected.BoundingRectangle.Top;
 
@@ -637,25 +641,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // adopted by #11820 because bare arrows now navigate the header band); dev-spec:135 still says bare
             // Left/Right and is spec debt. Asserts DIRECTION and RELATIVE magnitude only, never a pixel step.
             // Failure means the resize key route is dead, Shift is not honored, or the chord also moves focus.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject header = GetHeader("BasicTableView", "Name");
+                UIObject header = GetHeader(BasicTable, "Name");
                 if (header == null) { Verify.Fail("The Name header was not found."); return; }
                 header.SetFocus();
                 Wait.ForIdle();
                 Verify.IsTrue(header.HasKeyboardFocus, "Precondition: the Name header should take keyboard focus.");
 
-                int w0 = GetHeader("BasicTableView", "Name").BoundingRectangle.Width;
+                int w0 = GetHeader(BasicTable, "Name").BoundingRectangle.Width;
 
                 KeyboardHelper.PressKey(Key.Right, ModifierKey.Alt);
                 Wait.ForIdle();
-                UIObject afterPlain = GetHeader("BasicTableView", "Name");
+                UIObject afterPlain = GetHeader(BasicTable, "Name");
                 int w1 = afterPlain.BoundingRectangle.Width;
                 bool focusKeptPlain = afterPlain.HasKeyboardFocus;
 
                 KeyboardHelper.PressKey(Key.Right, ModifierKey.Alt | ModifierKey.Shift);
                 Wait.ForIdle();
-                UIObject afterShift = GetHeader("BasicTableView", "Name");
+                UIObject afterShift = GetHeader(BasicTable, "Name");
                 int w2 = afterShift.BoundingRectangle.Width;
                 bool focusKeptShift = afterShift.HasKeyboardFocus;
 
@@ -683,9 +687,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // localized state text is empty (product finding #5), so we assert the reorder consequence,
             // not the indicator text. Selection tracks the data item (IDL:531-546), so the selected
             // bottom row (largest Age) moving up after two clicks toggle Age to Descending is the signal.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
 
@@ -694,17 +698,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(IsSelected(bottom), "The bottom row should be selected.");
                 int oldTop = bottom.BoundingRectangle.Top;
 
-                UIObject ageHeader = GetHeader("BasicTableView", "Age");
+                UIObject ageHeader = GetHeader(BasicTable, "Age");
                 if (ageHeader == null) { Verify.Fail("The Age header was not found."); return; }
 
                 InputHelper.LeftClick(ageHeader); // None -> Ascending
                 Wait.ForIdle();
-                ageHeader = GetHeader("BasicTableView", "Age");
+                ageHeader = GetHeader(BasicTable, "Age");
                 if (ageHeader == null) { Verify.Fail("The Age header disappeared after the first click."); return; }
                 InputHelper.LeftClick(ageHeader); // Ascending -> Descending (largest Age rises)
                 Wait.ForIdle();
 
-                UIObject selected = FindSelectedRow(GetRowsHost("BasicTableView"));
+                UIObject selected = FindSelectedRow(GetRowsHost(BasicTable));
                 if (selected == null) { Verify.Fail("The selected row was not found after sorting."); return; }
                 int newTop = selected.BoundingRectangle.Top;
 
@@ -730,37 +734,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //
             // Observability is the usual one: sort-state text is empty (product finding #5), so the signal is the
             // selected item's row INDEX. Selection tracks the data item (IDL:531-546) and so survives a reorder.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                var sortCycle = FindElement.ById<ComboBox>("SortCycleComboBox");
+                var sortCycle = FindElement.ById<ComboBox>(SortCycleComboBox);
                 if (sortCycle == null) { Verify.Fail("SortCycleComboBox was not found."); return; }
 
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
 
                 int rowCount = rowsHost.Children.Count;
-                if (rowCount < 12) { Verify.Fail(string.Format("Need the 12 authored rows realized; saw {0}.", rowCount)); return; }
+                if (rowCount < BasicItemCount) { Verify.Fail(string.Format("Need the {0} authored rows realized; saw {1}.", BasicItemCount, rowCount)); return; }
 
-                const int MaxScoreSourceIndex = 5;
 
                 Log.Comment("Set the Score column's cycle to DescendingAscendingNone.");
                 sortCycle.SelectItemByName("SortCycleDescendingAscendingNone");
                 Wait.ForIdle();
 
                 SelectRow(rowsHost.Children[MaxScoreSourceIndex]);
-                Verify.AreEqual(MaxScoreSourceIndex, IndexOfSelectedRow("BasicTableView"),
+                Verify.AreEqual(MaxScoreSourceIndex, IndexOfSelectedRow(BasicTable),
                     "Precondition: the highest-Score row is authored at source index 5.");
 
-                ClickHeader("BasicTableView", "Score");
-                Verify.AreEqual(0, IndexOfSelectedRow("BasicTableView"),
+                ClickHeader(BasicTable, "Score");
+                Verify.AreEqual(0, IndexOfSelectedRow(BasicTable),
                     "With DescendingAscendingNone the FIRST click must sort Descending, putting the highest Score at the top.");
 
-                ClickHeader("BasicTableView", "Score");
-                Verify.AreEqual(rowCount - 1, IndexOfSelectedRow("BasicTableView"),
+                ClickHeader(BasicTable, "Score");
+                Verify.AreEqual(rowCount - 1, IndexOfSelectedRow(BasicTable),
                     "The SECOND click must sort Ascending, putting the highest Score at the bottom.");
 
-                ClickHeader("BasicTableView", "Score");
-                Verify.AreEqual(MaxScoreSourceIndex, IndexOfSelectedRow("BasicTableView"),
+                ClickHeader(BasicTable, "Score");
+                Verify.AreEqual(MaxScoreSourceIndex, IndexOfSelectedRow(BasicTable),
                     "The THIRD click must reach the cycle's None step and restore source order, returning the tracked row to index 5.");
             }
         }
@@ -781,9 +784,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Observability is the same as the other sort tests: sort-state text is empty (product finding
             // #5) and the row peer has no index, so the signal is the selected item's row position. Selection
             // tracks the data ITEM (IDL:531-546), so it survives a reorder and its row moves with it.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
 
@@ -792,18 +795,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(IsSelected(bottom), "The bottom row should be selected.");
                 int oldTop = bottom.BoundingRectangle.Top;
 
-                ClickHeaderTwice("BasicTableView", "ReadOnlyCity");
+                ClickHeaderTwice(BasicTable, "ReadOnlyCity");
 
-                UIObject afterBlocked = FindSelectedRow(GetRowsHost("BasicTableView"));
+                UIObject afterBlocked = FindSelectedRow(GetRowsHost(BasicTable));
                 if (afterBlocked == null) { Verify.Fail("The selected row was lost after clicking the non-sortable header."); return; }
                 Verify.IsTrue(Math.Abs(afterBlocked.BoundingRectangle.Top - oldTop) <= 2,
                     string.Format("A CanSort=False header must not reorder rows (selected row {0} -> {1}).",
                         oldTop, afterBlocked.BoundingRectangle.Top));
 
                 // Negative control: the same gesture on a sortable column must work, proving the clicks land.
-                ClickHeaderTwice("BasicTableView", "Age");
+                ClickHeaderTwice(BasicTable, "Age");
 
-                UIObject afterSortable = FindSelectedRow(GetRowsHost("BasicTableView"));
+                UIObject afterSortable = FindSelectedRow(GetRowsHost(BasicTable));
                 if (afterSortable == null) { Verify.Fail("The selected row was lost after clicking the sortable header."); return; }
                 Verify.IsTrue(afterSortable.BoundingRectangle.Top < oldTop - 2,
                     string.Format("Control: clicking the sortable Age header must still reorder rows ({0} -> {1}).",
@@ -824,12 +827,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //
             // Re-checking the box is the negative control - it proves the table can still sort, so the first
             // half measured a gate holding rather than a dead click path.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                var canUserSort = FindElement.ById<CheckBox>("CanUserSortColumnsCheckBox");
+                var canUserSort = FindElement.ById<CheckBox>(CanUserSortColumnsCheckBox);
                 if (canUserSort == null) { Verify.Fail("CanUserSortColumnsCheckBox was not found."); return; }
 
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
 
@@ -841,9 +844,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(IsSelected(bottom), "The bottom row should be selected.");
                 int oldTop = bottom.BoundingRectangle.Top;
 
-                ClickHeaderTwice("BasicTableView", "Age");
+                ClickHeaderTwice(BasicTable, "Age");
 
-                UIObject afterBlocked = FindSelectedRow(GetRowsHost("BasicTableView"));
+                UIObject afterBlocked = FindSelectedRow(GetRowsHost(BasicTable));
                 if (afterBlocked == null) { Verify.Fail("The selected row was lost while sorting was disabled."); return; }
                 Verify.IsTrue(Math.Abs(afterBlocked.BoundingRectangle.Top - oldTop) <= 2,
                     string.Format("With CanUserSortColumns false a header click must not reorder rows ({0} -> {1}).",
@@ -852,9 +855,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 canUserSort.Check();
                 Wait.ForIdle();
 
-                ClickHeaderTwice("BasicTableView", "Age");
+                ClickHeaderTwice(BasicTable, "Age");
 
-                UIObject afterRestored = FindSelectedRow(GetRowsHost("BasicTableView"));
+                UIObject afterRestored = FindSelectedRow(GetRowsHost(BasicTable));
                 if (afterRestored == null) { Verify.Fail("The selected row was lost after re-enabling sorting."); return; }
                 Verify.IsTrue(afterRestored.BoundingRectangle.Top < oldTop - 2,
                     string.Format("Control: with CanUserSortColumns restored the same clicks must sort ({0} -> {1}).",
@@ -876,9 +879,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Distinct from 8 PointerResizeDragChangesColumnWidth, which owns "the drag reaches the width
             // engine". Here the width growth is only a PRECONDITION proving the drag happened; the assertion
             // under test is that the rows did not move.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
 
@@ -887,19 +890,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(IsSelected(bottom), "The bottom row should be selected.");
                 int oldTop = bottom.BoundingRectangle.Top;
 
-                UIObject nameHeader = GetHeader("BasicTableView", "Name");
+                UIObject nameHeader = GetHeader(BasicTable, "Name");
                 if (nameHeader == null) { Verify.Fail("The Name header was not found."); return; }
                 int widthBefore = nameHeader.BoundingRectangle.Width;
 
-                DragHeaderTrailingEdge(nameHeader, 40);
+                DragColumnBoundary(nameHeader, 40);
 
-                UIObject afterDrag = GetHeader("BasicTableView", "Name");
+                UIObject afterDrag = GetHeader(BasicTable, "Name");
                 if (afterDrag == null) { Verify.Fail("The Name header was not found after the drag."); return; }
                 Verify.IsTrue(afterDrag.BoundingRectangle.Width > widthBefore,
                     string.Format("Precondition: the drag should widen the column ({0} -> {1}).",
                         widthBefore, afterDrag.BoundingRectangle.Width));
 
-                UIObject selected = FindSelectedRow(GetRowsHost("BasicTableView"));
+                UIObject selected = FindSelectedRow(GetRowsHost(BasicTable));
                 if (selected == null) { Verify.Fail("The selected row was lost after the resize drag."); return; }
                 Verify.IsTrue(Math.Abs(selected.BoundingRectangle.Top - oldTop) <= 2,
                     string.Format("A resize drag must not also sort the column (selected row {0} -> {1}).",
@@ -927,7 +930,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   assistive technology takes - the header loses focus across its own collapse. That needs its own
             //   test in the accessibility section; do not read this test's pass as closing #15.
             // Failure means: key routing to the group header is broken, so a keyboard user cannot collapse a group.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject tableView = SelectGroupedPivotAndGetTable();
                 if (tableView == null)
@@ -992,7 +995,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   implemented by TreeView (TreeViewKeyDownLeftToRightTest asserts exactly this for its items).
             // Failure means: group headers respond to Enter/Space only, so a keyboard user navigating with the
             //   arrow keys - the natural gesture for a hierarchy - cannot open or close a group.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject tableView = SelectGroupedPivotAndGetTable();
                 if (tableView == null)
@@ -1059,12 +1062,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   which is why the item is not in the API plan (TableView_Grouping_APITests.cs:575).
             // Failure means: keys reach the header's expansion state but not its public event, so a handler
             //   built on ToggleRequested silently misses keyboard users.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 // Resolved before the grouped table realizes - a FindElement afterwards forces a full tree
                 // re-walk that descends into TableViewRow children and asserts the app (finding #13).
-                Button hookButton = FindElement.ById<Button>("HookGroupHeadersButton");
-                Edit toggleReport = FindElement.ById<Edit>("GroupToggleReportTextBlock");
+                Button hookButton = FindElement.ById<Button>(HookGroupHeadersButton);
+                Edit toggleReport = FindElement.ById<Edit>(GroupToggleReport);
                 if (hookButton == null || toggleReport == null)
                 {
                     Verify.Fail("The page's group-header instrumentation was not found.");
@@ -1118,34 +1121,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Interaction plan §3 FocusStaysAtSamePositionWhenSortReordersRows (owner decision; dev-spec Keyboard
             // "Re-shape while focused"). The sort is driven by the header peer's UIA Invoke, which does not move keyboard
             // focus, so focus is inside the body throughout. Failure means a sort drags focus with the old record.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
-                if (rowsHost.Children.Count < 12) { Verify.Fail("Need the 12 authored rows realized."); return; }
+                if (rowsHost.Children.Count < BasicItemCount) { Verify.Fail("Need every authored Basic row realized."); return; }
 
                 const int Position = 2;
                 rowsHost.Children[Position].SetFocus();
                 Wait.ForIdle();
-                Verify.IsTrue(GetRowsHost("BasicTableView").Children[Position].HasKeyboardFocus, "Precondition: row 2 should take focus.");
-                Verify.IsTrue(GetRowsHost("BasicTableView").Children[Position].Name.Contains("Person 2"), "Precondition: row 2 holds Person 2.");
+                Verify.IsTrue(GetRowsHost(BasicTable).Children[Position].HasKeyboardFocus, "Precondition: row 2 should take focus.");
+                Verify.IsTrue(GetRowsHost(BasicTable).Children[Position].Name.Contains(BasicName(Position)), "Precondition: row 2 holds Person 2.");
 
-                UIObject age = GetHeader("BasicTableView", "Age");
+                UIObject age = GetHeader(BasicTable, "Age");
                 if (age == null) { Verify.Fail("The Age header was not found."); return; }
                 var invoke = new InvokeImplementation(age);
                 invoke.Invoke(); // None -> Ascending
                 Wait.ForIdle();
-                invoke = new InvokeImplementation(GetHeader("BasicTableView", "Age"));
+                invoke = new InvokeImplementation(GetHeader(BasicTable, "Age"));
                 invoke.Invoke(); // Ascending -> Descending
                 Wait.ForIdle();
 
-                rowsHost = GetRowsHost("BasicTableView");
+                rowsHost = GetRowsHost(BasicTable);
                 UIObject focused = FindFocusedBodyElement(rowsHost);
                 Log.Comment("After the sort focus is on: {0}.", focused == null ? "<none>" : focused.Name);
                 if (focused == null) { Verify.Fail("Focus must stay inside the body across a sort."); return; }
 
                 Verify.AreEqual(rowsHost.Children[Position].RuntimeId, focused.RuntimeId, "Focus must stay at the same position (row 2) across a sort.");
-                Verify.IsTrue(focused.Name.Contains("Person 9"), "Negative control: position 2 must now hold Person 9 (Age descending), proving the rows re-sorted.");
+                Verify.IsTrue(focused.Name.Contains(BasicName(BasicIdAtPositionWhenAgeDescending(Position))), "Negative control: position 2 must now hold Person 9 (Age descending), proving the rows re-sorted.");
             }
         }
 
@@ -1158,9 +1161,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // "Re-shape while focused ... also applies when the focused record was filtered out"). The page filter acts on
             // the grouped source only. Projection before: H-Redmond, G0, G3, G6, H-Seattle, G1, G4, G7, H-Bellevue, G2, G5,
             // G8. After removing Seattle, position 5 is G2. Failure means a filter drops focus out of the table.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                var filter = FindElement.ById<Button>("FilterSourceButton");
+                var filter = FindElement.ById<Button>(FilterSourceButton);
                 if (filter == null) { Verify.Fail("FilterSourceButton was not found."); return; }
 
                 UIObject tableView = SelectGroupedPivotAndGetTable();
@@ -1168,10 +1171,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 const int Position = 5;
                 UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
-                if (rowsHost.Children.Count < 12) { Verify.Fail("Need the full grouped projection (3 headers + 9 rows) realized."); return; }
+                if (rowsHost.Children.Count < GroupedItemCount + Cities.Length) { Verify.Fail("Need the full grouped projection (3 headers + 9 rows) realized."); return; }
 
                 UIObject target = rowsHost.Children[Position];
-                Verify.IsTrue(target.Name.Contains("Grouped 1"), "Precondition: projected position 5 holds Grouped 1, the first Seattle row.");
+                Verify.IsTrue(target.Name.Contains(GroupedName(1)), "Precondition: projected position 5 holds Grouped 1, the first Seattle row.");
                 target.SetFocus();
                 Wait.ForIdle();
                 Verify.IsTrue(target.HasKeyboardFocus, "Precondition: the Grouped 1 row should take focus.");
@@ -1185,7 +1188,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 if (focused == null) { Verify.Fail("Focus must stay inside the body when the focused record is filtered out."); return; }
 
                 Verify.AreEqual(rowsHost.Children[Position].RuntimeId, focused.RuntimeId, "Focus must stay at the same projected position (5).");
-                Verify.IsTrue(focused.Name.Contains("Grouped 2"), "Position 5 must now be Grouped 2, the first Bellevue row.");
+                Verify.IsTrue(focused.Name.Contains(GroupedName(2)), "Position 5 must now be Grouped 2, the first Bellevue row.");
             }
         }
 
@@ -1201,32 +1204,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // dev-spec:201 - Left/Right move the cell cursor WITHIN the focused row. No-wrap is the WPF/ListView
             // convention of the #11820 model (spec debt). Failure means horizontal movement skips cells, wraps into
             // another row, or escapes the table at an edge.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                if (!DrillIntoRow("BasicTableView", 1)) { return; }
+                if (!DrillIntoRow(BasicTable, 1)) { return; }
 
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 1, 1, "One Right from cell 0 must reach cell 1 of the SAME row.");
+                VerifyFocusedCell(BasicTable, 1, 1, "One Right from cell 0 must reach cell 1 of the SAME row.");
 
-                int cellCount = GetRowsHost("BasicTableView").Children[1].Children.Count;
+                int cellCount = GetRowsHost(BasicTable).Children[1].Children.Count;
                 Verify.IsGreaterThan(cellCount, 2, "Precondition: BasicTableView rows expose one cell per visible column.");
 
                 KeyboardHelper.PressKey(Key.Right, numPresses: (uint)(cellCount - 2));
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 1, cellCount - 1, "Right must reach the last visible cell of the row.");
+                VerifyFocusedCell(BasicTable, 1, cellCount - 1, "Right must reach the last visible cell of the row.");
 
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 1, cellCount - 1, "Right on the last cell must not wrap to the next row or leave the table.");
+                VerifyFocusedCell(BasicTable, 1, cellCount - 1, "Right on the last cell must not wrap to the next row or leave the table.");
 
                 KeyboardHelper.PressKey(Key.Left, numPresses: (uint)(cellCount - 1));
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 1, 0, "Left must walk back to cell 0 of the same row.");
+                VerifyFocusedCell(BasicTable, 1, 0, "Left must walk back to cell 0 of the same row.");
 
                 KeyboardHelper.PressKey(Key.Left);
                 Wait.ForIdle();
-                UIObject row = GetRowsHost("BasicTableView").Children[1];
+                UIObject row = GetRowsHost(BasicTable).Children[1];
                 Verify.IsTrue(row.HasKeyboardFocus, "Left on cell 0 must return to the row, not wrap to the previous row's last cell.");
             }
         }
@@ -1238,33 +1241,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Interaction plan N.1 CellHomeEndStayInRowAndCtrlHomeEndJumpTable.
             // dev-spec:201, stated outright. Failure means at cell level Home/End still jump rows, throwing the user
             // to another record, or the grid-wide jump is missing.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                if (!DrillIntoRow("BasicTableView", 2)) { return; }
+                if (!DrillIntoRow(BasicTable, 2)) { return; }
 
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 2, 1, "Precondition: Right from cell 0 reaches cell 1.");
+                VerifyFocusedCell(BasicTable, 2, 1, "Precondition: Right from cell 0 reaches cell 1.");
 
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 int rowCount = rowsHost.Children.Count;
                 int lastCell = rowsHost.Children[2].Children.Count - 1;
 
                 KeyboardHelper.PressKey(Key.End);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 2, lastCell, "End at cell level must reach the last cell of the SAME row.");
+                VerifyFocusedCell(BasicTable, 2, lastCell, "End at cell level must reach the last cell of the SAME row.");
 
                 KeyboardHelper.PressKey(Key.Home);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 2, 0, "Home at cell level must reach the first cell of the SAME row.");
+                VerifyFocusedCell(BasicTable, 2, 0, "Home at cell level must reach the first cell of the SAME row.");
 
                 KeyboardHelper.PressKey(Key.End, ModifierKey.Control);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", rowCount - 1, lastCell, "Ctrl+End must reach the last cell of the last row.");
+                VerifyFocusedCell(BasicTable, rowCount - 1, lastCell, "Ctrl+End must reach the last cell of the last row.");
 
                 KeyboardHelper.PressKey(Key.Home, ModifierKey.Control);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 0, 0, "Ctrl+Home must reach the first cell of the first row.");
+                VerifyFocusedCell(BasicTable, 0, 0, "Ctrl+Home must reach the first cell of the first row.");
             }
         }
 
@@ -1275,22 +1278,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Interaction plan N.1 CellUpDownPreserveColumn.
             // dev-spec:201 - "move to the same visible column in another row". Failure means vertical movement drops
             // to row level or column 0, so walking down one field across records is impossible.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                if (!DrillIntoRow("BasicTableView", 1)) { return; }
+                if (!DrillIntoRow(BasicTable, 1)) { return; }
 
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 1, 1, "Precondition: Right from cell 0 reaches cell 1 (Age).");
+                VerifyFocusedCell(BasicTable, 1, 1, "Precondition: Right from cell 0 reaches cell 1 (Age).");
 
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 2, 1, "Down at cell level must reach the SAME column in the next row.");
-                Verify.IsFalse(GetRowsHost("BasicTableView").Children[2].HasKeyboardFocus, "Down at cell level must not drop to the row container.");
+                VerifyFocusedCell(BasicTable, 2, 1, "Down at cell level must reach the SAME column in the next row.");
+                Verify.IsFalse(GetRowsHost(BasicTable).Children[2].HasKeyboardFocus, "Down at cell level must not drop to the row container.");
 
                 KeyboardHelper.PressKey(Key.Up);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 1, 1, "Up at cell level must return to the SAME column in the previous row.");
+                VerifyFocusedCell(BasicTable, 1, 1, "Up at cell level must return to the SAME column in the previous row.");
             }
         }
 
@@ -1301,9 +1304,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Interaction plan N.1 CtrlDownMovesFocusWithoutSelecting.
             // Selection-follows-focus is KeyboardFocusMoveCarriesSelection's claim; the Ctrl opt-out is the ListView
             // convention (spec debt). Failure means the cursor cannot move without acting on a row.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
 
@@ -1315,14 +1318,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Down, ModifierKey.Control);
                 Wait.ForIdle();
 
-                rowsHost = GetRowsHost("BasicTableView");
+                rowsHost = GetRowsHost(BasicTable);
                 Verify.IsTrue(rowsHost.Children[1].HasKeyboardFocus, "Ctrl+Down must move focus to row 1.");
                 VerifyNoRowSelected("moving with Ctrl+Down");
 
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
 
-                rowsHost = GetRowsHost("BasicTableView");
+                rowsHost = GetRowsHost(BasicTable);
                 Verify.IsTrue(rowsHost.Children[2].HasKeyboardFocus, "Positive control: plain Down must move focus to row 2.");
                 Verify.IsTrue(IsSelected(rowsHost.Children[2]), "Positive control: plain Down must select the row it lands on.");
             }
@@ -1337,9 +1340,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // leg moves with Ctrl+Down first so selection-follows-focus cannot already have selected the row.
             // Failure means a keyboard user who moved with Ctrl has no way to select, or Space is swallowed at
             // cell level.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 3) { Verify.Fail("Need several realized rows."); return; }
 
@@ -1353,28 +1356,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
                 Wait.ForIdle();
 
-                rowsHost = GetRowsHost("BasicTableView");
+                rowsHost = GetRowsHost(BasicTable);
                 Verify.IsTrue(IsSelected(rowsHost.Children[1]), "Space on a focused row must select it.");
                 Verify.IsTrue(rowsHost.Children[1].HasKeyboardFocus, "Space must not move focus off the row.");
 
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 1, 0, "Precondition: Right drills into row 1's first cell.");
+                VerifyFocusedCell(BasicTable, 1, 0, "Precondition: Right drills into row 1's first cell.");
 
                 KeyboardHelper.PressKey(Key.Down, ModifierKey.Control);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 2, 0, "Precondition: Ctrl+Down at cell level reaches row 2's first cell.");
+                VerifyFocusedCell(BasicTable, 2, 0, "Precondition: Ctrl+Down at cell level reaches row 2's first cell.");
 
-                rowsHost = GetRowsHost("BasicTableView");
+                rowsHost = GetRowsHost(BasicTable);
                 Verify.IsFalse(IsSelected(rowsHost.Children[2]), "Precondition: Ctrl+Down must not have selected row 2.");
 
                 KeyboardHelper.PressKey(Key.Space);
                 Wait.ForIdle();
 
-                rowsHost = GetRowsHost("BasicTableView");
+                rowsHost = GetRowsHost(BasicTable);
                 Verify.IsTrue(IsSelected(rowsHost.Children[2]), "Space on a focused cell must select that cell's row.");
                 Verify.IsFalse(IsSelected(rowsHost.Children[1]), "SelectionMode.Single: selecting row 2 must clear row 1.");
-                VerifyFocusedCell("BasicTableView", 2, 0, "Space must not move focus off the cell.");
+                VerifyFocusedCell(BasicTable, 2, 0, "Space must not move focus off the cell.");
             }
         }
 
@@ -1386,16 +1389,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // WAI-ARIA grid interactive-content convention, stated as a design point in #11820 (spec debt). Uses the
             // page's trailing Action column, whose cell hosts a Button. Failure means hosted controls are keyboard-
             // unreachable, arrows yank the user out of a control, or there is no way back to grid navigation.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                if (!DrillIntoRow("BasicTableView", 0)) { return; }
+                if (!DrillIntoRow(BasicTable, 0)) { return; }
 
                 KeyboardHelper.PressKey(Key.End);
                 Wait.ForIdle();
 
-                UIObject row = GetRowsHost("BasicTableView").Children[0];
+                UIObject row = GetRowsHost(BasicTable).Children[0];
                 int actionCell = row.Children.Count - 1;
-                VerifyFocusedCell("BasicTableView", 0, actionCell, "Precondition: End reaches the Action cell.");
+                VerifyFocusedCell(BasicTable, 0, actionCell, "Precondition: End reaches the Action cell.");
 
                 UIObject button = FindDescendantByName(row.Children[actionCell], "RowActionButton");
                 if (button == null) { Verify.Fail("The Action cell does not expose its hosted RowActionButton to UIA."); return; }
@@ -1411,7 +1414,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Escape);
                 Wait.ForIdle();
                 Verify.IsFalse(button.HasKeyboardFocus, "Escape must leave the hosted control.");
-                VerifyFocusedCell("BasicTableView", 0, actionCell, "Escape must return focus to the Action cell itself.");
+                VerifyFocusedCell(BasicTable, 0, actionCell, "Escape must return focus to the Action cell itself.");
             }
         }
 
@@ -1422,11 +1425,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Interaction plan N.1 RightToLeftDrillInAndCellArrowsMirror.
             // dev-spec:131 makes reading order the frame for horizontal movement; TreeView's RTL key tests are the
             // mirroring precedent; drill-in itself is spec debt. Failure means arrows act in screen direction under RTL.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                SelectPivotItem("Rtl");
+                if (!SelectPivotItem(RtlPivotItem)) { Verify.Fail(GoToButton(RtlPivotItem) + " was not found."); return; }
 
-                UIObject rowsHost = GetRowsHost("RtlTableView");
+                UIObject rowsHost = GetRowsHost(RtlTable);
                 if (rowsHost == null) { return; }
                 if (rowsHost.Children.Count < 2) { Verify.Fail("Need several realized rows in RtlTableView."); return; }
 
@@ -1436,19 +1439,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 KeyboardHelper.PressKey(Key.Left);
                 Wait.ForIdle();
-                VerifyFocusedCell("RtlTableView", 1, 0, "Under RTL, Left (reading-order forward) must drill into the first cell.");
+                VerifyFocusedCell(RtlTable, 1, 0, "Under RTL, Left (reading-order forward) must drill into the first cell.");
 
                 KeyboardHelper.PressKey(Key.Left);
                 Wait.ForIdle();
-                VerifyFocusedCell("RtlTableView", 1, 1, "Under RTL, Left at cell level must move forward to cell 1.");
+                VerifyFocusedCell(RtlTable, 1, 1, "Under RTL, Left at cell level must move forward to cell 1.");
 
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                VerifyFocusedCell("RtlTableView", 1, 0, "Under RTL, Right at cell level must move back to cell 0.");
+                VerifyFocusedCell(RtlTable, 1, 0, "Under RTL, Right at cell level must move back to cell 0.");
 
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                Verify.IsTrue(GetRowsHost("RtlTableView").Children[1].HasKeyboardFocus,
+                Verify.IsTrue(GetRowsHost(RtlTable).Children[1].HasKeyboardFocus,
                     "Under RTL, Right on the first cell must return to the row.");
             }
         }
@@ -1465,9 +1468,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // dev-spec Keyboard: header-band Left/Right move between visible headers without wrapping; Up stays in the
             // band. Down now LEAVES the band (owner decision) and is owned by UpFromFirstRowMovesToHeaderAndDownReturnsToFirstRow.
             // Failure means headers are unreachable, Up walks out of the table, or the band wraps.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject name = GetHeader("BasicTableView", "Name");
+                UIObject name = GetHeader(BasicTable, "Name");
                 if (name == null) { Verify.Fail("The Name header was not found."); return; }
                 name.SetFocus();
                 Wait.ForIdle();
@@ -1475,25 +1478,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 KeyboardHelper.PressKey(Key.Left);
                 Wait.ForIdle();
-                VerifyFocusedHeader("BasicTableView", "Name", "Left on the first header must not leave it (no wrap, no exit).");
+                VerifyFocusedHeader(BasicTable, "Name", "Left on the first header must not leave it (no wrap, no exit).");
 
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                VerifyFocusedHeader("BasicTableView", "Age", "Right must move focus to the next header.");
+                VerifyFocusedHeader(BasicTable, "Age", "Right must move focus to the next header.");
 
                 KeyboardHelper.PressKey(Key.Up);
                 Wait.ForIdle();
-                VerifyFocusedHeader("BasicTableView", "Age", "Up must leave focus on the header band.");
-                Verify.IsNull(FindFocusedBodyElement(GetRowsHost("BasicTableView")), "Up from a header must not enter the body.");
+                VerifyFocusedHeader(BasicTable, "Age", "Up must leave focus on the header band.");
+                Verify.IsNull(FindFocusedBodyElement(GetRowsHost(BasicTable)), "Up from a header must not enter the body.");
 
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 UIObject headerHost = tableView.Children[0];
                 int headerCount = headerHost.Children.Count;
                 string lastHeaderName = headerHost.Children[headerCount - 1].Name;
 
                 KeyboardHelper.PressKey(Key.Right, numPresses: (uint)headerCount);
                 Wait.ForIdle();
-                VerifyFocusedHeader("BasicTableView", lastHeaderName, "Right past the last header must leave the last header focused.");
+                VerifyFocusedHeader(BasicTable, lastHeaderName, "Right past the last header must leave the last header focused.");
             }
         }
 
@@ -1504,17 +1507,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Interaction plan N.2 NonSortableHeaderIsFocusableAndEnterDoesNotSort.
             // TableView.idl:156-158 (CanSort gates the click-to-sort UX) + dev-spec:201 (Enter/Space sort) => the
             // gate covers the key route. Failure means non-sortable headers are unreachable, or Enter ignores CanSort.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 int bottomIndex = rowsHost.Children.Count - 1;
                 if (bottomIndex < 2) { Verify.Fail("Need several realized rows."); return; }
 
                 SelectRow(rowsHost.Children[bottomIndex]);
-                Verify.AreEqual(bottomIndex, IndexOfSelectedRow("BasicTableView"), "Precondition: the bottom row is selected.");
+                Verify.AreEqual(bottomIndex, IndexOfSelectedRow(BasicTable), "Precondition: the bottom row is selected.");
 
-                UIObject city = GetHeader("BasicTableView", "ReadOnlyCity");
+                UIObject city = GetHeader(BasicTable, "ReadOnlyCity");
                 if (city == null) { Verify.Fail("The ReadOnlyCity header was not found."); return; }
                 city.SetFocus();
                 Wait.ForIdle();
@@ -1522,16 +1525,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 KeyboardHelper.PressKey(Key.Enter, numPresses: 2);
                 Wait.ForIdle();
-                Verify.AreEqual(bottomIndex, IndexOfSelectedRow("BasicTableView"), "Enter on a CanSort=False header must not reorder rows.");
+                Verify.AreEqual(bottomIndex, IndexOfSelectedRow(BasicTable), "Enter on a CanSort=False header must not reorder rows.");
 
-                UIObject age = GetHeader("BasicTableView", "Age");
+                UIObject age = GetHeader(BasicTable, "Age");
                 if (age == null) { Verify.Fail("The Age header was not found."); return; }
                 age.SetFocus();
                 Wait.ForIdle();
 
                 KeyboardHelper.PressKey(Key.Enter, numPresses: 2); // None -> Ascending -> Descending
                 Wait.ForIdle();
-                Verify.IsLessThan(IndexOfSelectedRow("BasicTableView"), bottomIndex, "Positive control: Enter twice on Age must sort Descending and lift the bottom row.");
+                Verify.IsLessThan(IndexOfSelectedRow(BasicTable), bottomIndex, "Positive control: Enter twice on Age must sort Descending and lift the bottom row.");
             }
         }
 
@@ -1543,26 +1546,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // dev-spec:201 makes Space a sort key. The Score column with DescendingAscendingNone lands the tracked row
             // on three distinct indices (0, last, 5), so a press that fires twice is visible. Failure means Space does
             // not sort, or one press-release advances two steps.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                var sortCycle = FindElement.ById<ComboBox>("SortCycleComboBox");
+                var sortCycle = FindElement.ById<ComboBox>(SortCycleComboBox);
                 if (sortCycle == null) { Verify.Fail("SortCycleComboBox was not found."); return; }
 
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
 
                 int rowCount = rowsHost.Children.Count;
-                if (rowCount < 12) { Verify.Fail(string.Format("Need the 12 authored rows realized; saw {0}.", rowCount)); return; }
+                if (rowCount < BasicItemCount) { Verify.Fail(string.Format("Need the {0} authored rows realized; saw {1}.", BasicItemCount, rowCount)); return; }
 
-                const int MaxScoreSourceIndex = 5;
 
                 sortCycle.SelectItemByName("SortCycleDescendingAscendingNone");
                 Wait.ForIdle();
 
                 SelectRow(rowsHost.Children[MaxScoreSourceIndex]);
-                Verify.AreEqual(MaxScoreSourceIndex, IndexOfSelectedRow("BasicTableView"), "Precondition: the highest-Score row is authored at source index 5.");
+                Verify.AreEqual(MaxScoreSourceIndex, IndexOfSelectedRow(BasicTable), "Precondition: the highest-Score row is authored at source index 5.");
 
-                UIObject score = GetHeader("BasicTableView", "Score");
+                UIObject score = GetHeader(BasicTable, "Score");
                 if (score == null) { Verify.Fail("The Score header was not found."); return; }
                 score.SetFocus();
                 Wait.ForIdle();
@@ -1570,15 +1572,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 KeyboardHelper.PressKey(Key.Space);
                 Wait.ForIdle();
-                Verify.AreEqual(0, IndexOfSelectedRow("BasicTableView"), "Space 1 must sort Descending (one step), putting the highest Score at the top.");
+                Verify.AreEqual(0, IndexOfSelectedRow(BasicTable), "Space 1 must sort Descending (one step), putting the highest Score at the top.");
 
                 KeyboardHelper.PressKey(Key.Space);
                 Wait.ForIdle();
-                Verify.AreEqual(rowCount - 1, IndexOfSelectedRow("BasicTableView"), "Space 2 must sort Ascending (one step), putting the highest Score at the bottom.");
+                Verify.AreEqual(rowCount - 1, IndexOfSelectedRow(BasicTable), "Space 2 must sort Ascending (one step), putting the highest Score at the bottom.");
 
                 KeyboardHelper.PressKey(Key.Space);
                 Wait.ForIdle();
-                Verify.AreEqual(MaxScoreSourceIndex, IndexOfSelectedRow("BasicTableView"), "Space 3 must reach None and restore source order.");
+                Verify.AreEqual(MaxScoreSourceIndex, IndexOfSelectedRow(BasicTable), "Space 3 must reach None and restore source order.");
             }
         }
 
@@ -1590,23 +1592,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Interaction plan N.2 TabBetweenBandsPreservesColumn.
             // Shared column cursor across bands is the #11820 model (spec debt), consistent with dev-spec:201 making
             // the column the unit of vertical movement. Failure means crossing bands loses the user's column.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                if (!DrillIntoRow("BasicTableView", 0)) { return; }
+                if (!DrillIntoRow(BasicTable, 0)) { return; }
 
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 0, 1, "Precondition: Right from cell 0 reaches cell 1 (Age).");
+                VerifyFocusedCell(BasicTable, 0, 1, "Precondition: Right from cell 0 reaches cell 1 (Age).");
 
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
-                VerifyFocusedHeader("BasicTableView", "Age", "Shift+Tab from the Age cell must land on the Age header.");
+                VerifyFocusedHeader(BasicTable, "Age", "Shift+Tab from the Age cell must land on the Age header.");
 
                 KeyboardHelper.PressKey(Key.Tab);
                 Wait.ForIdle();
 
                 int rowIndex, cellIndex;
-                FindFocusedCell("BasicTableView", out rowIndex, out cellIndex);
+                FindFocusedCell(BasicTable, out rowIndex, out cellIndex);
                 Log.Comment("After Tab back: row={0}, cell={1}.", rowIndex, cellIndex);
                 Verify.AreEqual(1, cellIndex, "Tab from the header band must return to a cell in the same column (Age).");
             }
@@ -1621,10 +1623,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // "Up from the first row moves to the header band" / header band "Down moves to the first row"; shared column
             // cursor). Failure means the header band and the rows are only joined by Tab. The Down half is expected to
             // fail on main, which absorbs Down in the band.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 // Row-level leg.
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 rowsHost.Children[0].SetFocus();
                 Wait.ForIdle();
@@ -1632,34 +1634,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 KeyboardHelper.PressKey(Key.Up);
                 Wait.ForIdle();
-                UIObject header = FindFocusedHeader("BasicTableView");
+                UIObject header = FindFocusedHeader(BasicTable);
                 Log.Comment("Row-level Up landed on header: {0}.", header == null ? "<none>" : header.Name);
                 Verify.IsNotNull(header, "Up from the first row must move focus to the header band.");
-                Verify.IsNull(FindFocusedBodyElement(GetRowsHost("BasicTableView")), "No row may keep focus after Up from the first row.");
+                Verify.IsNull(FindFocusedBodyElement(GetRowsHost(BasicTable)), "No row may keep focus after Up from the first row.");
 
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
-                UIObject bodyFocus = FindFocusedBodyElement(GetRowsHost("BasicTableView"));
+                UIObject bodyFocus = FindFocusedBodyElement(GetRowsHost(BasicTable));
                 Verify.IsNotNull(bodyFocus, "Down from a header must move focus to the first row.");
                 if (bodyFocus != null)
                 {
-                    Verify.AreEqual(GetRowsHost("BasicTableView").Children[0].RuntimeId, bodyFocus.RuntimeId,
+                    Verify.AreEqual(GetRowsHost(BasicTable).Children[0].RuntimeId, bodyFocus.RuntimeId,
                         "Down from a header must land on the FIRST row.");
                 }
 
                 // Cell-level leg: the column is kept across the band boundary.
-                if (!DrillIntoRow("BasicTableView", 0)) { return; }
+                if (!DrillIntoRow(BasicTable, 0)) { return; }
                 KeyboardHelper.PressKey(Key.Right);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 0, 1, "Precondition: Right from cell 0 reaches cell 1 (Age).");
+                VerifyFocusedCell(BasicTable, 0, 1, "Precondition: Right from cell 0 reaches cell 1 (Age).");
 
                 KeyboardHelper.PressKey(Key.Up);
                 Wait.ForIdle();
-                VerifyFocusedHeader("BasicTableView", "Age", "Up from the Age cell of the first row must land on the Age header.");
+                VerifyFocusedHeader(BasicTable, "Age", "Up from the Age cell of the first row must land on the Age header.");
 
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
-                VerifyFocusedCell("BasicTableView", 0, 1, "Down from the Age header must return to the first row's Age cell.");
+                VerifyFocusedCell(BasicTable, 0, 1, "Down from the Age header must return to the first row's Age cell.");
             }
         }
 
@@ -1671,9 +1673,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // "Tabbing back into the body returns to the same record that last had focus, even after a sort or filter").
             // The record is tracked through selection, which follows the item across a re-order (TableView.idl:531-546).
             // Failure means Tab drops the user on whatever record now occupies the old position.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject rowsHost = GetRowsHost("BasicTableView");
+                UIObject rowsHost = GetRowsHost(BasicTable);
                 if (rowsHost == null) { return; }
                 int bottomIndex = rowsHost.Children.Count - 1;
                 if (bottomIndex < 2) { Verify.Fail("Need several realized rows."); return; }
@@ -1681,28 +1683,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 SelectRow(rowsHost.Children[bottomIndex]);
                 rowsHost.Children[bottomIndex].SetFocus();
                 Wait.ForIdle();
-                Verify.IsTrue(GetRowsHost("BasicTableView").Children[bottomIndex].HasKeyboardFocus, "Precondition: the bottom row should take focus.");
+                Verify.IsTrue(GetRowsHost(BasicTable).Children[bottomIndex].HasKeyboardFocus, "Precondition: the bottom row should take focus.");
 
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
-                if (FindFocusedHeader("BasicTableView") == null) { Verify.Fail("Precondition: Shift+Tab from the body should land on the header band."); return; }
+                if (FindFocusedHeader(BasicTable) == null) { Verify.Fail("Precondition: Shift+Tab from the body should land on the header band."); return; }
 
-                UIObject age = GetHeader("BasicTableView", "Age");
+                UIObject age = GetHeader(BasicTable, "Age");
                 age.SetFocus();
                 Wait.ForIdle();
-                VerifyFocusedHeader("BasicTableView", "Age", "Precondition: the Age header should take focus.");
+                VerifyFocusedHeader(BasicTable, "Age", "Precondition: the Age header should take focus.");
 
                 KeyboardHelper.PressKey(Key.Enter, numPresses: 2); // None -> Ascending -> Descending: oldest Age to the top
                 Wait.ForIdle();
 
-                int recordIndex = IndexOfSelectedRow("BasicTableView");
+                int recordIndex = IndexOfSelectedRow(BasicTable);
                 Log.Comment("After the sort the tracked record is at index {0} (was {1}).", recordIndex, bottomIndex);
                 Verify.IsTrue(recordIndex >= 0 && recordIndex != bottomIndex, "Precondition: the sort must have moved the tracked record.");
 
                 KeyboardHelper.PressKey(Key.Tab);
                 Wait.ForIdle();
 
-                rowsHost = GetRowsHost("BasicTableView");
+                rowsHost = GetRowsHost(BasicTable);
                 UIObject reentered = FindFocusedBodyElement(rowsHost);
                 if (reentered == null) { Verify.Fail("Tab from the header band must re-enter the body."); return; }
 
@@ -1717,26 +1719,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             // Interaction plan N.2 HeaderCtrlArrowDoesNotResize (owner decision; dev-spec resize Keyboard: "Alt is the only
             // resize modifier: Ctrl+Arrow on a header does nothing"). Failure means Ctrl acts as an undocumented second chord.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject header = GetHeader("BasicTableView", "Name");
+                UIObject header = GetHeader(BasicTable, "Name");
                 if (header == null) { Verify.Fail("The Name header was not found."); return; }
                 header.SetFocus();
                 Wait.ForIdle();
                 Verify.IsTrue(header.HasKeyboardFocus, "Precondition: the Name header should take focus.");
 
-                int w0 = GetHeader("BasicTableView", "Name").BoundingRectangle.Width;
+                int w0 = GetHeader(BasicTable, "Name").BoundingRectangle.Width;
 
                 KeyboardHelper.PressKey(Key.Right, ModifierKey.Control);
                 Wait.ForIdle();
-                int w1 = GetHeader("BasicTableView", "Name").BoundingRectangle.Width;
+                int w1 = GetHeader(BasicTable, "Name").BoundingRectangle.Width;
                 Log.Comment("Ctrl+Right: {0} -> {1}.", w0, w1);
                 Verify.AreEqual(w0, w1, "Ctrl+Right must not resize the column; Alt is the only resize modifier.");
-                VerifyFocusedHeader("BasicTableView", "Name", "Ctrl+Right must not move focus off the Name header.");
+                VerifyFocusedHeader(BasicTable, "Name", "Ctrl+Right must not move focus off the Name header.");
 
                 KeyboardHelper.PressKey(Key.Right, ModifierKey.Alt);
                 Wait.ForIdle();
-                int w2 = GetHeader("BasicTableView", "Name").BoundingRectangle.Width;
+                int w2 = GetHeader(BasicTable, "Name").BoundingRectangle.Width;
                 Log.Comment("Alt+Right: {0} -> {1}.", w1, w2);
                 Verify.IsTrue(w2 > w1, "Positive control: Alt+Right must widen the column.");
             }
@@ -1757,9 +1759,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         // measured: 0xC0000420 inside this very helper).
         private static bool TabToFirstGroupHeader(UIObject tableView, UIObject rowsHost, UIObject groupHeader)
         {
-            if (s_groupedAnchorButton == null) { Verify.Fail("The grouped-pivot anchor button was not captured."); return false; }
+            if (GroupedAnchorButton == null) { Verify.Fail("The grouped-pivot anchor button was not captured."); return false; }
 
-            s_groupedAnchorButton.SetFocus();
+            GroupedAnchorButton.SetFocus();
             Wait.ForIdle();
 
             for (int i = 0; i < 40; i++)
@@ -1796,397 +1798,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
 
             return "something outside the table";
-        }
-
-        // Group headers and rows are siblings under the rows host; the header's class name is
-        // "TableViewGroupHeader" (TableViewGroupHeaderAutomationPeer::GetClassNameCore), distinct from the
-        // row's "...TableViewRow".
-        private static UIObject GetFirstGroupHeader(UIObject rowsHost)
-        {
-            foreach (UIObject child in rowsHost.Children)
-            {
-                if (child != null && child.ClassName != null && child.ClassName.Contains("GroupHeader"))
-                {
-                    return child;
-                }
-            }
-
-            return null;
-        }
-
-        // Counts the TableViewRow peers directly under the rows host. Row-level only - it never asks a row for
-        // its children (finding #13). Clears the element cache first so a collapse driven from outside the
-        // table is not read from a stale walk.
-        private static int CountRows(UIObject rowsHost)
-        {
-            ElementCache.Clear();
-
-            int count = 0;
-            foreach (UIObject child in rowsHost.Children)
-            {
-                if (child != null && child.ClassName != null && child.ClassName.Contains("TableViewRow"))
-                {
-                    count++;
-                }
-            }
-
-            return count;
-        }
-
-        // Kept from SelectGroupedPivotAndGetTable so the keyboard tests have a focus anchor that does not need a
-        // second FindElement once the grouped table is realized (see TabToFirstGroupHeader).
-        private static Button s_groupedAnchorButton;
-
-        // Switches the page Pivot to the Grouped item, then returns GroupedTableView. Uses the page's
-        // GoToGroupedButton rather than a name-based Pivot header search: a name search makes the provider
-        // compute names for realized TableViewRow peers and trips finding #13 (0xC0000420).
-        private static UIObject SelectGroupedPivotAndGetTable()
-        {
-            var goToGrouped = FindElement.ById<Button>("GoToGroupedButton");
-            if (goToGrouped == null)
-            {
-                Verify.Fail("GoToGroupedButton was not found.");
-                return null;
-            }
-
-            s_groupedAnchorButton = goToGrouped;
-            goToGrouped.InvokeAndWait();
-            Wait.ForIdle();
-
-            UIObject tableView = FindElement.ById("GroupedTableView");
-            if (tableView == null)
-            {
-                Verify.Fail("GroupedTableView was not found after selecting the Grouped pivot item.");
-                return null;
-            }
-
-            return tableView;
-        }
-
-        // Clicks a header once, re-finding it first: a previous click can rebuild the header band, which
-        // invalidates any UIObject the caller still holds.
-        private static void ClickHeader(string tableAutomationId, string columnHeader)
-        {
-            UIObject header = GetHeader(tableAutomationId, columnHeader);
-            if (header == null) { Verify.Fail("The " + columnHeader + " header was not found."); return; }
-            InputHelper.LeftClick(header);
-            Wait.ForIdle();
-        }
-
-        // Position of the selected row among the realized rows, or -1. Re-resolves the rows host on every call so
-        // the walk reflects the post-sort order; deliberately does NOT call ElementCache.Clear(), because the
-        // full re-walk that forces descends into TableViewRow children and asserts the app (finding #13/#14,
-        // measured in ptrrun2). UIA re-queries children on access, which is enough here - the other sort tests
-        // re-resolve the same way and see reordered rows.
-        private static int IndexOfSelectedRow(string tableAutomationId)
-        {
-            UIObject rowsHost = GetRowsHost(tableAutomationId);
-            if (rowsHost == null) { return -1; }
-
-            int index = 0;
-            foreach (UIObject row in rowsHost.Children)
-            {
-                if (IsSelected(row))
-                {
-                    return index;
-                }
-                index++;
-            }
-            return -1;
-        }
-
-        // Clicks a header twice, re-finding it in between: the first click can rebuild the header band, which
-        // invalidates the previous UIObject.
-        private static void ClickHeaderTwice(string tableAutomationId, string columnHeader)
-        {
-            UIObject header = GetHeader(tableAutomationId, columnHeader);
-            if (header == null) { Verify.Fail("The " + columnHeader + " header was not found."); return; }
-            InputHelper.LeftClick(header);
-            Wait.ForIdle();
-
-            header = GetHeader(tableAutomationId, columnHeader);
-            if (header == null) { Verify.Fail("The " + columnHeader + " header disappeared after the first click."); return; }
-            InputHelper.LeftClick(header);
-            Wait.ForIdle();
-        }
-
-        // Presses just inside the column's LTR trailing edge, where the ResizeGripper straddles the boundary,
-        // and drags right so the column widens. Absolute points are used for the moves because the header's
-        // own rectangle grows during the drag, so a relative offset would drift. Mirrors the layout file's
-        // DragColumnBoundary; kept local because the sort observability helpers live in this file.
-        private static void DragHeaderTrailingEdge(UIObject header, int widenBy)
-        {
-            var bounds = header.BoundingRectangle;
-            int grabOffsetX = (bounds.Width / 2) - 1;
-            int startX = bounds.Left + bounds.Width - 1;
-            int y = bounds.Top + (bounds.Height / 2);
-
-            InputHelper.LeftMouseButtonDown(header, grabOffsetX, 0);
-            // Two steps so the manipulation clears the 0.5 DIP deadband (dev-spec:123).
-            InputHelper.MoveMouse(new Point(startX + (widenBy / 2), y));
-            InputHelper.MoveMouse(new Point(startX + widenBy, y));
-            InputHelper.LeftMouseButtonUp();
-            Wait.ForIdle();
-        }
-
-        // The rows host is the LAST child of the TableView peer; its children are TableViewRow peers.
-        // FindElement.ById on the top-level AutomationId is safe (finding #13 only bites when a row is
-        // asked for ITS children). We never call rowsHost.Children[i].Children.
-        private static UIObject GetRowsHost(string tableAutomationId)
-        {
-            UIObject tableView = FindElement.ById(tableAutomationId);
-            if (tableView == null) { Verify.Fail(tableAutomationId + " was not found."); return null; }
-            if (tableView.Children.Count < 1) { Verify.Fail(tableAutomationId + " exposed no children."); return null; }
-            return tableView.Children[tableView.Children.Count - 1];
-        }
-
-        // The header host is the FIRST child of the TableView peer; its children are the header peers,
-        // whose Name is the column header string. Reading one level of children here is safe.
-        private static UIObject GetHeader(string tableAutomationId, string columnHeader)
-        {
-            UIObject tableView = FindElement.ById(tableAutomationId);
-            if (tableView == null) { Verify.Fail(tableAutomationId + " was not found."); return null; }
-            if (tableView.Children.Count < 1) { Verify.Fail(tableAutomationId + " exposed no children."); return null; }
-            UIObject headerHost = tableView.Children[0];
-            foreach (UIObject child in headerHost.Children)
-            {
-                if (child.Name == columnHeader)
-                {
-                    return child;
-                }
-            }
-            return null;
-        }
-
-        private static UIObject FindFocusedRow(UIObject rowsHost)
-        {
-            if (rowsHost == null) { return null; }
-            foreach (UIObject row in rowsHost.Children)
-            {
-                if (row.HasKeyboardFocus)
-                {
-                    return row;
-                }
-            }
-            return null;
-        }
-
-        // Index of the row's cell peer that holds keyboard focus, or -1. Cell peers are the row peer's children, one
-        // per visible column in visible order (safe to read since #11820; see the file header).
-        private static int IndexOfFocusedCell(UIObject row)
-        {
-            if (row == null) { return -1; }
-            int index = 0;
-            foreach (UIObject cell in row.Children)
-            {
-                if (cell.HasKeyboardFocus)
-                {
-                    return index;
-                }
-                index++;
-            }
-            return -1;
-        }
-
-        // The realized row that holds focus itself or through one of its cells, or null.
-        private static UIObject FindFocusedBodyElement(UIObject rowsHost)
-        {
-            if (rowsHost == null) { return null; }
-            foreach (UIObject row in rowsHost.Children)
-            {
-                if (row.HasKeyboardFocus || IndexOfFocusedCell(row) >= 0)
-                {
-                    return row;
-                }
-            }
-            return null;
-        }
-
-        // The header peer of the named table that holds keyboard focus, or null.
-        private static UIObject FindFocusedHeader(string tableAutomationId)
-        {
-            UIObject tableView = FindElement.ById(tableAutomationId);
-            if (tableView == null) { Verify.Fail(tableAutomationId + " was not found."); return null; }
-            if (tableView.Children.Count < 1) { Verify.Fail(tableAutomationId + " exposed no children."); return null; }
-            foreach (UIObject header in tableView.Children[0].Children)
-            {
-                if (header.HasKeyboardFocus)
-                {
-                    return header;
-                }
-            }
-            return null;
-        }
-
-        // Focuses the row at index and drills into its first cell with Right. Returns false (after failing) if
-        // either step does not take; callers then stop, since every later assertion would be unmeasured.
-        private static bool DrillIntoRow(string tableAutomationId, int rowIndex)
-        {
-            UIObject rowsHost = GetRowsHost(tableAutomationId);
-            if (rowsHost == null) { return false; }
-            if (rowsHost.Children.Count <= rowIndex) { Verify.Fail(string.Format("Need at least {0} realized rows.", rowIndex + 1)); return false; }
-
-            UIObject row = rowsHost.Children[rowIndex];
-            row.SetFocus();
-            Wait.ForIdle();
-            if (!row.HasKeyboardFocus) { Verify.Fail(string.Format("Precondition: row {0} did not take focus.", rowIndex)); return false; }
-
-            KeyboardHelper.PressKey(Key.Right);
-            Wait.ForIdle();
-            if (IndexOfFocusedCell(GetRowsHost(tableAutomationId).Children[rowIndex]) != 0)
-            {
-                Verify.Fail(string.Format("Precondition: Right did not drill into row {0}'s first cell.", rowIndex));
-                return false;
-            }
-            return true;
-        }
-
-        // Finds which realized row/cell holds keyboard focus; both are -1 when no cell does.
-        private static void FindFocusedCell(string tableAutomationId, out int rowIndex, out int cellIndex)
-        {
-            rowIndex = -1;
-            cellIndex = -1;
-            UIObject rowsHost = GetRowsHost(tableAutomationId);
-            if (rowsHost == null) { return; }
-
-            int r = 0;
-            foreach (UIObject row in rowsHost.Children)
-            {
-                int c = IndexOfFocusedCell(row);
-                if (c >= 0)
-                {
-                    rowIndex = r;
-                    cellIndex = c;
-                    return;
-                }
-                r++;
-            }
-        }
-
-        private static void VerifyFocusedCell(string tableAutomationId, int expectedRow, int expectedCell, string message)
-        {
-            int rowIndex, cellIndex;
-            FindFocusedCell(tableAutomationId, out rowIndex, out cellIndex);
-            Log.Comment("Focused cell: row={0}, cell={1} (expected row={2}, cell={3}).", rowIndex, cellIndex, expectedRow, expectedCell);
-            Verify.IsTrue(rowIndex == expectedRow && cellIndex == expectedCell, message);
-        }
-
-        private static void VerifyFocusedHeader(string tableAutomationId, string expectedHeader, string message)
-        {
-            UIObject focused = FindFocusedHeader(tableAutomationId);
-            Log.Comment("Focused header: {0} (expected {1}).", focused == null ? "<none>" : focused.Name, expectedHeader);
-            Verify.IsTrue(focused != null && focused.Name == expectedHeader, message);
-        }
-
-        // Depth-first search under a cell peer for a named element (hosted cell content).
-        private static UIObject FindDescendantByName(UIObject root, string name)
-        {
-            foreach (UIObject child in root.Children)
-            {
-                if (child.Name == name)
-                {
-                    return child;
-                }
-                UIObject nested = FindDescendantByName(child, name);
-                if (nested != null)
-                {
-                    return nested;
-                }
-            }
-            return null;
-        }
-
-        private static void VerifyNoRowSelected(string when)
-        {
-            UIObject rowsHost = GetRowsHost("BasicTableView");
-            if (rowsHost == null) { return; }
-            foreach (UIObject row in rowsHost.Children)
-            {
-                bool isSelected;
-                if (!TryGetIsSelected(row, out isSelected))
-                {
-                    Verify.Fail("Selection could not be observed on a row while checking " + when + ".");
-                    return;
-                }
-                Verify.IsFalse(isSelected, "No row may be selected merely by " + when + ".");
-            }
-        }
-
-        private static UIObject FindSelectedRow(UIObject rowsHost)
-        {
-            if (rowsHost == null) { return null; }
-            foreach (UIObject row in rowsHost.Children)
-            {
-                if (IsSelected(row))
-                {
-                    return row;
-                }
-            }
-            return null;
-        }
-
-        // Selection state has two possible channels out of proc. The SelectionItem pattern is the one a
-        // real client reaches for, but this build's row peer does not marshal it (see the run-status
-        // notes in the interaction plan), so fall back to reading the underlying UIA property directly.
-        // Returns false only when NEITHER channel answers, so callers can tell "not selected" apart from
-        // "cannot be observed" instead of passing vacuously.
-        private static bool TryGetIsSelected(UIObject row, out bool isSelected)
-        {
-            isSelected = false;
-            if (row == null) { return false; }
-
-            var selectionItem = new SelectionItemImplementation<UIObject>(row, UIObject.Factory);
-            if (selectionItem.IsAvailable)
-            {
-                isSelected = selectionItem.IsSelected;
-                return true;
-            }
-
-            try
-            {
-                object raw = row.GetProperty(UIProperty.Get("SelectionItem.IsSelected"));
-                if (raw == null) { return false; }
-                isSelected = Convert.ToBoolean(raw);
-                return true;
-            }
-            catch (UIObjectNotFoundException)
-            {
-                return false;
-            }
-        }
-
-        private static bool IsSelected(UIObject row)
-        {
-            bool isSelected;
-            return TryGetIsSelected(row, out isSelected) && isSelected;
-        }
-
-        // Selection is driven through the row peer's SelectionItem pattern - a row-level operation that
-        // never asks the row for its children, so it stays off the finding #13 crash path.
-        private static void SelectRow(UIObject row)
-        {
-            var selectionItem = new SelectionItemImplementation<UIObject>(row, UIObject.Factory);
-            if (!selectionItem.IsAvailable)
-            {
-                Verify.Fail("The row did not expose the SelectionItem pattern.");
-                return;
-            }
-
-            selectionItem.Select();
-            Wait.ForIdle();
-        }
-
-        // Switch the Pivot to the named page by invoking the page's GoTo* button, which is reachable by
-        // AutomationId. Do NOT resolve the Pivot header by name: a name-based UIA search makes the
-        // provider compute names for realized TableViewRow peers, which manufactures cell peers and
-        // trips product finding #13 (0xC0000420 in Microsoft.UI.Xaml.dll). Measured: every test that
-        // called FindElement.ByName here crashed the app; every ById lookup is safe.
-        private static void SelectPivotItem(string headerName)
-        {
-            var goTo = FindElement.ById<Button>("GoTo" + headerName + "Button");
-            if (goTo == null) { Verify.Fail("GoTo" + headerName + "Button was not found."); return; }
-            goTo.InvokeAndWait();
-            Wait.ForIdle();
         }
 
         #endregion

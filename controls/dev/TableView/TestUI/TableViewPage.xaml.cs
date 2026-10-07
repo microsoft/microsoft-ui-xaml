@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Facts = Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
 
 namespace MUXControlsTestApp
 {
@@ -39,7 +40,7 @@ namespace MUXControlsTestApp
         // neither first nor last. A column whose source order already equals its ascending order cannot
         // distinguish the trailing "None" step of a sort cycle from "Ascending", which is what
         // HeaderClicksFollowTheColumnSortCycle has to observe.
-        public int Score => ((Id * 7) % 12) + 1;
+        public int Score => Facts.ScoreOf(Id);
 
         public string Name
         {
@@ -90,8 +91,6 @@ namespace MUXControlsTestApp
     [AxeScanTestPage(Name = "TableView-Axe")]
     public sealed partial class TableViewPage : TestPage
     {
-        private static readonly string[] Cities = { "Redmond", "Seattle", "Bellevue" };
-
         private readonly ObservableCollection<TableViewTestPerson> _basicItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _scrollingItems = new ObservableCollection<TableViewTestPerson>();
         private readonly ObservableCollection<TableViewTestPerson> _groupedItems = new ObservableCollection<TableViewTestPerson>();
@@ -109,19 +108,19 @@ namespace MUXControlsTestApp
 
             InitializeComponent();
 
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < Facts.BasicItemCount; i++)
             {
-                _basicItems.Add(new TableViewTestPerson(i, "Person " + i, 20 + i, Cities[i % Cities.Length]));
+                _basicItems.Add(new TableViewTestPerson(i, Facts.BasicName(i), Facts.BasicAge(i), Facts.CityOf(i)));
             }
 
-            for (int i = 0; i < 200; i++)
+            for (int i = 0; i < Facts.ScrollingItemCount; i++)
             {
-                _scrollingItems.Add(new TableViewTestPerson(i, "Scroll " + i, 20 + (i % 40), Cities[i % Cities.Length]));
+                _scrollingItems.Add(new TableViewTestPerson(i, Facts.ScrollingName(i), Facts.ScrollingAge(i), Facts.CityOf(i)));
             }
 
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < Facts.GroupedItemCount; i++)
             {
-                _groupedItems.Add(new TableViewTestPerson(i, "Grouped " + i, 30 + i, Cities[i % Cities.Length]));
+                _groupedItems.Add(new TableViewTestPerson(i, Facts.GroupedName(i), Facts.GroupedAge(i), Facts.CityOf(i)));
             }
 
             _groupedSource = TableViewSource.From(_groupedItems)

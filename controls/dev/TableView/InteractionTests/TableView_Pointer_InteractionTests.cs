@@ -16,6 +16,9 @@ using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using MUXTestInfra.Shared.Infra;
 using Point = System.Drawing.Point;
 
+using static Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.TableViewInteractionTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
+
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // TableView pointer / group-header interaction tests.
@@ -28,13 +31,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // programmatically. They deliberately do not re-assert the state machine's permutations — only that a
     // gesture arrives at it.
     //
-    // CRASH CONSTRAINT (product finding #13, measured this session): asking a TableViewRow peer for its
-    // children crashes the app (0xC0000420 in Microsoft.UI.Xaml.dll) because
-    // TableViewRowAutomationPeer::GetChildrenCore manufactures fresh cell peers per call. Therefore NOTHING
-    // here descends into a row's children: no FindElement by cell text, no row.Children enumeration. All
-    // assertions are made at the row level (SelectionItem pattern, keyboard focus, BoundingRectangle) or by
-    // counting the row/group-header peers that are direct children of the rows host. Cells are exercised, when
-    // needed, by clicking the row at a coordinate offset — never by resolving a cell peer.
+    // Product finding #13 (a client asking a row peer for its children fail-fasted the app) shaped the older tests in
+    // this file: they observe rows at row level, point at cells by coordinates, and read editors and visual states
+    // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
+    // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
     public class TableViewPointerInteractionTests
     {
@@ -52,6 +52,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+            RestartAppIfLongRunning();
         }
 
         #region 3. Pointer selection and focus
@@ -67,16 +68,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   could not tell "focused the clicked cell" from "focused the first cell".
             // Failure means: the click never reaches selection, or focus lands somewhere other than the cell under
             //   the pointer, so a screen reader names a different cell from the one clicked.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {
                     Verify.Fail("BasicTableView was not found on the test page.");
                     return;
                 }
 
-                Button dummyButton = FindElement.ById<Button>("DummyButton");
+                Button dummyButton = FindElement.ById<Button>(DummyButton);
                 if (dummyButton == null)
                 {
                     Verify.Fail("DummyButton was not found on the test page.");
@@ -101,7 +102,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 int focusedCell = IndexOfFocusedCell(row);
                 Log.Comment("After the click: focused cell index={0}, row focused={1}.", focusedCell, row.HasKeyboardFocus);
 
-                Verify.AreEqual(AgeColumnIndex, focusedCell, "A pointer click must move keyboard focus to the clicked cell (Age, visible column 1).");
+                Verify.AreEqual(AgeColumn, focusedCell, "A pointer click must move keyboard focus to the clicked cell (Age, visible column 1).");
                 Verify.IsFalse(dummyButton.HasKeyboardFocus, "Focus must leave the previously focused unrelated control.");
                 var selectionItem = new SelectionItemImplementation<UIObject>(row, UIObject.Factory);
                 Verify.IsTrue(selectionItem.IsAvailable, "Under SelectionMode.Single the row peer must advertise SelectionItem.");
@@ -118,9 +119,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   focus target is the clicked cell (#11820 model; spec debt dev-spec:427).
             // Failure means: the pointer route writes selection additively or fails to clear the prior row, so a
             //   mouse user can hold two selected rows in a single-selection control.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {
                     Verify.Fail("BasicTableView was not found on the test page.");
@@ -146,7 +147,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 var secondSelection = new SelectionItemImplementation<UIObject>(secondRow, UIObject.Factory);
                 Verify.IsTrue(secondSelection.IsSelected, "Clicking the second row must select it.");
-                Verify.AreEqual(AgeColumnIndex, IndexOfFocusedCell(secondRow), "Clicking the second row must move keyboard focus to its clicked cell (Age).");
+                Verify.AreEqual(AgeColumn, IndexOfFocusedCell(secondRow), "Clicking the second row must move keyboard focus to its clicked cell (Age).");
 
                 // Re-query the first row's pattern after the reshape of selection state.
                 var firstSelectionAfter = new SelectionItemImplementation<UIObject>(firstRow, UIObject.Factory);
@@ -163,9 +164,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   The focus target is the clicked cell (#11820 model; spec debt dev-spec:427).
             // Failure means: the None gate lives only inside Select() and the pointer handler writes selection
             //   behind it; or the cell refuses focus in None, breaking keyboard/AT reachability of a display-only table.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                ComboBox selectionModeComboBox = new ComboBox(FindElement.ById("SelectionModeComboBox"));
+                ComboBox selectionModeComboBox = new ComboBox(FindElement.ById(SelectionModeComboBox));
                 if (selectionModeComboBox == null)
                 {
                     Verify.Fail("SelectionModeComboBox was not found on the test page.");
@@ -175,14 +176,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 selectionModeComboBox.SelectItemByName("SelectionModeNone");
                 Wait.ForIdle();
 
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {
                     Verify.Fail("BasicTableView was not found on the test page.");
                     return;
                 }
 
-                Button dummyButton = FindElement.ById<Button>("DummyButton");
+                Button dummyButton = FindElement.ById<Button>(DummyButton);
                 UIObject row = GetRow(tableView, 0);
                 if (dummyButton == null || row == null)
                 {
@@ -209,7 +210,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
 
                 // Focus must still move to the clicked cell: a display-only table remains keyboard-reachable.
-                Verify.AreEqual(AgeColumnIndex, IndexOfFocusedCell(row), "Focus must still move to the clicked cell under SelectionMode.None (interaction plan §3).");
+                Verify.AreEqual(AgeColumn, IndexOfFocusedCell(row), "Focus must still move to the clicked cell under SelectionMode.None (interaction plan §3).");
             }
         }
 
@@ -226,16 +227,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   column, which is Name. A Name-only test would pass on a control that ignores the pointer.
             // Observability: read through the page's BeginningEdit report (TableViewBeginningEditEventArgs
             //   .Column is public IDL), an independent data-side channel.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {
                     Verify.Fail("BasicTableView was not found on the test page.");
                     return;
                 }
 
-                Edit report = FindElement.ById<Edit>("EditColumnReportTextBlock");
+                Edit report = FindElement.ById<Edit>(EditColumnReport);
                 if (report == null)
                 {
                     Verify.Fail("EditColumnReportTextBlock was not found on the test page.");
@@ -253,7 +254,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Authored column widths on BasicTableView: Name 160, Age 100, ReadOnlyCity 160, Score 100, Template 200.
                 // Click x is expressed row-relative and converted to the center-relative offset InputHelper wants.
-                ClickRowAtColumnOffset(row, 210);   // inside Age
+                ClickRowAtColumnOffset(row, BasicColumnCentreX(AgeColumn));
                 KeyboardHelper.PressKey(Key.F2);
                 Wait.ForIdle();
 
@@ -264,7 +265,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Second leg: the row now holds focus, so the press arrives with the row as source and the
                 // control must fall back to hit-testing the pointer position (dev-spec:286).
-                ClickRowAtColumnOffset(row, 80);    // inside Name
+                ClickRowAtColumnOffset(row, BasicColumnCentreX(NameColumn));
                 KeyboardHelper.PressKey(Key.F2);
                 Wait.ForIdle();
 
@@ -285,11 +286,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   programmatic route enters the state.
             // Read through the page's transition LOG rather than a live query: any interaction that read the
             //   state would itself move the pointer off the row and destroy what it was measuring.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
-                Button hookButton = FindElement.ById<Button>("HookRowStatesButton");
-                Button dummyButton = FindElement.ById<Button>("DummyButton");
+                UIObject tableView = FindElement.ById(BasicTable);
+                Button hookButton = FindElement.ById<Button>(HookRowStatesButton);
+                Button dummyButton = FindElement.ById<Button>(DummyButton);
                 if (tableView == null || hookButton == null || dummyButton == null)
                 {
                     Verify.Fail("BasicTableView, HookRowStatesButton and DummyButton are all required for this test.");
@@ -303,7 +304,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     return;
                 }
 
-                Edit stateLog = FindElement.ById<Edit>("RowStateLogTextBlock");
+                Edit stateLog = FindElement.ById<Edit>(RowStateLog);
                 if (stateLog == null)
                 {
                     Verify.Fail("RowStateLogTextBlock was not found on the test page.");
@@ -345,7 +346,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   realizes 9 TableViewRow peers; collapsing one group drops it to 6; re-expanding returns to 9.
             // Failure means: the band click never reaches TableView::ToggleGroupExpansion, so grouping is not
             //   operable by pointer.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject tableView = SelectGroupedPivotAndGetTable();
                 if (tableView == null)
@@ -399,14 +400,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   API §9 covers ExpansionStates, which is a different group reached by a different mechanism.
             // Failure means: the group header gives no hover or press feedback, so a pointer user cannot tell
             //   the band is interactive before clicking it.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 // Everything on the page toolbar is resolved BEFORE the grouped table realizes: a FindElement
                 // afterwards forces ElementCache.Refresh() to re-walk the whole tree, which descends into
                 // TableViewRow children and asserts the app (finding #13, measured).
-                Button hookButton = FindElement.ById<Button>("HookGroupHeadersButton");
-                Edit stateLog = FindElement.ById<Edit>("GroupHeaderStateLogTextBlock");
-                UIObject awayTarget = FindElement.ById("DummyButton");
+                Button hookButton = FindElement.ById<Button>(HookGroupHeadersButton);
+                Edit stateLog = FindElement.ById<Edit>(GroupHeaderStateLog);
+                UIObject awayTarget = FindElement.ById(DummyButton);
                 if (hookButton == null || stateLog == null || awayTarget == null)
                 {
                     Verify.Fail("The page's group-header instrumentation was not found.");
@@ -476,10 +477,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   point: a constant key would satisfy a single-header test.
             // Failure means: a handler cannot tell which group the user activated, so per-group behaviour
             //   built on the event is impossible.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                Button hookButton = FindElement.ById<Button>("HookGroupHeadersButton");
-                Edit toggleReport = FindElement.ById<Edit>("GroupToggleReportTextBlock");
+                Button hookButton = FindElement.ById<Button>(HookGroupHeadersButton);
+                Edit toggleReport = FindElement.ById<Edit>(GroupToggleReport);
                 if (hookButton == null || toggleReport == null)
                 {
                     Verify.Fail("The page's group-header instrumentation was not found.");
@@ -528,7 +529,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Failure means: the two paths keep separate state and drift apart - the gesture-collapsed header stays
             //   Collapsed (or its rows stay unrealized) even though ExpandAllGroups ran. Invisible to a purely
             //   programmatic test, because that test never collapsed the group by gesture in the first place.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject tableView = SelectGroupedPivotAndGetTable();
                 if (tableView == null)
@@ -536,7 +537,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     return;
                 }
 
-                Button expandAllButton = FindElement.ById<Button>("ExpandAllGroupsButton");
+                Button expandAllButton = FindElement.ById<Button>(ExpandAllGroupsButton);
                 if (expandAllButton == null)
                 {
                     Verify.Fail("ExpandAllGroupsButton was not found on the test page.");
@@ -583,7 +584,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   (mirror of the expand-all case).
             // Failure means: a group expanded by gesture is left Expanded (its rows still realized) after
             //   CollapseAllGroups runs, i.e. the gesture wrote expansion state the bulk API cannot see.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject tableView = SelectGroupedPivotAndGetTable();
                 if (tableView == null)
@@ -591,7 +592,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     return;
                 }
 
-                Button collapseAllButton = FindElement.ById<Button>("CollapseAllGroupsButton");
+                Button collapseAllButton = FindElement.ById<Button>(CollapseAllGroupsButton);
                 if (collapseAllButton == null)
                 {
                     Verify.Fail("CollapseAllGroupsButton was not found on the test page.");
@@ -658,10 +659,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // The complement of the #11820 "a cell press focuses the cell" rule, and the case where dev-spec:427's
             // "pointer focus lands on the row" still applies (spec debt). Failure means the row's empty area is a dead
             // target, or focus goes to a cell the user did not click.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
-                Button dummyButton = FindElement.ById<Button>("DummyButton");
+                UIObject tableView = FindElement.ById(BasicTable);
+                Button dummyButton = FindElement.ById<Button>(DummyButton);
                 if (tableView == null || dummyButton == null) { Verify.Fail("BasicTableView and DummyButton are required."); return; }
 
                 UIObject row = GetRow(tableView, 0);
@@ -702,9 +703,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // functional-spec:54 reserves a per-row/cell context menu, so right-click is a menu gesture, not a
             // selection one; ListView agrees (spec debt: no sentence says it). Failure means opening a context menu
             // silently changes selection.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null) { Verify.Fail("BasicTableView was not found on the test page."); return; }
 
                 UIObject row1 = GetRow(tableView, 1);
@@ -743,10 +744,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Interaction plan N.3 PressAndDragOffRowDoesNotSelect (owner decision; dev-spec gesture layer: "Selection is
             // applied on release, and only when the release lands on the row that was pressed"). Failure means a user
             // cannot back out of a selection gesture by dragging away.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
-                UIObject afterTable = FindElement.ById("AfterTableButton");
+                UIObject tableView = FindElement.ById(BasicTable);
+                UIObject afterTable = FindElement.ById(AfterTableButton);
                 if (tableView == null || afterTable == null) { Verify.Fail("BasicTableView and AfterTableButton are required."); return; }
 
                 UIObject row1 = GetRow(tableView, 1);
@@ -784,60 +785,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // Row-relative x of a plain text cell (inside the Age column: Name is 0-160, Age is 160-260).
         // Any cell would do for a selection click; a text cell is used so nothing depends on template content.
-        private const int TextCellRelativeX = 210;
-
-        // Visible column index of Age on BasicTableView (Name, Age, ReadOnlyCity, Score, Template).
-        private const int AgeColumnIndex = 1;
-
-        // Index of the row's cell peer that holds keyboard focus, or -1. Cell peers are the row peer's children, one
-        // per visible column in visible order; reading them is safe since #11820 made them identity-stable (the
-        // main baseline's VerifyTableIsNavigableByAUiaClient passes).
-        private static int IndexOfFocusedCell(UIObject row)
-        {
-            if (row == null) { return -1; }
-            int index = 0;
-            foreach (UIObject cell in row.Children)
-            {
-                if (cell.HasKeyboardFocus)
-                {
-                    return index;
-                }
-                index++;
-            }
-            return -1;
-        }
-
-        // Reads the page's BeginningEdit report. Resolved fresh each call but WITHOUT ElementCache.Clear():
-        // clearing the cache forces the next FindElement to re-walk the whole visual tree, and that walk
-        // descends into TableViewRow children - the peer-manufacturing path of finding #13 - which asserts
-        // the app (0xC0000420 in Microsoft.UI.Xaml.dll, measured in ptrrun2). UIA property reads are live, so
-        // a plain Value read already sees the current text.
-        private static string ReadEditReport()
-        {
-            Edit report = FindElement.ById<Edit>("EditColumnReportTextBlock");
-            return report == null ? null : report.Value;
-        }
-
-        // ALL pointer input below is expressed as ABSOLUTE SCREEN POINTS derived from BoundingRectangle, and
-        // never as a UIObject + offset. Two reasons, both measured:
-        //   1. PRODUCT FINDING #14 - every InputHelper offset overload (LeftClick, MoveMouse, LeftMouseButtonDown)
-        //      resolves its anchor with IUIAutomationElement::GetClickablePoint, and that call access-violates
-        //      the app (0xC0000005) on a TableViewRow peer, because UIA computes the point by walking into the
-        //      row's children and trips the same peer bug as finding #13.
-        //   2. The offset overloads that do NOT crash are anchored inconsistently - some at the clickable point
-        //      (centre), some at the upper-left corner - so a row-relative column x cannot be expressed
-        //      reliably as an offset. ptrrun2 proved this the hard way: clicks at a centre-relative offset
-        //      landed off the table entirely and every selection and focus assertion failed.
-        // The WebView2 interaction tests use the same absolute-point workaround for the same GetClickablePoint
-        // fault (see their Task 30555367 comments).
-        private static void ClickPoint(Point point)
-        {
-            Log.Comment("Click at absolute point ({0}, {1}).", point.X, point.Y);
-            PointerInput.Move(point);
-            PointerInput.Press(PointerButtons.Primary);
-            PointerInput.Release(PointerButtons.Primary);
-            Wait.ForIdle();
-        }
+        private static readonly int TextCellRelativeX = BasicColumnCentreX(AgeColumn);
 
         private static void ClickRow(UIObject row)
         {
@@ -848,112 +796,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             var bounds = row.BoundingRectangle;
             InputHelper.MoveMouse(new Point(bounds.Left + TextCellRelativeX, bounds.Top + (bounds.Height / 2)));
-        }
-
-        // Clicks the row at a row-relative x, so a caller can name a column by its authored width.
-        private static void ClickRowAtColumnOffset(UIObject row, int rowRelativeX)
-        {
-            var bounds = row.BoundingRectangle;
-            ClickPoint(new Point(bounds.Left + rowRelativeX, bounds.Top + (bounds.Height / 2)));
-        }
-
-        // Returns the rows host (last child of the TableView) and the row peer at index, or null. Never descends
-        // into the row's own children - the crash constraint forbids that.
-        private static UIObject GetRow(UIObject tableView, int index)
-        {
-            UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
-            if (rowsHost == null || index >= rowsHost.Children.Count)
-            {
-                return null;
-            }
-
-            UIObject candidate = rowsHost.Children[index];
-            if (candidate == null || candidate.ClassName == null || !candidate.ClassName.Contains("TableViewRow"))
-            {
-                return null;
-            }
-
-            return candidate;
-        }
-
-        // Counts the TableViewRow peers directly under the rows host. This is row-level (one hop from the rows
-        // host to the row peers) and therefore safe; it never asks a row for its children.
-        // Clears the element cache first: a collapse driven from OUTSIDE the table (the page's
-        // CollapseAllGroups button) changes the rows host's children without any interaction inside the tree
-        // to invalidate MITA's cache, so a cached walk can report the pre-collapse count.
-        private static int CountRows(UIObject rowsHost)
-        {
-            ElementCache.Clear();
-
-            int count = 0;
-            foreach (UIObject child in rowsHost.Children)
-            {
-                if (child != null && child.ClassName != null && child.ClassName.Contains("TableViewRow"))
-                {
-                    count++;
-                }
-            }
-
-            return count;
-        }
-
-        // Group headers and rows are siblings under the rows host; the header's class name is "TableViewGroupHeader"
-        // (TableViewGroupHeaderAutomationPeer::GetClassNameCore), distinct from the row's "...TableViewRow".
-        private static UIObject GetFirstGroupHeader(UIObject rowsHost)
-        {
-            return GetGroupHeaderAt(rowsHost, 0);
-        }
-
-        // The index-th group header among the rows host's own children. Sibling-level only; never asks a row
-        // or a header for its children.
-        private static UIObject GetGroupHeaderAt(UIObject rowsHost, int index)
-        {
-            int seen = 0;
-            foreach (UIObject child in rowsHost.Children)
-            {
-                if (child != null && child.ClassName != null && child.ClassName.Contains("GroupHeader"))
-                {
-                    if (seen == index)
-                    {
-                        return child;
-                    }
-                    seen++;
-                }
-            }
-
-            return null;
-        }
-
-        private static Point CentreOf(UIObject element)
-        {
-            var bounds = element.BoundingRectangle;
-            return new Point(bounds.Left + (bounds.Width / 2), bounds.Top + (bounds.Height / 2));
-        }
-
-        // Switches the page Pivot to the Grouped item, then returns GroupedTableView.
-        // Uses the page's GoToGroupedButton (found by AutomationId) rather than clicking the Pivot
-        // header by name: a name-based UIA search makes the provider compute names for realized
-        // TableViewRow peers, which manufactures cell peers and trips finding #13 (0xC0000420).
-        private static UIObject SelectGroupedPivotAndGetTable()
-        {
-            var goToGrouped = FindElement.ById<Button>("GoToGroupedButton");
-            if (goToGrouped == null)
-            {
-                Verify.Fail("GoToGroupedButton was not found.");
-                return null;
-            }
-
-            goToGrouped.InvokeAndWait();
-            Wait.ForIdle();
-
-            UIObject tableView = FindElement.ById("GroupedTableView");
-            if (tableView == null)
-            {
-                Verify.Fail("GroupedTableView was not found after selecting the Grouped pivot item.");
-                return null;
-            }
-
-            return tableView;
         }
 
         #endregion

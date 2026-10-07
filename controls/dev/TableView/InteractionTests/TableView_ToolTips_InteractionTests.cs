@@ -16,6 +16,9 @@ using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using MUXTestInfra.Shared.Infra;
 using Point = System.Drawing.Point;
 
+using static Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.TableViewInteractionTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
+
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // TableView tooltip hover interaction tests.
@@ -25,15 +28,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // reach: TableView_ToolTips_APITests.cs asserts the ToolTip object that was attached and the HelpText the
     // peer reports, but nothing programmatic makes ToolTipService open a popup - it shows on pointer dwell.
     //
-    // CRASH CONSTRAINT (product finding #13): asking a TableViewRow peer for its children crashes the app
-    // (0xC0000420). Two consequences, both load-bearing here:
-    //   1. No cell peer is ever resolved. The cell tests point at a cell by COMPOSING coordinates from two
-    //      peers that are each safe to read on their own - the column's x from its header, the row's y from
-    //      the row peer. The constraint forbids descending INTO a row, not pointing at one.
-    //   2. FindElement.ById / ByName must not be used to locate the popup. On a miss they call
-    //      ElementCache.Refresh(), which walks window.Descendants reading .Name on every node
-    //      (FindElement.cs:384-423) - the row-peer descent finding #13 kills the app for. This took down the
-    //      whole §7 run once. The searches below are bounded and explicitly refuse to enter the TableView.
+    // Product finding #13 (a client asking a row peer for its children fail-fasted the app) shaped the older tests in
+    // this file: they observe rows at row level, point at cells by coordinates, and read editors and visual states
+    // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
+    // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
     public class TableViewToolTipsInteractionTests
     {
@@ -59,6 +57,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+            RestartAppIfLongRunning();
         }
 
         #region 9. Tooltip hover
@@ -77,9 +76,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   that; it owns only the gesture route - dwell, hit-testing and the ToolTipService wiring.
             // Failure means: the tooltip is attached but never shown, so the affordance does not exist for a
             //   user even though every API assertion about it passes.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {
                     Verify.Fail("BasicTableView was not found on the test page.");
@@ -166,9 +165,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // TableViewCellsPanel's column geometry, so the header's horizontal centre is over that column's
             // cell in every row. The crash constraint forbids descending INTO a row; it does not forbid
             // pointing at one.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                UIObject tableView = FindElement.ById("BasicTableView");
+                UIObject tableView = FindElement.ById(BasicTable);
                 if (tableView == null)
                 {
                     Verify.Fail("BasicTableView was not found on the test page.");
@@ -209,7 +208,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Tooltip found: class='{0}' text='{1}'.", toolTip.ClassName, toolTipText);
 
                 Verify.IsTrue(
-                    toolTipText.Contains("Person 0"),
+                    toolTipText.Contains(BasicName(0)),
                     string.Format(
                         "The tooltip over row 0's Name cell must carry that ROW's bound value 'Person 0'; got '{0}'.",
                         toolTipText));
@@ -261,15 +260,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // arithmetic (finding #20). Both ends of the list are identified by the scroll extreme instead:
             // scrolled fully to the bottom, the bottom-most realized row is the last item, whatever the
             // realization order happens to be.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
-                if (!SelectPivotItem("Scrolling"))
+                if (!SelectPivotItem(ScrollingPivotItem))
                 {
                     Verify.Fail("GoToScrollingButton was not found on the test page.");
                     return;
                 }
 
-                UIObject tableView = FindElement.ById("ScrollingTableView");
+                UIObject tableView = FindElement.ById(ScrollingTable);
                 if (tableView == null)
                 {
                     Verify.Fail("ScrollingTableView was not found on the test page.");
@@ -298,7 +297,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 string beforeText = ReadToolTipText(beforeToolTip);
                 Log.Comment("Tooltip over the top row before scrolling: '{0}'.", beforeText);
                 Verify.IsTrue(
-                    beforeText.Contains("Redmond"),
+                    beforeText.Contains(CityOf(0)),
                     string.Format(
                         "Precondition: the top row is item 0, whose City is 'Redmond'; got '{0}'.", beforeText));
 
@@ -344,7 +343,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Tooltip over the bottom row after scrolling: '{0}'.", afterText);
 
                 Verify.IsTrue(
-                    afterText.Contains("Seattle"),
+                    afterText.Contains(CityOf(ScrollingItemCount - 1)),
                     string.Format(
                         "The bottom row at maximum scroll is item 199, whose City is 'Seattle'; got '{0}'. A " +
                         "value of 'Redmond' specifically means the container is still showing the tooltip of " +
@@ -354,43 +353,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         #endregion
-
-        // ---- helpers ---------------------------------------------------------------------------------
-        // Returns the header peer for the named column, or null. Enumerating the header host's children is the
-        // measured-safe descent (finding #13); this never touches a row peer's children.
-        private static UIObject FindColumnHeader(UIObject tableView, string headerText)
-        {
-            UIObject headerHost = tableView.Children[0];
-            foreach (UIObject child in headerHost.Children)
-            {
-                if (child.Name == headerText)
-                {
-                    return child;
-                }
-            }
-
-            return null;
-        }
-
-        // Returns the row peer at index, or null. The rows host is the TableView's last child; its children are
-        // the row peers. This is one hop and stops there - it never asks a row for its children, which is the
-        // descent finding #13 fail-fasts on.
-        private static UIObject GetRow(UIObject tableView, int index)
-        {
-            UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
-            if (rowsHost == null || index >= rowsHost.Children.Count)
-            {
-                return null;
-            }
-
-            UIObject candidate = rowsHost.Children[index];
-            if (candidate == null || candidate.ClassName == null || !candidate.ClassName.Contains("TableViewRow"))
-            {
-                return null;
-            }
-
-            return candidate;
-        }
 
         // The screen point over a given column's cell in a given row: the column's x from its HEADER, the row's
         // y from the ROW. See the note in CellToolTipAppearsOnHover for why this composition is what keeps the
@@ -437,30 +399,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
             Wait.ForMilliseconds(c_toolTipDwellMs);
             Wait.ForIdle();
-        }
-
-        // Selects a Pivot item by invoking the page's GoTo* button, found by AutomationId. Not by header name:
-        // a name-based UIA search makes the provider compute names for realized TableViewRow peers, which
-        // manufactures cell peers and trips finding #13 (0xC0000420).
-        private static bool SelectPivotItem(string headerText)
-        {
-            var goTo = FindElement.ById<Button>("GoTo" + headerText + "Button");
-            if (goTo == null)
-            {
-                return false;
-            }
-
-            goTo.InvokeAndWait();
-            Wait.ForIdle();
-            return true;
-        }
-
-        // Reads the page's PART_BodyScroller offset readout. Used only as a PRECONDITION that the body moved -
-        // never as the subject of an assertion, which AGENTS.md forbids for page-written readouts.
-        private static string ReadScrollOffsets()
-        {
-            var readout = FindElement.ById<TextBlock>("ScrollOffsetTextBlock");
-            return readout == null ? "<no readout>" : readout.DocumentText;
         }
 
         // Drags the body scroller's vertical ScrollBar thumb from the top of the track to well past the bottom,
@@ -560,12 +498,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
 
             return bottom;
-        }
-
-        private static Point CentreOf(UIObject element)
-        {
-            var bounds = element.BoundingRectangle;
-            return new Point(bounds.Left + (bounds.Width / 2), bounds.Top + (bounds.Height / 2));
         }
 
         // Finds an open ToolTip, or returns null. Two candidate layers are searched, in order, because which
@@ -702,7 +634,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             string className = element.ClassName ?? string.Empty;
             return className.IndexOf("TableView", StringComparison.OrdinalIgnoreCase) >= 0
-                || string.Equals(element.AutomationId, "BasicTableView", StringComparison.Ordinal);
+                || string.Equals(element.AutomationId, BasicTable, StringComparison.Ordinal);
         }
     }
 }

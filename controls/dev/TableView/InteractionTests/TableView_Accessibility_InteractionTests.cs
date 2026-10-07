@@ -15,6 +15,9 @@ using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using MUXTestInfra.Shared.Infra;
 
+using static Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.TableViewInteractionTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
+
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // TableView accessibility-route interaction tests.
@@ -26,9 +29,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // it is why they are not merged into the keyboard file - the keyboard file must reach its targets by real
     // tab-stop traversal, or it stops proving anything about keyboard navigation.
     //
-    // CRASH CONSTRAINT (product finding #13): asking a TableViewRow peer for its children crashes the app
-    // (0xC0000420). Nothing here descends into a row's children; every assertion is made at the row/group-header
-    // level or by counting the peers directly under the rows host.
+    // Product finding #13 (a client asking a row peer for its children fail-fasted the app) shaped the older tests in
+    // this file: they observe rows at row level, point at cells by coordinates, and read editors and visual states
+    // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
+    // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
     public class TableViewAccessibilityInteractionTests
     {
@@ -46,6 +50,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+            RestartAppIfLongRunning();
         }
 
         #region Assistive-technology focus route
@@ -64,7 +69,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   focus by different paths, so one passing says nothing about the other.
             // Failure means: TableView is operable by a sighted keyboard user but not by a screen-reader user,
             //   which is an accessibility bug, not a cosmetic one.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject tableView = SelectGroupedPivotAndGetTable();
                 if (tableView == null)
@@ -114,67 +119,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(baselineRows, CountRows(rowsHost), "A second Enter must re-expand the same group and restore the baseline row count.");
                 Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapse.ExpandCollapseState, "After the second Enter the header must report Expanded.");
             }
-        }
-
-        #endregion
-
-        #region Helpers
-
-        // Group headers and rows are siblings under the rows host; the header's class name is
-        // "TableViewGroupHeader" (TableViewGroupHeaderAutomationPeer::GetClassNameCore).
-        private static UIObject GetFirstGroupHeader(UIObject rowsHost)
-        {
-            foreach (UIObject child in rowsHost.Children)
-            {
-                if (child != null && child.ClassName != null && child.ClassName.Contains("GroupHeader"))
-                {
-                    return child;
-                }
-            }
-
-            return null;
-        }
-
-        // Counts the TableViewRow peers directly under the rows host - row level only, never a row's children.
-        private static int CountRows(UIObject rowsHost)
-        {
-            ElementCache.Clear();
-
-            int count = 0;
-            foreach (UIObject child in rowsHost.Children)
-            {
-                if (child != null && child.ClassName != null && child.ClassName.Contains("TableViewRow"))
-                {
-                    count++;
-                }
-            }
-
-            return count;
-        }
-
-        // Switches the page Pivot to the Grouped item, then returns GroupedTableView. Uses the page's
-        // GoToGroupedButton rather than a name-based Pivot header search: a name search makes the provider
-        // compute names for realized TableViewRow peers and trips finding #13 (0xC0000420).
-        private static UIObject SelectGroupedPivotAndGetTable()
-        {
-            var goToGrouped = FindElement.ById<Button>("GoToGroupedButton");
-            if (goToGrouped == null)
-            {
-                Verify.Fail("GoToGroupedButton was not found.");
-                return null;
-            }
-
-            goToGrouped.InvokeAndWait();
-            Wait.ForIdle();
-
-            UIObject tableView = FindElement.ById("GroupedTableView");
-            if (tableView == null)
-            {
-                Verify.Fail("GroupedTableView was not found after selecting the Grouped pivot item.");
-                return null;
-            }
-
-            return tableView;
         }
 
         #endregion

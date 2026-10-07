@@ -19,5 +19,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TableViewPage.xaml.cs">
       <DependentUpon>TableViewPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)TableViewTestPageFacts.cs" />
   </ItemGroup>
 </Project>

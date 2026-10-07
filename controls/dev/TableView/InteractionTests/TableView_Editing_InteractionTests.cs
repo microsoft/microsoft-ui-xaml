@@ -16,6 +16,9 @@ using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using MUXTestInfra.Shared.Infra;
 using Point = System.Drawing.Point;
 
+using static Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.TableViewInteractionTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPageFacts;
+
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // TableView editing-gesture interaction tests.
@@ -24,12 +27,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // then driven from the keyboard - so it gets its own file rather than being split across the pointer and
     // keyboard files.
     //
-    // CRASH CONSTRAINT (product finding #13): an out-of-process client must never ask a TableViewRow peer for
-    // its children; TableViewRowAutomationPeer::GetChildrenCore manufactures fresh cell peers per call and
-    // fail-fasts the app. So nothing here resolves a cell or an editor peer. Cells are reached by clicking the
-    // row at a row-relative x, and the editor is observed through the page's in-process probe
-    // (EditorProbeTextBlock), which walks the visual tree in process and therefore creates no peers at all -
-    // the same technique the row and group-header state logs already use.
+    // Product finding #13 (a client asking a row peer for its children fail-fasted the app) shaped the older tests in
+    // this file: they observe rows at row level, point at cells by coordinates, and read editors and visual states
+    // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
+    // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
     public class TableViewEditingInteractionTests
     {
@@ -47,6 +48,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
+            RestartAppIfLongRunning();
         }
 
         #region 5. Editing gestures
@@ -60,7 +62,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //       dev-spec:284 - the gesture is driven from PointerPressed with click-count tracking, not from a
             //       DoubleTapped handler, so that a row marking the press handled for selection cannot kill it.
             // Observed through the page's BeginningEdit report (TableViewBeginningEditEventArgs.Column is public IDL).
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject row = GetFirstRow();
 
@@ -85,7 +87,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   silent rather than cancelling - hence the assertion is that the event does not fire at all.
             // The second leg is a POSITIVE CONTROL: without it a double-click that missed the table entirely would
             //   look like correct gating.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject row = GetFirstRow();
 
@@ -118,7 +120,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   (TableView.idl:208 - "A column with no CellEditingTemplate and no built-in editor is not editable").
             //   An implementation that raised the event and swapped in nothing would pass the other test and fail
             //   this one.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject row = GetFirstRow();
 
@@ -144,7 +146,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   documented route into the same editor, so it is a separate test: a regression can break one route
             //   while leaving the other intact (they enter from OnKeyDown and OnPointerPressed respectively).
             // A single click first, to establish which cell is current - F2 acts on the current cell.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject row = GetFirstRow();
 
@@ -176,7 +178,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // The page's template column authors its editing template as a TextBox with AutomationProperties.Name
             //   "TemplateCellEditor", which is what distinguishes it from the built-in text-column editor: both are
             //   TextBoxes, so type alone would not prove the template was used.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject row = GetFirstRow();
 
@@ -205,7 +207,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Not API-testable: SetValue overwrites the initial value inside the same call, so there is no moment at
             //   which an API test could observe it. The probe reads the editor's text at the instant it opens.
             // The first item's Name is "Person 0" (the page seeds "Person " + index).
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject row = GetFirstRow();
 
@@ -215,7 +217,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 string probe = ReadEditorProbe();
                 Log.Comment("Editor probe: '{0}'.", probe);
 
-                Verify.AreEqual("Person 0", ProbeField(probe, 2),
+                Verify.AreEqual(BasicName(0), ProbeField(probe, 2),
                     "The editor must open showing the cell's current value; an empty or stale editor would silently discard data on commit.");
 
                 CancelAnyOpenEdit();
@@ -232,7 +234,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   (Enter commits, Escape cancels) silently depends on this.
             // The probe compares the focused element against the editor it found, walking up parents so an editor
             //   whose inner content part takes focus still counts.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject row = GetFirstRow();
 
@@ -258,11 +260,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   own account of the outcome) AND the bound item's Name must hold the typed text (the edit actually
             //   reached the data). An implementation that closed the editor and reported Commit without pushing the
             //   value would pass the first and fail the second.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject row = GetFirstRow();
 
-                Verify.AreEqual("Person 0", ReadFirstItemName(), "Precondition: the first item's Name is the seeded value.");
+                Verify.AreEqual(BasicName(0), ReadFirstItemName(), "Precondition: the first item's Name is the seeded value.");
 
                 OpenNameEditorAndReplaceText(row, "Renamed");
 
@@ -287,11 +289,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // The mirror of EnterKeyCommitsEdit, and it is the more important half: a cancel that still wrote the
             //   value is silent data loss. Both observations are taken before either is asserted, because Verify
             //   throws in this suite and a failure on the first would hide the second.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject row = GetFirstRow();
 
-                Verify.AreEqual("Person 0", ReadFirstItemName(), "Precondition: the first item's Name is the seeded value.");
+                Verify.AreEqual(BasicName(0), ReadFirstItemName(), "Precondition: the first item's Name is the seeded value.");
 
                 OpenNameEditorAndReplaceText(row, "Discarded");
 
@@ -304,7 +306,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Edit-end report: '{0}'. First item Name: '{1}'.", endReport, itemName);
 
                 Verify.AreEqual("Cancel;", endReport, "Escape must end the edit with EditAction.Cancel.");
-                Verify.AreEqual("Person 0", itemName, "Escape must leave the item's pre-edit value intact; writing it anyway is silent data loss.");
+                Verify.AreEqual(BasicName(0), itemName, "Escape must leave the item's pre-edit value intact; writing it anyway is silent data loss.");
             }
         }
 
@@ -316,7 +318,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Focus leaves by a real click on a button OUTSIDE the table, which is how a user loses an editor in
             //   practice. The contract is commit, not cancel: a user who types and then clicks elsewhere expects to
             //   keep the edit, and the failure mode is silent data loss.
-            using (var setup = new TestSetupHelper("TableView Tests"))
+            using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject row = GetFirstRow();
 
@@ -324,7 +326,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 // its panel, so it stays on screen. The bounds guard is not decoration: a button pushed off the
                 // panel reports an empty rectangle and the click below would silently land at (0, 0), which is
                 // exactly how this test failed the first time it ran.
-                UIObject focusSink = FindElement.ById("AfterTableButton");
+                UIObject focusSink = FindElement.ById(AfterTableButton);
                 if (focusSink == null)
                 {
                     Verify.Fail("AfterTableButton was not found on the test page.");
@@ -336,7 +338,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(sinkBounds.Width > 0 && sinkBounds.Height > 0,
                     "The focus target is not laid out on screen, so the click below could not move focus.");
 
-                Verify.AreEqual("Person 0", ReadFirstItemName(), "Precondition: the first item's Name is the seeded value.");
+                Verify.AreEqual(BasicName(0), ReadFirstItemName(), "Precondition: the first item's Name is the seeded value.");
 
                 OpenNameEditorAndReplaceText(row, "CommittedByFocusLoss");
 
@@ -357,20 +359,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         #region Helpers
 
         // Row-relative x inside the Name column (0-160), which is editable.
-        private const int NameCellRelativeX = 80;
+        private static readonly int NameCellRelativeX = BasicColumnCentreX(NameColumn);
 
         // Row-relative x inside the Age column (160-260), which is editable.
-        private const int AgeCellRelativeX = 210;
+        private static readonly int AgeCellRelativeX = BasicColumnCentreX(AgeColumn);
 
         // Row-relative x inside the ReadOnlyCity column (260-420), authored IsReadOnly="True".
-        private const int ReadOnlyCellRelativeX = 340;
+        private static readonly int ReadOnlyCellRelativeX = BasicColumnCentreX(ReadOnlyCityColumn);
 
         // Row-relative x inside the Template column (520-720), which authors a CellEditingTemplate.
-        private const int TemplateCellRelativeX = 620;
+        private static readonly int TemplateCellRelativeX = BasicColumnCentreX(TemplateColumn);
 
         private static UIObject GetFirstRow()
         {
-            UIObject tableView = FindElement.ById("BasicTableView");
+            UIObject tableView = FindElement.ById(BasicTable);
             if (tableView == null)
             {
                 Verify.Fail("BasicTableView was not found on the test page.");
@@ -406,34 +408,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
-        // Page readouts. Resolved fresh each call but WITHOUT ElementCache.Clear(): clearing the cache forces the
-        // next FindElement to re-walk the whole visual tree, and that walk descends into TableViewRow children -
-        // the peer-manufacturing path of finding #13 - which asserts the app. UIA property reads are live, so a
-        // plain Value read already sees the current text.
-        private static string ReadEditReport()
-        {
-            Edit report = FindElement.ById<Edit>("EditColumnReportTextBlock");
-            return report == null ? null : report.Value;
-        }
-
-        private static string ReadEditorProbe()
-        {
-            Edit report = FindElement.ById<Edit>("EditorProbeTextBlock");
-            return report == null ? null : report.Value;
-        }
-
-        private static string ReadEditEndReport()
-        {
-            Edit report = FindElement.ById<Edit>("EditEndReportTextBlock");
-            return report == null ? null : report.Value;
-        }
-
-        private static string ReadFirstItemName()
-        {
-            Edit report = FindElement.ById<Edit>("FirstItemNameTextBlock");
-            return report == null ? null : report.Value;
-        }
-
         // The probe writes one entry per opened edit, "<type>|<automationName>|<text>|focus=<bool>;".
         // Returns the requested field of the FIRST entry, or a diagnostic string the assertion will print.
         private static string ProbeField(string probe, int field)
@@ -446,59 +420,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             string firstEntry = probe.Split(';')[0];
             string[] fields = firstEntry.Split('|');
             return field < fields.Length ? fields[field] : "<probe entry has no field " + field + ": '" + firstEntry + "'>";
-        }
-
-        // ALL pointer input below is expressed as ABSOLUTE SCREEN POINTS derived from BoundingRectangle, never as
-        // a UIObject + offset: every InputHelper offset overload resolves its anchor with
-        // IUIAutomationElement::GetClickablePoint, and that call access-violates the app on a TableViewRow peer
-        // (product finding #14) because UIA computes the point by walking into the row's children.
-        private static void ClickPoint(Point point)
-        {
-            Log.Comment("Click at absolute point ({0}, {1}).", point.X, point.Y);
-            PointerInput.Move(point);
-            PointerInput.Press(PointerButtons.Primary);
-            PointerInput.Release(PointerButtons.Primary);
-            Wait.ForIdle();
-        }
-
-        private static void ClickRowAtColumnOffset(UIObject row, int rowRelativeX)
-        {
-            var bounds = row.BoundingRectangle;
-            ClickPoint(new Point(bounds.Left + rowRelativeX, bounds.Top + (bounds.Height / 2)));
-        }
-
-        // The two press/release pairs are issued back to back with no idle wait between them: a Wait.ForIdle in
-        // the middle can exceed the system double-click time and turn the gesture into two single clicks.
-        private static void DoubleClickRowAtColumnOffset(UIObject row, int rowRelativeX)
-        {
-            var bounds = row.BoundingRectangle;
-            var point = new Point(bounds.Left + rowRelativeX, bounds.Top + (bounds.Height / 2));
-
-            Log.Comment("Double-click at absolute point ({0}, {1}).", point.X, point.Y);
-            PointerInput.Move(point);
-            PointerInput.Press(PointerButtons.Primary);
-            PointerInput.Release(PointerButtons.Primary);
-            PointerInput.Press(PointerButtons.Primary);
-            PointerInput.Release(PointerButtons.Primary);
-            Wait.ForIdle();
-        }
-
-        // Returns the row peer at index, or null. Never descends into the row's own children.
-        private static UIObject GetRow(UIObject tableView, int index)
-        {
-            UIObject rowsHost = tableView.Children[tableView.Children.Count - 1];
-            if (rowsHost == null || index >= rowsHost.Children.Count)
-            {
-                return null;
-            }
-
-            UIObject candidate = rowsHost.Children[index];
-            if (candidate == null || candidate.ClassName == null || !candidate.ClassName.Contains("TableViewRow"))
-            {
-                return null;
-            }
-
-            return candidate;
         }
 
         #endregion
