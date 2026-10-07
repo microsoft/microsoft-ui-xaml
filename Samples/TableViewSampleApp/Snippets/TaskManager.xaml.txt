@@ -63,18 +63,18 @@
                         TextChanged="OnSearchBoxTextChanged"/>
     </Grid>
 
-    <adv:TableView x:Name="ProcessTable"
+    <tv:TableView x:Name="ProcessTable"
                    Grid.Row="1"
                    Sorted="OnProcessTableSorted"
                    SelectionChanged="OnSelectionChanged"
                    SelectionMode="Single">
-        <adv:TableViewTemplateColumn Header="Name" CellTemplate="{StaticResource NameCellTemplate}" MinWidth="320" Width="400" CanSort="True" SortMemberPath="Name"/>
-        <adv:TableViewTemplateColumn Header="Status" CellTemplate="{StaticResource StatusCellTemplate}" MinWidth="100" Width="130" CanSort="True" SortMemberPath="StatusText"/>
-        <adv:TableViewTemplateColumn Header="CPU" CellTemplate="{StaticResource CpuCellTemplate}" MinWidth="70" Width="90" CanSort="True" SortMemberPath="CpuPercent"/>
-        <adv:TableViewTemplateColumn Header="Memory" CellTemplate="{StaticResource MemoryCellTemplate}" MinWidth="90" Width="120" CanSort="True" SortMemberPath="MemoryMB"/>
-        <adv:TableViewTemplateColumn Header="Disk" CellTemplate="{StaticResource DiskCellTemplate}" MinWidth="80" Width="100" CanSort="True" SortMemberPath="DiskMBps"/>
-        <adv:TableViewTemplateColumn Header="Network" CellTemplate="{StaticResource NetworkCellTemplate}" MinWidth="80" Width="100" CanSort="True" SortMemberPath="NetworkMbps"/>
-    </adv:TableView>
+        <tv:TableViewTemplateColumn Header="Name" CellTemplate="{StaticResource NameCellTemplate}" MinWidth="320" Width="400" CanSort="True" SortMemberPath="Name"/>
+        <tv:TableViewTemplateColumn Header="Status" CellTemplate="{StaticResource StatusCellTemplate}" MinWidth="100" Width="130" CanSort="True" SortMemberPath="StatusText"/>
+        <tv:TableViewTemplateColumn Header="CPU" CellTemplate="{StaticResource CpuCellTemplate}" MinWidth="70" Width="90" CanSort="True" SortMemberPath="CpuPercent"/>
+        <tv:TableViewTemplateColumn Header="Memory" CellTemplate="{StaticResource MemoryCellTemplate}" MinWidth="90" Width="120" CanSort="True" SortMemberPath="MemoryMB"/>
+        <tv:TableViewTemplateColumn Header="Disk" CellTemplate="{StaticResource DiskCellTemplate}" MinWidth="80" Width="100" CanSort="True" SortMemberPath="DiskMBps"/>
+        <tv:TableViewTemplateColumn Header="Network" CellTemplate="{StaticResource NetworkCellTemplate}" MinWidth="80" Width="100" CanSort="True" SortMemberPath="NetworkMbps"/>
+    </tv:TableView>
 
     <TextBlock x:Name="StatusBar" Grid.Row="2" AutomationProperties.LiveSetting="Polite"/>
 </Grid>

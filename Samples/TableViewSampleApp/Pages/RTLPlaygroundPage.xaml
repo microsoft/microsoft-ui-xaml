@@ -5,7 +5,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
@@ -33,7 +33,7 @@
                     MinHeight="104"/>
 
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
-                    <adv:TableView
+                    <tv:TableView
                         x:Name="PlaygroundTable"
                         AutomationProperties.AutomationId="PlaygroundTable"
                         AutomationProperties.Name="Right-to-left people"
@@ -42,16 +42,16 @@
                         VerticalAlignment="Stretch"
                         MinHeight="320">
                         <!-- RTL mirrors column flow and resize grippers. -->
-                        <adv:TableViewTextColumn x:Name="IndexColumn" Header="Index"        Width="{StaticResource ColWidthId}"  Binding="{Binding Index}" CanSort="False"/>
-                        <adv:TableViewTextColumn x:Name="NameColumn" Header="Name"         Width="{StaticResource ColWidthLongName}"  Binding="{Binding Name}" CanSort="False"/>
-                        <adv:TableViewTextColumn x:Name="DepartmentColumn" Header="Department"   Width="{StaticResource ColWidthDepartment}" CanResize="True"  Binding="{Binding Department}" CanSort="False"/>
-                        <adv:TableViewTextColumn x:Name="RoleColumn" Header="Role"         Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
-                        <adv:TableViewTextColumn x:Name="RegionColumn" Header="Region"       Width="{StaticResource ColWidthLocation}" Binding="{Binding Region}" CanSort="False"/>
-                        <adv:TableViewTextColumn x:Name="JoinDateColumn" Header="Join date"     Width="{StaticResource ColWidthDate}" Binding="{Binding JoinDate}" CanSort="False"/>
-                        <adv:TableViewTextColumn x:Name="NotesColumn" Header="Notes"        Width="{StaticResource ColWidthNotes}" Binding="{Binding Notes}" CanSort="False"/>
-                        <adv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary"       Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary}" CanSort="False"/>
-                        <adv:TableViewTextColumn x:Name="StatusColumn" Header="Status"       Width="{StaticResource ColWidthDepartment}" Binding="{Binding Status}" CanSort="False"/>
-                    </adv:TableView>
+                        <tv:TableViewTextColumn x:Name="IndexColumn" Header="Index"        Width="{StaticResource ColWidthId}"  Binding="{Binding Index}" CanSort="False"/>
+                        <tv:TableViewTextColumn x:Name="NameColumn" Header="Name"         Width="{StaticResource ColWidthLongName}"  Binding="{Binding Name}" CanSort="False"/>
+                        <tv:TableViewTextColumn x:Name="DepartmentColumn" Header="Department"   Width="{StaticResource ColWidthDepartment}" CanResize="True"  Binding="{Binding Department}" CanSort="False"/>
+                        <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role"         Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
+                        <tv:TableViewTextColumn x:Name="RegionColumn" Header="Region"       Width="{StaticResource ColWidthLocation}" Binding="{Binding Region}" CanSort="False"/>
+                        <tv:TableViewTextColumn x:Name="JoinDateColumn" Header="Join date"     Width="{StaticResource ColWidthDate}" Binding="{Binding JoinDate}" CanSort="False"/>
+                        <tv:TableViewTextColumn x:Name="NotesColumn" Header="Notes"        Width="{StaticResource ColWidthNotes}" Binding="{Binding Notes}" CanSort="False"/>
+                        <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary"       Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary}" CanSort="False"/>
+                        <tv:TableViewTextColumn x:Name="StatusColumn" Header="Status"       Width="{StaticResource ColWidthDepartment}" Binding="{Binding Status}" CanSort="False"/>
+                    </tv:TableView>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>

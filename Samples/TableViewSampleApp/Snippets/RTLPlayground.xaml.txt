@@ -1,5 +1,5 @@
-<adv:TableView x:Name="PlaygroundTable" FlowDirection="RightToLeft" SelectionMode="Single">
-    <adv:TableViewTextColumn Header="Index"      Binding="{Binding Index}"      CanSort="False"/>
-    <adv:TableViewTextColumn Header="Name"       Binding="{Binding Name}"       CanSort="False"/>
-    <adv:TableViewTextColumn Header="Department" Binding="{Binding Department}" CanResize="True" CanSort="False"/>
-</adv:TableView>
+<tv:TableView x:Name="PlaygroundTable" FlowDirection="RightToLeft" SelectionMode="Single">
+    <tv:TableViewTextColumn Header="Index"      Binding="{Binding Index}"      CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name"       Binding="{Binding Name}"       CanSort="False"/>
+    <tv:TableViewTextColumn Header="Department" Binding="{Binding Department}" CanResize="True" CanSort="False"/>
+</tv:TableView>

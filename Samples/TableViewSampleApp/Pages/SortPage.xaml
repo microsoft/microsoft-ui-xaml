@@ -5,7 +5,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
@@ -32,7 +32,7 @@
                     Message="Click a column header to sort by it; click again to flip the direction. Use the buttons to call SortByColumn, ToggleSortDirection, and ClearSort from code."
                     MinHeight="104"/>
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                    <adv:TableView
+                    <tv:TableView
                         x:Name="TeamsTable"
                         AutomationProperties.AutomationId="SortTeamsTable"
                         AutomationProperties.Name="League standings"
@@ -40,17 +40,17 @@
                         Sorted="OnTableSorted"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <adv:TableViewTextColumn x:Name="GroupColumn"          Header="Group" Width="{StaticResource ColWidthNumber}"     SortMemberPath="Group"          Binding="{Binding Group}"/>
-                        <adv:TableViewTextColumn x:Name="TeamColumn"           Header="Team"  Width="*" MinWidth="140" SortMemberPath="Team"           Binding="{Binding Team}"/>
-                        <adv:TableViewTextColumn x:Name="PlayedColumn"         Header="P"     Width="{StaticResource ColWidthNumber}"     CanSort="False"             Binding="{Binding Played}"/>
-                        <adv:TableViewTextColumn x:Name="WinsColumn"           Header="W"     Width="{StaticResource ColWidthNumber}"     SortMemberPath="Wins"           Binding="{Binding Wins}"/>
-                        <adv:TableViewTextColumn x:Name="DrawsColumn"          Header="D"     Width="{StaticResource ColWidthNumber}"     SortMemberPath="Draws"          Binding="{Binding Draws}"/>
-                        <adv:TableViewTextColumn x:Name="LossesColumn"         Header="L"     Width="{StaticResource ColWidthNumber}"     SortMemberPath="Losses"         Binding="{Binding Losses}"/>
-                        <adv:TableViewTextColumn x:Name="GoalsForColumn"       Header="GF"    Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalsFor"       Binding="{Binding GoalsFor}"/>
-                        <adv:TableViewTextColumn x:Name="GoalsAgainstColumn"   Header="GA"    Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalsAgainst"   Binding="{Binding GoalsAgainst}"/>
-                        <adv:TableViewTextColumn x:Name="GoalDifferenceColumn" Header="GD"    Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalDifference" Binding="{Binding GoalDifference}"/>
-                        <adv:TableViewTextColumn x:Name="PointsColumn"         Header="Pts"   Width="{StaticResource ColWidthNumber}"     SortMemberPath="Points"         Binding="{Binding Points}"/>
-                    </adv:TableView>
+                        <tv:TableViewTextColumn x:Name="GroupColumn"          Header="Group" Width="{StaticResource ColWidthNumber}"     SortMemberPath="Group"          Binding="{Binding Group}"/>
+                        <tv:TableViewTextColumn x:Name="TeamColumn"           Header="Team"  Width="*" MinWidth="140" SortMemberPath="Team"           Binding="{Binding Team}"/>
+                        <tv:TableViewTextColumn x:Name="PlayedColumn"         Header="P"     Width="{StaticResource ColWidthNumber}"     CanSort="False"             Binding="{Binding Played}"/>
+                        <tv:TableViewTextColumn x:Name="WinsColumn"           Header="W"     Width="{StaticResource ColWidthNumber}"     SortMemberPath="Wins"           Binding="{Binding Wins}"/>
+                        <tv:TableViewTextColumn x:Name="DrawsColumn"          Header="D"     Width="{StaticResource ColWidthNumber}"     SortMemberPath="Draws"          Binding="{Binding Draws}"/>
+                        <tv:TableViewTextColumn x:Name="LossesColumn"         Header="L"     Width="{StaticResource ColWidthNumber}"     SortMemberPath="Losses"         Binding="{Binding Losses}"/>
+                        <tv:TableViewTextColumn x:Name="GoalsForColumn"       Header="GF"    Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalsFor"       Binding="{Binding GoalsFor}"/>
+                        <tv:TableViewTextColumn x:Name="GoalsAgainstColumn"   Header="GA"    Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalsAgainst"   Binding="{Binding GoalsAgainst}"/>
+                        <tv:TableViewTextColumn x:Name="GoalDifferenceColumn" Header="GD"    Width="{StaticResource ColWidthNumber}"     SortMemberPath="GoalDifference" Binding="{Binding GoalDifference}"/>
+                        <tv:TableViewTextColumn x:Name="PointsColumn"         Header="Pts"   Width="{StaticResource ColWidthNumber}"     SortMemberPath="Points"         Binding="{Binding Points}"/>
+                    </tv:TableView>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>

@@ -47,13 +47,13 @@
     </DataTemplate>
 </Page.Resources>
 
-<adv:TableView x:Name="PeopleTable" SelectionMode="Single">
-    <adv:TableViewTextColumn Header="Name" Binding="{Binding FullName}" CanSort="False"/>
-    <adv:TableViewTemplateColumn Header="Join date" SortMemberPath="JoinDate" CellTemplate="{StaticResource JoinDateCell}" CanSort="False"/>
-    <adv:TableViewTemplateColumn Header="Shift start" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftStartCell}" CanSort="False"/>
-    <adv:TableViewTemplateColumn Header="Department" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentCell}" CanSort="False"/>
-    <adv:TableViewTemplateColumn Header="Active" SortMemberPath="IsActive" CellTemplate="{StaticResource IsActiveCell}" CanSort="False"/>
-</adv:TableView>
+<tv:TableView x:Name="PeopleTable" SelectionMode="Single">
+    <tv:TableViewTextColumn Header="Name" Binding="{Binding FullName}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Join date" SortMemberPath="JoinDate" CellTemplate="{StaticResource JoinDateCell}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Shift start" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftStartCell}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Department" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentCell}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Active" SortMemberPath="IsActive" CellTemplate="{StaticResource IsActiveCell}" CanSort="False"/>
+</tv:TableView>
 
 // Code-behind wires the source and ComboBox choices in this split-binary host.
 People = new ObservableCollection<Person>(PersonData.Take(18));

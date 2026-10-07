@@ -3,7 +3,7 @@
      ThemeResource-backed styles so Light, Dark, and High Contrast stay correct. -->
 
 <Page.Resources>
-    <Style x:Key="CustomBandingTableViewStyle" TargetType="adv:TableView">
+    <Style x:Key="CustomBandingTableViewStyle" TargetType="tv:TableView">
         <Setter Property="RowBackground" Value="{ThemeResource SampleCustomRowBackgroundBrush}"/>
         <Setter Property="AlternatingRowBackground" Value="{ThemeResource SampleCustomAlternatingRowBackgroundBrush}"/>
     </Style>
@@ -17,11 +17,11 @@
                  Checked="OnGridLinesVisibilityChecked"/>
 </StackPanel>
 
-<adv:TableView x:Name="DemoTable"
+<tv:TableView x:Name="DemoTable"
                SelectionMode="Single">
-    <adv:TableViewTextColumn Header="First"      Binding="{Binding FirstName}" CanSort="False"/>
-    <adv:TableViewTextColumn Header="Last"       Binding="{Binding LastName}" CanSort="False"/>
-    <adv:TableViewTextColumn Header="Department" Binding="{Binding Department}" CanSort="False"/>
-    <adv:TableViewTextColumn Header="Role"       Binding="{Binding Role}" CanSort="False"/>
-    <adv:TableViewTextColumn Header="Email"      Binding="{Binding Email}" CanSort="False"/>
-</adv:TableView>
+    <tv:TableViewTextColumn Header="First"      Binding="{Binding FirstName}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Last"       Binding="{Binding LastName}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Department" Binding="{Binding Department}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Role"       Binding="{Binding Role}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Email"      Binding="{Binding Email}" CanSort="False"/>
+</tv:TableView>

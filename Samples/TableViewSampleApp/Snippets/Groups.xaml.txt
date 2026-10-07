@@ -1,11 +1,11 @@
 <Page
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular">
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
 
   <Page.Resources>
     <DataTemplate x:Key="CustomGroupHeaderTemplate"
-                  x:DataType="adv:TableViewGroupInfo">
+                  x:DataType="tv:TableViewGroupInfo">
       <Grid ColumnSpacing="10" Padding="0,6">
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"/>
@@ -22,20 +22,20 @@
     </DataTemplate>
   </Page.Resources>
 
-  <adv:TableView x:Name="PeopleTableControl"
+  <tv:TableView x:Name="PeopleTableControl"
                  GroupHeaderTemplate="{StaticResource CustomGroupHeaderTemplate}"
                  SelectionMode="Single">
-    <adv:TableView.Columns>
-      <adv:TableViewTextColumn Header="First name"
+    <tv:TableView.Columns>
+      <tv:TableViewTextColumn Header="First name"
                                Binding="{Binding FirstName}"/>
-      <adv:TableViewTextColumn Header="Last name"
+      <tv:TableViewTextColumn Header="Last name"
                                Binding="{Binding LastName}"/>
-      <adv:TableViewTextColumn Header="Department"
+      <tv:TableViewTextColumn Header="Department"
                                Binding="{Binding Department}"/>
-      <adv:TableViewTextColumn Header="Role"
+      <tv:TableViewTextColumn Header="Role"
                                Binding="{Binding Role}"/>
-    </adv:TableView.Columns>
-  </adv:TableView>
+    </tv:TableView.Columns>
+  </tv:TableView>
 
 </Page>
 

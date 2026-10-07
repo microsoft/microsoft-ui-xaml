@@ -1,42 +1,42 @@
 <!-- Showcase: columns are declared in markup, ItemsSource is set in code-behind.
      Rich template columns use SortMemberPath so header sort still works. -->
 
-<adv:TableView x:Name="PeopleTable"
+<tv:TableView x:Name="PeopleTable"
                SelectionMode="Single"
                AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
                Sorted="OnPeopleTableSorted"
                SelectionChanged="OnSelectionChanged">
 
-    <adv:TableViewTemplateColumn x:Name="FirstNameColumn" Header="First name"
+    <tv:TableViewTemplateColumn x:Name="FirstNameColumn" Header="First name"
                                  SortMemberPath="FirstName"
                                  CellTemplate="{StaticResource ShowcaseNameTemplate}"/>
 
-    <adv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department"
+    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department"
                                  SortMemberPath="Department">
-        <adv:TableViewTemplateColumn.CellTemplate>
+        <tv:TableViewTemplateColumn.CellTemplate>
             <DataTemplate x:DataType="models:Person">
                 <Border Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource ShowcaseDepartmentTintConverter}}"
                         CornerRadius="10" Padding="10,3" Margin="2,2">
                     <TextBlock Text="{x:Bind Department, Mode=OneWay}"/>
                 </Border>
             </DataTemplate>
-        </adv:TableViewTemplateColumn.CellTemplate>
-    </adv:TableViewTemplateColumn>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
 
-    <adv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Status"
+    <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Status"
                                  SortMemberPath="IsActive">
-        <adv:TableViewTemplateColumn.CellTemplate>
+        <tv:TableViewTemplateColumn.CellTemplate>
             <DataTemplate x:DataType="models:Person">
                 <Border Background="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ShowcaseActiveChipConverter}}"
                         CornerRadius="10" Padding="10,3" Margin="2,2">
                     <TextBlock Text="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ShowcaseActiveTextConverter}}"/>
                 </Border>
             </DataTemplate>
-        </adv:TableViewTemplateColumn.CellTemplate>
-    </adv:TableViewTemplateColumn>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
 
-    <adv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" SortMemberPath="Salary">
-        <adv:TableViewTemplateColumn.CellTemplate>
+    <tv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" SortMemberPath="Salary">
+        <tv:TableViewTemplateColumn.CellTemplate>
             <DataTemplate x:DataType="models:Person">
                 <Border Background="{x:Bind Salary, Mode=OneWay, Converter={StaticResource ShowcaseSalaryTintConverter}}"
                         CornerRadius="4" Padding="8,2" Margin="2,2">
@@ -44,11 +44,11 @@
                                HorizontalAlignment="Right"/>
                 </Border>
             </DataTemplate>
-        </adv:TableViewTemplateColumn.CellTemplate>
-    </adv:TableViewTemplateColumn>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
 
-    <adv:TableViewTextColumn x:Name="LastNameColumn" Header="Last name" SortMemberPath="LastName" Binding="{Binding LastName}"/>
-    <adv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="*" MinWidth="200" SortMemberPath="Email" Binding="{Binding Email}"/>
-    <adv:TableViewTextColumn x:Name="RoleColumn" Header="Role" SortMemberPath="Role" Binding="{Binding Role}"/>
-    <adv:TableViewTextColumn x:Name="JoinDateColumn" Header="Join date" SortMemberPath="JoinDate" Binding="{Binding JoinDateText}"/>
-</adv:TableView>
+    <tv:TableViewTextColumn x:Name="LastNameColumn" Header="Last name" SortMemberPath="LastName" Binding="{Binding LastName}"/>
+    <tv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="*" MinWidth="200" SortMemberPath="Email" Binding="{Binding Email}"/>
+    <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role" SortMemberPath="Role" Binding="{Binding Role}"/>
+    <tv:TableViewTextColumn x:Name="JoinDateColumn" Header="Join date" SortMemberPath="JoinDate" Binding="{Binding JoinDateText}"/>
+</tv:TableView>

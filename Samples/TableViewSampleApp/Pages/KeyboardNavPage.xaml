@@ -5,7 +5,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
@@ -32,14 +32,14 @@
                         AutomationProperties.Name="Before table"
                         AutomationProperties.HelpText="Focus sentinel placed immediately before the table so tab order into the table can be verified."/>
                 <Border Grid.Row="2" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch" Padding="0">
-                    <adv:TableView x:Name="PeopleTable" AutomationProperties.AutomationId="PeopleTable" AutomationProperties.Name="Keyboard navigation people" SelectionMode="Single" SelectionChanged="OnSelectionChanged" VerticalAlignment="Stretch" MinHeight="320">
-                        <adv:TableViewTextColumn Header="#"          Width="{StaticResource ColWidthId}"  Binding="{Binding Number}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Email"      Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
-                    </adv:TableView>
+                    <tv:TableView x:Name="PeopleTable" AutomationProperties.AutomationId="PeopleTable" AutomationProperties.Name="Keyboard navigation people" SelectionMode="Single" SelectionChanged="OnSelectionChanged" VerticalAlignment="Stretch" MinHeight="320">
+                        <tv:TableViewTextColumn Header="#"          Width="{StaticResource ColWidthId}"  Binding="{Binding Number}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Email"      Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
+                    </tv:TableView>
                 </Border>
                 <Button Grid.Row="3" Content="After table" HorizontalAlignment="Left"
                         AutomationProperties.AutomationId="KeyboardNavAfterTable"

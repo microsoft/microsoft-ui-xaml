@@ -5,7 +5,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:local="using:TableViewSampleApp.Pages"
     xmlns:controls="using:TableViewSampleApp.Controls"
     xmlns:models="using:TableViewSampleApp.Models">
@@ -117,7 +117,7 @@
                     MinHeight="104"/>
 
                 <Border Grid.Row="2" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                    <adv:TableView
+                    <tv:TableView
                         x:Name="PeopleTable"
                         AutomationProperties.AutomationId="ShowcasePeopleTable"
                         AutomationProperties.Name="People showcase"
@@ -127,14 +127,14 @@
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <adv:TableViewTemplateColumn x:Name="FirstNameColumn" Header="First name" Width="{StaticResource ColWidthShortName}" SortMemberPath="FirstName" CellTemplate="{StaticResource ShowcaseNameTemplate}"/>
+                        <tv:TableViewTemplateColumn x:Name="FirstNameColumn" Header="First name" Width="{StaticResource ColWidthShortName}" SortMemberPath="FirstName" CellTemplate="{StaticResource ShowcaseNameTemplate}"/>
                         <!-- Rich columns are front-loaded so the colorful, data-bound cells
                              are visible without horizontal scrolling. Department + Status +
                              Salary are template columns whose Border background comes from a
                              value converter, so live updates recolor in place with no
                              rebuild; SortMemberPath keeps header sort working. -->
-                        <adv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" SortMemberPath="Department">
-                            <adv:TableViewTemplateColumn.CellTemplate>
+                        <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" SortMemberPath="Department">
+                            <tv:TableViewTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="models:Person">
                                     <Border Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource ShowcaseDepartmentTintConverter}}" CornerRadius="10" Padding="10,3" Margin="2,2" HorizontalAlignment="Left" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal" Spacing="7">
@@ -143,31 +143,31 @@
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
-                            </adv:TableViewTemplateColumn.CellTemplate>
-                        </adv:TableViewTemplateColumn>
-                        <adv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Status" Width="{StaticResource ColWidthStatus}" SortMemberPath="IsActive">
-                            <adv:TableViewTemplateColumn.CellTemplate>
+                            </tv:TableViewTemplateColumn.CellTemplate>
+                        </tv:TableViewTemplateColumn>
+                        <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Status" Width="{StaticResource ColWidthStatus}" SortMemberPath="IsActive">
+                            <tv:TableViewTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="models:Person">
                                     <Border Background="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ShowcaseActiveChipConverter}}" CornerRadius="10" Padding="10,3" Margin="2,2" HorizontalAlignment="Left" VerticalAlignment="Center">
                                         <TextBlock Text="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ShowcaseActiveTextConverter}}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                                     </Border>
                                 </DataTemplate>
-                            </adv:TableViewTemplateColumn.CellTemplate>
-                        </adv:TableViewTemplateColumn>
-                        <adv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" SortMemberPath="Salary">
-                            <adv:TableViewTemplateColumn.CellTemplate>
+                            </tv:TableViewTemplateColumn.CellTemplate>
+                        </tv:TableViewTemplateColumn>
+                        <tv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" SortMemberPath="Salary">
+                            <tv:TableViewTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="models:Person">
                                     <Border Background="{x:Bind Salary, Mode=OneWay, Converter={StaticResource ShowcaseSalaryTintConverter}}" CornerRadius="4" Padding="8,2" Margin="2,2" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                                         <TextBlock Text="{x:Bind Salary, Mode=OneWay, Converter={StaticResource ShowcaseSalaryTextConverter}}" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
                                     </Border>
                                 </DataTemplate>
-                            </adv:TableViewTemplateColumn.CellTemplate>
-                        </adv:TableViewTemplateColumn>
-                        <adv:TableViewTextColumn x:Name="LastNameColumn" Header="Last name" Width="{StaticResource ColWidthShortName}" SortMemberPath="LastName" Binding="{Binding LastName}"/>
-                        <adv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="*" MinWidth="200" SortMemberPath="Email" Binding="{Binding Email}"/>
-                        <adv:TableViewTextColumn x:Name="RoleColumn" Header="Role" Width="{StaticResource ColWidthLongName}" SortMemberPath="Role" Binding="{Binding Role}"/>
-                        <adv:TableViewTextColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthDate}" SortMemberPath="JoinDate" Binding="{Binding JoinDateText}"/>
-                    </adv:TableView>
+                            </tv:TableViewTemplateColumn.CellTemplate>
+                        </tv:TableViewTemplateColumn>
+                        <tv:TableViewTextColumn x:Name="LastNameColumn" Header="Last name" Width="{StaticResource ColWidthShortName}" SortMemberPath="LastName" Binding="{Binding LastName}"/>
+                        <tv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="*" MinWidth="200" SortMemberPath="Email" Binding="{Binding Email}"/>
+                        <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role" Width="{StaticResource ColWidthLongName}" SortMemberPath="Role" Binding="{Binding Role}"/>
+                        <tv:TableViewTextColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthDate}" SortMemberPath="JoinDate" Binding="{Binding JoinDateText}"/>
+                    </tv:TableView>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>

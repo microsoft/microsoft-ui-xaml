@@ -12,12 +12,12 @@
     </DataTemplate>
 </Page.Resources>
 
-<adv:TableView x:Name="DemoTable" SelectionMode="Single">
-    <adv:TableViewTextColumn     Header="Name"       Binding="{Binding FullName}"/>
-    <adv:TableViewTemplateColumn Header="First name" SortMemberPath="FirstName"
+<tv:TableView x:Name="DemoTable" SelectionMode="Single">
+    <tv:TableViewTextColumn     Header="Name"       Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn Header="First name" SortMemberPath="FirstName"
                                  CellTemplate="{StaticResource FirstNameCell}"/>
     <!-- Last name / Role / Email columns follow the same editable pattern -->
-</adv:TableView>
+</tv:TableView>
 
 <!-- Density picker -->
 <RadioButton Content="Compact"     Tag="Compact"     GroupName="Density" Checked="OnDensityChecked"/>

@@ -326,9 +326,10 @@ public sealed partial class ShowcasePage : Page
             return;
         }
 
-        // There is no AutoSizeAllColumns in this release. Auto-sizing is a width INTENT, so
-        // setting each column's Width to Auto is the equivalent - it sizes to the widest
-        // realized cell from here on.
+        // Width carries sizing INTENT (TableView.idl:123-126). Auto tracks the widest
+        // *realized* cell continuously and is shrink-capable, so widths re-derive on every
+        // measure pass as rows scroll in and out - it is a persistent mode, not a one-shot
+        // fit-to-content command. Prefer Pixel/Star for large virtualized grids.
         foreach (var column in PeopleTable.Columns)
         {
             column.Width = new GridLength(1, GridUnitType.Auto);

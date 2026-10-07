@@ -18,12 +18,12 @@
 
         <TextBlock x:Name="SelectedFileText" Text="Select a file to see its details"/>
 
-        <adv:TableView x:Name="PropTable"
+        <tv:TableView x:Name="PropTable"
                        Grid.Row="1"
                        SelectionMode="Single">
-            <adv:TableViewTextColumn Header="Property" Width="200" MinWidth="140" Binding="{Binding Property}"/>
-            <adv:TableViewTextColumn Header="Value" Width="*" Binding="{Binding Value}"/>
-        </adv:TableView>
+            <tv:TableViewTextColumn Header="Property" Width="200" MinWidth="140" Binding="{Binding Property}"/>
+            <tv:TableViewTextColumn Header="Value" Width="*" Binding="{Binding Value}"/>
+        </tv:TableView>
 
         <TextBlock x:Name="StatusText" Grid.Row="2" AutomationProperties.LiveSetting="Polite"/>
     </Grid>

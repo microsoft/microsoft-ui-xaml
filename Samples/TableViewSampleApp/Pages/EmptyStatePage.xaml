@@ -5,7 +5,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls"
     xmlns:system="using:System">
 
@@ -76,7 +76,7 @@
                     Style="{StaticResource TableHostBorderStyle}"
                     Padding="0"
                     VerticalAlignment="Stretch">
-                    <adv:TableView
+                    <tv:TableView
                         x:Name="DemoTable"
                         AutomationProperties.Name="Empty state people"
                         AutomationProperties.AutomationId="EmptyStateTable"
@@ -84,11 +84,11 @@
                         EmptyTemplate="{StaticResource EmptyStateTemplate}"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <adv:TableViewTextColumn Header="Name"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding FullName}"   CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding Role}"       CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Email"      Width="*" MinWidth="200"                    Binding="{Binding Email}"      CanSort="False"/>
-                    </adv:TableView>
+                        <tv:TableViewTextColumn Header="Name"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding FullName}"   CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding Role}"       CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Email"      Width="*" MinWidth="200"                    Binding="{Binding Email}"      CanSort="False"/>
+                    </tv:TableView>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>

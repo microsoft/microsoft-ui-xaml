@@ -17,7 +17,7 @@
               Title="Horizontal scrolling"
               Message="Select Pixel mode, then scroll horizontally to validate that the sticky header tracks the body."/>
 
-<adv:TableView x:Name="WidthsTable"
+<tv:TableView x:Name="WidthsTable"
                SelectionMode="Single"
                AutomationProperties.AutomationId="WidthsTable"/>
 

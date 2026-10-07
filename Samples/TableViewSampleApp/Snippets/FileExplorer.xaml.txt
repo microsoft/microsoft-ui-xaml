@@ -28,17 +28,17 @@
         <Button Grid.Column="3" Click="OnRefreshClick" AutomationProperties.Name="Refresh"/>
     </Grid>
 
-    <adv:TableView x:Name="FileTable"
+    <tv:TableView x:Name="FileTable"
                    Grid.Row="1"
                    SelectionMode="Single"
                    Sorted="OnTableSorted"
                    SelectionChanged="OnSelectionChanged"
                    DoubleTapped="OnRowDoubleTapped">
-        <adv:TableViewTemplateColumn Header="Name" CellTemplate="{StaticResource NameCellTemplate}" MinWidth="260" Width="*" CanSort="True" SortMemberPath="Name"/>
-        <adv:TableViewTextColumn Header="Type" Width="180" SortMemberPath="TypeDisplay" Binding="{Binding TypeDisplay}"/>
-        <adv:TableViewTextColumn Header="Date modified" Width="170" SortMemberPath="DateModified" Binding="{Binding DateModifiedDisplay}"/>
-        <adv:TableViewTextColumn Header="Size" Width="110" SortMemberPath="Size" Binding="{Binding SizeDisplay}"/>
-    </adv:TableView>
+        <tv:TableViewTemplateColumn Header="Name" CellTemplate="{StaticResource NameCellTemplate}" MinWidth="260" Width="*" CanSort="True" SortMemberPath="Name"/>
+        <tv:TableViewTextColumn Header="Type" Width="180" SortMemberPath="TypeDisplay" Binding="{Binding TypeDisplay}"/>
+        <tv:TableViewTextColumn Header="Date modified" Width="170" SortMemberPath="DateModified" Binding="{Binding DateModifiedDisplay}"/>
+        <tv:TableViewTextColumn Header="Size" Width="110" SortMemberPath="Size" Binding="{Binding SizeDisplay}"/>
+    </tv:TableView>
 
     <Grid Grid.Row="2" ColumnSpacing="16">
         <Grid.ColumnDefinitions>

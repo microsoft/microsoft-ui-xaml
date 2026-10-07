@@ -1,5 +1,5 @@
-<adv:TableView x:Name="PeopleTable" SelectionMode="Single" SelectionChanged="OnSelectionChanged">
-    <adv:TableViewTextColumn Header="#"          Binding="{Binding Number}" CanSort="False"/>
-    <adv:TableViewTextColumn Header="First name" Binding="{Binding FirstName}" CanSort="False"/>
-    <adv:TableViewTextColumn Header="Last name"  Binding="{Binding LastName}" CanSort="False"/>
-</adv:TableView>
+<tv:TableView x:Name="PeopleTable" SelectionMode="Single" SelectionChanged="OnSelectionChanged">
+    <tv:TableViewTextColumn Header="#"          Binding="{Binding Number}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="First name" Binding="{Binding FirstName}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Last name"  Binding="{Binding LastName}" CanSort="False"/>
+</tv:TableView>

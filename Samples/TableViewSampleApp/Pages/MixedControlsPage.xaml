@@ -5,7 +5,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls"
     xmlns:data="using:TableViewSampleApp.Data"
     xmlns:local="using:TableViewSampleApp.Pages"
@@ -94,7 +94,7 @@
                     Message="Template cells can display rich control visuals while this sample stays read-only; use the Cell Editing page for framework editing APIs."
                     MinHeight="104"/>
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                    <adv:TableView
+                    <tv:TableView
                         x:Name="PeopleTable"
                         AutomationProperties.AutomationId="MixedControlsTable"
                         AutomationProperties.Name="People with template controls"
@@ -104,7 +104,7 @@
 
                         <!-- Plain text column for context.  Width matches the other
                              columns so the table looks balanced. -->
-                        <adv:TableViewTextColumn
+                        <tv:TableViewTextColumn
                             Header="Name"
                             Width="{StaticResource ColWidthLongName}"
                             Binding="{Binding FullName}" CanSort="False"/>
@@ -113,14 +113,14 @@
                              SortMemberPath is mandatory on a template column (the column
                              has no Binding the framework can fall back to — the binding
                              lives inside the DataTemplate). -->
-                        <adv:TableViewTemplateColumn
+                        <tv:TableViewTemplateColumn
                             Header="Join date"
                             Width="{StaticResource ColWidthDatePicker}"
                             SortMemberPath="JoinDate"
                             CellTemplate="{StaticResource JoinDateCell}" CanSort="False"/>
 
                         <!-- TimePicker in a read-only cell — bound to Person.ShiftStart. -->
-                        <adv:TableViewTemplateColumn
+                        <tv:TableViewTemplateColumn
                             Header="Shift start"
                             Width="{StaticResource ColWidthTimePicker}"
                             SortMemberPath="ShiftStart"
@@ -129,19 +129,19 @@
                         <!-- ComboBox in a cell — choices come from
                              PersonData.Departments; selected item is bound to
                              Person.Department. -->
-                        <adv:TableViewTemplateColumn
+                        <tv:TableViewTemplateColumn
                             Header="Department"
                             Width="{StaticResource ColWidthDepartment}"
                             SortMemberPath="Department"
                             CellTemplate="{StaticResource DepartmentCell}" CanSort="False"/>
 
                         <!-- CheckBox in a read-only cell — bound to Person.IsActive. -->
-                        <adv:TableViewTemplateColumn
+                        <tv:TableViewTemplateColumn
                             Header="Active"
                             Width="{StaticResource ColWidthBoolean}"
                             SortMemberPath="IsActive"
                             CellTemplate="{StaticResource IsActiveCell}" CanSort="False"/>
-                    </adv:TableView>
+                    </tv:TableView>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>

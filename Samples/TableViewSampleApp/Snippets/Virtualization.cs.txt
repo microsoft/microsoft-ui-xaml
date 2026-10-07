@@ -1,7 +1,34 @@
-// In-memory mode: materialise tens of thousands of rows up front.
-PeopleTable.ItemsSource = People;            // ObservableCollection<NumberedPerson>
+// Build the rows OFF the bind path, then assign once. Adding tens of thousands of
+// items to an already-bound ObservableCollection raises one CollectionChanged per
+// item on the UI thread, which stalls the very scenario this page demonstrates.
+var rows = new List<NumberedPerson>(count);
+for (int i = 0; i < count; i++) { rows.Add(/* ... */); }
 
-// The v1 control surfaces data-side counts (no realized-row / scroll-offset API):
-TotalRowsText.Text    = People.Count.ToString("N0");
-SelectedRowsText.Text = (PeopleTable.SelectedItem is null ? 0 : 1).ToString("N0");
-ColumnCountText.Text  = PeopleTable.Columns.Count.ToString();
+People = new ObservableCollection<NumberedPerson>(rows);
+PeopleTable.ItemsSource = People;
+
+// The control surfaces no realized-row count, so derive one by walking the visual
+// tree for TableViewRow — a PUBLIC type, not a private template part. Rows never
+// nest, so recursion stops at each hit.
+static int CountRealizedRows(DependencyObject? root)
+{
+    if (root is null) return 0;
+    int realized = 0;
+    int children = VisualTreeHelper.GetChildrenCount(root);
+    for (int i = 0; i < children; i++)
+    {
+        var child = VisualTreeHelper.GetChild(root, i);
+        if (child is TableViewRow) realized++;          // don't recurse into a row
+        else realized += CountRealizedRows(child);
+    }
+    return realized;
+}
+
+// "Total rows" grows into the tens of thousands; "Realized rows" stays flat at
+// roughly the viewport height / row height. That gap IS virtualization.
+int realized = CountRealizedRows(PeopleTable);
+RealizedRowsText.Text  = realized.ToString("N0");
+RealizedShareText.Text = $"{(double)realized / People.Count:P2} of {People.Count:N0}";
+
+// Realization changes as the user scrolls and the control raises no event for it,
+// so sample it on a DispatcherTimer (started in Loaded, stopped in Unloaded).

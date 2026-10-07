@@ -5,13 +5,13 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
-    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <Page.Resources>
         <!-- App.xaml owns these ThemeResource keys so Light, Dark, and HighContrast
              can resolve different brushes without code-behind resource lookup. -->
-        <Style x:Key="CustomBandingTableViewStyle" TargetType="adv:TableView">
+        <Style x:Key="CustomBandingTableViewStyle" TargetType="tv:TableView">
             <Setter Property="RowBackground" Value="{ThemeResource SampleCustomRowBackgroundBrush}"/>
             <Setter Property="AlternatingRowBackground" Value="{ThemeResource SampleCustomAlternatingRowBackgroundBrush}"/>
         </Style>
@@ -46,19 +46,19 @@
                     Padding="0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Stretch">
-                    <adv:TableView
+                    <tv:TableView
                         x:Name="DemoTable"
                         AutomationProperties.AutomationId="GridLinesDemoTable"
                         AutomationProperties.Name="People grid line visibility"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <adv:TableViewTextColumn Header="First"      Width="{StaticResource ColWidthShortName}"  Binding="{Binding FirstName}"     CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Last"       Width="{StaticResource ColWidthShortName}"  Binding="{Binding LastName}"      CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"    CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding Role}"          CanSort="False"/>
-                        <adv:TableViewTextColumn Header="Email"      Width="*" MinWidth="200"      Binding="{Binding Email}"         CanSort="False"/>
-                    </adv:TableView>
+                        <tv:TableViewTextColumn Header="First"      Width="{StaticResource ColWidthShortName}"  Binding="{Binding FirstName}"     CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Last"       Width="{StaticResource ColWidthShortName}"  Binding="{Binding LastName}"      CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"    CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding Role}"          CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Email"      Width="*" MinWidth="200"      Binding="{Binding Email}"         CanSort="False"/>
+                    </tv:TableView>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>

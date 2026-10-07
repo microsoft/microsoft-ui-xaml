@@ -48,11 +48,11 @@
     </DataTemplate>
 </Page.Resources>
 
-<adv:TableView x:Name="PeopleTable" SelectionMode="Single" IsReadOnly="False">
-    <adv:TableViewTextColumn Header="Name" Binding="{Binding FullName}" CanSort="False"/>
-    <adv:TableViewTemplateColumn Header="Join date" SortMemberPath="JoinDate" CellTemplate="{StaticResource DatePickerCell}" CanSort="False"/>
-    <adv:TableViewTemplateColumn Header="Department" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentComboCell}" CanSort="False"/>
-    <adv:TableViewTemplateColumn Header="Details flyout" SortMemberPath="FullName" CellTemplate="{StaticResource DetailsButtonCell}" CanSort="False"/>
-    <adv:TableViewTemplateColumn Header="Shift menu" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftMenuCell}" CanSort="False"/>
-    <adv:TableViewTemplateColumn Header="Image" Width="{StaticResource ColWidthAvatar}" SortMemberPath="Initial" CellTemplate="{StaticResource AvatarCell}" CanSort="False"/>
-</adv:TableView>
+<tv:TableView x:Name="PeopleTable" SelectionMode="Single" IsReadOnly="False">
+    <tv:TableViewTextColumn Header="Name" Binding="{Binding FullName}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Join date" SortMemberPath="JoinDate" CellTemplate="{StaticResource DatePickerCell}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Department" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentComboCell}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Details flyout" SortMemberPath="FullName" CellTemplate="{StaticResource DetailsButtonCell}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Shift menu" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftMenuCell}" CanSort="False"/>
+    <tv:TableViewTemplateColumn Header="Image" Width="{StaticResource ColWidthAvatar}" SortMemberPath="Initial" CellTemplate="{StaticResource AvatarCell}" CanSort="False"/>
+</tv:TableView>
