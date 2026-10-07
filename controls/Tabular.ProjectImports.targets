@@ -37,7 +37,7 @@
     <Import Project="$(MSBuildThisFileDirectory)dev\GroupedSourceAdapter\GroupedSourceAdapter.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\SortIndicator\SortIndicator.vcxitems" Label="Shared" />
     <!-- TableView control (hosted only in the Tabular binary) -->
-    <Import Project="$(MSBuildThisFileDirectory)dev\TableView\TableView.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\TableView\TableView.vcxitems" Label="Shared" Condition="$(FeatureTableViewEnabled) == 'true' Or $(FeatureTableViewEnabled) == 'productOnly'" />
   </ImportGroup>
   <!--
     GridCoordinateHelper: an internal C++ helper (used only by TableView's row keyboard
