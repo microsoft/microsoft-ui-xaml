@@ -279,23 +279,12 @@ void TableViewCellsPanel::ApplyFrozenColumnLayout(const winrt::Panel& host, doub
         return;
     }
 
-    if (host.FlowDirection() == winrt::FlowDirection::RightToLeft)
-    {
-        // Frozen-column pin math is LTR-only; under RTL it would pin/clip the wrong
-        // edge. Skip pinning in RTL so scrolling remains plain and uncorrupted.
-        auto children = host.Children();
-        const uint32_t count = children.Size();
-        for (uint32_t i = 0; i < count; ++i)
-        {
-            if (auto el = children.GetAt(i).try_as<winrt::FrameworkElement>())
-            {
-                el.Translation({ 0.0f, 0.0f, 0.0f });
-                winrt::Canvas::SetZIndex(el, 0);
-                el.Clip(nullptr);
-            }
-        }
-        return;
-    }
+    // The pin math below runs entirely in logical (pre-mirror) LTR coordinates: children arrange
+    // left-to-right regardless of FlowDirection, and XAML applies RTL as a single mirror transform
+    // at the FlowDirection boundary above this panel. That mirror flips the counter-translation and
+    // the clip geometry uniformly, so a Leading-frozen prefix pinned at logical-left lands on the
+    // visual right under RTL - exactly where FrozenEdge.Leading must pin. No RTL special-casing is
+    // needed here; the same code pins the correct edge in both flow directions.
 
     // Accumulate each cell's panel-space left edge from column ActualWidth.
     double panelX = 0.0;
