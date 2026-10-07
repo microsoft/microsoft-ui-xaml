@@ -29,6 +29,7 @@ public:
         test.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::init_type_islands_only));
         test.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::initialized_dispatcher));
         test.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::created_uwp_window));
+        test.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::created_dispatcher_xcpwindow));
 
         test.complete();
 

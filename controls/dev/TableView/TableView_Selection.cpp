@@ -198,8 +198,13 @@ int32_t TableView::IndexOfItem(winrt::IInspectable const& item) const
 
 // ----- The single writer -----
 
-void TableView::ApplySelection(int32_t index)
+void TableView::ApplySelection(int32_t index, bool reportTelemetry)
 {
+    const bool accepted = reportTelemetry && !m_isRestoringSelection && CanSelectRows() && HasRowsSource() &&
+        index >= -1 && index < GetItemsSourceCount() && SelectedIndexInternal() != index;
+    const auto version = m_selectionVersion;
+    const auto sourceGeneration = m_rowMetadataGeneration;
+    ActionTelemetry telemetry{ *this, TableViewTelemetry::Operation::Selection, TableViewTelemetry::Stage::Selection, accepted };
     if (!CanSelectRows())
     {
         index = -1;
@@ -239,6 +244,18 @@ void TableView::ApplySelection(int32_t index)
     // The model raises SelectionChanged only when the selection actually moved; publish here too so
     // a rejected write still leaves the DPs agreeing with the model.
     PushSelectionProperties();
+    if (accepted)
+    {
+        if (m_selectionVersion == version + 1 && m_rowMetadataGeneration == sourceGeneration &&
+            SelectedIndexInternal() == index && SelectedIndex() == index && m_lastPublishedIndex == index)
+        {
+            telemetry.Complete();
+        }
+        else
+        {
+            telemetry.Ignore(TableViewTelemetry::IgnoreReason::Superseded);
+        }
+    }
 }
 
 void TableView::OnSelectionModelSelectionChanged(
@@ -720,11 +737,11 @@ void TableView::SelectRowIndexFromInteraction(int32_t index, bool toggle)
 
     if (toggle && IsSelected(index))
     {
-        ApplySelection(-1);
+        ApplySelection(-1, true);
         return;
     }
 
-    ApplySelection(index);
+    ApplySelection(index, true);
 }
 
 // ----- Public API -----
@@ -753,7 +770,7 @@ void TableView::Select(int32_t index)
         return;
     }
 
-    ApplySelection(index);
+    ApplySelection(index, true);
 }
 
 void TableView::Deselect(int32_t index)
@@ -761,7 +778,7 @@ void TableView::Deselect(int32_t index)
     // Only clears when `index` IS the selection, so a stale call cannot clobber a newer one.
     if (IsSelected(index))
     {
-        ApplySelection(-1);
+        ApplySelection(-1, true);
     }
 }
 
@@ -781,5 +798,5 @@ bool TableView::IsSelected(int32_t index)
 void TableView::DeselectAll()
 {
     ClearPendingSelection();
-    ApplySelection(-1);
+    ApplySelection(-1, true);
 }

@@ -118,6 +118,8 @@ namespace
 
 winrt::Size TableView::MeasureOverride(winrt::Size const& availableSize)
 {
+    const auto telemetryGeneration = m_telemetry.operationGeneration;
+    const auto scrollGeneration = m_scrollTelemetry.operationGeneration;
     try
     {
         auto desired = __super::MeasureOverride(availableSize);
@@ -128,7 +130,14 @@ winrt::Size TableView::MeasureOverride(winrt::Size const& availableSize)
     catch (...)
     {
         FailOperationTelemetry(TableViewTelemetry::Operation::Layout,
-            m_telemetry.operationGeneration, TableViewTelemetry::Stage::Layout);
+            telemetryGeneration, TableViewTelemetry::Stage::Layout, winrt::to_hresult());
+        if (TableViewTelemetry::IsOperationStarted(m_scrollTelemetry) &&
+            TableViewTelemetry::UpdateConfiguration(m_scrollTelemetry,
+                SnapshotTelemetryConfiguration(m_telemetry.configuration.content, m_telemetry.configuration.available)))
+        {
+            TableViewTelemetry::FailOperation(m_scrollTelemetry, TableViewTelemetry::Operation::Scroll,
+                scrollGeneration, TableViewTelemetry::Stage::Scroll, winrt::to_hresult());
+        }
         throw;
     }
 }

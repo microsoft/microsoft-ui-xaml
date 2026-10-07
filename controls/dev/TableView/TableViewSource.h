@@ -10,6 +10,7 @@
 
 #include "TableViewSource.g.h"
 #include "TableViewRowInfo.h"
+#include "TableViewTelemetry.h"
 
 class ShapedItemsSource;
 
@@ -87,6 +88,7 @@ public:
     // this to decide how to interpret a row DataContext, so reporting intent here would make them
     // read a flat item as a GroupedEntry.
     bool IsGrouped() const;
+    std::optional<uint32_t> DataRowCount() const;
 
     // Internal: the owning TableView caches the projection (ItemsSourceView, row metadata and
     // grouped-ness) when it binds, so it must be told when a shaping verb swaps that projection
@@ -104,8 +106,19 @@ public:
     // Raised when a shaping verb rewrote the projection. `reorderOnly` is true when membership is
     // unchanged and only the order moved.
     void SetShapingChangedHandler(std::function<void(bool)> handler) { m_shapingChanged = std::move(handler); }
+    using ShapingOperationCompleted = std::function<void(TableViewTelemetry::Operation, uint64_t, TableViewTelemetry::Result, std::optional<HRESULT>)>;
+    void SetShapingOperationHandlers(
+        std::function<uint64_t(TableViewTelemetry::Operation, bool)> begin,
+        ShapingOperationCompleted complete)
+    {
+        m_beginShapingOperation = std::move(begin);
+        m_completeShapingOperation = std::move(complete);
+    }
+    // Owned key resolvers report only caught exceptions; the engine's computation owns the fact.
+    void ObserveShapingFailure(HRESULT error) noexcept;
 
 private:
+    struct ShapingOperation;
     winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     // Re-derives everything this class caches from the shape the engine just produced.
     void OnProjectionRebuilt();
@@ -126,6 +139,10 @@ private:
     // source that has been swapped out cannot drive its former owner.
     std::function<void()> m_projectionChanged{};
     std::function<void(bool)> m_shapingChanged{};
+    std::function<uint64_t(TableViewTelemetry::Operation, bool)> m_beginShapingOperation;
+    ShapingOperationCompleted m_completeShapingOperation;
+    bool m_hasFilter{};
+    bool m_hasGroup{};
     // tracker_ref so the GC can walk this strong reference into the (possibly managed) projected
     // rows and collect any cycle; also swaps to null safely during finalization.
     tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };

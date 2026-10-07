@@ -117,6 +117,7 @@ namespace ShapingHelpers
         // holding one token cannot address the axes it does not own by token alone.
         void ClearSortsExcept(winrt::hstring const& axisToken) noexcept;
         bool HasActiveSort() const noexcept;
+        bool HasSortAxis(winrt::hstring const& token, winrt::Windows::Foundation::IUnknown const& keyIdentity) const noexcept;
 
         // Axes with a live key and direction whose Order falls strictly between the bounds. A
         // negative bound is unbounded, so ActiveSortAxes(-1, -1) is every active axis. Returned in
@@ -174,6 +175,8 @@ namespace ShapingHelpers
         ShapingSpec const& CommittedSpec() const noexcept { return m_committedSpec; }
 
     private:
+        static bool MatchesSortAxis(SortAxis const& axis, winrt::hstring const& token,
+            winrt::Windows::Foundation::IUnknown const& keyIdentity) noexcept;
         // Mints a process-unique-per-pipeline description id, e.g. "s3" for the fourth axis
         // declared. Only ever compared for equality, never parsed.
         winrt::hstring MintDescriptionId(wchar_t prefix);

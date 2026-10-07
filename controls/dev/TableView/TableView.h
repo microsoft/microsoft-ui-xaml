@@ -400,8 +400,9 @@ public:
     bool PurgeColumnFromSortState(const winrt::TableViewColumn& removedColumn);
 
 private:
+    class ActionTelemetry;
     // Drives the SelectionModel; its SelectionChanged is the single funnel that publishes.
-    void ApplySelection(int32_t index);
+    void ApplySelection(int32_t index, bool reportTelemetry = false);
 
     void ReleaseHeaderToolTips(const winrt::Panel& host);
 
@@ -564,7 +565,7 @@ private:
     void UpdateCurrentColumn(winrt::TableViewColumn const& column);
 
     // Shared tail of the synchronous and deferred edit-close paths.
-    bool CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, bool vetoed);
+    bool CompleteEditEnd(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, bool vetoed, ActionTelemetry* telemetry = nullptr);
     // The cell being edited. Distinct from m_currentItem/m_currentColumn, which track focus.
     tracker_ref<winrt::IInspectable> m_currentEditItem{ this };
     tracker_ref<winrt::TableViewColumn> m_currentEditColumn{ this };
@@ -573,14 +574,15 @@ private:
     // Whatever the column's PrepareCellForEdit handed back, returned to it on cancel.
     tracker_ref<winrt::IInspectable> m_editUneditedValue{ this };
 
-    bool RaiseBeginningEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
+    bool RaiseBeginningEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column, ActionTelemetry& telemetry);
     // Returns Vetoed or Completed. Synchronous: there is no deferral in this release, so a handler
     // must set Cancel before it returns.
     enum class EditEndingResult { Vetoed, Completed };
     EditEndingResult RaiseEditEnding(
         EditingUnit unit,
         winrt::TableViewEditAction action,
-        bool honorCancel);
+        bool honorCancel,
+        ActionTelemetry* telemetry);
 
     bool TryResolveFocusedCell(winrt::IInspectable& item, winrt::TableViewColumn& column);
     bool TryResolveCurrentCell(winrt::IInspectable& item, winrt::TableViewColumn& column);
@@ -589,20 +591,46 @@ private:
     winrt::TableViewRow FindRealizedRowForItem(winrt::IInspectable const& item);
     bool TryBeginEditVisual(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
 
-    void EndEditVisual(winrt::TableViewEditAction action);
+    void EndEditVisual(winrt::TableViewEditAction action, ActionTelemetry* telemetry = nullptr);
 
     // Applies the outcome of an edit close: writes or reverts, tears down the visual, clears state.
     // Shared by the synchronous and deferred paths so they cannot drift.
-    bool FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel);
+    bool FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel, ActionTelemetry* telemetry);
     bool EndCurrentEdit(EditingUnit unit, winrt::TableViewEditAction action, bool honorCancel);
 
     // Scoped to the property the edited column writes; falls back to the object-level check only
     // when the column reports no single editing property path.
     bool HasBlockingValidationErrors(
         winrt::IInspectable const& item,
-        winrt::TableViewColumn const& column) const;
+        winrt::TableViewColumn const& column,
+        ActionTelemetry* telemetry = nullptr) const;
 
 private:
+    // Synchronous actions cannot replace a source operation awaiting layout.
+    class ActionTelemetry
+    {
+    public:
+        ActionTelemetry(TableView& owner, TableViewTelemetry::Operation operation, TableViewTelemetry::Stage stage, bool admitted = true) noexcept;
+        ~ActionTelemetry();
+        ActionTelemetry(ActionTelemetry const&) = delete;
+        ActionTelemetry& operator=(ActionTelemetry const&) = delete;
+        void Complete() noexcept { m_completed = true; }
+        void Ignore(TableViewTelemetry::IgnoreReason reason) noexcept { m_completed = false; m_ignoreReason = reason; }
+        void Fail(std::optional<HRESULT> error = {}) noexcept;
+
+    private:
+        TableView& m_owner;
+        TableViewTelemetry::State m_state;
+        TableViewTelemetry::Stage m_stage;
+        uint64_t m_generation{};
+        uint64_t m_lifetimeGeneration{};
+        int m_exceptions{};
+        bool m_completed{};
+        bool m_failed{};
+        TableViewTelemetry::IgnoreReason m_ignoreReason{ TableViewTelemetry::IgnoreReason::Stale };
+        std::optional<HRESULT> m_error;
+    };
+
     void BeginInitializationTelemetry(TableViewTelemetry::Origin origin) noexcept;
     void QueueTelemetryLayout() noexcept;
     void StopTelemetryLayout() noexcept;
@@ -610,15 +638,40 @@ private:
     void WatchTelemetrySourceChanges();
     bool WatchTelemetryVisualProperty(winrt::DependencyObject const& object, winrt::DependencyProperty const& property);
     void WatchTelemetryTransform(winrt::Transform const& transform);
+    void WatchTelemetryViewport();
+    TableViewTelemetry::Configuration SnapshotTelemetryConfiguration(TableViewTelemetry::Content content, bool contentAvailable = false) noexcept;
     bool TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& configuration);
-    uint64_t BeginOperationTelemetry(TableViewTelemetry::Operation operation) noexcept;
+    uint64_t BeginOperationTelemetry(TableViewTelemetry::Operation operation, bool admitted = true) noexcept;
     void EndOperationTelemetry() noexcept;
     void InvalidateOperationTelemetry() noexcept;
-    void FailOperationTelemetry(TableViewTelemetry::Operation operation, uint64_t generation, TableViewTelemetry::Stage stage) noexcept;
+    void FailOperationTelemetry(TableViewTelemetry::Operation operation, uint64_t generation, TableViewTelemetry::Stage stage, std::optional<HRESULT> error = {}) noexcept;
+    void IgnoreTelemetry(TableViewTelemetry::IgnoreReason reason, TableViewTelemetry::Stage stage = TableViewTelemetry::Stage::None) noexcept;
+    void ObserveScrollTelemetry(winrt::ScrollViewer const& scroller, bool intermediate, bool admit = true) noexcept;
+    void IgnoreScrollTelemetry(TableViewTelemetry::IgnoreReason reason) noexcept;
 
     TableViewTelemetry::State m_telemetry;
+    TableViewTelemetry::State m_scrollTelemetry;
+    uint64_t m_telemetryLifetimeGeneration{};
+    TableViewTelemetry::IgnoreReason m_telemetryCancellationReason{ TableViewTelemetry::IgnoreReason::Cancelled };
+    struct ScrollTelemetryViewport
+    {
+        double horizontalOffset{};
+        double verticalOffset{};
+        double extentWidth{};
+        double extentHeight{};
+        double width{};
+        double height{};
+        float zoomFactor{};
+        bool known{};
+    };
+    ScrollTelemetryViewport m_scrollTelemetryViewport;
+    std::optional<double> m_headerScrollTelemetryOffset;
+    bool m_scrollTelemetrySettled{};
+    uint64_t m_scrollTelemetryVersion{};
     winrt::event_token m_telemetryLayoutToken{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_telemetrySourceChangedRevoker{};
+    winrt::FrameworkElement::EffectiveViewportChanged_revoker m_telemetryViewportChangedRevoker{};
+    winrt::XamlRoot::Changed_revoker m_telemetryRootChangedRevoker{};
     struct TelemetryVisualWatch
     {
         winrt::weak_ref<winrt::DependencyObject> object{ nullptr };
@@ -628,6 +681,7 @@ private:
     std::vector<TelemetryVisualWatch> m_telemetryVisualWatches;
     uint64_t m_telemetryLayoutGeneration{};
     uint32_t m_telemetryMutationDepth{};
+    uint32_t m_telemetrySourceMutationDepth{};
 
     void OnColumnsVectorChanged(
         const winrt::IObservableVector<winrt::TableViewColumn>& sender,
@@ -707,10 +761,15 @@ private:
     void QueueReconcileSortStateWithSource();
     // Suppresses ReconcileSortStateWithSource for the duration of a control-initiated verb, whose
     // own source mutations would otherwise read as the app taking over.
-    [[nodiscard]] auto BeginControlInitiatedSortScope()
+    [[nodiscard]] auto BeginControlInitiatedSortScope(uint64_t telemetryGeneration = 0)
     {
-        m_isApplyingControlInitiatedSort = true;
-        return gsl::finally([this]() { m_isApplyingControlInitiatedSort = false; });
+        const auto previous = std::exchange(m_isApplyingControlInitiatedSort, true);
+        const auto previousGeneration = std::exchange(m_controlSortTelemetryGeneration, telemetryGeneration);
+        return gsl::finally([this, previous, previousGeneration]()
+        {
+            m_isApplyingControlInitiatedSort = previous;
+            m_controlSortTelemetryGeneration = previousGeneration;
+        });
     }
     // EmptyTemplate shows only for null or empty row sources.
     void UpdateEmptyState();
@@ -749,6 +808,7 @@ private:
 
     void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired);    void QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired);
     void ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation);
+    bool GroupExpansionChangesRows(winrt::hstring const& identity, std::optional<bool> desired) const noexcept;
     void RaiseGroupStructureChanged();
     void SetAllGroupsExpansion(bool expand);
 
@@ -789,12 +849,14 @@ private:
     void ApplySingleColumnSortState(const winrt::TableViewColumn& column, winrt::SortDirection direction);
     // Applies the current sort state to the bound TableViewSource. Returns false when there is no
     // TableViewSource, or the trigger column resolves no sort key.
-    bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
+    bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t telemetryGeneration);
+    bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool reportTelemetry);
+    bool ClearSortInternal(bool reportTelemetry);
     winrt::TableViewKeySelector GetTableViewSourceSortKeySelector(const winrt::hstring& sortMemberPath);
     bool RaiseSortingAndCheckCanceled(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
     // Single funnel for "the sort state has been written to the columns": reshapes, restores the
     // selection, raises Sorted, and announces.
-    void RecomputeSortDPsAndRaiseInternal(const winrt::TableViewColumn& trigger);
+    void RecomputeSortDPsAndRaiseInternal(const winrt::TableViewColumn& trigger, bool reportTelemetry = true);
 
     // Silently drops the active sort when the data set is replaced. See the definition for why this
     // is not ClearSort.
@@ -839,6 +901,7 @@ private:
     // True while a control-initiated sort verb is mutating the source. Its own mutations must not
     // be mistaken for the app declaring a sort behind the control's back.
     bool m_isApplyingControlInitiatedSort{ false };
+    uint64_t m_controlSortTelemetryGeneration{};
     bool m_sortReconcileQueued{ false };
     winrt::event_token m_rowsRepeaterLoadedToken{};
     winrt::event_token m_pendingFocusLayoutToken{};

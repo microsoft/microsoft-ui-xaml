@@ -6,6 +6,9 @@
 #include "pch.h"
 #include "common.h"
 
+#include <functional>
+#include <utility>
+
 // Evaluates a property path against a row item. A one-time {Binding} on a throwaway
 // ContentControl is used rather than reflection because it is the same evaluator the cells use,
 // so a path that displays also sorts - including indexers and dotted paths.
@@ -19,8 +22,11 @@
 // path cost a DataContext write and a property read.
 struct SortMemberPathResolver
 {
-    explicit SortMemberPathResolver(const winrt::hstring& sortMemberPath) :
-        SortMemberPath(sortMemberPath)
+    explicit SortMemberPathResolver(
+        const winrt::hstring& sortMemberPath,
+        std::function<void(HRESULT)> failureObserver = {}) :
+        SortMemberPath(sortMemberPath),
+        FailureObserver(std::move(failureObserver))
     {
     }
 
@@ -44,12 +50,18 @@ struct SortMemberPathResolver
         }
         catch (...)
         {
+            ReportCaughtFailure();
             ClearDataContext();
             return nullptr;
         }
     }
 
 private:
+    void ReportCaughtFailure() const noexcept
+    {
+        if (FailureObserver) { FailureObserver(winrt::to_hresult()); }
+    }
+
     void EnsureBinding()
     {
         if (!Probe)
@@ -87,10 +99,13 @@ private:
         }
         catch (...)
         {
+            ReportCaughtFailure();
         }
     }
 
     winrt::hstring SortMemberPath;
     winrt::hstring BoundPath;
     winrt::ContentControl Probe{ nullptr };
+    // Exception-only and nonthrowing; the caller owns operation/generation attribution.
+    std::function<void(HRESULT)> FailureObserver;
 };

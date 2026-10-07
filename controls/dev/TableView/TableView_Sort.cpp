@@ -141,6 +141,12 @@ bool TableView::IsSortRequestStillValid(const winrt::TableViewColumn& column) co
 
 bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDirection direction)
 {
+    return SortByColumnInternal(column, direction, true);
+}
+
+bool TableView::SortByColumnInternal(
+    const winrt::TableViewColumn& column, winrt::SortDirection direction, bool reportTelemetry)
+{
     if (!CanSortColumn(column))
     {
         return false;
@@ -168,9 +174,9 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)
         {
-            QueueCoalescedEditReshape([this, column, direction]()
+            QueueCoalescedEditReshape([this, column, direction, reportTelemetry]()
             {
-                SortByColumn(column, direction);
+                SortByColumnInternal(column, direction, reportTelemetry);
             });
         }
         return false;
@@ -191,7 +197,7 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
     }
 
     ApplySingleColumnSortState(column, direction);
-    RecomputeSortDPsAndRaiseInternal(column);
+    RecomputeSortDPsAndRaiseInternal(column, reportTelemetry);
     DrainCoalescedEditReshape();
     return true;
 }
@@ -275,6 +281,11 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
 
 bool TableView::ClearSort()
 {
+    return ClearSortInternal(true);
+}
+
+bool TableView::ClearSortInternal(bool reportTelemetry)
+{
     if (m_sortedColumns.empty())
     {
         return false;
@@ -284,9 +295,9 @@ bool TableView::ClearSort()
     {
         if (m_editState == EditState::Ending && !m_isApplyingCoalescedEditReshape)
         {
-            QueueCoalescedEditReshape([this]()
+            QueueCoalescedEditReshape([this, reportTelemetry]()
             {
-                ClearSort();
+                ClearSortInternal(reportTelemetry);
             });
         }
         return false;
@@ -316,7 +327,7 @@ bool TableView::ClearSort()
     m_sortedColumns.clear();
 
     // Null trigger: Sorted fires with Column=null to signal a full clear.
-    RecomputeSortDPsAndRaiseInternal(nullptr);
+    RecomputeSortDPsAndRaiseInternal(nullptr, reportTelemetry);
     DrainCoalescedEditReshape();
     return true;
 }
@@ -408,7 +419,14 @@ winrt::TableViewKeySelector TableView::GetTableViewSourceSortKeySelector(
     if (!m_tableViewSourceSort.KeySelector || sortMemberPathChanged)
     {
         auto customSortState = m_tableViewSourceSort.CustomSortState;
-        auto sortMemberPathResolver = std::make_shared<SortMemberPathResolver>(sortMemberPath);
+        auto sortMemberPathResolver = std::make_shared<SortMemberPathResolver>(sortMemberPath,
+            [weakSource = winrt::make_weak(ShapingSourceInternal())](HRESULT error) noexcept
+            {
+                if (auto source = weakSource.get())
+                {
+                    winrt::get_self<::TableViewSource>(source)->ObserveShapingFailure(error);
+                }
+            });
         m_tableViewSourceSort.KeySelector = winrt::TableViewKeySelector{
             [sortMemberPathResolver, customSortState](const winrt::IInspectable& item) -> winrt::IInspectable
             {
@@ -426,7 +444,8 @@ winrt::TableViewKeySelector TableView::GetTableViewSourceSortKeySelector(
 
 bool TableView::SyncTableViewSourceSort(
     const winrt::TableViewColumn& trigger,
-    winrt::SortDirection direction)
+    winrt::SortDirection direction,
+    uint64_t telemetryGeneration)
 {
     auto tableViewSource = ShapingSourceInternal();
     if (!tableViewSource)
@@ -457,7 +476,7 @@ bool TableView::SyncTableViewSourceSort(
 
                 // Snapshot the rows for the engine, which ranks over a plain vector and never sees
                 // an ItemsSourceView. The comparer is wrapped into a neutral pairwise functor; the
-                // engine catches a throw and degrades it to "equal", so this lambda stays trivial.
+                // engine catches a throw and degrades it to "equal"; observe only the exceptional path.
                 std::vector<winrt::IInspectable> rows;
                 if (rowsView)
                 {
@@ -478,12 +497,37 @@ bool TableView::SyncTableViewSourceSort(
 
                 if (auto const& rankAdapter = m_tableViewSourceSort.CustomSortState)
                 {
+                    // Only the initial Rank call owns this fact. The retained comparer later
+                    // reports KeyFor failures to the engine phase that actually invokes it.
+                    auto rankFailure = std::make_shared<std::optional<HRESULT>>();
                     ShapingHelpers::PairwiseComparer comparer =
-                        [customComparer](winrt::IInspectable const& a, winrt::IInspectable const& b)
+                        [customComparer, weakSource = winrt::make_weak(tableViewSource),
+                            initialRank = std::weak_ptr<std::optional<HRESULT>>{ rankFailure }]
+                        (winrt::IInspectable const& a, winrt::IInspectable const& b)
                         {
-                            return static_cast<int>(customComparer.Compare(a, b));
+                            try { return static_cast<int>(customComparer.Compare(a, b)); }
+                            catch (...)
+                            {
+                                const auto error = winrt::to_hresult();
+                                if (auto initial = initialRank.lock())
+                                {
+                                    if (!*initial) { *initial = error; }
+                                }
+                                else if (auto source = weakSource.get())
+                                {
+                                    winrt::get_self<::TableViewSource>(source)->ObserveShapingFailure(error);
+                                }
+                                throw;
+                            }
                         };
                     rankAdapter->Rank(comparer, rows);
+                    const auto failure = *rankFailure;
+                    rankFailure.reset();
+                    if (failure)
+                    {
+                        FailOperationTelemetry(TableViewTelemetry::Operation::Sort, telemetryGeneration,
+                            TableViewTelemetry::Stage::Sort, *failure);
+                    }
                 }
             }
         }
@@ -523,7 +567,7 @@ bool TableView::SyncTableViewSourceSort(
     // The control is the last writer here, so its axis becomes the only one. Without this an
     // app-declared fluent Sort axis would survive alongside it and, being declared earlier, would
     // outrank it as the primary sort while the chevron advertised this column.
-    auto const reconcileGuard = BeginControlInitiatedSortScope();
+    auto const reconcileGuard = BeginControlInitiatedSortScope(telemetryGeneration);
     if (direction == winrt::SortDirection::None)
     {
         // A control-initiated clear means "nothing is sorted", so it clears EVERY axis, not just
@@ -616,7 +660,7 @@ int32_t TableView::FindEntryIndexForDataItem(const winrt::IInspectable& item) co
 }
 
 void TableView::RecomputeSortDPsAndRaiseInternal(
-    const winrt::TableViewColumn& trigger)
+    const winrt::TableViewColumn& trigger, bool reportTelemetry)
 {
     // Stale-deferred-clear guard. A null trigger means "clear", and every legitimate null-trigger
     // caller - ClearSort, SortByColumn(col, None), ToggleSortDirection cycling to None - clears
@@ -630,11 +674,13 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         return;
     }
 
-    auto const telemetryGeneration = BeginOperationTelemetry(TableViewTelemetry::Operation::Sort);
+    const auto invalidatedSort = !reportTelemetry && m_telemetry.operation == TableViewTelemetry::Operation::Sort
+        ? m_telemetry.operationGeneration : 0;
+    auto const telemetryGeneration = BeginOperationTelemetry(TableViewTelemetry::Operation::Sort, reportTelemetry);
     bool completed = false;
-    auto telemetryCompletion = wil::scope_exit([this, telemetryGeneration, &completed]() noexcept
+    auto telemetryCompletion = wil::scope_exit([this, telemetryGeneration, reportTelemetry, &completed]() noexcept
     {
-        if (!completed)
+        if (reportTelemetry && !completed)
         {
             FailOperationTelemetry(TableViewTelemetry::Operation::Sort, telemetryGeneration, TableViewTelemetry::Stage::Sort);
         }
@@ -648,10 +694,14 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     // Selection is index-based, and a re-sort moves every index. Capture the item, then re-find it
     // afterwards so the selection follows the row rather than the slot.
     const auto preservedSelection = SelectedItemInternal();
-    const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection);
+    const bool reshaped = SyncTableViewSourceSort(trigger, requestedDirection, telemetryGeneration);
+    if (reshaped && invalidatedSort)
+    {
+        TableViewTelemetry::IgnoreOperation(m_telemetry, invalidatedSort, TableViewTelemetry::IgnoreReason::Stale);
+    }
     if (!reshaped && telemetryGeneration == m_telemetry.operationGeneration)
     {
-        TableViewTelemetry::CompleteOperation(m_telemetry, TableViewTelemetry::Result::Cancelled);
+        TableViewTelemetry::IgnoreOperation(m_telemetry, telemetryGeneration, TableViewTelemetry::IgnoreReason::Stale);
     }
 
     if (reshaped && preservedSelection)
@@ -671,6 +721,11 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
         }
         catch (...)
         {
+            if (reportTelemetry)
+            {
+                FailOperationTelemetry(TableViewTelemetry::Operation::Sort, telemetryGeneration,
+                    TableViewTelemetry::Stage::Sort, winrt::to_hresult());
+            }
         }
     }
 
@@ -890,7 +945,7 @@ void TableView::QueueClearSortAfterColumnRemoval(){
                 strongThis->m_clearSortAfterColumnRemovalQueued = false;
                 // RecomputeSortDPsAndRaiseInternal's stale-clear guard drops this if the app
                 // applied a new sort on a different column in the meantime.
-                strongThis->RecomputeSortDPsAndRaiseInternal(nullptr);
+                strongThis->RecomputeSortDPsAndRaiseInternal(nullptr, false);
             }
         });
     }
