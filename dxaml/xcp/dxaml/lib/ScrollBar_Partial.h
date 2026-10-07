@@ -28,6 +28,8 @@ namespace DirectUI
             // We don't want to show the initial fade-out of the mouse/panning indicators.
             BOOLEAN m_suspendVisualStateUpdates;
 
+            bool m_areTrackBrushesInitialized = false;
+
             // Value indicating how far the ScrollBar has beeen dragged.
             DOUBLE m_dragValue;
 

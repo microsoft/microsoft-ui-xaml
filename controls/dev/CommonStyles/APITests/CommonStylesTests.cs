@@ -31,7 +31,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class CommonStylesApiTests : ApiTestBase
     {
         [TestMethod]
-        public void ScrollBarDeferredTrackStyleSupportsVisualStateOverrides()
+        public void ScrollBarDeferredTrackBrushesSupportVisualStateOverrides()
         {
             foreach (var orientation in new[] { Orientation.Horizontal, Orientation.Vertical })
             {
@@ -73,12 +73,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         Verify.IsNotNull(track.Stroke);
                     }
 
-                    // Exercise the style contract independently of pointer input.
-                    var trackStyle = (Style)templateRoot.Resources["DeferredTrackBrushStyle"];
+                    // Exercise the local-binding contract independently of pointer input.
+                    var applicationStyle = new Style { TargetType = typeof(Microsoft.UI.Xaml.Shapes.Rectangle) };
+                    applicationStyle.Setters.Add(new Setter(FrameworkElement.TagProperty, "Application style"));
                     foreach (var name in new[] { "HorizontalTrackRect", "VerticalTrackRect" })
                     {
                         var trackPart = (Microsoft.UI.Xaml.Shapes.Rectangle)VisualTreeUtils.FindVisualChildByName(scrollBar, name);
-                        trackPart.Style = trackStyle;
+                        trackPart.Style = applicationStyle;
+                        trackPart.SetThemeResourceBinding(Microsoft.UI.Xaml.Shapes.Shape.FillProperty, "ScrollBarTrackFill");
+                        trackPart.SetThemeResourceBinding(Microsoft.UI.Xaml.Shapes.Shape.StrokeProperty, "ScrollBarTrackStroke");
                     }
 
                     Verify.IsTrue(VisualStateManager.GoToState(scrollBar, "Expanded", false));
@@ -88,6 +91,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsTrue(VisualStateManager.GoToState(scrollBar, "Collapsed", false));
                     Verify.IsNotNull(track.Fill, "Collapse restores the persistent normal fill.");
                     Verify.IsNotNull(track.Stroke, "Collapse restores the persistent normal stroke.");
+                    Verify.AreEqual(applicationStyle, track.Style, "Initializing brushes must preserve the application's Style.");
+                    Verify.AreEqual("Application style", track.Tag);
 
                     Verify.IsTrue(VisualStateManager.GoToState(scrollBar, "Expanded", false));
                     Verify.IsNotNull(track.Fill, "The track must also render on subsequent expansions.");
