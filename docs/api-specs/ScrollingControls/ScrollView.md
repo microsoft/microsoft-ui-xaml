@@ -2311,16 +2311,20 @@ decoupled these limitations should disappear.
 | Focus rects on elements in the sub-tree are displayed correctly (clipped / not clipped)    | No      | No            | Yes           | Yes                  | UX polish issue                                                                                                                                                                                                                                                                                                                                                                                             |
 
 
-# Future Supported Features with known scenarios
+# Preview and Future Features with Known Scenarios
 
 These features have valid scenarios and should be considered for future releases.
 
 ## Markup scenarios
 
-### Clipping suppression
+### Clipping suppression (preview)
 
-The old ScrollViewer has [this property](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.scrollviewer.cancontentrenderoutsidebounds) 
-already. It would allow the inner ScrollPresenter to stop its clipping.
+`ScrollView` and `ScrollPresenter` expose the preview `CanContentRenderOutsideBounds` property for parity with the old
+[ScrollViewer property](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.scrollviewer.cancontentrenderoutsidebounds).
+The default value is `False`, which applies a viewport-sized rectangular clip during arrange. Setting the property to
+`True` removes that clip so translated, scaled, shadowed, or otherwise overflowing content can render outside the
+viewport. The property changes rendering only; it does not change extent, viewport, scrolling boundaries, realization,
+or hit testing.
 
 ```csharp
 unsealed runtimeclass ScrollView : ...

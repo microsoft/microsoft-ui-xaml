@@ -14,6 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
 #include "ScrollPresenter.g.cpp"
 
 GlobalDependencyProperty ScrollPresenterProperties::s_BackgroundProperty{ nullptr };
+GlobalDependencyProperty ScrollPresenterProperties::s_CanContentRenderOutsideBoundsProperty{ nullptr };
 GlobalDependencyProperty ScrollPresenterProperties::s_ComputedHorizontalScrollModeProperty{ nullptr };
 GlobalDependencyProperty ScrollPresenterProperties::s_ComputedVerticalScrollModeProperty{ nullptr };
 GlobalDependencyProperty ScrollPresenterProperties::s_ContentProperty{ nullptr };
@@ -60,6 +61,17 @@ void ScrollPresenterProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnBackgroundPropertyChanged));
+    }
+    if (!s_CanContentRenderOutsideBoundsProperty)
+    {
+        s_CanContentRenderOutsideBoundsProperty =
+            InitializeDependencyProperty(
+                L"CanContentRenderOutsideBounds",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::ScrollPresenter>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(ScrollPresenter::s_defaultCanContentRenderOutsideBounds),
+                winrt::PropertyChangedCallback(&OnCanContentRenderOutsideBoundsPropertyChanged));
     }
     if (!s_ComputedHorizontalScrollModeProperty)
     {
@@ -253,6 +265,7 @@ void ScrollPresenterProperties::EnsureProperties()
 void ScrollPresenterProperties::ClearProperties()
 {
     s_BackgroundProperty = nullptr;
+    s_CanContentRenderOutsideBoundsProperty = nullptr;
     s_ComputedHorizontalScrollModeProperty = nullptr;
     s_ComputedVerticalScrollModeProperty = nullptr;
     s_ContentProperty = nullptr;
@@ -273,6 +286,14 @@ void ScrollPresenterProperties::ClearProperties()
 }
 
 void ScrollPresenterProperties::OnBackgroundPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ScrollPresenter>();
+    winrt::get_self<ScrollPresenter>(owner)->OnPropertyChanged(args);
+}
+
+void ScrollPresenterProperties::OnCanContentRenderOutsideBoundsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -467,6 +488,19 @@ void ScrollPresenterProperties::Background(winrt::Brush const& value)
 winrt::Brush ScrollPresenterProperties::Background()
 {
     return ValueHelper<winrt::Brush>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_BackgroundProperty));
+}
+
+void ScrollPresenterProperties::CanContentRenderOutsideBounds(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<ScrollPresenter*>(this)->SetValue(s_CanContentRenderOutsideBoundsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool ScrollPresenterProperties::CanContentRenderOutsideBounds()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<ScrollPresenter*>(this)->GetValue(s_CanContentRenderOutsideBoundsProperty));
 }
 
 void ScrollPresenterProperties::ComputedHorizontalScrollMode(winrt::ScrollingScrollMode const& value)

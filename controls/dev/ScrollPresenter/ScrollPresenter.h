@@ -59,6 +59,7 @@ public:
     static constexpr winrt::ScrollingZoomMode s_defaultZoomMode{ winrt::ScrollingZoomMode::Disabled };
     static constexpr winrt::ScrollingInputKinds s_defaultIgnoredInputKinds{ winrt::ScrollingInputKinds::None };
     static constexpr winrt::ScrollingContentOrientation s_defaultContentOrientation{ winrt::ScrollingContentOrientation::Both };
+    static constexpr bool s_defaultCanContentRenderOutsideBounds{ false };
     static constexpr bool s_defaultAnchorAtExtent{ true };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
     static constexpr double s_defaultMaxZoomFactor{ 10.0 };
@@ -441,6 +442,7 @@ private:
     void UpdateScrollControllerValues(ScrollPresenterDimension dimension);
     void UpdateVisualInteractionSourceMode(ScrollPresenterDimension dimension);
     void UpdateManipulationRedirectionMode();
+    void UpdateViewportClip(const winrt::Size& viewport);
     void OnContentSizeChanged(
         const winrt::UIElement& content);
     void OnViewChanged(bool horizontalOffsetChanged, bool verticalOffsetChanged);

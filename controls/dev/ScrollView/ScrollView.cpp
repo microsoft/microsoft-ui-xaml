@@ -2606,6 +2606,10 @@ winrt::hstring ScrollView::DependencyPropertyToString(const winrt::IDependencyPr
     {
         return L"VerticalScrollBarVisibility";
     }
+    else if (dependencyProperty == s_CanContentRenderOutsideBoundsProperty)
+    {
+        return L"CanContentRenderOutsideBounds";
+    }
     else if (dependencyProperty == s_ContentOrientationProperty)
     {
         return L"ContentOrientation";

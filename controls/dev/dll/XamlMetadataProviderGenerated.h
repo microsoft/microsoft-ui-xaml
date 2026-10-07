@@ -4991,6 +4991,11 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"ZoomMode", L"Microsoft.UI.Xaml.Controls.ScrollingZoomMode", statics.ZoomModeProperty(), false /* isContent */);
                     }
 
+                    winrt::IScrollPresenterStatics2 statics2 = GetFactory<winrt::IScrollPresenterStatics2>(L"Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter");
+                    {
+                        xamlType.AddDPMember(L"CanContentRenderOutsideBounds", L"Boolean", statics2.CanContentRenderOutsideBoundsProperty(), false /* isContent */);
+                    }
+
                     xamlType.AddMember(
                         L"CurrentAnchor", /* propertyName */
                         L"Microsoft.UI.Xaml.UIElement", /* propertyType */
@@ -5891,6 +5896,11 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"VerticalScrollRailMode", L"Microsoft.UI.Xaml.Controls.ScrollingRailMode", statics.VerticalScrollRailModeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ZoomChainMode", L"Microsoft.UI.Xaml.Controls.ScrollingChainMode", statics.ZoomChainModeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ZoomMode", L"Microsoft.UI.Xaml.Controls.ScrollingZoomMode", statics.ZoomModeProperty(), false /* isContent */);
+                    }
+
+                    winrt::IScrollViewStatics2 statics2 = GetFactory<winrt::IScrollViewStatics2>(L"Microsoft.UI.Xaml.Controls.ScrollView");
+                    {
+                        xamlType.AddDPMember(L"CanContentRenderOutsideBounds", L"Boolean", statics2.CanContentRenderOutsideBoundsProperty(), false /* isContent */);
                     }
 
                     xamlType.AddMember(
