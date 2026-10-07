@@ -121,8 +121,8 @@
                                   Toggled="OnThemeToggled"
                                   VerticalAlignment="Center"
                                   MinWidth="0"/>
-                    <Button Content="Run new task"/>
-                    <Button Content="End task" Click="OnEndTaskClick"/>
+                    <Button Content="Run new task" AutomationProperties.AutomationId="TaskManagerRunNewTaskButton"/>
+                    <Button Content="End task" Click="OnEndTaskClick" AutomationProperties.AutomationId="TaskManagerEndTaskButton" AutomationProperties.HelpText="Removes the selected process from the sample process list."/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -131,6 +131,7 @@
             <adv:TableView
                 x:Name="ProcessTable"
                 AutomationProperties.AutomationId="TaskManagerProcessTable"
+                AutomationProperties.Name="Sample processes"
                 Sorted="OnProcessTableSorted"
                 SelectionChanged="OnSelectionChanged"
                 SelectionMode="Single"
@@ -142,7 +143,7 @@
                     <adv:TableViewTemplateColumn.Header>
                         <StackPanel Spacing="0">
                             <TextBlock Text="CPU"/>
-                            <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="CpuSummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="CpuSummary" AutomationProperties.AutomationId="TaskManagerCpuSummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                     </adv:TableViewTemplateColumn.Header>
                 </adv:TableViewTemplateColumn>
@@ -150,7 +151,7 @@
                     <adv:TableViewTemplateColumn.Header>
                         <StackPanel Spacing="0">
                             <TextBlock Text="Memory"/>
-                            <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="MemorySummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="MemorySummary" AutomationProperties.AutomationId="TaskManagerMemorySummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                     </adv:TableViewTemplateColumn.Header>
                 </adv:TableViewTemplateColumn>
@@ -158,7 +159,7 @@
                     <adv:TableViewTemplateColumn.Header>
                         <StackPanel Spacing="0">
                             <TextBlock Text="Disk"/>
-                            <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="DiskSummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="DiskSummary" AutomationProperties.AutomationId="TaskManagerDiskSummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                     </adv:TableViewTemplateColumn.Header>
                 </adv:TableViewTemplateColumn>
@@ -166,7 +167,7 @@
                     <adv:TableViewTemplateColumn.Header>
                         <StackPanel Spacing="0">
                             <TextBlock Text="Network"/>
-                            <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="NetworkSummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="NetworkSummary" AutomationProperties.AutomationId="TaskManagerNetworkSummary" Text="0%" FontSize="12" FontWeight="Normal" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                     </adv:TableViewTemplateColumn.Header>
                 </adv:TableViewTemplateColumn>
@@ -184,10 +185,10 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="StatusBar" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="StatusBar" AutomationProperties.AutomationId="TaskManagerStatusBar" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
                     <TextBlock Text="Selected:" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="SelectedProcessText" Text="(none)" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="SelectedProcessText" AutomationProperties.AutomationId="TaskManagerSelectedProcessText" Text="(none)" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
             </Grid>
         </Border>

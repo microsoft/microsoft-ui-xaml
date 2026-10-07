@@ -52,6 +52,8 @@
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <adv:TableView
                         x:Name="PeopleTable"
+                        AutomationProperties.AutomationId="ToolTipsTable"
+                        AutomationProperties.Name="People with tooltips"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">

@@ -94,10 +94,10 @@
                 <TextBlock Grid.Row="5" Grid.Column="0" Text="Build" VerticalAlignment="Top"
                            Style="{ThemeResource BodyStrongTextBlockStyle}"/>
                 <StackPanel Grid.Row="5" Grid.Column="1" Spacing="2">
-                    <TextBlock x:Name="BuildLineText" Style="{ThemeResource BodyTextBlockStyle}" TextWrapping="Wrap"/>
-                    <TextBlock x:Name="BuildCommitText" Style="{ThemeResource BodyTextBlockStyle}"
+                    <TextBlock x:Name="BuildLineText" AutomationProperties.AutomationId="AboutBuildLineText" Style="{ThemeResource BodyTextBlockStyle}" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="BuildCommitText" AutomationProperties.AutomationId="AboutBuildCommitText" Style="{ThemeResource BodyTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
-                    <TextBlock x:Name="BuildCommitSubjectText" Style="{ThemeResource CaptionTextBlockStyle}"
+                    <TextBlock x:Name="BuildCommitSubjectText" AutomationProperties.AutomationId="AboutBuildCommitSubjectText" Style="{ThemeResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                 </StackPanel>
 
@@ -109,8 +109,14 @@
                     </TextBlock>
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <Button x:Name="ReportIssueButton" Content="Report on GitHub"
+                                AutomationProperties.AutomationId="AboutReportIssueButton"
+                                AutomationProperties.Name="Report an issue on GitHub"
+                                AutomationProperties.HelpText="Opens the public Microsoft UI XAML bug report template in a browser."
                                 ToolTipService.ToolTip="Opens the public Microsoft UI XAML bug report template on GitHub."/>
                         <Button x:Name="CopyAutoFillButton" Content="📋 Copy auto-fill"
+                                AutomationProperties.AutomationId="AboutCopyAutoFillButton"
+                                AutomationProperties.Name="Copy auto-fill details"
+                                AutomationProperties.HelpText="Copies a Markdown block with commit, branch, build, theme, and OS details to the clipboard."
                                 ToolTipService.ToolTip="Copies a Markdown block ready to paste into the GitHub issue."/>
                     </StackPanel>
                     <TextBlock Text="Auto-fill includes: commit SHA, branch, build timestamp, current theme, and OS / .NET version — everything a triager needs to reproduce."

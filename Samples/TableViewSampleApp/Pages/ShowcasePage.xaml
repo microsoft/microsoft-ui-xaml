@@ -120,6 +120,7 @@
                     <adv:TableView
                         x:Name="PeopleTable"
                         AutomationProperties.AutomationId="ShowcasePeopleTable"
+                        AutomationProperties.Name="People showcase"
                         AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
                         Sorted="OnPeopleTableSorted"
                         SelectionChanged="OnSelectionChanged"

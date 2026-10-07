@@ -39,6 +39,8 @@
                     VerticalAlignment="Stretch">
                     <adv:TableView
                         x:Name="DemoTable"
+                        AutomationProperties.AutomationId="HeadersVisibilityTable"
+                        AutomationProperties.Name="Header visibility records"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
@@ -59,8 +61,8 @@
                     Text="Choose which header surfaces are visible."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
-                <RadioButton Content="Column" Tag="Column" GroupName="HeadersVisibility" IsChecked="True" Checked="OnHeadersVisibilityChecked"/>
-                <RadioButton Content="None" Tag="None" GroupName="HeadersVisibility" Checked="OnHeadersVisibilityChecked"/>
+                <RadioButton Content="Column" Tag="Column" GroupName="HeadersVisibility" IsChecked="True" Checked="OnHeadersVisibilityChecked" AutomationProperties.AutomationId="HeadersVisibilityColumnRadio" AutomationProperties.HelpText="Shows the table's column headers."/>
+                <RadioButton Content="None" Tag="None" GroupName="HeadersVisibility" Checked="OnHeadersVisibilityChecked" AutomationProperties.AutomationId="HeadersVisibilityNoneRadio" AutomationProperties.HelpText="Hides the table's column headers."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
 

@@ -84,6 +84,7 @@
             Background="{ThemeResource SubtleFillColorTransparentBrush}">
             <ContentControl
                 x:Name="ExampleHost"
+                IsTabStop="False"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
@@ -111,6 +112,7 @@
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     <ContentControl
                         x:Name="OptionsHost"
+                        IsTabStop="False"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Stretch"
                         Content="{x:Bind Options, Mode=OneWay}"/>
@@ -125,7 +127,10 @@
             Margin="0,12,0,0"
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Stretch"
-            AutomationProperties.Name="Source"
+            AutomationProperties.AutomationId="SampleSourceExpander"
+            AutomationProperties.Name="Source code"
+            Expanding="OnSourceExpanderExpanding"
+            Collapsed="OnSourceExpanderCollapsed"
             Visibility="Collapsed">
             <Expander.Header>
                 <StackPanel Orientation="Horizontal" Spacing="8">

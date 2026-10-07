@@ -36,6 +36,7 @@
                     <adv:TableView
                         x:Name="PlaygroundTable"
                         AutomationProperties.AutomationId="PlaygroundTable"
+                        AutomationProperties.Name="Right-to-left people"
                         SelectionMode="Single"
                         FlowDirection="RightToLeft"
                         VerticalAlignment="Stretch"

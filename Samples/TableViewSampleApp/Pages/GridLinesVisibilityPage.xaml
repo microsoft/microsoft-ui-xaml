@@ -49,6 +49,7 @@
                     <adv:TableView
                         x:Name="DemoTable"
                         AutomationProperties.AutomationId="GridLinesDemoTable"
+                        AutomationProperties.Name="People grid line visibility"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
@@ -64,7 +65,7 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <StackPanel Spacing="4">
+                <StackPanel Spacing="4" AutomationProperties.Name="Grid lines visibility options">
                     <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Grid lines" Style="{StaticResource SectionHeaderTextStyle}"/>
                     <muxc:RadioButtons
                         x:Name="GridLinesVisibilityRadioButtons"
@@ -78,7 +79,7 @@
                     </muxc:RadioButtons>
                 </StackPanel>
 
-                <StackPanel Spacing="4">
+                <StackPanel Spacing="4" AutomationProperties.Name="Grid lines layout options">
                     <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Mode" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                     <muxc:RadioButtons
                         x:Name="GridLinesModeRadioButtons"
@@ -90,7 +91,7 @@
                     </muxc:RadioButtons>
                 </StackPanel>
 
-                <StackPanel Spacing="4">
+                <StackPanel Spacing="4" AutomationProperties.Name="Row banding options">
                     <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Row banding" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                     <muxc:RadioButtons
                         x:Name="BandingRadioButtons"

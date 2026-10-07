@@ -23,7 +23,7 @@
                 </Grid.RowDefinitions>
                 <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Toggle the checkboxes to show or hide each column, and add or remove the Tenure column by mutating the Columns collection." MinHeight="104"/>
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
-                    <adv:TableView x:Name="DynamicTable" AutomationProperties.AutomationId="DynamicTable" VerticalAlignment="Stretch" MinHeight="320">
+                    <adv:TableView x:Name="DynamicTable" AutomationProperties.AutomationId="DynamicTable" AutomationProperties.Name="People with dynamic columns" VerticalAlignment="Stretch" MinHeight="320">
                         <adv:TableView.Columns>
                             <adv:TableViewTextColumn x:Name="ColFirstName"  Header="First name" Width="160" Binding="{Binding FirstName}"  SortMemberPath="FirstName"/>
                             <adv:TableViewTextColumn x:Name="ColLastName"   Header="Last name"  Width="160" Binding="{Binding LastName}"   SortMemberPath="LastName"/>

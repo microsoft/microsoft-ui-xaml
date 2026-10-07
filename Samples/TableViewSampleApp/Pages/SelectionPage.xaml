@@ -34,6 +34,8 @@
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <adv:TableView
                         x:Name="PeopleTable"
+                        AutomationProperties.AutomationId="SelectionTable"
+                        AutomationProperties.Name="People selection"
                         SelectionMode="Single"
                         SelectionChanged="OnTableSelectionChanged"
                         VerticalAlignment="Stretch"
@@ -72,6 +74,8 @@
                 </StackPanel>
                 <TextBlock
                     x:Name="ModeDescriptionText"
+                    AutomationProperties.AutomationId="SelectionModeDescriptionText"
+                    AutomationProperties.LiveSetting="Polite"
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
 

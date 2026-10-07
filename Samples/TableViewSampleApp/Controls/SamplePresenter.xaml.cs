@@ -225,6 +225,14 @@ public sealed partial class SamplePresenter : UserControl
         SourceExpander.Visibility = hasSource ? Visibility.Visible : Visibility.Collapsed;
     }
 
+    // Expanding/collapsing the source expander changes how much vertical space the
+    // Example row can claim, so re-run the stretch sizing against the current height.
+    private void OnSourceExpanderExpanding(Expander sender, ExpanderExpandingEventArgs args)
+        => ApplyStretchSizing(ActualHeight);
+
+    private void OnSourceExpanderCollapsed(Expander sender, ExpanderCollapsedEventArgs args)
+        => ApplyStretchSizing(ActualHeight);
+
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
         ApplyResponsiveLayout(e.NewSize.Width);

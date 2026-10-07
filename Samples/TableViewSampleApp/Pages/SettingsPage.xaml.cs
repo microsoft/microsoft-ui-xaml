@@ -6,6 +6,7 @@ using System.IO;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using TableViewSampleApp.Services;
+using Windows.UI.ViewManagement;
 
 namespace TableViewSampleApp.Pages;
 
@@ -74,6 +75,20 @@ public sealed partial class SettingsPage : Page
             "TableViewSampleApp",
             "theme.txt");
         StoragePathText.Text = path;
+
+        RefreshWindowsState();
+    }
+
+    private void OnRefreshWindowsStateClick(object sender, RoutedEventArgs e) => RefreshWindowsState();
+
+    // Reads the OS high-contrast flag only. This is a Windows setting readout,
+    // not a rendering, contrast-ratio, or UI Automation test result.
+    private void RefreshWindowsState()
+    {
+        var highContrast = new AccessibilitySettings().HighContrast;
+        ContrastStatusText.Text =
+            $"Windows HighContrast = {highContrast} (refreshed {DateTimeOffset.Now:HH:mm:ss}). " +
+            "This is an OS setting readout, not a rendering or contrast-ratio test result.";
     }
 
     private void OnThemeSelectionChanged(object sender, SelectionChangedEventArgs e)

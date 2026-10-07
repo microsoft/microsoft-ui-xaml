@@ -24,7 +24,7 @@
                 </Grid.RowDefinitions>
                 <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Pick a column, then click Move left / right or Autosize. The order list updates as you go." MinHeight="104"/>
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
-                    <adv:TableView x:Name="PeopleTable" AutomationProperties.AutomationId="PeopleTable" SelectionMode="Single" VerticalAlignment="Stretch" MinHeight="320">
+                    <adv:TableView x:Name="PeopleTable" AutomationProperties.AutomationId="PeopleTable" AutomationProperties.Name="People column reorder and autosize" SelectionMode="Single" VerticalAlignment="Stretch" MinHeight="320">
                         <adv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" CanSort="False"/>
                         <adv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}" CanSort="False"/>
                         <adv:TableViewTextColumn Header="Email"      Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" CanSort="False"/>

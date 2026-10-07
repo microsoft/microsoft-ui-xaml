@@ -84,6 +84,8 @@
                 <StackPanel Spacing="2">
                     <TextBlock Text="Details" FontSize="18" FontWeight="SemiBold"/>
                     <TextBlock x:Name="SelectedFileText"
+                               AutomationProperties.AutomationId="FilePropertiesSelectedFileText"
+                               AutomationProperties.LiveSetting="Polite"
                                Text="Select a file to see its details"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                TextTrimming="CharacterEllipsis"/>
@@ -94,6 +96,7 @@
                 <adv:TableView
                     x:Name="PropTable"
                     AutomationProperties.AutomationId="FilePropertiesTable"
+                    AutomationProperties.Name="Sample file properties"
                     SelectionMode="Single"
                     MinHeight="420"
                     VerticalAlignment="Stretch">
@@ -108,7 +111,7 @@
                     BorderThickness="1"
                     CornerRadius="{StaticResource ControlCornerRadius}"
                     Padding="16,6">
-                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="StatusText" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="StatusText" AutomationProperties.AutomationId="FilePropertiesStatusText" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
             </Border>
         </Grid>
     </Grid>

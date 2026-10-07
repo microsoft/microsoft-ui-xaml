@@ -100,6 +100,8 @@
                     VerticalAlignment="Stretch">
                     <adv:TableView
                         x:Name="DemoTable"
+                        AutomationProperties.Name="People density and read-only"
+                        AutomationProperties.AutomationId="DensityReadOnlyTable"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
@@ -115,7 +117,7 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <StackPanel Spacing="4">
+                <StackPanel Spacing="4" AutomationProperties.Name="Density options">
                     <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Density" Style="{StaticResource SectionHeaderTextStyle}"/>
                     <TextBlock
                         x:Name="DensityDescriptionText"
@@ -128,9 +130,9 @@
                         AutomationProperties.HelpText="Row height + built-in cell padding preset."
                         SelectedIndex="1"
                         SelectionChanged="OnDensitySelectionChanged">
-                        <RadioButton Content="Compact" Tag="Compact" AutomationProperties.AutomationId="DensityCompactRadio"/>
-                        <RadioButton Content="Standard (default)" Tag="Standard" AutomationProperties.AutomationId="DensityStandardRadio"/>
-                        <RadioButton Content="Comfortable" Tag="Comfortable" AutomationProperties.AutomationId="DensityComfortableRadio"/>
+                        <RadioButton Content="Compact" Tag="Compact" AutomationProperties.AutomationId="DensityCompactRadio" AutomationProperties.HelpText="Row height + built-in cell padding preset."/>
+                        <RadioButton Content="Standard (default)" Tag="Standard" AutomationProperties.AutomationId="DensityStandardRadio" AutomationProperties.HelpText="Row height + built-in cell padding preset."/>
+                        <RadioButton Content="Comfortable" Tag="Comfortable" AutomationProperties.AutomationId="DensityComfortableRadio" AutomationProperties.HelpText="Row height + built-in cell padding preset."/>
                     </muxc:RadioButtons>
                 </StackPanel>
 

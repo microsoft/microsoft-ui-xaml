@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.Pages.AccessibilityRegressionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:controls="using:TableViewSampleApp.Controls"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <!-- No compensating TableViewTextColumn in either template-only scenario.
+             Button peers supply intrinsic names; only the explicit case sets Name. -->
+        <DataTemplate x:Key="IntrinsicRecordTemplate">
+            <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch">
+                <TextBlock Text="{Binding DisplayText}" TextWrapping="Wrap"/>
+            </Button>
+        </DataTemplate>
+        <DataTemplate x:Key="ExplicitRecordTemplate">
+            <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch"
+                    AutomationProperties.Name="{Binding ExplicitName}">
+                <TextBlock Text="{Binding DisplayText}" TextWrapping="Wrap"/>
+            </Button>
+        </DataTemplate>
+        <DataTemplate x:Key="DepartmentTemplate">
+            <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch">
+                <TextBlock Text="{Binding Department}" TextWrapping="Wrap"/>
+            </Button>
+        </DataTemplate>
+    </Page.Resources>
+
+    <controls:SamplePresenter
+        Header="Accessibility regression fixture"
+        Description="A small, synthetic assessment fixture, not an automated accessibility result. Reset before each scenario. Use Narrator and an external UIA inspector to record actual names, patterns, focus, events, and contrast. The readout below reports only app/model state.">
+
+        <controls:SamplePresenter.Example>
+            <StackPanel Spacing="12" Padding="12">
+                <TextBlock Text="Keyboard entry and exit" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Tab to Before table, then keep tabbing into the table/header/body stops. Press Home once focus is within the table to reach its first row. Up/Down move rows; Ctrl+Up/Down move without selecting; Space selects the focused data row in Single mode. Tab/Shift+Tab traverse the control's ordinary focus stops, including template buttons. Continue Tab until After table; reverse with Shift+Tab. Do not expect Tab or Left/Right to be spreadsheet cell navigation."
+                    TextWrapping="Wrap"/>
+                <Button Content="Before table" AutomationProperties.AutomationId="A11yBeforeTable"/>
+                <!-- A bounded viewport makes record 24 an offscreen candidate.
+                     Its actual visibility must be checked, not inferred from its source index. -->
+                <Border Style="{StaticResource TableHostBorderStyle}">
+                    <adv:TableView
+                        x:Name="AssessmentTable"
+                        AutomationProperties.AutomationId="A11yTable"
+                        AutomationProperties.Name="Accessibility regression records"
+                        SelectionMode="Single"
+                        SelectionChanged="OnTableSelectionChanged"
+                        BeginningEdit="OnBeginningEdit"
+                        CellEditEnding="OnCellEditEnding"
+                        IsReadOnly="True"
+                        Height="360"/>
+                </Border>
+                <Button Content="After table" AutomationProperties.AutomationId="A11yAfterTable"/>
+                <TextBlock Text="Expected observations — verify at runtime"
+                           Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock x:Name="ExpectedObservationsText" TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="A11yExpectedObservations"/>
+                <TextBlock
+                    Text="For template-only rows, query a row's Name before expanding its children, then query it again afterward. Record missing or changed content names: peer creation can affect the provider's name composition. This fixture does not repair those results."
+                    Style="{StaticResource SectionDescriptionTextStyle}"/>
+                <TextBlock
+                    Text="Grouping uses TableViewSource.GroupBy on Department. Inspect group header ExpandCollapse and row positions within groups; group headers are not selectable data records. Re-query providers after reshapes. Source count is not the grouped UIA grid row count."
+                    Style="{StaticResource SectionDescriptionTextStyle}"/>
+                <TextBlock
+                    Text="For real high contrast, follow Theme &amp; settings → Windows accessibility assessment. Test normal, selected, keyboard-focused, editing, read-only, and disabled states. App Light/Dark is not a Windows Contrast theme. Increase Windows Text size and verify these instructions, options, focus targets, and table remain reachable."
+                    Style="{StaticResource SectionDescriptionTextStyle}"/>
+            </StackPanel>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <ComboBox x:Name="ScenarioSelector" Header="Assessment scenario"
+                          AutomationProperties.AutomationId="A11yScenarioSelector"
+                          HorizontalAlignment="Stretch" SelectedIndex="0"
+                          SelectionChanged="OnScenarioChanged">
+                    <ComboBoxItem Content="Text columns" Tag="Text"/>
+                    <ComboBoxItem Content="Template-only: intrinsic" Tag="Intrinsic"/>
+                    <ComboBoxItem Content="Template-only: explicit" Tag="Explicit"/>
+                    <ComboBoxItem Content="Unlabeled table" Tag="Unlabeled"/>
+                </ComboBox>
+                <Button Content="Reset fixture" Click="OnResetClick"
+                        AutomationProperties.AutomationId="A11yReset"/>
+                <TextBlock Text="Reset: 24 original objects/values, text columns, named table, Single selection with nothing selected, flat, enabled, and read-only."
+                           Style="{StaticResource SectionDescriptionTextStyle}"/>
+                <ToggleSwitch x:Name="GroupingToggle" Header="Group by department"
+                              AutomationProperties.AutomationId="A11yGroupingToggle"
+                              Toggled="OnGroupingToggled"/>
+                <ToggleSwitch x:Name="EditingToggle" Header="Allow text editing"
+                              AutomationProperties.AutomationId="A11yEditingToggle"
+                              Toggled="OnEditingToggled"/>
+                <ToggleSwitch x:Name="EnabledToggle" Header="Enable table" IsOn="True"
+                              AutomationProperties.AutomationId="A11yEnabledToggle"
+                              Toggled="OnEnabledToggled"/>
+                <ComboBox x:Name="SelectionModeSelector" Header="Selection mode"
+                          AutomationProperties.AutomationId="A11ySelectionMode"
+                          HorizontalAlignment="Stretch" SelectedIndex="0"
+                          SelectionChanged="OnSelectionModeChanged">
+                    <ComboBoxItem Content="Single" Tag="Single"/>
+                    <ComboBoxItem Content="None" Tag="None"/>
+                </ComboBox>
+
+                <TextBlock Text="Edit from the table" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="In Text columns or Unlabeled table, enable editing. Focus a data row and press F2, or double-click a text cell. Enter commits; Esc cancels. No public BeginEdit/current-cell API is used. Leaving the editor can commit before an options button runs, so test cancellation with Esc inside the editor. Template buttons only log their Click event; they are not editors."
+                    Style="{StaticResource SectionDescriptionTextStyle}"/>
+                <Button Content="Call CommitEdit" Click="OnCommitEditClick"
+                        AutomationProperties.AutomationId="A11yCommitEdit"/>
+                <Button Content="Call CancelEdit" Click="OnCancelEditClick"
+                        AutomationProperties.AutomationId="A11yCancelEdit"/>
+
+                <TextBlock Text="Data mutation setup" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock
+                    Text="Select a data row using the table. Mutation toggles its text and Department in place. Record 24 is a fixed source object: return to Home and confirm it is offscreen before using its buttons. Removal does not force a replacement selection; restore reuses removed objects without selecting them. These buttons are setup, not evidence of UIA operations."
+                    Style="{StaticResource SectionDescriptionTextStyle}"/>
+                <Button Content="Mutate selected" Click="OnMutateSelectedClick"
+                        AutomationProperties.AutomationId="A11yMutateSelected"/>
+                <Button Content="Remove selected" Click="OnRemoveSelectedClick"
+                        AutomationProperties.AutomationId="A11yRemoveSelected"/>
+                <Button Content="Mutate record 24" Click="OnMutateLastClick"
+                        AutomationProperties.AutomationId="A11yMutateLast"/>
+                <Button Content="Remove record 24" Click="OnRemoveLastClick"
+                        AutomationProperties.AutomationId="A11yRemoveLast"/>
+                <Button Content="Restore removed" Click="OnRestoreClick"
+                        AutomationProperties.AutomationId="A11yRestoreRemoved"/>
+                <TextBlock Text="App/model readout — not UIA" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock x:Name="ModelStatusText" TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="A11yModelStatus"/>
+            </StackPanel>
+        </controls:SamplePresenter.Options>
+    </controls:SamplePresenter>
+</Page>

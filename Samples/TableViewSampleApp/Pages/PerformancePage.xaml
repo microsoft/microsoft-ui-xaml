@@ -82,7 +82,7 @@
                     <TextBlock Grid.Row="0" Grid.Column="2" Text="Result" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
 
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Load 10,000 rows" VerticalAlignment="Center"/>
-                    <Button Grid.Row="1" Grid.Column="1" Content="Run" Click="OnLoad10kClick" AutomationProperties.AutomationId="Load10kButton" HorizontalAlignment="Stretch">
+                    <Button Grid.Row="1" Grid.Column="1" Content="Run" Click="OnLoad10kClick" AutomationProperties.AutomationId="Load10kButton" AutomationProperties.Name="Run load 10,000 rows" HorizontalAlignment="Stretch">
                         <ToolTipService.ToolTip>
                             <TextBlock TextWrapping="Wrap" MaxWidth="360"
                                 Text="Measures: Clear() + 10,000 Add() events on the bound ObservableCollection + TableView.UpdateLayout(). Data is generated into a List&lt;T&gt; off the clock. Two GC passes precede the Stopwatch start."/>
@@ -91,7 +91,7 @@
                     <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="1" Grid.Column="2" x:Name="Load10kResult" Text="—" AutomationProperties.AutomationId="Load10kResult" VerticalAlignment="Center"/>
 
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Load 100,000 rows" VerticalAlignment="Center"/>
-                    <Button Grid.Row="2" Grid.Column="1" Content="Run" Click="OnLoad100kClick" AutomationProperties.AutomationId="Load100kButton" HorizontalAlignment="Stretch">
+                    <Button Grid.Row="2" Grid.Column="1" Content="Run" Click="OnLoad100kClick" AutomationProperties.AutomationId="Load100kButton" AutomationProperties.Name="Run load 100,000 rows" HorizontalAlignment="Stretch">
                         <ToolTipService.ToolTip>
                             <TextBlock TextWrapping="Wrap" MaxWidth="360"
                                 Text="Same as Load 10K but 100,000 rows. Stresses the ItemsRepeater realization budget under heavier collection-change pressure. With virtualization, only the visible viewport realizes — most of the cost is the CollectionChanged event marshalling, not UI."/>
@@ -100,7 +100,7 @@
                     <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="2" x:Name="Load100kResult" Text="—" AutomationProperties.AutomationId="Load100kResult" VerticalAlignment="Center"/>
 
                     <TextBlock Grid.Row="3" Grid.Column="0" Text="Sort current dataset by Name asc" VerticalAlignment="Center"/>
-                    <Button Grid.Row="3" Grid.Column="1" Content="Run" Click="OnSortClick" AutomationProperties.AutomationId="SortButton" HorizontalAlignment="Stretch">
+                    <Button Grid.Row="3" Grid.Column="1" Content="Run" Click="OnSortClick" AutomationProperties.AutomationId="SortButton" AutomationProperties.Name="Run sort current dataset by Name ascending" HorizontalAlignment="Stretch">
                         <ToolTipService.ToolTip>
                             <TextBlock TextWrapping="Wrap" MaxWidth="360"
                                 Text="LINQ OrderBy runs off the clock (pure C# cost — not what we are measuring). On the clock: Clear() + Add() each sorted row + UpdateLayout(). Mirrors 'user clicked a header, the sort key is already computed, now repopulate'."/>
@@ -109,7 +109,7 @@
                     <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="2" x:Name="SortResult" Text="—" AutomationProperties.AutomationId="SortResult" VerticalAlignment="Center"/>
 
                     <TextBlock Grid.Row="4" Grid.Column="0" Text="Filter current dataset (Salary 100k+)" VerticalAlignment="Center"/>
-                    <Button Grid.Row="4" Grid.Column="1" Content="Run" Click="OnFilterClick" AutomationProperties.AutomationId="FilterButton" HorizontalAlignment="Stretch">
+                    <Button Grid.Row="4" Grid.Column="1" Content="Run" Click="OnFilterClick" AutomationProperties.AutomationId="FilterButton" AutomationProperties.Name="Run filter current dataset" HorizontalAlignment="Stretch">
                         <ToolTipService.ToolTip>
                             <TextBlock TextWrapping="Wrap" MaxWidth="360"
                                 Text="LINQ Where runs off the clock. On the clock: Clear() + Add() each matching row + UpdateLayout(). Result shows matched/total rows so you can tell how heavy the predicate filtered."/>
@@ -118,7 +118,7 @@
                     <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="4" Grid.Column="2" x:Name="FilterResult" Text="—" AutomationProperties.AutomationId="FilterResult" VerticalAlignment="Center"/>
 
                     <TextBlock Grid.Row="5" Grid.Column="0" Text="Clear filter (restore full dataset)" VerticalAlignment="Center"/>
-                    <Button Grid.Row="5" Grid.Column="1" Content="Run" Click="OnClearFilterClick" AutomationProperties.AutomationId="ClearFilterButton" HorizontalAlignment="Stretch">
+                    <Button Grid.Row="5" Grid.Column="1" Content="Run" Click="OnClearFilterClick" AutomationProperties.AutomationId="ClearFilterButton" AutomationProperties.Name="Run clear filter" HorizontalAlignment="Stretch">
                         <ToolTipService.ToolTip>
                             <TextBlock TextWrapping="Wrap" MaxWidth="360"
                                 Text="Reverses the Filter: re-binds the full dataset. Useful for comparing 'large -> small' vs 'small -> large' transition cost; the ItemsRepeater realization budget differs."/>
@@ -127,7 +127,7 @@
                     <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="5" Grid.Column="2" x:Name="ClearFilterResult" Text="—" AutomationProperties.AutomationId="ClearFilterResult" VerticalAlignment="Center"/>
 
                     <TextBlock Grid.Row="6" Grid.Column="0" Text="Snapshot memory (delta from baseline)" VerticalAlignment="Center"/>
-                    <Button Grid.Row="6" Grid.Column="1" Content="Snapshot" Click="OnSnapshotClick" AutomationProperties.AutomationId="SnapshotButton" HorizontalAlignment="Stretch">
+                    <Button Grid.Row="6" Grid.Column="1" Content="Snapshot" Click="OnSnapshotClick" AutomationProperties.AutomationId="SnapshotButton" AutomationProperties.Name="Snapshot memory delta from baseline" HorizontalAlignment="Stretch">
                         <ToolTipService.ToolTip>
                             <TextBlock TextWrapping="Wrap" MaxWidth="360"
                                 Text="Forces two GC passes, then reads GC.GetTotalMemory(forceFullCollection: true) for managed heap (deterministic) AND Process.WorkingSet64 for the OS view (lazy; reflects unmanaged growth like XAML composition surfaces). Delta is from the baseline captured when the page first loaded; click Re-baseline to reset."/>
@@ -136,16 +136,16 @@
                     <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="6" Grid.Column="2" x:Name="SnapshotResult" Text="—" AutomationProperties.AutomationId="SnapshotResult" VerticalAlignment="Center" TextWrapping="Wrap"/>
 
                     <TextBlock Grid.Row="7" Grid.Column="0" Text="Re-baseline memory" VerticalAlignment="Center"/>
-                    <Button Grid.Row="7" Grid.Column="1" Content="Re-baseline" Click="OnRebaselineClick" AutomationProperties.AutomationId="RebaselineButton" HorizontalAlignment="Stretch">
+                    <Button Grid.Row="7" Grid.Column="1" Content="Re-baseline" Click="OnRebaselineClick" AutomationProperties.AutomationId="RebaselineButton" AutomationProperties.Name="Re-baseline memory" HorizontalAlignment="Stretch">
                         <ToolTipService.ToolTip>
                             <TextBlock TextWrapping="Wrap" MaxWidth="360"
                                 Text="Re-captures the WorkingSet + managed heap baseline. Use this AFTER you have completed a Load scenario, to measure incremental growth from subsequent operations."/>
                         </ToolTipService.ToolTip>
                     </Button>
-                    <TextBlock Grid.Row="7" Grid.Column="2" Text="(click Snapshot to see deltas from the current baseline)" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="7" Grid.Column="2" Text="(click Snapshot to see deltas from the current baseline)" AutomationProperties.AutomationId="RebaselineResult" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
 
                     <TextBlock Grid.Row="8" Grid.Column="0" Text="Run all (sequential)" VerticalAlignment="Center"/>
-                    <Button Grid.Row="8" Grid.Column="1" Content="Run all" Click="OnRunAllClick" AutomationProperties.AutomationId="RunAllButton" HorizontalAlignment="Stretch" Style="{ThemeResource AccentButtonStyle}">
+                    <Button Grid.Row="8" Grid.Column="1" Content="Run all" Click="OnRunAllClick" AutomationProperties.AutomationId="RunAllButton" AutomationProperties.Name="Run all performance scenarios" HorizontalAlignment="Stretch" Style="{ThemeResource AccentButtonStyle}">
                         <ToolTipService.ToolTip>
                             <TextBlock TextWrapping="Wrap" MaxWidth="360"
                                 Text="Runs Load 10K, Load 100K, Sort, Filter, Clear, and Snapshot in sequence on the UI thread. Each step uses its own GC settle pass. Per-row readouts show individual timings; the bottom-right summary confirms completion and which build flavor produced the numbers."/>
@@ -164,6 +164,7 @@
                     <adv:TableView
                         x:Name="PerfTable"
                         AutomationProperties.AutomationId="PerfTable"
+                        AutomationProperties.Name="Performance measurement records"
                         SelectionMode="Single"
                         Height="320">
                         <adv:TableViewTextColumn Header="Id"         Width="{StaticResource ColWidthId}"  Binding="{Binding Id}"     SortMemberPath="Id" CanSort="False"/>

@@ -29,7 +29,11 @@
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="HighContrast">
                     <SolidColorBrush x:Key="SampleCustomRowBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
-                    <SolidColorBrush x:Key="SampleCustomAlternatingRowBackgroundBrush" Color="{ThemeResource SystemColorButtonFaceColor}"/>
+                    <!-- Sample-owned optional row banding only. Under High Contrast the
+                         banding collapses to the system window colour so it never fights
+                         the user's chosen contrast pair. Do not override TableView/Tabular
+                         provider or theme resources in the app. -->
+                    <SolidColorBrush x:Key="SampleCustomAlternatingRowBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}"/>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
             <Thickness x:Key="PageContentMargin">24,16,24,24</Thickness>

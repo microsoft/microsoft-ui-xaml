@@ -34,6 +34,8 @@
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <adv:TableView
                         x:Name="TeamsTable"
+                        AutomationProperties.AutomationId="SortTeamsTable"
+                        AutomationProperties.Name="League standings"
                         SelectionMode="Single"
                         Sorted="OnTableSorted"
                         VerticalAlignment="Stretch"

@@ -78,6 +78,8 @@
                     VerticalAlignment="Stretch">
                     <adv:TableView
                         x:Name="DemoTable"
+                        AutomationProperties.Name="Empty state people"
+                        AutomationProperties.AutomationId="EmptyStateTable"
                         SelectionMode="Single"
                         EmptyTemplate="{StaticResource EmptyStateTemplate}"
                         VerticalAlignment="Stretch"
@@ -93,7 +95,7 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <StackPanel Spacing="4">
+                <StackPanel Spacing="4" AutomationProperties.Name="Empty state data source options">
                     <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Data source" Style="{StaticResource SectionHeaderTextStyle}"/>
                     <TextBlock
                         Text="Clear ItemsSource to show the EmptyTemplate."

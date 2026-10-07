@@ -30,7 +30,7 @@
                     Description="Choose how the app renders. Your theme choice persists across launches in a small text file under %LocalAppData%\TableViewSampleApp."/>
 
                 <!-- Appearance -->
-                <TextBlock Text="Appearance" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"/>
+                <TextBlock Text="Appearance" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" AutomationProperties.HeadingLevel="Level2"/>
                 <Border Style="{StaticResource TableHostBorderStyle}" Padding="16,12">
                     <Grid ColumnSpacing="16" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
@@ -65,8 +65,35 @@
                     </Grid>
                 </Border>
 
+                <TextBlock Text="Windows contrast themes"
+                           Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                           TextWrapping="Wrap"
+                           AutomationProperties.HeadingLevel="Level2"/>
+                <Border Style="{StaticResource TableHostBorderStyle}" Padding="16,12">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Real contrast themes — not the app's Light / Dark"
+                                   Style="{StaticResource BodyStrongTextBlockStyle}"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.HeadingLevel="Level3"/>
+                        <TextBlock Text="1. Set App theme to &quot;Use system setting&quot; above. The title-bar theme button only cycles the app's Default / Light / Dark appearance; it does not enable a Windows contrast theme."
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="2. Open Windows Settings (Win+I) → Accessibility → Contrast themes, choose a contrast theme, and select Apply. Make this Windows change manually; this app does not change system settings."
+                                   TextWrapping="Wrap"/>
+                        <TextBlock Text="3. Return to the gallery and inspect ordinary, selected, keyboard-focused, and disabled table states against the actual Windows palette. A Light / Dark pass is not a contrast-theme pass."
+                                   TextWrapping="Wrap"/>
+                        <Button Content="Refresh Windows state" Click="OnRefreshWindowsStateClick"
+                                AutomationProperties.AutomationId="SettingsRefreshContrastState"
+                                AutomationProperties.Name="Refresh Windows contrast state"
+                                HorizontalAlignment="Left"/>
+                        <TextBlock x:Name="ContrastStatusText" TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="SettingsContrastState"
+                                   AutomationProperties.LiveSetting="Polite"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </Border>
+
                 <!-- Storage -->
-                <TextBlock Text="Storage" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"/>
+                <TextBlock Text="Storage" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" AutomationProperties.HeadingLevel="Level2"/>
                 <Border x:Name="StorageCard"
                         AutomationProperties.AutomationId="StorageCard"
                         Style="{StaticResource TableHostBorderStyle}"

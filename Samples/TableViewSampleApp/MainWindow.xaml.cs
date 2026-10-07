@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -14,6 +15,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using TableViewSampleApp.Pages;
 using Windows.UI;
+using Windows.UI.ViewManagement;
 
 namespace TableViewSampleApp;
 
@@ -39,6 +41,7 @@ public sealed partial class MainWindow : Window
         ["Virtualization"] = typeof(VirtualizationPage),
         ["Performance"] = typeof(PerformancePage),
         ["KeyboardNav"] = typeof(KeyboardNavPage),
+        ["AccessibilityRegression"] = typeof(AccessibilityRegressionPage),
         ["ColumnReorder"] = typeof(ColumnReorderPage),
         ["MixedControls"] = typeof(MixedControlsPage),
         ["TextWrap"] = typeof(TextWrapPage),
@@ -55,6 +58,7 @@ public sealed partial class MainWindow : Window
     private bool _isUpdatingSelection;
     private bool _shouldFocusContentAfterNavigation;
     private FocusState _contentNavigationFocusState = FocusState.Programmatic;
+    private readonly AccessibilitySettings _accessibilitySettings = new();
 
     public MainWindow(IReadOnlyList<string>? launchArguments = null)
     {
@@ -266,6 +270,21 @@ public sealed partial class MainWindow : Window
                 return;
             }
 
+            if (_accessibilitySettings.HighContrast)
+            {
+                // Undo only our sample-owned Light/Dark overrides. Let Windows
+                // high-contrast resources provide the caption-button colors.
+                titleBar.ButtonBackgroundColor = null;
+                titleBar.ButtonInactiveBackgroundColor = null;
+                titleBar.ButtonForegroundColor = null;
+                titleBar.ButtonInactiveForegroundColor = null;
+                titleBar.ButtonHoverForegroundColor = null;
+                titleBar.ButtonHoverBackgroundColor = null;
+                titleBar.ButtonPressedForegroundColor = null;
+                titleBar.ButtonPressedBackgroundColor = null;
+                return;
+            }
+
             var isDark = (Content as FrameworkElement)?.ActualTheme == ElementTheme.Dark;
 
             var fg = isDark ? Microsoft.UI.Colors.White : Microsoft.UI.Colors.Black;
@@ -348,7 +367,12 @@ public sealed partial class MainWindow : Window
             _ => "\uE793",                    // Color (system default)
         };
 
-        AutomationProperties.SetName(ThemeToggleButton, $"Theme: {GetThemeName(theme)}. Switch to {GetThemeName(GetNextTheme(theme))}");
+        var current = GetThemeName(theme);
+        var next = GetThemeName(GetNextTheme(theme));
+
+        AutomationProperties.SetName(ThemeToggleButton, $"Theme: {current}. Switch to {next}.");
+        AutomationProperties.SetHelpText(ThemeToggleButton, $"The current theme is {current}. Activating this button switches to {next}.");
+        ToolTipService.SetToolTip(ThemeToggleButton, $"Theme: {current}. Switch to {next}.");
     }
 
     private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
@@ -483,7 +507,49 @@ public sealed partial class MainWindow : Window
         }
 
         _shouldFocusContentAfterNavigation = false;
-        (ContentFrame.Content as UIElement)?.Focus(_contentNavigationFocusState);
+
+        if (ContentFrame.Content is not FrameworkElement page)
+        {
+            return;
+        }
+
+        // Land focus on the first focusable element INSIDE the page rather than on
+        // the page root, so Narrator starts reading at a real control and the first
+        // Tab continues from there instead of restarting at the title bar.
+        var focusState = _contentNavigationFocusState;
+        if (page.IsLoaded)
+        {
+            FocusFirstElement(page, focusState, attemptsLeft: 10);
+            return;
+        }
+
+        void OnPageLoaded(object sender, RoutedEventArgs args)
+        {
+            page.Loaded -= OnPageLoaded;
+            FocusFirstElement(page, focusState, attemptsLeft: 10);
+        }
+
+        page.Loaded += OnPageLoaded;
+    }
+
+    // Synchronous on purpose: the previous page (holding the focused element) stays in
+    // the tree until the navigation transition ends, and its removal clears a still
+    // pending FocusManager.TryFocusAsync. Retry on the dispatcher while the incoming
+    // page is still realizing its first focusable child.
+    private void FocusFirstElement(FrameworkElement page, FocusState focusState, int attemptsLeft)
+    {
+        if (FocusManager.FindFirstFocusableElement(page) is UIElement first &&
+            first.Focus(focusState))
+        {
+            return;
+        }
+
+        if (attemptsLeft > 0)
+        {
+            DispatcherQueue.TryEnqueue(
+                DispatcherQueuePriority.Low,
+                () => FocusFirstElement(page, focusState, attemptsLeft - 1));
+        }
     }
 
     private static ElementTheme GetNextTheme(ElementTheme theme)
@@ -512,8 +578,8 @@ public sealed partial class MainWindow : Window
             ?? FrameworkElementAutomationPeer.CreatePeerForElement(ThemeToggleButton);
         peer?.RaiseNotificationEvent(
             AutomationNotificationKind.ActionCompleted,
-            AutomationNotificationProcessing.MostRecent,
-            $"Theme changed to {GetThemeName(theme)}",
+            AutomationNotificationProcessing.ImportantMostRecent,
+            $"{GetThemeName(theme)} theme selected.",
             "ThemeChanged");
     }
 

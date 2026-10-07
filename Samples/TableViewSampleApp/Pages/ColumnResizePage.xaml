@@ -25,7 +25,7 @@
                 </Grid.RowDefinitions>
                 <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Drag the right edge of any header to resize (Role is locked). Or use the sliders to set Width / Min / Max programmatically and watch ActualWidth clamp." MinHeight="104"/>
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
-                    <adv:TableView x:Name="PeopleTable" SelectionMode="Single" VerticalAlignment="Stretch" MinHeight="320">
+                    <adv:TableView x:Name="PeopleTable" AutomationProperties.Name="People column resize" AutomationProperties.AutomationId="ColumnResizeTable" SelectionMode="Single" VerticalAlignment="Stretch" MinHeight="320">
                         <adv:TableViewTextColumn x:Name="FirstNameColumn"  Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" CanSort="False"/>
                         <adv:TableViewTextColumn x:Name="LastNameColumn"   Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}" CanSort="False"/>
                         <adv:TableViewTextColumn x:Name="EmailColumn"      Header="Email"      Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" CanSort="False"/>
@@ -44,13 +44,13 @@
                 <ComboBox x:Name="ColumnCombo" SelectedIndex="0" SelectionChanged="OnColumnComboChanged" AutomationProperties.Name="Column to adjust" HorizontalAlignment="Stretch"/>
                 <TextBlock Text="MinWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
                 <Slider x:Name="MinWidthSlider" Minimum="0" Maximum="400" StepFrequency="10" Value="20" ValueChanged="OnMinWidthSliderChanged" AutomationProperties.AutomationId="MinWidthSlider" AutomationProperties.Name="Minimum column width" HorizontalAlignment="Stretch"/>
-                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="MinWidthValue" Text="20" Style="{StaticResource StatusReadoutValueStyle}" TextAlignment="Right"/>
+                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="MinWidthValue" Text="20" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="MinWidthValue" TextAlignment="Right"/>
                 <TextBlock Text="Width" Style="{StaticResource StatusReadoutLabelStyle}"/>
                 <Slider x:Name="WidthSlider" Minimum="0" Maximum="500" StepFrequency="10" Value="160" ValueChanged="OnWidthSliderChanged" AutomationProperties.AutomationId="WidthSlider" AutomationProperties.Name="Column width" HorizontalAlignment="Stretch"/>
-                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="WidthValue" Text="160" Style="{StaticResource StatusReadoutValueStyle}" TextAlignment="Right"/>
+                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="WidthValue" Text="160" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="WidthValue" TextAlignment="Right"/>
                 <TextBlock Text="MaxWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
                 <Slider x:Name="MaxWidthSlider" Minimum="50" Maximum="500" StepFrequency="10" Value="500" ValueChanged="OnMaxWidthSliderChanged" AutomationProperties.AutomationId="MaxWidthSlider" AutomationProperties.Name="Maximum column width" HorizontalAlignment="Stretch"/>
-                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="MaxWidthValue" Text="500" Style="{StaticResource StatusReadoutValueStyle}" TextAlignment="Right"/>
+                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="MaxWidthValue" Text="500" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="MaxWidthValue" TextAlignment="Right"/>
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                 <Grid ColumnSpacing="12" RowSpacing="4">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>

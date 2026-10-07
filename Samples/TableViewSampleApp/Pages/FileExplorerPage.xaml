@@ -80,6 +80,7 @@
                         MinWidth="40"
                         Click="OnRefreshClick"
                         AutomationProperties.Name="Refresh"
+                        AutomationProperties.AutomationId="RefreshButton"
                         ToolTipService.ToolTip="Refresh">
                     <FontIcon Glyph="&#xE72C;" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
                 </Button>
@@ -90,6 +91,7 @@
             <adv:TableView
                 x:Name="FileTable"
                 AutomationProperties.AutomationId="FileExplorerTable"
+                AutomationProperties.Name="Sample files"
                 SelectionMode="Single"
                 Sorted="OnTableSorted"
                 SelectionChanged="OnSelectionChanged"
@@ -114,8 +116,8 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="StatusText" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="SelectionText" Grid.Column="1" Text="0 selected (0 bytes)" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="StatusText" AutomationProperties.AutomationId="FileExplorerStatusText" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="SelectionText" Grid.Column="1" AutomationProperties.AutomationId="FileExplorerSelectionText" Text="0 selected (0 bytes)" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
             </Grid>
         </Border>
     </Grid>

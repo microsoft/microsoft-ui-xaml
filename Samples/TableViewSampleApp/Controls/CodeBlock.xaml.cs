@@ -116,7 +116,7 @@ public sealed partial class CodeBlock : UserControl
     // buttons are qualified by caption — otherwise they are indistinguishable to a
     // screen reader and read as the same button twice.
     private string ResolvedCopyAutomationName =>
-        string.IsNullOrWhiteSpace(Caption) ? CopyButtonAutomationName : $"Copy {Caption}";
+        string.IsNullOrWhiteSpace(Caption) ? CopyButtonAutomationName : $"Copy {Caption} code";
 
     private static string LoadSnippet(string snippetName)
     {

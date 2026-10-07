@@ -42,15 +42,18 @@
                     AutomationProperties.Name="Clear filter"
                     AutomationProperties.AutomationId="ClearFilterButton"/>
             <ToggleSwitch x:Name="ActiveOnlyToggle" Header="Active only" OffContent="Off" OnContent="On"
+                          AutomationProperties.Name="Active only"
+                          AutomationProperties.AutomationId="ActiveOnlyToggle"
                           Toggled="OnActiveToggled"/>
         </StackPanel>
 
-        <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" x:Name="ReadoutText" Opacity="0.7" FontSize="12"/>
+        <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" x:Name="ReadoutText" AutomationProperties.AutomationId="FilterReadoutText" AutomationProperties.Name="Filter readout" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontSize="12"/>
 
         <Border Grid.Row="3"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1" CornerRadius="6">
             <tv:TableView x:Name="FilterTable"
+                          AutomationProperties.Name="Filtered people"
                           SelectionMode="Single"
                           AutomationProperties.AutomationId="FilterTable"/>
         </Border>

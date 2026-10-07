@@ -130,6 +130,8 @@
                     VerticalAlignment="Stretch">
                     <adv:TableView
                         x:Name="PeopleTable"
+                        AutomationProperties.Name="People with cell flyouts"
+                        AutomationProperties.AutomationId="CellFlyoutsTable"
                         SelectionMode="Single"
                         IsReadOnly="False"
                         VerticalAlignment="Stretch"
@@ -151,6 +153,8 @@
                 <TextBlock Text="The first row updates when an interactive cell commits a value." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
                 <TextBlock AutomationProperties.LiveSetting="Polite"
                     x:Name="LiveReadout"
+                    AutomationProperties.AutomationId="CellFlyoutsLiveReadout"
+                    AutomationProperties.Name="Live data readout"
                     FontFamily="Consolas"
                     FontSize="12"
                     TextWrapping="Wrap"

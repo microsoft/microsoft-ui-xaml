@@ -82,6 +82,8 @@
                     VerticalAlignment="Stretch">
                     <adv:TableView
                         x:Name="DemoTable"
+                        AutomationProperties.AutomationId="TextWrapTable"
+                        AutomationProperties.Name="People text wrapping"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">

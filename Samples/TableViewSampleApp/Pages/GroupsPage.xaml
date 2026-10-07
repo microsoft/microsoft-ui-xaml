@@ -72,7 +72,7 @@
                     <adv:TableView
                         x:Name="PeopleTableControl"
                         AutomationProperties.AutomationId="PeopleTable"
-                        AutomationProperties.Name="Grouped people table"
+                        AutomationProperties.Name="Grouped people"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
@@ -98,6 +98,7 @@
                     TextWrapping="Wrap"/>
                 <ToggleSwitch
                     x:Name="GroupingToggleControl"
+                    AutomationProperties.AutomationId="GroupsGroupingToggle"
                     Header="Grouping"
                     IsOn="True"
                     OffContent="Flat"
@@ -117,6 +118,7 @@
                 </ComboBox>
                 <ToggleSwitch
                     x:Name="UseCustomHeaderTemplateToggle"
+                    AutomationProperties.AutomationId="GroupsHeaderTemplateToggle"
                     Header="Group header template"
                     IsOn="True"
                     OffContent="Built-in"

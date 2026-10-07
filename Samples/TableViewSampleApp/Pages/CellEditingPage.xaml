@@ -35,6 +35,8 @@
                     VerticalAlignment="Stretch">
                     <adv:TableView
                         x:Name="DemoTable"
+                        AutomationProperties.Name="Editable people"
+                        AutomationProperties.AutomationId="CellEditingTable"
                         SelectionMode="Single"
                         IsReadOnly="False"
                         VerticalAlignment="Stretch"

@@ -41,6 +41,7 @@
 
             <Button x:Name="ThemeToggleButton"
                     Grid.Column="3"
+                    AutomationProperties.AutomationId="ThemeToggleButton"
                     Style="{ThemeResource SubtleButtonStyle}"
                     Width="36" Height="32"
                     Margin="0,0,8,0"
@@ -56,6 +57,8 @@
         <muxc:NavigationView
             Grid.Row="1"
             x:Name="NavView"
+            PaneTitle="Sample navigation"
+            AutomationProperties.Name="Sample navigation"
             PaneDisplayMode="Auto"
             IsBackButtonVisible="Auto"
             IsBackEnabled="False"
@@ -86,6 +89,7 @@
                 <muxc:NavigationViewItem Tag="Sort" Content="Sorting"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8CB;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="Filter" Content="Filtering"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE71C;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="KeyboardNav" Content="Keyboard navigation + accessibility"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE765;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="AccessibilityRegression" Content="Accessibility regression fixture" AutomationProperties.AutomationId="NavAccessibilityRegression"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE765;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItemSeparator/>
                 <muxc:NavigationViewItemHeader Content="Columns"/>
                 <muxc:NavigationViewItem Tag="Layout" Content="Layout"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE799;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>

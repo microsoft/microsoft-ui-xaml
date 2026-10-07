@@ -21,12 +21,18 @@
             <Grid RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Click any cell to focus it, then use arrow keys / Tab / Home / End / PgUp / PgDn to move around the read-only grid."/>
-                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch" Padding="0">
-                    <adv:TableView x:Name="PeopleTable" AutomationProperties.AutomationId="PeopleTable" AutomationProperties.Name="People grid" SelectionMode="Single" SelectionChanged="OnSelectionChanged" VerticalAlignment="Stretch" MinHeight="320">
+                <muxc:InfoBar Grid.Row="0" IsOpen="True" IsClosable="False" Severity="Informational" Title="Try it" Message="Keyboard-only route: Tab until &quot;Before table&quot; has focus, then Tab into the table. Use Up/Down, Page Up/Page Down, and Ctrl+Home/Ctrl+End to move between rows; once a cell has focus, Left/Right move across cells and Home/End jump to the first/last cell of that row. Tab again to reach &quot;After table&quot;; Shift+Tab goes back the same way."/>
+                <Button Grid.Row="1" Content="Before table" HorizontalAlignment="Left"
+                        AutomationProperties.AutomationId="KeyboardNavBeforeTable"
+                        AutomationProperties.Name="Before table"
+                        AutomationProperties.HelpText="Focus sentinel placed immediately before the table so tab order into the table can be verified."/>
+                <Border Grid.Row="2" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch" Padding="0">
+                    <adv:TableView x:Name="PeopleTable" AutomationProperties.AutomationId="PeopleTable" AutomationProperties.Name="Keyboard navigation people" SelectionMode="Single" SelectionChanged="OnSelectionChanged" VerticalAlignment="Stretch" MinHeight="320">
                         <adv:TableViewTextColumn Header="#"          Width="{StaticResource ColWidthId}"  Binding="{Binding Number}" CanSort="False"/>
                         <adv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}" CanSort="False"/>
                         <adv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}" CanSort="False"/>
@@ -35,28 +41,39 @@
                         <adv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" CanSort="False"/>
                     </adv:TableView>
                 </Border>
-                <muxc:InfoBar Grid.Row="2" IsOpen="True" IsClosable="False" Severity="Informational" Title="Accessibility" Message="TableView ships UI Automation support out of the box: assistive tools such as Narrator can announce each row's position in the grid, and the grid reports its dimensions and orientation to automation clients. The status readout on the right mirrors those same values."/>
+                <Button Grid.Row="3" Content="After table" HorizontalAlignment="Left"
+                        AutomationProperties.AutomationId="KeyboardNavAfterTable"
+                        AutomationProperties.Name="After table"
+                        AutomationProperties.HelpText="Focus sentinel placed immediately after the table so tab order out of the table can be verified."/>
+                <muxc:InfoBar Grid.Row="4" IsOpen="True" IsClosable="False" Severity="Informational" Title="Accessibility" Message="TableView ships UI Automation support out of the box: assistive tools such as Narrator can announce each row's position in the grid, and the grid reports its dimensions and orientation to automation clients. Expected table Name: Keyboard navigation people; AutomationId: PeopleTable. The status readout on the right mirrors those same values."/>
             </Grid>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Keyboard shortcuts" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock Text="Click any row to take focus, then use the keyboard. The readout below shows the selected row plus bound row and column counts." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <TextBlock Text="Start at the &quot;Before table&quot; button and Tab into the table — no mouse needed. The readout below shows the selected row plus bound row and column counts." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
                 <Grid ColumnSpacing="12" RowSpacing="4">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Up" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
                     <TextBlock Grid.Row="0" Grid.Column="1" Text="prev row" Style="{StaticResource StatusReadoutLabelStyle}"/>
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Down" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
                     <TextBlock Grid.Row="1" Grid.Column="1" Text="next row" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Home" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="first row" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="End" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="last row" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="PageUp / PageDown" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                    <TextBlock Grid.Row="4" Grid.Column="1" Text="-1 / +1 viewport" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Left / Right" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="prev / next cell in the focused row" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Home" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="first cell of the focused row" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="End" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="last cell of the focused row" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Ctrl+Home / Ctrl+End" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="5" Grid.Column="1" Text="first / last row" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="6" Grid.Column="0" Text="PageUp / PageDown" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="6" Grid.Column="1" Text="-1 / +1 viewport" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Enter / Space" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    <TextBlock Grid.Row="7" Grid.Column="1" Text="sorts by the focused column header" Style="{StaticResource StatusReadoutLabelStyle}"/>
                 </Grid>
+                <TextBlock Text="Tab and Shift+Tab traverse ordinary focus stops: the &quot;Before table&quot; button, the table, then the &quot;After table&quot; button. Sorting is disabled on this page's columns, so Enter and Space on a header have no visible effect here." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                 <Grid ColumnSpacing="12" RowSpacing="4">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>

@@ -38,6 +38,8 @@
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
                     <adv:TableView
                         x:Name="PeopleTable"
+                        AutomationProperties.AutomationId="VirtualizationTable"
+                        AutomationProperties.Name="Virtualized people"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
