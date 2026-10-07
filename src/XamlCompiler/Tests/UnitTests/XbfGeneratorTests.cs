@@ -29,15 +29,43 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void UnchangedXbfUpdatesTimestamp()
+        public void UnchangedXbfOlderThanSourceUpdatesTimestamp()
         {
             AssertUnchangedOutputIsCurrent(new byte[] { 1, 2, 3 });
         }
 
         [TestMethod]
-        public void UnchangedEmptyXbfUpdatesTimestamp()
+        public void UnchangedEmptyXbfOlderThanSourceUpdatesTimestamp()
         {
             AssertUnchangedOutputIsCurrent(new byte[0]);
+        }
+
+        [TestMethod]
+        public void UnchangedXbfNewerThanSourceKeepsTimestamp()
+        {
+            // Simulates forced regeneration (e.g. a referenced assembly changed) where the XAML
+            // wasn't touched: identical output must not dirty downstream targets.
+            string path = Path.Combine(_directory, "forced.xbf");
+            byte[] contents = { 1, 2, 3 };
+            File.WriteAllBytes(path, contents);
+            string source = CreateSource(DateTime.UtcNow.AddDays(-3));
+            DateTime xbfTimestamp = DateTime.UtcNow.AddDays(-2);
+            File.SetLastWriteTimeUtc(path, xbfTimestamp);
+            using (CreateOutput(path, source, contents)) { }
+            CollectionAssert.AreEqual(contents, File.ReadAllBytes(path));
+            Assert.AreEqual(xbfTimestamp, File.GetLastWriteTimeUtc(path));
+        }
+
+        [TestMethod]
+        public void UnchangedXbfWithMissingSourceKeepsTimestamp()
+        {
+            string path = Path.Combine(_directory, "nosource.xbf");
+            byte[] contents = { 1, 2, 3 };
+            File.WriteAllBytes(path, contents);
+            DateTime xbfTimestamp = DateTime.UtcNow.AddDays(-2);
+            File.SetLastWriteTimeUtc(path, xbfTimestamp);
+            using (CreateOutput(path, Path.Combine(_directory, "missing.xaml"), contents)) { }
+            Assert.AreEqual(xbfTimestamp, File.GetLastWriteTimeUtc(path));
         }
 
         [TestMethod]
@@ -45,7 +73,7 @@ namespace UnitTests
         {
             string path = Path.Combine(_directory, "new.xbf");
             byte[] contents = { 1, 2, 3 };
-            using (CreateOutput(path, contents)) { }
+            using (CreateOutput(path, CreateSource(DateTime.UtcNow), contents)) { }
             CollectionAssert.AreEqual(contents, File.ReadAllBytes(path));
         }
 
@@ -59,7 +87,7 @@ namespace UnitTests
                 File.WriteAllBytes(path, original);
                 File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddDays(-2));
                 DateTime sourceTimestamp = DateTime.UtcNow.AddMinutes(-1);
-                using (CreateOutput(path, contents)) { }
+                using (CreateOutput(path, CreateSource(sourceTimestamp), contents)) { }
                 CollectionAssert.AreEqual(contents, File.ReadAllBytes(path));
                 Assert.IsTrue(File.GetLastWriteTimeUtc(path) >= sourceTimestamp);
             }
@@ -71,7 +99,7 @@ namespace UnitTests
             string path = Path.Combine(_directory, "disposed.xbf");
             byte[] contents = { 1, 2, 3 };
             File.WriteAllBytes(path, contents);
-            using (IDisposable output = CreateOutput(path, contents))
+            using (IDisposable output = CreateOutput(path, CreateSource(DateTime.UtcNow), contents))
             {
                 output.Dispose();
                 File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddDays(-2));
@@ -87,16 +115,24 @@ namespace UnitTests
             File.WriteAllBytes(path, contents);
             File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddDays(-2));
             DateTime sourceTimestamp = DateTime.UtcNow.AddMinutes(-1);
-            using (CreateOutput(path, contents)) { }
+            using (CreateOutput(path, CreateSource(sourceTimestamp), contents)) { }
             CollectionAssert.AreEqual(contents, File.ReadAllBytes(path));
             Assert.IsTrue(File.GetLastWriteTimeUtc(path) >= sourceTimestamp,
-                "Successful byte-identical generation must advance the XBF timestamp beyond the source.");
+                "Byte-identical generation must advance an XBF that is older than its source XAML.");
         }
 
-        private static IDisposable CreateOutput(string path, byte[] contents)
+        private string CreateSource(DateTime lastWriteTimeUtc)
+        {
+            string source = Path.Combine(_directory, Guid.NewGuid().ToString("N") + ".xaml");
+            File.WriteAllText(source, "<Page />");
+            File.SetLastWriteTimeUtc(source, lastWriteTimeUtc);
+            return source;
+        }
+
+        private static IDisposable CreateOutput(string path, string sourceXamlPath, byte[] contents)
         {
             object output = new ProxyHelper("Microsoft.UI.Xaml.Markup.Compiler.FileIO.StreamXbfOutput")
-                .CreateInstance(new object[] { path });
+                .CreateInstance(new object[] { path, sourceXamlPath });
             IntPtr written = Marshal.AllocHGlobal(sizeof(int));
             try
             {
