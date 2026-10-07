@@ -26,6 +26,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     {
         private const string HostWindowTitle = "TitleBar API test window";
 
+        // Scenario: create a TitleBar in code without putting it in a window.
+        // Expected: every public property has its documented default (empty Title/Subtitle, no icon/headers/content,
+        //           back button hidden but enabled, pane toggle hidden, AutoRefreshDragRegions off, TemplateSettings
+        //           present with no IconElement), and IsDragRegion is unset (null) on an arbitrary element.
+        // A failure means: a default value changed, so existing apps that rely on the defaults would look or behave
+        //                  differently.
         [TestMethod]
         public void VerifyDefaultPropertyValues()
         {
@@ -49,6 +55,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: ask UI Automation for the TitleBar's automation peer and read its control type, class name and
+        //           name while changing Title and AutomationProperties.Name.
+        // Expected: a TitleBarAutomationPeer with control type TitleBar and class name
+        //           Microsoft.UI.Xaml.Controls.TitleBar; its name follows Title, an explicit AutomationProperties.Name
+        //           wins over Title, and it is empty when both are cleared.
+        // A failure means: screen readers would announce the TitleBar with the wrong role or name.
         [TestMethod]
         public void VerifyAutomationPeer()
         {
@@ -76,6 +88,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: configure a TitleBar that is never added to a window, call RecomputeDragRegions(), and use
+        //           IsDragRegion on an element outside any TitleBar.
+        // Expected: the icon element is still built from IconSource, nothing throws, the main test window's title is
+        //           untouched, and IsDragRegion just stores and returns its value.
+        // A failure means: a TitleBar that is not hosted yet (e.g. created in code before being shown) crashes or
+        //                  modifies an unrelated window.
         [TestMethod]
         public void VerifyTitleBarWithoutWindowHasNoWindowSideEffects()
         {
@@ -112,6 +130,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: host a TitleBar in a window, then set and clear Title and Subtitle.
+        // Expected: the title/subtitle text parts are collapsed when empty, become visible with the right text when
+        //           set, and collapse again when cleared (the TitleText*/SubtitleText* visual states follow).
+        // A failure means: the title or subtitle text is shown when empty, hidden when set, or shows stale text.
         [TestMethod]
         public void VerifyTitleAndSubtitleVisibility()
         {
@@ -146,6 +168,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: host a TitleBar whose Title is set before load, change Title, clear it, and repeat after the app
+        //           changes the window title itself.
+        // Expected: the window (AppWindow) title follows TitleBar.Title, and clearing Title restores the window title
+        //           that was there before the TitleBar replaced it.
+        // A failure means: the taskbar/Alt+Tab title is not synced with the TitleBar, or the original window title is
+        //                  lost after clearing Title.
         [TestMethod]
         public void VerifyTitleUpdatesWindowTitleAndRestoresDefault()
         {
@@ -176,6 +204,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: TitleBar.Title sets the window title, then the app sets AppWindow.Title directly, then
+        //           TitleBar.Title is cleared.
+        // Expected: the app's own window title is kept (the TitleBar does not overwrite a title it no longer owns) and
+        //           the title text collapses.
+        // A failure means: clearing TitleBar.Title clobbers a window title the app set on purpose.
         [TestMethod]
         public void VerifyClearingTitleKeepsExternallySetWindowTitle()
         {
@@ -198,6 +231,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: toggle IsBackButtonVisible and IsPaneToggleButtonVisible through all four combinations, then
+        //           disable the back button.
+        // Expected: the buttons are not created until first shown; each appears/collapses with its visual state; the
+        //           left-header spacing switches between the default and negative-inset values the template defines;
+        //           IsBackButtonEnabled=false disables the back button.
+        // A failure means: the buttons show at the wrong time, the spacing next to them is wrong, or a disabled back
+        //                  button can still be clicked.
         [TestMethod]
         public void VerifyBackAndPaneToggleButtonVisibilityAndSpacing()
         {
@@ -246,6 +286,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: show both buttons and read their automation names and tooltips.
+        // Expected: both buttons have non-empty, different automation names and tooltips, and the pane toggle tooltip
+        //           matches its name. Text is not compared to English because it is localized.
+        // A failure means: the buttons are unnamed or ambiguous for screen-reader and keyboard users.
         [TestMethod]
         public void VerifyBackAndPaneToggleButtonAccessibility()
         {
@@ -274,6 +318,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: invoke the back and pane-toggle buttons through UI Automation, then remove the handlers and invoke
+        //           them again.
+        // Expected: each button raises only its own event, exactly once, with the TitleBar as sender (BackRequested
+        //           args are null); removed handlers are not called again.
+        // A failure means: apps are not told (or are told twice or wrongly) about back/pane-toggle presses, or handler
+        //                  removal does not work.
         [TestMethod]
         public void VerifyBackRequestedAndPaneToggleRequestedEvents()
         {
@@ -331,6 +381,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: set IconSource on a hosted TitleBar, replace it, then clear it.
+        // Expected: TemplateSettings.IconElement is created from (and follows) IconSource, the icon becomes visible,
+        //           the window's Icon non-client region matches the icon's bounds, and clearing IconSource hides the
+        //           icon and removes the Icon region.
+        // A failure means: the icon is missing or stale, or the system icon area (system-menu click target) is wrong
+        //                  or left behind.
         [TestMethod]
         public void VerifyIconSourceUpdatesIconAndIconRegion()
         {
@@ -368,6 +424,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: add and remove LeftHeader, Content and RightHeader one at a time.
+        // Expected: each presenter and its visual state follow its property; the TitleBar uses the compact height when
+        //           all three are empty and the expanded height while any of them is set.
+        // A failure means: header/content slots are shown when empty or hidden when set, or the TitleBar has the wrong
+        //                  height.
         [TestMethod]
         public void VerifyHeaderAndContentPresentersAndHeight()
         {
@@ -416,6 +477,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: a narrow TitleBar whose Content is wider than the available space; then the TitleBar is widened;
+        //           then it is made narrow again without Content.
+        // Expected: it starts in the Compact display mode (title and subtitle hidden to make room), switches back to
+        //           Expanded with title/subtitle visible once there is enough space, and stays Expanded without
+        //           Content.
+        // A failure means: title/subtitle are not hidden when space runs out, or never come back when space is
+        //                  available.
         [TestMethod]
         public void VerifyCompactModeWhenContentDoesNotFit()
         {
@@ -461,6 +529,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: read the window's caption-button insets and the TitleBar's left/right padding columns in
+        //           left-to-right and right-to-left layout.
+        // Expected: the padding columns equal the caption insets converted to effective pixels, and they swap sides in
+        //           RTL. The validation VM runs at 100% scale; at other scales this test is expected to expose product
+        //           bug PC-2.
+        // A failure means: TitleBar content overlaps, or leaves a gap next to, the system caption buttons
+        //                  (minimize/maximize/close).
         [TestMethod]
         public void VerifyPaddingColumnsMatchCaptionInsets()
         {
@@ -506,6 +581,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 $"Expected column width {expectedWidth} but was {column.Width.Value}");
         }
 
+        // Scenario: a TitleBar with back button, pane toggle, left header and right header; then the back button is
+        //           disabled and re-enabled.
+        // Expected: each interactive element gets a passthrough (clickable) non-client region that exactly matches its
+        //           bounds, and a disabled back button stops being a passthrough region.
+        // A failure means: clicks on those elements would be treated as window-caption drags/double-clicks instead of
+        //                  reaching the controls.
         [TestMethod]
         public void VerifyPassthroughRegionsForBuiltInElements()
         {
@@ -539,6 +620,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: show the back button and a right header at runtime (which makes the TitleBar taller), then remove
+        //           them.
+        // Expected: after layout the passthrough regions match the new elements, and removing every interactive
+        //           element clears the passthrough region.
+        // A failure means: elements added or removed at runtime leave missing or stale clickable areas in the title
+        //                  bar.
         [TestMethod]
         public void VerifyPassthroughRegionsAfterRuntimeChanges()
         {
@@ -566,6 +653,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: like VerifyPassthroughRegionsAfterRuntimeChanges, but a left header keeps the TitleBar at its
+        //           expanded height, so showing the back button and right header does not resize the TitleBar.
+        // Expected: the passthrough regions still match the newly shown elements after layout.
+        // A failure means: product bug PC-1 (currently the case): regions are computed before layout and not
+        //                  refreshed, so the new buttons are not clickable. Ignored until PC-1 is fixed.
         [TestMethod]
         [TestProperty("Ignore", "True")] // PC-1: passthrough regions are not refreshed after layout when the TitleBar size is unchanged (UpdateDragRegion runs before layout in OnPropertyChanged). Re-enable when fixed.
         public void VerifyPassthroughRegionsRefreshWhenTitleBarSizeIsUnchanged()
@@ -594,6 +686,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: TitleBar Content with enabled, disabled, collapsed and non-hit-testable buttons, plus elements and
+        //           panels with IsDragRegion set to true or false.
+        // Expected: only enabled, visible, hit-testable controls outside drag regions, and elements explicitly marked
+        //           IsDragRegion=false, become passthrough regions (including ones nested in a disabled control or a
+        //           drag panel).
+        // A failure means: the rules that decide what is clickable vs. draggable inside custom title-bar content are
+        //                  broken.
         [TestMethod]
         public void VerifyContentInteractiveElementDetection()
         {
@@ -646,6 +745,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: flip TitleBar.IsDragRegion on a TextBlock and a Button in the Content at runtime, then clear it.
+        // Expected: the passthrough regions update immediately: a TextBlock marked false becomes clickable, a Button
+        //           marked true becomes draggable, and clearing the value restores the defaults.
+        // A failure means: changing IsDragRegion after load has no effect until something else forces a refresh.
         [TestMethod]
         public void VerifyIsDragRegionChangesAtRuntime()
         {
@@ -680,6 +783,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: add a button to Content after load with AutoRefreshDragRegions off, call RecomputeDragRegions(),
+        //           then turn AutoRefreshDragRegions on and keep changing the content.
+        // Expected: whatever is registered before the manual refresh is still correct, RecomputeDragRegions()
+        //           registers the new button exactly, and with auto-refresh on later content changes are picked up
+        //           after layout.
+        // A failure means: apps cannot rely on RecomputeDragRegions() or AutoRefreshDragRegions to keep clickable
+        //                  areas in sync with dynamic content.
         [TestMethod]
         public void VerifyRecomputeAndAutoRefreshDragRegions()
         {
@@ -742,6 +852,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: add a button to Content and call RecomputeDragRegions() in the same UI-thread step, before any
+        //           layout pass.
+        // Expected: the new button is registered with its real bounds, because RecomputeDragRegions() brings layout up
+        //           to date first.
+        // A failure means: calling RecomputeDragRegions() right after changing content registers zero-size or stale
+        //                  regions.
         [TestMethod]
         public void VerifyRecomputeDragRegionsUsesUpToDateLayout()
         {
@@ -773,6 +889,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: widen a left-aligned TitleBar so its right header moves only horizontally (same count, Y and
+        //           size).
+        // Expected: the right header's passthrough region moves with it.
+        // A failure means: the "regions unchanged" optimization ignores X-only moves and leaves the clickable area at
+        //                  the old position.
         [TestMethod]
         public void VerifyPassthroughRegionFollowsHorizontalMove()
         {
@@ -811,6 +932,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: a fully populated TitleBar; activate another window, reactivate the TitleBar window, then disable
+        //           the back button and deactivate again.
+        // Expected: all parts switch to their *Deactivated visual states when the window loses activation and back to
+        //           *Visible when it is reactivated; a disabled back button keeps its regular state while the rest
+        //           deactivates.
+        // A failure means: the TitleBar does not show the standard inactive-window look, or gets stuck in it.
         [TestMethod]
         public void VerifyDeactivatedVisualStates()
         {
@@ -862,6 +989,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: read every public static DependencyProperty identifier on TitleBar and TitleBarTemplateSettings.
+        // Expected: all identifiers are non-null and distinct, and repeated calls return the same identifier.
+        // A failure means: an identifier is missing or points at the wrong property, so GetValue/SetValue, bindings,
+        //                  styles and animations would target the wrong property.
         [TestMethod]
         public void VerifyDependencyPropertyIdentifiers()
         {
@@ -899,6 +1030,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: for each TitleBar property, SetValue/GetValue/ClearValue through its DependencyProperty identifier
+        //           and compare with the CLR property; also IconSource, TemplateSettings and the attached
+        //           IsDragRegion.
+        // Expected: values set through the DP are visible through the CLR property and vice versa, ClearValue restores
+        //           the documented default, setting IconSource through the DP still builds the icon element, and the
+        //           TemplateSettings DP returns the same instance.
+        // A failure means: XAML styles/bindings (which go through the DP) and code (which uses the CLR property) would
+        //                  see different values.
         [TestMethod]
         public void VerifyDependencyPropertiesMatchClrProperties()
         {
@@ -942,6 +1081,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: look up TitleBar and TitleBarTemplateSettings in the controls XAML metadata provider and query
+        //           each member by name.
+        // Expected: TitleBar derives from Control, Content is its content property, and every public property
+        //           (including IsDragRegion and IconElement) is a dependency-property member of the right type.
+        // A failure means: XAML markup, bindings or tooling that rely on type metadata cannot resolve TitleBar
+        //                  properties correctly.
         [TestMethod]
         public void VerifyXamlMetadata()
         {
@@ -990,6 +1135,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: construct a TitleBarAutomationPeer directly from C#, as a derived control or custom peer would.
+        // Expected: the peer's owner is the given TitleBar, its control type is TitleBar, its class name is
+        //           Microsoft.UI.Xaml.Controls.TitleBar, and its name falls back to Title.
+        // A failure means: the public TitleBarAutomationPeer constructor (activation factory) is broken for apps that
+        //                  create or derive from the peer.
         [TestMethod]
         public void VerifyAutomationPeerCreatedDirectly()
         {
@@ -1005,6 +1155,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: construct a TitleBarTemplateSettings directly and set/clear IconElement through the property and
+        //           the DependencyProperty.
+        // Expected: IconElement defaults to null, the property and DP stay in sync, and ClearValue resets it to null.
+        // A failure means: the public TitleBarTemplateSettings constructor or its IconElement property is broken for
+        //                  code and templates that use it.
         [TestMethod]
         public void VerifyTemplateSettingsCreatedDirectly()
         {
@@ -1028,6 +1183,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: start with AutoRefreshDragRegions on and add a button; turn it off at runtime and add another
+        //           button; finally call RecomputeDragRegions().
+        // Expected: with auto-refresh on the new button is registered after layout; after turning it off later content
+        //           changes are not registered automatically; RecomputeDragRegions() then registers them.
+        // A failure means: turning AutoRefreshDragRegions off does not stop the TitleBar from reacting to layout
+        //                  changes.
         [TestMethod]
         public void VerifyAutoRefreshDragRegionsCanBeTurnedOff()
         {
@@ -1077,6 +1238,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Scenario: close the TitleBar's window, then clear/change Title and clear IconSource on the TitleBar that is
+        //           still alive.
+        // Expected: nothing throws; the TitleBar is detached (XamlRoot is null) and its own visual states still follow
+        //           the properties.
+        // A failure means: an app that updates a TitleBar after its window closed would crash (e.g. while restoring
+        //                  the title of a window that no longer exists).
         [TestMethod]
         public void VerifyTitleBarChangesAfterWindowClosed()
         {

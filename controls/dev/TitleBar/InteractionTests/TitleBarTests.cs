@@ -42,6 +42,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
+        // Scenario: real-mouse double-click on an empty, non-interactive part of the TitleBar in its own window.
+        // Expected: the window caption handles it and the window maximizes. This is the control case that proves the
+        //           "not part of caption" checks in the other tests can fail.
+        // A failure means: the TitleBar area no longer acts as the window caption (drag/maximize broken), or the test
+        //                  machine is not delivering real input.
         [TestMethod]
         // Closing the test app after visiting the TitleBar page currently fail-fasts the app (PC-3), and a test-host crash
         // on app restart would cascade into unrelated tests. Isolate each method in its own app process.
@@ -60,6 +65,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             });
         }
 
+        // Scenario: show the back button at runtime and real-mouse double-click it.
+        // Expected: BackRequested fires twice, PaneToggleRequested does not fire, and the window stays Normal (the
+        //           caption did not handle the clicks).
+        // A failure means: product bug PC-1 (currently the case): the back button shown at runtime has no clickable
+        //                  region, so the double-click maximizes the window instead. Ignored until PC-1 is fixed.
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")]
         [TestProperty("Ignore", "True")] // PC-1: passthrough regions are not refreshed after layout when the TitleBar size is unchanged (UpdateDragRegion runs before layout in OnPropertyChanged). Re-enable when fixed.
@@ -79,6 +89,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             });
         }
 
+        // Scenario: show the pane toggle button at runtime and real-mouse double-click it.
+        // Expected: PaneToggleRequested fires twice, BackRequested does not fire, and the window stays Normal.
+        // A failure means: product bug PC-1 (currently the case): the pane toggle button shown at runtime is not
+        //                  clickable. Ignored until PC-1 is fixed.
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")]
         [TestProperty("Ignore", "True")] // PC-1: passthrough regions are not refreshed after layout when the TitleBar size is unchanged (UpdateDragRegion runs before layout in OnPropertyChanged). Re-enable when fixed.
@@ -96,6 +110,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             });
         }
 
+        // Scenario: show custom content with two buttons in the TitleBar and real-mouse double-click each of them.
+        // Expected: each double-click reaches the button (click count goes to 2, then 4) and the window stays Normal.
+        // A failure means: buttons placed in TitleBar content are treated as window caption, so users cannot click
+        //                  them.
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")]
         public void ContentButtonsAreClickableAndNotPartOfCaption()
@@ -114,6 +132,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             });
         }
 
+        // Scenario: inspect the TitleBar through UI Automation in the running app, then change its Title.
+        // Expected: the element has control type TitleBar and its name equals Title; after changing Title, both the
+        //           automation name and the top-level window title update.
+        // A failure means: assistive technology sees the wrong role/name, or the window title shown by the shell is
+        //                  not synced with the TitleBar.
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")]
         public void TitleBarExposesTitleBarControlTypeAndTitleName()
@@ -136,6 +159,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             });
         }
 
+        // Scenario: drag the window by its TitleBar with the real mouse (raising WindowRectChanged) and read the
+        //           registered Icon region before and after the move.
+        // Expected: the window moves, WindowRectChanged is raised, and the Icon region still matches the icon's
+        //           window-relative bounds.
+        // A failure means: the icon region is lost or wrong after the window moves. This is a smoke test: on current
+        //                  OS builds a missing WindowRectChanged handler is not observable (verified with a stubbed
+        //                  handler).
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")]
         public void IconRegionIsKeptWhenWindowIsDraggedByCaption()
