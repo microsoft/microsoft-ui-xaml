@@ -2324,7 +2324,7 @@ These features have valid scenarios and should be considered for future releases
 The default value is `False`, which applies a viewport-sized rectangular clip during arrange. Setting the property to
 `True` removes that clip so translated, scaled, shadowed, or otherwise overflowing content can render outside the
 viewport. The property changes rendering only; it does not change extent, viewport, scrolling boundaries, realization,
-or hit testing.
+or layout.
 
 ```csharp
 unsealed runtimeclass ScrollView : ...
