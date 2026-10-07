@@ -33,18 +33,10 @@
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ResizeGripper_themeresources.xaml">
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
     <!-- No separate Perf2026 visual; reuse the page so that dictionary still carries a style. -->
     <Page Include="$(MSBuildThisFileDirectory)ResizeGripper.xaml">
       <Version>RS1</Version>
       <Type>StylePerf2026</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ResizeGripper_themeresources.xaml">
-      <Version>RS1</Version>
-      <Type>ThemeResourcesPerf2026</Type>
     </Page>
   </ItemGroup>
   <ItemGroup>
