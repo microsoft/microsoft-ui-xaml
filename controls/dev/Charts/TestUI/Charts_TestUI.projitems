@@ -16,6 +16,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ChartsObservableVector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ChartsPage.xaml.cs">
       <DependentUpon>ChartsPage.xaml</DependentUpon>
     </Compile>

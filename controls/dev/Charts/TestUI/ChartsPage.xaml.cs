@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Charts;
 
@@ -12,10 +11,10 @@ namespace MUXControlsTestApp
     {
         private static XamlChartsResources s_chartsResources;
 
-        private readonly ObservableCollection<string> _months = new ObservableCollection<string> { "Jan", "Feb", "Mar", "Apr" };
-        private readonly ObservableCollection<double> _sales = new ObservableCollection<double> { 12, 15, 9, 18 };
-        private readonly ObservableCollection<double> _costs = new ObservableCollection<double> { 7, 8, 6, 10 };
-        private readonly ObservableCollection<double> _units = new ObservableCollection<double> { 4, 6, 3, 8 };
+        private readonly ChartsObservableVector<string> _months = new ChartsObservableVector<string> { "Jan", "Feb", "Mar", "Apr" };
+        private readonly ChartsObservableVector<double> _sales = new ChartsObservableVector<double> { 12, 15, 9, 18 };
+        private readonly ChartsObservableVector<double> _costs = new ChartsObservableVector<double> { 7, 8, 6, 10 };
+        private readonly ChartsObservableVector<double> _units = new ChartsObservableVector<double> { 4, 6, 3, 8 };
 
         public ChartsPage()
         {

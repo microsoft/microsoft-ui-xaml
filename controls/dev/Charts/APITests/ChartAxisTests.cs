@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Charts;
 using Microsoft.UI.Xaml.Media;
+using MUXControlsTestApp;
 using MUXControlsTestApp.Utilities;
 
 using WEX.TestExecution;
@@ -648,14 +648,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                xSamples.ItemsSource = new ObservableCollection<double> { 10.0, 20.0 };
+                xSamples.ItemsSource = new ChartsObservableVector<double> { 10.0, 20.0 };
                 Content.UpdateLayout();
             });
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                xSamples.ItemsSource = new ObservableCollection<DateTimeOffset> { Date(2020, 1, 1), Date(2021, 1, 1) };
+                xSamples.ItemsSource = new ChartsObservableVector<DateTimeOffset> { Date(2020, 1, 1), Date(2021, 1, 1) };
                 Content.UpdateLayout();
             });
             IdleSynchronizer.Wait();
@@ -897,7 +897,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             return new Samples
             {
-                ItemsSource = new ObservableCollection<T>(values)
+                ItemsSource = new ChartsObservableVector<T>(values)
             };
         }
 

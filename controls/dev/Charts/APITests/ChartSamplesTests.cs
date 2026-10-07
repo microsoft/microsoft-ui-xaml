@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Controls.Charts;
+using MUXControlsTestApp;
 using MUXControlsTestApp.Utilities;
 
 using WEX.TestExecution;
@@ -533,16 +533,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             Chart chart = null;
             LineSeries series = null;
-            ObservableCollection<double> oldSource = null;
+            ChartsObservableVector<double> oldSource = null;
             Samples oldSamples = null;
-            ObservableCollection<double> newSource = null;
+            ChartsObservableVector<double> newSource = null;
             Samples newSamples = null;
 
             RunOnUIThread.Execute(() =>
             {
-                oldSource = new ObservableCollection<double> { 1.0 };
+                oldSource = new ChartsObservableVector<double> { 1.0 };
                 oldSamples = new Samples { ItemsSource = oldSource };
-                newSource = new ObservableCollection<double> { 2.0 };
+                newSource = new ChartsObservableVector<double> { 2.0 };
                 newSamples = new Samples { ItemsSource = newSource };
                 series = new LineSeries { XValues = CreateSamples(0.0), YValues = oldSamples };
                 chart = CreateChartWithSeries(series);
@@ -555,7 +555,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 series.YValues = newSamples;
                 oldSource.Add(3.0);
-                oldSamples.ItemsSource = new ObservableCollection<double> { 4.0 };
+                oldSamples.ItemsSource = new ChartsObservableVector<double> { 4.0 };
                 newSource.Add(5.0);
                 Content.UpdateLayout();
             });
@@ -574,13 +574,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             Chart chart = null;
             Samples samples = null;
-            ObservableCollection<double> oldSource = null;
-            ObservableCollection<double> newSource = null;
+            ChartsObservableVector<double> oldSource = null;
+            ChartsObservableVector<double> newSource = null;
 
             RunOnUIThread.Execute(() =>
             {
-                oldSource = new ObservableCollection<double> { 1.0 };
-                newSource = new ObservableCollection<double> { 2.0 };
+                oldSource = new ChartsObservableVector<double> { 1.0 };
+                newSource = new ChartsObservableVector<double> { 2.0 };
                 samples = new Samples { ItemsSource = oldSource };
                 chart = CreateChartWithYValues(samples);
 
@@ -610,11 +610,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             Chart chart = null;
             Samples samples = null;
-            ObservableCollection<double> source = null;
+            ChartsObservableVector<double> source = null;
 
             RunOnUIThread.Execute(() =>
             {
-                source = new ObservableCollection<double> { 1.0, 2.0, 3.0 };
+                source = new ChartsObservableVector<double> { 1.0, 2.0, 3.0 };
                 samples = new Samples { ItemsSource = source };
                 chart = CreateChartWithYValues(samples);
 
@@ -669,11 +669,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             Chart chart = null;
             Samples samples = null;
-            ObservableCollection<string> source = null;
+            ChartsObservableVector<string> source = null;
 
             RunOnUIThread.Execute(() =>
             {
-                source = new ObservableCollection<string> { "A", "B", "C" };
+                source = new ChartsObservableVector<string> { "A", "B", "C" };
                 samples = new Samples { ItemsSource = source };
                 chart = CreateChartWithXValues(samples);
 
@@ -728,13 +728,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             Chart chart = null;
             Samples sharedSamples = null;
-            ObservableCollection<double> sharedSource = null;
+            ChartsObservableVector<double> sharedSource = null;
             LineSeries first = null;
             LineSeries second = null;
 
             RunOnUIThread.Execute(() =>
             {
-                sharedSource = new ObservableCollection<double> { 1.0, 2.0 };
+                sharedSource = new ChartsObservableVector<double> { 1.0, 2.0 };
                 sharedSamples = new Samples { ItemsSource = sharedSource };
                 first = new LineSeries { XValues = CreateSamples(0.0, 1.0), YValues = sharedSamples };
                 second = new LineSeries { XValues = CreateSamples(0.0, 1.0), YValues = sharedSamples };
@@ -773,7 +773,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 sharedSamples = new Samples
                 {
-                    ItemsSource = new ObservableCollection<double> { 0.0, 1.0 }
+                    ItemsSource = new ChartsObservableVector<double> { 0.0, 1.0 }
                 };
                 series = new LineSeries { XValues = sharedSamples, YValues = CreateSamples(1.0, 2.0) };
                 chart = CreateChartWithSeries(series);
@@ -795,7 +795,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             return new Samples
             {
-                ItemsSource = new ObservableCollection<double>(values)
+                ItemsSource = new ChartsObservableVector<double>(values)
             };
         }
 

@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Controls.Charts;
 using Microsoft.UI.Xaml.Media;
+using MUXControlsTestApp;
 using MUXControlsTestApp.Utilities;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -1067,14 +1067,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void OverridesBeyondCurrentSamplesAreAcceptedAndSurviveGrowth()
         {
             Chart chart = null;
-            ObservableCollection<double> values = null;
+            ChartsObservableVector<double> values = null;
             LineSeries series = null;
             DataLabelOverride label = null;
             DataMarkerOverride marker = null;
 
             RunOnUIThread.Execute(() =>
             {
-                values = new ObservableCollection<double> { 1.0, 2.0 };
+                values = new ChartsObservableVector<double> { 1.0, 2.0 };
                 series = new LineSeries
                 {
                     XValues = CreateSamples(0.0, 1.0),
@@ -1114,7 +1114,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void OverridesSurviveSampleChangesAndSeriesRemoval()
         {
             Chart chart = null;
-            ObservableCollection<double> values = null;
+            ChartsObservableVector<double> values = null;
             Samples samples = null;
             LineSeries series = null;
             DataLabelOverride label = null;
@@ -1122,7 +1122,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                values = new ObservableCollection<double> { 1.0, 2.0, 3.0 };
+                values = new ChartsObservableVector<double> { 1.0, 2.0, 3.0 };
                 samples = new Samples { ItemsSource = values };
                 series = new LineSeries
                 {
@@ -1144,7 +1144,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 values.Insert(0, 0.0);
                 values.RemoveAt(0);
-                samples.ItemsSource = new ObservableCollection<double> { 9.0, 8.0, 7.0 };
+                samples.ItemsSource = new ChartsObservableVector<double> { 9.0, 8.0, 7.0 };
                 chart.Series.Remove(series);
                 chart.Series.Add(series);
                 Content.UpdateLayout();
@@ -1245,7 +1245,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             return new Samples
             {
-                ItemsSource = new ObservableCollection<double>(values)
+                ItemsSource = new ChartsObservableVector<double>(values)
             };
         }
 
