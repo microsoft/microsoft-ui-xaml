@@ -30,7 +30,7 @@ namespace winrt::LinkedMDSubControlsCppWinRT::implementation
         if (!_contentLoaded)
         {
             _contentLoaded = true;
-            ::winrt::Windows::Foundation::Uri resourceLocator{ L"ms-appx:///LinkedMDSubControlsCppWinRT/S.xaml" };
+            ::winrt::Windows::Foundation::Uri resourceLocator{ L"ms-appx:///S.xaml" };
             ::winrt::Microsoft::UI::Xaml::Application::LoadComponent(*this, resourceLocator, ComponentResourceLocation::Nested);
         }
     }

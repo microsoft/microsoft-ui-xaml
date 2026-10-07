@@ -30,7 +30,7 @@ namespace winrt::CppWinRTComponent::implementation
         if (!_contentLoaded)
         {
             _contentLoaded = true;
-            ::winrt::Windows::Foundation::Uri resourceLocator{ L"ms-appx:///CppWinRTComponent/CppWinRTUserControlFromWinRTComponent.xaml" };
+            ::winrt::Windows::Foundation::Uri resourceLocator{ L"ms-appx:///CppWinRTUserControlFromWinRTComponent.xaml" };
             ::winrt::Microsoft::UI::Xaml::Application::LoadComponent(*this, resourceLocator, ComponentResourceLocation::Nested);
         }
     }

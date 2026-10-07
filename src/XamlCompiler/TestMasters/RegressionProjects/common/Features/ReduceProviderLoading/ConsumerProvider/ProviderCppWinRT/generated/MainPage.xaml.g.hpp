@@ -30,7 +30,7 @@ namespace winrt::ProviderCppWinRT::implementation
         if (!_contentLoaded)
         {
             _contentLoaded = true;
-            ::winrt::Windows::Foundation::Uri resourceLocator{ L"ms-appx:///ProviderCppWinRT/MainPage.xaml" };
+            ::winrt::Windows::Foundation::Uri resourceLocator{ L"ms-appx:///MainPage.xaml" };
             ::winrt::Microsoft::UI::Xaml::Application::LoadComponent(*this, resourceLocator, ComponentResourceLocation::Nested);
         }
     }
