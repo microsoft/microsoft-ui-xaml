@@ -52,15 +52,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() =>
             {
-                var chart = new Chart();
-                var label = new TextBlock { Text = "CPU history" };
-                AutomationProperties.SetLabeledBy(chart, label);
-                AutomationProperties.SetName(chart, "Processor utilization");
+                // Apps can set the two properties in either order.
+                foreach (bool nameFirst in new[] { true, false })
+                {
+                    string order = nameFirst ? "Name set before LabeledBy" : "Name set after LabeledBy";
+                    var chart = new Chart();
+                    var label = new TextBlock { Text = "CPU history" };
+                    if (nameFirst)
+                    {
+                        AutomationProperties.SetName(chart, "Processor utilization");
+                        AutomationProperties.SetLabeledBy(chart, label);
+                    }
+                    else
+                    {
+                        AutomationProperties.SetLabeledBy(chart, label);
+                        AutomationProperties.SetName(chart, "Processor utilization");
+                    }
 
-                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(chart);
+                    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(chart);
 
-                Verify.IsNotNull(peer, "Chart should create an automation peer.");
-                Verify.AreEqual("Processor utilization", peer.GetName(), "Explicit name should win over LabeledBy.");
+                    Verify.IsNotNull(peer, order + ": Chart should create an automation peer.");
+                    Verify.AreEqual("Processor utilization", peer.GetName(), order + ": explicit name should win over LabeledBy.");
+                }
             });
         }
 

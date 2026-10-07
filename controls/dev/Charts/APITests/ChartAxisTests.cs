@@ -173,29 +173,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void CategoryAxisSortPropertiesWorkThroughDependencyProperties()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                var axis = new CategoryAxis();
-
-                axis.SetValue(CategoryAxis.SortKeyProperty, CategorySortKey.Value);
-                axis.SetValue(CategoryAxis.SortOrderProperty, SortOrder.Descending);
-
-                Verify.AreEqual(CategorySortKey.Value, axis.SortKey, "SortKey should read SetValue.");
-                Verify.AreEqual(SortOrder.Descending, axis.SortOrder, "SortOrder should read SetValue.");
-                Verify.AreEqual(CategorySortKey.Value, (CategorySortKey)axis.GetValue(CategoryAxis.SortKeyProperty), "SortKeyProperty should read the local value.");
-                Verify.AreEqual(SortOrder.Descending, (SortOrder)axis.GetValue(CategoryAxis.SortOrderProperty), "SortOrderProperty should read the local value.");
-
-                axis.ClearValue(CategoryAxis.SortKeyProperty);
-                axis.ClearValue(CategoryAxis.SortOrderProperty);
-
-                Verify.AreEqual(CategorySortKey.Index, axis.SortKey, "ClearValue should restore SortKey default.");
-                Verify.AreEqual(SortOrder.Ascending, axis.SortOrder, "ClearValue should restore SortOrder default.");
-            });
-        }
-
-        [TestMethod]
         public void CategoryAxisSortDependencyPropertiesUpdateAndClearValues()
         {
             RunOnUIThread.Execute(() =>
