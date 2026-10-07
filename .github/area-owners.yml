@@ -223,6 +223,23 @@ areas:
       - controls/dev/dll-tabular/**
       - controls/idl-tabular/**
 
+  - id: C10
+    name: TableView
+    tier: Tier 2 - WinUI Controls
+    reviewers: [dipeshmsft]
+    paths:
+      - controls/dev/TableView/**
+      - controls/dev/ResizeGripper/**
+
+  - id: C11
+    name: Tabular Data Shaping
+    tier: Tier 2 - WinUI Controls
+    reviewers: [sundaramramaswamy]
+    paths:
+      - controls/dev/TabularShaping/**
+      - controls/dev/ShapedItemsSource/**
+      - controls/dev/GroupedSourceAdapter/**
+
   # ---------------------------------------------------------------- Tier 3
   - id: T1
     name: Test Infrastructure & Tests
@@ -320,17 +337,3 @@ areas:
       - .gitignore
       - .gitmodules
       - controls/.GitHubCommitSyncedTo
-
-  # -------------------------------------------------------------- Holding area
-  # Paths the weekly sync could not attribute. UNASSIGNED requests nobody (CODEOWNERS
-  # applies); move each path into the area that should own it.
-  - id: UNASSIGNED
-    name: Unassigned - needs an owning area
-    tier: Holding area
-    reviewers: []
-    paths:
-      - controls/dev/TableView/**
-      - controls/dev/ResizeGripper/**
-      - controls/dev/TabularShaping/**
-      - controls/dev/ShapedItemsSource/**
-      - controls/dev/GroupedSourceAdapter/**
