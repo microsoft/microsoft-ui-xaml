@@ -27,6 +27,8 @@ namespace LibManagedDll
 
     public class BindPathParserClass
     {
+        public static BindPathParserClass Instance { get; } = new BindPathParserClass();
+
         public Color[] Rainbow = {
             Colors.Red, Colors.Orange, Colors.Yellow, Colors.Violet, Colors.Black, Colors.Indigo, Colors.Green
         };
@@ -39,12 +41,18 @@ namespace LibManagedDll
         public string Value;
 
         public String StringProperty { get; set; }
+        public String ReadOnlyStringProperty { get; }
+        public String InitOnlyStringProperty { get; init; }
+        public String PrivateSetStringProperty { get; private set; }
         public static String StringPropertyStatic { get; set; }
 
         public String PropertyWithNoGetAccessor { set { } }
+        public readonly String ReadOnlyStringField;
 
         public string GetTipOfTheDay() { return "Tip of the day"; }
         public static string GetTipOfTheDayStatic() { return "Tip of the day static"; }
+
+        public static IList<string> GetReadOnlyItems(DependencyObject obj) { return null; }
 
         public string FormatPosition(int value) { return String.Format("Position: {0}", value); }
         public string FormatPositionFloat(float value) { return String.Format("Position: {0}", value); }
