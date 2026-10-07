@@ -5,10 +5,12 @@
 # only *requested* - they never block a merge. The `* @microsoft/tm-winui` entry in
 # .github/CODEOWNERS remains the authoritative safety net.
 #
-# `reviewers` are GitHub handles. A handle that is not a repository collaborator
-# is skipped by the workflow rather than failing the run.
+# `reviewers` are GitHub handles and must be repository collaborators; a handle GitHub
+# refuses is reported as a warning on the run and everyone else is still requested.
 #
-# Source of truth for the area breakdown: WinUI-Area-Ownership spreadsheet.
+# This file is the source of truth for area ownership - change it with a PR. Globs and
+# coverage are checked on every PR (area-owners-check.yml) and drift is fixed by a
+# weekly sync PR (area-owners-sync.yml). See .github/scripts/AREA-REVIEWERS.md.
 
 areas:
   # ---------------------------------------------------------------- Tier 1
@@ -152,8 +154,6 @@ areas:
       - controls/dev/TitleBar/**
       - controls/dev/inc/**
 
-  # C6 was unassigned in the spreadsheet. Assigned to the least-loaded owner
-  # (vinnarayana-msft, 1 area) - also adjacent to the C5 styling/chrome surface.
   - id: C6
     name: Media & Visuals
     tier: Tier 2 - WinUI Controls
@@ -173,8 +173,6 @@ areas:
       - controls/dev/MonochromaticOverlayPresenter/**
       - controls/dev/SystemBackdropElement/**
 
-  # C7 was unassigned in the spreadsheet. Assigned to the least-loaded owner
-  # (HariniMalothu17, 1 area).
   - id: C7
     name: Interactions & Flyouts
     tier: Tier 2 - WinUI Controls
@@ -222,6 +220,8 @@ areas:
       - controls/dev/Microsoft.UI.Xaml.Design/**
       - controls/dev/Microsoft.UI.Xaml.FrameworkPackagePRI/**
       - controls/idl/**
+      - controls/dev/dll-tabular/**
+      - controls/idl-tabular/**
 
   # ---------------------------------------------------------------- Tier 3
   - id: T1
@@ -233,8 +233,6 @@ areas:
       - controls/test/**
       - test/**
 
-  # T2 was unassigned in the spreadsheet. Assigned to harshit7962 - tied on load
-  # with the other 2-area owners, broken toward the Tier 3 test-infrastructure owner.
   - id: T2
     name: Performance
     tier: Tier 3 - Test / Perf / Engineering
@@ -299,7 +297,6 @@ areas:
     reviewers: [HariniMalothu17]
     paths:
       - docs/**
-      - specs/**
       - README.md
       - CONTRIBUTING.md
       - CONTRIBUTING_feedback_and_requests.md
@@ -323,3 +320,17 @@ areas:
       - .gitignore
       - .gitmodules
       - controls/.GitHubCommitSyncedTo
+
+  # -------------------------------------------------------------- Holding area
+  # Paths the weekly sync could not attribute. UNASSIGNED requests nobody (CODEOWNERS
+  # applies); move each path into the area that should own it.
+  - id: UNASSIGNED
+    name: Unassigned - needs an owning area
+    tier: Holding area
+    reviewers: []
+    paths:
+      - controls/dev/TableView/**
+      - controls/dev/ResizeGripper/**
+      - controls/dev/TabularShaping/**
+      - controls/dev/ShapedItemsSource/**
+      - controls/dev/GroupedSourceAdapter/**

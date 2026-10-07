@@ -1,0 +1,9 @@
+{
+  "name": "winui-area-owners",
+  "private": true,
+  "description": "Tooling for .github/area-owners.yml (area reviewers, validator, weekly sync).",
+  "type": "module",
+  "dependencies": {
+    "yaml": "2.9.1"
+  }
+}

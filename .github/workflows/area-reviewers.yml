@@ -2,21 +2,28 @@
 # (`* @microsoft/tm-winui`) remains the authoritative reviewer requirement.
 #
 # Runs as `pull_request_target` so the workflow, script and area map are always
-# read from the default branch and fork PRs still get a writable token.
+# read from the default branch and fork PRs still get a writable token. No code
+# from the PR is checked out or executed.
 
 name: Area Reviewers
 
 on:
   pull_request_target:
-    types: [opened, ready_for_review, reopened]
-
-concurrency:
-  group: area-reviewers-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+    # `synchronize` covers pushes; the script only adds owners of newly touched
+    # areas and never re-requests anyone who was already asked.
+    types: [opened, synchronize, ready_for_review, reopened]
 
 permissions:
   contents: read
   pull-requests: write
+  issues: read # PR timeline, to skip people who were requested before
+
+# Serialize runs per PR so two quick events cannot both request the same people.
+# Every run evaluates the whole PR, so a newer queued run superseding an older one
+# loses nothing.
+concurrency:
+  group: area-reviewers-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
 
 jobs:
   suggest:
@@ -31,10 +38,12 @@ jobs:
         with:
           sparse-checkout: .github
           fetch-depth: 1
+          persist-credentials: false
           show-progress: false
 
-      - name: Install parser
-        run: npm install js-yaml@4 --no-save --no-audit --no-fund --loglevel=error
+      - name: Install dependencies
+        working-directory: .github/scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Suggest reviewers
         env:

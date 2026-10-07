@@ -1,105 +1,130 @@
 // Requests optional reviewers on a PR: every area in .github/area-owners.yml whose
 // paths match a changed file contributes its reviewers. Nothing here blocks a merge.
+//
+// Runs on opened / reopened / ready_for_review and on every push (synchronize). A
+// person is only ever requested once per PR: anyone who is the author, is currently
+// requested, has already reviewed, or was requested before (including people the
+// author later removed) is skipped. So pushes only add owners of newly touched areas.
 
 import fs from 'node:fs';
-import yaml from 'js-yaml';
+import {
+  MAP_PATH,
+  UNASSIGNED,
+  annotate,
+  areasForFile,
+  code,
+  compileAreas,
+  createLog,
+  github,
+  parseMap,
+  readMapText,
+  requestReviewers,
+  schemaErrors,
+  uniqueHandles,
+} from './area-owners-lib.mjs';
 
-const token = process.env.GITHUB_TOKEN;
 const repo = process.env.GITHUB_REPOSITORY;
 const dryRun = (process.env.AREA_REVIEWERS_DRY_RUN ?? 'true').toLowerCase() !== 'false';
+const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+const number = event.pull_request.number;
+const gh = github(process.env.GITHUB_TOKEN);
+const { log, flush } = createLog();
 
-const pr = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8')).pull_request;
+// The pulls/files endpoint stops at this many files.
+const FILES_API_LIMIT = 3000;
 
-const out = [];
-const log = (line) => {
-  console.log(line);
-  out.push(line);
-};
-
-async function api(route, init = {}) {
-  const res = await fetch(`https://api.github.com${route}`, {
-    ...init,
-    headers: {
-      accept: 'application/vnd.github+json',
-      authorization: `Bearer ${token}`,
-      'content-type': 'application/json',
-    },
-  });
-  return { ok: res.ok, status: res.status, body: await res.json().catch(() => null) };
-}
-
-// Glob -> regex. `**` crosses directories, `*` does not, everything else is literal.
-function toRegExp(glob) {
-  const source = glob
-    .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-    .replace(/\*\*\//g, '\u0000')
-    .replace(/\*\*/g, '\u0001')
-    .replace(/\*/g, '[^/]*')
-    .replace(/\?/g, '[^/]')
-    .replace(/\u0000/g, '(?:.*/)?')
-    .replace(/\u0001/g, '.*');
-  return new RegExp(`^${source}$`, 'i');
-}
-
-async function changedFiles() {
-  const files = [];
-  for (let page = 1; ; page++) {
-    const { body } = await api(`/repos/${repo}/pulls/${pr.number}/files?per_page=100&page=${page}`);
-    if (!Array.isArray(body) || body.length === 0) return files;
-    files.push(...body.map((f) => f.filename));
-    if (body.length < 100) return files;
+async function changedPaths() {
+  const entries = await gh.paginate(`/repos/${repo}/pulls/${number}/files`);
+  if (entries.length >= FILES_API_LIMIT) {
+    log(`> Note: GitHub only lists the first ${FILES_API_LIMIT} changed files; areas touched beyond that are missed.`);
+    log('');
   }
+  // A move notifies the owners of both the old and the new location.
+  return [...new Set(entries.flatMap((f) => [f.filename, f.previous_filename].filter(Boolean)))];
+}
+
+// Everyone who is, or has been, involved in reviewing this PR.
+async function alreadyInvolved(pr) {
+  const [reviews, timeline] = await Promise.all([
+    gh.paginate(`/repos/${repo}/pulls/${number}/reviews`),
+    gh.paginate(`/repos/${repo}/issues/${number}/timeline`),
+  ]);
+  const logins = [
+    pr.user,
+    ...(pr.requested_reviewers ?? []),
+    ...reviews.map((r) => r.user),
+    ...timeline.filter((e) => e.event === 'review_requested').map((e) => e.requested_reviewer),
+  ]
+    .filter(Boolean)
+    .map((u) => u.login.toLowerCase());
+  return new Set(logins);
 }
 
 async function main() {
-  const areas = yaml.load(fs.readFileSync('.github/area-owners.yml', 'utf8')).areas;
-  const files = await changedFiles();
+  const data = parseMap(readMapText()).toJS();
+  const errors = schemaErrors(data);
+  if (errors.length > 0) {
+    throw new Error(`${MAP_PATH} is invalid: ${errors.join('; ')}`);
+  }
+  const areas = compileAreas(data.areas);
 
-  const matched = areas.filter((area) =>
-    area.paths.some((glob) => files.some((file) => toRegExp(glob).test(file))),
-  );
-
+  const { data: pr } = await gh.request(`/repos/${repo}/pulls/${number}`);
   log(`### Area reviewers${dryRun ? ' (dry run)' : ''}`);
   log('');
-  log(`PR #${pr.number} - ${files.length} changed file(s), ${matched.length} area(s) matched.`);
-  for (const area of matched) {
-    log(`- \`${area.id}\` ${area.name}: ${area.reviewers.map((r) => `@${r}`).join(', ')}`);
+  if (pr.state !== 'open' || pr.draft) {
+    log(`PR #${number} is ${pr.draft ? 'a draft' : pr.state}; nothing to do.`);
+    return;
   }
 
-  // Requesting the author, or someone already on the PR, is rejected by the API.
-  const onPr = new Set(
-    [pr.user, ...(pr.requested_reviewers ?? [])].map((u) => u.login.toLowerCase()),
-  );
-  const reviewers = [...new Set(matched.flatMap((area) => area.reviewers))].filter(
-    (login) => !onPr.has(login.toLowerCase()),
+  const files = await changedPaths();
+  const matched = new Map();
+  const unmatched = [];
+  for (const file of files) {
+    const owners = areasForFile(areas, file);
+    if (owners.length === 0) unmatched.push(file);
+    for (const area of owners) matched.set(area.id, area);
+  }
+  const owned = [...matched.values()].filter((a) => a.id !== UNASSIGNED);
+
+  log(`PR #${number} (${event.action}) - ${files.length} changed path(s), ${owned.length} area(s) matched.`);
+  for (const area of owned) {
+    log(`- \`${area.id}\` ${area.name}: ${area.reviewers.map((r) => `@${r}`).join(', ')}`);
+  }
+  if (matched.has(UNASSIGNED)) {
+    log(`- Some files are in the \`${UNASSIGNED}\` holding area (no owner yet) - CODEOWNERS applies.`);
+  }
+  if (unmatched.length > 0) {
+    log(`- ${unmatched.length} file(s) match no area - CODEOWNERS applies:`);
+    for (const f of unmatched.slice(0, 10)) log(`  - ${code(f)}`);
+    if (unmatched.length > 10) log(`  - ...and ${unmatched.length - 10} more`);
+  }
+
+  const involved = await alreadyInvolved(pr);
+  const reviewers = uniqueHandles(owned.flatMap((a) => a.reviewers)).filter(
+    (login) => !involved.has(login.toLowerCase()),
   );
 
   log('');
   if (reviewers.length === 0) {
-    log('Nothing to request.');
+    log('Nothing to request - every matching owner is already on, or has already been on, this PR.');
     return;
   }
 
-  const names = reviewers.map((r) => `@${r}`).join(', ');
-
   if (dryRun) {
-    log(`Would request: ${names}`);
+    log(`Would request: ${reviewers.map((r) => `@${r}`).join(', ')}`);
     log('');
     log('_Dry run - set the `AREA_REVIEWERS_DRY_RUN` repository variable to `false` to enable._');
     return;
   }
 
-  const { ok, status } = await api(`/repos/${repo}/pulls/${pr.number}/requested_reviewers`, {
-    method: 'POST',
-    body: JSON.stringify({ reviewers }),
-  });
-  log(ok ? `Requested: ${names}` : `Could not request ${names} (HTTP ${status}).`);
+  await requestReviewers(gh, repo, number, reviewers, log);
 }
 
 main()
-  .catch((err) => log(`Area reviewers failed: ${err.message}`))
-  .finally(() => {
-    if (process.env.GITHUB_STEP_SUMMARY) {
-      fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${out.join('\n')}\n`);
-    }
-  });
+  .catch((err) => {
+    log('');
+    log(`**Area reviewers failed:** ${err.message}`);
+    annotate('error', `Area reviewers failed: ${err.message}`);
+    process.exitCode = 1;
+  })
+  .finally(flush);
