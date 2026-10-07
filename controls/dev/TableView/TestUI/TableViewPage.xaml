@@ -1,0 +1,310 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.TableViewPage"
+    x:Name="TableViewTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" RowSpacing="8" Padding="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+            <Button Content="Dummy Button" AutomationProperties.Name="DummyButton" AutomationProperties.AutomationId="DummyButton" />
+            <Button Content="Trailing Button" AutomationProperties.Name="TrailingButton" AutomationProperties.AutomationId="TrailingButton" />
+            <CheckBox Content="IsReadOnly"
+                      AutomationProperties.Name="IsReadOnlyCheckBox"
+                      AutomationProperties.AutomationId="IsReadOnlyCheckBox"
+                      IsChecked="False"
+                      Checked="OnIsReadOnlyToggled"
+                      Unchecked="OnIsReadOnlyToggled" />
+            <CheckBox Content="CanUserSortColumns"
+                      AutomationProperties.Name="CanUserSortColumnsCheckBox"
+                      AutomationProperties.AutomationId="CanUserSortColumnsCheckBox"
+                      IsChecked="True"
+                      Checked="OnCanUserSortColumnsToggled"
+                      Unchecked="OnCanUserSortColumnsToggled" />
+            <Button Content="Add Column"
+                    AutomationProperties.Name="AddColumnButton"
+                    AutomationProperties.AutomationId="AddColumnButton"
+                    Click="OnAddColumnClick" />
+            <Button Content="Remove Column"
+                    AutomationProperties.Name="RemoveColumnButton"
+                    AutomationProperties.AutomationId="RemoveColumnButton"
+                    Click="OnRemoveColumnClick" />
+            <Button Content="Filter Source"
+                    AutomationProperties.Name="FilterSourceButton"
+                    AutomationProperties.AutomationId="FilterSourceButton"
+                    Click="OnFilterSourceClick" />
+            <Button Content="Clear Filter"
+                    AutomationProperties.Name="ClearFilterButton"
+                    AutomationProperties.AutomationId="ClearFilterButton"
+                    Click="OnClearFilterClick" />
+            <Button Content="Expand All Groups"
+                    AutomationProperties.Name="ExpandAllGroupsButton"
+                    AutomationProperties.AutomationId="ExpandAllGroupsButton"
+                    Click="OnExpandAllGroupsClick" />
+            <Button Content="Collapse All Groups"
+                    AutomationProperties.Name="CollapseAllGroupsButton"
+                    AutomationProperties.AutomationId="CollapseAllGroupsButton"
+                    Click="OnCollapseAllGroupsClick" />
+            <Button Content="Delayed Unload"
+                    AutomationProperties.Name="DelayedUnloadButton"
+                    AutomationProperties.AutomationId="DelayedUnloadButton"
+                    Click="OnDelayedUnloadClick" />
+            <ComboBox AutomationProperties.Name="SelectionModeComboBox"
+                      AutomationProperties.AutomationId="SelectionModeComboBox"
+                      SelectedIndex="1"
+                      SelectionChanged="OnSelectionModeChanged">
+                <ComboBoxItem Content="None" AutomationProperties.Name="SelectionModeNone" />
+                <ComboBoxItem Content="Single" AutomationProperties.Name="SelectionModeSingle" />
+            </ComboBox>
+            <ComboBox AutomationProperties.Name="SortCycleComboBox"
+                      AutomationProperties.AutomationId="SortCycleComboBox"
+                      SelectedIndex="0"
+                      SelectionChanged="OnSortCycleChanged">
+                <ComboBoxItem Content="AscendingDescending" AutomationProperties.Name="SortCycleAscendingDescending" />
+                <ComboBoxItem Content="AscendingDescendingNone" AutomationProperties.Name="SortCycleAscendingDescendingNone" />
+                <ComboBoxItem Content="DescendingAscending" AutomationProperties.Name="SortCycleDescendingAscending" />
+                <ComboBoxItem Content="DescendingAscendingNone" AutomationProperties.Name="SortCycleDescendingAscendingNone" />
+            </ComboBox>
+        </StackPanel>
+
+        <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in
+             Microsoft.UI.Xaml.Phone.dll (0xC0000420) on the SECOND navigation to this page, which
+             crashed every other interaction test. Visibility-toggled hosts, driven by the GoTo*
+             buttons below, give the same one-table-at-a-time surface without the Pivot. -->
+        <Grid Grid.Row="1">
+
+            <Grid x:Name="BasicTableHost" Visibility="Visible">
+                <controls:TableView x:Name="BasicTableView"
+                                    AutomationProperties.Name="BasicTableView"
+                                    AutomationProperties.AutomationId="BasicTableView"
+                                    IsReadOnly="False"
+                                    CanUserSortColumns="True"
+                                    CanUserResizeColumns="True"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="Name"
+                                                  Width="160"
+                                                  MinWidth="60"
+                                                  CanSort="True"
+                                                  SortMemberPath="Name"
+                                                  Binding="{Binding Name}"
+                                                  CellToolTipBinding="{Binding Name}"
+                                                  HeaderToolTip="The person's name" />
+                    <controls:TableViewTextColumn Header="Age"
+                                                  Width="100"
+                                                  CanSort="True"
+                                                  SortMemberPath="Age"
+                                                  Binding="{Binding Age}" />
+                    <controls:TableViewTextColumn Header="ReadOnlyCity"
+                                                  Width="160"
+                                                  IsReadOnly="True"
+                                                  CanSort="False"
+                                                  Binding="{Binding City}" />
+                    <controls:TableViewTextColumn x:Name="ScoreColumn"
+                                                  Header="Score"
+                                                  Width="100"
+                                                  CanSort="True"
+                                                  SortMemberPath="Score"
+                                                  Binding="{Binding Score}" />
+                    <controls:TableViewTemplateColumn Header="Template" Width="200">
+                        <controls:TableViewTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <TextBlock Text="{x:Bind Name, Mode=OneWay}"
+                                           AutomationProperties.Name="TemplateCellText"
+                                           VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellTemplate>
+                        <controls:TableViewTemplateColumn.CellEditingTemplate>
+                            <DataTemplate x:DataType="local:TableViewTestPerson">
+                                <TextBox Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         AutomationProperties.Name="TemplateCellEditor"
+                                         AutomationProperties.AutomationId="TemplateCellEditor" />
+                            </DataTemplate>
+                        </controls:TableViewTemplateColumn.CellEditingTemplate>
+                    </controls:TableViewTemplateColumn>
+                </controls:TableView>
+            </Grid>
+
+            <Grid x:Name="RtlTableHost" Visibility="Collapsed">
+                <controls:TableView x:Name="RtlTableView"
+                                    AutomationProperties.Name="RtlTableView"
+                                    AutomationProperties.AutomationId="RtlTableView"
+                                    FlowDirection="RightToLeft"
+                                    Height="300"
+                                    Width="520"
+                                    HorizontalAlignment="Left"
+                                    CanUserSortColumns="True"
+                                    CanUserResizeColumns="True"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="RtlName"
+                                                  Width="180"
+                                                  MinWidth="60"
+                                                  Binding="{Binding Name}" />
+                    <controls:TableViewTextColumn Header="RtlCity" Width="220" Binding="{Binding City}" />
+                    <controls:TableViewTextColumn Header="RtlAge" Width="220" Binding="{Binding Age}" />
+                </controls:TableView>
+            </Grid>
+
+            <Grid x:Name="GroupedTableHost" Visibility="Collapsed">
+                <controls:TableView x:Name="GroupedTableView"
+                                    AutomationProperties.Name="GroupedTableView"
+                                    AutomationProperties.AutomationId="GroupedTableView"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="GroupedName" Width="200" Binding="{Binding Name}" />
+                    <controls:TableViewTextColumn Header="GroupedCity" Width="160" Binding="{Binding City}" />
+                </controls:TableView>
+            </Grid>
+
+            <Grid x:Name="ScrollingTableHost" Visibility="Collapsed">
+                <StackPanel Orientation="Vertical" Spacing="4">
+                <controls:TableView x:Name="ScrollingTableView"
+                                    AutomationProperties.Name="ScrollingTableView"
+                                    AutomationProperties.AutomationId="ScrollingTableView"
+                                    Height="300"
+                                    Width="520"
+                                    HorizontalAlignment="Left"
+                                    SelectionMode="Single">
+                    <controls:TableViewTextColumn Header="FrozenName"
+                                                  Width="180"
+                                                  FrozenEdge="Leading"
+                                                  Binding="{Binding Name}"
+                                                  CellToolTipBinding="{Binding City}" />
+                    <controls:TableViewTextColumn Header="ScrollCity" Width="220" Binding="{Binding City}" />
+                    <controls:TableViewTextColumn Header="ScrollAge" Width="220" Binding="{Binding Age}" />
+                    <controls:TableViewTextColumn Header="ScrollId" Width="220" Binding="{Binding Id}" />
+                </controls:TableView>
+                <!-- Publishes PART_BodyScroller's offsets so an out-of-process test can tell whether the body
+                     actually scrolled. Without it, "the header did not move" is vacuous: it also holds when
+                     nothing scrolled at all. -->
+                <TextBlock x:Name="ScrollOffsetTextBlock"
+                           AutomationProperties.Name="ScrollOffsetTextBlock"
+                           AutomationProperties.AutomationId="ScrollOffsetTextBlock"
+                           IsTabStop="False"
+                           Width="300"
+                           Text="&lt;not resolved&gt;" />
+                </StackPanel>
+            </Grid>
+
+        </Grid>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
+            <Button Content="After Table Button"
+                    AutomationProperties.Name="AfterTableButton"
+                    AutomationProperties.AutomationId="AfterTableButton" />
+            <Button Content="Basic"
+                    AutomationProperties.Name="GoToBasicButton"
+                    AutomationProperties.AutomationId="GoToBasicButton"
+                    Click="OnGoToBasicClick" />
+            <Button Content="Rtl"
+                    AutomationProperties.Name="GoToRtlButton"
+                    AutomationProperties.AutomationId="GoToRtlButton"
+                    Click="OnGoToRtlClick" />
+            <Button Content="Grouped"
+                    AutomationProperties.Name="GoToGroupedButton"
+                    AutomationProperties.AutomationId="GoToGroupedButton"
+                    Click="OnGoToGroupedClick" />
+            <Button Content="Scrolling"
+                    AutomationProperties.Name="GoToScrollingButton"
+                    AutomationProperties.AutomationId="GoToScrollingButton"
+                    Click="OnGoToScrollingClick" />
+            <TextBlock x:Name="StatusTextBlock"
+                       AutomationProperties.Name="StatusTextBlock"
+                       AutomationProperties.AutomationId="StatusTextBlock"
+                       VerticalAlignment="Center"
+                       Text="Ready" />
+            <!-- Reports which column an edit opened on, from the public BeginningEdit event. Tests read this
+                 instead of locating the editor: finding an editor means descending into a row's children,
+                 which fail-fasts the app (product finding #13). -->
+            <TextBox x:Name="EditColumnReportTextBlock"
+                     AutomationProperties.Name="EditColumnReportTextBlock"
+                     AutomationProperties.AutomationId="EditColumnReportTextBlock"
+                     VerticalAlignment="Center"
+                     Width="120"
+                     IsReadOnly="True"
+                     IsTabStop="False"
+                     Text="" />
+            <Button Content="Hook Row States"
+                    AutomationProperties.Name="HookRowStatesButton"
+                    AutomationProperties.AutomationId="HookRowStatesButton"
+                    Click="OnHookRowStatesClick" />
+            <!-- Append-only log of the first realized row's CommonStates transitions. A log, not a live read:
+                 any interaction that read the state would itself move the pointer off the row. -->
+            <TextBox x:Name="RowStateLogTextBlock"
+                     AutomationProperties.Name="RowStateLogTextBlock"
+                     AutomationProperties.AutomationId="RowStateLogTextBlock"
+                     VerticalAlignment="Center"
+                     Width="200"
+                     IsReadOnly="True"
+                     IsTabStop="False"
+                     Text="" />
+            <Button Content="Hook Group Headers"
+                    AutomationProperties.Name="HookGroupHeadersButton"
+                    AutomationProperties.AutomationId="HookGroupHeadersButton"
+                    Click="OnHookGroupHeadersClick" />
+            <!-- Append-only log of the FIRST realized group header's CommonStates transitions, for the same
+                 reason as RowStateLogTextBlock: reading the state live would require moving the pointer. -->
+            <TextBox x:Name="GroupHeaderStateLogTextBlock"
+                     AutomationProperties.Name="GroupHeaderStateLogTextBlock"
+                     AutomationProperties.AutomationId="GroupHeaderStateLogTextBlock"
+                     VerticalAlignment="Center"
+                     Width="200"
+                     IsReadOnly="True"
+                     IsTabStop="False"
+                     Text="" />
+            <!-- One entry per TableViewGroupHeader.ToggleRequested, formatted "<key>|<key>;": the key is read
+                 once on entry and once AFTER the handler mutates the header, which is the re-entrancy case
+                 TableView.idl:350-355 states the args exist for. Entry count = number of times the event was
+                 raised, which is what makes "exactly once per activation" assertable. -->
+            <TextBox x:Name="GroupToggleReportTextBlock"
+                     AutomationProperties.Name="GroupToggleReportTextBlock"
+                     AutomationProperties.AutomationId="GroupToggleReportTextBlock"
+                     VerticalAlignment="Center"
+                     Width="240"
+                     IsReadOnly="True"
+                     IsTabStop="False"
+                     Text="" />
+            <!-- One entry per opened edit, "<EditorType>|<EditorAutomationName>|<EditorText>|focus=<bool>;".
+                 Written by an IN-PROCESS visual-tree walk posted from BeginningEdit, so no out-of-process
+                 client ever asks a row peer for its children (finding #13). The walk itself creates no
+                 automation peers, exactly like the row/group-header state hooks above. It runs at Low
+                 dispatcher priority so the editor is generated, laid out and focused before it is read. -->
+            <TextBox x:Name="EditorProbeTextBlock"
+                     AutomationProperties.Name="EditorProbeTextBlock"
+                     AutomationProperties.AutomationId="EditorProbeTextBlock"
+                     VerticalAlignment="Center"
+                     Width="280"
+                     IsReadOnly="True"
+                     IsTabStop="False"
+                     Text="" />
+            <!-- One entry per CellEditEnding, "<EditAction>;" - Commit or Cancel, from the public args. -->
+            <TextBox x:Name="EditEndReportTextBlock"
+                     AutomationProperties.Name="EditEndReportTextBlock"
+                     AutomationProperties.AutomationId="EditEndReportTextBlock"
+                     VerticalAlignment="Center"
+                     Width="140"
+                     IsReadOnly="True"
+                     IsTabStop="False"
+                     Text="" />
+            <!-- Live value of the first bound item's Name, updated from its own PropertyChanged. This is the
+                 DATA side of an edit, not a product state readout: it says whether the edit reached the item. -->
+            <TextBox x:Name="FirstItemNameTextBlock"
+                     AutomationProperties.Name="FirstItemNameTextBlock"
+                     AutomationProperties.AutomationId="FirstItemNameTextBlock"
+                     VerticalAlignment="Center"
+                     Width="140"
+                     IsReadOnly="True"
+                     IsTabStop="False"
+                     Text="" />
+        </StackPanel>
+    </Grid>
+</local:TestPage>

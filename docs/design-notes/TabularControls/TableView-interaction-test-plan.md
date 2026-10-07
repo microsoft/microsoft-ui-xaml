@@ -116,6 +116,106 @@ here regardless of input.
 
 ---
 
+## Intent review against current `main` (post #11820)
+
+The tests were ported unchanged from `user/dipesh/tableview/basic-tests`. Since they were written, `main` took a set of
+accessibility and keyboard changes — chiefly #11820 ("close the remaining UIA accessibility gaps"), plus keyboard sorting,
+the RTL gripper fix, #12083, #12084 and #12183 — that change the **keyboard and focus model** the tests were written
+against. The tests have **not** been edited to match. Items whose intent no longer holds are marked inline with
+**INTENT CHANGE** so the expectation can be revisited deliberately.
+
+What changed in the model, as read from `TableView_Keyboard.cpp`, `TableViewRow.cpp` and the updated `dev-spec:201`:
+
+1. **Navigation is cell-aware (ARIA treegrid), not row-only.** From a focused row, `Right` drills into the first cell and
+   `Left` on the first cell pops back to the row. At cell level, `Left`/`Right` move the cell cursor without wrapping,
+   `Home`/`End` go to the first/last cell of the row, and `Ctrl+Home`/`Ctrl+End` go to the first/last cell of the table.
+   `Up`/`Down`/`PageUp`/`PageDown` keep the starting level (row to row, or same column cell to cell).
+2. **Two tab stops: header band and body.** `TableView` itself is `IsTabStop=False`. The header band is one tab stop (it
+   enters at the shared column cursor), and the body is another. Inside the header band, `Left`/`Right` move between
+   headers and `Up`/`Down` are absorbed, so they cannot leave the band.
+3. **Header keyboard resize moved to `Alt+Left`/`Alt+Right`** (with `Shift` for a large step; `Ctrl` is an alias), matching
+   WPF DataGrid. Bare `Left`/`Right` on a header now navigate. `dev-spec:135` still says `Left`/`Right` resize, so the spec is
+   stale on this point.
+4. **`Enter` and `Space` on a focused sortable header sort.** `Enter` fires on key-down. `Space` arms on key-down and fires
+   on key-up, so auto-repeat cannot re-sort.
+5. **A pointer press on a cell focuses that cell**, not the row. Selection is applied on release. A press on the row's
+   empty strip still focuses the row. `dev-spec:427` still says "pointer focus lands on the row", so it is also stale.
+6. **Cell interaction mode.** `Enter` on a focused cell moves focus into its first focusable content (template columns),
+   and `Escape` returns to the cell. `Space` (without `Alt` or `Ctrl`) selects the focused row from row or cell level.
+   `Ctrl`+navigation keys move focus without selecting.
+7. **UIA surface.**
+   - Row peers are named and report flat `PositionInSet`/`SizeOfSet`.
+   - Rows expose one identity-stable cell peer per visible column, with `LocalizedControlType="cell"`.
+   - Header peers are identity-stable, and `GetColumnHeaders` works.
+   - Group headers report `Level`.
+   - Width changes from a resize are announced through a `Notification` event.
+
+   This removes the basis of findings #13 and #22 (and probably #14). The page readouts and "never descend into a row"
+   rules in this document were workarounds for those findings. They are now harness choices, not constraints.
+
+| Item | Section | Verdict |
+| --- | --- | --- |
+| `LeftAndRightArrowsDoNotMoveRowFocus` | §1 | **INTENT CHANGE.** The asserted boundary is now inverted (treegrid drill-in). |
+| `ShiftTabMovesFocusOutOfTableUpstream` | §1 | **INTENT CHANGE.** Shift+Tab from the body lands in the header band; the current assertions pass vacuously. |
+| `TabIntoTableFocusesARowWithoutSelecting` | §1 | **INTENT CHANGE.** The first Tab enters the header band, not the table or a row. |
+| `HeaderKeyboardResizeChangesWidth` | §2 | **INTENT CHANGE.** The resize chord is `Alt+Right`; bare `Right` moves to the next header. |
+| `RightToLeftKeyboardNavigationMirrors` | §8 | **INTENT CHANGE.** Same chord change; bare arrows under RTL now navigate headers (mirrored). |
+| `PointerClickSelectsAndFocusesRow` | §3 | **INTENT CHANGE.** A click on a cell focuses the cell, not the row. |
+| `PointerClickOnSecondRowMovesSelection` | §3 | **INTENT CHANGE.** Same focus target change. |
+| `PointerClickInSelectionModeNoneSelectsNothingButMovesFocus` | §3 | **INTENT CHANGE.** Same focus target change. |
+| `PointerPressEstablishesCurrentCellForKeyboardEditing` | §3 | **INTENT CHANGE (remarks only).** The "row already holds focus → hit-test fallback" leg no longer describes a distinct path. |
+| `HeaderEnterTogglesSort` | §2 | Intent unchanged. The product defect was fixed by #11820, so this is expected to pass. |
+| `VerifyTableIsNavigableByAUiaClient`, `VerifyAxeScanPasses` | §10 | Intent unchanged. Findings #13 and #22 were addressed by #11820, so these are expected to pass. |
+| `PointerResizeEscapeCancelsResize`, `RightToLeftResizeMirrors` | §6, §8 | Intent unchanged. Escape-cancels and the RTL gripper were reworked on `main`, so re-measure before treating #17 and #19 as open. |
+| All other items | — | Reviewed. Intent unchanged by the new model. |
+
+The baseline run on `main` is recorded in **Baseline on `main`** below. Proposed tests that the old intent ruled out are in
+**Proposed new tests (unblocked by the new model)** at the end of this document.
+
+### Baseline on `main`
+
+Run on VM `winui-test2` (x64 chk). Product built at `daf300dcb6`; tests ported unchanged. Filter
+`*MUXControls.InteractionTests.TableView*`: **57 total, 41 passed, 16 failed, 0 blocked**. There were no app crashes and
+no `0xC0000420`.
+
+Every predicted **INTENT CHANGE** failure did fail, and on the predicted assertion:
+
+| Test | Measured | Cause |
+| --- | --- | --- |
+| `LeftAndRightArrowsDoNotMoveRowFocus` | "Right must leave row focus where it was" | INTENT CHANGE (drill-in) |
+| `HeaderKeyboardResizeChangesWidth` | `160 -> 160` after `Right` | INTENT CHANGE (`Alt+Arrow` resize) |
+| `RightToLeftKeyboardNavigationMirrors` | `IsGreaterThan(78, 182)`. The arrows navigated, and the clipped header rect shrank | INTENT CHANGE (`Alt+Arrow` resize) |
+| `PointerClickSelectsAndFocusesRow` | row `HasKeyboardFocus` false | INTENT CHANGE (cell takes focus) |
+| `PointerClickOnSecondRowMovesSelection` | row 1 `HasKeyboardFocus` false | INTENT CHANGE (cell takes focus) |
+| `PointerClickInSelectionModeNoneSelectsNothingButMovesFocus` | row `HasKeyboardFocus` false | INTENT CHANGE (cell takes focus) |
+
+Two INTENT CHANGE items **pass vacuously** and must not be read as confirmation: `ShiftTabMovesFocusOutOfTableUpstream`
+(accepts focus on a header) and `TabIntoTableFocusesARowWithoutSelecting` (needs a second Tab, which the loop allows).
+
+The other ten failures are **not** intent changes:
+
+| Test | Measured | Reading |
+| --- | --- | --- |
+| `VerifyAxeScanPasses` | **1** Axe error (`NameNotNull`), down from 24 | #22 is largely fixed. One focusable element is still nameless; the log does not name it, so pull the Axe snapshot from the VM. |
+| `VerifyStructureChangedEventsReachAUiaClient` | add column → no event | **Finding #21 still open.** `StructureChanged` is still raised only for sort, virtualization reset and group expansion. |
+| `GroupHeaderKeepsFocusAcrossCollapseWhenFocusedThroughUia` | header lost focus | **Finding #15 still open** on the UIA `SetFocus` route. |
+| `PageDownMovesByViewport` | `0.38%` vs `0%` | **Measurement, not intent (probable).** Focus moves a page, but the view appears to scroll only enough to bring the target row into view (about one row). The scroll-percent proxy the remarks already called weak no longer separates paging from a single step. Re-assert on the destination row's `PositionInSet`, which is now exposed. |
+| `PageUpMovesByViewport` | `3.47% -> 3.10%` | Same as `PageDownMovesByViewport`. |
+| `PointerResizeEscapeCancelsResize` | `86px` off the authored width | **Finding #17 still open** on the pointer route. `CancelColumnResizeDrag` exists in the key handler, but on this route it does not take effect. Escape during a pointer drag still does not restore the width. |
+| `HorizontalScrollKeepsHeaderAligned` | header `Left` unchanged | Finding #20 (observable is blind), unchanged. |
+| `FrozenColumnStaysPinnedUnderPointerScroll` | precondition `0 > 10` | Finding #20, unchanged. |
+| `RightToLeftResizeMirrors` | `RtlName` `180 -> 180` | **Finding #19 still open** despite the RTL gripper positioning fix on `main`. |
+| `CollapseAllGroupsReconcilesGestureExpandedGroup` | header still `Expanded` | **Finding #16 still open.** |
+
+Now passing, matching the review: `HeaderEnterTogglesSort` and `VerifyTableIsNavigableByAUiaClient` (the row → cell edge
+no longer fail-fasts, so #13 is gone for MITA).
+
+**Port defect found and fixed:** `ExpandAllGroupsReconcilesGestureCollapsedGroup` had no `[TestMethod]` attribute in the
+source branch, so TAEF never ran it (57 discovered, 58 written). The attribute is now added, and the test is otherwise
+unchanged.
+
+---
+
 ## Run status and open failures (interaction tier)
 
 ### The Pivot was poisoning the whole suite (resolved)
@@ -777,6 +877,10 @@ converted as each category comes up for review** — do not add a new item in th
     damage from the Pivot crash and the test passes unchanged once the Pivot is gone. Left as a warning about triaging
     a failure that follows a crashed test.
 - [x] `PageDownMovesByViewport` — **Status:** passing (0% after one Down vs 3.10% after PageDown).
+  - **Review note (intent unchanged, measurement broken):** the `main` baseline fails with `0.38%` vs `0%`. PageDown
+    still moves focus by `GetEstimatedRowsPerPage` rows, but the view appears to scroll only enough (inferred, not measured) to bring the target into
+    view, so scroll percent no longer separates a page from a step. Row peers now expose `PositionInSet`, so assert the
+    destination row's position (≈ rows-per-page) directly, as the remarks below anticipated.
   - **Description:** On the 200-item `ScrollingTableView` (`Height` 300), focuses the top row, records
     `VerticalScrollPercent` after a single Down, returns Home, presses PageDown and records it again.
   - **Expected result:** a row still holds focus, and the percent after PageDown exceeds the percent after one Down by
@@ -791,6 +895,8 @@ converted as each category comes up for review** — do not add a new item in th
     travel available out of process — meaning this test proves *the view paged*, and infers the focus move from it rather
     than observing the destination row directly. That is the weakness to fix if the row peer ever gains an index.
 - [x] `PageUpMovesByViewport` — **Status:** passing (6.19% after two PageDowns, 2.95% after PageUp).
+  - **Review note (intent unchanged, measurement broken):** the baseline fails with `3.47% -> 3.10%`, for the same reason
+    as `PageDownMovesByViewport`.
   - **Description:** Pages down twice on `ScrollingTableView` to earn headroom, then presses PageUp.
   - **Expected result:** the precondition percent after two PageDowns is above 1, a row still holds focus after PageUp,
     and the percent drops by more than one point.
@@ -826,32 +932,69 @@ converted as each category comes up for review** — do not add a new item in th
     programmatic half and neither of those touches key routing, which is why all three exist. The combo item's
     `AutomationProperties.Name` is `SelectionModeNone`, not `None` — an earlier failure here was the test using the
     display string.
-- [x] `LeftAndRightArrowsDoNotMoveRowFocus` — **Status:** passing.
-  - **Description:** Focuses a middle row of `BasicTableView`, presses Left, then Right.
-  - **Expected result:** the same row still reports `HasKeyboardFocus` after each key.
-  - **Failure means:** the control has grown horizontal cell navigation that the spec does not describe, which would
-    change the whole keyboard model (and would need a `CurrentCell` concept the public API does not have).
-  - **Remarks:** `dev-spec:165` enumerates exactly six keys — Up, Down, Home, End, PageUp, PageDown — and calls keyboard
-    handling "row-oriented". This pins the *boundary* of the contract rather than a behaviour inside it, which is why a
-    cheap negative test earns its place.
-- [x] `ShiftTabMovesFocusOutOfTableUpstream` — **Status:** passing.
-  - **Description:** Focuses the first row, then presses Shift+Tab.
-  - **Expected result:** no row holds focus and the control authored before the table (`DummyButton`) does.
-  - **Failure means:** reverse tab order walks the table's internals even though forward order does not.
-  - **Remarks:** ItemsView keeps the same forward/backward pair (`TabIntoItemsViewWithoutCurrentItem` /
-    `ShiftTabIntoItemsViewWithoutCurrentItem`), which is the precedent for treating the two directions as separate
-    concerns rather than one permutation.
-- [x] `TabIntoTableFocusesARowWithoutSelecting` — **Status:** passing.
-  - **Description:** Starts on the control before the table and presses Tab (up to three times) to enter it, checking
-    selection **on entry**, before any navigation key.
-  - **Expected result:** focus lands inside the table — on the table or a row — rather than skipping the control, and
-    nothing is selected merely by entering. A following arrow key must then focus a row.
-  - **Failure means:** either the table is not a tab stop at all, or entry silently selects — the asymmetry that makes
-    keyboard-only use feel wrong.
-  - **Remarks:** adopted from ItemsView, which tests entry and exit separately. **Its first failure was a test bug, not
-    a defect:** it checked "nothing selected" *after* pressing Down, and selection legitimately follows focus. The entry
-    assertion is deliberately loose about *what* takes focus, because whether the table or its first row is the tab stop
-    is unstated.
+- [x] `RightDrillsIntoFirstCellAndLeftReturnsToRow` (was `LeftAndRightArrowsDoNotMoveRowFocus`) — **Status:**
+      rewritten for the new intent, built, not yet run.
+  - **INTENT CHANGE (applied):** the old test pinned a row-only boundary: "Left/Right never move row focus" under
+    `dev-spec:165`. `dev-spec:201` replaces that with cell-aware navigation, so the old expectation now contradicts the
+    spec. The test is renamed because its old name asserts the opposite of the contract.
+  - **Description:** Focuses the middle row (index 1) of `BasicTableView`. Presses `Left` while the row is focused,
+    then `Right`, then `Left`, reading focus after each key from the row peer and from the row's cell peers.
+  - **Expected result:**
+    - The first `Left` (on a row) leaves focus on that row, and focus does not leave the table.
+    - `Right` moves focus to the row's **first** cell peer (child 0), and the row peer itself no longer reports
+      `HasKeyboardFocus`.
+    - The second `Left` (on the first cell) returns focus to the row peer.
+  - **Failure means:** a keyboard user cannot get from row level to the individual cells, or cannot get back, so cell
+    content is unreachable without a mouse. Alternatively, `Left` on a row walks focus sideways out of the table.
+  - **Remarks:**
+    - `dev-spec:201` says "`Left`/`Right` move the cell cursor within the focused row". It does not say where the
+      cursor **starts** when focus is on the row container. "Right enters at the first cell, Left on the first cell
+      returns to the row" is the WAI-ARIA treegrid keyboard convention that #11820 adopted. That is a platform
+      convention, not a spec sentence, so record it as **spec debt**: `dev-spec:201` should state the row ↔ cell
+      transition.
+    - The `Left`-on-a-row leg is a negative control. Without it, a `Right` that happened to move focus anywhere would
+      look like drill-in.
+    - Reading cell peers (row → children) was forbidden under finding #13. The `main` baseline shows it is safe now
+      (`VerifyTableIsNavigableByAUiaClient` passes).
+- [x] `ShiftTabMovesFocusOutOfTableUpstream` — **Status:** rewritten for the new intent, built, not yet run.
+  - **INTENT CHANGE (applied):** the table is now two tab stops, the header band and the body. Shift+Tab from the body
+    no longer leaves the table in one press. The old assertions accepted focus on a header, so they passed vacuously.
+  - **Description:** Focuses the first row of `BasicTableView` and presses Shift+Tab. Records which element has focus.
+    Presses Shift+Tab again and records which element has focus.
+  - **Expected result:**
+    - After the first Shift+Tab, no row holds focus and a column header of `BasicTableView` does.
+    - After the second Shift+Tab, neither a header nor a row of `BasicTableView` holds focus, and `AfterTableButton`
+      does not either (focus moved upstream, not forward).
+  - **Failure means:** reverse tab order either skips the header band (column headers become unreachable by Shift+Tab)
+    or walks header by header (one tab stop per column, the trap `dev-spec:135` rejects).
+  - **Remarks:**
+    - `dev-spec:135` rejects "one tab stop per column" for headers. Neither spec states that the header band is exactly
+      **one** tab stop ahead of the body. That comes from the #11820 keyboard model (`TableView_Keyboard.cpp` "One tab
+      stop per band"). Record it as **spec debt** until the dev spec says it.
+    - The test does not name the upstream landing control, because that is page layout. It asserts only that focus left
+      the table in the upstream direction.
+    - ItemsView keeps the same forward and backward pair, which is the precedent for treating the two directions as
+      separate concerns.
+- [x] `TabIntoTableFocusesAHeaderThenARowWithoutSelecting` (was `TabIntoTableFocusesARowWithoutSelecting`) —
+      **Status:** rewritten for the new intent, built, not yet run.
+  - **INTENT CHANGE (applied):** entry used to be "the table or a row". The first tab stop is now the header band, and
+    the body is the second. The old loop needed a second Tab to reach a row and never recognised the header, so it
+    passed without checking the first stop.
+  - **Description:** Focuses `SelectionModeComboBox`, the control before the table, and presses Tab (at most three
+    times) until a header of `BasicTableView` has focus. Checks selection there. Presses Tab once more, checks that a
+    row (or a cell of a row) has focus and that nothing is selected, then presses `Down`.
+  - **Expected result:**
+    - A header of `BasicTableView` takes focus before any row does.
+    - On entering the header band, no row is focused and no row is selected.
+    - The next Tab puts focus in the body (a row, or a cell inside a row), and still nothing is selected.
+    - `Down` then focuses a row (or a cell of a row) in the body.
+  - **Failure means:** either the header band is skipped (sorting and resizing are keyboard-unreachable from the tab
+    order), the body is not reachable by Tab, or tabbing into the table silently selects a row.
+  - **Remarks:**
+    - The header band being first rests on the same **spec debt** as `ShiftTabMovesFocusOutOfTableUpstream`.
+    - The selection checks stay **before** any navigation key, because navigation keys are entitled to select
+      (`KeyboardFocusMoveCarriesSelection`).
+    - Which row the body puts focus on is unstated, so the body assertion stays loose about *which* row.
 - [x] `GroupHeaderArrowKeysExpandAndCollapse` — **Status:** **passing on the Tab route** (`iso_kbgrp4`; the `[Failed]`
       verdict is the teardown crash). **Moved into `TableView_Keyboard_InteractionTests.cs`**. Finding #15 remains
       **active** for the UIA `SetFocus` route — see the note above.
@@ -925,6 +1068,9 @@ A second crash was found and fixed on the way: `FindElement.*` called **after** 
 
 - [x] `HeaderEnterTogglesSort` — **Status:** FAILING — real product defect, no keyboard route to sort. Confirmed in
       `kbrun4`: the selected row does not move (`964 -> 964`).
+  - **Review note (intent unchanged):** the defect is fixed on `main`. `Enter` and `Space` on a focused sortable header
+    now sort (`TryHandleHeaderSortKey`; `dev-spec:201`), so this is expected to pass as written. The spec gap in the
+    remarks below is closed by `dev-spec:201`. `Space` (fires on key-up) has no test yet; see the proposed tests.
   - **Description:** Selects the bottom row of `BasicTableView`, focuses the `Age` column header, presses Enter, then
     locates the still-selected row and compares its position.
   - **Expected result:** the sort runs, so the selected row moves upward by more than 2px — the row's identity is
@@ -939,15 +1085,30 @@ A second crash was found and fixed on the way: `FindElement.*` called **after** 
     routes only Left/Right (resize) and never mentions Enter, so the expectation's authority is the accessibility
     baseline, not a sentence — the spec should be amended alongside the fix. Contrast `TableViewGroupHeader::OnKeyDown`
     (`TableViewGroupHeader.cpp:203-213`), which does handle Enter and Space.
-- [x] `HeaderKeyboardResizeChangesWidth` — **Status:** passing — 8px step, 32px with Shift.
-  - **Description:** Focuses the `Name` header and drives the keyboard resize path, plain and with Shift held, measuring
-    the header's width after each.
-  - **Expected result:** the plain step widens the column, and the Shift step widens it by strictly more.
-  - **Failure means:** the resize key route is dead, or the Shift multiplier is not applied, leaving no keyboard way to
-    size a column.
-  - **Remarks:** `dev-spec:133` and `dev-spec:127`. The test asserts the *relationship* between the two steps rather
-    than the literal 8/32px values, so a deliberate change to the step size does not produce a false failure; the
-    observed values are recorded in the status line instead.
+- [x] `HeaderKeyboardResizeChangesWidth` — **Status:** rewritten for the new intent, built, not yet run. (With bare
+      arrows it passed: 8px step, 32px with Shift.)
+  - **INTENT CHANGE (applied):** the keyboard resize chord is now **`Alt+Left`/`Alt+Right`**, with `Alt+Shift` for the large step
+    (`TableView::TryHandleHeaderColumnResizeKey`, WPF DataGrid binding; `Ctrl` is accepted as an alias). Bare
+    `Left`/`Right` on a header now **move focus between headers** (`TryHandleHeaderNavigationKey`). As written, `Right`
+    moves focus from `Name` to `Age`, so `Name`'s width does not change. New expectation: `Alt+Right` grows `Name`, and
+    `Alt+Shift+Right` grows it by a strictly larger step. **Spec debt:** `dev-spec:135` still says Left/Right route into
+    `TryKeyboardStep`.
+  - **Description:** Focuses the `Name` header. Presses `Alt+Right`, then `Alt+Shift+Right`, measuring the `Name`
+    header's width after each key and checking that the `Name` header still holds focus.
+  - **Expected result:**
+    - `Alt+Right` widens `Name`.
+    - `Alt+Shift+Right` widens it by strictly more than `Alt+Right` did.
+    - Focus stays on the `Name` header throughout, so the resize chord never doubles as navigation.
+  - **Failure means:** the resize key route is dead, the Shift multiplier is not applied, or the chord also moves focus.
+    In any of these cases a keyboard user has no reliable way to size a column.
+  - **Remarks:**
+    - `dev-spec:127` and `dev-spec:133` give the step and the Shift multiplier.
+    - The chord is `Alt+Arrow`, the WPF DataGrid binding #11820 adopted, because bare arrows now navigate the header
+      band. **Spec debt:** `dev-spec:135` still says bare Left/Right resize and should be amended.
+    - The test asserts the *relationship* between the two steps, not the literal 8/32px values, so a deliberate change
+      to the step size does not produce a false failure.
+    - The focus check is new. It is what distinguishes "resized" from "moved focus and the measurement happened to
+      change".
 - [x] `HeaderClickDoesNotSortColumnWithCanSortFalse` — **Status:** written, unverified.
   - **Description:** Clicks the `ReadOnlyCity` header of `BasicTableView`, which is authored `CanSort="False"`, then —
     in the same test — clicks the `Age` header, which is `CanSort="True"`.
@@ -1031,33 +1192,64 @@ retraction reasoning was sound at the time — it had been measured while the `P
 reproduces cleanly post-Pivot and is now product finding #14 above: it is the UIA **clickable-point** call on a row peer
 that access-violates, not the click. See the run-status section for the isolation.
 
-- [x] `PointerClickSelectsAndFocusesRow` — **Status:** written, **passing**.
-  - **Description:** Parks keyboard focus on `DummyButton`, then left-clicks the first realized row of `BasicTableView`.
-  - **Expected result:** the row reports `HasKeyboardFocus`, `DummyButton` no longer does, and the row peer's
-    `SelectionItem` pattern reads `IsSelected == true`.
-  - **Failure means:** hit-testing or the row's `PointerPressed` handler never reaches selection or focus — the control
-    is unusable with a mouse even though `Select()` passes in API §6.
-  - **Remarks:** `dev-spec:284` (the press establishes the row's participation in selection) and `:296-301` (pointer
-    focus lands on the **row**, not a cell). Parking focus elsewhere first is what stops the focus assertion passing
-    vacuously.
-- [x] `PointerClickOnSecondRowMovesSelection` — **Status:** written, **passing**.
-  - **Description:** Clicks row 0, asserts it is selected, then clicks row 1 and re-reads both rows.
-  - **Expected result:** row 1 is selected and holds focus; row 0 reads `IsSelected == false`.
+- [x] `PointerClickSelectsAndFocusesCell` (was `PointerClickSelectsAndFocusesRow`) — **Status:** rewritten for the new
+      intent, built, not yet run.
+  - **INTENT CHANGE (applied):** pointer focus used to land on the row (`dev-spec:427`). Since #11820 a press on a cell
+    puts focus on **that cell** and selects the row. The test is renamed because the old name asserts the old target.
+  - **Description:** Parks keyboard focus on `DummyButton`, then left-clicks row 0 of `BasicTableView` inside the
+    `Age` column (row-relative x = 210; authored widths are Name 160, Age 100). Reads focus from the row's cell peers
+    and selection from the row peer.
+  - **Expected result:**
+    - The row's cell peer at visible column index 1 (`Age`) reports `HasKeyboardFocus`, and no other cell of that row
+      does.
+    - `DummyButton` no longer has focus.
+    - The row peer's `SelectionItem.IsSelected` is `true`.
+  - **Failure means:** hit-testing or the row's pointer handler never reaches selection, or focus lands somewhere other
+    than the element under the pointer. Either the mouse cannot select at all, or a screen reader announces a different
+    cell from the one the user clicked.
+  - **Remarks:**
+    - `dev-spec:284` says the press establishes selection participation and the current cell.
+    - "Focus lands on the pressed cell" is the #11820 model, and it is what makes AT focus agree with the current cell
+      that F2 edits. **Spec debt:** `dev-spec:427` still says pointer focus lands on the row and must be amended.
+    - Clicking `Age` rather than `Name` is deliberate. Column 0 is also where a keyboard drill-in lands, so a
+      `Name`-only test could not tell "focused the clicked cell" from "focused the first cell".
+    - Parking focus first stops the focus assertion passing vacuously.
+- [x] `PointerClickOnSecondRowMovesSelection` — **Status:** rewritten for the new intent, built, not yet run.
+  - **INTENT CHANGE (applied):** the selection half is unchanged. The focus half ("row 1 holds focus") becomes "the
+    clicked cell in row 1 holds focus", for the same reason as `PointerClickSelectsAndFocusesCell`.
+  - **Description:** Clicks row 0 in the `Age` column and asserts it is selected. Then clicks row 1 in the same column
+    and re-reads both rows.
+  - **Expected result:**
+    - Row 1 is selected.
+    - Row 1's `Age` cell (visible index 1) has keyboard focus.
+    - Row 0 reads `IsSelected == false`.
   - **Failure means:** the pointer route writes selection additively or fails to clear the previous row, so a mouse user
     can hold two selected rows in a `SelectionMode.Single` control.
-  - **Remarks:** separate from the test above by **assertion**, not scenario (step 2.4): that one proves a click reaches
-    selection at all, this one proves the single-selection invariant survives the pointer route. API §6 proves the
-    invariant programmatically; a gate implemented in `Select()` but bypassed by the pointer handler passes there and
-    fails here, which is the whole point of keeping both.
-- [x] `PointerClickInSelectionModeNoneSelectsNothingButMovesFocus` — **Status:** written, **passing**.
-  - **Description:** Switches `SelectionModeComboBox` to `None`, parks focus on `DummyButton`, then clicks row 0.
-  - **Expected result:** nothing is selected — the row peer withholds `SelectionItem`, and if it is wrongly advertised,
-    `IsSelected` is still false — while keyboard focus does move to the clicked row.
-  - **Failure means:** the `None` gate lives only inside `Select()` and the pointer handler writes selection behind it;
-    or the row refuses focus under `None`, making a display-only table keyboard-unreachable.
-  - **Remarks:** `TableView.idl:536` — `None` is "display-only". The focus half is the deliberate asymmetry: display-only
-    restricts *selection*, not reachability.
-- [x] `PointerPressEstablishesCurrentCellForKeyboardEditing` — **Status:** written, **passing**.
+  - **Remarks:** this differs from the test above by **assertion**, not scenario (step 2.4). That test proves a click
+    reaches selection at all; this one proves the single-selection invariant survives the pointer route.
+- [x] `PointerClickInSelectionModeNoneSelectsNothingButMovesFocus` — **Status:** rewritten for the new intent, built,
+      not yet run.
+  - **INTENT CHANGE (applied):** the "display-only is still reachable" half now means the clicked **cell** takes focus,
+    not the row. The "nothing selected" half is unchanged.
+  - **Description:** Switches `SelectionModeComboBox` to `None`, parks focus on `DummyButton`, then clicks row 0 in the
+    `Age` column.
+  - **Expected result:**
+    - Nothing is selected. The row peer withholds `SelectionItem`, and if it is wrongly advertised, `IsSelected` is
+      still `false`.
+    - Keyboard focus moves to row 0's `Age` cell (visible index 1).
+  - **Failure means:** the `None` gate lives only inside `Select()` and the pointer handler writes selection behind it.
+    Or the cell refuses focus under `None`, making a display-only table unreachable for keyboard and AT.
+  - **Remarks:** `TableView.idl:536` defines `None` as "display-only". The focus half is the deliberate asymmetry:
+    display-only restricts *selection*, not reachability. The focus target rests on the same **spec debt** as
+    `PointerClickSelectsAndFocusesCell`.
+- [x] `PointerPressEstablishesCurrentCellForKeyboardEditing` — **Status:** written, **passing**. Test code is
+      unchanged; only these remarks changed.
+  - **INTENT CHANGE (remarks only, applied):** the assertions still stand, but the justification for the second leg
+    does not. A press no longer arrives with an already-focused **row** as `OriginalSource` that needs the hit-test
+    fallback (`dev-spec:286`), because the first press focused a **cell**. The second leg is now "a cell is already
+    focused and the user presses a different cell", which is worth keeping for a different reason: cell-to-cell
+    transfer of the current cell. The "fail-fasts the app (finding #13)" rationale for the `BeginningEdit` readout no
+    longer applies either, because cell peers are reachable.
   - **Description:** Clicks `BasicTableView` at an x-offset inside the **`Age`** column, presses F2, and reads the column
     the page's `BeginningEdit` handler reports; then repeats on the **`Name`** column. Each leg escapes the editor first
     so the next begins clean. The second leg also re-presses while the row already holds focus.
@@ -1487,17 +1679,27 @@ merely disfavouring it.
   - **Lesson:** a press aimed at an assumed edge cannot falsify a claim about where that edge is. Aim input at a
     **measured** boundary and let the run report which element responded — and keep the last-resort probe, since
     here it is the probe that produced the diagnosis rather than merely the verdict.
-- [x] `RightToLeftKeyboardNavigationMirrors` **(passing)** — Under RTL, horizontal keyboard resize is mirrored.
-  - **Description:** Under `FlowDirection.RightToLeft`, focuses the header and presses Left then Right.
-  - **Expected result:** `Left` widens the column (reading-order growth) and `Right` shrinks it — measured
-    `IsGreaterThan(228, 182)` then `IsLessThan(180, 226)`.
-  - **Failure means:** the keyboard path reads the raw arrow key instead of resolving it against flow direction.
-  - **Remarks:** this passes, and the keyboard path is a *different* code path from the pointer one
-    (`TryKeyboardStep` mirrors on the gripper's own `FlowDirection`, `ResizeGripper.cpp:348`, while the pointer
-    path mirrors via the manipulation container's space, `:201`). Finding #19 was briefly withdrawn as a harness
-    fault and is now **reinstated** against the pointer path, so this test recovers its original role as the
-    localizing evidence: it proves the gripper *does* see `RightToLeft`, which is what makes the pointer path's
-    failure to mirror a pointer-path defect rather than a missing `FlowDirection`.
+- [x] `RightToLeftKeyboardResizeMirrors` (was `RightToLeftKeyboardNavigationMirrors`) — **Status:** rewritten for the
+      new intent, built, not yet run. Under RTL, horizontal keyboard resize is mirrored.
+  - **INTENT CHANGE (applied):** the chord change is the same as in §2 `HeaderKeyboardResizeChangesWidth`: resize is
+    now `Alt+Left`/`Alt+Right`, and bare arrows navigate headers. The test is renamed, because "navigation" now names a
+    different behaviour from the one it tests. The bare-arrow mirror (header navigation) and the row drill-in mirror
+    are separate RTL claims, proposed as new tests.
+  - **Description:** Under `FlowDirection.RightToLeft`, focuses the `RtlName` header and presses `Alt+Left` six times,
+    re-checks that focus is still on `RtlName`, then presses `Alt+Right` six times. Reads the `RtlName` header's width
+    after each run of presses.
+  - **Expected result:**
+    - `Alt+Left` widens `RtlName` (reading-order growth under RTL).
+    - `Alt+Right` shrinks it.
+    - `RtlName` keeps keyboard focus throughout.
+  - **Failure means:** the keyboard resize path reads the raw arrow key instead of resolving it against flow direction,
+    or the chord is consumed as navigation.
+  - **Remarks:**
+    - The keyboard path is a *different* code path from the pointer one (`TryKeyboardStep` mirrors on the gripper's
+      own `FlowDirection`), so this stays the localizing evidence for finding #19 (pointer path).
+    - The chord rests on the same **spec debt** as `HeaderKeyboardResizeChangesWidth` (`dev-spec:135`).
+    - The focus check matters here. In the `main` baseline, the old bare-arrow test read a *clipped* header rectangle
+      after focus navigated away, measuring `78` px, which looked like a shrink.
 
 ## 9. Tooltip hover
 
@@ -1654,6 +1856,10 @@ the same thing. Those are different claims, and only the second is what Narrator
     then fails `TestCleanup` (`GoBack` cannot find the Back button), crashes `te.processhost.exe` with `0xE0434352`, and
     fails `AssemblyCleanup`. Anything scheduled after it in the same invocation is running against a restarted app at
     best.
+  - **Review note (intent unchanged):** #11820 rebuilt row and cell peers. Rows now expose one identity-stable cell peer
+    per visible column, the `GetChildrenCore` walk is bounded, and row names and `PositionInSet` are populated. That is
+    the repair §10.2 called for, so this test and `VerifyAxeScanPasses` are expected to pass as written. If they still
+    fail, findings #13 and #22 need re-stating against the new peers rather than the old ones.
 - [x] `VerifyStructureChangedEventsReachAUiaClient` **(new — written, FAILING: product finding #21)**
   - **Description:** Arms a `StructureChangedEventWaiter` on the TableView, then drives three shape changes and records
     which of them reach the client: a sort (click the `Name` header), an `AddColumnButton` invoke, and a
@@ -1835,3 +2041,87 @@ repo's `SortIndicator` is internal and has no independent activation surface.
 
 **Already stolen:** `SortIndicator_ThemeSwitchMidState` — switching theme *while* a transition is in flight — is now API
 §13's `VerifyThemeChangeDuringSortIndicatorTransitionIsCoherent`, and it passes.
+
+---
+
+# Proposed new tests (unblocked by the new model)
+
+These were ruled out, or simply not imaginable, under the old intent: row-only navigation, a single tab stop, header
+arrows as resize, pointer focus on the row, and findings #13 and #22 forbidding any descent into a row. Each one targets a
+gesture route added or exposed by the changes summarised in **Intent review against current `main`**. Nothing here is
+written yet.
+
+**Keyboard — cell level (treegrid)**
+
+- ~~`RightDrillsIntoFirstCellAndLeftPopsBackToRow`~~ — folded into the rewritten §1
+  `RightDrillsIntoFirstCellAndLeftReturnsToRow` (dropped as a separate item: same route, same assertions).
+- `CellLeftRightMoveWithinRowWithoutWrapping`: Right/Left step one visible column; at the last/first cell the key is
+  consumed and focus stays put.
+- `CellHomeEndMoveWithinRowAndCtrlHomeEndJumpTable`: at cell level, Home/End go to the first/last cell of the same row
+  (not row 0/last row); Ctrl+Home/Ctrl+End go to cell (0,0) and to the last cell of the last row.
+- `CellUpDownPreserveColumn`: from cell (r, c), Down/Up/PageDown land on column c of another row, not on the row container.
+- `CtrlArrowMovesFocusWithoutSelecting`: Ctrl+Down moves focus to the next row and leaves selection where it was. This is
+  the opt-out that `KeyboardFocusMoveCarriesSelection` never covered.
+- `SpaceSelectsFocusedRowFromRowAndCellLevel`: with `SelectionMode.Single`, after Ctrl+Down (so nothing is selected),
+  Space selects the focused row. Repeat from a focused cell.
+- `EnterOnTemplateCellEntersContentAndEscapeReturnsToCell`: on a template cell that hosts a focusable control, Enter moves
+  focus into the control, arrow keys stay inside it, and Escape returns focus to the cell. A first Escape that the hosted
+  control handles itself (for example a ComboBox) must not leave the cell.
+- `RtlDrillInAndCellArrowsMirror`: under RTL, Left drills in from the row and Right pops back out, and cell Left/Right
+  mirror too.
+
+**Keyboard — header band and tab order**
+
+- `HeaderBandIsOneTabStopAndArrowsNavigateHeaders`: Tab into the band focuses one header; Left/Right move between visible
+  headers and clamp at both ends; Up/Down are absorbed; the next Tab leaves the band for the body.
+- `NonSortableHeaderIsStillFocusableAndEnterDoesNothing`: `ReadOnlyCity` (`CanSort=False`) is reachable by arrow keys,
+  and Enter on it leaves row order unchanged.
+- `HeaderSpaceTogglesSortOnKeyUpOnly`: Space sorts once per press-release. A held Space (auto-repeat) produces exactly
+  one sort.
+- `HeaderAltShiftArrowUsesLargeStep` and `HeaderCtrlArrowIsResizeAlias`: pin the rest of the resize chord contract.
+- `TabBetweenBandsPreservesColumn`: focus a cell in column 2, Shift+Tab to the header band, and the column 2 header has
+  focus; Tab back to the body and column 2 is the current cell.
+- `BodyTabReentryReturnsToRememberedItemAfterSort`: focus row k, Tab out, sort, Tab back in. Focus lands on the row
+  holding the same **item**, not on index k (`ResolveFocusEntryRow`).
+- `UpFromFirstRowBehaviour`: **spec question first.** Up from row 0 is not consumed (`OnKeyDownForNavigation` leaves it to
+  XAML directional navigation) while Down from a header is absorbed. Decide whether that asymmetry is intended before
+  writing an expectation.
+
+**Pointer**
+
+- `PointerClickOnCellFocusesThatCell`: the focused cell peer's `GridItem.Column` equals the column under the pointer.
+  Repeat for two different columns.
+- `PointerClickOnRowStripFocusesRow`: a click past the last column (the row's empty strip) focuses the row, not a cell.
+- `RightClickDoesNotSelect`: a right-button press does not select (the `IsLeftButtonPressed` gate). This guards the
+  context-menu scenario.
+- `PressAndDragOffRowDoesNotSelect`: selection is applied on release, so pressing a row and releasing elsewhere leaves
+  selection unchanged. **Spec question first**: confirm release-outside semantics before writing.
+
+**UIA client (out-of-proc), no longer blocked by #13/#22**
+
+- `RowPeersExposeNameAndFlatPositionInSet`: through a client, every realized row has a non-empty `Name`, and
+  `PositionInSet`/`SizeOfSet` match the item index and count. In the grouped table, the values are flat over group
+  headers and rows.
+- `CellPeersAreIdentityStableAcrossGridAndTreeWalk`: `GridPattern.GetItem(r,c)` and the tree-walked cell for (r,c)
+  compare equal through `IUIAutomation::CompareElements`, and the cell reports `LocalizedControlType="cell"`.
+- `TablePatternGetColumnHeadersReturnsAllColumns`: a client calls `GetColumnHeaders` and gets every column, including
+  columns scrolled out of view. Synthetic `AutomationId` values follow `TableViewColumnHeader_<n>`.
+- `GroupHeaderReportsLevelToAClient`: group header `Level` is 1 for single-level grouping. Unknown values read 0, not -1.
+- `RowsStayExposedAfterGroupCollapseAndExpand`: collapse and then expand a group; the client again sees the group's row
+  peers with cell children.
+- `DescendantFindFirstOnWideTableCompletesQuickly`: `FindFirst(Descendants, PropertyCondition)` over a wide table
+  returns within a bounded time. This guards the hang that #11820 fixed.
+- `KeyboardResizeRaisesWidthNotification`: Alt+Right on a header raises a UIA `Notification` event (activity id
+  `TableViewColumnWidthChangedActivityId`) that a client receives. Events are not API-testable (§12.6).
+- `CellFocusRaisesFocusChangedToAClient`: drilling into a cell raises `AutomationFocusChanged` on the cell peer, which
+  is the screen-reader path for the new cell level.
+
+**Harness simplifications now available (not new tests)**
+
+- §1 `PageDownMovesByViewport` / `PageUpMovesByViewport` can assert the destination row's `PositionInSet` directly,
+  instead of inferring travel from `VerticalScrollPercent` (the weakness their remarks call out).
+- The §3/§4/§5 page readouts (`EditColumnReportTextBlock`, `EditorProbeTextBlock`, the state logs) existed only because
+  cell and editor peers were unreachable. The editor's cell peer `Value` and the cell's own focus can now be read
+  directly. The readouts can stay as an independent data-side check, but they are no longer the only channel.
+- The prohibitions on `FindElement.ById` and `ElementCache.Refresh()` after a grouped table is realized (§1, §7.0, §9.0)
+  should be re-tested. They were consequences of #13.
