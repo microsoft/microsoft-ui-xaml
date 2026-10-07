@@ -1,34 +1,19 @@
-// Build the rows OFF the bind path, then assign once. Adding tens of thousands of
-// items to an already-bound ObservableCollection raises one CollectionChanged per
-// item on the UI thread, which stalls the very scenario this page demonstrates.
+// There is nothing to switch on. TableView virtualizes by default, so the
+// only consumer-facing lesson here is how NOT to defeat it.
+
+// DON'T: per-item Add into an already-bound collection. Each Add raises a
+// CollectionChanged notification on the UI thread, so 50,000 rows means
+// 50,000 layout-invalidating notifications and a frozen window.
+foreach (var row in rows) { People.Add(row); }     // <- stalls for seconds
+
+// DO: build the set off the bind path, then assign once.
 var rows = new List<NumberedPerson>(count);
 for (int i = 0; i < count; i++) { rows.Add(/* ... */); }
 
 People = new ObservableCollection<NumberedPerson>(rows);
-PeopleTable.ItemsSource = People;
+PeopleTable.ItemsSource = People;                  // one reset notification
 
-// The control surfaces no realized-row count, so derive one by walking the visual
-// tree for TableViewRow — a PUBLIC type, not a private template part. Rows never
-// nest, so recursion stops at each hit.
-static int CountRealizedRows(DependencyObject? root)
-{
-    if (root is null) return 0;
-    int realized = 0;
-    int children = VisualTreeHelper.GetChildrenCount(root);
-    for (int i = 0; i < children; i++)
-    {
-        var child = VisualTreeHelper.GetChild(root, i);
-        if (child is TableViewRow) realized++;          // don't recurse into a row
-        else realized += CountRealizedRows(child);
-    }
-    return realized;
-}
-
-// "Total rows" grows into the tens of thousands; "Realized rows" stays flat at
-// roughly the viewport height / row height. That gap IS virtualization.
-int realized = CountRealizedRows(PeopleTable);
-RealizedRowsText.Text  = realized.ToString("N0");
-RealizedShareText.Text = $"{(double)realized / People.Count:P2} of {People.Count:N0}";
-
-// Realization changes as the user scrolls and the control raises no event for it,
-// so sample it on a DispatcherTimer (started in Loaded, stopped in Unloaded).
+// The other way to defeat it: Width="Auto" on a column. Auto sizes to the
+// widest *realized* cell and is shrink-capable, so on a large virtualized
+// grid the widths re-derive from whatever is on screen and shift as you
+// scroll. Prefer Pixel or Star widths for large sets.

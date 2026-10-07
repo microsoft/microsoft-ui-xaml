@@ -1,5 +1,5 @@
-<!-- VirtualizationPage.xaml — bind a large source; the v1 TableView realizes
-     only the rows in the viewport, so memory and scroll stay flat. -->
+<!-- VirtualizationPage.xaml — there is no virtualization switch to set. Bind a
+     large source and TableView realizes only the rows in the viewport. -->
 <tv:TableView x:Name="PeopleTable" SelectionMode="Single" MinHeight="320">
     <tv:TableViewTextColumn Header="#"          Binding="{Binding Id}"        CanSort="False"/>
     <tv:TableViewTextColumn Header="First name" Binding="{Binding FirstName}" CanSort="False"/>

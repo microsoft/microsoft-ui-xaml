@@ -42,13 +42,21 @@
                 </Button>
             </Grid>
 
+            <!--
+                Code scrolls in both axes inside a capped viewport. Vertical scroll was
+                previously Disabled, so a long snippet grew the block without limit and
+                pushed the rest of the page off-screen. MaxHeight keeps the Source
+                expander a predictable size; IsTabStop keeps it keyboard-reachable.
+            -->
             <ScrollViewer
                 Grid.Row="1"
+                MaxHeight="360"
                 HorizontalScrollMode="Auto"
                 HorizontalScrollBarVisibility="Auto"
-                VerticalScrollMode="Disabled"
-                VerticalScrollBarVisibility="Disabled"
-                IsTabStop="True">
+                VerticalScrollMode="Auto"
+                VerticalScrollBarVisibility="Auto"
+                IsTabStop="True"
+                AutomationProperties.Name="Code">
                 <TextBlock
                     x:Name="CodeText"
                     Padding="14,12"
