@@ -21,7 +21,6 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPa
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // TableView accessibility-route interaction tests.
-    // Backlog: docs\design-notes\TabularControls\TableView-interaction-test-plan.md.
     //
     // These own the ASSISTIVE-TECHNOLOGY route, which is a different entry point from both the keyboard and the
     // pointer files. A screen reader does not Tab through a page to reach an element: it calls

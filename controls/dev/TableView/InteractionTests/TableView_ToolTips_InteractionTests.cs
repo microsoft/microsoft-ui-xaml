@@ -22,7 +22,6 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPa
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // TableView tooltip hover interaction tests.
-    // Scope: interaction test plan (docs\design-notes\TabularControls\TableView-interaction-test-plan.md) §9.
     //
     // These own the SHOWING of a tooltip, which is the part a user experiences and the part no API test can
     // reach: TableView_ToolTips_APITests.cs asserts the ToolTip object that was attached and the HelpText the
@@ -66,7 +65,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies hovering a column header that sets HeaderToolTip opens a tooltip carrying that text, and that it dismisses when the pointer leaves.")]
         public void HeaderToolTipAppearsOnHover()
         {
-            // Interaction plan §9 HeaderToolTipAppearsOnHover.
             // Contract: TableView.idl:116-119 - HeaderToolTip is opt-in content, "null or empty means no
             //   tooltip", and deliberately NOT a Binding ("a header is not bound against a row, so there is
             //   nothing to defer"). The page authors it on the Name column (TableViewPage.xaml:102) and
@@ -110,7 +108,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.Fail(
                         "Hovering the 'Name' header must open a tooltip. Nothing was found on the popup layer " +
                         "or among the window's non-TableView children - see the logged tree above for where " +
-                        "the search looked (interaction plan §9.0).");
+                        "the search looked.");
                     return;
                 }
 
@@ -147,7 +145,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies hovering a cell in a column that sets CellToolTipBinding opens a tooltip carrying that row's bound value.")]
         public void CellToolTipAppearsOnHover()
         {
-            // Interaction plan §9 CellToolTipAppearsOnHover.
             // Contract: CellToolTipBinding is evaluated against the ROW ITEM, so the tooltip over row 0 must
             //   carry row 0's value - not the column's header text, and not a constant. The page authors it on
             //   the Name column bound to {Binding Name} (TableViewPage.xaml:101) and authors none on Age
@@ -200,7 +197,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     Verify.Fail(
                         "Hovering the 'Name' cell of row 0 must open a tooltip. Nothing was found on either " +
-                        "popup layer - see the logged candidates above (interaction plan §9.0).");
+                        "popup layer - see the logged candidates above.");
                     return;
                 }
 
@@ -242,7 +239,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a row container that has been recycled onto a different item shows that item's tooltip, not the one it previously held.")]
         public void RecycledRowShowsCurrentToolTipOnHover()
         {
-            // Interaction plan §9 RecycledRowShowsCurrentToolTipOnHover.
             // Contract: cell tooltips are attached per COLUMN but evaluated per ITEM, so a container that gets
             //   recycled onto a new item must re-evaluate. A tooltip that is wired once and never rebound is
             //   invisible to every non-scrolling test and to every API test - it only shows up as a user

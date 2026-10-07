@@ -23,11 +23,10 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPa
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // TableView keyboard-navigation and header-input interaction tests.
-    // Backlog: docs\design-notes\TabularControls\TableView-interaction-test-plan.md sections 1 and 2.
     //
     // These run out of process and reach the control only through the real UIA provider tree, which
     // is the point of an interaction test: they prove that real key routing and pointer hit-testing
-    // reach the state machine the API tests cover in process (interaction-plan coverage rule).
+    // reach the state machine the API tests cover in process.
     //
     // Product finding #13 (a client asking a row peer for its children fail-fasted the app) shaped the older tests in
     // this file: they observe rows at row level, point at cells by coordinates, and read editors and visual states
@@ -428,7 +427,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "From a focused row Right drills into the first cell and Left on that cell returns to the row; Left on a row does not leave it (dev-spec:201, treegrid model).")]
         public void RightDrillsIntoFirstCellAndLeftReturnsToRow()
         {
-            // Interaction plan §1 RightDrillsIntoFirstCellAndLeftReturnsToRow (was LeftAndRightArrowsDoNotMoveRowFocus).
+            // Previously named LeftAndRightArrowsDoNotMoveRowFocus.
             // dev-spec:201 makes navigation cell-aware: Left/Right move the cell cursor within the focused row.
             // Entering at the first cell from row level and returning on Left is the WAI-ARIA treegrid convention
             // (spec debt: dev-spec:201 does not state the row <-> cell transition). Failure means a keyboard user
@@ -470,7 +469,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Shift+Tab from the body lands on the header band, and a second Shift+Tab leaves the table upstream.")]
         public void ShiftTabMovesFocusOutOfTableUpstream()
         {
-            // Interaction plan §1 ShiftTabMovesFocusOutOfTableUpstream (rewritten for the two-band tab model).
+            // Rewritten for the two-band tab model.
             // dev-spec:135 rejects one tab stop per column header; the header band as exactly one stop ahead of the
             // body is the #11820 model (spec debt). Failure means Shift+Tab skips the header band, so headers are
             // unreachable backwards, or walks it header by header.
@@ -519,8 +518,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Tab enters the table at the header band, the next Tab enters the body, and neither selects a row.")]
         public void TabIntoTableFocusesAHeaderThenARowWithoutSelecting()
         {
-            // Interaction plan §1 TabIntoTableFocusesAHeaderThenARowWithoutSelecting (was
-            // TabIntoTableFocusesARowWithoutSelecting). The header band first and the body second is the #11820
+            // Previously named TabIntoTableFocusesARowWithoutSelecting. The header band first and the body second is the #11820
             // two-band model (spec debt, see ShiftTabMovesFocusOutOfTableUpstream). Selection is checked BEFORE any
             // navigation key, because navigation keys are entitled to select (KeyboardFocusMoveCarriesSelection).
             // Failure means the header band is skipped, the body is not tab-reachable, or tabbing in selects.
@@ -635,7 +633,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Alt+Right on a focused header widens the column, Alt+Shift+Right widens it by a larger step, and focus stays on the header (dev-spec:127, dev-spec:133).")]
         public void HeaderKeyboardResizeChangesWidth()
         {
-            // Interaction plan §2 HeaderKeyboardResizeChangesWidth (rewritten for the Alt+Arrow chord).
+            // Rewritten for the Alt+Arrow chord.
             // dev-spec:133 - the header cell is the keyboard target and TryKeyboardStep owns direction, the RTL
             // mirror, KeyboardIncrement and the Shift multiplier. The chord is Alt+Arrow (WPF DataGrid binding,
             // adopted by #11820 because bare arrows now navigate the header band); dev-spec:135 still says bare
@@ -681,7 +679,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Pointer click on a sortable header toggles the sort and reorders rows (dev-spec:286, IDL:531).")]
         public void HeaderPointerClickTogglesSortAndUpdatesIndicator()
         {
-            // Interaction plan 2 - the pointer route into sort. The API twin (7.5) drives IInvokeProvider
+            // The pointer route into sort. The API twin (7.5) drives IInvokeProvider
             // and never touches the pointer hit-test path (dev-spec:286), so this proves a real click
             // reaches the sort. Same observability limits as HeaderEnterTogglesSort: the SortIndicator's
             // localized state text is empty (product finding #5), so we assert the reorder consequence,
@@ -721,7 +719,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Repeated header clicks walk the column's authored SortCycle, including the trailing None step that returns the rows to source order.")]
         public void HeaderClicksFollowTheColumnSortCycle()
         {
-            // Interaction plan 2 - HeaderClicksFollowTheColumnSortCycle.
+            // HeaderClicksFollowTheColumnSortCycle.
             // TableView.idl on SortCycle: the cycle "describes how one column responds to being clicked again",
             // is per-column, and is read AT CLICK TIME, so the page combo box can set it before the clicks and
             // no rebuild is needed. Only the click route consumes it - SortByColumn takes an explicit direction -
@@ -918,7 +916,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies Enter and Space on a group header reached by Tab collapse and expand the group's rows, with the ExpandCollapse peer agreeing at each step.")]
         public void GroupHeaderKeyboardActivationTogglesRowVisibility()
         {
-            // Interaction plan §4 GroupHeaderActivationExpandsAndCollapsesRows (keyboard leg: Enter and Space).
+            // Keyboard leg: Enter and Space.
             // Lives in the keyboard file, beside the other key-routing tests; the pointer leg
             //   (GroupHeaderPointerClickTogglesRowVisibility) stays in the pointer file. Splitting them keeps one
             //   failure mode per test: pointer hit-testing and key routing to the header fail independently.
@@ -989,7 +987,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies Right expands and Left collapses a group header reached by Tab, matching the platform convention TreeView implements.")]
         public void GroupHeaderArrowKeysExpandAndCollapse()
         {
-            // Interaction plan §1 GroupHeaderArrowKeysExpandAndCollapse.
             // SPEC GAP, recorded deliberately: neither the dev spec nor the functional spec states any keyboard
             //   contract for group headers beyond activation. The expectation is platform convention, as
             //   implemented by TreeView (TreeViewKeyDownLeftToRightTest asserts exactly this for its items).
@@ -1053,7 +1050,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies Enter and Space on a group header each raise ToggleRequested exactly once, carrying that group's key, and that the key survives a handler that mutates the header re-entrantly.")]
         public void GroupHeaderKeyboardToggleRaisesToggleRequestedWithGroupKey()
         {
-            // Interaction plan §4 GroupHeaderToggleRequestedCarriesTheGroupKey (keyboard leg).
+            // Keyboard leg.
             // Spec: TableView.idl:350-355 - the key rides on the args "so a handler that re-enters and mutates
             //   the header still sees the key that was actually activated". The page handler reads the key,
             //   flips sender.IsExpanded, and reads it again, recording "<key>|<key>;" per raise.
@@ -1118,8 +1115,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "When a sort reorders the rows while a row is focused, focus stays at the same position (now another record).")]
         public void FocusStaysAtSamePositionWhenSortReordersRows()
         {
-            // Interaction plan §3 FocusStaysAtSamePositionWhenSortReordersRows (owner decision; dev-spec Keyboard
-            // "Re-shape while focused"). The sort is driven by the header peer's UIA Invoke, which does not move keyboard
+            // Owner decision; dev-spec Keyboard
+            // "Re-shape while focused". The sort is driven by the header peer's UIA Invoke, which does not move keyboard
             // focus, so focus is inside the body throughout. Failure means a sort drags focus with the old record.
             using (var setup = new TestSetupHelper(PageName))
             {
@@ -1157,8 +1154,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "When a filter removes the focused record, focus stays at the same projected position.")]
         public void FocusStaysAtSamePositionWhenFilterRemovesFocusedRecord()
         {
-            // Interaction plan §3 FocusStaysAtSamePositionWhenFilterRemovesFocusedRecord (owner decision; dev-spec Keyboard
-            // "Re-shape while focused ... also applies when the focused record was filtered out"). The page filter acts on
+            // Owner decision; dev-spec Keyboard
+            // "Re-shape while focused ... also applies when the focused record was filtered out". The page filter acts on
             // the grouped source only. Projection before: H-Redmond, G0, G3, G6, H-Seattle, G1, G4, G7, H-Bellevue, G2, G5,
             // G8. After removing Seattle, position 5 is G2. Failure means a filter drops focus out of the table.
             using (var setup = new TestSetupHelper(PageName))
@@ -1200,7 +1197,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "At cell level Left/Right move one visible column within the focused row and do not wrap across rows or leave the table (dev-spec:201).")]
         public void CellLeftRightMoveWithinRowWithoutWrapping()
         {
-            // Interaction plan N.1 CellLeftRightMoveWithinRowWithoutWrapping.
             // dev-spec:201 - Left/Right move the cell cursor WITHIN the focused row. No-wrap is the WPF/ListView
             // convention of the #11820 model (spec debt). Failure means horizontal movement skips cells, wraps into
             // another row, or escapes the table at an edge.
@@ -1238,7 +1234,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "At cell level Home/End move to the first/last cell of the current row and Ctrl+Home/Ctrl+End to the first/last cell of the table (dev-spec:201).")]
         public void CellHomeEndStayInRowAndCtrlHomeEndJumpTable()
         {
-            // Interaction plan N.1 CellHomeEndStayInRowAndCtrlHomeEndJumpTable.
             // dev-spec:201, stated outright. Failure means at cell level Home/End still jump rows, throwing the user
             // to another record, or the grid-wide jump is missing.
             using (var setup = new TestSetupHelper(PageName))
@@ -1275,7 +1270,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "At cell level Down/Up move to the same visible column in the next/previous row (dev-spec:201).")]
         public void CellUpDownPreserveColumn()
         {
-            // Interaction plan N.1 CellUpDownPreserveColumn.
             // dev-spec:201 - "move to the same visible column in another row". Failure means vertical movement drops
             // to row level or column 0, so walking down one field across records is impossible.
             using (var setup = new TestSetupHelper(PageName))
@@ -1301,7 +1295,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Ctrl+Down moves row focus without selecting; plain Down then moves and selects (positive control).")]
         public void CtrlDownMovesFocusWithoutSelecting()
         {
-            // Interaction plan N.1 CtrlDownMovesFocusWithoutSelecting.
             // Selection-follows-focus is KeyboardFocusMoveCarriesSelection's claim; the Ctrl opt-out is the ListView
             // convention (spec debt). Failure means the cursor cannot move without acting on a row.
             using (var setup = new TestSetupHelper(PageName))
@@ -1335,7 +1328,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Space selects the focused row both from row level and from cell level, without moving focus.")]
         public void SpaceSelectsFocusedRowFromRowAndCellLevel()
         {
-            // Interaction plan N.1 SpaceSelectsFocusedRowFromRowAndCellLevel.
             // Space for row selection is the ListView/WPF DataGrid convention of the #11820 model (spec debt). Each
             // leg moves with Ctrl+Down first so selection-follows-focus cannot already have selected the row.
             // Failure means a keyboard user who moved with Ctrl has no way to select, or Space is swallowed at
@@ -1385,7 +1377,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Enter on a cell hosting a control moves focus into the control, arrow keys stay inside it, and Escape returns to the cell.")]
         public void EnterOnInteractiveCellEntersContentAndEscapeReturnsToCell()
         {
-            // Interaction plan N.1 EnterOnInteractiveCellEntersContentAndEscapeReturnsToCell.
             // WAI-ARIA grid interactive-content convention, stated as a design point in #11820 (spec debt). Uses the
             // page's trailing Action column, whose cell hosts a Button. Failure means hosted controls are keyboard-
             // unreachable, arrows yank the user out of a control, or there is no way back to grid navigation.
@@ -1422,7 +1413,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Under RTL the drill-in and cell arrows follow reading order: Left drills in and moves forward, Right moves back and pops out.")]
         public void RightToLeftDrillInAndCellArrowsMirror()
         {
-            // Interaction plan N.1 RightToLeftDrillInAndCellArrowsMirror.
             // dev-spec:131 makes reading order the frame for horizontal movement; TreeView's RTL key tests are the
             // mirroring precedent; drill-in itself is spec debt. Failure means arrows act in screen direction under RTL.
             using (var setup = new TestSetupHelper(PageName))
@@ -1464,7 +1454,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "In the header band Left/Right move between headers and clamp at the ends; Up leaves focus in the band.")]
         public void HeaderBandArrowsMoveBetweenHeaders()
         {
-            // Interaction plan N.2 HeaderBandArrowsMoveBetweenHeaders (was ...AndStayInBand).
+            // Previously named ...AndStayInBand.
             // dev-spec Keyboard: header-band Left/Right move between visible headers without wrapping; Up stays in the
             // band. Down now LEAVES the band (owner decision) and is owned by UpFromFirstRowMovesToHeaderAndDownReturnsToFirstRow.
             // Failure means headers are unreachable, Up walks out of the table, or the band wraps.
@@ -1504,7 +1494,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "A CanSort=False header is still keyboard-focusable and Enter on it does not sort; Enter on Age does (positive control).")]
         public void NonSortableHeaderIsFocusableAndEnterDoesNotSort()
         {
-            // Interaction plan N.2 NonSortableHeaderIsFocusableAndEnterDoesNotSort.
             // TableView.idl:156-158 (CanSort gates the click-to-sort UX) + dev-spec:201 (Enter/Space sort) => the
             // gate covers the key route. Failure means non-sortable headers are unreachable, or Enter ignores CanSort.
             using (var setup = new TestSetupHelper(PageName))
@@ -1542,7 +1531,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Each Space press on a focused header advances the column's sort cycle exactly one step (dev-spec:201).")]
         public void HeaderSpaceTogglesSortOncePerPress()
         {
-            // Interaction plan N.2 HeaderSpaceTogglesSortOncePerPress.
             // dev-spec:201 makes Space a sort key. The Score column with DescendingAscendingNone lands the tracked row
             // on three distinct indices (0, last, 5), so a press that fires twice is visible. Failure means Space does
             // not sort, or one press-release advances two steps.
@@ -1589,7 +1577,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Shift+Tab from a cell lands on that column's header, and Tab back lands on a cell in the same column.")]
         public void TabBetweenBandsPreservesColumn()
         {
-            // Interaction plan N.2 TabBetweenBandsPreservesColumn.
             // Shared column cursor across bands is the #11820 model (spec debt), consistent with dev-spec:201 making
             // the column the unit of vertical movement. Failure means crossing bands loses the user's column.
             using (var setup = new TestSetupHelper(PageName))
@@ -1619,9 +1606,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Up from the first row moves to the header band and Down from a header returns to the first row, keeping the column at cell level.")]
         public void UpFromFirstRowMovesToHeaderAndDownReturnsToFirstRow()
         {
-            // Interaction plan N.2 UpFromFirstRowMovesToHeaderAndDownReturnsToFirstRow (owner decision; dev-spec Keyboard:
+            // Owner decision; dev-spec Keyboard:
             // "Up from the first row moves to the header band" / header band "Down moves to the first row"; shared column
-            // cursor). Failure means the header band and the rows are only joined by Tab. The Down half is expected to
+            // cursor. Failure means the header band and the rows are only joined by Tab. The Down half is expected to
             // fail on main, which absorbs Down in the band.
             using (var setup = new TestSetupHelper(PageName))
             {
@@ -1669,8 +1656,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "After a sort moves the focused record, Tab back into the body returns to the same record, not the old index.")]
         public void BodyTabReentryReturnsToSameRecordAfterSort()
         {
-            // Interaction plan N.2 BodyTabReentryReturnsToSameRecordAfterSort (owner decision; dev-spec Keyboard:
-            // "Tabbing back into the body returns to the same record that last had focus, even after a sort or filter").
+            // Owner decision; dev-spec Keyboard:
+            // "Tabbing back into the body returns to the same record that last had focus, even after a sort or filter".
             // The record is tracked through selection, which follows the item across a re-order (TableView.idl:531-546).
             // Failure means Tab drops the user on whatever record now occupies the old position.
             using (var setup = new TestSetupHelper(PageName))
@@ -1717,8 +1704,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Ctrl+Right on a focused header neither resizes nor navigates; Alt+Right does resize (positive control).")]
         public void HeaderCtrlArrowDoesNotResize()
         {
-            // Interaction plan N.2 HeaderCtrlArrowDoesNotResize (owner decision; dev-spec resize Keyboard: "Alt is the only
-            // resize modifier: Ctrl+Arrow on a header does nothing"). Failure means Ctrl acts as an undocumented second chord.
+            // Owner decision; dev-spec resize Keyboard: "Alt is the only
+            // resize modifier: Ctrl+Arrow on a header does nothing". Failure means Ctrl acts as an undocumented second chord.
             using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject header = GetHeader(BasicTable, "Name");

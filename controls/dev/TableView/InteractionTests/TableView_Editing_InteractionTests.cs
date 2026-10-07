@@ -22,8 +22,7 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPa
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // TableView editing-gesture interaction tests.
-    // Scope: interaction test plan (docs\design-notes\TabularControls\TableView-interaction-test-plan.md) §5
-    // "Editing gestures". Editing mixes routes by nature - the edit is opened with a pointer or with F2 and
+    // Editing mixes routes by nature - the edit is opened with a pointer or with F2 and
     // then driven from the keyboard - so it gets its own file rather than being split across the pointer and
     // keyboard files.
     //
@@ -57,7 +56,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a double-click inside an editable column begins an edit on the column under the pointer.")]
         public void PointerDoubleClickBeginsEditWhenEditable()
         {
-            // Interaction plan §5 PointerDoubleClickBeginsEditWhenEditable.
             // Spec: functional-spec:61 - "double-click / double-tap and F2 begin an edit".
             //       dev-spec:284 - the gesture is driven from PointerPressed with click-count tracking, not from a
             //       DoubleTapped handler, so that a row marking the press handled for selection cannot kill it.
@@ -82,7 +80,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a double-click inside a column authored IsReadOnly begins no edit, while the same gesture on an editable column still does.")]
         public void PointerDoubleClickDoesNothingWhenReadOnly()
         {
-            // Interaction plan §5 PointerDoubleClickDoesNothingWhenReadOnly.
             // Spec: the per-column gate is checked before BeginningEdit is raised, so a correct implementation is
             //   silent rather than cancelling - hence the assertion is that the event does not fire at all.
             // The second leg is a POSITIVE CONTROL: without it a double-click that missed the table entirely would
@@ -113,7 +110,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies double-clicking an editable text cell puts a TextBox editor in the cell, not just a begin-edit event.")]
         public void TextColumnDoubleClickCreatesTextBox()
         {
-            // Interaction plan §5 TextColumnDoubleClickCreatesTextBox.
             // Distinct from PointerDoubleClickBeginsEditWhenEditable: that one proves the GESTURE reaches the edit
             //   state machine (BeginningEdit fired, on the right column). This one proves the state machine then
             //   produces an EDITOR - TableViewTextColumn's documented editing visual is a TextBox
@@ -141,7 +137,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies F2 on the current editable text cell puts a TextBox editor in the cell.")]
         public void TextColumnF2CreatesTextBox()
         {
-            // Interaction plan §5 TextColumnF2CreatesTextBox.
             // Spec: functional-spec:61 names F2 as a begin-edit gesture alongside double-click. This is the second
             //   documented route into the same editor, so it is a separate test: a regression can break one route
             //   while leaving the other intact (they enter from OnKeyDown and OnPointerPressed respectively).
@@ -171,7 +166,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a column with a CellEditingTemplate opens that template's content as its editor.")]
         public void TemplateColumnEditorUsesCellEditingTemplateContent()
         {
-            // Interaction plan §5 TemplateColumnEditorUsesCellEditingTemplateContent.
             // Spec: TableView.idl:208-218 - CellEditingTemplate is "the supported way to customise an editor".
             // Not API-testable: such a column deliberately does not advertise the Value pattern, so SetValue cannot
             //   open it. API §10.1 covers that advertisement gate; only a gesture reaches the editor itself.
@@ -203,7 +197,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies the editor opens pre-populated with the cell's current value.")]
         public void EditorReceivesInitialValue()
         {
-            // Interaction plan §5 EditorReceivesInitialValue.
             // Not API-testable: SetValue overwrites the initial value inside the same call, so there is no moment at
             //   which an API test could observe it. The probe reads the editor's text at the instant it opens.
             // The first item's Name is "Person 0" (the page seeds "Person " + index).
@@ -228,7 +221,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies focus moves into the editor when an edit opens.")]
         public void EditorGetsFocusOnBeginEdit()
         {
-            // Interaction plan §5 EditorGetsFocusOnBeginEdit.
             // Separate from the editor-exists tests: an editor that is created but never focused sends the user's
             //   typing to the table's key handling instead of into the cell, and every keyboard leg below
             //   (Enter commits, Escape cancels) silently depends on this.
@@ -255,7 +247,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies Enter commits the open edit and writes the typed value through to the item.")]
         public void EnterKeyCommitsEdit()
         {
-            // Interaction plan §5 EnterKeyCommitsEdit.
             // Two independent observations, both needed: CellEditEnding must report EditAction.Commit (the control's
             //   own account of the outcome) AND the bound item's Name must hold the typed text (the edit actually
             //   reached the data). An implementation that closed the editor and reported Commit without pushing the
@@ -285,7 +276,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies Escape cancels the open edit and leaves the item's pre-edit value intact.")]
         public void EscapeKeyCancelsEdit()
         {
-            // Interaction plan §5 EscapeKeyCancelsEdit.
             // The mirror of EnterKeyCommitsEdit, and it is the more important half: a cancel that still wrote the
             //   value is silent data loss. Both observations are taken before either is asserted, because Verify
             //   throws in this suite and a failure on the first would hide the second.
@@ -314,7 +304,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies moving focus out of the editor commits the edit rather than discarding it.")]
         public void FocusLossCommitsEdit()
         {
-            // Interaction plan §5 FocusLossCommitsEdit.
             // Focus leaves by a real click on a button OUTSIDE the table, which is how a user loses an editor in
             //   practice. The contract is commit, not cancel: a user who types and then clicks elsewhere expects to
             //   keep the edit, and the failure mode is silent data loss.

@@ -21,7 +21,7 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPa
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    // TableView interaction tests. See docs\design-notes\TabularControls\TableView-interaction-test-plan.md.
+    // TableView interaction tests: page load, and accessibility scan and out-of-process UIA.
     //
     // These run out of process and can only reach the control through the real UIA provider tree,
     // which is precisely the point: they assert that gestures and a UIA client reach the state
@@ -85,7 +85,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies an Axe accessibility scan of the TableView test page reports no issues.")]
         public void VerifyAxeScanPasses()
         {
-            // Interaction plan §10 VerifyAxeScanPasses.
             // Repo convention: 12 controls run this exact shape from their interaction tests, and it exists at no
             //   other tier. TableViewPage is already registered for it (TableViewPage.xaml.cs:90).
             // Failure means: the table trips a general accessibility rule - contrast, a missing name, a wrong
@@ -139,7 +138,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies adding and removing a column raises a StructureChanged event that reaches a UIA client outside the app.")]
         public void VerifyStructureChangedEventsReachAUiaClient()
         {
-            // Interaction plan §10 VerifyStructureChangedEventsReachAUiaClient.
             // Contract: adding or removing a column changes the SHAPE of the grid - the column count, and the
             //   set of children every row exposes. A UIA client that has cached the tree has no way to learn
             //   that except from a StructureChanged event. The product already accepts this obligation for
@@ -233,7 +231,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "From out of process, GridPattern.GetItem(1,1) and the tree-walked cell (row 1, child 1) are the same provider, and the cell reports LocalizedControlType 'cell'.")]
         public void CellPeersAreIdentityStableAcrossGridAndTreeWalk()
         {
-            // Interaction plan N.4 CellPeersAreIdentityStableAcrossGridAndTreeWalk.
             // #11820 states identity stability as a goal: "UIA compares providers by identity, so grid addressing and
             // tree navigation disagreed". Only a client sees identity after marshalling. LocalizedControlType is
             // localized; the VM runs en-US. Failure means a screen reader gets two providers for one cell and loses
@@ -264,7 +261,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "From out of process, TablePattern.ColumnHeaders returns one header per visible column, in order, as the same providers as the header host's children.")]
         public void TablePatternReturnsColumnHeadersToAClient()
         {
-            // Interaction plan N.4 TablePatternReturnsColumnHeadersToAClient.
             // #11820 fixed CUIATableProviderWrapper::GetColumnHeaders in dxaml, which broke column-header enumeration
             // for every XAML ITableProvider; only a cross-process client exercises that wrapper. Failure means a
             // client cannot enumerate headers, or the table pattern and the tree disagree about them.
@@ -296,7 +292,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Drilling into a row's first cell with Right raises AutomationFocusChanged for that cell to an out-of-process client.")]
         public void CellDrillInRaisesFocusChangedToAClient()
         {
-            // Interaction plan N.4 CellDrillInRaisesFocusChangedToAClient.
             // Focus events are not API-testable (§12.6). This is the screen-reader half of
             // RightDrillsIntoFirstCellAndLeftReturnsToRow. Failure means focus moves into the cell but AT is not told.
             using (var setup = new TestSetupHelper(PageName))

@@ -1546,7 +1546,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         // ---------- 12.6 Set metadata, names and re-exposure (#11820) ----------
         //
-        // Moved here from the interaction plan (section N.4): each asserts a peer VALUE an in-proc test reads just as
+        // Moved here from the interaction tier: each asserts a peer VALUE an in-proc test reads just as
         // well as a client. Authority: TableView-spec.md (api-spec) :884-886 and TableView-dev-spec.md:205-213.
 
         [TestMethod]

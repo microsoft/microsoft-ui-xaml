@@ -21,9 +21,7 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPa
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    // TableView layout interaction tests — interaction plan sections 6 (pointer resize), 7 (scrolling and
-    // frozen columns) and 8 (right-to-left). See
-    // docs\design-notes\TabularControls\TableView-interaction-test-plan.md.
+    // TableView layout interaction tests: pointer resize, scrolling and frozen columns, and right-to-left.
     //
     // These run out of process against the real UIA provider tree. They own the *gesture route* into the
     // column-sizing and scroll-sync contracts the API tests (TableView_Sizing_APITests.cs and API 4.x)
@@ -603,7 +601,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies keyboard resize is direction-mirrored under RTL: Alt+Left widens the column and Alt+Right shrinks it, without moving header focus.")]
         public void RightToLeftKeyboardResizeMirrors()
         {
-            // Interaction plan §8 RightToLeftKeyboardResizeMirrors (was RightToLeftKeyboardNavigationMirrors).
+            // Previously named RightToLeftKeyboardNavigationMirrors.
             // dev-spec:133 - TryKeyboardStep owns direction and the RTL mirror; dev-spec:131 - positive grows in
             // reading order, so under RTL the forward chord is Alt+LEFT. The Alt+Arrow chord is the #11820 model
             // (spec debt: dev-spec:135 still says bare Left/Right). Focus is re-checked so a chord that navigates
@@ -748,7 +746,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
 
             // Press a quarter of the way along the track, which is inside the thumb while the offset is 0
-            // (the viewport is ~62% of the extent, so the thumb covers the left ~62% of the track).
+            // The viewport is ~62% of the extent, so the thumb covers the left ~62% of the track.
             int startX = bounds.Left + (bounds.Width / 4);
             int y = bounds.Top + (bounds.Height / 2);
 

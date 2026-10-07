@@ -21,9 +21,7 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewTestPa
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    // TableView pointer / group-header interaction tests.
-    // Scope: interaction test plan (docs\design-notes\TabularControls\TableView-interaction-test-plan.md)
-    // §3 "Pointer selection and focus" and §4 "Group header input".
+    // TableView pointer interaction tests: pointer selection and focus, and group header input.
     //
     // These run out of process and reach the control only through the real UIA provider tree. They own the
     // GESTURE ROUTE: they prove real pointer/keyboard input reaches the same selection and expand/collapse
@@ -61,7 +59,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a pointer click on a cell selects its row (SelectionItem pattern) and moves keyboard focus to that cell, taking focus away from an unrelated control.")]
         public void PointerClickSelectsAndFocusesCell()
         {
-            // Interaction plan §3 PointerClickSelectsAndFocusesCell (was PointerClickSelectsAndFocusesRow).
+            // Previously named PointerClickSelectsAndFocusesRow.
             // Spec: dev-spec:284 - PointerPressed establishes selection participation and the current cell. Focus
             //   on the pressed CELL is the #11820 model (spec debt: dev-spec:427 still says the row).
             // Clicks Age (column 1), not Name (column 0): column 0 is where keyboard drill-in lands, so a Name click
@@ -114,7 +112,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies clicking a second row moves single selection off the first row onto the second, and focus onto the clicked cell of the second row.")]
         public void PointerClickOnSecondRowMovesSelection()
         {
-            // Interaction plan §3 PointerClickOnSecondRowMovesSelection.
             // Spec: dev-spec:284 - the press selects; SelectionMode.Single (TableView.idl:536) permits one row. The
             //   focus target is the clicked cell (#11820 model; spec debt dev-spec:427).
             // Failure means: the pointer route writes selection additively or fails to clear the prior row, so a
@@ -159,7 +156,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies that with SelectionMode.None a pointer click selects nothing (SelectionItem withheld) yet keyboard focus still moves to the clicked cell.")]
         public void PointerClickInSelectionModeNoneSelectsNothingButMovesFocus()
         {
-            // Interaction plan §3 PointerClickInSelectionModeNoneSelectsNothingButMovesFocus.
             // Spec: TableView.idl:536 - None = "display-only"; display-only restricts selection, not reachability.
             //   The focus target is the clicked cell (#11820 model; spec debt dev-spec:427).
             // Failure means: the None gate lives only inside Select() and the pointer handler writes selection
@@ -210,7 +206,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
 
                 // Focus must still move to the clicked cell: a display-only table remains keyboard-reachable.
-                Verify.AreEqual(AgeColumn, IndexOfFocusedCell(row), "Focus must still move to the clicked cell under SelectionMode.None (interaction plan §3).");
+                Verify.AreEqual(AgeColumn, IndexOfFocusedCell(row), "Focus must still move to the clicked cell under SelectionMode.None.");
             }
         }
 
@@ -218,7 +214,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a pointer press establishes the current cell so a following F2 opens the edit on the clicked column, both on a fresh row and on one that already has focus.")]
         public void PointerPressEstablishesCurrentCellForKeyboardEditing()
         {
-            // Interaction plan §3 PointerPressEstablishesCurrentCellForKeyboardEditing.
             // Spec: dev-spec:284 - the pointer handler is the ONLY place a pointer establishes the current
             //   cell, and without it keyboard editing "silently fails". Since #11820 the first press focuses the
             //   pressed CELL, so the second leg is "a cell is already focused and a different cell is pressed" -
@@ -280,7 +275,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a row enters its PointerOver common state while the mouse is over it and returns to Normal when the mouse leaves.")]
         public void RowPointerOverEntersHoverState()
         {
-            // Interaction plan §3 RowPointerOverEntersHoverState.
             // Spec: dev-spec:95 names the row's CommonStates - Normal, PointerOver, Pressed, Disabled.
             // Moved from API §5.5: m_isPointerOver is set only from the row's own pointer handlers, so no
             //   programmatic route enters the state.
@@ -338,7 +332,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies clicking a group header band collapses the group's rows and expands them again, with the header's ExpandCollapse peer agreeing at each step.")]
         public void GroupHeaderPointerClickTogglesRowVisibility()
         {
-            // Interaction plan §4 GroupHeaderActivationExpandsAndCollapsesRows (pointer leg).
+            // Pointer leg.
             // Spec: TableViewGroupHeader::RequestToggle is raised only from OnPointerReleased / OnKeyDown
             //   (TableViewGroupHeader.cpp), a different entry point than the peer's RequestExpansion that API §9
             //   drives - so this gesture route is not covered by the API test.
@@ -390,7 +384,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies the group header's CommonStates follow the pointer: Normal to PointerOver on enter, Pressed while the button is down, back to PointerOver on release, and Normal when the pointer leaves.")]
         public void GroupHeaderPointerAndPressedVisualStates()
         {
-            // Interaction plan §4 GroupHeaderPointerAndPressedVisualStates.
             // Spec: TableView.idl documents the group header's states as "CommonStates
             //   Normal|PointerOver|Pressed|Disabled" - a contract on the control, so the names are spec-derived,
             //   not read out of the implementation.
@@ -464,7 +457,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a pointer activation of a group header band raises ToggleRequested exactly once, carrying that group's own key, and that the key survives a handler that mutates the header re-entrantly.")]
         public void GroupHeaderPointerToggleRaisesToggleRequestedWithGroupKey()
         {
-            // Interaction plan §4 GroupHeaderToggleRequestedCarriesTheGroupKey (pointer leg).
+            // Pointer leg.
             // Spec: TableView.idl:350-355 - "Carried on the args so a handler that re-enters and mutates the
             //   header still sees the key that was actually activated." The page handler therefore reads the
             //   key, flips sender.IsExpanded, and reads the key again; the report records "<key>|<key>;" per
@@ -520,7 +513,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void ExpandAllGroupsReconcilesGestureCollapsedGroup()
         {
-            // Interaction plan §4 "expand-all / collapse-all driven from the page controls reconcile with header state".
+            // "expand-all / collapse-all driven from the page controls reconcile with header state".
             // This owns the RECONCILIATION between the gesture route (TableViewGroupHeader::RequestToggle) and the
             //   programmatic route (TableView::ExpandAllGroups, driven here by the page button). API §9 already covers
             //   ExpandAllGroups on its own; the interesting claim here is that a group collapsed by a real gesture is
@@ -580,7 +573,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies clicking CollapseAllGroupsButton re-collapses a group that was expanded by gesture: the header peer reports Collapsed and the realized row count returns to the all-collapsed baseline.")]
         public void CollapseAllGroupsReconcilesGestureExpandedGroup()
         {
-            // Interaction plan §4 "expand-all / collapse-all driven from the page controls reconcile with header state"
+            // "expand-all / collapse-all driven from the page controls reconcile with header state"
             //   (mirror of the expand-all case).
             // Failure means: a group expanded by gesture is left Expanded (its rows still realized) after
             //   CollapseAllGroups runs, i.e. the gesture wrote expansion state the bulk API cannot see.
@@ -655,7 +648,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "A click on the row's empty strip, past the last column, focuses the row itself (no cell) and selects it.")]
         public void PointerClickOnRowStripFocusesRow()
         {
-            // Interaction plan N.3 PointerClickOnRowStripFocusesRow.
             // The complement of the #11820 "a cell press focuses the cell" rule, and the case where dev-spec:427's
             // "pointer focus lands on the row" still applies (spec debt). Failure means the row's empty area is a dead
             // target, or focus goes to a cell the user did not click.
@@ -699,7 +691,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "A right-click on a row does not select it; a following left-click on another row does (positive control).")]
         public void RightClickDoesNotSelect()
         {
-            // Interaction plan N.3 RightClickDoesNotSelect.
             // functional-spec:54 reserves a per-row/cell context menu, so right-click is a menu gesture, not a
             // selection one; ListView agrees (spec debt: no sentence says it). Failure means opening a context menu
             // silently changes selection.
@@ -741,8 +732,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "A press on a row that is dragged off the table and released elsewhere selects nothing; a normal click then selects (positive control).")]
         public void PressAndDragOffRowDoesNotSelect()
         {
-            // Interaction plan N.3 PressAndDragOffRowDoesNotSelect (owner decision; dev-spec gesture layer: "Selection is
-            // applied on release, and only when the release lands on the row that was pressed"). Failure means a user
+            // Owner decision; dev-spec gesture layer: "Selection is
+            // applied on release, and only when the release lands on the row that was pressed". Failure means a user
             // cannot back out of a selection gesture by dragging away.
             using (var setup = new TestSetupHelper(PageName))
             {
