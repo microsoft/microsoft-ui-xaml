@@ -426,6 +426,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: raise Replace notifications whose old and new item counts differ, inside and after the realized
+        //           range.
+        // Expected: later realized elements move to their new indexes (ElementIndexChanged) and keep the right data.
+        // A failure means: replacing items could show wrong data in realized elements.
         [TestMethod]
         [TestProperty("Description", "Verifies Replace notifications whose old and new item counts differ shift the indexes of the following realized elements and keep the element-to-data mapping correct.")]
         public void ReplaceMultipleItems()
@@ -483,6 +487,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             Log.Comment("ElementIndexChanged: " + string.Join(",", indexChanges.Select(c => $"{c.Item1}->{c.Item2}")));
         }
 
+        // Scenario: scroll a 3-column UniformGridLayout down, then insert an item at index 0.
+        // Expected: every realized item is still placed in its own grid cell (column = index mod 3).
+        // Ignored: reproduces grid items being misplaced after an insert while scrolled (PC-GRID-ANCHOR-INSERT);
+        //          currently fails because rows are shifted out of their columns.
         [TestMethod]
 
         [TestProperty("Ignore", "True")] // Product concern PC-GRID-ANCHOR-INSERT (bug pending): after an insert before a scrolled anchor, UniformGridLayout places items outside their grid cells.

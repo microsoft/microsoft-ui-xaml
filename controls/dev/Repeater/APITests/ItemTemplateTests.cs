@@ -423,6 +423,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: show items with empty DataTemplates (markup, code, live tree) next to a template of 20px items.
+        // Expected: empty templates take no space; 10 non-empty items take 200px (within 1px), also after switching
+        //           templates.
+        // A failure means: empty templates could reserve space or crash, or a template switch would not refresh the
+        //                  items.
         [TestMethod]
         public void ValidateNoSizeWhenEmptyDataTemplate()
         {
@@ -804,6 +809,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         private const int E_FAIL = unchecked((int)0x80004005);
         private const int E_INVALIDARG = unchecked((int)0x80070057);
 
+        // Scenario: resolve elements through a RecyclingElementFactory with no SelectTemplateKey handler, an unknown
+        //           key and an empty key.
+        // Expected: the handler receives the item and owner, its key selects the template, and invalid setups fail with
+        //           E_FAIL.
+        // A failure means: items could be created from the wrong template or fail without a clear error.
         [TestMethod]
         [TestProperty("Description", "Verifies RecyclingElementFactory template key resolution: RecyclePool getter, SelectTemplateKey arguments, and E_FAIL for missing handler, unknown key and empty key.")]
         public void VerifyRecyclingElementFactoryTemplateKeyValidation()
@@ -851,6 +861,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: assign a Templates map with one template to a RecyclingElementFactory, and register one template
+        //           under an empty key.
+        // Expected: the single template is used without a SelectTemplateKey handler; the empty-key setup fails with
+        //           E_FAIL.
+        // A failure means: apps replacing the template map would still get elements from the old templates.
         [TestMethod]
         [TestProperty("Description", "Verifies that a Templates map assigned to RecyclingElementFactory is used, and that a single template registered under an empty key is rejected.")]
         public void VerifyRecyclingElementFactoryTemplatesSetter()
@@ -873,6 +888,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: use a DataTemplateSelector that returns null for an item.
+        // Expected: layout fails with E_INVALIDARG.
+        // A failure means: a selector bug in an app would be hidden instead of reported clearly.
         [TestMethod]
         [TestProperty("Description", "Verifies a DataTemplateSelector returning null for an item makes layout fail with E_INVALIDARG (message intentionally not asserted, see VerifyNullTemplateGivesMeaningfullError).")]
         public void VerifyNullTemplateFromSelectorFailsWithInvalidArgument()

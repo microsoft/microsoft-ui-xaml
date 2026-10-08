@@ -1022,6 +1022,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
         private const int E_FAIL = unchecked((int)0x80004005);
 
+        // Scenario: focus the first item, scroll far away so it leaves the realized range, then scroll back.
+        // Expected: the focused element keeps its index and focus while out of view and the same instance is reused
+        //           when it returns.
+        // A failure means: keyboard focus could be lost or the focused item re-created when the user scrolls away and
+        //                  back.
         [TestMethod]
         [TestProperty("Description", "Verifies that a focused element that scrolls out of the realized range stays pinned (keeps its index and focus) and is reused, not re-prepared, when scrolled back into view.")]
         public void VerifyFocusedElementIsReusedFromPinnedPool()
@@ -1069,6 +1074,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: focus item 90, scroll back to the top, then insert an item before 90 but after the realized items.
+        // Expected: only the focused element's index changes (90 to 91, with ElementIndexChanged) and it keeps content
+        //           and focus.
+        // A failure means: a focused item outside the visible range could end up bound to the wrong data after an
+        //                  insert.
         [TestMethod]
         [TestProperty("Description", "Verifies that inserting items after the realized range updates the index of a focused element held in the pinned pool and raises ElementIndexChanged for it.")]
         public void VerifyPinnedElementIndexUpdatesOnInsertOutsideRealizedRange()
@@ -1123,6 +1133,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: focus a Button item and remove it from the source (also for the first and last items).
+        // Expected: focus moves to the next realized item, or to the previous one when the last item was removed.
+        // Ignored: reproduces focus jumping to the first item when the focused item is removed (PC-FOCUS-ON-REMOVE);
+        //          currently fails because focus lands on item 0 instead of the adjacent item.
         [TestMethod]
         [TestProperty("Ignore", "True")] // Product concern PC-FOCUS-ON-REMOVE, same behavior as Issue 1018: after removing the focused 'Item #2', expected focus on the adjacent 'Item #3' (new index 2); actual focus is on 'Item #0' (index 0).
         [TestProperty("Description", "Verifies that removing the focused item moves focus to the next realized item, or to the previous one when the last item is removed.")]
@@ -1131,6 +1145,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             VerifyFocusMoveOnRemoval(itemTemplate: "<Button Content='{Binding}' Height='30'/>");
         }
 
+        // Scenario: same as the previous test with non-Control item containers whose child Button has focus.
+        // Expected: focus moves to the Button inside the adjacent item.
+        // Ignored: reproduces focus jumping to the first item when the focused item is removed (PC-FOCUS-ON-REMOVE);
+        //          currently fails because focus lands on the first item's Button.
         [TestMethod]
         [TestProperty("Ignore", "True")] // Product concern PC-FOCUS-ON-REMOVE, same behavior as Issue 1018: after removing the item whose Button 'Item #2' is focused, expected focus on Button 'Item #3' (new index 2); actual focus is on Button 'Item #0' (index 0).
         [TestProperty("Description", "Same as VerifyFocusMovesToAdjacentItemWhenFocusedItemRemoved when item containers are not Controls: focus moves to a focusable descendant of the adjacent item.")]
@@ -1270,6 +1288,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() => Verify.AreEqual(verticalOffset, scrollViewer.VerticalOffset));
         }
 
+        // Scenario: raise Replace notifications with an empty old-items or new-items list from a custom data source.
+        // Expected: each notification is rejected with E_FAIL and the realized elements are left untouched.
+        // A failure means: malformed data source notifications could corrupt the repeater's element bookkeeping.
         [TestMethod]
         [TestProperty("Description", "Verifies that Replace notifications with an empty old or new item list are rejected with E_FAIL and leave realized elements untouched.")]
         public void VerifyInvalidReplaceNotificationsThrow()

@@ -42,6 +42,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: call LockItemToLine with negative, too-large and int.MaxValue indexes, on a detached layout and a
+        //           laid-out one.
+        // Expected: every out-of-range call fails with E_BOUNDS.
+        // A failure means: invalid indexes could corrupt the layout's line bookkeeping instead of being rejected.
         [TestMethod]
         [TestProperty("Description", "Verifies LockItemToLine rejects out-of-range item indexes, including when the layout has no items.")]
         public void VerifyLockItemToLineThrowsForOutOfRangeIndex()
@@ -75,6 +79,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: call LockItemToLine on a LinedFlowLayout whose repeater was never measured.
+        // Expected: valid indexes return -1 (line unknown yet) and the item count index fails with E_BOUNDS.
+        // A failure means: apps could lock items to a made-up line before the layout knows how many items fit per line.
         [TestMethod]
         [TestProperty("Description", "Verifies LockItemToLine returns -1 when no measure pass has established an average items-per-line yet.")]
         public void VerifyLockItemToLineReturnsMinusOneBeforeFirstMeasure()
@@ -95,6 +102,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: lay out 100px items in a 520px wide LinedFlowLayout; call LockItemToLine for first, middle and last
+        //           items.
+        // Expected: each call returns the line the item is arranged on, and repeated calls return the same line.
+        // A failure means: locked items could be kept on a different line than the one they are displayed on.
         [TestMethod]
         [TestProperty("Description", "Verifies LockItemToLine returns the line on which each realized item is actually arranged, for first, middle and last items, and is idempotent.")]
         public void VerifyLockItemToLineReturnsArrangedLineIndex()
@@ -102,6 +113,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             VerifyLockItemToLineReturnsArrangedLineIndex(useItemsInfoRequested: false);
         }
 
+        // Scenario: same as the previous test, while the ItemsInfoRequested handler supplies the aspect ratio of every
+        //           item.
+        // Expected: LockItemToLine returns the arranged line for first, middle and last items and is idempotent.
+        // A failure means: apps that provide items info could get wrong line indexes from LockItemToLine.
         [TestMethod]
         [TestProperty("Description", "Same as VerifyLockItemToLineReturnsArrangedLineIndex while the ItemsInfoRequested handler supplies all aspect ratios (fast path).")]
         public void VerifyLockItemToLineReturnsArrangedLineIndexWithItemsInfo()
@@ -179,6 +194,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: lock items to lines, then change the collection; also change it while nothing is locked.
+        // Expected: ItemsUnlocked is raised synchronously once per change that invalidates locks, and not raised when
+        //           nothing is locked.
+        // A failure means: apps would not learn that their locked items were released and could show stale positions.
         [TestMethod]
         [TestProperty("Description", "Verifies ItemsUnlocked is raised synchronously when the collection changes or the layout is detached while items are locked, and not raised when nothing is locked.")]
         public void VerifyItemsUnlockedRaisedWhenLocksAreInvalidated()
@@ -237,6 +256,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: lock an item to a line, then replace the repeater's LinedFlowLayout with a StackLayout.
+        // Expected: ItemsUnlocked is raised synchronously exactly once.
+        // A failure means: apps would not learn that their locked items were released when the layout was swapped.
         [TestMethod]
         [TestProperty("Description", "Verifies ItemsUnlocked is raised synchronously when a LinedFlowLayout with locked items is detached from its ItemsRepeater.")]
         public void VerifyItemsUnlockedRaisedWhenLayoutDetached()
@@ -271,6 +293,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: arrange three 100px items on a 500px line for every ItemsJustification value with
+        //           ItemsStretch=None.
+        // Expected: items keep their width and are placed at the X offsets defined by each justification (start,
+        //           center, end, spacing).
+        // A failure means: item alignment within a line would not match the ItemsJustification the app selected.
         [TestMethod]
         [TestProperty("Description", "Verifies item positions for every ItemsJustification value when ItemsStretch is None and the line is not full.")]
         public void VerifyItemsJustificationWithoutStretch()
@@ -330,6 +357,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: host the layout in a horizontal StackPanel (infinite width) for several justification and stretch
+        //           combinations.
+        // Expected: all items are placed on one line separated by MinItemSpacing, with the leading offset of
+        //           SpaceEvenly/SpaceAround.
+        // A failure means: LinedFlowLayout inside an unconstrained container would size or position items incorrectly.
         [TestMethod]
         [TestProperty("Description", "Verifies that with an infinite available width all items are measured and arranged on a single line using MinItemSpacing and the SpaceEvenly/SpaceAround leading offset.")]
         public void VerifyUnconstrainedWidthArrangesSingleLine()
@@ -412,6 +444,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: assign one LinedFlowLayout instance to two live ItemsRepeaters, then detach it and reuse it.
+        // Expected: the second assignment fails while the first repeater uses it, and reuse works once it is detached.
+        // A failure means: two repeaters could silently share one layout and corrupt each other's layout state.
         [TestMethod]
         [TestProperty("Description", "Verifies a LinedFlowLayout instance cannot be used by two ItemsRepeaters at once but can be reused once detached.")]
         public void VerifyLinedFlowLayoutCannotBeShared()
@@ -453,6 +488,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: read RequestedRangeStartIndex/Length without items info, then with ItemsInfoRequested covering all
+        //           items.
+        // Expected: the range is -1/0 without items info and 0/ItemCount when info for the whole collection is
+        //           provided.
+        // A failure means: apps would supply items info for the wrong range of items.
         [TestMethod]
         [TestProperty("Description", "Verifies RequestedRangeStartIndex/RequestedRangeLength without items info (-1/0) and when ItemsInfoRequested provides info for the whole collection (0/ItemCount).")]
         public void VerifyRequestedRangeReflectsItemsInfo()
@@ -507,6 +547,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: lay out a repeater with a LinedFlowLayout, drop all references and force garbage collection while
+        //           its timer may run.
+        // Expected: the layout is released without crashing and a new repeater still lays out normally afterwards.
+        // Ignored: reproduces a process crash when a LinedFlowLayout is released off the UI thread (PC-LFL-TIMER);
+        //          currently it can crash the test host depending on when the finalizer runs.
         [TestMethod]
         [TestProperty("Ignore", "True")] // Product concern PC-LFL-TIMER (bug pending): releasing a LinedFlowLayout off the UI thread crashes the process (~LinedFlowLayout -> InvalidateMeasureTimerStop -> DispatcherTimer.IsEnabled throws -> terminate, 0xC0000409); a use-after-free in InvalidateMeasureTimerTick was also observed.
         [TestProperty("Description", "Verifies that releasing an ItemsRepeater and its LinedFlowLayout while the layout's asynchronous measure timer may still be running does not crash when the timer would have ticked.")]

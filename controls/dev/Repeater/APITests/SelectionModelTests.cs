@@ -1201,6 +1201,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
         private const int E_FAIL = unchecked((int)0x80004005);
 
+        // Scenario: call SelectAll and SelectAllFlat on a flat list source.
+        // Expected: every item is selected and SelectionChanged is raised once per call.
+        // A failure means: Select all in list UIs could miss items or raise redundant change notifications.
         [TestMethod]
         [TestProperty("Description", "Verifies SelectAll and SelectAllFlat select every item of a flat source and raise SelectionChanged once each.")]
         public void VerifySelectAllOnFlatSource()
@@ -1232,6 +1235,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: call SelectAll on a grouped (nested) source.
+        // Expected: every group and every leaf item is realized and reported as selected.
+        // A failure means: Select all in grouped UIs could leave items unselected.
         [TestMethod]
         [TestProperty("Description", "Verifies SelectAll realizes and selects every leaf and group of a nested source.")]
         public void VerifySelectAllOnNestedSource()
@@ -1258,6 +1264,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: query IsSelected(groupIndex, itemIndex) for selected, unselected and never-expanded groups.
+        // Expected: it returns true only for the selected items and false for the rest, including groups never
+        //           realized.
+        // A failure means: grouped UIs could show wrong selection states.
         [TestMethod]
         [TestProperty("Description", "Verifies IsSelected(groupIndex, itemIndex) for selected, unselected and never-realized groups.")]
         public void VerifyIsSelectedWithGroupIndex()
@@ -1281,6 +1291,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: enable SingleSelect and select items by group and item index one after another.
+        // Expected: SingleSelect reads back true and each new selection replaces the previous one.
+        // A failure means: single-selection grouped UIs could end up with several selected items.
         [TestMethod]
         [TestProperty("Description", "Verifies SingleSelect reports its value and that selecting by group and item index in single selection mode replaces the previous selection.")]
         public void VerifySingleSelectWithGroupIndexReplacesSelection()
@@ -1311,6 +1324,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: select a range, then deselect a sub-range, a reversed range and a single-item range.
+        // Expected: exactly the requested items are deselected and the rest stay selected.
+        // A failure means: range deselection (for example Shift+click) could deselect too much or too little.
         [TestMethod]
         [TestProperty("Description", "Verifies DeselectRange removes a sub-range from a selected range, accepts a reversed range, and handles a single-item range.")]
         public void VerifyDeselectRange()
@@ -1341,6 +1357,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: call SelectRange and DeselectRange where start and end are the same item.
+        // Expected: SelectionChanged is raised exactly once per call, like for a multi-item range.
+        // Ignored: reproduces duplicate SelectionChanged events for single-item ranges (PC-SELECTION-DOUBLE-EVENT);
+        //          currently fails because the event is raised twice.
         [TestMethod]
         [TestProperty("Ignore", "True")] // Product concern PC-SELECTION-DOUBLE-EVENT (bug pending): SelectionModel.SelectRangeImpl raises SelectionChanged twice when start equals end (SelectAt/DeselectAt plus the unconditional OnSelectionChanged).
         [TestProperty("Description", "Verifies SelectRange and DeselectRange with identical start and end raise SelectionChanged exactly once, like a multi-item range.")]
@@ -1363,6 +1383,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: use SelectionModel through ICustomPropertyProvider (as data binding does), other than for
+        //           SelectedItem.
+        // Expected: it reports its string representation and type, and returns null for unknown or unsupported
+        //           properties.
+        // A failure means: XAML bindings to SelectionModel properties could fail.
         [TestMethod]
         [TestProperty("Description", "Verifies the ICustomPropertyProvider members of SelectionModel other than the SelectedItem property (see CanReadSelectedItemViaICustomPropertyProvider).")]
         public void VerifyCustomPropertyProviderMembers()
@@ -1381,6 +1406,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: add a PropertyChanged handler, remove it, then change the selection.
+        // Expected: the removed handler is not called again.
+        // A failure means: removed handlers would keep firing and could leak or update dead UI.
         [TestMethod]
         [TestProperty("Description", "Verifies PropertyChanged handlers stop receiving notifications once removed.")]
         public void VerifyPropertyChangedHandlerRemoval()
@@ -1404,6 +1432,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: keep the ChildrenRequested event args and read Source and SourceIndex after the handler returns.
+        // Expected: reading Source or SourceIndex after the handler has returned fails with E_FAIL.
+        // A failure means: apps could read stale data from reused event args without any error.
         [TestMethod]
         [TestProperty("Description", "Verifies SelectionModelChildrenRequestedEventArgs Source and SourceIndex are only accessible during the ChildrenRequested handler.")]
         public void VerifyChildrenRequestedArgsOnlyValidDuringHandler()

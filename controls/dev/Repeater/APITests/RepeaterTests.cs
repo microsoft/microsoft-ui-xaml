@@ -101,6 +101,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: set ItemsSource to null, a list, another list, back to null and to a new list.
+        // Expected: ItemsSourceView is null when there is no source and otherwise exposes the current items in order.
+        // A failure means: switching or clearing the items source could crash or leave the repeater showing stale data.
         [TestMethod]
         public void CanSetItemsSource()
         {
@@ -998,6 +1001,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         private const int E_FAIL = unchecked((int)0x80004005);
         private const int E_INVALIDARG = unchecked((int)0x80070057);
 
+        // Scenario: call GetOrCreateElement without an ItemsSource and with indexes outside the items range.
+        // Expected: without a source the call fails with E_FAIL; out-of-range indexes fail with E_INVALIDARG.
+        // A failure means: invalid element requests could crash or return elements for items that do not exist.
         [TestMethod]
         [TestProperty("Description", "Verifies GetOrCreateElement fails with E_FAIL without an ItemsSource and with E_INVALIDARG for out-of-range indexes.")]
         public void VerifyGetOrCreateElementRejectsInvalidRequests()
@@ -1021,6 +1027,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: from inside a custom layout's measure and arrange passes, call GetOrCreateElement and change
+        //           ItemsSource, ItemTemplate and Layout.
+        // Expected: all four calls fail with E_FAIL, the original items and template stay realized, and the original
+        //           layout is still in use and was never uninitialized.
+        // A failure means: changing the repeater in the middle of layout could corrupt its elements or crash the app.
         [TestMethod]
         [TestProperty("Description", "Verifies that GetOrCreateElement and changes to ItemsSource, ItemTemplate and Layout are rejected with E_FAIL while the ItemsRepeater runs layout, leaving the processed repeater state unchanged.")]
         public void VerifyRepeaterApisThrowWhenCalledDuringLayout()
@@ -1113,6 +1124,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: raise a collection change notification from the data source while the repeater runs layout.
+        // Expected: the change is rejected with E_FAIL.
+        // A failure means: data changes during layout could leave realized elements out of sync with the data.
         [TestMethod]
         [TestProperty("Description", "Verifies that a data source change raised while the ItemsRepeater runs layout is rejected with E_FAIL.")]
         public void VerifyCollectionChangeDuringLayoutThrows()
@@ -1145,6 +1159,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: raise a second collection change from inside the handling of a first one.
+        // Expected: the nested change is rejected with E_FAIL.
+        // A failure means: nested data changes could leave the repeater's element indexes inconsistent.
         [TestMethod]
         [TestProperty("Description", "Verifies that a data source change raised while the ItemsRepeater processes another data source change is rejected with E_FAIL.")]
         public void VerifyCollectionChangeDuringCollectionChangeThrows()
@@ -1181,6 +1198,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: set ItemTemplate to an object that is neither a template, a template selector nor an element
+        //           factory.
+        // Expected: the assignment fails with E_INVALIDARG and the previous template keeps producing the elements.
+        // A failure means: an invalid template could be accepted silently and items would disappear or fail later.
         [TestMethod]
         [TestProperty("Description", "Verifies that setting ItemTemplate to an object that is not an element factory is rejected and the previous template keeps producing elements.")]
         public void VerifyInvalidItemTemplateTypeIsRejected()
@@ -1208,6 +1229,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: show items with a custom DataTemplate, then set ItemTemplate back to null.
+        // Expected: the change is accepted and items are shown with the default TextBlock template.
+        // Ignored: reproduces clearing ItemTemplate being rejected (PC-ITEMTEMPLATE-NULL); currently fails because the
+        //          assignment throws E_INVALIDARG and the old template keeps being used.
         [TestMethod]
 
         [TestProperty("Ignore", "True")] // Product concern PC-ITEMTEMPLATE-NULL (bug pending): setting ItemTemplate to null throws E_INVALIDARG (ItemsRepeater.cpp OnItemTemplateChanged) and leaves the old template active.
@@ -1238,6 +1263,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: replace the repeater's Layout while items are realized, then lay out again.
+        // Expected: every realized element is cleared synchronously and the new layout realizes the items again.
+        // A failure means: elements from the old layout could leak or be shown at stale positions after a layout
+        //                  change.
         [TestMethod]
         [TestProperty("Description", "Verifies that replacing the Layout synchronously clears every realized element and that the new layout realizes them again.")]
         public void VerifyChangingLayoutClearsRealizedElements()
@@ -1282,6 +1311,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: set HorizontalCacheLength and VerticalCacheLength to negative, infinite, NaN and zero values.
+        // Expected: invalid values fail with E_INVALIDARG and zero is accepted.
+        // A failure means: invalid cache lengths could be accepted and make the repeater realize no or unlimited items.
         [TestMethod]
         [TestProperty("Description", "Verifies HorizontalCacheLength and VerticalCacheLength reject negative, infinite and NaN values with E_INVALIDARG and accept zero.")]
         public void VerifyInvalidCacheLengthsAreRejected()

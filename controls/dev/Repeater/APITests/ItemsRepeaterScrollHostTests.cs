@@ -30,6 +30,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         private const double c_viewportHeight = 300.0;
         private const int c_itemCount = 10;
 
+        // Scenario: create an ItemsRepeaterScrollHost and set HorizontalAnchorRatio and VerticalAnchorRatio to several
+        //           values, including NaN.
+        // Expected: both ratios default to 0 and read back exactly the value that was set.
+        // A failure means: apps cannot rely on the anchor ratios they configure to scroll anchoring.
         [TestMethod]
         [TestProperty("Description", "Verifies HorizontalAnchorRatio and VerticalAnchorRatio default to 0 and round-trip set values, including NaN.")]
         public void VerifyAnchorRatioPropertiesRoundTrip()
@@ -53,6 +57,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: assign a ScrollViewer to the host, then assign a second ScrollViewer.
+        // Expected: the host shows exactly one child, the current ScrollViewer, and the previous one is removed from
+        //           the tree.
+        // A failure means: the host could show two scroll viewers or keep a stale one, breaking scrolling of the
+        //                  repeater.
         [TestMethod]
         [TestProperty("Description", "Verifies that setting ScrollViewer hosts it as the only child and that a new ScrollViewer replaces the previous one.")]
         public void VerifyScrollViewerPropertyReplacesChild()
@@ -81,6 +90,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: register several stacked items as anchor candidates with both anchor ratios set to 0, 0.5 and 1.
+        // Expected: CurrentAnchor (and AnchorElement) is the candidate whose ratio point is closest to the same point
+        //           of the viewport.
+        // A failure means: scrolled content can jump when items above the viewport change size, because the wrong item
+        //                  is used as anchor.
         [TestMethod]
         [TestProperty("Description", "Verifies that CurrentAnchor is the registered candidate whose anchor-ratio edge is closest to the same edge of the viewport.")]
         public void VerifyCurrentAnchorIsCandidateClosestToViewportEdge()
@@ -117,6 +131,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: register six anchor candidates, then unregister the anchor, an unknown element and the rest.
+        // Expected: the anchor moves to the next closest candidate, unknown elements are ignored, and finally no anchor
+        //           remains.
+        // A failure means: removed items could stay the scroll anchor and cause wrong scroll offsets.
         [TestMethod]
         [TestProperty("Description", "Verifies that unregistering the current anchor recomputes the anchor and that unregistering unknown elements has no effect.")]
         public void VerifyUnregisterAnchorCandidateRecomputesAnchor()
@@ -156,6 +174,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: set both anchor ratios to NaN and register anchor candidates.
+        // Expected: CurrentAnchor stays null, i.e. scroll anchoring is turned off.
+        // A failure means: apps that disable anchoring with NaN would still get anchoring scroll adjustments.
         [TestMethod]
         [TestProperty("Description", "Verifies that a NaN anchor ratio produces no anchor even when candidates are registered.")]
         public void VerifyNaNAnchorRatioYieldsNoAnchor()
@@ -175,6 +196,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: query GetRelativeViewport for items before and after scrolling the ScrollViewer down by 200px.
+        // Expected: the relative viewport reflects the scroll offset and the anchor is the item at the top of the
+        //           scrolled viewport.
+        // A failure means: the repeater would realize the wrong items or pick the wrong anchor after the user scrolls.
         [TestMethod]
         [TestProperty("Description", "Verifies the anchor selection and GetRelativeViewport account for the ScrollViewer vertical offset.")]
         public void VerifyAnchorAndRelativeViewportUseScrollOffset()
@@ -227,6 +252,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: use the host as a scrolling surface before any ScrollViewer is assigned.
+        // Expected: anchor candidates are ignored, there is no anchor and the relative viewport is empty, without any
+        //           exception.
+        // A failure means: a host without a ScrollViewer could crash or report a bogus viewport to the repeater.
         [TestMethod]
         [TestProperty("Description", "Verifies the scrolling surface behavior when no ScrollViewer is hosted: candidates are ignored and the relative viewport is empty.")]
         public void VerifyScrollingSurfaceWithoutScrollViewer()

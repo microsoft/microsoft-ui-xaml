@@ -288,6 +288,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: use a StackLayout whose items keep changing size so layout does not settle for many passes.
+        // Expected: the repeater stops re-measuring after its fixed iteration limit and keeps the last extent (within
+        //           1px).
+        // A failure means: an unsettled StackLayout could hit a layout cycle and crash the app.
         [TestMethod]
         [TestProperty("Description", "Verifies that ItemsRepeater short-circuits an unsettled StackLayout measure loop after 60 consecutive measures, returning the last layout extent instead of re-measuring the layout.")]
         public void VerifyStackLayoutCycleShortcut()
@@ -343,6 +347,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: call InvalidateArrange on a custom layout used by a repeater.
+        // Expected: ArrangeInvalidated is raised and the repeater re-arranges the layout without re-measuring it.
+        // A failure means: custom layouts could not request a cheap re-arrange, or would trigger unnecessary measures.
         [TestMethod]
         [TestProperty("Description", "Verifies Layout.InvalidateArrange raises ArrangeInvalidated and makes the ItemsRepeater re-arrange its layout without re-measuring it.")]
         public void VerifyLayoutInvalidateArrangeRearrangesRepeater()
@@ -378,6 +385,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: add and remove items in the source of a repeater that uses a non-virtualizing layout.
+        // Expected: the repeater re-measures and the realized elements match the updated items.
+        // A failure means: non-virtualizing layouts would show stale items after the data changes.
         [TestMethod]
         [TestProperty("Description", "Verifies a NonVirtualizingLayout ItemsRepeater re-measures and realizes elements when items are added to or removed from its source.")]
         public void VerifyNonVirtualLayoutRemeasuresOnCollectionChange()
@@ -412,6 +422,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: run a virtualizing layout through the context of a non-virtualizing layout.
+        // Expected: the items are the children, the realization window is infinite, there is no anchor, recycling does
+        //           nothing and the layout origin must stay at (0,0).
+        // A failure means: layouts that wrap other layouts would get a wrong view of the items and break.
         [TestMethod]
         [TestProperty("Description", "Verifies the context a VirtualizingLayout receives when hosted by a NonVirtualizingLayout: items are the children, the realization window is infinite, there is no anchor, recycling is a no-op and LayoutOrigin must stay at (0,0).")]
         public void VerifyVirtualizingLayoutHostedByNonVirtualizingLayoutContext()
@@ -469,6 +483,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: store an object in the context's LayoutState during initialization of a non-virtualizing layout.
+        // Expected: the same object is read back in later measure/arrange passes and when the layout is uninitialized.
+        // A failure means: custom layouts would lose their per-repeater state between layout passes.
         [TestMethod]
         [TestProperty("Description", "Verifies a NonVirtualizingLayout hosted by ItemsRepeater can store state in its context's LayoutState and read it back in later passes and on uninitialization.")]
         public void VerifyNonVirtualizingLayoutStateRoundTrip()
@@ -499,6 +516,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: call the default implementations of the overridable layout, context, element factory and transition
+        //           members.
+        // Expected: they fail with E_NOTIMPL, except the virtualizing layout's default arrange, which returns the final
+        //           size (within layout rounding).
+        // A failure means: derived classes that skip an override would behave differently than documented.
         [TestMethod]
         [TestProperty("Description", "Verifies the default implementations of the overridable layout, context, element factory and transition provider members: E_NOTIMPL except VirtualizingLayout.ArrangeOverride which returns the final size.")]
         public void VerifyDefaultOverridableImplementations()

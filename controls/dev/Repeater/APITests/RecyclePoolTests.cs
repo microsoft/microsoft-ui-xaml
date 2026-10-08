@@ -23,6 +23,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     public class RecyclePoolTests : ApiTestBase
     {
         // This test was missing its [TestMethod] attribute and therefore never ran.
+        // Scenario: store Buttons, TextBlocks and StackPanels under different keys (and one under the empty key), then
+        //           retrieve them.
+        // Expected: each key returns only its own elements until empty, the empty key is a regular key, and non-Panel
+        //           owners fail.
+        // A failure means: recycled elements could come back for the wrong template (previously this test never ran).
         [TestMethod]
         [TestProperty("Description", "Verifies RecyclePool returns elements only for the key they were stored under and rejects non-Panel owners.")]
         public void ValidateElementsHaveCorrectKeys()

@@ -27,6 +27,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         private const int E_INVALIDARG = unchecked((int)0x80070057);
         private const int E_NOTIMPL = unchecked((int)0x80004001);
 
+        // Scenario: create an ItemsSourceView from null and from an object that is not a supported collection.
+        // Expected: both fail with E_INVALIDARG.
+        // A failure means: unsupported items sources would be accepted and fail later in less obvious ways.
         [TestMethod]
         [TestProperty("Description", "Verifies ItemsSourceView rejects a null source and a source that is not a supported collection with E_INVALIDARG.")]
         public void VerifyItemsSourceViewRejectsInvalidSources()
@@ -44,6 +47,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: call KeyFromIndex and IndexFromKey on an ItemsSourceView over a plain list without key mapping.
+        // Expected: both fail with E_NOTIMPL.
+        // A failure means: apps could get made-up keys for sources that do not provide unique ids.
         [TestMethod]
         [TestProperty("Description", "Verifies KeyFromIndex and IndexFromKey fail with E_NOTIMPL when the source does not implement IKeyIndexMapping.")]
         public void VerifyKeyIndexMappingNotImplementedWithoutMappingSource()
