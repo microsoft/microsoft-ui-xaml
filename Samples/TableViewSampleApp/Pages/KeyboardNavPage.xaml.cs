@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -31,37 +30,40 @@ namespace TableViewSampleApp.Pages;
 /// restores values and membership without duplicating rows. Nothing here measures
 /// accessibility; the readouts report app and model state only.
 /// </summary>
-public sealed partial class KeyboardNavPage : Page
+public sealed partial class KeyboardNavPage : SamplePageBase
 {
+    // The fixture's value is determinism: the same 24 objects, in the same order, under every
+    // scenario. Reset restores values AND membership without creating new objects, so a UIA
+    // inspector can stay open across a reset.
     private readonly AccessibilityFixtureData _data = new();
-    private TableViewSource? _source;          // top table: created ONCE; reshaped in place
     private TableViewSource? _fixtureSource;
-    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
-    private string _appliedKey = "Department";
     private bool _updating = true;
     private bool _listening;
 
     public KeyboardNavPage()
     {
-        _source = TableViewSource.From(People);
+        // <snippet>
+        // The keyboard table reads from one TableViewSource, created once and reshaped in place.
+        Source = TableViewSource.From(People);
         InitializeComponent();
-        PeopleTable.ItemsSource = _source;
-        Loaded += OnPageLoaded;
-        Unloaded += OnPageUnloaded;
+        PeopleTable.ItemsSource = Source;
         ResetFixture(announce: false);
-        RefreshReadouts();
+        // </snippet>
+        Shaping.ProbeLimit = () => People.Count + PersonData.Departments.Count + PersonData.Offices.Count;
+        InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
+        TrackLifetime(
+            () => PeopleTable.SelectionChanged += OnPeopleSelectionChanged,
+            () => PeopleTable.SelectionChanged -= OnPeopleSelectionChanged);
+        TrackItems(People, OnPersonChanged);
+        TrackLifetime(StartListeningToFixture, StopListeningToFixture);
     }
 
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
-    private void OnPageLoaded(object sender, RoutedEventArgs e)
-    {
-        PeopleTable.SelectionChanged += OnPeopleSelectionChanged;
-        foreach (var person in People)
-        {
-            person.PropertyChanged += OnPersonChanged;
-        }
+    public TableViewSource Source { get; }
 
+    private void StartListeningToFixture()
+    {
         if (!_listening)
         {
             foreach (var row in _data.OriginalRows)
@@ -71,18 +73,10 @@ public sealed partial class KeyboardNavPage : Page
 
             _listening = true;
         }
-
-        RefreshReadouts();
     }
 
-    private void OnPageUnloaded(object sender, RoutedEventArgs e)
+    private void StopListeningToFixture()
     {
-        PeopleTable.SelectionChanged -= OnPeopleSelectionChanged;
-        foreach (var person in People)
-        {
-            person.PropertyChanged -= OnPersonChanged;
-        }
-
         foreach (var row in _data.OriginalRows)
         {
             row.PropertyChanged -= OnFixtureRowChanged;
@@ -101,7 +95,9 @@ public sealed partial class KeyboardNavPage : Page
         }
     }
 
-    // In-cell editors write the model; re-bucket when the grouped-on value changed.
+    // <snippet>
+    // In-cell editors write the model; re-bucket when the grouped-on value changed, because
+    // GroupBy takes a delegate and cannot follow PropertyChanged.
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (sender is not Person person)
@@ -121,6 +117,7 @@ public sealed partial class KeyboardNavPage : Page
                 break;
         }
     }
+    // </snippet>
 
     // ---- Assessment fixture -----------------------------------------------------------------
 
@@ -162,6 +159,7 @@ public sealed partial class KeyboardNavPage : Page
         }
     }
 
+    // <snippet>
     private void ConfigureColumns()
     {
         AssessmentTable.ClearSort();
@@ -217,7 +215,13 @@ public sealed partial class KeyboardNavPage : Page
             AutomationProperties.SetName(AssessmentTable, "Accessibility regression records");
         }
 
-        ExpectedObservationsText.Text = Scenario switch
+        ExpectedObservationsText.Text = ExpectedObservations(Scenario); // snippet:skip
+    }
+    // </snippet>
+
+    // What to check in each scenario: shown under the fixture table.
+    private static string ExpectedObservations(string scenario) =>
+        scenario switch
         {
             "Intrinsic" =>
                 "Two template columns only. With baseline values, check whether the row names contain Record 01 and Design, " +
@@ -242,7 +246,6 @@ public sealed partial class KeyboardNavPage : Page
                 "can offer the Value pattern with the displayed text (Record 01), not the composed cell name. Turning editing off removes " +
                 "that editable Value pattern; verify it with an inspector rather than assuming a read-only Value provider exists.",
         };
-    }
 
     private bool CloseEditForSetup()
     {
@@ -268,6 +271,8 @@ public sealed partial class KeyboardNavPage : Page
 
     private void OnResetClick(object sender, RoutedEventArgs e) => ResetFixture(announce: true);
 
+    // <snippet>
+    // The fixture groups with its own switch (a documented exception to the Shaping list).
     private void OnGroupingToggled(object sender, RoutedEventArgs e)
     {
         if (_updating || _fixtureSource is null || !CloseEditForSetup())
@@ -289,6 +294,7 @@ public sealed partial class KeyboardNavPage : Page
             ? "Fixture grouped by Department on the same TableViewSource."
             : "Fixture grouping cleared on the same TableViewSource.");
     }
+    // </snippet>
 
     private void OnEditingToggled(object sender, RoutedEventArgs e)
     {
@@ -426,127 +432,4 @@ public sealed partial class KeyboardNavPage : Page
             RefreshReadouts();
         }
     }
-
-    // ---- Readouts ---------------------------------------------------------------------------
-
-    private void RefreshReadouts()
-    {
-        if (PeopleTable is null || RowsText is null || SelectedIndexText is null || AssessmentTable is null)
-        {
-            return;
-        }
-
-        var index = PeopleTable.SelectedIndex;
-        SelectedIndexText.Text = index >= 0
-            ? index.ToString(CultureInfo.CurrentCulture)
-            : string.Format(CultureInfo.CurrentCulture, "{0} (none)", -1);
-        ColumnsText.Text = PeopleTable.Columns.Count.ToString(CultureInfo.CurrentCulture);
-        RowsText.Text = SampleShaping.RowCountText(People.Count);
-
-        FixtureRecordsText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} in the source, {1:N0} removed", _data.Rows.Count, _data.RemovedCount);
-        FixtureSelectionText.Text = AssessmentTable.SelectedItem is AccessibilityRow selected
-            ? string.Format(CultureInfo.CurrentCulture, "Record {0:00}, SelectedIndex {1}", selected.Id, AssessmentTable.SelectedIndex)
-            : string.Format(CultureInfo.CurrentCulture, "(none), SelectedIndex {0}", AssessmentTable.SelectedIndex);
-        FixtureEditingText.Text = string.Format(
-            CultureInfo.CurrentCulture,
-            "{0} (IsReadOnly {1}, IsEnabled {2})",
-            AssessmentTable.IsEditing,
-            AssessmentTable.IsReadOnly,
-            AssessmentTable.IsEnabled);
-    }
-
-    #region Sample scaffolding (generic; see FIX-PLAN §6)
-
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void ApplyShaping(bool announce)
-    {
-        // Fires during InitializeComponent, before the later-declared elements exist.
-        if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
-            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
-        {
-            return;
-        }
-
-        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
-        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
-        var selected = PeopleTable.SelectedItem;
-
-        switch (mode)
-        {
-            case "grouped":
-                // The key selector receives the ROW; the identity selector receives the KEY.
-                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
-                break;
-            // case "hierarchy":
-            // case "groupedHierarchy":
-            //     Hierarchical (tree) rows are not available in this release, so the two matching
-            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
-            //     member today. When hierarchy ships, apply it to this same source here, composed
-            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
-            //     after the call returns.
-            default:
-                _source.ClearGroupBy();
-                mode = "flat";
-                break;
-        }
-
-        _appliedMode = mode;
-        _appliedKey = key;
-
-        // Re-applying GroupBy can drop the selection when the selected row changed group.
-        SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Departments.Count + PersonData.Offices.Count, RefreshReadouts);
-        UpdateShapingGating();
-        if (announce)
-        {
-            SetLastAction(mode == "grouped"
-                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
-                : "Shaping -> Flat");
-        }
-    }
-
-    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
-    private void ReapplyIfGroupedOn(string? propertyName)
-    {
-        if (_appliedMode == "grouped" && propertyName == _appliedKey)
-        {
-            ApplyShaping(announce: false);
-        }
-    }
-
-    private void UpdateShapingGating()
-    {
-        var grouped = _appliedMode == "grouped";
-        GroupKeySelector.IsEnabled = grouped;
-        ExpandAllButton.IsEnabled = grouped;
-        CollapseAllButton.IsEnabled = grouped;
-        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
-    }
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        PeopleTable.ExpandAllGroups();
-        SetLastAction("Expanded all groups");
-    }
-
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
-    {
-        PeopleTable.CollapseAllGroups();
-        SetLastAction("Collapsed all groups");
-    }
-
-    // The only writer of LastActionText.
-    private void SetLastAction(string message)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = message;
-        }
-
-        RefreshReadouts();
-    }
-
-    #endregion
 }

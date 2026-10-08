@@ -7,11 +7,11 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -24,7 +24,7 @@ namespace TableViewSampleApp.Pages;
 /// The load runs assign a pre-built collection once (the pattern to use); the per-item Add run
 /// shows the pattern to avoid.
 /// </summary>
-public sealed partial class PerformancePage : Page
+public sealed partial class PerformancePage : SamplePageBase
 {
     private const int InitialRows = 1_000;
     private const int PerItemCap = 10_000;
@@ -32,15 +32,12 @@ public sealed partial class PerformancePage : Page
     private const string FilterDepartment = "Engineering";
 
     private ObservableCollection<Person> _people;
-    private TableViewSource? _source;          // one per loaded dataset; reshaped in place
-    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private TableViewSource _source;           // one per loaded dataset; reshaped in place
     private TableViewTemplateColumn? _photoColumn;
     private TableViewTemplateColumn? _departmentChipColumn;
     private bool _templateColumns;
     private bool _sortDescending = true;       // the first Sort click sorts ascending
     private bool _isRunning;
-    private long _baselineWorkingSet;
-    private long _baselineManagedHeap;
 
     public PerformancePage()
     {
@@ -48,21 +45,13 @@ public sealed partial class PerformancePage : Page
         _source = TableViewSource.From(_people);
         InitializeComponent();
         PerfTable.ItemsSource = _source;
-        BuildText.Text = string.Format(CultureInfo.CurrentCulture, "{0}, {1}", IsDebugBuild ? "Debug" : "Release", RuntimeInformation.ProcessArchitecture);
         CaptureBaseline();
-        RefreshReadouts();
-    }
 
-    private static bool IsDebugBuild
-    {
-        get
-        {
-#if DEBUG
-            return true;
-#else
-            return false;
-#endif
-        }
+        // No Reselect: no action on this page edits a group key, and a plain reshape keeps the
+        // selection on its item. Probing 100,000 indexes would also defeat the measurement.
+        Shaping.RestoreSelection = false;
+        Shaping.TimeCall = Timed;   // GroupBy, ClearGroupBy, Expand all and Collapse all are timed like every run
+        InitializeSample(Status, Shaping.Attach(PerfTable, _source));
     }
 
     // ---- Column set ---------------------------------------------------------------------
@@ -118,15 +107,14 @@ public sealed partial class PerformancePage : Page
 
     private string ColumnSetLabel => _templateColumns ? "template columns" : "text columns";
 
+    // <snippet>
     // ---- Timed runs ---------------------------------------------------------------------
 
     // Settles the heap, then times the mutation plus one synchronous measure and arrange, so the
     // window ends when the new rows are laid out rather than when the C# call returns.
     private long Timed(Action mutation)
     {
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
+        SettleHeap();
 
         var stopwatch = Stopwatch.StartNew();
         mutation();
@@ -134,6 +122,14 @@ public sealed partial class PerformancePage : Page
         stopwatch.Stop();
         return stopwatch.ElapsedMilliseconds;
     }
+
+    private static void SettleHeap()
+    {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+    }
+    // </snippet>
 
     private bool BeginRun()
     {
@@ -151,6 +147,7 @@ public sealed partial class PerformancePage : Page
 
     private async void OnLoad100kClick(object sender, RoutedEventArgs e) => await LoadAsync(100_000, Load100kText);
 
+    // <snippet>
     private async Task LoadAsync(int count, TextBlock result)
     {
         if (!BeginRun())
@@ -173,9 +170,10 @@ public sealed partial class PerformancePage : Page
             result.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms, {1}", ms, ColumnSetLabel);
 
             // A new dataset gets the current shaping; GroupBy is timed separately (Group row).
-            if (_appliedMode == "grouped")
+            Shaping.Attach(PerfTable, _source);
+            if (IsGrouped)
             {
-                ApplyShaping(announce: false);
+                Shaping.Apply(announce: false);
             }
 
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Loaded {0:N0} rows in one assignment: {1:N0} ms ({2})", count, ms, ColumnSetLabel));
@@ -185,6 +183,7 @@ public sealed partial class PerformancePage : Page
             _isRunning = false;
         }
     }
+    // </snippet>
 
     private void OnSortClick(object sender, RoutedEventArgs e)
     {
@@ -210,7 +209,7 @@ public sealed partial class PerformancePage : Page
 
     private void OnFilterClick(object sender, RoutedEventArgs e)
     {
-        if (_source is null || !BeginRun())
+        if (!BeginRun())
         {
             return;
         }
@@ -231,7 +230,7 @@ public sealed partial class PerformancePage : Page
 
     private void OnClearFilterClick(object sender, RoutedEventArgs e)
     {
-        if (_source is null || !BeginRun())
+        if (!BeginRun())
         {
             return;
         }
@@ -249,6 +248,7 @@ public sealed partial class PerformancePage : Page
         }
     }
 
+    // <snippet>
     private async void OnPerItemAddClick(object sender, RoutedEventArgs e)
     {
         if (!BeginRun())
@@ -259,7 +259,7 @@ public sealed partial class PerformancePage : Page
         try
         {
             var rows = await Task.Run(() => PersonData.Many(PerItemCap));
-            if (_appliedMode == "grouped")
+            if (IsGrouped)
             {
                 await RunPerItemAddGroupedAsync(rows);
                 return;
@@ -292,12 +292,11 @@ public sealed partial class PerformancePage : Page
     // (2) it does the real 10,000 Adds with the grouping detached, then groups once.
     private async Task RunPerItemAddGroupedAsync(IReadOnlyList<Person> rows)
     {
-        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
-        var keyLabel = SampleShaping.Label(GroupKeySelector);
-        var source = _source!;
+        var key = Shaping.SelectedKey;
+        var keyLabel = Shaping.SelectedKeyLabel;
+        var source = _source;
         var people = _people;
-        ShapingModeSelector.IsEnabled = false;
-        GroupKeySelector.IsEnabled = false;
+        Shaping.SetBusy(true);
         try
         {
             // (1) DON'T: per-row Add while grouped, stopped at GroupedAddBudgetMs.
@@ -366,39 +365,42 @@ public sealed partial class PerformancePage : Page
         }
         finally
         {
-            UpdateShapingGating();
-            ShapingModeSelector.IsEnabled = true;
+            Shaping.SetBusy(false);
         }
     }
+
+    // ---- Shaping is timed like every other run (Shaping.TimeCall = Timed) ------------------
+
+    protected override void OnShapingApplied(ShapingAppliedEventArgs e)
+    {
+        var ms = e.ElapsedMilliseconds;
+        GroupText.Text = e.IsGrouped
+            ? string.Format(CultureInfo.CurrentCulture, "GroupBy {0}: {1:N0} ms, {2:N0} rows", e.KeyLabel, ms, _people.Count)
+            : string.Format(CultureInfo.CurrentCulture, "ClearGroupBy: {0:N0} ms, {1:N0} rows", ms, _people.Count);
+        e.Message += string.Format(CultureInfo.CurrentCulture, " in {0:N0} ms", ms);
+    }
+
+    protected override void OnShapingAction(ShapingActionEventArgs e) =>
+        e.Message += string.Format(CultureInfo.CurrentCulture, " in {0:N0} ms", e.ElapsedMilliseconds);
+    // </snippet>
 
     // ---- Memory -------------------------------------------------------------------------
 
     private void CaptureBaseline()
     {
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
+        SettleHeap();
         _baselineWorkingSet = Process.GetCurrentProcess().WorkingSet64;
         _baselineManagedHeap = GC.GetTotalMemory(forceFullCollection: true);
     }
 
     private void OnSnapshotClick(object sender, RoutedEventArgs e)
     {
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
+        SettleHeap();
         // The managed heap is exact after a full collection; the working set is the OS view and
         // also covers native growth such as XAML element trees, but it can lag.
         var workingSet = Process.GetCurrentProcess().WorkingSet64;
         var heap = GC.GetTotalMemory(forceFullCollection: true);
-        const double MB = 1024 * 1024;
-        MemoryText.Text = string.Format(
-            CultureInfo.CurrentCulture,
-            "Managed heap {0:N0} MB ({1:+0;-0;0} MB), working set {2:N0} MB ({3:+0;-0;0} MB)",
-            heap / MB,
-            (heap - _baselineManagedHeap) / MB,
-            workingSet / MB,
-            (workingSet - _baselineWorkingSet) / MB);
+        ShowMemory(workingSet, heap);
         SetLastAction("Took a memory snapshot (deltas from the baseline)");
     }
 
@@ -408,103 +410,4 @@ public sealed partial class PerformancePage : Page
         MemoryText.Text = "Baseline reset; take a snapshot to see growth from here.";
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Reset the memory baseline at {0:T}", DateTime.Now));
     }
-
-    private void RefreshReadouts()
-    {
-        if (RowsText is null)
-        {
-            return;
-        }
-
-        RowsText.Text = SampleShaping.RowCountText(_people.Count);
-    }
-
-    #region Sample scaffolding (generic; see FIX-PLAN §6)
-
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void ApplyShaping(bool announce)
-    {
-        // Fires during InitializeComponent, before the later-declared elements exist.
-        if (_source is null || PerfTable is null || ShapingModeSelector is null || GroupKeySelector is null
-            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null || GroupText is null)
-        {
-            return;
-        }
-
-        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
-        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
-        var source = _source;
-        long ms;
-
-        switch (mode)
-        {
-            case "grouped":
-                // The key selector receives the ROW; the identity selector receives the KEY.
-                ms = Timed(() => source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity));
-                break;
-            // case "hierarchy":
-            // case "groupedHierarchy":
-            //     Hierarchical (tree) rows are not available in this release, so the two matching
-            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
-            //     member today. When hierarchy ships, apply it to this same source here, composed
-            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
-            //     after the call returns.
-            default:
-                ms = Timed(() => source.ClearGroupBy());
-                mode = "flat";
-                break;
-        }
-
-        _appliedMode = mode;
-
-        // No Reselect here: no action on this page edits a group key, and a plain reshape keeps
-        // the selection on its item. Probing 100,000 indexes would also defeat the measurement.
-        UpdateShapingGating();
-        GroupText.Text = mode == "grouped"
-            ? string.Format(CultureInfo.CurrentCulture, "GroupBy {0}: {1:N0} ms, {2:N0} rows", SampleShaping.Label(GroupKeySelector), ms, _people.Count)
-            : string.Format(CultureInfo.CurrentCulture, "ClearGroupBy: {0:N0} ms, {1:N0} rows", ms, _people.Count);
-        if (announce)
-        {
-            SetLastAction(mode == "grouped"
-                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0} in {1:N0} ms", SampleShaping.Label(GroupKeySelector), ms)
-                : string.Format(CultureInfo.CurrentCulture, "Shaping -> Flat in {0:N0} ms", ms));
-        }
-    }
-
-    private void UpdateShapingGating()
-    {
-        var grouped = _appliedMode == "grouped";
-        GroupKeySelector.IsEnabled = grouped;
-        ExpandAllButton.IsEnabled = grouped;
-        CollapseAllButton.IsEnabled = grouped;
-        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
-    }
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        var ms = Timed(() => PerfTable.ExpandAllGroups());
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Expanded all groups in {0:N0} ms", ms));
-    }
-
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
-    {
-        var ms = Timed(() => PerfTable.CollapseAllGroups());
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Collapsed all groups in {0:N0} ms", ms));
-    }
-
-    // The only writer of LastActionText.
-    private void SetLastAction(string message)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = message;
-        }
-
-        RefreshReadouts();
-    }
-
-    #endregion
 }

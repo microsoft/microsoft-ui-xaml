@@ -2,68 +2,55 @@
 <!--
     Selection: SelectionMode, the index-based selection API (Select, DeselectAll, SelectedItem,
     SelectedIndex), and what selection does across a reshape, an insert and a remove.
+    The page holds only the selection behaviour: the table, the Selection mode section and the
+    Actions. Try it / What to look for are presenter attributes; Shaping and Status are the shared
+    ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
 -->
-<Page
+<pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.SelectionPage"
     NavigationCacheMode="Disabled"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:pages="using:TableViewSampleApp.Pages"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
         Header="Selection"
         Description="TableView.SelectionMode is None or Single in this release. Selection from code is index-based: Select(index) and DeselectAll() change it, and SelectedItem, SelectedIndex and the SelectionChanged event report it. Group headers take display indexes too, so the last row's index is larger than the row count when the table is grouped. Select a row, then group, insert above it or remove it, and watch the Status readouts follow the item."
-        SourceCaption="SelectionPage.xaml (excerpt)"
-        SourceSnippet="Selection.xaml.txt"
-        AdditionalSnippetCaption="SelectionPage.xaml.cs (excerpt)"
-        AdditionalSnippet="Selection.cs.txt"
-        StretchExample="True">
+        Snippet="Selection"
+        StretchExample="True"
+        TryIt="Click a row, then switch Shaping to Grouped: the same person stays selected while SelectedIndex moves past the group headers. Click Select last, Insert a row above the selection and Remove the selected row, and read SelectionChanged fires and Last action after each one."
+        WhatToLookFor="Selection follows the item, not the index: grouping, inserting above and moving to another group keep the same person selected while SelectedIndex changes. Removing the selected row clears the selection instead of moving it to a neighbour, and so does Collapse all. Check whether using an editor inside a row, such as the Active checkbox or the Office list, also selects that row: Last action names the edited person and the selected one.">
 
         <controls:SamplePresenter.Example>
-            <Grid RowSpacing="12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <!-- scaffold:tryit -->
-                <muxc:InfoBar
-                    Grid.Row="0"
-                    Title="Try it"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    MinHeight="104"
-                    Message="Click a row, then switch Shaping to Grouped: the same person stays selected while SelectedIndex moves past the group headers. Click Select last, Insert a row above the selection and Remove the selected row, and read SelectionChanged fires and Last action after each one."/>
-                <!-- /scaffold -->
-                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                    <tv:TableView
-                        x:Name="PeopleTable"
-                        AutomationProperties.AutomationId="SelectionTable"
-                        AutomationProperties.Name="People selection"
-                        SelectionMode="Single"
-                        VerticalAlignment="Stretch"
-                        MinHeight="320">
-                        <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                        <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                        <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
-                        <tv:TableViewTemplateColumn Header="Office" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office"/>
-                        <tv:TableViewTemplateColumn Header="Details" Width="{StaticResource ColWidthAction}" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False"/>
-                    </tv:TableView>
-                </Border>
-            </Grid>
+            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                <!-- snippet -->
+                <tv:TableView
+                    x:Name="PeopleTable"
+                    AutomationProperties.AutomationId="SelectionTable"
+                    AutomationProperties.Name="People selection"
+                    SelectionMode="Single"
+                    VerticalAlignment="Stretch"
+                    MinHeight="320">
+                    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                    <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+                    <tv:TableViewTemplateColumn Header="Office" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office"/>
+                    <tv:TableViewTemplateColumn Header="Details" Width="{StaticResource ColWidthAction}" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False"/>
+                </tv:TableView>
+                <!-- /snippet -->
+            </Border>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <!-- 1. Primary feature -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Selection mode">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Selection mode"
-                               Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <TextBlock Text="Sets TableView.SelectionMode. Single selects one row by click, by keyboard or from code; None turns selection off."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <!-- snippet -->
+                <controls:RailSection
+                    IsFirst="True"
+                    Header="Selection mode"
+                    Description="Sets TableView.SelectionMode. Single selects one row by click, by keyboard or from code; None turns selection off.">
                     <ComboBox
                         x:Name="SelectionModeSelector"
                         AutomationProperties.AutomationId="SelectionSelectionModeSelector"
@@ -76,75 +63,21 @@
                     </ComboBox>
                     <TextBlock Style="{StaticResource RailCaptionTextStyle}"
                                Text="Select first and Select last need the Single mode."/>
-                </StackPanel>
+                </controls:RailSection>
+                <!-- /snippet -->
 
-                <!-- scaffold:shaping -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Grouping keeps the selected person selected; only SelectedIndex changes, because the group headers above it take indexes. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                    <ComboBox
-                        x:Name="ShapingModeSelector"
-                        AutomationProperties.AutomationId="SelectionShapingModeSelector"
-                        Header="Shaping mode"
-                        SelectedIndex="0"
-                        SelectionChanged="OnShapingModeChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Flat" Tag="flat"/>
-                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                        <!-- Hierarchical rows are not available in this release. These two options stay
-                             visible but disabled so the shape of the feature is discoverable. When the
-                             control ships hierarchy, enable them and uncomment the matching branch in
-                             ApplyShaping. -->
-                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                    </ComboBox>
-                    <ComboBox
-                        x:Name="GroupKeySelector"
-                        AutomationProperties.AutomationId="SelectionGroupKeySelector"
-                        Header="Group key"
-                        SelectedIndex="0"
-                        IsEnabled="False"
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        SelectionChanged="OnGroupKeyChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Department" Tag="Department"/>
-                        <ComboBoxItem Content="Office" Tag="Office"/>
-                        <ComboBoxItem Content="Active" Tag="IsActive"/>
-                    </ComboBox>
-                    <Button
-                        x:Name="ExpandAllButton"
-                        AutomationProperties.AutomationId="SelectionExpandAllGroupsButton"
-                        Content="Expand all"
-                        Click="OnExpandAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <Button
-                        x:Name="CollapseAllButton"
-                        AutomationProperties.AutomationId="SelectionCollapseAllGroupsButton"
-                        Content="Collapse all"
-                        Click="OnCollapseAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
-                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
-                </StackPanel>
-                <!-- /scaffold -->
+                <controls:ShapingOptions
+                    x:Name="Shaping"
+                    AutomationIdPrefix="Selection"
+                    Description="Grouping keeps the selected person selected; only SelectedIndex changes, because the group headers above it take indexes. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Office" Tag="Office"/>
+                    <ComboBoxItem Content="Active" Tag="IsActive"/>
+                </controls:ShapingOptions>
 
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="These actions drive selection from code and change the rows around it. Watch the table and the Last action readout. Actions that change one row need a selected row."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    Header="Actions"
+                    Description="These actions drive selection from code and change the rows around it. Watch the table and the Last action readout. Actions that change one row need a selected row.">
                     <StackPanel Spacing="8">
                         <Button
                             x:Name="SelectFirstButton"
@@ -201,59 +134,16 @@
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                     </StackPanel>
-                </StackPanel>
+                </controls:RailSection>
 
-                <!-- scaffold:status -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <Grid Style="{StaticResource StatusGridStyle}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="SelectedItem" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SelectedItemText" AutomationProperties.AutomationId="SelectionSelectedItemText"
-                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="1" Text="SelectedIndex" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="SelectedIndexText" AutomationProperties.AutomationId="SelectionSelectedIndexText"
-                                   AutomationProperties.LiveSetting="Polite" Text="-1 (none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="2" Text="SelectionChanged fires" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ChangeCountText" AutomationProperties.AutomationId="SelectionChangeCountText"
-                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="3" Text="Last delta" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="SelectionDeltaText" AutomationProperties.AutomationId="SelectionDeltaText"
-                                   AutomationProperties.LiveSetting="Polite" Text="(no SelectionChanged yet)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="4" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="SelectionRowsText"
-                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="5" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="SelectionShapingModeText"
-                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="6" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="6" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="SelectionLastActionText"
-                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
-                                   Style="{StaticResource StatusReadoutValueStyle}"/>
-                    </Grid>
-                </StackPanel>
-                <!-- /scaffold -->
-
-                <muxc:InfoBar
-                    Title="What to look for"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    Message="Selection follows the item, not the index: grouping, inserting above and moving to another group keep the same person selected while SelectedIndex changes. Removing the selected row clears the selection instead of moving it to a neighbour, and so does Collapse all. Check whether using an editor inside a row, such as the Active checkbox or the Office list, also selects that row: Last action names the edited person and the selected one."/>
+                <controls:StatusPanel x:Name="Status" AutomationIdPrefix="Selection">
+                    <TextBlock x:Name="SelectedItemText" controls:StatusPanel.Label="SelectedItem" Text="(none)"/>
+                    <TextBlock x:Name="SelectedIndexText" controls:StatusPanel.Label="SelectedIndex" Text="-1 (none)"/>
+                    <TextBlock x:Name="ChangeCountText" controls:StatusPanel.Label="SelectionChanged fires" Text="0"/>
+                    <TextBlock x:Name="SelectionDeltaText" AutomationProperties.AutomationId="SelectionDeltaText"
+                               controls:StatusPanel.Label="Last delta" Text="(no SelectionChanged yet)"/>
+                </controls:StatusPanel>
             </StackPanel>
         </controls:SamplePresenter.Options>
     </controls:SamplePresenter>
-</Page>
+</pages:SamplePageBase>

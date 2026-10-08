@@ -1,67 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page
+<!--
+    Density: TableView.Density (Compact / Standard / Comfortable) switched live over text and
+    read-only template cells, alongside grouping, whose headers keep a fixed height. The page holds
+    only the density behaviour: the table, the Density section and the Actions. Try it / What to
+    look for are presenter attributes; Shaping and Status are the shared ShapingOptions /
+    StatusPanel controls (see Pages\SamplePageBase.cs).
+-->
+<pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.DensityPage"
     NavigationCacheMode="Disabled"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:pages="using:TableViewSampleApp.Pages"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
         Header="Density"
         Description="TableView.Density sets the row height and the built-in cell padding to Compact, Standard or Comfortable. Pick a preset and every row resizes at once, including the template cells: the 28 px avatar and the Department and Status chips. Group headers keep the same height in every preset, so with grouping on, the rows change and the headers do not. The cells here are read-only visuals, so nothing but the density changes their size."
-        SourceCaption="DensityPage.xaml (excerpt)"
-        SourceSnippet="Density.xaml.txt"
-        AdditionalSnippetCaption="DensityPage.xaml.cs (excerpt)"
-        AdditionalSnippet="Density.cs.txt"
-        StretchExample="True">
+        Snippet="Density"
+        StretchExample="True"
+        TryIt="Choose Compact, then Comfortable, and watch every row resize. Switch Shaping to Grouped and change the density again: the rows resize but the group headers keep their height. Then select a row and move it to the next group."
+        WhatToLookFor="Every row takes the new height at once, and the 28 px avatar and the chips still fit in Compact. Group headers keep the same height in every preset. Grouped, moving a row re-applies GroupBy, so the row jumps to its new group, and a group that loses its last row disappears.">
 
         <controls:SamplePresenter.Example>
-            <Grid RowSpacing="12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <!-- scaffold:tryit -->
-                <muxc:InfoBar
-                    Grid.Row="0"
-                    Title="Try it"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    MinHeight="104"
-                    Message="Choose Compact, then Comfortable, and watch every row resize. Switch Shaping to Grouped and change the density again: the rows resize but the group headers keep their height. Then select a row and move it to the next group."/>
-                <!-- /scaffold -->
-                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                    <tv:TableView
-                        x:Name="PeopleTable"
-                        AutomationProperties.AutomationId="DensityTable"
-                        AutomationProperties.Name="People density"
-                        ItemsSource="{x:Bind Source}"
-                        Density="Standard"
-                        SelectionMode="Single"
-                        SelectionChanged="OnSelectionChanged"
-                        VerticalAlignment="Stretch"
-                        MinHeight="320">
-                        <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                        <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                        <tv:TableViewTemplateColumn Header="Status" Width="{StaticResource ColWidthStatus}" CellTemplate="{StaticResource ActiveStatusChipTemplate}" SortMemberPath="IsActive"/>
-                        <tv:TableViewTextColumn Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}"/>
-                    </tv:TableView>
-                </Border>
-            </Grid>
+            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                <!-- snippet -->
+                <!-- Density is one table-level property; the template cells take the new row height
+                     with no change of their own. -->
+                <tv:TableView
+                    x:Name="PeopleTable"
+                    AutomationProperties.AutomationId="DensityTable"
+                    AutomationProperties.Name="People density"
+                    ItemsSource="{x:Bind Source}"
+                    Density="Standard"
+                    SelectionMode="Single"
+                    SelectionChanged="OnSelectionChanged"
+                    VerticalAlignment="Stretch"
+                    MinHeight="320">
+                    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                    <tv:TableViewTemplateColumn Header="Status" Width="{StaticResource ColWidthStatus}" CellTemplate="{StaticResource ActiveStatusChipTemplate}" SortMemberPath="IsActive"/>
+                    <tv:TableViewTextColumn Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}"/>
+                </tv:TableView>
+                <!-- /snippet -->
+            </Border>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <!-- 1. Primary feature -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Density">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Density"
-                               Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <TextBlock Text="Sets TableView.Density. Each preset changes the row height and the built-in cell padding; group headers are not affected."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    IsFirst="True"
+                    Header="Density"
+                    Description="Sets TableView.Density. Each preset changes the row height and the built-in cell padding; group headers are not affected.">
+                    <!-- snippet -->
                     <ComboBox
                         x:Name="DensitySelector"
                         AutomationProperties.AutomationId="DensitySelector"
@@ -73,75 +66,21 @@
                         <ComboBoxItem Content="Standard (default)" Tag="Standard"/>
                         <ComboBoxItem Content="Comfortable" Tag="Comfortable"/>
                     </ComboBox>
-                </StackPanel>
+                    <!-- /snippet -->
+                </controls:RailSection>
 
-                <!-- scaffold:shaping -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Grouped, compare the row height with the group-header height as you change the density. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                    <ComboBox
-                        x:Name="ShapingModeSelector"
-                        AutomationProperties.AutomationId="DensityShapingModeSelector"
-                        Header="Shaping mode"
-                        SelectedIndex="0"
-                        SelectionChanged="OnShapingModeChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Flat" Tag="flat"/>
-                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                        <!-- Hierarchical rows are not available in this release. These two options stay
-                             visible but disabled so the shape of the feature is discoverable. When the
-                             control ships hierarchy, enable them and uncomment the matching branch in
-                             ApplyShaping. -->
-                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                    </ComboBox>
-                    <ComboBox
-                        x:Name="GroupKeySelector"
-                        AutomationProperties.AutomationId="DensityGroupKeySelector"
-                        Header="Group key"
-                        SelectedIndex="0"
-                        IsEnabled="False"
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        SelectionChanged="OnGroupKeyChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Department" Tag="Department"/>
-                        <ComboBoxItem Content="Role" Tag="Role"/>
-                        <ComboBoxItem Content="Active" Tag="IsActive"/>
-                    </ComboBox>
-                    <Button
-                        x:Name="ExpandAllButton"
-                        AutomationProperties.AutomationId="DensityExpandAllGroupsButton"
-                        Content="Expand all"
-                        Click="OnExpandAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <Button
-                        x:Name="CollapseAllButton"
-                        AutomationProperties.AutomationId="DensityCollapseAllGroupsButton"
-                        Content="Collapse all"
-                        Click="OnCollapseAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
-                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
-                </StackPanel>
-                <!-- /scaffold -->
+                <controls:ShapingOptions
+                    x:Name="Shaping"
+                    AutomationIdPrefix="Density"
+                    Description="Grouped, compare the row height with the group-header height as you change the density. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Role" Tag="Role"/>
+                    <ComboBoxItem Content="Active" Tag="IsActive"/>
+                </controls:ShapingOptions>
 
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Change the rows and groups while a density is applied; new rows take the current density. Watch the table and the Last action readout. Actions that change one row need a selected row."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    Header="Actions"
+                    Description="Change the rows and groups while a density is applied; new rows take the current density. Watch the table and the Last action readout. Actions that change one row need a selected row.">
                     <StackPanel Spacing="8">
                         <Button
                             x:Name="MoveGroupButton"
@@ -180,47 +119,12 @@
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                     </StackPanel>
-                </StackPanel>
+                </controls:RailSection>
 
-                <!-- scaffold:status -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <Grid Style="{StaticResource StatusGridStyle}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Density" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="DensityText" AutomationProperties.AutomationId="DensityText"
-                                   AutomationProperties.LiveSetting="Polite" Text="Standard" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="1" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="DensityRowsText"
-                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="2" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="DensityShapingModeText"
-                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="3" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="DensityLastActionText"
-                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
-                                   Style="{StaticResource StatusReadoutValueStyle}"/>
-                    </Grid>
-                </StackPanel>
-                <!-- /scaffold -->
-
-                <muxc:InfoBar
-                    Title="What to look for"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    Message="Every row takes the new height at once, and the 28 px avatar and the chips still fit in Compact. Group headers keep the same height in every preset. Grouped, moving a row re-applies GroupBy, so the row jumps to its new group, and a group that loses its last row disappears."/>
+                <controls:StatusPanel x:Name="Status" AutomationIdPrefix="Density">
+                    <TextBlock x:Name="DensityText" AutomationProperties.AutomationId="DensityText" controls:StatusPanel.Label="Density" Text="Standard"/>
+                </controls:StatusPanel>
             </StackPanel>
         </controls:SamplePresenter.Options>
     </controls:SamplePresenter>
-</Page>
+</pages:SamplePageBase>

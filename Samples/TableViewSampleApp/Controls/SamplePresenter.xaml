@@ -82,14 +82,33 @@
             BorderThickness="1"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             Background="{ThemeResource SubtleFillColorTransparentBrush}">
-            <ContentControl
-                x:Name="ExampleHost"
-                IsTabStop="False"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                HorizontalContentAlignment="Stretch"
-                VerticalContentAlignment="Stretch"
-                Content="{x:Bind Example, Mode=OneWay}"/>
+            <!-- No x:Name on the InfoBars: WinUI reports an unset AutomationId as the x:Name, which
+                 would add AutomationIds the pages' inline InfoBars never had.
+                 Try it (when set) above the page's Example. The host row is `*` on a stretch page,
+                 Auto otherwise; RowSpacing is 0 while there is no Try it (see UpdateTryIt). -->
+            <Grid x:Name="ExampleGrid" RowSpacing="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition x:Name="ExampleHostRow" Height="Auto"/>
+                </Grid.RowDefinitions>
+                <InfoBar
+                    Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
+                    IsOpen="True"
+                    IsClosable="False"
+                    MinHeight="104"
+                    Visibility="Collapsed"/>
+                <ContentControl
+                    x:Name="ExampleHost"
+                    Grid.Row="1"
+                    IsTabStop="False"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"
+                    Content="{x:Bind Example, Mode=OneWay}"/>
+            </Grid>
         </Border>
 
         <!-- Options rail (right in wide layouts, stacked under the example in narrow
@@ -107,7 +126,7 @@
             Background="{ThemeResource LayerFillColorDefaultBrush}"
             Visibility="Collapsed">
             <ScrollViewer VerticalScrollMode="Auto" VerticalScrollBarVisibility="Auto">
-                <StackPanel Spacing="12">
+                <StackPanel x:Name="RailPanel" Spacing="12">
                     <TextBlock Text="Options" FontWeight="SemiBold" FontSize="12"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                     <ContentControl
@@ -116,6 +135,13 @@
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Stretch"
                         Content="{x:Bind Options, Mode=OneWay}"/>
+                    <!-- What to look for (when set): always last in the rail, no heading above it. -->
+                    <InfoBar
+                        Title="What to look for"
+                        Severity="Informational"
+                        IsOpen="True"
+                        IsClosable="False"
+                        Visibility="Collapsed"/>
                 </StackPanel>
             </ScrollViewer>
         </Border>

@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Data;
@@ -65,6 +67,36 @@ public static class LeagueData
     /// mutate its own copy without disturbing shared state.</summary>
     public static ObservableCollection<LeagueTeam> All() =>
         new(s_rows.Select(Clone));
+
+    /// <summary>Qualification band for a points total: Qualified (12+), Playoff (7–11) or
+    /// Eliminated. Never returns the empty string, so it is also safe as a GroupBy key.</summary>
+    public static string Band(object? value) => value switch
+    {
+        int points when points >= 12 => "Qualified",
+        int points when points >= 7 => "Playoff",
+        int => "Eliminated",
+        _ => SampleShaping.NoneKey,
+    };
+
+    /// <summary>GroupBy key for a standings row and a group-key Tag (Group, Standing, Country,
+    /// IsSeeded). Never blank: an empty group identity fails fast.</summary>
+    public static object GroupKeyOf(LeagueTeam? team, string key)
+    {
+        if (team is null)
+        {
+            return SampleShaping.NoneKey;
+        }
+
+        var value = key switch
+        {
+            "Standing" => Band(team.Points),
+            nameof(LeagueTeam.Country) => team.Country,
+            nameof(LeagueTeam.IsSeeded) => team.IsSeeded ? "Seeded" : "Unseeded",
+            _ => string.IsNullOrWhiteSpace(team.Group) ? string.Empty : string.Format(CultureInfo.CurrentCulture, "Group {0}", team.Group),
+        };
+
+        return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
+    }
 
     /// <summary>A realistic late entrant for <paramref name="group"/>: no games played yet, so
     /// adding it keeps every group invariant. <paramref name="index"/> cycles through the list.</summary>

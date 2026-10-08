@@ -2,13 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
-using System.Globalization;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
-using TableViewSampleApp.Converters;
+using TableViewSampleApp.Pages;
 
-namespace TableViewSampleApp.Pages;
+namespace TableViewSampleApp.Converters;
 
 // Vibrant cell tints for the Showcase page. Each tinted cell binds a Border background to a row
 // value through one of these converters, so a live update on the bound Person recolors only that
@@ -92,25 +91,6 @@ public sealed partial class PersonAvatarColorNameConverter : IValueConverter
             "Design" or "HR" or "Marketing" => "rust avatar",
             _ => "blue avatar",
         };
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language) =>
-        throw new NotImplementedException();
-}
-
-public sealed partial class RowAutomationNameConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language)
-    {
-        var rowName = value?.ToString();
-        if (string.IsNullOrWhiteSpace(rowName))
-        {
-            rowName = "row";
-        }
-
-        return parameter is string format && !string.IsNullOrWhiteSpace(format)
-            ? string.Format(CultureInfo.CurrentCulture, format, rowName)
-            : rowName;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, string language) =>

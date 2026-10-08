@@ -1,70 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Performance: time the common TableView workloads on the UI thread. Each Action is one timed
-    run; results go to the Status grid. Navigation cache stays disabled because a run can hold a
-    100,000-row dataset.
+    run; results go to the Status readouts. Navigation cache stays disabled because a run can hold
+    a 100,000-row dataset. The page holds only the timed runs: the table, the Column set section
+    and the Actions. Try it / What to look for are presenter attributes; Shaping and Status are the
+    shared ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs); Shaping.TimeCall
+    times GroupBy and Expand / Collapse all like every other run.
 -->
-<Page
+<pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.PerformancePage"
     NavigationCacheMode="Disabled"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
+    xmlns:pages="using:TableViewSampleApp.Pages"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
         Header="Performance"
         Description="Times the workloads that decide whether a large TableView feels responsive: binding 10,000 or 100,000 rows, sorting with TableView.SortByColumn, filtering and grouping with TableViewSource, and the per-item Add pattern to avoid. Each run builds its data off the clock, then measures the call plus one synchronous layout pass with a Stopwatch. Run a scenario twice and read the second number, because the first includes JIT warm-up. The numbers are quick triage on this machine, not a benchmark."
-        SourceCaption="PerformancePage.xaml (excerpt)"
-        SourceSnippet="Performance.xaml.txt"
-        AdditionalSnippetCaption="PerformancePage.xaml.cs (excerpt)"
-        AdditionalSnippet="Performance.cs.txt"
-        StretchExample="True">
+        Snippet="Performance"
+        StretchExample="True"
+        TryIt="Click Load 100,000 rows, then Sort by Name, Filter to Engineering and Clear filter, and read each time in Status. Run Add 10,000 rows one at a time and compare it with Load 10,000 rows. Then switch Shaping to Grouped, which times GroupBy, and run the Add again: it stops after 2 seconds and shows what grouping once afterwards costs instead."
+        WhatToLookFor="A bulk load of 100,000 rows finishes in well under a second, because only the visible rows are realized. Adding rows one at a time raises one change notification per row, so 10,000 Adds take far longer than the 10,000-row bulk load. Under GroupBy every Add also regroups every row, so the cost grows with each row: detach the grouping (ClearGroupBy), add, and group once. Sorting, filtering and grouping all 100,000 rows does real work inside the control and takes longer than loading them. Debug builds are several times slower than Release builds. For per-row costs, record a trace with WPR and open it in WPA.">
 
         <controls:SamplePresenter.Example>
-            <Grid RowSpacing="12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <!-- scaffold:tryit -->
-                <muxc:InfoBar
-                    Grid.Row="0"
-                    Title="Try it"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    MinHeight="104"
-                    Message="Click Load 100,000 rows, then Sort by Name, Filter to Engineering and Clear filter, and read each time in Status. Run Add 10,000 rows one at a time and compare it with Load 10,000 rows. Then switch Shaping to Grouped, which times GroupBy, and run the Add again: it stops after 2 seconds and shows what grouping once afterwards costs instead."/>
-                <!-- /scaffold -->
-                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                    <tv:TableView
-                        x:Name="PerfTable"
-                        AutomationProperties.AutomationId="PerformanceTable"
-                        AutomationProperties.Name="Performance run dataset"
-                        SelectionMode="Single"
-                        IsReadOnly="True"
-                        VerticalAlignment="Stretch"
-                        MinHeight="320">
-                        <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}" Binding="{Binding EmployeeId}"/>
-                        <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                        <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"/>
-                        <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}" Binding="{Binding Office}"/>
-                        <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
-                    </tv:TableView>
-                </Border>
-            </Grid>
+            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                <!-- snippet -->
+                <!-- The table only shows the dataset; the runs live in the rail's Actions section. Exactly one
+                     * column (Name). Salary is formatted by the shared SalaryTextConverter (C0, current culture)
+                     and still sorts by the number, because a text column sorts by its Binding path. -->
+                <tv:TableView
+                    x:Name="PerfTable"
+                    AutomationProperties.AutomationId="PerformanceTable"
+                    AutomationProperties.Name="Performance run dataset"
+                    SelectionMode="Single"
+                    IsReadOnly="True"
+                    VerticalAlignment="Stretch"
+                    MinHeight="320">
+                    <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}" Binding="{Binding EmployeeId}"/>
+                    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                    <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"/>
+                    <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}" Binding="{Binding Office}"/>
+                    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+                </tv:TableView>
+                <!-- /snippet -->
+            </Border>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <!-- 1. Primary feature -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Column set">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Column set"
-                               Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <TextBlock Text="Text columns render one TextBlock per cell. Template columns add the shared Photo (PersonPicture) and Department chip templates, so each realized row builds more elements. Every Load run reports which set it measured."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    IsFirst="True"
+                    Header="Column set"
+                    Description="Text columns render one TextBlock per cell. Template columns add the shared Photo (PersonPicture) and Department chip templates, so each realized row builds more elements. Every Load run reports which set it measured.">
                     <ComboBox
                         x:Name="ColumnSetSelector"
                         AutomationProperties.AutomationId="PerformanceColumnSetSelector"
@@ -75,75 +64,20 @@
                         <ComboBoxItem Content="Text columns" Tag="text"/>
                         <ComboBoxItem Content="Template columns" Tag="template"/>
                     </ComboBox>
-                </StackPanel>
+                </controls:RailSection>
 
-                <!-- scaffold:shaping -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Grouping is timed too: Last action reports how long GroupBy or ClearGroupBy took on the current dataset. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                    <ComboBox
-                        x:Name="ShapingModeSelector"
-                        AutomationProperties.AutomationId="PerformanceShapingModeSelector"
-                        Header="Shaping mode"
-                        SelectedIndex="0"
-                        SelectionChanged="OnShapingModeChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Flat" Tag="flat"/>
-                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                        <!-- Hierarchical rows are not available in this release. These two options stay
-                             visible but disabled so the shape of the feature is discoverable. When the
-                             control ships hierarchy, enable them and uncomment the matching branch in
-                             ApplyShaping. -->
-                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                    </ComboBox>
-                    <ComboBox
-                        x:Name="GroupKeySelector"
-                        AutomationProperties.AutomationId="PerformanceGroupKeySelector"
-                        Header="Group key"
-                        SelectedIndex="0"
-                        IsEnabled="False"
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        SelectionChanged="OnGroupKeyChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Department" Tag="Department"/>
-                        <ComboBoxItem Content="Office" Tag="Office"/>
-                        <ComboBoxItem Content="Active" Tag="IsActive"/>
-                    </ComboBox>
-                    <Button
-                        x:Name="ExpandAllButton"
-                        AutomationProperties.AutomationId="PerformanceExpandAllGroupsButton"
-                        Content="Expand all"
-                        Click="OnExpandAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <Button
-                        x:Name="CollapseAllButton"
-                        AutomationProperties.AutomationId="PerformanceCollapseAllGroupsButton"
-                        Content="Collapse all"
-                        Click="OnCollapseAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
-                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
-                </StackPanel>
-                <!-- /scaffold -->
+                <controls:ShapingOptions
+                    x:Name="Shaping"
+                    AutomationIdPrefix="Performance"
+                    Description="Grouping is timed too: Last action reports how long GroupBy or ClearGroupBy took on the current dataset. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Office" Tag="Office"/>
+                    <ComboBoxItem Content="Active" Tag="IsActive"/>
+                </controls:ShapingOptions>
 
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Each run is timed with a Stopwatch around the call and one TableView.UpdateLayout(), after two GC passes. Data is generated on a background thread before the clock starts. Watch the table and the Status times."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    Header="Actions"
+                    Description="Each run is timed with a Stopwatch around the call and one TableView.UpdateLayout(), after two GC passes. Data is generated on a background thread before the clock starts. Watch the table and the Status times.">
                     <StackPanel Spacing="8">
                         <Button
                             x:Name="Load10kButton"
@@ -218,75 +152,19 @@
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                     </StackPanel>
-                </StackPanel>
+                </controls:RailSection>
 
-                <!-- scaffold:status -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <Grid Style="{StaticResource StatusGridStyle}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Build" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="BuildText" AutomationProperties.AutomationId="PerformanceBuildText"
-                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="1" Text="Load 10,000" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="Load10kText" AutomationProperties.AutomationId="PerformanceLoad10kText"
-                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="2" Text="Load 100,000" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="Load100kText" AutomationProperties.AutomationId="PerformanceLoad100kText"
-                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="3" Text="Sort" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="SortText" AutomationProperties.AutomationId="PerformanceSortText"
-                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="4" Text="Filter" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="FilterText" AutomationProperties.AutomationId="PerformanceFilterText"
-                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="5" Text="Group" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="GroupText" AutomationProperties.AutomationId="PerformanceGroupText"
-                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="6" Text="Per-item Add" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="6" Grid.Column="1" x:Name="PerItemAddText" AutomationProperties.AutomationId="PerformancePerItemAddText"
-                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="7" Text="Memory" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="7" Grid.Column="1" x:Name="MemoryText" AutomationProperties.AutomationId="PerformanceMemoryText"
-                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="8" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="8" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="PerformanceRowsText"
-                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="9" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="9" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="PerformanceShapingModeText"
-                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="10" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="10" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="PerformanceLastActionText"
-                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
-                                   Style="{StaticResource StatusReadoutValueStyle}"/>
-                    </Grid>
-                </StackPanel>
-                <!-- /scaffold -->
-
-                <muxc:InfoBar
-                    Title="What to look for"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    Message="A bulk load of 100,000 rows finishes in well under a second, because only the visible rows are realized. Adding rows one at a time raises one change notification per row, so 10,000 Adds take far longer than the 10,000-row bulk load. Under GroupBy every Add also regroups every row, so the cost grows with each row: detach the grouping (ClearGroupBy), add, and group once. Sorting, filtering and grouping all 100,000 rows does real work inside the control and takes longer than loading them. Debug builds are several times slower than Release builds. For per-row costs, record a trace with WPR and open it in WPA."/>
+                <controls:StatusPanel x:Name="Status" AutomationIdPrefix="Performance">
+                    <TextBlock x:Name="BuildText" controls:StatusPanel.Label="Build" Text="—"/>
+                    <TextBlock x:Name="Load10kText" controls:StatusPanel.Label="Load 10,000" Text="—"/>
+                    <TextBlock x:Name="Load100kText" controls:StatusPanel.Label="Load 100,000" Text="—"/>
+                    <TextBlock x:Name="SortText" controls:StatusPanel.Label="Sort" Text="—"/>
+                    <TextBlock x:Name="FilterText" controls:StatusPanel.Label="Filter" Text="—"/>
+                    <TextBlock x:Name="GroupText" controls:StatusPanel.Label="Group" Text="—"/>
+                    <TextBlock x:Name="PerItemAddText" controls:StatusPanel.Label="Per-item Add" Text="—"/>
+                    <TextBlock x:Name="MemoryText" controls:StatusPanel.Label="Memory" Text="—"/>
+                </controls:StatusPanel>
             </StackPanel>
         </controls:SamplePresenter.Options>
     </controls:SamplePresenter>
-</Page>
+</pages:SamplePageBase>

@@ -1,17 +1,19 @@
-// GroupsPage.xaml.cs. The source is created once and reshaped in place; the page starts Grouped.
-public GroupsPage()
-{
-    var pool = PersonData.Take(80);
-    People = new ObservableCollection<Person>(pool.Take(60));
-    _newHires = new Queue<Person>(pool.Skip(60));
-    _source = TableViewSource.From(People);
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+ApplyGroupHeaderTemplate();
 
-    InitializeComponent();
-    Loaded += OnPageLoaded;
-    Unloaded += OnPageUnloaded;
+// …
+
+// ---- Group header template ----------------------------------------------------------
+
+private void OnHeaderTemplateChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (PeopleTable is null || HeaderTemplateSelector is null)
+    {
+        return;
+    }
 
     ApplyGroupHeaderTemplate();
-    ApplyShaping(announce: false);
 }
 
 private void ApplyGroupHeaderTemplate()
@@ -21,68 +23,127 @@ private void ApplyGroupHeaderTemplate()
         : null;
 }
 
-private void ApplyShaping(bool announce)
-{
-    var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
-    var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
-    var selected = PeopleTable.SelectedItem;
+// ---- In-cell edits --------------------------------------------------------------------
 
-    switch (mode)
-    {
-        case "grouped":
-            // The key selector receives the ROW; the identity selector receives the KEY.
-            _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
-            break;
-        default:
-            _source.ClearGroupBy();
-            mode = "flat";
-            break;
-    }
-
-    _appliedMode = mode;
-    _appliedKey = key;
-
-    // Re-applying GroupBy can drop the selection when the selected row changed group.
-    SampleShaping.Reselect(PeopleTable, selected, People.Count + 64, RefreshReadouts);
-}
-
-// GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row on
-// PropertyChanged; re-apply the grouping when the grouped-on value changed.
 private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
 {
+    if (sender is not Person person || IsBulkUpdating)
+    {
+        return;
+    }
+
     switch (e.PropertyName)
     {
         case nameof(Person.Department):
         case nameof(Person.IsActive):
+            // GroupBy takes a delegate, not a property path, so the control cannot re-bucket
+            // the row on PropertyChanged; re-apply the grouping when the grouped-on value changed.
             ReapplyIfGroupedOn(e.PropertyName);
             break;
     }
 }
 
-private void ReapplyIfGroupedOn(string? propertyName)
+// ---- Expansion across a reshape -------------------------------------------------------
+
+protected override void OnShapingApplying(ShapingApplyingEventArgs e)
 {
-    if (_appliedMode == "grouped" && propertyName == _appliedKey)
-    {
-        ApplyShaping(announce: false);
-    }
+    _wasAllCollapsed = ExpansionSummary() == AllCollapsed;
 }
+
+// Re-applying GroupBy rebuilds the groups, so restore the bulk expansion state the readout
+// reports; a mixed state resets to expanded.
+protected override void OnShapingApplied(ShapingAppliedEventArgs e)
+{
+    if (!e.IsGrouped)
+    {
+        return;
+    }
+
+    var collapse = _wasAllCollapsed;
+    _collapsedGroups.Clear();
+    if (collapse)
+    {
+        _collapsedGroups.UnionWith(CurrentGroupIdentities());
+    }
+
+    EnqueueIfLoaded(() =>
+    {
+        if (!IsGrouped)
+        {
+            return;
+        }
+
+        if (collapse)
+        {
+            PeopleTable.CollapseAllGroups();
+        }
+        else
+        {
+            PeopleTable.ExpandAllGroups();
+        }
+    });
+}
+
+// …
 
 // Adding and removing rows needs no GroupBy call: the projection follows collection changes.
 private void OnAddPersonClick(object sender, RoutedEventArgs e)
 {
     if (!_newHires.TryDequeue(out var person))
     {
-        SetLastAction("No more new hires to add.");
         return;
+    }
+
+    // Give the new hire the first group's key, so the row joins a live group.
+    var key = ActionKey;
+    var firstKey = InViewOrder().Select(p => SampleShaping.KeyOf(p, key) as string).FirstOrDefault();
+    if (firstKey is not null)
+    {
+        switch (key)
+        {
+            case nameof(Person.Office):
+                person.Office = firstKey;
+                break;
+            case nameof(Person.Role):
+                person.Role = firstKey;
+                break;
+            case nameof(Person.IsActive):
+                person.IsActive = firstKey == "Active";
+                break;
+            default:
+                person.Department = firstKey;
+                break;
+        }
     }
 
     People.Add(person);
 }
 
-private void OnExpandAllClick(object sender, RoutedEventArgs e) => PeopleTable.ExpandAllGroups();
+// …
 
-private void OnCollapseAllClick(object sender, RoutedEventArgs e) => PeopleTable.CollapseAllGroups();
+// From Controls\ShapingOptions.xaml.cs
+switch (mode)
+{
+    case "grouped":
+        // The key selector receives the ROW; the identity selector receives the KEY.
+        source.GroupBy(item => _groupKeyOf(item, key), SampleShaping.GroupIdentity);
+        break;
+    // case "hierarchy":
+    // case "groupedHierarchy":
+    //     Hierarchical (tree) rows are not available in this release, so the two matching
+    //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+    //     member today. When hierarchy ships, apply it to this same source here, composed
+    //     with the GroupBy stage above rather than replacing it, and set AppliedMode only
+    //     after the call returns.
+    default:
+        source.ClearGroupBy();
+        mode = "flat";
+        break;
+}
 
+// …
+
+// From Pages\GroupsPage.Status.cs
 // A header click toggles its group on a LATER dispatcher turn, so header.IsExpanded still holds
 // the old state here. Compute the new state instead of reading it back.
 var identity = SampleShaping.GroupIdentity(group.Key);

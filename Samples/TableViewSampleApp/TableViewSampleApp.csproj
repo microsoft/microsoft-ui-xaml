@@ -48,11 +48,17 @@
   </ItemGroup>
 
   <!-- Source snippets shown in each page's Source expander. Embedded rather than loose content so
-       CodeBlock can resolve them by name with no file I/O and no deployment step. -->
+       CodeBlock can resolve them by name with no file I/O and no deployment step. Pages that carry
+       // <snippet> markers get theirs from tools\Update-Snippets.ps1 (checked on every build). -->
   <ItemGroup>
     <EmbeddedResource Include="Snippets\*.txt">
       <WithCulture>false</WithCulture>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <!-- <X>Page.Status.cs (the page's readouts) nests under <X>Page.xaml.cs. -->
+  <ItemGroup>
+    <Compile Update="Pages\*Page.Status.cs" DependentUpon="$([System.String]::Copy('%(Filename)').Replace('.Status', '.xaml.cs'))" />
   </ItemGroup>
 
   <!-- BuildInfo.g.cs is generated under obj\ so local builds do not rewrite tracked source. -->

@@ -1,18 +1,14 @@
-// ShowcasePage.xaml.cs. One TableViewSource, created once and reshaped in place.
-public ShowcasePage()
-{
-    Vibrant = true;
-    FillPeople(100);
-    _source = TableViewSource.From(People);
-    InitializeComponent();
-    // ...
-}
+Vibrant = true;
+FillPeople(100);
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+// …
 
 private void OnLiveTimerTick(object? sender, object e)
 {
     var flipped = false;
-    _isBulkUpdate = true;
-    try
+    using (BeginBulkUpdate())
     {
         foreach (var person in People.Take(LiveRowCount))
         {
@@ -27,10 +23,6 @@ private void OnLiveTimerTick(object? sender, object e)
             }
         }
     }
-    finally
-    {
-        _isBulkUpdate = false;
-    }
 
     // Neither grouping nor sorting observes PropertyChanged, so re-apply whichever one is
     // keyed on a value the tick just changed.
@@ -40,47 +32,38 @@ private void OnLiveTimerTick(object? sender, object e)
     }
 
     ResortIfSortedOn(nameof(Person.Salary), nameof(Person.IsActive));
-    RefreshReadouts();
 }
 
-// The control sorts once, when the sort is applied. Re-declaring the same path on the source
-// re-reads every key (TableViewSource.Sort replaces that axis in place), so a row whose sorted
-// value changed moves to its new position.
-private void ResortIfSortedOn(params string[] propertyNames)
+private void OnVibrantToggled(object sender, RoutedEventArgs e)
 {
-    var column = ActiveSortColumn();
-    if (_source is null || column is null || Array.IndexOf(propertyNames, column.SortMemberPath) < 0)
+    if (!_ready)
     {
         return;
     }
 
-    var selected = PeopleTable.SelectedItem;
-    _isResorting = true;
-    try
-    {
-        _source.Sort(column.SortMemberPath, column.SortDirection);
-    }
-    finally
-    {
-        _isResorting = false;
-    }
+    Vibrant = VibrantToggle.IsOn;
 
-    SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex, RefreshReadouts);
+    // The tint converters read Vibrant, which no binding observes. Re-assigning the
+    // CellTemplate regenerates the realized cells of just the two tinted columns.
+    foreach (var column in new[] { DepartmentColumn, SalaryColumn })
+    {
+        var template = column.CellTemplate;
+        column.CellTemplate = null;
+        column.CellTemplate = template;
+    }
 }
 
-private TableViewColumn? ActiveSortColumn() =>
-    PeopleTable.Columns.FirstOrDefault(column => column.SortDirection != TableViewSortDirection.None);
+// …
 
-private void OnColumnCheckBoxClick(object sender, RoutedEventArgs e)
+private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
 {
-    if (sender is not CheckBox checkBox || !_columnToggles.TryGetValue(checkBox, out var column))
+    if (!_ready)
     {
         return;
     }
 
-    var show = checkBox.IsChecked == true;
-    column.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} column -> {1}", column.Header, show ? "shown" : "hidden"));
+    var mode = Enum.Parse<TableViewSelectionMode>(SampleShaping.SelectedTag(SelectionModeSelector, "Single"));
+    PeopleTable.SelectionMode = mode;
 }
 
 private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
@@ -92,5 +75,42 @@ private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs
 
     var visibility = Enum.Parse<TableViewHeadersVisibility>(SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column"));
     PeopleTable.HeadersVisibility = visibility;
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "HeadersVisibility -> {0}", visibility));
+}
+
+private void OnColumnCheckBoxClick(object sender, RoutedEventArgs e)
+{
+    if (sender is not CheckBox checkBox || !_columnToggles.TryGetValue(checkBox, out var column))
+    {
+        return;
+    }
+
+    var show = checkBox.IsChecked == true;
+    column.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+}
+
+// …
+
+// The control sorts once, when the sort is applied. Re-declaring the same path on the source
+// re-reads every key (TableViewSource.Sort replaces that axis in place), so a row whose sorted
+// value changed moves to its new position.
+private void ResortIfSortedOn(params string[] propertyNames)
+{
+    var column = SampleShaping.ActiveSortColumn(PeopleTable);
+    if (column is null || Array.IndexOf(propertyNames, column.SortMemberPath) < 0)
+    {
+        return;
+    }
+
+    var selected = PeopleTable.SelectedItem;
+    _isResorting = true;
+    try
+    {
+        Source.Sort(column.SortMemberPath, column.SortDirection);
+    }
+    finally
+    {
+        _isResorting = false;
+    }
+
+    SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex, RefreshReadouts);
 }

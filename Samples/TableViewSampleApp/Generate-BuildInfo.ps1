@@ -30,6 +30,11 @@ function Test-SnippetReferences {
         [regex]::Matches($text, '(?:SourceSnippet|AdditionalSnippet)="([^"]+)"') | ForEach-Object {
             [void]$declared.Add($_.Groups[1].Value)
         }
+        # Snippet="Sort" names both Sort.xaml.txt and Sort.cs.txt (SamplePresenter.Snippet).
+        [regex]::Matches($text, '\bSnippet="([^"]+)"') | ForEach-Object {
+            [void]$declared.Add("$($_.Groups[1].Value).xaml.txt")
+            [void]$declared.Add("$($_.Groups[1].Value).cs.txt")
+        }
     }
 
     $missing = @($declared | Where-Object { -not $snippetNames.Contains($_) })
@@ -48,6 +53,9 @@ function Run-Git {
 }
 
 Test-SnippetReferences
+
+# Snippets generated from // <snippet> regions must match their page (tools\Update-Snippets.ps1).
+& (Join-Path $ProjectDir 'tools\Update-Snippets.ps1') -Check -ProjectDir $ProjectDir
 
 $sha       = Run-Git -Args @('rev-parse','HEAD')
 $shaShort  = if ($sha.Length -ge 10) { $sha.Substring(0,10) } else { $sha }

@@ -98,9 +98,10 @@ high-contrast entries must use `SystemColor*` resources rather than accent color
 
 `SamplePresenter` is a normal UserControl in this assembly. Bind `Header`, `Description`, `Example`,
 and `Options` with `x:Bind`; do not reintroduce split-binary/CsWinRT manual content sync
-workarounds. Its `SourceSnippet` and `AdditionalSnippet` values must correspond to files under
-`Snippets\*.txt`. `Generate-BuildInfo.ps1` validates those declarations at compile time before
-emitting `BuildInfo.g.cs`.
+workarounds. Its `SourceSnippet` and `AdditionalSnippet` values (or `Snippet="X"`, which names
+`X.xaml.txt` and `X.cs.txt`) must correspond to files under `Snippets\*.txt`.
+`Generate-BuildInfo.ps1` validates those declarations at compile time before emitting
+`BuildInfo.g.cs`.
 
 `BuildInfo` is generated to `$(IntermediateOutputPath)\BuildInfo.g.cs` and included from there.
 Do not check in generated `BuildInfo.cs`, and do not change the existing `BuildInfo` field names
@@ -110,3 +111,29 @@ The pages deliberately source-free today are `AboutPage.xaml`, `CellEditingPage.
 `FileExplorerPage.xaml`, `FilePropertiesPage.xaml`, `FilterPage.xaml`, `HomePage.xaml`,
 `PerformancePage.xaml`, `SettingsPage.xaml`, and `TaskManagerPage.xaml`. All other
 `SamplePresenter` pages that declare snippet attributes are covered by the snippet-existence check.
+
+## Page structure
+
+A page holds only the TableView behaviour it demonstrates; the generic parts are shared:
+
+- `Pages\SamplePageBase.cs` — the page base (`<pages:SamplePageBase>` XAML root): Last action,
+  readout refresh, Loaded/Unloaded tracking (`TrackItems`, `TrackTimer` for both timer types,
+  `TrackLifetime`), `EnqueueIfLoaded`, `BeginBulkUpdate`, and the page hooks `OnShapingApplying`,
+  `OnShapingApplied`, `OnShapingAction` (Expand all / Collapse all) and `OnLastActionSet`.
+- `Controls\RailSection.cs`, `Controls\ShapingOptions.xaml`, `Controls\StatusPanel.cs` — the rail's
+  section chrome, the Shaping section (GroupBy / ClearGroupBy, re-selection, gating) and the Status
+  grid with its fixed Rows → Shaping → Last action tail (readouts are Polite live regions unless
+  they set `AutomationProperties.LiveSetting` themselves). `ShapingOptions.TimeCall` lets a page
+  time the GroupBy / ClearGroupBy and Expand / Collapse all calls. `SamplePresenter.TryIt` and
+  `WhatToLookFor` render the two InfoBars.
+- `Pages\<X>Page.Status.cs` — the page's own readouts (`RefreshReadouts`).
+- `Converters\Converters.xaml` — every page converter key, merged in `App.xaml`.
+
+Element AutomationIds are a contract with the UIA verification scripts. WinUI reports an unset
+AutomationId as the element's `x:Name`, so do not add an `x:Name` to an element that has an
+automation peer unless the AutomationId should change too.
+
+Snippets of migrated pages are generated from `<!-- snippet -->` / `// <snippet>` regions by
+`tools\Update-Snippets.ps1` (`-Tags Sort,Groups` limits it to some pages); the build runs it with
+`-Check` and fails on a stale snippet. A named region (`// <snippet Groups Sort>`) in a shared or
+data file is appended to those pages' snippets.

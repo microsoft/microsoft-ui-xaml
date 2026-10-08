@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using TableViewSampleApp.Controls;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 using TableViewSampleApp.Services;
@@ -27,17 +28,16 @@ namespace TableViewSampleApp.Pages;
 /// each folder off the UI thread, keeps folders first through computed SortMemberPath keys, and
 /// filters and groups one TableViewSource in place. Enter opens a folder, Backspace goes up.
 /// </summary>
-public sealed partial class FileExplorerPage : Page
+public sealed partial class FileExplorerPage : SamplePageBase
 {
     private readonly Stack<string> _history = new();
-    private TableViewSource? _source;          // created ONCE over Entries; filtered and grouped in place
-    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
     private string _currentDir = string.Empty;
     private int _navigationVersion;
 
     public FileExplorerPage()
     {
-        _source = TableViewSource.From(Entries);
+        // <snippet>
+        Source = TableViewSource.From(Entries);    // created once; filtered and grouped in place
         InitializeComponent();
 
         FileTable.HeadersVisibility = TableViewHeadersVisibility.Column;
@@ -45,16 +45,19 @@ public sealed partial class FileExplorerPage : Page
         FileTable.Density = TableViewDensity.Compact;
         // handledEventsToo: the table consumes Enter for its own row navigation.
         FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
+        // </snippet>
 
-        Loaded += OnPageLoaded;
+        Shaping.ProbeLimit = () => Entries.Count + 64;
+        InitializeSample(Status, Shaping.Attach(FileTable, Source, (row, key) => KeyOf(row as FileSystemEntry, key)));
+        TrackLifetime(OpenInitialFolder);
     }
 
     // Folder contents replace the items of this one collection; the source is never rebuilt.
     public ObservableCollection<FileSystemEntry> Entries { get; } = new();
 
-    public TableViewSource? Source => _source;
+    public TableViewSource Source { get; }
 
-    private void OnPageLoaded(object sender, RoutedEventArgs e)
+    private void OpenInitialFolder()
     {
         if (_currentDir.Length == 0)
         {
@@ -62,6 +65,7 @@ public sealed partial class FileExplorerPage : Page
         }
     }
 
+    // <snippet>
     // ---- Navigation (the folder is read on a background thread) ---------------------------
 
     private async Task NavigateAsync(string path, bool addToHistory, string verb)
@@ -105,6 +109,7 @@ public sealed partial class FileExplorerPage : Page
 
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0}: {1} ({2:N0} items)", verb, DisplayName(_currentDir), Entries.Count));
     }
+    // </snippet>
 
     // How focus sits in the table, or Unfocused when it is elsewhere on the page.
     private FocusState TableFocusState()
@@ -248,11 +253,12 @@ public sealed partial class FileExplorerPage : Page
         _ = NavigateAsync(path, addToHistory: true, verb: "Opened");
     }
 
+    // <snippet>
     // ---- Filter (TableViewSource.Filter) ---------------------------------------------------
 
     private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_source is null || FilterSelector is null)
+        if (FilterSelector is null)
         {
             return;
         }
@@ -261,16 +267,16 @@ public sealed partial class FileExplorerPage : Page
         switch (filter)
         {
             case "folders":
-                _source.Filter(item => item is FileSystemEntry { IsFolder: true });
+                Source.Filter(item => item is FileSystemEntry { IsFolder: true });
                 break;
             case "files":
-                _source.Filter(item => item is FileSystemEntry { IsFolder: false });
+                Source.Filter(item => item is FileSystemEntry { IsFolder: false });
                 break;
             case "none":
-                _source.Filter(_ => false);
+                Source.Filter(_ => false);
                 break;
             default:
-                _source.ClearFilter();
+                Source.ClearFilter();
                 break;
         }
 
@@ -288,6 +294,7 @@ public sealed partial class FileExplorerPage : Page
         "none" => 0,
         _ => Entries.Count,
     };
+    // </snippet>
 
     // ---- Actions ------------------------------------------------------------------------
 
@@ -331,24 +338,17 @@ public sealed partial class FileExplorerPage : Page
         RefreshReadouts();
     }
 
-    private void RefreshReadouts()
+    // <snippet>
+    // Groups appear in the order of their first row, and a sort declared BEFORE GroupBy orders
+    // them. Sorting newest first makes the Date modified buckets read Today, Yesterday, ... and
+    // the Date modified header shows that sort.
+    protected override void OnShapingApplying(ShapingApplyingEventArgs e)
     {
-        if (RowsText is null || FolderText is null || ItemsText is null || SelectedText is null || FileTable is null)
+        if (e.Mode == "grouped" && e.Key == nameof(FileSystemEntry.DateModified))
         {
-            return;
+            FileTable.SortByColumn(DateModifiedColumn, SortDirection.Descending);
         }
-
-        FolderText.Text = _currentDir.Length > 0 ? _currentDir : "(reading)";
-        ItemsText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} items ({1:N0} folders)", Entries.Count, Entries.Count(entry => entry.IsFolder));
-        SelectedText.Text = FileTable.SelectedItem switch
-        {
-            FileSystemEntry { IsFolder: true } folder => string.Format(CultureInfo.CurrentCulture, "{0} (folder)", folder.Name),
-            FileSystemEntry file => string.Format(CultureInfo.CurrentCulture, "{0} ({1})", file.Name, file.SizeDisplay),
-            _ => "(none)",
-        };
-        RowsText.Text = SampleShaping.RowCountText(VisibleCount());
     }
-
     // Group key resolution for this page's model (FIX-PLAN §1.6 R2). Never returns a blank key.
     private static object KeyOf(FileSystemEntry? entry, string key)
     {
@@ -380,98 +380,5 @@ public sealed partial class FileExplorerPage : Page
             _ => "A long time ago",
         };
     }
-
-    #region Sample scaffolding (generic; see FIX-PLAN §6)
-
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void ApplyShaping(bool announce)
-    {
-        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
-        // later-declared elements exist. Guard every element this path touches.
-        if (_source is null || FileTable is null || ShapingModeSelector is null || GroupKeySelector is null
-            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
-        {
-            return;
-        }
-
-        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
-        var key = SampleShaping.SelectedTag(GroupKeySelector, "TypeDisplay");
-        var selected = FileTable.SelectedItem;
-
-        switch (mode)
-        {
-            case "grouped":
-                if (key == nameof(FileSystemEntry.DateModified))
-                {
-                    // Groups appear in the order of their first row, and a sort declared BEFORE
-                    // GroupBy orders them. Sorting newest first makes the buckets read Today,
-                    // Yesterday, ... and the Date modified header shows that sort.
-                    FileTable.SortByColumn(DateModifiedColumn, SortDirection.Descending);
-                }
-
-                // The key selector receives the ROW; the identity selector receives the KEY.
-                _source.GroupBy(item => KeyOf(item as FileSystemEntry, key), SampleShaping.GroupIdentity);
-                break;
-            // case "hierarchy":
-            // case "groupedHierarchy":
-            //     Hierarchical (tree) rows are not available in this release, so the two matching
-            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
-            //     member today. When hierarchy ships, apply it to this same source here, composed
-            //     with the GroupBy stage above rather than replacing it (folders parenting their
-            //     contents is the natural shape), and set _appliedMode only after the call returns.
-            default:
-                _source.ClearGroupBy();
-                mode = "flat";
-                break;
-        }
-
-        _appliedMode = mode;
-
-        // Re-applying GroupBy can drop the selection when the selected row changed group.
-        SampleShaping.Reselect(FileTable, selected, Entries.Count + 64, RefreshReadouts);
-        UpdateShapingGating();
-        if (announce)
-        {
-            SetLastAction(mode == "grouped"
-                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
-                : "Shaping -> Flat");
-        }
-    }
-
-    private void UpdateShapingGating()
-    {
-        var grouped = _appliedMode == "grouped";
-        GroupKeySelector.IsEnabled = grouped;
-        ExpandAllButton.IsEnabled = grouped;
-        CollapseAllButton.IsEnabled = grouped;
-        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
-    }
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        FileTable.ExpandAllGroups();
-        SetLastAction("Expanded all groups");
-    }
-
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
-    {
-        FileTable.CollapseAllGroups();
-        SetLastAction("Collapsed all groups");
-    }
-
-    // The only writer of LastActionText.
-    private void SetLastAction(string message)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = message;
-        }
-
-        RefreshReadouts();
-    }
-
-    #endregion
+    // </snippet>
 }

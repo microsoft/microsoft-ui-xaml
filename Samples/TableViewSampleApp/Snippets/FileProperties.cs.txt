@@ -1,21 +1,13 @@
-// FilePropertiesPage.xaml.cs. One source over one collection, created once; it is never rebuilt.
-public ObservableCollection<FilePropertyEntry> Entries { get; } = new();
+Source = TableViewSource.From(Entries);    // created once; never rebuilt
+InitializeComponent();
 
-public TableViewSource? Source => _source;
+PropTable.HeadersVisibility = TableViewHeadersVisibility.Column;
+PropTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
+PropTable.Density = TableViewDensity.Compact;
 
-public FilePropertiesPage()
-{
-    _source = TableViewSource.From(Entries);
-    InitializeComponent();
+// …
 
-    // This page starts Grouped by section (ShapingModeSelector SelectedIndex="1"). The
-    // SelectionChanged that InitializeComponent raised was ignored by the guard, so apply it now.
-    ApplyShaping(announce: false);
-    Loaded += OnPageLoaded;
-}
-
-// Picking a file refills the one collection; the source re-projects it under the current
-// filter and grouping. Every value comes from FileVersionInfo or FileInfo, so none is blank.
+// Refills the one collection; the source re-projects it under the current filter and grouping.
 private void ShowFile(FileInfo file)
 {
     _currentFile = file;
@@ -26,32 +18,72 @@ private void ShowFile(FileInfo file)
     }
 }
 
-// Remove is a collection change: the source drops the row (and an emptied section) by itself.
-Entries.Remove(entry);
+// …
 
-// Move rewrites the grouped-on value. GroupBy takes a delegate, not a property path, so it is
-// re-applied; ApplyShaping then restores the selection, so the row stays selected.
-var from = entry.Section;
-entry.Section = SampleShaping.Next(s_sections, from);
-ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
+// ---- Filter (TableViewSource.Filter) ---------------------------------------------------
 
-private void ApplyShaping(bool announce)
+private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
 {
-    // ...guards, then:
-    var selected = PropTable.SelectedItem;
-    switch (mode)
+    if (FilterSelector is null)
     {
-        case "grouped":
-            _source.GroupBy(item => KeyOf(item as FilePropertyEntry, key), SampleShaping.GroupIdentity);
+        return;
+    }
+
+    switch (SampleShaping.SelectedTag(FilterSelector, "all"))
+    {
+        case "dates":
+            Source.Filter(item => item is FilePropertyEntry { IsDate: true });
+            break;
+        case "version":
+            Source.Filter(item => item is FilePropertyEntry { Source: FilePropertyEntry.VersionResource });
+            break;
+        case "none":
+            Source.Filter(_ => false);
             break;
         default:
-            _source.ClearGroupBy();
-            mode = "flat";
+            Source.ClearFilter();
             break;
     }
 
-    _appliedMode = mode;
-    _appliedKey = key;
-    SampleShaping.Reselect(PropTable, selected, Entries.Count + s_sections.Length + 2, RefreshReadouts);
-    UpdateShapingGating();
+    // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only.
+    if (IsLoaded)
+    {
+    }
+}
+
+// …
+
+private void OnMoveSectionClick(object sender, RoutedEventArgs e)
+{
+    if (PropTable.SelectedItem is not FilePropertyEntry entry)
+    {
+        return;
+    }
+
+    var from = entry.Section;
+    entry.Section = SampleShaping.Next(s_sections, from);
+
+    // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row;
+    // the shaping restores the selection in its new section.
+    ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
+}
+
+private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
+{
+    if (PropTable.SelectedItem is not FilePropertyEntry entry)
+    {
+        return;
+    }
+
+    // A collection change: the source drops the row (and an emptied section) by itself.
+    Entries.Remove(entry);
+}
+
+// …
+
+// Group key resolution for this page's model (FIX-PLAN §1.6 R2). Never returns a blank key.
+private static object KeyOf(FilePropertyEntry? entry, string key)
+{
+    var value = key == nameof(FilePropertyEntry.Source) ? entry?.Source : entry?.Section;
+    return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
 }

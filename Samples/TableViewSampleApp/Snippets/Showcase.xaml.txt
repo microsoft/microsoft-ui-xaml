@@ -1,5 +1,20 @@
-<!-- ShowcasePage.xaml. A tinted template cell: the converter reads the bound value, so a live
-     update recolors only the cell whose value changed. -->
+<!-- Vibrant tints: each tinted cell binds its Border background to the row value through a
+     converter, so a live update recolors only that cell. ShowcasePage.Vibrant gates them. The
+     converters are registered in Converters\Converters.xaml. -->
+<DataTemplate x:Key="ShowcaseDepartmentPillTemplate" x:DataType="models:Person">
+    <Border Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource ShowcaseDepartmentTintConverter}}"
+            AutomationProperties.Name="{x:Bind Department, Mode=OneWay}"
+            CornerRadius="10" Padding="10,3" Margin="6,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+        <StackPanel Orientation="Horizontal" Spacing="7">
+            <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                     Fill="{x:Bind Department, Mode=OneWay, Converter={StaticResource ShowcaseDepartmentDotConverter}}"
+                     AutomationProperties.AccessibilityView="Raw"/>
+            <TextBlock Text="{x:Bind Department, Mode=OneWay}" VerticalAlignment="Center"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+        </StackPanel>
+    </Border>
+</DataTemplate>
+
 <DataTemplate x:Key="ShowcaseSalaryTemplate" x:DataType="models:Person">
     <Border Background="{x:Bind Salary, Mode=OneWay, Converter={StaticResource ShowcaseSalaryTintConverter}}"
             CornerRadius="4" Padding="8,2" Margin="2,2" HorizontalAlignment="Stretch" VerticalAlignment="Center">
@@ -8,6 +23,8 @@
                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
     </Border>
 </DataTemplate>
+
+<!-- … -->
 
 <tv:TableView
     x:Name="PeopleTable"
@@ -34,3 +51,18 @@
     <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" Visibility="Collapsed"/>
     <tv:TableViewTemplateColumn x:Name="DetailsColumn" Header="Details" Width="{StaticResource ColWidthAction}" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" Visibility="Collapsed"/>
 </tv:TableView>
+
+<!-- … -->
+
+<controls:RailSection
+    IsFirst="True"
+    Header="Live updates"
+    Description="A timer changes the Salary and Active values of the first five rows. Person raises PropertyChanged, so only those cells re-run their bindings and tints. Vibrant cells turns the Department and Salary tints on or off.">
+    <ToggleSwitch x:Name="LiveToggle" AutomationProperties.AutomationId="ShowcaseLiveToggle"
+                  Header="Live updates" IsOn="True" OnContent="On" OffContent="Off" Toggled="OnLiveToggled"/>
+    <Slider x:Name="UpdateIntervalSlider" AutomationProperties.AutomationId="ShowcaseUpdateIntervalSlider"
+            Header="Update interval (ms)" Minimum="200" Maximum="2000" StepFrequency="100" Value="700"
+            ValueChanged="OnUpdateIntervalChanged"/>
+    <ToggleSwitch x:Name="VibrantToggle" AutomationProperties.AutomationId="ShowcaseVibrantToggle"
+                  Header="Vibrant cells" IsOn="True" OnContent="On" OffContent="Off" Toggled="OnVibrantToggled"/>
+</controls:RailSection>
