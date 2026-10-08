@@ -6,6 +6,9 @@
 #include "DesktopUtility.h"
 #include <winternl.h>
 
+// The user-mode SDK header does not declare this documented ntdll export.
+extern "C" NTSYSAPI NTSTATUS NTAPI RtlGetVersion(PRTL_OSVERSIONINFOW versionInformation);
+
 namespace DesktopUtility {
 
 bool shouldReturnCachedIsOnDesktopValue = false;
@@ -30,31 +33,18 @@ bool IsPriorToWindows11() noexcept
 {
     static const bool isPriorToWindows11Result = []()
     {
-        const HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
-        if (!ntdll)
-        {
-            TRACE_HR_NORETURN(HRESULT_FROM_WIN32(GetLastError()));
-            return false;
-        }
-
-        using RtlGetVersionFn = NTSTATUS(WINAPI*)(PRTL_OSVERSIONINFOW);
-        const auto rtlGetVersion = reinterpret_cast<RtlGetVersionFn>(GetProcAddress(ntdll, "RtlGetVersion"));
-        if (!rtlGetVersion)
-        {
-            TRACE_HR_NORETURN(HRESULT_FROM_WIN32(GetLastError()));
-            return false;
-        }
-
         RTL_OSVERSIONINFOW version = { sizeof(version) };
-        const NTSTATUS status = rtlGetVersion(&version);
+        const NTSTATUS status = ::RtlGetVersion(&version);
         if (status != 0)
         {
             TRACE_HR_NORETURN(HRESULT_FROM_NT(status));
             return false;
         }
 
-        // Compatibility shims can report an older OS, so this may apply the workaround
-        // on Windows 11. If the query fails, assume the latest OS and skip the workaround.
+        // Windows 11 retains major/minor version 10.0 and starts at build 22000.
+        // AppCompat shims can make a newer OS appear older to this process, so a
+        // true result may enable the workaround on Windows 11. On query failure,
+        // assume a newer OS and leave the workaround off.
         return version.dwMajorVersion < 10 ||
             (version.dwMajorVersion == 10 && version.dwMinorVersion == 0 && version.dwBuildNumber < 22000);
     }();
