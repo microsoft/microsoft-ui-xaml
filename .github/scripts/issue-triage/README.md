@@ -160,6 +160,10 @@ stale handling, or the maintainer's acceptance/closure process.
 
 ## Trust boundaries and limits
 
+- The prepared JSON keeps each area, follow-up, and candidate on one line, while
+  preserving the complete bounded evidence and fingerprint. The agent reads it
+  with the native `view` tool in explicit line ranges. Shell readers/searches
+  (`cat`, `grep`, `head`, etc.) remain denied; only the safe-output CLI is allowed.
 - Issue content, comments, code samples, links, and candidate text are untrusted.
   The model cannot search GitHub, download attachments, run sample code, or write
   directly to issues. It can only return a structured triage result.
@@ -184,10 +188,17 @@ stale handling, or the maintainer's acceptance/closure process.
   was written. A later run safely refreshes the single comment.
 - Only allowlisted routing labels, `needs-triage`, and `needs-repro` can be added,
   at most four per run. The publisher uses additive label writes, never replacement.
-- Per-issue concurrency cancels superseded runs. Actor rate limiting allows five
-  runs per hour. Ignored label events and other people's comments use separate
+- Per-issue concurrency cancels superseded runs. `on.roles: all` permits external
+  issue authors: pre-activation is not a Microsoft organization-membership gate.
+  Its repository-permission lookup only exempts `admin`, `maintain`, and `write`
+  actors from rate limiting. Other actors, including non-collaborators, may
+  trigger five runs per hour. A permission-lookup failure continues through
+  that rate-limit check instead of rejecting the reporter. Manual dispatch still
+  requires GitHub's normal workflow-dispatch permissions.
+  Ignored label events and other people's comments use separate
   concurrency groups so they cannot cancel an active intake. The triage agent
-  is bounded to five turns and ten AI credits;
+  is bounded to twelve model invocations (including evidence/tool iterations)
+  and ten AI credits, leaving room to read the evidence and submit its result;
   the separate output-safety analysis has its own ten-credit budget. A
   one-hundred-credit daily guardrail stops starting further analyses after the
   measured threshold is reached; concurrent runs may already be in flight.

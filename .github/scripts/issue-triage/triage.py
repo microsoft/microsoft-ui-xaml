@@ -729,6 +729,27 @@ def read_json(path: str, limit: int = MAX_RESPONSE_BYTES):
     return json.loads(raw.decode("utf-8-sig"))
 
 
+def format_model_context(evidence: dict) -> str:
+    """Keep each area, follow-up, and candidate on one line for bounded native reads."""
+    fields = []
+    for key, value in evidence.items():
+        if key.startswith("_"):
+            continue
+        if isinstance(value, dict):
+            entries = [
+                f"    {json.dumps(name)}: {json.dumps(item, ensure_ascii=True)}"
+                for name, item in value.items()
+            ]
+            formatted = "{\n" + ",\n".join(entries) + "\n  }" if entries else "{}"
+        elif isinstance(value, list):
+            entries = ["    " + json.dumps(item, ensure_ascii=True) for item in value]
+            formatted = "[\n" + ",\n".join(entries) + "\n  ]" if entries else "[]"
+        else:
+            formatted = json.dumps(value, ensure_ascii=True)
+        fields.append(f"  {json.dumps(key)}: {formatted}")
+    return "{\n" + ",\n".join(fields) + "\n}\n"
+
+
 def main() -> int:
     try:
         if len(sys.argv) != 4 or sys.argv[1] not in ("prepare", "publish"):
@@ -739,10 +760,9 @@ def main() -> int:
         mapping = read_json(str(MAP_PATH))
         evidence = prepare(client, event, mapping)
         if mode == "prepare":
-            public = {key: value for key, value in evidence.items() if not key.startswith("_")}
             destination = Path(output_path)
             destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_text(json.dumps(public, indent=2, ensure_ascii=True), encoding="utf-8")
+            destination.write_text(format_model_context(evidence), encoding="utf-8")
             print(f"Prepared bounded evidence (should_process={evidence['should_process']})")
             return 0
         if not evidence["should_process"]:
