@@ -41,6 +41,14 @@ namespace winrt::MetadataTestbedCppWinRT::factory_implementation
         {
             return T::SetAttachedValues(target, value);
         }
+        auto GetAttachedCharValue(winrt::Windows::Foundation::IInspectable const& target)
+        {
+            return T::GetAttachedCharValue(target);
+        }
+        auto SetAttachedCharValue(winrt::Windows::Foundation::IInspectable const& target, char16_t value)
+        {
+            return T::SetAttachedCharValue(target, value);
+        }
     };
 }
 

@@ -30,7 +30,7 @@ namespace winrt::StaticLibInRuntimeComponent::implementation
         if (!_contentLoaded)
         {
             _contentLoaded = true;
-            ::winrt::Windows::Foundation::Uri resourceLocator{ L"ms-appx:///AnotherBlankUserControl.xaml" };
+            ::winrt::Windows::Foundation::Uri resourceLocator{ L"ms-appx:///StaticLibInRuntimeComponent/AnotherBlankUserControl.xaml" };
             ::winrt::Microsoft::UI::Xaml::Application::LoadComponent(*this, resourceLocator, ComponentResourceLocation::Nested);
         }
     }

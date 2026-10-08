@@ -18,4 +18,12 @@ WINRT_EXPORT namespace winrt::MetadataTestbedCppWinRT
     {
         MetadataTestbedCppWinRT::implementation::ArrayProperties::SetAttachedValues(target, value);
     }
+    char16_t ArrayProperties::GetAttachedCharValue(winrt::Windows::Foundation::IInspectable const& target)
+    {
+        return MetadataTestbedCppWinRT::implementation::ArrayProperties::GetAttachedCharValue(target);
+    }
+    void ArrayProperties::SetAttachedCharValue(winrt::Windows::Foundation::IInspectable const& target, char16_t value)
+    {
+        MetadataTestbedCppWinRT::implementation::ArrayProperties::SetAttachedCharValue(target, value);
+    }
 }

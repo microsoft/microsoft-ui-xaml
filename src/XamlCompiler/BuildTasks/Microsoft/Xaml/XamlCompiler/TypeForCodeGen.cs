@@ -217,7 +217,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 
             if (parameterType.IsArray)
             {
-                string element = XamlSchemaCodeInfo.GetCppWinRTArrayElementName(parameterType.GetElementType(), true);
+                string element = cppName(parameterType.GetElementType());
                 return parameter.IsOut
                     ? $"::winrt::array_view<{element}> {parameter.Name}"
                     : $"::winrt::array_view<{element} const> {parameter.Name}";

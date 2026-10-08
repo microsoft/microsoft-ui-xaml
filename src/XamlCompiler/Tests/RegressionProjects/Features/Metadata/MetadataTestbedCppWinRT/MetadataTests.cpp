@@ -64,6 +64,22 @@ namespace
         VerifyArray<T>(member.GetValue(instance), {}, name);
     }
 
+    template<typename T>
+    void RoundTripScalar(IXamlType const& type, IInspectable const& instance, hstring const& name,
+        std::initializer_list<T> values, bool isAttachable = false)
+    {
+        auto member = type.GetMember(name);
+        Verify(member != nullptr, name);
+        Verify(!member.IsReadOnly(), name);
+        Verify(member.IsAttachable() == isAttachable, name);
+
+        for (auto const& expected : values)
+        {
+            member.SetValue(instance, box_value(expected));
+            Verify(unbox_value<T>(member.GetValue(instance)) == expected, name);
+        }
+    }
+
     void RunArrayMetadataTests()
     {
         auto provider = make<MetadataTestbedCppWinRT::implementation::XamlMetaDataProvider>();
@@ -76,6 +92,9 @@ namespace
         RoundTrip<hstring>(type, instance, L"StringValues", { L"", L"one", L"two" });
         RoundTrip<guid>(type, instance, L"GuidValues", { {}, guid{ "12345678-1234-abcd-0123-456789abcdef" } });
         RoundTrip<char16_t>(type, instance, L"CharValues", { u'\0', u'A', u'\u4e2d', u'\uffff' });
+        RoundTripScalar<guid>(type, instance, L"GuidValue", { {}, guid{ "12345678-1234-abcd-0123-456789abcdef" } });
+        RoundTripScalar<char16_t>(type, instance, L"CharValue", { u'\0', u'A', u'\u4e2d', char16_t{ 0xd800 }, u'\uffff' });
+        RoundTripScalar<char16_t>(type, instance, L"AttachedCharValue", { u'\0', u'\u4e2d', u'\uffff' }, true);
         RoundTrip<IInspectable>(type, instance, L"ObjectValues", { box_value(42), nullptr, box_value(L"text") });
         RoundTrip<Point>(type, instance, L"PointValues", { { 1, 2 }, { -3, 4 } });
         RoundTrip<int32_t>(type, instance, L"AttachedValues", { 7, 8 }, true);
@@ -90,6 +109,11 @@ namespace
         auto readOnlyMember = type.GetMember(L"ReadOnlyValues");
         Verify(readOnlyMember != nullptr && readOnlyMember.IsReadOnly(), L"ReadOnlyValues must be read-only");
         VerifyArray<int32_t>(readOnlyMember.GetValue(instance), { 3, 5 }, L"ReadOnlyValues");
+
+        instance.CharValue(u'\u4e2d');
+        auto readOnlyCharMember = type.GetMember(L"ReadOnlyCharValue");
+        Verify(readOnlyCharMember != nullptr && readOnlyCharMember.IsReadOnly(), L"ReadOnlyCharValue must be read-only");
+        Verify(unbox_value<char16_t>(readOnlyCharMember.GetValue(instance)) == u'\u4e2d', L"ReadOnlyCharValue");
     }
 }
 

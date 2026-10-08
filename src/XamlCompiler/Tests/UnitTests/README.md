@@ -88,13 +88,15 @@ would otherwise run from a partial copied payload.
 
 The script returns VSTest's exit code unchanged.
 
-## Array metadata regressions
+## Primitive and array metadata regressions
 
 `Schema_CppWinRTArray*` and `Schema_ArrayTypeNamesPreserveOtherLanguages` cover
-array type projection. `Codegen_MetadataTestbedCppWinRT*` compares the generated
-metadata for both ordinary and incremental C++/WinRT code generation.
-Array element tests include the exact `guid` and `char16_t` projections, which
-cannot use the compiler's legacy scalar `GUID` and `wchar_t` aliases.
+scalar and array type projection. `Schema_CppCXPrimitiveTypeNames` verifies that
+the C++/CX scalar and array projections remain unchanged.
+`Codegen_MetadataTestbedCppWinRT*` compares the generated metadata for both
+ordinary and incremental C++/WinRT code generation. Scalars and array elements
+use the same primitive mapping, including `winrt::guid` and `char16_t`, rather
+than the unsupported `GUID` and `wchar_t` types for C++/WinRT boxing.
 
 `Codegen_EventHandlingCppWinRT` covers XAML-attached delegates with `UInt32`,
 `Guid`, and `Char` pass, fill, and receive arrays, plus a scalar out string.
@@ -104,10 +106,11 @@ the C++/WinRT projection as well as with the codegen masters.
 `Metadata_ArrayPropertiesCppWinRT*` launches each metadata testbed with
 `--test-array-metadata`. This mode runs without creating a XAML application or
 window. It exercises the generated `IXamlMetadataProvider` and `IXamlMember`
-getters/setters on a plain WinRT model, including empty arrays, invalid boxed
-values, read-only properties, and attached properties. Both testbed projects
-must be built for the test assembly's flavor; they are included in
-`XamlCompilerTests.sln`.
+getters/setters on a plain WinRT model, including scalar `Char` and `Guid`
+properties, empty arrays, invalid boxed array values, read-only properties, and
+attached properties. Scalar `Char` cases include NUL, Unicode, surrogate, and
+maximum UTF-16 code units. Both testbed projects must be built for the test
+assembly's flavor; they are included in `XamlCompilerTests.sln`.
 
 The round trips use C++/WinRT's existing array boxing support. This projection
 fix does not add generalized boxing for enum, custom-struct, or runtime-class

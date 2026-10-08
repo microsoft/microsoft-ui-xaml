@@ -21,11 +21,16 @@ namespace MetadataTestbedCppWinRT
         String[] StringValues;
         Guid[] GuidValues;
         Char[] CharValues;
+        Guid GuidValue;
+        Char CharValue;
         Object[] ObjectValues;
         Windows.Foundation.Point[] PointValues;
         Int32[] ReadOnlyValues{ get; };
+        Char ReadOnlyCharValue{ get; };
 
         static Int32[] GetAttachedValues(Object target);
         static void SetAttachedValues(Object target, Int32[] value);
+        static Char GetAttachedCharValue(Object target);
+        static void SetAttachedCharValue(Object target, Char value);
     }
 }

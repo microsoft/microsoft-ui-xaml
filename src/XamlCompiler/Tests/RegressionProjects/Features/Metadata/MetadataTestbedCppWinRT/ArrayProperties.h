@@ -62,6 +62,26 @@ namespace winrt::MetadataTestbedCppWinRT::implementation
             m_charValues.assign(value.begin(), value.end());
         }
 
+        guid GuidValue() const
+        {
+            return m_guidValue;
+        }
+
+        void GuidValue(guid const& value)
+        {
+            m_guidValue = value;
+        }
+
+        char16_t CharValue() const
+        {
+            return m_charValue;
+        }
+
+        void CharValue(char16_t value)
+        {
+            m_charValue = value;
+        }
+
         com_array<Windows::Foundation::IInspectable> ObjectValues() const
         {
             return { m_objectValues.begin(), m_objectValues.end() };
@@ -87,6 +107,11 @@ namespace winrt::MetadataTestbedCppWinRT::implementation
             return Int32Values();
         }
 
+        char16_t ReadOnlyCharValue() const
+        {
+            return CharValue();
+        }
+
         static com_array<int32_t> GetAttachedValues(Windows::Foundation::IInspectable const& target)
         {
             return target.as<MetadataTestbedCppWinRT::ArrayProperties>().Int32Values();
@@ -97,12 +122,24 @@ namespace winrt::MetadataTestbedCppWinRT::implementation
             target.as<MetadataTestbedCppWinRT::ArrayProperties>().Int32Values(value);
         }
 
+        static char16_t GetAttachedCharValue(Windows::Foundation::IInspectable const& target)
+        {
+            return target.as<MetadataTestbedCppWinRT::ArrayProperties>().CharValue();
+        }
+
+        static void SetAttachedCharValue(Windows::Foundation::IInspectable const& target, char16_t value)
+        {
+            target.as<MetadataTestbedCppWinRT::ArrayProperties>().CharValue(value);
+        }
+
     private:
         std::vector<int32_t> m_int32Values;
         std::vector<uint16_t> m_uint16Values;
         std::vector<hstring> m_stringValues;
         std::vector<guid> m_guidValues;
         std::vector<char16_t> m_charValues;
+        guid m_guidValue{};
+        char16_t m_charValue{};
         std::vector<Windows::Foundation::IInspectable> m_objectValues;
         std::vector<Windows::Foundation::Point> m_pointValues;
     };

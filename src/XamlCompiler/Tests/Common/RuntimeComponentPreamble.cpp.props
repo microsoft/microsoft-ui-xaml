@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.WinUI.$(WinUIVersion)\build\native\Microsoft.WindowsAppSDK.WinUI.props')" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.MSIX.$(MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.MSIX.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.MSIX.$(MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.MSIX.props')" />
   <Import Project="$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.props')" />
   <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.Foundation.$(FoundationPackageVersion)\build\native\Microsoft.WindowsAppSDK.Foundation.props')" />

@@ -30,6 +30,8 @@ namespace UnitTests
                 { typeof(string), "::winrt::hstring" },
                 { typeof(object), "::winrt::Windows::Foundation::IInspectable" },
                 { typeof(TimeSpan), "::winrt::Windows::Foundation::TimeSpan" },
+                { typeof(Guid), "::winrt::guid" },
+                { typeof(char), "char16_t" },
             };
 
             foreach (bool globalized in new[] { false, true })
@@ -45,18 +47,24 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void Schema_CppWinRTArrayScalarAliases()
+        public void Schema_CppCXPrimitiveTypeNames()
         {
+            var elementNames = new Dictionary<Type, string>
+            {
+                { typeof(Guid), "Platform::Guid" },
+                { typeof(char), "default::char16" },
+            };
+
             foreach (bool globalized in new[] { false, true })
             {
-                Assert.AreEqual("GUID",
-                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(Guid), "CppWinRT", globalized));
-                Assert.AreEqual("::winrt::com_array<::winrt::guid>",
-                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(Guid[]), "CppWinRT", globalized));
-                Assert.AreEqual("wchar_t",
-                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(char), "CppWinRT", globalized));
-                Assert.AreEqual("::winrt::com_array<char16_t>",
-                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(char[]), "CppWinRT", globalized));
+                string prefix = globalized ? "::" : "";
+                foreach (var entry in elementNames)
+                {
+                    Assert.AreEqual(prefix + entry.Value,
+                        XamlSchemaCodeInfo.GetFullGenericNestedName(entry.Key, "C++", globalized));
+                    Assert.AreEqual(prefix + entry.Value + "[]",
+                        XamlSchemaCodeInfo.GetFullGenericNestedName(entry.Key.MakeArrayType(), "C++", globalized));
+                }
             }
         }
 
@@ -79,10 +87,10 @@ namespace UnitTests
         {
             var expectedNames = new[]
             {
-                new { Language = "WinRT", Int32 = "Int32[]", String = "String[]" },
-                new { Language = "C#", Int32 = "global::System.Int32[]", String = "global::System.String[]" },
-                new { Language = "VB", Int32 = "Global.System.Int32()", String = "Global.System.String()" },
-                new { Language = "C++", Int32 = "::default::int32[]", String = "::Platform::String[]" },
+                new { Language = "WinRT", Int32 = "Int32[]", String = "String[]", Guid = "Guid[]", Char = "Char[]" },
+                new { Language = "C#", Int32 = "global::System.Int32[]", String = "global::System.String[]", Guid = "global::System.Guid[]", Char = "global::System.Char[]" },
+                new { Language = "VB", Int32 = "Global.System.Int32()", String = "Global.System.String()", Guid = "Global.System.Guid()", Char = "Global.System.Char()" },
+                new { Language = "C++", Int32 = "::default::int32[]", String = "::Platform::String[]", Guid = "::Platform::Guid[]", Char = "::default::char16[]" },
             };
 
             foreach (var entry in expectedNames)
@@ -91,6 +99,10 @@ namespace UnitTests
                     XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(int[]), entry.Language, true));
                 Assert.AreEqual(entry.String,
                     XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(string[]), entry.Language, true));
+                Assert.AreEqual(entry.Guid,
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(Guid[]), entry.Language, true));
+                Assert.AreEqual(entry.Char,
+                    XamlSchemaCodeInfo.GetFullGenericNestedName(typeof(char[]), entry.Language, true));
             }
         }
 
