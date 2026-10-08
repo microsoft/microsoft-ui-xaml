@@ -6,6 +6,12 @@
     <ProjectGuid>{E1A9D28B-07C6-4D51-8CF3-C52F8763E012}</ProjectGuid>
     <ProjectName>MetadataTestbedCppWinRTIncremental</ProjectName>
     <RootNamespace>MetadataTestbedCppWinRT</RootNamespace>
+    <!-- Exercise the shared fixtures with incremental metadata codegen.
+         Normal mode centralizes templated callbacks in XamlTypeInfo.g.cpp.
+         Incremental mode emits concrete callbacks per type/member, placing local
+         XAML-class callbacks in their page's generated .xaml.g.hpp.
+         Together with the non-incremental sibling project, this covers both modes
+         to catch projection, declaration, and linkage regressions. -->
     <XamlCodeGenerationControlFlags>IncrementalTypeInfoCodeGen</XamlCodeGenerationControlFlags>
     <GeneratedFilesSubdirectory>MetadataTestbedCppWinRTIncremental</GeneratedFilesSubdirectory>
     <AppContainerApplication>false</AppContainerApplication>
