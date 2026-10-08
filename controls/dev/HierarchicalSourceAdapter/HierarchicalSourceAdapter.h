@@ -77,6 +77,14 @@ public:
     void HasChildrenSelector(ShapingHelpers::HasChildrenFn fn);
     void ShapeSiblings(ShapingHelpers::ShapeSiblingsFn fn);
 
+    // Filter context rows: rows kept only because a descendant matches the filter (ancestor
+    // retention). A context row is presented expanded by default, from an overlay that never
+    // writes persistent intent, so a filter can reveal a deep match without the app expanding the
+    // path to it and clearing the filter restores the tree the user left. Set before Source();
+    // does not rebuild. Null means no row is a context row.
+    void ContextSelector(std::function<bool(winrt::IInspectable const&)> fn);
+    // A changed filter is a new question: context rows go back to expanded. Does not rebuild.
+    void ResetContextOverlay();
     // Drops all three contract callbacks in one step, WITHOUT rebuilding.
     //
     // The three setters above each end in a Rebuild, which is right when a hierarchy is being
@@ -153,6 +161,8 @@ public:
 
         bool HasChildren{ false };
         bool IsExpanded{ false };
+        // Kept only because a descendant matches the filter; expanded from the context overlay.
+        bool IsContext{ false };
     };
 
     NodeRow const* TryGetNodeRow(int32_t index) const;
@@ -307,6 +317,18 @@ private:
     ShapingHelpers::HasChildrenFn m_hasChildrenSelector{ nullptr };
     ShapingHelpers::ShapeSiblingsFn m_shapeSiblings{ nullptr };
 
+    // See ContextSelector. The overlay is a baseline (ExpandAll/CollapseAll move it) plus the
+    // context rows the user toggled away from it, by path key.
+    std::function<bool(winrt::IInspectable const&)> m_isContext{ nullptr };
+    bool m_contextDefaultExpanded{ true };
+    std::unordered_set<winrt::hstring> m_contextOverrides;
+    uint64_t m_rebuildSerial{ 0 };
+    bool IsContextExpanded(winrt::hstring const& pathKey) const
+    {
+        return m_contextDefaultExpanded != (m_contextOverrides.find(pathKey) != m_contextOverrides.end());
+    }
+    // Splices (or rebuilds) one node to `isExpanded` under the re-entrancy guard.
+    void ApplySingleNodeToggle(winrt::hstring const& pathKey, bool isExpanded);
     // See ProjectionChanged. Held by value; the owner clears it by passing nullptr.
     std::function<void()> m_projectionChanged{ nullptr };
 

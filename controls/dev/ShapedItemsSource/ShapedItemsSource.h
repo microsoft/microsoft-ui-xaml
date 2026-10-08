@@ -254,6 +254,34 @@ private:
     void ReleaseHierarchyProjection();
     // Guards the re-slice against re-entering itself through the group mutations it performs.
     bool m_reslicingGroups{ false };
+
+    // Filter ancestor retention over a children-selector hierarchy. A node is KEPT when it matches
+    // the filter or any descendant does; a kept node that does not match is a CONTEXT row. Deciding
+    // that needs every descendant, so an active filter pre-walks the whole tree through the children
+    // selector -- the price of retention over a lazy contract. Keyed by ABI pointer, valid because a
+    // node's subtree is a function of the object; m_filterKeepAlive pins the objects so a pointer
+    // cannot be reused by a different object while the sets are live.
+    void ComputeFilterRetention(std::vector<winrt::IInspectable> const& roots);
+    void ClearFilterRetention();
+    void ResetFilterContextOverlay();
+    bool IsFilterKept(winrt::IInspectable const& item) const;
+    bool IsFilterContext(winrt::IInspectable const& item) const;
+    void OnRetentionChildrenChanged();
+    bool m_filterRetentionActive{ false };
+    std::unordered_set<void*> m_filterKept;
+    std::unordered_set<void*> m_filterContext;
+    std::vector<winrt::IInspectable> m_filterKeepAlive;
+    // Every child collection the pre-walk read, observed so a change anywhere -- even under a
+    // collapsed node -- re-derives retention (Refresh), not just the adapter's visible walk.
+    struct RetentionSubscription
+    {
+        winrt::IInspectable Collection{ nullptr };
+        winrt::event_token CollectionToken{};
+        winrt::event_token Token{};
+        winrt::event_token BindableToken{};
+    };
+    std::vector<RetentionSubscription> m_retentionSubscriptions;
+    void RevokeRetentionSubscriptions();
     void RebuildUnshapedRows(std::vector<winrt::IInspectable> const& rows, wchar_t const* reason);
     bool IsIdentityRequired() const;
     // True when any of Filter / Sort / GroupBy is in force. Distinct from IsIdentityRequired,

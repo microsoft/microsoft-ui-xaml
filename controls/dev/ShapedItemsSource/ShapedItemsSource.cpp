@@ -53,6 +53,7 @@ ShapedItemsSource::ShapedItemsSource(winrt::IInspectable const& source) :
 ShapedItemsSource::~ShapedItemsSource()
 {
     UnsubscribeFromSourceCollectionChanges();
+    RevokeRetentionSubscriptions();
 }
 
 void ShapedItemsSource::Start()
@@ -101,24 +102,28 @@ void ShapedItemsSource::EndShapingBatch()
 void ShapedItemsSource::SetFilter(ShapingHelpers::Predicate const& predicate)
 {
     m_pipeline.SetFilter(predicate);
+    ResetFilterContextOverlay();
     ApplyShapingChange();
 }
 
 void ShapedItemsSource::SetFilter(winrt::hstring const& axisToken, ShapingHelpers::Predicate const& predicate)
 {
     m_pipeline.SetFilter(axisToken, predicate);
+    ResetFilterContextOverlay();
     ApplyShapingChange();
 }
 
 void ShapedItemsSource::ClearFilter()
 {
     m_pipeline.ClearFilter();
+    ResetFilterContextOverlay();
     ApplyShapingChange();
 }
 
 void ShapedItemsSource::ClearFilter(winrt::hstring const& axisToken)
 {
     m_pipeline.ClearFilter(axisToken);
+    ResetFilterContextOverlay();
     ApplyShapingChange();
 }
 
@@ -496,9 +501,12 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
 
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
 
-    // A rebuild in flight, a grouped projection, or a not-yet-materialized projection -> full
-    // rebuild (the incremental paths need a live flat projection + its view/metadata).
-    if (m_isRefreshing || m_groupSelector || !m_rows || m_kind == ProjectionKind::None)
+    // A rebuild in flight, a grouped or hierarchical projection, or a not-yet-materialized
+    // projection -> full rebuild (the incremental paths need a live flat projection + its
+    // view/metadata). Under a hierarchy the presented rows come from the adapter's own root copy,
+    // and a source index is not a projection index once descendants are interleaved, so splicing
+    // m_rows would neither show the change nor land at the right position.
+    if (m_isRefreshing || m_groupSelector || m_childrenSelector || !m_rows || m_kind == ProjectionKind::None)
     {
         Refresh();
         return;
@@ -662,7 +670,7 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
     // VectorChanged has only a verb + index (no OldItems/NewItems). Keep the low-risk fast path
     // to flat 1:1 projections, where the source index is the projection index and the current
     // source/projection can provide the one item needed to splice m_rows and identity tracking.
-    if (m_isRefreshing || m_groupSelector || HasActiveSort() || m_pipeline.HasFilter() ||
+    if (m_isRefreshing || m_groupSelector || m_childrenSelector || HasActiveSort() || m_pipeline.HasFilter() ||
         !m_rows || m_kind == ProjectionKind::None)
     {
         Refresh();
@@ -1130,7 +1138,19 @@ void ShapedItemsSource::Refresh()
         }
         else
         {
-            ApplyFilter(rows);
+            if (m_childrenSelector && m_pipeline.HasFilter())
+            {
+                // Ancestor retention: a root survives when it or any descendant matches.
+                ComputeFilterRetention(rows);
+                rows.erase(
+                    std::remove_if(rows.begin(), rows.end(), [this](auto const& row) { return !IsFilterKept(row); }),
+                    rows.end());
+            }
+            else
+            {
+                ClearFilterRetention();
+                ApplyFilter(rows);
+            }
 
             // A shaping verb is in force here (the branch above took the no-verb case), and a verb
             // always requires identity, so there is nothing to gate on.
@@ -1637,8 +1657,176 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
         m_hierarchySource.Clear();
     }
 
+    ClearFilterRetention();
     m_hierarchyGroups.clear();
     m_rootBucketIndex.clear();
+}
+
+void ShapedItemsSource::ClearFilterRetention()
+{
+    RevokeRetentionSubscriptions();
+    m_filterRetentionActive = false;
+    m_filterKept.clear();
+    m_filterContext.clear();
+    m_filterKeepAlive.clear();
+}
+
+void ShapedItemsSource::ResetFilterContextOverlay()
+{
+    if (m_hierarchicalAdapter)
+    {
+        m_hierarchicalAdapter->ResetContextOverlay();
+    }
+}
+
+bool ShapedItemsSource::IsFilterKept(winrt::IInspectable const& item) const
+{
+    return item && m_filterKept.find(winrt::get_abi(item)) != m_filterKept.end();
+}
+
+bool ShapedItemsSource::IsFilterContext(winrt::IInspectable const& item) const
+{
+    return item && m_filterContext.find(winrt::get_abi(item)) != m_filterContext.end();
+}
+
+void ShapedItemsSource::ComputeFilterRetention(std::vector<winrt::IInspectable> const& roots)
+{
+    ClearFilterRetention();
+    m_filterRetentionActive = true;
+
+    std::unordered_map<void*, bool> memo;
+    std::unordered_set<void*> onPath;
+    std::unordered_set<void*> subscribed;
+    std::weak_ptr<ShapedItemsSource> weakThis = weak_from_this();
+
+    const auto subscribe = [&](winrt::IInspectable const& collection)
+    {
+        if (!collection || !subscribed.insert(winrt::get_abi(collection)).second)
+        {
+            return;
+        }
+        RetentionSubscription sub;
+        sub.Collection = collection;
+        auto handler = [weakThis](auto&&, auto&&)
+        {
+            if (auto strongThis = weakThis.lock()) { strongThis->OnRetentionChildrenChanged(); }
+        };
+        if (auto incc = collection.try_as<winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged>())
+        {
+            sub.CollectionToken = incc.CollectionChanged(handler);
+        }
+        else if (auto obs = collection.try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>())
+        {
+            sub.Token = obs.VectorChanged(handler);
+        }
+        else if (auto bobs = collection.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector>())
+        {
+            sub.BindableToken = bobs.VectorChanged(handler);
+        }
+        if (sub.CollectionToken.value != 0 || sub.Token.value != 0 || sub.BindableToken.value != 0)
+        {
+            m_retentionSubscriptions.push_back(std::move(sub));
+        }
+    };
+
+    // Post-order: a node is kept when it matches or any child is kept. Every child is visited (no
+    // short-circuit) so the whole subtree is memoized and its collections observed. A cycle or an
+    // over-deep chain stops the descent here; the adapter's walk reports it if it becomes visible.
+    std::function<bool(winrt::IInspectable const&, int32_t)> visit =
+        [&](winrt::IInspectable const& item, int32_t depth) -> bool
+    {
+        void* const abi = winrt::get_abi(item);
+        if (auto it = memo.find(abi); it != memo.end())
+        {
+            return it->second;
+        }
+
+        const bool match = m_pipeline.PassesFilter(item);
+        bool descendantKept = false;
+        if (depth < HierarchicalSourceAdapter::c_maxHierarchyDepth && onPath.insert(abi).second)
+        {
+            winrt::IInspectable collection{ nullptr };
+            std::vector<winrt::IInspectable> children;
+            try
+            {
+                collection = m_childrenSelector(item);
+                children = ShapingHelpers::EnumerateInspectableItems(collection);
+            }
+            catch (...)
+            {
+                collection = nullptr;
+                children.clear();
+            }
+            subscribe(collection);
+
+            for (auto const& child : children)
+            {
+                if (child && visit(child, depth + 1))
+                {
+                    descendantKept = true;
+                }
+            }
+            onPath.erase(abi);
+        }
+
+        const bool kept = match || descendantKept;
+        memo.emplace(abi, kept);
+        m_filterKeepAlive.push_back(item);
+        if (kept)
+        {
+            m_filterKept.insert(abi);
+            if (!match)
+            {
+                m_filterContext.insert(abi);
+            }
+        }
+        return kept;
+    };
+
+    for (auto const& root : roots)
+    {
+        if (root)
+        {
+            visit(root, 0);
+        }
+    }
+}
+
+void ShapedItemsSource::OnRetentionChildrenChanged()
+{
+    // Retention is a property of the whole tree, so any child set changing re-derives it.
+    if (m_shapingBatchDepth > 0)
+    {
+        m_shapingBatchHasRefresh = true;
+        return;
+    }
+    Refresh();
+}
+
+void ShapedItemsSource::RevokeRetentionSubscriptions()
+{
+    for (auto& sub : m_retentionSubscriptions)
+    {
+        try
+        {
+            if (sub.CollectionToken.value != 0)
+            {
+                sub.Collection.as<winrt::Microsoft::UI::Xaml::Interop::INotifyCollectionChanged>().CollectionChanged(sub.CollectionToken);
+            }
+            else if (sub.Token.value != 0)
+            {
+                sub.Collection.as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>().VectorChanged(sub.Token);
+            }
+            else if (sub.BindableToken.value != 0)
+            {
+                sub.Collection.as<winrt::Microsoft::UI::Xaml::Interop::IBindableObservableVector>().VectorChanged(sub.BindableToken);
+            }
+        }
+        catch (...)
+        {
+        }
+    }
+    m_retentionSubscriptions.clear();
 }
 
 void ShapedItemsSource::EnsureHierarchicalAdapter(std::vector<winrt::IInspectable> const& roots, bool shapeRoots)
@@ -1672,10 +1860,9 @@ void ShapedItemsSource::EnsureHierarchicalAdapter(std::vector<winrt::IInspectabl
     // ApplySort: comparing a parent against its own child is meaningless and must not be
     // expressible.
     //
-    // NOTE on filtering: this is match-node-only, not the ancestor retention §5 describes. A child
-    // that fails the predicate is dropped even if one of ITS descendants matches. Ancestor
-    // retention requires testing descendants of collapsed nodes, which is exactly what the lazy
-    // walk exists to avoid; reconciling the two is deferred with the rest of that section.
+    // NOTE on filtering: ancestor retention. Under an active filter Refresh pre-walks the whole tree
+    // (ComputeFilterRetention), so a child that fails the predicate is still kept, as a context row,
+    // when one of ITS descendants matches. The per-level callback then filters by that kept set.
     //
     // The ROOT set is never routed here (the adapter shapes only the levels it discovers), so
     // shapeRoots does not gate this callback; it documents which caller already owns root order.
@@ -1685,10 +1872,36 @@ void ShapedItemsSource::EnsureHierarchicalAdapter(std::vector<winrt::IInspectabl
         {
             if (auto strongThis = weakThis.lock())
             {
-                strongThis->ApplyFilter(siblings);
+                if (strongThis->m_filterRetentionActive)
+                {
+                    siblings.erase(
+                        std::remove_if(siblings.begin(), siblings.end(),
+                            [&strongThis](auto const& item) { return !strongThis->IsFilterKept(item); }),
+                        siblings.end());
+                }
+                else
+                {
+                    strongThis->ApplyFilter(siblings);
+                }
                 strongThis->ApplySort(siblings);
             }
         });
+
+    // Context rows (kept only for a matching descendant) present from the adapter's filter overlay.
+    // Installed before Source() so the attach walk already sees them.
+    if (m_filterRetentionActive)
+    {
+        m_hierarchicalAdapter->ContextSelector(
+            [weakThis](winrt::IInspectable const& item)
+            {
+                auto strongThis = weakThis.lock();
+                return strongThis && strongThis->IsFilterContext(item);
+            });
+    }
+    else
+    {
+        m_hierarchicalAdapter->ContextSelector(nullptr);
+    }
 
     m_hierarchicalAdapter->ChildrenSelector(m_childrenSelector);
     m_hierarchicalAdapter->HasChildrenSelector(m_hasChildrenSelector);

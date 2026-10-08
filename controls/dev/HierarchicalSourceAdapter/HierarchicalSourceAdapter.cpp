@@ -112,6 +112,7 @@ void HierarchicalSourceAdapter::ReleaseCallbacks()
     m_childrenSelector = nullptr;
     m_hasChildrenSelector = nullptr;
     m_shapeSiblings = nullptr;
+    m_isContext = nullptr;
 
     // Deliberately no Rebuild: the caller has already detached the source and dropped the projection
     // callback, and the three setters' own rebuilds would publish three Resets over rows the
@@ -199,6 +200,7 @@ void HierarchicalSourceAdapter::Rebuild()
     // Projection mutations are UI-thread-affine. Source notifications are required to arrive on the
     // owning UI thread and reach here synchronously; off-thread delivery is app misuse.
     AssertRebuildOnUiThread();
+    ++m_rebuildSerial;
 
     if (m_rebuildInFlight)
     {
@@ -430,7 +432,8 @@ void HierarchicalSourceAdapter::Emit(
         hasChildren = childCount > 0;
     }
 
-    const bool isExpanded = hasChildren && m_expansion.IsExpanded(path);
+    const bool isContext = m_isContext && m_isContext(item);
+    const bool isExpanded = hasChildren && (isContext ? IsContextExpanded(path) : m_expansion.IsExpanded(path));
 
     NodeRow row;
     row.Item = item;
@@ -439,6 +442,7 @@ void HierarchicalSourceAdapter::Emit(
     row.ChildCount = childCount;
     row.HasChildren = hasChildren;
     row.IsExpanded = isExpanded;
+    row.IsContext = isContext;
 
     built.push_back(item);
     descriptors.push_back(std::move(row));
@@ -510,7 +514,30 @@ void HierarchicalSourceAdapter::PruneExpansionIntent(
 
 bool HierarchicalSourceAdapter::IsNodeExpanded(winrt::hstring const& pathKey) const
 {
+    if (m_isContext)
+    {
+        int32_t index = -1;
+        if (TryGetIndexForPathKey(pathKey, index))
+        {
+            if (auto const* row = TryGetNodeRow(index); row && row->IsContext)
+            {
+                return IsContextExpanded(pathKey);
+            }
+        }
+    }
     return m_expansion.IsExpanded(pathKey);
+}
+
+void HierarchicalSourceAdapter::ContextSelector(std::function<bool(winrt::IInspectable const&)> fn)
+{
+    AssertNotInShapeSiblings();
+    m_isContext = std::move(fn);
+}
+
+void HierarchicalSourceAdapter::ResetContextOverlay()
+{
+    m_contextDefaultExpanded = true;
+    m_contextOverrides.clear();
 }
 
 void HierarchicalSourceAdapter::SetNodeExpanded(winrt::hstring const& pathKey, bool isExpanded)
@@ -522,6 +549,33 @@ void HierarchicalSourceAdapter::SetNodeExpanded(winrt::hstring const& pathKey, b
         return;
     }
 
+    if (m_isContext)
+    {
+        int32_t index = -1;
+        if (TryGetIndexForPathKey(pathKey, index))
+        {
+            if (auto const* row = TryGetNodeRow(index); row && row->IsContext)
+            {
+                // Context rows toggle the filter overlay, never persistent intent.
+                if (IsContextExpanded(pathKey) != isExpanded)
+                {
+                    if (isExpanded == m_contextDefaultExpanded)
+                    {
+                        m_contextOverrides.erase(pathKey);
+                    }
+                    else
+                    {
+                        m_contextOverrides.insert(pathKey);
+                    }
+                }
+                if (row->HasChildren && row->IsExpanded != isExpanded)
+                {
+                    ApplySingleNodeToggle(pathKey, isExpanded);
+                }
+                return;
+            }
+        }
+    }
     if (m_expansion.IsExpanded(pathKey) == isExpanded)
     {
         // Intent already agrees. Normally that means the projection does too -- but a previous
@@ -552,14 +606,29 @@ void HierarchicalSourceAdapter::ExpandAll()
     // Moves the BASELINE, so nodes that do not exist yet also arrive expanded. On a large or lazy
     // tree this realizes everything the children selector can reach, bounded only by the cycle and
     // depth guards -- the inherent cost of "expand everything" over a materialized axis.
+    m_contextDefaultExpanded = true;
+    m_contextOverrides.clear();
+    const auto serial = m_rebuildSerial;
     m_expansion.SetAllExpanded(true);
+    if (m_isContext && serial == m_rebuildSerial)
+    {
+        // The intent baseline did not move, but the context overlay may have.
+        Rebuild();
+    }
 }
 
 void HierarchicalSourceAdapter::CollapseAll()
 {
     AssertNotInShapeSiblings();
 
+    m_contextDefaultExpanded = false;
+    m_contextOverrides.clear();
+    const auto serial = m_rebuildSerial;
     m_expansion.SetAllExpanded(false);
+    if (m_isContext && serial == m_rebuildSerial)
+    {
+        Rebuild();
+    }
 }
 
 void HierarchicalSourceAdapter::OnExpansionChanged(ShapingHelpers::RowExpansionModel::Change const& change)
@@ -584,6 +653,17 @@ void HierarchicalSourceAdapter::OnExpansionChanged(ShapingHelpers::RowExpansionM
         return;
     }
 
+    ApplySingleNodeToggle(change.Keys.front(), change.IsExpanded);
+}
+
+void HierarchicalSourceAdapter::ApplySingleNodeToggle(winrt::hstring const& pathKey, bool isExpanded)
+{
+    if (m_rebuildInFlight)
+    {
+        m_pendingRebuild = true;
+        return;
+    }
+
     bool runPending = false;
     bool applied = false;
     {
@@ -596,7 +676,7 @@ void HierarchicalSourceAdapter::OnExpansionChanged(ShapingHelpers::RowExpansionM
             m_pendingRebuild = false;
         });
 
-        applied = TryApplyExpansionSplice(change.Keys.front(), change.IsExpanded);
+        applied = TryApplyExpansionSplice(pathKey, isExpanded);
     }
 
     // A re-entrant request, or a splice that couldn't resolve the node, resolves to a single
