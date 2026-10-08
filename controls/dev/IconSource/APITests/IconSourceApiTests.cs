@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.XamlTypeInfo;
 using Windows.UI.Text;
 using Windows.Foundation.Metadata;
 using Common;
+using Color = Windows.UI.Color;
 
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -110,6 +111,102 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(iconSource.MirroredWhenRightToLeft);
                 Verify.IsTrue(animatedIcon.MirroredWhenRightToLeft);
             });
+        }
+
+        [TestMethod]
+        public void AnimatedIconSourceCopiesPropertiesToCreatedIcon()
+        {
+            var source = new AnimatedBackVisualSource();
+            var iconSource = CreateAnimatedIconSource(source, Symbol.Back, Microsoft.UI.Colors.Green, mirroredWhenRightToLeft: true);
+
+            var animatedIcon = CreateIconElement(iconSource) as AnimatedIcon;
+
+            Verify.IsNotNull(animatedIcon);
+            Verify.AreEqual(Microsoft.UI.Colors.Green, GetSolidForegroundColor(animatedIcon));
+            Verify.IsTrue(HasSameSourceAndFallback(iconSource, animatedIcon));
+            Verify.IsTrue(GetMirroredWhenRightToLeft(animatedIcon));
+        }
+
+        [TestMethod]
+        public void AnimatedIconSourceFallbackIconSourcePropagatesToCreatedIcon()
+        {
+            var iconSource = CreateAnimatedIconSource(null, null, null, mirroredWhenRightToLeft: false);
+            var animatedIcon = CreateIconElement(iconSource) as AnimatedIcon;
+            Verify.IsNotNull(animatedIcon);
+            Verify.AreEqual("null", DescribeFallbackIconSource(animatedIcon));
+
+            SetFallbackSymbol(iconSource, Symbol.Accept);
+            IdleSynchronizer.Wait();
+
+            Verify.AreEqual("SymbolIconSource:" + Symbol.Accept, DescribeFallbackIconSource(animatedIcon));
+            Verify.IsTrue(HasSameSourceAndFallback(iconSource, animatedIcon));
+        }
+
+        private static AnimatedIconSource CreateAnimatedIconSource(IAnimatedVisualSource2 source, Symbol? fallbackSymbol, Color? foreground, bool mirroredWhenRightToLeft)
+        {
+            AnimatedIconSource iconSource = null;
+            RunOnUIThread.Execute(() =>
+            {
+                iconSource = new AnimatedIconSource { Source = source, MirroredWhenRightToLeft = mirroredWhenRightToLeft };
+                if (fallbackSymbol.HasValue)
+                {
+                    iconSource.FallbackIconSource = new SymbolIconSource { Symbol = fallbackSymbol.Value };
+                }
+                if (foreground.HasValue)
+                {
+                    iconSource.Foreground = new SolidColorBrush(foreground.Value);
+                }
+            });
+            return iconSource;
+        }
+
+        private static IconElement CreateIconElement(IconSource iconSource)
+        {
+            IconElement element = null;
+            RunOnUIThread.Execute(() => element = iconSource.CreateIconElement());
+            return element;
+        }
+
+        private static void SetFallbackSymbol(AnimatedIconSource iconSource, Symbol symbol)
+        {
+            RunOnUIThread.Execute(() => iconSource.FallbackIconSource = new SymbolIconSource { Symbol = symbol });
+        }
+
+        private static Color GetSolidForegroundColor(IconElement element)
+        {
+            var color = default(Color);
+            RunOnUIThread.Execute(() => color = ((SolidColorBrush)element.Foreground).Color);
+            return color;
+        }
+
+        private static bool GetMirroredWhenRightToLeft(AnimatedIcon animatedIcon)
+        {
+            bool mirrored = false;
+            RunOnUIThread.Execute(() => mirrored = animatedIcon.MirroredWhenRightToLeft);
+            return mirrored;
+        }
+
+        private static string DescribeFallbackIconSource(AnimatedIcon animatedIcon)
+        {
+            string description = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var fallback = animatedIcon.FallbackIconSource as SymbolIconSource;
+                description = animatedIcon.FallbackIconSource == null ? "null" : "SymbolIconSource:" + fallback?.Symbol;
+            });
+            return description;
+        }
+
+        // The created icon must share the configured objects, not copies of them.
+        private static bool HasSameSourceAndFallback(AnimatedIconSource iconSource, AnimatedIcon animatedIcon)
+        {
+            bool same = false;
+            RunOnUIThread.Execute(() =>
+            {
+                same = ReferenceEquals(iconSource.Source, animatedIcon.Source) &&
+                    ReferenceEquals(iconSource.FallbackIconSource, animatedIcon.FallbackIconSource);
+            });
+            return same;
         }
 
         [TestMethod]
