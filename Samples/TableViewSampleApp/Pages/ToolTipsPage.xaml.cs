@@ -1,53 +1,20 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using TableViewSampleApp.Converters;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Pages;
-
-/// <summary>
-/// Turns a row item into rich, non-string tooltip content. A converter is how a computed tooltip is
-/// authored when the content comes from a binding rather than a callback: the binding has no Path,
-/// so the whole row item arrives here.
-/// </summary>
-public sealed partial class RowCardConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language)
-    {
-        if (value is not Person person)
-        {
-            return null!;
-        }
-
-        // A fresh element per evaluation. The returned UIElement is parented by the cell's ToolTip,
-        // and one element cannot have two parents, so this must not be cached.
-        var panel = new StackPanel { Spacing = 4 };
-        panel.Children.Add(new TextBlock { Text = person.FullName, FontWeight = FontWeights.SemiBold });
-        panel.Children.Add(new TextBlock { Text = string.Format(CultureInfo.CurrentCulture, "{0}, {1}", person.Role, person.Department), Opacity = 0.75 });
-        panel.Children.Add(new TextBlock { Text = person.Email, Opacity = 0.6, FontSize = 12 });
-
-        // Rich content has no text of its own for UI Automation, so name the card explicitly.
-        AutomationProperties.SetName(panel, string.Format(CultureInfo.CurrentCulture, "{0}, {1}, {2}, {3}", person.FullName, person.Role, person.Department, person.Email));
-
-        return panel;
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language) =>
-        throw new NotSupportedException();
-}
 
 /// <summary>
 /// Demonstrates the two opt-in tooltip surfaces, both per column:
@@ -61,31 +28,31 @@ public sealed partial class RowCardConverter : IValueConverter
 /// </list>
 /// The control never invents a tooltip, and never touches one a cell's own template already set.
 /// </summary>
-public sealed partial class ToolTipsPage : Page
+public sealed partial class ToolTipsPage : SamplePageBase
 {
     private const string LongBio =
         "Runs the quarterly planning review, mentors two new hires, and is the person everyone asks about the customer onboarding pipeline, from contract hand-off to the first support call.";
 
-    private TableViewSource? _source;          // created ONCE; reshaped in place, never rebuilt
-    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
-    private string _appliedKey = "Department";
-
     public ToolTipsPage()
     {
-        _source = TableViewSource.From(People);
+        // <snippet>
+        Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
 
         // The control sorts the TableViewSource itself when a header is clicked; no app code is
         // needed for the Name, Department and Salary columns.
         AttachCellToolTips();
         ApplyHeaderToolTips("original");
-        RefreshReadouts();
+        // </snippet>
+        Shaping.ProbeLimit = () => People.Count + PersonData.Roles.Count;
+        InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
     }
 
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
-    public TableViewSource? Source => _source;
+    public TableViewSource Source { get; }
 
+    // <snippet>
     // ---- Cell tooltips ----------------------------------------------------------------------
 
     private void AttachCellToolTips()
@@ -180,6 +147,7 @@ public sealed partial class ToolTipsPage : Page
                 break;
         }
     }
+    // </snippet>
 
     // ---- Actions ------------------------------------------------------------------------
 
@@ -224,137 +192,4 @@ public sealed partial class ToolTipsPage : Page
         ReapplyIfGroupedOn(nameof(Person.Department));
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, person.Department));
     }
-
-    private void RefreshReadouts()
-    {
-        if (RowsText is null || CellToolTipsText is null || PerColumnText is null || PeopleTable is null)
-        {
-            return;
-        }
-
-        RowsText.Text = SampleShaping.RowCountText(People.Count);
-        CellToolTipsText.Text = NameColumn.CellToolTipBinding is null ? "Detached" : "Attached";
-
-        // Read back from the columns, so the readout reports what the control actually holds.
-        var parts = new List<string>();
-        foreach (var column in PeopleTable.Columns)
-        {
-            var what = new List<string>();
-            if (column.HeaderToolTip is not null)
-            {
-                what.Add(column.HeaderToolTip is string ? "header" : "header (card)");
-            }
-
-            if (column.CellToolTipBinding is not null)
-            {
-                what.Add("cell");
-            }
-
-            if (column == EmailColumn)
-            {
-                what.Add("template-owned");
-            }
-
-            parts.Add(string.Format(CultureInfo.CurrentCulture, "{0}: {1}", column.Header, what.Count == 0 ? "none" : string.Join(", ", what)));
-        }
-
-        PerColumnText.Text = string.Join("; ", parts);
-    }
-
-    #region Sample scaffolding (generic; see FIX-PLAN §6)
-
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void ApplyShaping(bool announce)
-    {
-        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
-        // later-declared elements exist. Guard every element this path touches.
-        if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
-            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
-        {
-            return;
-        }
-
-        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
-        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
-        var selected = PeopleTable.SelectedItem;
-
-        switch (mode)
-        {
-            case "grouped":
-                // The key selector receives the ROW; the identity selector receives the KEY.
-                // The columns, and so every tooltip, are untouched by a reshape.
-                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
-                break;
-            // case "hierarchy":
-            // case "groupedHierarchy":
-            //     Hierarchical (tree) rows are not available in this release, so the two matching
-            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
-            //     member today. When hierarchy ships, apply it to this same source here, composed
-            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
-            //     after the call returns.
-            default:
-                _source.ClearGroupBy();
-                mode = "flat";
-                break;
-        }
-
-        _appliedMode = mode;
-        _appliedKey = key;
-
-        // Re-applying GroupBy can drop the selection when the selected row changed group.
-        SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Roles.Count, RefreshReadouts);
-        UpdateShapingGating();
-        if (announce)
-        {
-            SetLastAction(mode == "grouped"
-                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
-                : "Shaping -> Flat");
-        }
-    }
-
-    // Call after ANY write to the grouped-on property.
-    private void ReapplyIfGroupedOn(string? propertyName)
-    {
-        if (_appliedMode == "grouped" && propertyName == _appliedKey)
-        {
-            ApplyShaping(announce: false);
-        }
-    }
-
-    private void UpdateShapingGating()
-    {
-        var grouped = _appliedMode == "grouped";
-        GroupKeySelector.IsEnabled = grouped;
-        ExpandAllButton.IsEnabled = grouped;
-        CollapseAllButton.IsEnabled = grouped;
-        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
-    }
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        PeopleTable.ExpandAllGroups();
-        SetLastAction("Expanded all groups");
-    }
-
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
-    {
-        PeopleTable.CollapseAllGroups();
-        SetLastAction("Collapsed all groups");
-    }
-
-    // The only writer of LastActionText.
-    private void SetLastAction(string message)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = message;
-        }
-
-        RefreshReadouts();
-    }
-
-    #endregion
 }

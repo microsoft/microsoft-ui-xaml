@@ -1,83 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page
+<!--
+    Text wrap + row height: a wrapping TextBlock in a TableViewTemplateColumn, with TextWrapping,
+    MaxLines and the column width driven from the rail, and the resulting distinct row heights.
+    The page holds only that behaviour: the table, the Bio template, the Wrapping and Bio column
+    width sections and the Actions. Try it / What to look for are presenter attributes; Shaping
+    and Status are the shared ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
+-->
+<pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.TextWrapPage"
     NavigationCacheMode="Disabled"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
-    xmlns:controls="using:TableViewSampleApp.Controls"
-    xmlns:local="using:TableViewSampleApp.Pages"
-    xmlns:models="using:TableViewSampleApp.Models">
+    xmlns:models="using:TableViewSampleApp.Models"
+    xmlns:pages="using:TableViewSampleApp.Pages"
+    xmlns:controls="using:TableViewSampleApp.Controls">
 
     <Page.Resources>
+        <!-- snippet -->
         <!-- The Bio cell. Wrapping, trimming and the line limit come from the page's static
              WrapState, so every realized cell, including recycled ones, follows the rail. The
              TextBlock carries the bio as its accessible name, so the cell has a value in UIA. -->
         <DataTemplate x:Key="BioTemplate" x:DataType="models:Person">
             <TextBlock
                 Text="{x:Bind Bio, Mode=OneWay}"
-                TextWrapping="{x:Bind local:TextWrapPage.WrapState.TextWrapping, Mode=OneWay}"
-                TextTrimming="{x:Bind local:TextWrapPage.WrapState.TextTrimming, Mode=OneWay}"
-                MaxLines="{x:Bind local:TextWrapPage.WrapState.MaxLines, Mode=OneWay}"
+                TextWrapping="{x:Bind pages:TextWrapPage.WrapState.TextWrapping, Mode=OneWay}"
+                TextTrimming="{x:Bind pages:TextWrapPage.WrapState.TextTrimming, Mode=OneWay}"
+                MaxLines="{x:Bind pages:TextWrapPage.WrapState.MaxLines, Mode=OneWay}"
                 Margin="8,6"
                 VerticalAlignment="Center"
                 SizeChanged="OnBioSizeChanged"
                 AutomationProperties.Name="{x:Bind Bio, Mode=OneWay}"/>
         </DataTemplate>
+        <!-- /snippet -->
     </Page.Resources>
 
     <controls:SamplePresenter
         Header="Text wrap + row height"
         Description="A TableViewTemplateColumn can host a wrapping TextBlock, and TableView measures each row to its tallest cell, so rows with long bios grow while short ones stay compact. Toggle TextWrapping, narrow the Bio column or clamp the text with MaxLines, and the Status readout reports the distinct row heights that result. Grouping shows that group header bands keep their own height while the rows around them vary."
-        SourceCaption="TextWrapPage.xaml (excerpt)"
-        SourceSnippet="TextWrap.xaml.txt"
-        AdditionalSnippetCaption="TextWrapPage.xaml.cs (excerpt)"
-        AdditionalSnippet="TextWrap.cs.txt"
-        StretchExample="True">
+        Snippet="TextWrap"
+        StretchExample="True"
+        TryIt="Drag the Bio column width slider down and watch long bios wrap onto more lines and their rows grow. Pick 2 lines under Max lines to clamp them, then turn wrapping off. Select a row and use Lengthen selected bio to grow one row on its own."
+        WhatToLookFor="Row heights is the list of distinct heights among the realized rows: one value means every row is the same height. With wrapping on it shows several, and narrowing the column adds taller ones. With Max lines set, no row grows past that many lines, and with NoWrap every row collapses to one height. Group header bands do not change height with the rows.">
 
         <controls:SamplePresenter.Example>
-            <Grid RowSpacing="12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <!-- scaffold:tryit -->
-                <muxc:InfoBar
-                    Grid.Row="0"
-                    Title="Try it"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    MinHeight="104"
-                    Message="Drag the Bio column width slider down and watch long bios wrap onto more lines and their rows grow. Pick 2 lines under Max lines to clamp them, then turn wrapping off. Select a row and use Lengthen selected bio to grow one row on its own."/>
-                <!-- /scaffold -->
-                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                    <tv:TableView
-                        x:Name="PeopleTable"
-                        AutomationProperties.AutomationId="TextWrapTable"
-                        AutomationProperties.Name="People with wrapped bios"
-                        ItemsSource="{x:Bind Source}"
-                        SelectionMode="Single"
-                        IsReadOnly="True"
-                        VerticalAlignment="Stretch"
-                        MinHeight="320">
-                        <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                        <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
-                        <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                    </tv:TableView>
-                </Border>
-            </Grid>
+            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                <!-- snippet -->
+                <tv:TableView
+                    x:Name="PeopleTable"
+                    AutomationProperties.AutomationId="TextWrapTable"
+                    AutomationProperties.Name="People with wrapped bios"
+                    ItemsSource="{x:Bind Source}"
+                    SelectionMode="Single"
+                    IsReadOnly="True"
+                    VerticalAlignment="Stretch"
+                    MinHeight="320">
+                    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                    <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="{StaticResource ColWidthWrappedText}" CellTemplate="{StaticResource BioTemplate}" SortMemberPath="Bio"/>
+                    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                </tv:TableView>
+                <!-- /snippet -->
+            </Border>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Wrapping">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Wrapping"
-                               Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <TextBlock Text="Switches the Bio TextBlock between TextWrapping Wrap and NoWrap, and clamps wrapped text with TextBlock.MaxLines plus an ellipsis."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    IsFirst="True"
+                    Header="Wrapping"
+                    Description="Switches the Bio TextBlock between TextWrapping Wrap and NoWrap, and clamps wrapped text with TextBlock.MaxLines plus an ellipsis.">
+                    <!-- snippet -->
                     <ToggleSwitch
                         x:Name="WrapToggle"
                         AutomationProperties.AutomationId="TextWrapToggle"
@@ -86,6 +79,7 @@
                         OnContent="Wrap"
                         OffContent="NoWrap"
                         Toggled="OnWrapToggled"/>
+                    <!-- Disabled by ApplyTextState while TextWrapping is NoWrap, where MaxLines is a no-op. -->
                     <ComboBox
                         x:Name="MaxLinesSelector"
                         AutomationProperties.AutomationId="TextWrapMaxLinesSelector"
@@ -98,15 +92,15 @@
                         <ComboBoxItem Content="2 lines + ellipsis" Tag="2"/>
                         <ComboBoxItem Content="3 lines + ellipsis" Tag="3"/>
                     </ComboBox>
+                    <!-- /snippet -->
                     <TextBlock Style="{StaticResource RailCaptionTextStyle}"
                                Text="Max lines applies only while TextWrapping is Wrap, so it is disabled for NoWrap: a single unwrapped line has nothing to clamp."/>
-                </StackPanel>
+                </controls:RailSection>
 
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Bio column width">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Bio column width"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Sets the Bio column's Width. A narrower column wraps each bio onto more lines, so its row grows; a wider one lets rows shrink again."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    Header="Bio column width"
+                    Description="Sets the Bio column's Width. A narrower column wraps each bio onto more lines, so its row grows; a wider one lets rows shrink again.">
+                    <!-- snippet -->
                     <Slider
                         x:Name="BioWidthSlider"
                         AutomationProperties.AutomationId="TextWrapBioWidthSlider"
@@ -116,75 +110,21 @@
                         StepFrequency="20"
                         Value="360"
                         ValueChanged="OnBioWidthChanged"/>
-                </StackPanel>
+                    <!-- /snippet -->
+                </controls:RailSection>
 
-                <!-- scaffold:shaping -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Grouped puts fixed-height group header bands between rows whose height follows their bios. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                    <ComboBox
-                        x:Name="ShapingModeSelector"
-                        AutomationProperties.AutomationId="TextWrapShapingModeSelector"
-                        Header="Shaping mode"
-                        SelectedIndex="0"
-                        SelectionChanged="OnShapingModeChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Flat" Tag="flat"/>
-                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                        <!-- Hierarchical rows are not available in this release. These two options stay
-                             visible but disabled so the shape of the feature is discoverable. When the
-                             control ships hierarchy, enable them and uncomment the matching branch in
-                             ApplyShaping. -->
-                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                    </ComboBox>
-                    <ComboBox
-                        x:Name="GroupKeySelector"
-                        AutomationProperties.AutomationId="TextWrapGroupKeySelector"
-                        Header="Group key"
-                        SelectedIndex="0"
-                        IsEnabled="False"
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        SelectionChanged="OnGroupKeyChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Department" Tag="Department"/>
-                        <ComboBoxItem Content="Office" Tag="Office"/>
-                        <ComboBoxItem Content="Active" Tag="IsActive"/>
-                    </ComboBox>
-                    <Button
-                        x:Name="ExpandAllButton"
-                        AutomationProperties.AutomationId="TextWrapExpandAllGroupsButton"
-                        Content="Expand all"
-                        Click="OnExpandAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <Button
-                        x:Name="CollapseAllButton"
-                        AutomationProperties.AutomationId="TextWrapCollapseAllGroupsButton"
-                        Content="Collapse all"
-                        Click="OnCollapseAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
-                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
-                </StackPanel>
-                <!-- /scaffold -->
+                <controls:ShapingOptions
+                    x:Name="Shaping"
+                    AutomationIdPrefix="TextWrap"
+                    Description="Grouped puts fixed-height group header bands between rows whose height follows their bios. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    <ComboBoxItem Content="Department" Tag="Department"/>
+                    <ComboBoxItem Content="Office" Tag="Office"/>
+                    <ComboBoxItem Content="Active" Tag="IsActive"/>
+                </controls:ShapingOptions>
 
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Changing a bio re-measures only the rows it touches, and scrolling realizes rows that were never measured before. Watch the table and the Row heights and Last action readouts. Actions that change one row need a selected row."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    Header="Actions"
+                    Description="Changing a bio re-measures only the rows it touches, and scrolling realizes rows that were never measured before. Watch the table and the Row heights and Last action readouts. Actions that change one row need a selected row.">
                     <StackPanel Spacing="8">
                         <Button
                             x:Name="LengthenBioButton"
@@ -232,59 +172,15 @@
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                     </StackPanel>
-                </StackPanel>
+                </controls:RailSection>
 
-                <!-- scaffold:status -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <Grid Style="{StaticResource StatusGridStyle}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Wrapping" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="WrappingText" AutomationProperties.AutomationId="TextWrapWrappingText"
-                                   AutomationProperties.LiveSetting="Polite" Text="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="1" Text="Bio width" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="BioWidthText" AutomationProperties.AutomationId="TextWrapBioWidthText"
-                                   AutomationProperties.LiveSetting="Polite" Text="360 px" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="2" Text="Max lines" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="MaxLinesText" AutomationProperties.AutomationId="TextWrapMaxLinesText"
-                                   AutomationProperties.LiveSetting="Polite" Text="Unlimited" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="3" Text="Row heights" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="RowHeightsText" AutomationProperties.AutomationId="TextWrapRowHeightsText"
-                                   Text="(measuring)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="4" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="TextWrapRowsText"
-                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="5" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="TextWrapShapingModeText"
-                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="6" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="6" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="TextWrapLastActionText"
-                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
-                                   Style="{StaticResource StatusReadoutValueStyle}"/>
-                    </Grid>
-                </StackPanel>
-                <!-- /scaffold -->
-
-                <muxc:InfoBar
-                    Title="What to look for"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    Message="Row heights is the list of distinct heights among the realized rows: one value means every row is the same height. With wrapping on it shows several, and narrowing the column adds taller ones. With Max lines set, no row grows past that many lines, and with NoWrap every row collapses to one height. Group header bands do not change height with the rows."/>
+                <controls:StatusPanel x:Name="Status" AutomationIdPrefix="TextWrap">
+                    <TextBlock x:Name="WrappingText" controls:StatusPanel.Label="Wrapping" Text="Wrap"/>
+                    <TextBlock x:Name="BioWidthText" controls:StatusPanel.Label="Bio width" Text="360 px"/>
+                    <TextBlock x:Name="MaxLinesText" controls:StatusPanel.Label="Max lines" Text="Unlimited"/>
+                    <TextBlock x:Name="RowHeightsText" controls:StatusPanel.Label="Row heights" Text="(measuring)" AutomationProperties.LiveSetting="Off"/>
+                </controls:StatusPanel>
             </StackPanel>
         </controls:SamplePresenter.Options>
     </controls:SamplePresenter>
-</Page>
+</pages:SamplePageBase>

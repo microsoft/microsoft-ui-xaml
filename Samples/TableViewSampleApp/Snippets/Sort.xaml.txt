@@ -1,46 +1,70 @@
-<!-- SortPage.xaml: the table. The template renders a control; SortMemberPath names the value
-     that orders the rows. A text column without SortMemberPath sorts by its Binding path. -->
-<tv:TableView x:Name="TeamsTable"
-              AutomationProperties.AutomationId="SortTable"
-              AutomationProperties.Name="League standings"
-              ItemsSource="{x:Bind Source}"
-              SelectionMode="Single" IsReadOnly="False"
-              EmptyTemplate="{StaticResource SortEmptyTemplate}"
-              Sorted="OnTableSorted"
-              VerticalAlignment="Stretch" MinHeight="320">
-    <tv:TableViewTextColumn     x:Name="TeamColumn"      Header="Team"       Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Team, Mode=TwoWay}"/>
-    <tv:TableViewTemplateColumn x:Name="SeededColumn"    Header="Seeded"     Width="{StaticResource ColWidthBoolean}"      CellTemplate="{StaticResource SeededCheckBoxTemplate}" SortMemberPath="IsSeeded"/>
-    <tv:TableViewTemplateColumn x:Name="NextMatchColumn" Header="Next match" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource NextMatchDateTemplate}"  SortMemberPath="NextMatchDate"/>
-    <tv:TableViewTemplateColumn x:Name="KickoffColumn"   Header="Kickoff"    Width="{StaticResource ColWidthTimeCompact}"  CellTemplate="{StaticResource KickoffTimeTemplate}"    SortMemberPath="Kickoff"/>
-    <tv:TableViewTextColumn     x:Name="NextMatchTextColumn" Header="Next match (text)" Width="{StaticResource ColWidthDate}" Visibility="Collapsed" IsReadOnly="True" Binding="{Binding NextMatchText}"/>
-    <tv:TableViewTextColumn     x:Name="PlayedColumn"    Header="P"          Width="{StaticResource ColWidthStatNarrow}"   IsReadOnly="True" CanSort="False" Binding="{Binding Played}"/>
-    <tv:TableViewTextColumn     x:Name="PointsColumn"    Header="Pts"        Width="{StaticResource ColWidthStat}"         IsReadOnly="True" Binding="{Binding Points}"/>
-    <tv:TableViewTemplateColumn x:Name="StandingColumn"  Header="Standing"   Width="{StaticResource ColWidthChip}"         IsReadOnly="True" CellTemplate="{StaticResource StandingChipTemplate}" SortMemberPath="Points"/>
-</tv:TableView>
-
-<!-- Page resources: editors typed to LeagueTeam. CalendarDatePicker.Date is nullable, so it
-     binds the NextMatchDateOrNull shim; the column still sorts by NextMatchDate. -->
-<DataTemplate x:Key="NextMatchDateTemplate" x:DataType="models:LeagueTeam">
-    <CalendarDatePicker Date="{x:Bind NextMatchDateOrNull, Mode=TwoWay}"
-                        DateFormat="{}{day.integer} {month.abbreviated} {year.full}"
-                        Margin="6,2" HorizontalAlignment="Stretch"
-                        AutomationProperties.Name="{x:Bind Team, Mode=OneWay,
-                            Converter={StaticResource RowAutomationNameConverter},
-                            ConverterParameter='Next match for {0}'}"/>
-</DataTemplate>
-
-<DataTemplate x:Key="KickoffTimeTemplate" x:DataType="models:LeagueTeam">
-    <TimePicker Time="{x:Bind Kickoff, Mode=TwoWay}" ClockIdentifier="24HourClock"
-                MinuteIncrement="15" MinWidth="0" Margin="6,2" HorizontalAlignment="Stretch"
-                helpers:PickerSizing.FitToWidth="True"
-                AutomationProperties.Name="{x:Bind Team, Mode=OneWay,
-                    Converter={StaticResource RowAutomationNameConverter},
-                    ConverterParameter='Kickoff for {0}'}"/>
-</DataTemplate>
-
+<!-- Seeded: an editable CheckBox; the column sorts by the bool (unseeded first). -->
 <DataTemplate x:Key="SeededCheckBoxTemplate" x:DataType="models:LeagueTeam">
-    <CheckBox IsChecked="{x:Bind IsSeeded, Mode=TwoWay}" MinWidth="0" Margin="14,2"
-              AutomationProperties.Name="{x:Bind Team, Mode=OneWay,
-                  Converter={StaticResource RowAutomationNameConverter},
-                  ConverterParameter='Seeded: {0}'}"/>
+    <CheckBox
+        IsChecked="{x:Bind IsSeeded, Mode=TwoWay}"
+        MinWidth="0"
+        Margin="14,2"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Left"
+        AutomationProperties.Name="{x:Bind Team, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Seeded: {0}'}"/>
 </DataTemplate>
+
+<!-- Next match: a compact CalendarDatePicker. CalendarDatePicker.Date is nullable, so it
+     binds the NextMatchDateOrNull shim; the column sorts by NextMatchDate. -->
+<DataTemplate x:Key="NextMatchDateTemplate" x:DataType="models:LeagueTeam">
+    <CalendarDatePicker
+        Date="{x:Bind NextMatchDateOrNull, Mode=TwoWay}"
+        DateFormat="{}{day.integer} {month.abbreviated} {year.full}"
+        Margin="6,2"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch"
+        AutomationProperties.Name="{x:Bind Team, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Next match for {0}'}"/>
+</DataTemplate>
+
+<!-- Kickoff: a compact 24-hour TimePicker; the column sorts by the TimeSpan. -->
+<DataTemplate x:Key="KickoffTimeTemplate" x:DataType="models:LeagueTeam">
+    <TimePicker
+        Time="{x:Bind Kickoff, Mode=TwoWay}"
+        ClockIdentifier="24HourClock"
+        MinuteIncrement="15"
+        MinWidth="0"
+        helpers:PickerSizing.FitToWidth="True"
+        Margin="6,2"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch"
+        AutomationProperties.Name="{x:Bind Team, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Kickoff for {0}'}"/>
+</DataTemplate>
+
+<!-- … -->
+
+<tv:TableView
+    x:Name="TeamsTable"
+    AutomationProperties.AutomationId="SortTable"
+    AutomationProperties.Name="League standings"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    IsReadOnly="False"
+    EmptyTemplate="{StaticResource SortEmptyTemplate}"
+    Sorted="OnTableSorted"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <!-- The template renders a control; SortMemberPath names the value that orders
+         the rows. A text column without SortMemberPath sorts by its Binding path. -->
+    <tv:TableViewTemplateColumn x:Name="CrestColumn" Header="Crest" Width="{StaticResource ColWidthNarrow}" CellTemplate="{StaticResource CrestTemplate}" SortMemberPath="Team" HeaderToolTip="Club crest, drawn from the team's initials. Sorts by team name."/>
+    <tv:TableViewTextColumn x:Name="GroupColumn" Header="Group" Width="{StaticResource ColWidthNarrow}" IsReadOnly="True" HeaderToolTip="Group stage group, A–H." Binding="{Binding Group}"/>
+    <tv:TableViewTextColumn x:Name="TeamColumn" Header="Team" Width="*" MinWidth="{StaticResource ColMinWidthStar}" HeaderToolTip="Team name. Editable: press F2 or double-click a cell." Binding="{Binding Team, Mode=TwoWay}"/>
+    <tv:TableViewTemplateColumn x:Name="CountryColumn" Header="Country" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource CountryChipTemplate}" SortMemberPath="Country" HeaderToolTip="Read-only chip. Sorts by the Country string, like a text column."/>
+    <tv:TableViewTemplateColumn x:Name="SeededColumn" Header="Seeded" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource SeededCheckBoxTemplate}" SortMemberPath="IsSeeded" HeaderToolTip="Pot-1 seed in the draw. Editable CheckBox; sorts by the bool, unseeded first."/>
+    <tv:TableViewTemplateColumn x:Name="NextMatchColumn" Header="Next match" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource NextMatchDateTemplate}" SortMemberPath="NextMatchDate" HeaderToolTip="Date of the next fixture. Editable; sorts by the DateTimeOffset, so 28 Dec comes before 2 Jan."/>
+    <tv:TableViewTemplateColumn x:Name="KickoffColumn" Header="Kickoff" Width="{StaticResource ColWidthTimeCompact}" CellTemplate="{StaticResource KickoffTimeTemplate}" SortMemberPath="Kickoff" HeaderToolTip="Kickoff time, 24-hour clock. Editable; sorts by the TimeSpan."/>
+    <tv:TableViewTextColumn x:Name="NextMatchTextColumn" Header="Next match (text)" Width="{StaticResource ColWidthDate}" Visibility="Collapsed" IsReadOnly="True" HeaderToolTip="The same date as plain text. Sorts alphabetically, so 2 Jan comes before 28 Dec." Binding="{Binding NextMatchText}"/>
+    <tv:TableViewTextColumn x:Name="PlayedColumn" Header="P" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" CanSort="False" HeaderToolTip="Played. Not sortable: every team has played the same number of games." Binding="{Binding Played}"/>
+    <tv:TableViewTextColumn x:Name="WinsColumn" Header="W" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" HeaderToolTip="Won" Binding="{Binding Wins}"/>
+    <tv:TableViewTextColumn x:Name="DrawsColumn" Header="D" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" HeaderToolTip="Drawn" Binding="{Binding Draws}"/>
+    <tv:TableViewTextColumn x:Name="LossesColumn" Header="L" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" HeaderToolTip="Lost" Binding="{Binding Losses}"/>
+    <tv:TableViewTextColumn x:Name="GoalsForColumn" Header="GF" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Goals for" Binding="{Binding GoalsFor}"/>
+    <tv:TableViewTextColumn x:Name="GoalsAgainstColumn" Header="GA" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Goals against" Binding="{Binding GoalsAgainst}"/>
+    <tv:TableViewTextColumn x:Name="GoalDifferenceColumn" Header="GD" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Goal difference: goals for minus goals against. The tiebreaker after points." Binding="{Binding GoalDifference}"/>
+    <tv:TableViewTextColumn x:Name="PointsColumn" Header="Pts" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Points: 3 per win, 1 per draw. The primary standings key." Binding="{Binding Points}"/>
+    <tv:TableViewTemplateColumn x:Name="StandingColumn" Header="Standing" Width="{StaticResource ColWidthChip}" IsReadOnly="True" CellTemplate="{StaticResource StandingChipTemplate}" SortMemberPath="Points" HeaderToolTip="Qualification band derived from Points: Qualified (12+), Playoff (7–11), Eliminated. Sorts by Points."/>
+</tv:TableView>

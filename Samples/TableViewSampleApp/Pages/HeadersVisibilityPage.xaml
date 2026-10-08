@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page
+<!--
+    Headers visibility: TableView.HeadersVisibility (Column / None) on a support-ticket queue, how
+    the hidden header strip interacts with group headers, and sorting from code while there is no
+    header to click. The page holds only that behaviour: the table, its ticket templates, the
+    Headers visibility section and the Actions. Try it / What to look for are presenter
+    attributes; Shaping and Status are the shared ShapingOptions / StatusPanel controls (see
+    Pages\SamplePageBase.cs).
+-->
+<pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.HeadersVisibilityPage"
     NavigationCacheMode="Disabled"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
-    xmlns:controls="using:TableViewSampleApp.Controls"
-    xmlns:local="using:TableViewSampleApp.Pages"
-    xmlns:models="using:TableViewSampleApp.Models">
+    xmlns:models="using:TableViewSampleApp.Models"
+    xmlns:pages="using:TableViewSampleApp.Pages"
+    xmlns:converters="using:TableViewSampleApp.Converters"
+    xmlns:controls="using:TableViewSampleApp.Controls">
 
     <Page.Resources>
         <!-- Page-private templates: SupportTicket is not Person, so the shared Person templates do
@@ -25,6 +33,7 @@
                 AutomationProperties.Name="{x:Bind AssigneeAutomationName, Mode=OneWay}"/>
         </DataTemplate>
 
+        <!-- The chip brushes come from Converters\TicketConverters.cs (TicketChipPalette). -->
         <DataTemplate x:Key="PriorityChipTemplate" x:DataType="models:SupportTicket">
             <Border
                 CornerRadius="10"
@@ -32,7 +41,7 @@
                 Margin="6,2"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
-                Background="{x:Bind local:HeadersVisibilityPage.PriorityTint(Priority), Mode=OneWay}"
+                Background="{x:Bind converters:TicketChipPalette.PriorityTint(Priority), Mode=OneWay}"
                 BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 AutomationProperties.AccessibilityView="Raw">
@@ -41,7 +50,7 @@
                         Width="8"
                         Height="8"
                         VerticalAlignment="Center"
-                        Fill="{x:Bind local:HeadersVisibilityPage.PriorityDot(Priority), Mode=OneWay}"
+                        Fill="{x:Bind converters:TicketChipPalette.PriorityDot(Priority), Mode=OneWay}"
                         AutomationProperties.AccessibilityView="Raw"/>
                     <TextBlock
                         Text="{x:Bind Priority, Mode=OneWay}"
@@ -52,6 +61,9 @@
             </Border>
         </DataTemplate>
 
+        <!-- snippet -->
+        <!-- With the headers hidden, each editor's own name is the only column context a screen
+             reader announces, so every editor carries a per-row accessible name. -->
         <DataTemplate x:Key="DueDateTemplate" x:DataType="models:SupportTicket">
             <CalendarDatePicker
                 Date="{x:Bind DueOrNull, Mode=TwoWay}"
@@ -71,63 +83,49 @@
                 HorizontalAlignment="Left"
                 AutomationProperties.Name="{x:Bind ResolvedAutomationName, Mode=OneWay}"/>
         </DataTemplate>
+        <!-- /snippet -->
     </Page.Resources>
 
     <controls:SamplePresenter
         Header="Headers visibility"
         Description="TableView.HeadersVisibility shows the column header strip (Column) or hides it (None). This page uses a support-ticket queue rather than people because its columns, a priority chip, a due date and a Resolved checkbox, are hard to read without their headers, which is the trade-off the property makes. Group headers are a separate surface, so they stay when the column headers are hidden. Sorting also keeps working: TableView.SortByColumn orders the rows from code even when there is no header to click."
-        SourceCaption="HeadersVisibilityPage.xaml (excerpt)"
-        SourceSnippet="HeadersVisibility.xaml.txt"
-        AdditionalSnippetCaption="HeadersVisibilityPage.xaml.cs (excerpt)"
-        AdditionalSnippet="HeadersVisibility.cs.txt"
-        StretchExample="True">
+        Snippet="HeadersVisibility"
+        StretchExample="True"
+        TryIt="Set Headers to None and try to tell what the chip, the date and the checkbox mean. Then click Sort by due date: the rows still re-order with no header to click. Switch Shaping to Grouped and hide the headers again; the group header bands stay."
+        WhatToLookFor="With the headers hidden, Narrator still announces &quot;Due date for INC-1042&quot; and &quot;Resolved for INC-1042&quot;, because each editor carries its own name; plain text cells lose their column context. Group header bands and their chevrons stay, and Sort by due date still re-orders the rows while there is no header to click.">
 
         <controls:SamplePresenter.Example>
-            <Grid RowSpacing="12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <!-- scaffold:tryit -->
-                <muxc:InfoBar
-                    Grid.Row="0"
-                    Title="Try it"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    MinHeight="104"
-                    Message="Set Headers to None and try to tell what the chip, the date and the checkbox mean. Then click Sort by due date: the rows still re-order with no header to click. Switch Shaping to Grouped and hide the headers again; the group header bands stay."/>
-                <!-- /scaffold -->
-                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                    <tv:TableView
-                        x:Name="TicketsTable"
-                        AutomationProperties.AutomationId="HeadersVisibilityTable"
-                        AutomationProperties.Name="Support tickets"
-                        ItemsSource="{x:Bind Source}"
-                        SelectionMode="Single"
-                        IsReadOnly="True"
-                        VerticalAlignment="Stretch"
-                        MinHeight="320">
-                        <!-- IsReadOnly gates the built-in text editors only; the Due and Resolved
-                             template editors stay editable. -->
-                        <tv:TableViewTextColumn Header="Ticket" Width="{StaticResource ColWidthId}" Binding="{Binding TicketId}" HeaderToolTip="Incident number, unique per ticket."/>
-                        <tv:TableViewTemplateColumn Header="Assignee" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource AssigneeTemplate}" SortMemberPath="Assignee" CellToolTipBinding="{Binding Assignee}" HeaderToolTip="Initials of the person who owns the ticket. Hover for the full name."/>
-                        <tv:TableViewTextColumn Header="Summary" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Summary}" CellToolTipBinding="{Binding Summary}"/>
-                        <tv:TableViewTemplateColumn Header="Priority" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource PriorityChipTemplate}" SortMemberPath="Priority" HeaderToolTip="Urgency: Sev 1 is the most urgent."/>
-                        <tv:TableViewTemplateColumn x:Name="DueColumn" Header="Due" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource DueDateTemplate}" SortMemberPath="Due" HeaderToolTip="Date the ticket breaches its service-level agreement. Editable."/>
-                        <tv:TableViewTemplateColumn Header="Resolved" Width="{StaticResource ColWidthBooleanWide}" CellTemplate="{StaticResource ResolvedTemplate}" SortMemberPath="IsResolved" HeaderToolTip="Checked once the ticket is closed. Editable."/>
-                    </tv:TableView>
-                </Border>
-            </Grid>
+            <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                <!-- snippet -->
+                <tv:TableView
+                    x:Name="TicketsTable"
+                    AutomationProperties.AutomationId="HeadersVisibilityTable"
+                    AutomationProperties.Name="Support tickets"
+                    ItemsSource="{x:Bind Source}"
+                    SelectionMode="Single"
+                    IsReadOnly="True"
+                    VerticalAlignment="Stretch"
+                    MinHeight="320">
+                    <!-- IsReadOnly gates the built-in text editors only; the Due and Resolved
+                         template editors stay editable. -->
+                    <tv:TableViewTextColumn Header="Ticket" Width="{StaticResource ColWidthId}" Binding="{Binding TicketId}" HeaderToolTip="Incident number, unique per ticket."/>
+                    <tv:TableViewTemplateColumn Header="Assignee" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource AssigneeTemplate}" SortMemberPath="Assignee" CellToolTipBinding="{Binding Assignee}" HeaderToolTip="Initials of the person who owns the ticket. Hover for the full name."/>
+                    <tv:TableViewTextColumn Header="Summary" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Summary}" CellToolTipBinding="{Binding Summary}"/>
+                    <tv:TableViewTemplateColumn Header="Priority" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource PriorityChipTemplate}" SortMemberPath="Priority" HeaderToolTip="Urgency: Sev 1 is the most urgent."/>
+                    <tv:TableViewTemplateColumn x:Name="DueColumn" Header="Due" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource DueDateTemplate}" SortMemberPath="Due" HeaderToolTip="Date the ticket breaches its service-level agreement. Editable."/>
+                    <tv:TableViewTemplateColumn Header="Resolved" Width="{StaticResource ColWidthBooleanWide}" CellTemplate="{StaticResource ResolvedTemplate}" SortMemberPath="IsResolved" HeaderToolTip="Checked once the ticket is closed. Editable."/>
+                </tv:TableView>
+                <!-- /snippet -->
+            </Border>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Headers visibility">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Headers visibility"
-                               Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <TextBlock Text="Sets TableView.HeadersVisibility. Column shows the header strip; None hides it, and with it header-click sorting, resizing and the header tooltips."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    IsFirst="True"
+                    Header="Headers visibility"
+                    Description="Sets TableView.HeadersVisibility. Column shows the header strip; None hides it, and with it header-click sorting, resizing and the header tooltips.">
+                    <!-- snippet -->
                     <ComboBox
                         x:Name="HeadersVisibilitySelector"
                         AutomationProperties.AutomationId="HeadersVisibilityHeadersVisibilitySelector"
@@ -138,75 +136,21 @@
                         <ComboBoxItem Content="Column" Tag="Column"/>
                         <ComboBoxItem Content="None" Tag="None"/>
                     </ComboBox>
-                </StackPanel>
+                    <!-- /snippet -->
+                </controls:RailSection>
 
-                <!-- scaffold:shaping -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="Grouped shows that group headers are not column headers: HeadersVisibility None leaves them in place. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                    <ComboBox
-                        x:Name="ShapingModeSelector"
-                        AutomationProperties.AutomationId="HeadersVisibilityShapingModeSelector"
-                        Header="Shaping mode"
-                        SelectedIndex="0"
-                        SelectionChanged="OnShapingModeChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Flat" Tag="flat"/>
-                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                        <!-- Hierarchical rows are not available in this release. These two options stay
-                             visible but disabled so the shape of the feature is discoverable. When the
-                             control ships hierarchy, enable them and uncomment the matching branch in
-                             ApplyShaping. -->
-                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
-                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                    </ComboBox>
-                    <ComboBox
-                        x:Name="GroupKeySelector"
-                        AutomationProperties.AutomationId="HeadersVisibilityGroupKeySelector"
-                        Header="Group key"
-                        SelectedIndex="0"
-                        IsEnabled="False"
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        SelectionChanged="OnGroupKeyChanged"
-                        HorizontalAlignment="Stretch">
-                        <ComboBoxItem Content="Queue" Tag="Queue"/>
-                        <ComboBoxItem Content="Priority" Tag="Priority"/>
-                        <ComboBoxItem Content="Assignee" Tag="Assignee"/>
-                    </ComboBox>
-                    <Button
-                        x:Name="ExpandAllButton"
-                        AutomationProperties.AutomationId="HeadersVisibilityExpandAllGroupsButton"
-                        Content="Expand all"
-                        Click="OnExpandAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <Button
-                        x:Name="CollapseAllButton"
-                        AutomationProperties.AutomationId="HeadersVisibilityCollapseAllGroupsButton"
-                        Content="Collapse all"
-                        Click="OnCollapseAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
-                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
-                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
-                </StackPanel>
-                <!-- /scaffold -->
+                <controls:ShapingOptions
+                    x:Name="Shaping"
+                    AutomationIdPrefix="HeadersVisibility"
+                    Description="Grouped shows that group headers are not column headers: HeadersVisibility None leaves them in place. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    <ComboBoxItem Content="Queue" Tag="Queue"/>
+                    <ComboBoxItem Content="Priority" Tag="Priority"/>
+                    <ComboBoxItem Content="Assignee" Tag="Assignee"/>
+                </controls:ShapingOptions>
 
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="These actions work the queue the way a support lead would, with the headers shown or hidden. Watch the table and the Last action readout. Actions that change one row need a selected row."
-                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                <controls:RailSection
+                    Header="Actions"
+                    Description="These actions work the queue the way a support lead would, with the headers shown or hidden. Watch the table and the Last action readout. Actions that change one row need a selected row.">
                     <StackPanel Spacing="8">
                         <Button
                             x:Name="SortByDueButton"
@@ -254,55 +198,14 @@
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                     </StackPanel>
-                </StackPanel>
+                </controls:RailSection>
 
-                <!-- scaffold:status -->
-                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
-                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <Grid Style="{StaticResource StatusGridStyle}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="0" Text="Headers" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="HeadersText" AutomationProperties.AutomationId="HeadersVisibilityHeadersText"
-                                   AutomationProperties.LiveSetting="Polite" Text="Column" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="1" Text="Sort" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="SortText" AutomationProperties.AutomationId="HeadersVisibilitySortText"
-                                   AutomationProperties.LiveSetting="Polite" Text="None" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="2" Text="Resolved" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ResolvedCountText" AutomationProperties.AutomationId="HeadersVisibilityResolvedCountText"
-                                   AutomationProperties.LiveSetting="Polite" Text="0 of 0" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="3" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="HeadersVisibilityRowsText"
-                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="4" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="HeadersVisibilityShapingModeText"
-                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="5" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="HeadersVisibilityLastActionText"
-                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
-                                   Style="{StaticResource StatusReadoutValueStyle}"/>
-                    </Grid>
-                </StackPanel>
-                <!-- /scaffold -->
-
-                <muxc:InfoBar
-                    Title="What to look for"
-                    Severity="Informational"
-                    IsOpen="True"
-                    IsClosable="False"
-                    Message="With the headers hidden, Narrator still announces &quot;Due date for INC-1042&quot; and &quot;Resolved for INC-1042&quot;, because each editor carries its own name; plain text cells lose their column context. Group header bands and their chevrons stay, and Sort by due date still re-orders the rows while there is no header to click."/>
+                <controls:StatusPanel x:Name="Status" AutomationIdPrefix="HeadersVisibility">
+                    <TextBlock x:Name="HeadersText" controls:StatusPanel.Label="Headers" Text="Column"/>
+                    <TextBlock x:Name="SortText" controls:StatusPanel.Label="Sort" Text="None"/>
+                    <TextBlock x:Name="ResolvedCountText" controls:StatusPanel.Label="Resolved" Text="0 of 0"/>
+                </controls:StatusPanel>
             </StackPanel>
         </controls:SamplePresenter.Options>
     </controls:SamplePresenter>
-</Page>
+</pages:SamplePageBase>

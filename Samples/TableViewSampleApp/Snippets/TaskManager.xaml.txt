@@ -1,44 +1,90 @@
-<!-- TaskManagerPage.xaml: a metric cell. The converter turns the raw value into a tint, and
-     returns no tint in a high-contrast theme. The leaf in the Status cell repeats its text, so
-     it is decorative (Raw). -->
+<!-- The glyph is decorative (Raw); the name carries the row. No Image bound to a path:
+     x:Bind of an empty string to Image.Source throws inside Bindings_Update and blanks
+     the whole template. -->
+<DataTemplate x:Key="ProcessNameTemplate" x:DataType="models:ProcessItem">
+    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
+        <FontIcon Glyph="{x:Bind IconGlyph}" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+        <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+    </StackPanel>
+</DataTemplate>
+
+<!-- The leaf repeats the "Efficiency mode" text, so it is decorative (Raw). -->
+<DataTemplate x:Key="ProcessStatusTemplate" x:DataType="models:ProcessItem">
+    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="8,0,0,0">
+        <FontIcon Glyph="&#xE945;" FontSize="12" Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                  Visibility="{x:Bind IsEfficiency, Mode=OneWay}" AutomationProperties.AccessibilityView="Raw"/>
+        <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+    </StackPanel>
+</DataTemplate>
+
+<!-- Heat-map cells: the converter turns the raw value into a tint (none in high contrast). -->
 <DataTemplate x:Key="CpuHeatTemplate" x:DataType="models:ProcessItem">
     <Border Background="{x:Bind CpuPercent, Mode=OneWay, Converter={StaticResource ProcessHeatBrushConverter}, ConverterParameter=Cpu}" Padding="8,4">
         <TextBlock Text="{x:Bind CpuDisplay, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
     </Border>
 </DataTemplate>
+<DataTemplate x:Key="MemoryHeatTemplate" x:DataType="models:ProcessItem">
+    <Border Background="{x:Bind MemoryMB, Mode=OneWay, Converter={StaticResource ProcessHeatBrushConverter}, ConverterParameter=Memory}" Padding="8,4">
+        <TextBlock Text="{x:Bind MemoryDisplay, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+    </Border>
+</DataTemplate>
+<DataTemplate x:Key="DiskHeatTemplate" x:DataType="models:ProcessItem">
+    <Border Background="{x:Bind DiskMBps, Mode=OneWay, Converter={StaticResource ProcessHeatBrushConverter}, ConverterParameter=Disk}" Padding="8,4">
+        <TextBlock Text="{x:Bind DiskDisplay, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+    </Border>
+</DataTemplate>
+<DataTemplate x:Key="NetworkHeatTemplate" x:DataType="models:ProcessItem">
+    <Border Background="{x:Bind NetworkMbps, Mode=OneWay, Converter={StaticResource ProcessHeatBrushConverter}, ConverterParameter=Network}" Padding="8,4">
+        <TextBlock Text="{x:Bind NetworkDisplay, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+    </Border>
+</DataTemplate>
 
-<!-- The table. String headers, so header cells and data cells are announced with their column
-     name ("CPU, 3.2%"). SortMemberPath names the raw value behind each template. Name is the one
-     star column, so the four metric columns always fit. -->
-<tv:TableView x:Name="ProcessTable"
-              AutomationProperties.AutomationId="TaskManagerTable"
-              AutomationProperties.Name="Processes"
-              ItemsSource="{x:Bind Source}"
-              SelectionMode="Single"
-              Sorted="OnProcessTableSorted"
-              SelectionChanged="OnSelectionChanged"
-              VerticalAlignment="Stretch" MinHeight="320">
+<!-- … -->
+
+<tv:TableView
+    x:Name="ProcessTable"
+    AutomationProperties.AutomationId="TaskManagerTable"
+    AutomationProperties.Name="Processes"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    Sorted="OnProcessTableSorted"
+    SelectionChanged="OnSelectionChanged"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <!-- String headers, so the header cells and every data cell are announced
+         with their column name ("CPU, 3.2%"). SortMemberPath names the raw value
+         behind each template. -->
     <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource ProcessNameTemplate}" SortMemberPath="Name"/>
     <tv:TableViewTemplateColumn Header="Status" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource ProcessStatusTemplate}" SortMemberPath="StatusText"/>
-    <tv:TableViewTemplateColumn x:Name="CpuColumn" Header="CPU" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource CpuHeatTemplate}" SortMemberPath="CpuPercent"/>
-    <tv:TableViewTemplateColumn x:Name="MemoryColumn" Header="Memory" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource MemoryHeatTemplate}" SortMemberPath="MemoryMB"/>
-    <tv:TableViewTemplateColumn x:Name="DiskColumn" Header="Disk" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource DiskHeatTemplate}" SortMemberPath="DiskMBps"/>
-    <tv:TableViewTemplateColumn x:Name="NetworkColumn" Header="Network" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource NetworkHeatTemplate}" SortMemberPath="NetworkMbps"/>
+    <tv:TableViewTemplateColumn x:Name="CpuColumn" Header="CPU" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource CpuHeatTemplate}" SortMemberPath="CpuPercent" HeaderToolTip="CPU use per core. Opens sorted highest first"/>
+    <tv:TableViewTemplateColumn x:Name="MemoryColumn" Header="Memory" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource MemoryHeatTemplate}" SortMemberPath="MemoryMB" HeaderToolTip="Working set. Opens sorted highest first"/>
+    <tv:TableViewTemplateColumn x:Name="DiskColumn" Header="Disk" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource DiskHeatTemplate}" SortMemberPath="DiskMBps" HeaderToolTip="Disk throughput. Opens sorted highest first"/>
+    <tv:TableViewTemplateColumn x:Name="NetworkColumn" Header="Network" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource NetworkHeatTemplate}" SortMemberPath="NetworkMbps" HeaderToolTip="Network throughput. Opens sorted highest first"/>
 </tv:TableView>
 
-<!-- Live data: a true on/off is a ToggleSwitch; the interval is a ComboBox. -->
-<ToggleSwitch x:Name="LiveUpdatesToggle" Header="Live updates" IsOn="True"
-              OnContent="Running" OffContent="Paused" Toggled="OnLiveUpdatesToggled"/>
-<ComboBox x:Name="UpdateIntervalSelector" Header="Update interval" SelectedIndex="1"
-          SelectionChanged="OnUpdateIntervalChanged">
-    <ComboBoxItem Content="1 second" Tag="1"/>
-    <ComboBoxItem Content="2 seconds" Tag="2"/>
-    <ComboBoxItem Content="5 seconds" Tag="5"/>
-</ComboBox>
+<!-- … -->
 
-<!-- Shaping: group keys are data (Content = label, Tag = property name). -->
-<ComboBox x:Name="GroupKeySelector" Header="Group key" SelectedIndex="0" IsEnabled="False"
-          SelectionChanged="OnGroupKeyChanged">
-    <ComboBoxItem Content="Category" Tag="Category"/>
-    <ComboBoxItem Content="Status" Tag="StatusText"/>
-</ComboBox>
+<controls:RailSection
+    IsFirst="True"
+    Header="Live data"
+    Description="A DispatcherTimer rewrites every process's CPU, memory, disk and network values, and the cells follow through their bindings. A value change does not move a row, so while a metric column is sorted each update re-declares that sort with TableViewSource.Sort(path, direction).">
+    <ToggleSwitch
+        x:Name="LiveUpdatesToggle"
+        AutomationProperties.AutomationId="TaskManagerLiveUpdatesToggle"
+        Header="Live updates"
+        IsOn="True"
+        OnContent="Running"
+        OffContent="Paused"
+        Toggled="OnLiveUpdatesToggled"/>
+    <ComboBox
+        x:Name="UpdateIntervalSelector"
+        AutomationProperties.AutomationId="TaskManagerUpdateIntervalSelector"
+        Header="Update interval"
+        SelectedIndex="1"
+        SelectionChanged="OnUpdateIntervalChanged"
+        HorizontalAlignment="Stretch">
+        <ComboBoxItem Content="1 second" Tag="1"/>
+        <ComboBoxItem Content="2 seconds" Tag="2"/>
+        <ComboBoxItem Content="5 seconds" Tag="5"/>
+    </ComboBox>
+</controls:RailSection>

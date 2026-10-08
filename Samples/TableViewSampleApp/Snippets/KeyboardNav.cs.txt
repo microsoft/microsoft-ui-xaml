@@ -1,13 +1,10 @@
 // The keyboard table reads from one TableViewSource, created once and reshaped in place.
-public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+Source = TableViewSource.From(People);
+InitializeComponent();
+PeopleTable.ItemsSource = Source;
+ResetFixture(announce: false);
 
-public KeyboardNavPage()
-{
-    _source = TableViewSource.From(People);
-    InitializeComponent();
-    PeopleTable.ItemsSource = _source;
-    ResetFixture(announce: false);
-}
+// …
 
 // In-cell editors write the model; re-bucket when the grouped-on value changed, because
 // GroupBy takes a delegate and cannot follow PropertyChanged.
@@ -22,30 +19,22 @@ private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
         case nameof(Person.IsActive):
             ReapplyIfGroupedOn(e.PropertyName);
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Active -> {0} for {1}", person.IsActive ? "checked" : "unchecked", person.FullName));
             break;
         case nameof(Person.Office):
             ReapplyIfGroupedOn(e.PropertyName);
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Office -> {0} for {1}", person.Office, person.FullName));
             break;
     }
 }
 
-// ---- assessment fixture ----------------------------------------------------
-//
-// The fixture's value is determinism: the same 24 objects, in the same order, under every
-// scenario. Reset restores values AND membership without creating new objects, so a UIA
-// inspector can stay open across a reset.
-private readonly AccessibilityFixtureData _data = new();
-private TableViewSource? _fixtureSource;
+// …
 
 private void ConfigureColumns()
 {
     AssessmentTable.ClearSort();
     AssessmentTable.Columns.Clear();
 
-    // Record takes two thirds and Department one third, so the two columns fill the table in
-    // every scenario instead of leaving an empty filler band.
+    // Record takes two thirds of the width and Department one third, so the two columns
+    // fill the table in every scenario instead of leaving an empty filler band.
     if (Scenario is "Intrinsic" or "Explicit")
     {
         AssessmentTable.Columns.Add(new TableViewTemplateColumn
@@ -56,7 +45,14 @@ private void ConfigureColumns()
             CellTemplate = (DataTemplate)Resources[Scenario == "Explicit" ? "ExplicitRecordTemplate" : "IntrinsicRecordTemplate"],
             CanSort = false,
         });
-        // Department: the same shape with Width 1*, MinWidth 160 and DepartmentTemplate.
+        AssessmentTable.Columns.Add(new TableViewTemplateColumn
+        {
+            Header = "Department",
+            Width = new GridLength(1, GridUnitType.Star),
+            MinWidth = 160,
+            CellTemplate = (DataTemplate)Resources["DepartmentTemplate"],
+            CanSort = false,
+        });
     }
     else
     {
@@ -68,7 +64,13 @@ private void ConfigureColumns()
             MinWidth = 240,
             Binding = new Binding { Path = new PropertyPath(nameof(AccessibilityRow.DisplayText)) },
         });
-        // Department: Width 1*, MinWidth 160, bound to AccessibilityRow.Department.
+        AssessmentTable.Columns.Add(new TableViewTextColumn
+        {
+            Header = "Department",
+            Width = new GridLength(1, GridUnitType.Star),
+            MinWidth = 160,
+            Binding = new Binding { Path = new PropertyPath(nameof(AccessibilityRow.Department)) },
+        });
     }
 
     // One deliberate default-name baseline; no row/cell blanket names or provider overrides.
@@ -82,8 +84,9 @@ private void ConfigureColumns()
     }
 }
 
+// …
+
 // The fixture groups with its own switch (a documented exception to the Shaping list).
-// The key selector receives the ROW; the identity selector receives the KEY.
 private void OnGroupingToggled(object sender, RoutedEventArgs e)
 {
     if (_updating || _fixtureSource is null || !CloseEditForSetup())
@@ -93,30 +96,11 @@ private void OnGroupingToggled(object sender, RoutedEventArgs e)
 
     if (GroupingToggle.IsOn)
     {
+        // The key selector receives the ROW; the identity selector receives the KEY.
         _fixtureSource.GroupBy(item => ((AccessibilityRow)item).Department, SampleShaping.GroupIdentity);
     }
     else
     {
         _fixtureSource.ClearGroupBy();
     }
-
-    SetLastAction(GroupingToggle.IsOn
-        ? "Fixture grouped by Department on the same TableViewSource."
-        : "Fixture grouping cleared on the same TableViewSource.");
-}
-
-// Mutate / Remove / Restore are null- and foreign-record-guarded inside
-// AccessibilityFixtureData; they return false rather than throwing, so a mis-click during an
-// assessment cannot corrupt the fixture.
-private void OnMutateSelectedClick(object sender, RoutedEventArgs e)
-{
-    if (!CloseEditForSetup())
-    {
-        return;
-    }
-
-    var row = AssessmentTable.SelectedItem as AccessibilityRow;
-    SetLastAction(_data.Mutate(row)
-        ? string.Format(CultureInfo.CurrentCulture, "Mutated selected record {0} in place.", row!.Id)
-        : "No row selected.");
 }

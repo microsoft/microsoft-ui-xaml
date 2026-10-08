@@ -27,7 +27,7 @@ namespace TableViewSampleApp.Pages;
 /// column resize and visibility, selection modes, headers visibility and grouping over a single
 /// TableViewSource that is reshaped in place.
 /// </summary>
-public sealed partial class ShowcasePage : Page
+public sealed partial class ShowcasePage : SamplePageBase
 {
     // Read by the Showcase tint converters, which XAML instantiates as page resources.
     public static bool Vibrant = true;
@@ -37,20 +37,18 @@ public sealed partial class ShowcasePage : Page
 
     private readonly Random _liveRandom = new();
     private readonly Dictionary<CheckBox, TableViewColumn> _columnToggles = new();
-    private DispatcherTimer? _liveTimer;
-    private TableViewSource? _source;          // created ONCE; reshaped in place, never rebuilt
-    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
-    private string _appliedKey = "Department";
-    private bool _isBulkUpdate;                // suppresses per-row PropertyChanged handling
+    private readonly DispatcherTimer _liveTimer = new();
     private bool _isResorting;                 // suppresses the Sorted readout for code re-sorts
     private bool _ready;                       // false while InitializeComponent fires handlers
 
     public ShowcasePage()
     {
+        // <snippet>
         Vibrant = true;
         FillPeople(100);
-        _source = TableViewSource.From(People);
+        Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
+        // </snippet>
 
         _columnToggles[ShiftColumnCheckBox] = ShiftColumn;
         _columnToggles[OfficeColumnCheckBox] = OfficeColumn;
@@ -58,67 +56,43 @@ public sealed partial class ShowcasePage : Page
         _columnToggles[RoleColumnCheckBox] = RoleColumn;
         _columnToggles[DetailsColumnCheckBox] = DetailsColumn;
 
+        _liveTimer.Interval = TimeSpan.FromMilliseconds(UpdateIntervalSlider.Value);
+        _liveTimer.Tick += OnLiveTimerTick;
+
         _ready = true;
-        Loaded += OnPageLoaded;
-        Unloaded += OnPageUnloaded;
-        RefreshReadouts();
+        Shaping.ProbeLimit = () => MaxProbeIndex;
+        InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
+        TrackItems(People, OnPersonChanged);
+        TrackLifetime(
+            () => PersonCellTemplates.DetailsOpened += OnDetailsOpened,
+            () => PersonCellTemplates.DetailsOpened -= OnDetailsOpened);
+        TrackTimer(_liveTimer, () => LiveToggle.IsOn);
     }
 
     public ObservableCollection<Person> People { get; } = new();
 
-    public TableViewSource? Source => _source;
+    public TableViewSource Source { get; }
 
     private int MaxProbeIndex => People.Count + PersonData.Roles.Count + PersonData.Departments.Count;
 
-    private void OnPageLoaded(object sender, RoutedEventArgs e)
-    {
-        Track(People, attach: true);
-        PersonCellTemplates.DetailsOpened += OnDetailsOpened;
-        if (LiveToggle.IsOn)
-        {
-            StartLiveUpdates();
-        }
-
-        RefreshReadouts();
-    }
-
-    private void OnPageUnloaded(object sender, RoutedEventArgs e)
-    {
-        StopLiveUpdates();
-        Track(People, attach: false);
-        PersonCellTemplates.DetailsOpened -= OnDetailsOpened;
-    }
-
     protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
-        StopLiveUpdates();
+        _liveTimer.Stop();
         base.OnNavigatedFrom(e);
-    }
-
-    private void Track(IEnumerable<Person> people, bool attach)
-    {
-        foreach (var person in people)
-        {
-            person.PropertyChanged -= OnPersonChanged;
-            if (attach)
-            {
-                person.PropertyChanged += OnPersonChanged;
-            }
-        }
     }
 
     private void FillPeople(int count)
     {
-        Track(People, attach: false);
+        // Clear() is a Reset, which does not report the old rows: stop listening to them first.
+        foreach (var person in People)
+        {
+            person.PropertyChanged -= OnPersonChanged;
+        }
+
         People.Clear();
         foreach (var person in PersonData.Take(count))
         {
             People.Add(person);
-        }
-
-        if (IsLoaded)
-        {
-            Track(People, attach: true);
         }
     }
 
@@ -133,11 +107,11 @@ public sealed partial class ShowcasePage : Page
 
         if (LiveToggle.IsOn)
         {
-            StartLiveUpdates();
+            _liveTimer.Start();
         }
         else
         {
-            StopLiveUpdates();
+            _liveTimer.Stop();
         }
 
         SetLastAction(LiveToggle.IsOn ? "Live updates -> On" : "Live updates -> Off");
@@ -150,39 +124,15 @@ public sealed partial class ShowcasePage : Page
             return;
         }
 
-        if (_liveTimer is not null)
-        {
-            _liveTimer.Interval = TimeSpan.FromMilliseconds(e.NewValue);
-        }
-
+        _liveTimer.Interval = TimeSpan.FromMilliseconds(e.NewValue);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Update interval -> {0:N0} ms", e.NewValue));
     }
 
-    private void StartLiveUpdates()
-    {
-        StopLiveUpdates();
-        _liveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(UpdateIntervalSlider.Value) };
-        _liveTimer.Tick += OnLiveTimerTick;
-        _liveTimer.Start();
-    }
-
-    private void StopLiveUpdates()
-    {
-        if (_liveTimer is null)
-        {
-            return;
-        }
-
-        _liveTimer.Stop();
-        _liveTimer.Tick -= OnLiveTimerTick;
-        _liveTimer = null;
-    }
-
+    // <snippet>
     private void OnLiveTimerTick(object? sender, object e)
     {
         var flipped = false;
-        _isBulkUpdate = true;
-        try
+        using (BeginBulkUpdate())
         {
             foreach (var person in People.Take(LiveRowCount))
             {
@@ -196,10 +146,6 @@ public sealed partial class ShowcasePage : Page
                     flipped = true;
                 }
             }
-        }
-        finally
-        {
-            _isBulkUpdate = false;
         }
 
         // Neither grouping nor sorting observes PropertyChanged, so re-apply whichever one is
@@ -233,6 +179,7 @@ public sealed partial class ShowcasePage : Page
 
         SetLastAction(Vibrant ? "Vibrant cells -> On" : "Vibrant cells -> Off");
     }
+    // </snippet>
 
     // ---- Table options --------------------------------------------------------------------
 
@@ -247,21 +194,22 @@ public sealed partial class ShowcasePage : Page
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
         // Grouped, every Add re-buckets the projection; refill flat and group once at the end.
-        var grouped = _appliedMode == "grouped";
+        var grouped = IsGrouped;
         if (grouped)
         {
-            _source?.ClearGroupBy();
+            Source.ClearGroupBy();
         }
 
         FillPeople(count);
         if (grouped)
         {
-            ApplyShaping(announce: false);
+            Shaping.Apply(announce: false);
         }
 
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Row count -> {0:N0} (refilled in {1:N0} ms)", count, stopwatch.ElapsedMilliseconds));
     }
 
+    // <snippet>
     private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
     {
         if (!_ready)
@@ -297,6 +245,7 @@ public sealed partial class ShowcasePage : Page
         column.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} column -> {1}", column.Header, show ? "shown" : "hidden"));
     }
+    // </snippet>
 
     // ---- Sorting ----------------------------------------------------------------------------
 
@@ -312,16 +261,14 @@ public sealed partial class ShowcasePage : Page
             : string.Format(CultureInfo.CurrentCulture, "Sorted by {0} ({1})", args.Column.Header, args.Direction));
     }
 
-    private TableViewColumn? ActiveSortColumn() =>
-        PeopleTable.Columns.FirstOrDefault(column => column.SortDirection != TableViewSortDirection.None);
-
+    // <snippet>
     // The control sorts once, when the sort is applied. Re-declaring the same path on the source
     // re-reads every key (TableViewSource.Sort replaces that axis in place), so a row whose sorted
     // value changed moves to its new position.
     private void ResortIfSortedOn(params string[] propertyNames)
     {
-        var column = ActiveSortColumn();
-        if (_source is null || column is null || Array.IndexOf(propertyNames, column.SortMemberPath) < 0)
+        var column = SampleShaping.ActiveSortColumn(PeopleTable);
+        if (column is null || Array.IndexOf(propertyNames, column.SortMemberPath) < 0)
         {
             return;
         }
@@ -330,7 +277,7 @@ public sealed partial class ShowcasePage : Page
         _isResorting = true;
         try
         {
-            _source.Sort(column.SortMemberPath, column.SortDirection);
+            Source.Sort(column.SortMemberPath, column.SortDirection);
         }
         finally
         {
@@ -339,12 +286,13 @@ public sealed partial class ShowcasePage : Page
 
         SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex, RefreshReadouts);
     }
+    // </snippet>
 
     // ---- In-cell edits ----------------------------------------------------------------------
 
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender is not Person person || _isBulkUpdate)
+        if (sender is not Person person || IsBulkUpdating)
         {
             return;
         }
@@ -400,10 +348,9 @@ public sealed partial class ShowcasePage : Page
             return;
         }
 
-        var key = _appliedMode == "grouped" ? _appliedKey : nameof(Person.Department);
+        var key = IsGrouped ? AppliedGroupKey : nameof(Person.Department);
         var from = SampleShaping.KeyOf(person, key);
-        _isBulkUpdate = true;
-        try
+        using (BeginBulkUpdate())
         {
             switch (key)
             {
@@ -417,10 +364,6 @@ public sealed partial class ShowcasePage : Page
                     person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
                     break;
             }
-        }
-        finally
-        {
-            _isBulkUpdate = false;
         }
 
         ReapplyIfGroupedOn(key);
@@ -450,12 +393,9 @@ public sealed partial class ShowcasePage : Page
             return;
         }
 
-        person.PropertyChanged -= OnPersonChanged;
         People.Remove(person);
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0} ({1})", person.FullName, SampleShaping.KeyOf(person, _appliedKey)));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0} ({1})", person.FullName, SampleShaping.KeyOf(person, AppliedGroupKey)));
     }
-
-    // ---- Readouts ---------------------------------------------------------------------------
 
     private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
@@ -464,122 +404,4 @@ public sealed partial class ShowcasePage : Page
             RefreshReadouts();
         }
     }
-
-    private void RefreshReadouts()
-    {
-        if (RowsText is null || SelectionText is null || SortText is null || ColumnsText is null)
-        {
-            return;
-        }
-
-        RowsText.Text = SampleShaping.RowCountText(People.Count);
-        SelectionText.Text = PeopleTable.SelectedItem is Person person
-            ? string.Format(CultureInfo.CurrentCulture, "{0} ({1})", person.FullName, PeopleTable.SelectionMode)
-            : string.Format(CultureInfo.CurrentCulture, "(none) ({0})", PeopleTable.SelectionMode);
-
-        var sortColumn = ActiveSortColumn();
-        SortText.Text = sortColumn is null
-            ? "(none)"
-            : string.Format(CultureInfo.CurrentCulture, "{0} ({1})", sortColumn.Header, sortColumn.SortDirection);
-
-        var shown = PeopleTable.Columns.Count(column => column.Visibility == Visibility.Visible);
-        ColumnsText.Text = string.Format(CultureInfo.CurrentCulture, "{0} of {1} shown", shown, PeopleTable.Columns.Count);
-    }
-
-    #region Sample scaffolding (generic; see FIX-PLAN §6)
-
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void ApplyShaping(bool announce)
-    {
-        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
-        // later-declared elements exist. Guard every element this path touches.
-        if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
-            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
-        {
-            return;
-        }
-
-        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
-        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
-        var selected = PeopleTable.SelectedItem;
-
-        switch (mode)
-        {
-            case "grouped":
-                // The key selector receives the ROW; the identity selector receives the KEY.
-                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
-                break;
-            // case "hierarchy":
-            // case "groupedHierarchy":
-            //     Hierarchical (tree) rows are not available in this release, so the two matching
-            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
-            //     member today. When hierarchy ships, apply it to this same source here, composed
-            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
-            //     after the call returns.
-            default:
-                _source.ClearGroupBy();
-                mode = "flat";
-                break;
-        }
-
-        _appliedMode = mode;
-        _appliedKey = key;
-
-        // Re-applying GroupBy can drop the selection when the selected row changed group.
-        SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex, RefreshReadouts);
-
-        UpdateShapingGating();
-        if (announce)
-        {
-            SetLastAction(mode == "grouped"
-                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
-                : "Shaping -> Flat");
-        }
-    }
-
-    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
-    private void ReapplyIfGroupedOn(string? propertyName)
-    {
-        if (_appliedMode == "grouped" && propertyName == _appliedKey)
-        {
-            ApplyShaping(announce: false);
-        }
-    }
-
-    private void UpdateShapingGating()
-    {
-        var grouped = _appliedMode == "grouped";
-        GroupKeySelector.IsEnabled = grouped;
-        ExpandAllButton.IsEnabled = grouped;
-        CollapseAllButton.IsEnabled = grouped;
-        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
-    }
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        PeopleTable.ExpandAllGroups();
-        SetLastAction("Expanded all groups");
-    }
-
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
-    {
-        PeopleTable.CollapseAllGroups();
-        SetLastAction("Collapsed all groups");
-    }
-
-    // The only writer of LastActionText.
-    private void SetLastAction(string message)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = message;
-        }
-
-        RefreshReadouts();
-    }
-
-    #endregion
 }

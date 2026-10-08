@@ -432,9 +432,101 @@ public sealed partial class SamplePresenter : UserControl
     {
         if (d is SamplePresenter sp)
         {
+            sp.UpdateTryIt();
             sp.ApplyStretchSizing(sp._availableHeight);
             sp.InvalidateMeasure();
         }
+    }
+
+    /// <summary>
+    /// "Try it" steps, shown in an InfoBar above the Example (2–3 imperative steps: do X, then Y;
+    /// watch Z). Empty: no InfoBar and no gap.
+    /// </summary>
+    public string? TryIt
+    {
+        get => (string?)GetValue(TryItProperty);
+        set => SetValue(TryItProperty, value);
+    }
+
+    public static readonly DependencyProperty TryItProperty =
+        DependencyProperty.Register(nameof(TryIt), typeof(string), typeof(SamplePresenter),
+            new PropertyMetadata(null, (d, e) => ((SamplePresenter)d).UpdateTryIt()));
+
+    /// <summary>
+    /// "What to look for": the non-obvious consequence, shown in an InfoBar last in the options rail.
+    /// </summary>
+    public string? WhatToLookFor
+    {
+        get => (string?)GetValue(WhatToLookForProperty);
+        set => SetValue(WhatToLookForProperty, value);
+    }
+
+    public static readonly DependencyProperty WhatToLookForProperty =
+        DependencyProperty.Register(nameof(WhatToLookFor), typeof(string), typeof(SamplePresenter),
+            new PropertyMetadata(null, (d, e) =>
+            {
+                var sp = (SamplePresenter)d;
+                var text = (string?)e.NewValue;
+                sp.WhatToLookForInfoBar.Message = text ?? string.Empty;
+                sp.WhatToLookForInfoBar.Visibility = string.IsNullOrEmpty(text) ? Visibility.Collapsed : Visibility.Visible;
+            }));
+
+    /// <summary>
+    /// Snippet base name, e.g. "Sort": fills whichever of SourceSnippet ("Sort.xaml.txt"),
+    /// AdditionalSnippet ("Sort.cs.txt"), SourceCaption ("SortPage.xaml (excerpt)") and
+    /// AdditionalSnippetCaption ("SortPage.xaml.cs (excerpt)") the page did not set itself.
+    /// </summary>
+    public string? Snippet
+    {
+        get => (string?)GetValue(SnippetProperty);
+        set => SetValue(SnippetProperty, value);
+    }
+
+    public static readonly DependencyProperty SnippetProperty =
+        DependencyProperty.Register(nameof(Snippet), typeof(string), typeof(SamplePresenter),
+            new PropertyMetadata(null, OnSnippetChanged));
+
+    private static void OnSnippetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not SamplePresenter sp || e.NewValue is not string name || string.IsNullOrEmpty(name))
+        {
+            return;
+        }
+
+        if (sp.ReadLocalValue(SourceCaptionProperty) == DependencyProperty.UnsetValue)
+        {
+            sp.SourceCaption = $"{name}Page.xaml (excerpt)";
+        }
+
+        if (sp.ReadLocalValue(AdditionalSnippetCaptionProperty) == DependencyProperty.UnsetValue)
+        {
+            sp.AdditionalSnippetCaption = $"{name}Page.xaml.cs (excerpt)";
+        }
+
+        if (sp.ReadLocalValue(SourceSnippetProperty) == DependencyProperty.UnsetValue)
+        {
+            sp.SourceSnippet = $"{name}.xaml.txt";
+        }
+
+        if (sp.ReadLocalValue(AdditionalSnippetProperty) == DependencyProperty.UnsetValue)
+        {
+            sp.AdditionalSnippet = $"{name}.cs.txt";
+        }
+    }
+
+    // Unnamed on purpose (see SamplePresenter.xaml): WinUI would surface an x:Name as the AutomationId.
+    private InfoBar TryItInfoBar => (InfoBar)ExampleGrid.Children[0];
+
+    private InfoBar WhatToLookForInfoBar => (InfoBar)RailPanel.Children[2];
+
+    private void UpdateTryIt()
+    {
+        var text = TryIt;
+        var hasTryIt = !string.IsNullOrEmpty(text);
+        TryItInfoBar.Message = text ?? string.Empty;
+        TryItInfoBar.Visibility = hasTryIt ? Visibility.Visible : Visibility.Collapsed;
+        ExampleGrid.RowSpacing = hasTryIt ? 12 : 0;
+        ExampleHostRow.Height = StretchExample ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
     }
 
     // Star sizing inside an infinite-height ScrollViewer collapses to 0, so when StretchExample
@@ -669,9 +761,26 @@ public sealed partial class SamplePresenter : UserControl
                 using var stream = assembly.GetManifestResourceStream(resource);
                 if (stream is null) continue;
                 using var reader = new StreamReader(stream);
-                return reader.ReadToEnd();
+                return WithoutManualMarker(reader.ReadToEnd());
             }
         }
         throw new InvalidOperationException($"Snippet '{snippetName}' was not found in embedded resources.");
+    }
+
+    // A hand-written snippet starts with "// snippet:manual" or "<!-- snippet:manual -->" so that
+    // tools\Update-Snippets.ps1 leaves it alone; that marker is not part of the excerpt.
+    private static string WithoutManualMarker(string text)
+    {
+        var end = text.IndexOf('\n');
+        var first = (end < 0 ? text : text.Substring(0, end)).Trim();
+        if (first is not ("// snippet:manual" or "<!-- snippet:manual -->"))
+        {
+            return text;
+        }
+
+        var rest = end < 0 ? string.Empty : text.Substring(end + 1);
+        return rest.StartsWith("\r\n", StringComparison.Ordinal) ? rest.Substring(2)
+            : rest.StartsWith('\n') ? rest.Substring(1)
+            : rest;
     }
 }

@@ -54,6 +54,7 @@
          ChipBrushes and drop to transparent / theme text under a Contrast theme. The label is
          the visible and the accessible value, so colour never carries meaning alone. The chip root
          carries AutomationProperties.Name, which the cell reads first ("Department, Marketing"). -->
+    <!-- snippet CellTemplating -->
     <DataTemplate x:Key="DepartmentChipTemplate" x:DataType="models:Person">
         <Border
             CornerRadius="10"
@@ -81,6 +82,7 @@
             </StackPanel>
         </Border>
     </DataTemplate>
+    <!-- /snippet -->
 
     <!-- Active / Inactive status chip (ColWidthStatus). Read-only counterpart of the
          Active CheckBox, for pages about read-only presentation. -->
@@ -113,6 +115,7 @@
     </DataTemplate>
 
     <!-- Active CheckBox (ColWidthBoolean). Tab reaches it, Space toggles it. -->
+    <!-- snippet CellTemplating -->
     <DataTemplate x:Key="ActiveCheckBoxTemplate" x:DataType="models:Person">
         <CheckBox
             IsChecked="{x:Bind IsActive, Mode=TwoWay}"
@@ -122,6 +125,7 @@
             HorizontalAlignment="Left"
             AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Active for {0}'}"/>
     </DataTemplate>
+    <!-- /snippet -->
 
     <!-- Full DatePicker (ColWidthDatePicker, 310). The control's own MinWidth is about 296,
          so a narrower column clips the year. -->

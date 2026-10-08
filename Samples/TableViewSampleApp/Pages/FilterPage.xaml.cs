@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -29,65 +27,32 @@ namespace TableViewSampleApp.Pages;
 /// collection. Grouping is applied to that same source, so a filtered, grouped view is a single
 /// projection. The columns are built in code from the shared Person cell templates.
 /// </summary>
-public sealed partial class FilterPage : Page
+public sealed partial class FilterPage : SamplePageBase
 {
     // A query no row matches: no name, department, role or email contains it.
     private const string NoMatchQuery = "Astronaut";
 
-    private TableViewSource? _source;          // created ONCE; filtered and reshaped in place
-    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
-    private string _appliedKey = "Department";
-    private bool _isBulkUpdate;
     private bool _refreshQueued;
     private string? _programmaticQuery;        // set when an action types the query itself
 
     public FilterPage()
     {
-        _source = TableViewSource.From(People);
+        // <snippet>
+        Source = TableViewSource.From(People);     // created once; filtered and reshaped in place
         InitializeComponent();
         BuildColumns();
-        Loaded += OnPageLoaded;
-        Unloaded += OnPageUnloaded;
         ApplyFilter();
+        // </snippet>
+        Shaping.ProbeLimit = () => People.Count + 64;
+        InitializeSample(Status, Shaping.Attach(FilterTable, Source));
+        TrackItems(People, OnPersonChanged);
     }
 
     public ObservableCollection<Person> People { get; } = PersonData.Take(60);
 
-    public TableViewSource? Source => _source;
+    public TableViewSource Source { get; }
 
-    private void OnPageLoaded(object sender, RoutedEventArgs e)
-    {
-        People.CollectionChanged += OnPeopleCollectionChanged;
-        foreach (var person in People)
-        {
-            person.PropertyChanged += OnPersonChanged;
-        }
-
-        RefreshReadouts();
-    }
-
-    private void OnPageUnloaded(object sender, RoutedEventArgs e)
-    {
-        People.CollectionChanged -= OnPeopleCollectionChanged;
-        foreach (var person in People)
-        {
-            person.PropertyChanged -= OnPersonChanged;
-        }
-    }
-
-    private void OnPeopleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        foreach (Person person in e.OldItems ?? Array.Empty<Person>())
-        {
-            person.PropertyChanged -= OnPersonChanged;
-        }
-
-        foreach (Person person in e.NewItems ?? Array.Empty<Person>())
-        {
-            person.PropertyChanged += OnPersonChanged;
-        }
-    }
-
+    // <snippet>
     // ---- Columns, built in code from the shared templates -------------------------------------
 
     private void BuildColumns()
@@ -185,20 +150,15 @@ public sealed partial class FilterPage : Page
     /// </summary>
     private void ApplyFilter()
     {
-        if (_source is null)
-        {
-            return;
-        }
-
         var query = Query;
         var activeOnly = ActiveOnly;
         if (query.Length > 0 || activeOnly)
         {
-            _source.Filter(item => Matches((Person)item, query, activeOnly));
+            Source.Filter(item => Matches((Person)item, query, activeOnly));
         }
         else
         {
-            _source.ClearFilter();
+            Source.ClearFilter();
         }
 
         RefreshReadouts();
@@ -227,7 +187,7 @@ public sealed partial class FilterPage : Page
     /// </summary>
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender is not Person person || _isBulkUpdate || _refreshQueued
+        if (sender is not Person person || IsBulkUpdating || _refreshQueued
             || e.PropertyName is not (nameof(Person.Role) or nameof(Person.IsActive)))
         {
             return;
@@ -235,14 +195,9 @@ public sealed partial class FilterPage : Page
 
         var property = e.PropertyName;
         _refreshQueued = true;
-        DispatcherQueue.TryEnqueue(() =>
+        EnqueueIfLoaded(() =>
         {
             _refreshQueued = false;
-            if (!IsLoaded)
-            {
-                return;
-            }
-
             ReapplyIfGroupedOn(property);
             ApplyFilter();
             SetLastAction(string.Format(
@@ -252,6 +207,7 @@ public sealed partial class FilterPage : Page
                 person.FullName));
         });
     }
+    // </snippet>
 
     private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
@@ -311,8 +267,7 @@ public sealed partial class FilterPage : Page
         var query = Query;
         var activeOnly = ActiveOnly;
         string change;
-        _isBulkUpdate = true;
-        try
+        using (BeginBulkUpdate())
         {
             if (activeOnly && person.IsActive)
             {
@@ -340,13 +295,9 @@ public sealed partial class FilterPage : Page
                 change = "unchanged";
             }
         }
-        finally
-        {
-            _isBulkUpdate = false;
-        }
 
         // Any of Active, Department or Role may be the grouped-on value.
-        ReapplyIfGroupedOn(_appliedKey);
+        ReapplyIfGroupedOn(AppliedGroupKey);
         ApplyFilter();
         SetLastAction(Matches(person, query, activeOnly)
             ? string.Format(CultureInfo.CurrentCulture, "{0} still matches by name or email ({1})", person.FullName, change)
@@ -361,10 +312,9 @@ public sealed partial class FilterPage : Page
             return;
         }
 
-        var key = _appliedMode == "grouped" ? _appliedKey : SampleShaping.SelectedTag(GroupKeySelector, "Department");
+        var key = IsGrouped ? AppliedGroupKey : Shaping.SelectedKey;
         var from = SampleShaping.KeyOf(person, key);
-        _isBulkUpdate = true;
-        try
+        using (BeginBulkUpdate())
         {
             switch (key)
             {
@@ -379,13 +329,9 @@ public sealed partial class FilterPage : Page
                     break;
             }
         }
-        finally
-        {
-            _isBulkUpdate = false;
-        }
 
         // GroupBy's key selector and the filter predicate are delegates, evaluated when they are
-        // applied, so apply both again; ApplyShaping re-selects the moved row.
+        // applied, so apply both again; the reshape re-selects the moved row.
         ReapplyIfGroupedOn(key);
         ApplyFilter();
         SampleShaping.Reselect(FilterTable, person, People.Count + 64);
@@ -396,131 +342,4 @@ public sealed partial class FilterPage : Page
             from,
             SampleShaping.KeyOf(person, key)));
     }
-
-    // ---- Readouts ---------------------------------------------------------------------------
-
-    private void RefreshReadouts()
-    {
-        if (FilterTable is null || FilterStateText is null || SelectedItemText is null || RowsText is null)
-        {
-            return;
-        }
-
-        var query = Query;
-        var activeOnly = ActiveOnly;
-        FilterStateText.Text = !HasFilter
-            ? "(none)"
-            : query.Length == 0
-                ? "Active only"
-                : string.Format(CultureInfo.CurrentCulture, "Query \u201C{0}\u201D{1}", query, activeOnly ? " + Active only" : string.Empty);
-
-        // The projection's row count is not exposed, so count the matches app-side.
-        var matched = People.Count(p => Matches(p, query, activeOnly));
-        RowsText.Text = HasFilter
-            ? string.Format(CultureInfo.CurrentCulture, "Showing {0:N0} of {1:N0}", matched, People.Count)
-            : SampleShaping.RowCountText(People.Count);
-
-        SelectedItemText.Text = FilterTable.SelectedItem is Person person ? person.FullName : "(none)";
-    }
-
-    #region Sample scaffolding (generic; see FIX-PLAN §6)
-
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void ApplyShaping(bool announce)
-    {
-        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
-        // later-declared elements exist. Guard EVERY element this path touches.
-        if (_source is null || FilterTable is null || ShapingModeSelector is null || GroupKeySelector is null
-            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
-        {
-            return;
-        }
-
-        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
-        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
-        var selected = FilterTable.SelectedItem;
-
-        switch (mode)
-        {
-            case "grouped":
-                // The key selector receives the ROW; the identity selector receives the KEY.
-                // Applied to the same source as the filter, so only matching rows are grouped.
-                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
-                break;
-            // case "hierarchy":
-            // case "groupedHierarchy":
-            //     Hierarchical (tree) rows are not available in this release, so the two matching
-            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
-            //     member today. When hierarchy ships, apply it to this same source here, composed
-            //     with the Filter and GroupBy stages rather than replacing them, and set
-            //     _appliedMode only after the call returns.
-            default:
-                _source.ClearGroupBy();
-                mode = "flat";
-                break;
-        }
-
-        _appliedMode = mode;
-        _appliedKey = key;
-
-        // Re-applying GroupBy can drop the selection when the selected row changed group.
-        SampleShaping.Reselect(FilterTable, selected, People.Count + 64, RefreshReadouts);
-        UpdateShapingGating();
-        if (announce)
-        {
-            SetLastAction(mode == "grouped"
-                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
-                : "Shaping -> Flat");
-        }
-        else
-        {
-            RefreshReadouts();
-        }
-    }
-
-    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
-    private void ReapplyIfGroupedOn(string? propertyName)
-    {
-        if (_appliedMode == "grouped" && propertyName == _appliedKey)
-        {
-            ApplyShaping(announce: false);
-        }
-    }
-
-    private void UpdateShapingGating()
-    {
-        var grouped = _appliedMode == "grouped";
-        GroupKeySelector.IsEnabled = grouped;
-        ExpandAllButton.IsEnabled = grouped;
-        CollapseAllButton.IsEnabled = grouped;
-        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
-    }
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        FilterTable.ExpandAllGroups();
-        SetLastAction("Expanded all groups");
-    }
-
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
-    {
-        FilterTable.CollapseAllGroups();
-        SetLastAction("Collapsed all groups");
-    }
-
-    // The only writer of LastActionText.
-    private void SetLastAction(string message)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = message;
-        }
-
-        RefreshReadouts();
-    }
-
-    #endregion
 }

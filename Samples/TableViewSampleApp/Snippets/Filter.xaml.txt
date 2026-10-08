@@ -1,22 +1,47 @@
-<!-- FilterPage.xaml: the columns are added in code (BuildColumns). The EmptyTemplate shows
-     when the filter leaves no rows. -->
-<tv:TableView x:Name="FilterTable"
-              AutomationProperties.AutomationId="FilterTable"
-              AutomationProperties.Name="Filtered people"
-              ItemsSource="{x:Bind Source}"
-              SelectionMode="Single"
-              SelectionChanged="OnTableSelectionChanged"
-              EmptyTemplate="{StaticResource FilterEmptyTemplate}"
-              VerticalAlignment="Stretch" MinHeight="320"/>
-
+<!-- Shown when the filter narrows the projection to zero rows. -->
 <DataTemplate x:Key="FilterEmptyTemplate" x:DataType="system:Object">
     <StackPanel Spacing="4" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock Text="No rows match the filter" Style="{ThemeResource SubtitleTextBlockStyle}"/>
-        <TextBlock Text="The underlying collection is untouched. Clear the filter to bring every row back."
-                   TextWrapping="Wrap"/>
+        <TextBlock Text="No rows match the filter" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>
+        <TextBlock
+            Text="The underlying collection is untouched. Clear the filter to bring every row back."
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            TextWrapping="Wrap"
+            HorizontalAlignment="Center"/>
     </StackPanel>
 </DataTemplate>
 
-<TextBox x:Name="SearchBox" Header="Query" PlaceholderText="Name, department, role or email"
-         TextChanged="OnSearchChanged"/>
-<ToggleSwitch x:Name="ActiveOnlyToggle" Header="Active only" Toggled="OnActiveToggled"/>
+<!-- … -->
+
+<!-- Columns are added in code: see BuildColumns. -->
+<tv:TableView
+    x:Name="FilterTable"
+    AutomationProperties.AutomationId="FilterTable"
+    AutomationProperties.Name="Filtered people"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    SelectionChanged="OnTableSelectionChanged"
+    EmptyTemplate="{StaticResource FilterEmptyTemplate}"
+    VerticalAlignment="Stretch"
+    MinHeight="320"/>
+
+<!-- … -->
+
+<controls:RailSection
+    IsFirst="True"
+    Header="Filter"
+    Description="The query and the Active only switch combine into one predicate handed to TableViewSource.Filter. Clearing both calls ClearFilter(); the source instance never changes.">
+    <TextBox
+        x:Name="SearchBox"
+        AutomationProperties.AutomationId="FilterQueryBox"
+        Header="Query"
+        PlaceholderText="Name, department, role or email"
+        TextChanged="OnSearchChanged"
+        HorizontalAlignment="Stretch"/>
+    <ToggleSwitch
+        x:Name="ActiveOnlyToggle"
+        AutomationProperties.AutomationId="FilterActiveOnlyToggle"
+        Header="Active only"
+        OffContent="Off"
+        OnContent="On"
+        Toggled="OnActiveToggled"/>
+</controls:RailSection>

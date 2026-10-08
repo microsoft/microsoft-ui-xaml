@@ -1,20 +1,17 @@
 <!-- There is no virtualization switch to set: bind a large source and TableView realizes only
      the rows in the viewport. Exactly one * column (Role); the rest use width tokens, never
      Auto, because Auto re-measures against whatever rows happen to be realized. -->
-<tv:TableView x:Name="PeopleTable"
-              AutomationProperties.AutomationId="VirtualizationTable"
-              AutomationProperties.Name="Virtualized people"
-              SelectionMode="Single" VerticalAlignment="Stretch" MinHeight="320">
-    <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}"
-                            Binding="{Binding EmployeeId}" CanSort="False"/>
-    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
-                                CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-    <tv:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}"
-                            Binding="{Binding FullName}" CanSort="False"/>
-    <tv:TableViewTemplateColumn x:Name="DepartmentChipColumn" Header="Department" Width="{StaticResource ColWidthChip}"
-                                CellTemplate="{StaticResource DepartmentChipTemplate}" CanSort="False"/>
-    <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="{StaticResource ColWidthBoolean}"
-                                CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanSort="False"/>
-    <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
-                            Binding="{Binding Role}" CanSort="False"/>
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.AutomationId="VirtualizationTable"
+    AutomationProperties.Name="Virtualized people"
+    SelectionMode="Single"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}" Binding="{Binding EmployeeId}" CanSort="False"/>
+    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
+    <tv:TableViewTemplateColumn x:Name="DepartmentChipColumn" Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" CanSort="False"/>
+    <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Role}" CanSort="False"/>
 </tv:TableView>

@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:TableViewSampleApp"
+    xmlns:converters="using:TableViewSampleApp.Converters"
     xmlns:templates="using:TableViewSampleApp.Templates">
     <Application.Resources>
         <ResourceDictionary>
@@ -19,6 +20,8 @@
                 <!-- Shared Person cell templates and their converters (Templates\PersonCellTemplates.xaml).
                      Pages reference the keys with {StaticResource}; they never fork them. -->
                 <templates:PersonCellTemplates />
+                <!-- Every other converter key a page template uses (Converters\Converters.xaml). -->
+                <converters:SampleConverters />
             </ResourceDictionary.MergedDictionaries>
 
 

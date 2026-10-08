@@ -1,22 +1,24 @@
-// TaskManagerPage.xaml.cs. The source is created once; search, sort and grouping reshape it in place.
-public ObservableCollection<ProcessItem> Processes { get; } = new();
+RandomizeAll();
+Source = TableViewSource.From(Processes);  // created once; filtered, sorted and grouped in place
+InitializeComponent();
 
-public TableViewSource? Source => _source;
-
-public TaskManagerPage()
+ProcessTable.HeadersVisibility = TableViewHeadersVisibility.Column;
+ProcessTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
+ProcessTable.Density = TableViewDensity.Compact;
+// Metrics open descending, as in Task Manager: the busiest process comes first.
+foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColumn })
 {
-    PopulateProcesses();
-    _source = TableViewSource.From(Processes);
-    InitializeComponent();
-    // Metrics open descending, as in Task Manager: the busiest process comes first.
-    foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColumn })
-    {
-        column.SortCycle = TableViewSortCycle.DescendingAscending;
-    }
+    column.SortCycle = TableViewSortCycle.DescendingAscending;
+}
 
-    _timer.Tick += OnTimerTick;
-    Loaded += OnPageLoaded;      // starts the timer
-    Unloaded += OnPageUnloaded;  // stops it
+_timer.Tick += OnTimerTick;
+
+// …
+
+private void OnTimerTick(object? sender, object e)
+{
+    RandomizeAll();
+    ResortIfMetricSorted();
 }
 
 // A value change raised through INotifyPropertyChanged updates the cell but does not move the
@@ -24,55 +26,40 @@ public TaskManagerPage()
 // the column's own path re-sorts the same source and keeps that column's sort indicator.
 private void ResortIfMetricSorted()
 {
-    var column = ActiveSortColumn();
-    if (_source is null || column is null || column.SortMemberPath is not
+    var column = SampleShaping.ActiveSortColumn(ProcessTable);
+    if (column is null || column.SortMemberPath is not
         (nameof(ProcessItem.CpuPercent) or nameof(ProcessItem.MemoryMB) or nameof(ProcessItem.DiskMBps) or nameof(ProcessItem.NetworkMbps)))
     {
         return;
     }
 
-    _source.Sort(column.SortMemberPath, column.SortDirection);
+    Source.Sort(column.SortMemberPath, column.SortDirection);
 }
 
-// Search filters the same source; clearing the text removes the predicate.
-var text = _searchText;
-_source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
+// …
 
-// End task is enabled only while a process is selected (RefreshReadouts runs on SelectionChanged).
-EndTaskButton.IsEnabled = ProcessTable.SelectedItem is ProcessItem;
+// ---- Search (TableViewSource.Filter) ------------------------------------------------
 
-private void OnEndTaskClick(object sender, RoutedEventArgs e)
+private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 {
-    if (ProcessTable.SelectedItem is not ProcessItem process)
+    if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
     {
-        SetLastAction("No process selected.");
         return;
     }
 
-    Processes.Remove(process);
-    UpdateTotals();
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Ended {0} ({1})", process.Name, process.Category));
-}
-
-// GroupBy: the key selector receives the ROW; the identity selector receives the KEY.
-_source.GroupBy(item => KeyOf(item as ProcessItem, key), SampleShaping.GroupIdentity);
-
-// Heat-map tint: one blue hue whose opacity deepens with load; no tint in high contrast.
-public object Convert(object value, Type targetType, object parameter, string language)
-{
-    if (ChipBrushes.IsHighContrast)
+    var query = sender.Text?.Trim();
+    _searchText = string.IsNullOrEmpty(query) ? null : query;
+    if (_searchText is null)
     {
-        return ChipBrushes.Transparent;
+        Source.ClearFilter();
+        return;
     }
 
-    var thresholds = (parameter as string) switch
-    {
-        "Memory" => s_memory,
-        "Disk" => s_disk,
-        "Network" => s_network,
-        _ => s_cpu,
-    };
-
-    var load = value is double d ? d : 0;
-    return s_levels[thresholds.Count(threshold => load > threshold)];
+    var text = _searchText;
+    Source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
 }
+
+private static bool MatchesSearch(ProcessItem process, string query) =>
+    process.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+    || process.Category.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+    || process.StatusText.Contains(query, StringComparison.CurrentCultureIgnoreCase);

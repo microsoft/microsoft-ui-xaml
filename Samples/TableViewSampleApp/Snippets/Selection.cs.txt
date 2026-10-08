@@ -1,3 +1,11 @@
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+PeopleTable.ItemsSource = Source;
+
+// …
+
+// ---- Selection mode -----------------------------------------------------------------
+
 private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
 {
     // Fires during InitializeComponent (SelectedIndex="1"), before the table exists.
@@ -8,8 +16,15 @@ private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
 
     var single = SampleShaping.SelectedTag(SelectionModeSelector, "Single") == "Single";
     PeopleTable.SelectionMode = single ? TableViewSelectionMode.Single : TableViewSelectionMode.None;
-    SetLastAction(single ? "Selection mode -> Single" : "Selection mode -> None");
 }
+
+private bool IsSingleMode => PeopleTable.SelectionMode == TableViewSelectionMode.Single;
+
+// ---- Selection from code --------------------------------------------------------------
+
+private void OnSelectFirstClick(object sender, RoutedEventArgs e) => SelectDisplayedRow(fromEnd: false);
+
+private void OnSelectLastClick(object sender, RoutedEventArgs e) => SelectDisplayedRow(fromEnd: true);
 
 /// <summary>
 /// Selects the first or last row in DISPLAY order. Select(index) takes a display index, and
@@ -19,33 +34,38 @@ private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
 /// </summary>
 private void SelectDisplayedRow(bool fromEnd)
 {
-    var which = fromEnd ? "last" : "first";
     if (!IsSingleMode)
     {
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Ignored Select {0}: SelectionMode is None.", which));
         return;
     }
 
-    var max = People.Count + (_appliedMode == "grouped" ? GroupCount() : 0) - 1;
+    var max = People.Count + (IsGrouped ? GroupCount() : 0) - 1;
     for (var step = 0; step <= max; step++)
     {
         var index = fromEnd ? max - step : step;
         PeopleTable.Select(index);
         if (PeopleTable.IsSelected(index))
         {
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Select({0}) selected the {1} row, {2}", index, which, Describe(PeopleTable.SelectedItem)));
             return;
         }
     }
-
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "No {0} row to select: every row is hidden in a collapsed group.", which));
 }
+
+// Group headers take display indexes too.
+private int GroupCount() =>
+    People.Select(p => SampleShaping.GroupIdentity(SampleShaping.KeyOf(p, AppliedGroupKey))).Distinct(StringComparer.Ordinal).Count();
+
+private void OnClearSelectionClick(object sender, RoutedEventArgs e)
+{
+    PeopleTable.DeselectAll();
+}
+
+// …
 
 private void OnInsertAboveClick(object sender, RoutedEventArgs e)
 {
     if (PeopleTable.SelectedItem is not Person selected)
     {
-        SetLastAction("No row selected.");
         return;
     }
 
@@ -57,48 +77,20 @@ private void OnInsertAboveClick(object sender, RoutedEventArgs e)
     person.Office = selected.Office;
     person.IsActive = selected.IsActive;
 
-    var before = _changeCount;
     People.Insert(People.IndexOf(selected), person);
-
-    // A SelectionChanged raised by the insert lands before this continuation runs.
-    DispatcherQueue.TryEnqueue(() =>
-    {
-        if (!IsLoaded)
-        {
-            return;
-        }
-
-        SetLastAction(string.Format(
-            CultureInfo.CurrentCulture,
-            "Inserted {0} above {1}; {2}",
-            person.FullName,
-            selected.FullName,
-            _changeCount == before ? "no SelectionChanged was raised" : "SelectionChanged was raised"));
-    });
 }
 
 private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
 {
     if (PeopleTable.SelectedItem is not Person selected)
     {
-        SetLastAction("No row selected.");
         return;
     }
 
     People.Remove(selected);
-
-    DispatcherQueue.TryEnqueue(() =>
-    {
-        if (!IsLoaded)
-        {
-            return;
-        }
-
-        SetLastAction(PeopleTable.SelectedItem is null
-            ? string.Format(CultureInfo.CurrentCulture, "Removed {0}; the selection cleared", selected.FullName)
-            : string.Format(CultureInfo.CurrentCulture, "Removed {0}; the selection moved to {1}", selected.FullName, Describe(PeopleTable.SelectedItem)));
-    });
 }
+
+// ---- Events ---------------------------------------------------------------------------
 
 private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
 {
@@ -110,9 +102,4 @@ private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs
 
     _changeCount++;
     _lastDelta = string.Format(CultureInfo.CurrentCulture, "+[{0}] -[{1}]", DescribeAll(args.AddedItems), DescribeAll(args.RemovedItems));
-    RefreshReadouts();
 }
-
-// From ApplyShaping: re-applying GroupBy can drop the selection when the selected row changed
-// group, so it is restored by identity.
-SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Departments.Count + PersonData.Offices.Count, RefreshReadouts);

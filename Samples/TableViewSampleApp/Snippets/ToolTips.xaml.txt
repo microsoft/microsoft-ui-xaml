@@ -1,5 +1,5 @@
-<!-- A cell whose OWN template sets a tooltip. The control never replaces or clears it. -->
-
+<!-- A cell whose OWN content carries an app-set tooltip (the e-mail address). The control
+     never replaces or clears it: hovering the envelope shows the app's tooltip. -->
 <DataTemplate x:Key="EmailIconCellTemplate" x:DataType="models:Person">
     <Grid Background="Transparent"
           ToolTipService.ToolTip="{x:Bind Email, Mode=OneWay}"
@@ -9,8 +9,7 @@
     </Grid>
 </DataTemplate>
 
-<!-- HeaderToolTip is a plain object, set here in XAML. CellToolTipBinding is set in code
-     (AttachCellToolTips) so the page can detach it. -->
+<!-- … -->
 
 <tv:TableView
     x:Name="PeopleTable"
@@ -38,22 +37,3 @@
     <tv:TableViewTemplateColumn x:Name="EmailColumn" Header="Email" Width="{StaticResource ColWidthNarrow}"
                                  CellTemplate="{StaticResource EmailIconCellTemplate}" CanSort="False"/>
 </tv:TableView>
-
-<ToggleSwitch
-    x:Name="CellToolTipsToggle"
-    AutomationProperties.AutomationId="ToolTipsCellToolTipsToggle"
-    Header="Cell tooltips"
-    IsOn="True"
-    Toggled="OnCellToolTipsToggled"/>
-
-<ComboBox
-    x:Name="HeaderToolTipsSelector"
-    AutomationProperties.AutomationId="ToolTipsHeaderToolTipsSelector"
-    Header="Header tooltips"
-    SelectedIndex="0"
-    SelectionChanged="OnHeaderToolTipsChanged"
-    HorizontalAlignment="Stretch">
-    <ComboBoxItem Content="Original" Tag="original"/>
-    <ComboBoxItem Content="Changed in place" Tag="changed"/>
-    <ComboBoxItem Content="None" Tag="none"/>
-</ComboBox>

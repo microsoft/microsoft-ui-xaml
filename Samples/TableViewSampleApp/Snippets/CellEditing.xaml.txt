@@ -1,31 +1,44 @@
-<!-- CellEditingPage.xaml. Text columns get a built-in TextBox editor; the Department column
-     supplies its own editor through CellEditingTemplate. -->
+<!-- Display cell of the Department column. -->
 <DataTemplate x:Key="DepartmentTextTemplate" x:DataType="models:Person">
     <TextBlock Text="{x:Bind Department, Mode=OneWay}" Margin="12,0,8,0"
                VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
 </DataTemplate>
 
-<!-- Classic {Binding} with UpdateSourceTrigger=Explicit and no x:DataType: the control commits by
-     calling UpdateSource on the editor's binding expressions, which it can find only on a
-     {Binding}. Esc therefore discards the choice without touching the model. -->
+<!-- Editor of the Department column, shown only while the cell is in edit mode. It uses a
+     classic {Binding} with UpdateSourceTrigger=Explicit, and no x:DataType: the control
+     commits by calling UpdateSource on the editor's binding expressions, which it can find
+     only on a {Binding}. Esc therefore discards the choice without touching the model.
+     The items are the PersonData.Departments values. -->
 <DataTemplate x:Key="DepartmentEditingTemplate">
     <ComboBox SelectedItem="{Binding Department, Mode=TwoWay, UpdateSourceTrigger=Explicit}"
               AutomationProperties.Name="Department"
               HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="4,0">
         <x:String>Design</x:String>
         <x:String>Engineering</x:String>
-        <!-- ...the other PersonData.Departments values... -->
+        <x:String>Finance</x:String>
+        <x:String>HR</x:String>
+        <x:String>Marketing</x:String>
+        <x:String>Operations</x:String>
+        <x:String>Product</x:String>
+        <x:String>Sales</x:String>
     </ComboBox>
 </DataTemplate>
 
+<!-- … -->
+
 <tv:TableView
     x:Name="PeopleTable"
+    AutomationProperties.AutomationId="CellEditingTable"
+    AutomationProperties.Name="Editable people"
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single"
     IsReadOnly="False"
+    SelectionChanged="OnSelectionChanged"
     BeginningEdit="OnBeginningEdit"
-    CellEditEnding="OnCellEditEnding">
-    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    CellEditEnding="OnCellEditEnding"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="A CellTemplate with no CellEditingTemplate, so this column is never editable."/>
     <tv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}" Binding="{Binding FirstName}"/>
     <tv:TableViewTextColumn Header="Last name" Width="{StaticResource ColWidthShortName}" Binding="{Binding LastName}"/>
     <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Role}"/>
@@ -34,13 +47,42 @@
         Width="{StaticResource ColWidthCombo}"
         CellTemplate="{StaticResource DepartmentTextTemplate}"
         CellEditingTemplate="{StaticResource DepartmentEditingTemplate}"
-        SortMemberPath="Department"/>
+        SortMemberPath="Department"
+        HeaderToolTip="Text when displayed; a ComboBox from CellEditingTemplate while editing."/>
 </tv:TableView>
 
-<ToggleSwitch x:Name="ReadOnlyToggle" Header="IsReadOnly" Toggled="OnReadOnlyToggled"/>
+<!-- … -->
+
+<ToggleSwitch
+    x:Name="ReadOnlyToggle"
+    AutomationProperties.AutomationId="CellEditingReadOnlyToggle"
+    Header="IsReadOnly"
+    OnContent="On (every cell locked)"
+    OffContent="Off (cells editable)"
+    Toggled="OnReadOnlyToggled"/>
+
+<!-- … -->
 
 <!-- AllowFocusOnInteraction="False": clicking the button leaves the editor open and focused. -->
-<Button x:Name="CommitEditButton" Content="Commit the open edit" Click="OnCommitEditClick"
-        IsEnabled="False" AllowFocusOnInteraction="False"/>
-<Button x:Name="CancelEditButton" Content="Cancel the open edit" Click="OnCancelEditClick"
-        IsEnabled="False" AllowFocusOnInteraction="False"/>
+<Button
+    x:Name="CommitEditButton"
+    AutomationProperties.AutomationId="CellEditingCommitEditButton"
+    Content="Commit the open edit"
+    Click="OnCommitEditClick"
+    IsEnabled="False"
+    AllowFocusOnInteraction="False"
+    ToolTipService.ToolTip="Calls TableView.CommitEdit(): the editor's value is written to the model."
+    AutomationProperties.HelpText="Available while a cell is in edit mode. Press F2 on a cell first."
+    HorizontalAlignment="Stretch"
+    HorizontalContentAlignment="Center"/>
+<Button
+    x:Name="CancelEditButton"
+    AutomationProperties.AutomationId="CellEditingCancelEditButton"
+    Content="Cancel the open edit"
+    Click="OnCancelEditClick"
+    IsEnabled="False"
+    AllowFocusOnInteraction="False"
+    ToolTipService.ToolTip="Calls TableView.CancelEdit(): the editor closes and the model keeps its old value, as Esc does."
+    AutomationProperties.HelpText="Available while a cell is in edit mode. Press F2 on a cell first."
+    HorizontalAlignment="Stretch"
+    HorizontalContentAlignment="Center"/>

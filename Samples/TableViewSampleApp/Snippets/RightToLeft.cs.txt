@@ -1,18 +1,24 @@
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+// …
+
+// ---- Flow direction and filter ------------------------------------------------------
+
 private void OnRtlToggled(object sender, RoutedEventArgs e)
 {
     // Toggled fires during InitializeComponent (IsOn="True"); the XAML already sets RightToLeft.
-    if (!IsLoaded || PeopleTable is null)
+    if (!IsLoaded)
     {
         return;
     }
 
     PeopleTable.FlowDirection = RtlToggle.IsOn ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "FlowDirection -> {0}", PeopleTable.FlowDirection));
 }
 
 private void OnFilterChanged(object sender, TextChangedEventArgs e)
 {
-    if (_source is null || FilterBox is null)
+    if (FilterBox is null)
     {
         return;
     }
@@ -20,16 +26,22 @@ private void OnFilterChanged(object sender, TextChangedEventArgs e)
     var term = FilterBox.Text.Trim();
     if (term.Length == 0)
     {
-        _source.ClearFilter();
-        SetLastAction("ClearFilter()");
+        Source.ClearFilter();
     }
     else
     {
         // Filter reshapes the same source in place and composes with GroupBy and the sort.
-        _source.Filter(item => item is Person person && Matches(person, term));
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> \"{0}\"", term));
+        Source.Filter(item => item is Person person && Matches(person, term));
     }
 }
+
+private static bool Matches(Person person, string term) =>
+    person.FullName.Contains(term, StringComparison.CurrentCultureIgnoreCase)
+    || person.Department.Contains(term, StringComparison.CurrentCultureIgnoreCase)
+    || person.Office.Contains(term, StringComparison.CurrentCultureIgnoreCase)
+    || person.Bio.Contains(term, StringComparison.CurrentCultureIgnoreCase);
+
+// …
 
 private void OnSortFirstNameClick(object sender, RoutedEventArgs e)
 {
@@ -37,8 +49,9 @@ private void OnSortFirstNameClick(object sender, RoutedEventArgs e)
         ? TableViewSortDirection.Descending
         : TableViewSortDirection.Ascending;
     PeopleTable.SortByColumn(FirstNameColumn, direction);
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "SortByColumn(First name, {0})", direction));
 }
+
+// …
 
 // TableView.Columns is the live column collection: moving an entry moves the column.
 private void MoveColumn(TableViewColumn column, int offset)
@@ -48,14 +61,9 @@ private void MoveColumn(TableViewColumn column, int offset)
     var to = from + offset;
     if (from < 0 || to < 0 || to >= columns.Count)
     {
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} is already the {1} column", column.Header, offset < 0 ? "first" : "last"));
         return;
     }
 
     columns.RemoveAt(from);
     columns.Insert(to, column);
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} to column {1} of {2}", column.Header, to + 1, columns.Count));
 }
-
-// In ApplyShaping, grouped: the key selector receives the ROW; the identity selector the KEY.
-_source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
