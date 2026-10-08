@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "paltypes.h"
 #include "DesktopUtility.h"
+#include <winternl.h>
 
 namespace DesktopUtility {
 
@@ -25,20 +26,39 @@ bool IsOnDesktop()
     return isOnDesktopResult;
 }
 
-bool IsOnWindows10() noexcept
+bool IsPriorToWindows11() noexcept
 {
-    static const bool isOnWindows10Result = []()
+    static const bool isPriorToWindows11Result = []()
     {
-        ULONGLONG version = 0;
-        RtlGetDeviceFamilyInfoEnum(&version, nullptr, nullptr);
+        const HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
+        if (!ntdll)
+        {
+            TRACE_HR_NORETURN(HRESULT_FROM_WIN32(GetLastError()));
+            return false;
+        }
 
-        // The version packs major.minor.build.revision into four 16-bit fields.
-        // Windows 10 and 11 both use major version 10; Windows 11 starts at build 22000.
-        constexpr ULONGLONG windows10Version = 10ULL << 48;
-        constexpr ULONGLONG windows11Version = windows10Version | (22000ULL << 16);
-        return version >= windows10Version && version < windows11Version;
+        using RtlGetVersionFn = NTSTATUS(WINAPI*)(PRTL_OSVERSIONINFOW);
+        const auto rtlGetVersion = reinterpret_cast<RtlGetVersionFn>(GetProcAddress(ntdll, "RtlGetVersion"));
+        if (!rtlGetVersion)
+        {
+            TRACE_HR_NORETURN(HRESULT_FROM_WIN32(GetLastError()));
+            return false;
+        }
+
+        RTL_OSVERSIONINFOW version = { sizeof(version) };
+        const NTSTATUS status = rtlGetVersion(&version);
+        if (status != 0)
+        {
+            TRACE_HR_NORETURN(HRESULT_FROM_NT(status));
+            return false;
+        }
+
+        // Compatibility shims can report an older OS, so this may apply the workaround
+        // on Windows 11. If the query fails, assume the latest OS and skip the workaround.
+        return version.dwMajorVersion < 10 ||
+            (version.dwMajorVersion == 10 && version.dwMinorVersion == 0 && version.dwBuildNumber < 22000);
     }();
-    return isOnWindows10Result;
+    return isPriorToWindows11Result;
 }
 
 void DeleteIsOnDesktopCache()

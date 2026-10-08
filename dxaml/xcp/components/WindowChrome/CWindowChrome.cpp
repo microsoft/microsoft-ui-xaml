@@ -150,7 +150,7 @@ bool CWindowChrome::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, _Out_
 
         case WM_STYLECHANGED:
             if (wParam == static_cast<WPARAM>(GWL_STYLE)
-                && DesktopUtility::IsOnWindows10())
+                && DesktopUtility::IsPriorToWindows11())
             {
                 TRACE_HR_NORETURN(UpdateDwmFrameMargins());
             }
@@ -197,7 +197,7 @@ int CWindowChrome::GetTopBorderHeight() const noexcept
 // Query failures are logged and also return false.
 bool CWindowChrome::ShouldPaintTopRowOfClientArea()
 {
-    ASSERT(DesktopUtility::IsOnWindows10());
+    ASSERT(DesktopUtility::IsPriorToWindows11());
 
     const int topBorderHeight = GetTopBorderHeight();
     const auto style = ::GetWindowLongPtrW(m_topLevelWindow, GWL_STYLE);
@@ -284,7 +284,7 @@ bool CWindowChrome::IsTitlebarVisible() const
 // Clear WinUI-owned margins when the native frame or reserved top row is removed.
 _Check_return_ HRESULT CWindowChrome::UpdateDwmFrameMargins()
 {
-    ASSERT(DesktopUtility::IsOnWindows10());
+    ASSERT(DesktopUtility::IsPriorToWindows11());
 
     int topFrameMargin = 0;
     if (ShouldPaintTopRowOfClientArea())
@@ -367,7 +367,7 @@ void CWindowChrome::UpdateBridgeWindowSizePosition()
     const auto windowHeight = RectHelpers::rectHeight(clientRect);
     const auto topBorderHeight = WindowHelpers::ClampToShortMax(GetTopBorderHeight(), 0);
 
-    if (DesktopUtility::IsOnWindows10())
+    if (DesktopUtility::IsPriorToWindows11())
     {
         TRACE_HR_NORETURN(UpdateDwmFrameMargins());
     }

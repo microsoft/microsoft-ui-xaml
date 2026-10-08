@@ -164,7 +164,7 @@ void DesktopWindowImpl::OnCreate() noexcept
     // (FullScreen/CompactOverlay) was active gets applied when we return to one that sizes. See
     // OnAppWindowChanged. The Windows 10 top-border workaround also needs the settled presenter state,
     // since style/size messages can arrive before AppWindow finishes changing its presenter.
-    if (AreNewWindowingApisEnabled() || DesktopUtility::IsOnWindows10())
+    if (AreNewWindowingApisEnabled() || DesktopUtility::IsPriorToWindows11())
     {
         IFCFAILFAST(appWindow->add_Changed(
             wrl::Callback<AppWindowChangedHandler>(this, &DesktopWindowImpl::OnAppWindowChanged).Get(),
@@ -1158,7 +1158,7 @@ _Check_return_ HRESULT DesktopWindowImpl::OnAppWindowChanged(_In_ ixp::IAppWindo
         return S_OK;
     }
 
-    if (DesktopUtility::IsOnWindows10() && m_windowChrome)
+    if (DesktopUtility::IsPriorToWindows11() && m_windowChrome)
     {
         // Style/size messages can arrive while AppWindow still reports the old presenter.
         // Now that the window should be settled, we need to poke WindowChrome so it has a chance
@@ -1311,7 +1311,7 @@ LRESULT LResultFromHResult(HRESULT hr)
 // can fall back to the existing background erase.
 bool DesktopWindowImpl::TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF backgroundColor)
 {
-    ASSERT(DesktopUtility::IsOnWindows10());
+    ASSERT(DesktopUtility::IsPriorToWindows11());
 
     // The one-pixel XAML offset can remain in fullscreen/borderless windows.
     // Only treat it as a border when the HWND still has a native frame.
@@ -1446,7 +1446,7 @@ LRESULT DesktopWindowImpl::OnMessage(
 
             auto hdc = (HDC)wParam;
             auto color = ColorUtils::GetWUColor(dxamlCore->GetHandle()->GetFrameworkTheming()->GetHwndBackground(appTheme));
-            if (DesktopUtility::IsOnWindows10())
+            if (DesktopUtility::IsPriorToWindows11())
             {
                 if (TryEraseBackgroundForWindowTopBorder(hdc, RGB(color.R, color.G, color.B)))
                 {
