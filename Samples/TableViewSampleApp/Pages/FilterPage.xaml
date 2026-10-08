@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Filtering: TableViewSource.Filter / ClearFilter on the same source that grouping uses. The
+    columns are built in code (BuildColumns) from the shared Person cell templates, which shows
+    how to resolve them from Application.Current.Resources. Structure follows the golden page
+    (CellFlyoutsPage).
+-->
 <Page
     x:Class="TableViewSampleApp.Pages.FilterPage"
     NavigationCacheMode="Disabled"
@@ -6,70 +12,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
-    xmlns:controls="using:TableViewSampleApp.Controls"
-    xmlns:models="using:TableViewSampleApp.Models"
-    xmlns:pages="using:TableViewSampleApp.Pages">
+    xmlns:system="using:System"
+    xmlns:controls="using:TableViewSampleApp.Controls">
 
     <Page.Resources>
-        <pages:FilterChipTintConverter x:Key="FilterChipTintConverter"/>
-        <pages:FilterChipDotConverter x:Key="FilterChipDotConverter"/>
-        <pages:FilterRowCellNameConverter x:Key="FilterRowCellNameConverter"/>
-
-        <!-- Templated cell for the Department column. Built in XAML and attached to a
-             code-created TableViewTemplateColumn in BuildColumns(). -->
-        <DataTemplate x:Key="FilterDepartmentChipTemplate" x:DataType="models:Person">
-            <Border
-                Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource FilterChipTintConverter}}"
-                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="10"
-                Padding="8,2"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center">
-                <StackPanel Orientation="Horizontal" Spacing="7">
-                    <Ellipse
-                        Width="8" Height="8"
-                        VerticalAlignment="Center"
-                        AutomationProperties.AccessibilityView="Raw"
-                        Fill="{x:Bind Department, Mode=OneWay, Converter={StaticResource FilterChipDotConverter}}"/>
-                    <TextBlock
-                        Text="{x:Bind Department, Mode=OneWay}"
-                        VerticalAlignment="Center"
-                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                </StackPanel>
-            </Border>
-        </DataTemplate>
-
-        <!-- Role is free text that the filter matches on, so the cell is an editable TextBox:
-             typing a new role commits to the Person (TwoWay, and Person raises
-             PropertyChanged) and the row can fall straight out of the active filter. The
-             TextBox is left tab-reachable and hit-testable — never IsTabStop="False". -->
-        <DataTemplate x:Key="FilterRoleEditorTemplate" x:DataType="models:Person">
-            <TextBox
-                Text="{x:Bind Role, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                BorderThickness="0"
-                Background="Transparent"
-                Padding="4,2"
-                VerticalAlignment="Center"
-                AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource FilterRowCellNameConverter}, ConverterParameter=Role for {0}}"/>
-        </DataTemplate>
-
-        <!-- Boolean cell gets a real CheckBox, TwoWay bound with a per-row accessible name.
-             Toggling it while "Active only" is on drops the row out of the filtered view. -->
-        <DataTemplate x:Key="FilterActiveTemplate" x:DataType="models:Person">
-            <CheckBox
-                MinWidth="0"
-                VerticalAlignment="Center"
-                IsChecked="{x:Bind IsActive, Mode=TwoWay}"
-                AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource FilterRowCellNameConverter}, ConverterParameter=Active employee: {0}}"/>
-        </DataTemplate>
-
         <!-- Shown when the filter narrows the projection to zero rows. -->
-        <DataTemplate x:Key="FilterEmptyTemplate">
+        <DataTemplate x:Key="FilterEmptyTemplate" x:DataType="system:Object">
             <StackPanel Spacing="4" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="No rows match the filter" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>
                 <TextBlock
-                    Text="The underlying collection is untouched — clear the filter to bring every row back."
+                    Text="The underlying collection is untouched. Clear the filter to bring every row back."
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     TextWrapping="Wrap"
                     HorizontalAlignment="Center"/>
@@ -79,7 +31,7 @@
 
     <controls:SamplePresenter
         Header="Filtering"
-        Description="TableViewSource.Filter(predicate) narrows the rows the control renders without mutating the underlying collection. Filtering and grouping compose on ONE live source, so a filtered, grouped view is a single projection rather than two passes."
+        Description="TableViewSource.Filter(predicate) narrows the rows the table shows without touching the collection, and ClearFilter() brings them back. The query and Active only form one predicate on the same source that grouping uses, so a filtered, grouped view is one projection. Retype a Role or clear an Active box and the row can leave the view, because the page applies the filter again after each edit."
         SourceCaption="FilterPage.xaml (excerpt)"
         SourceSnippet="Filter.xaml.txt"
         AdditionalSnippetCaption="FilterPage.xaml.cs (excerpt)"
@@ -90,33 +42,25 @@
             <Grid RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-
+                <!-- scaffold:tryit -->
                 <muxc:InfoBar
                     Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Try it"
-                    Message="Type a query, then switch the shaping mode to Grouped: filter and grouping apply to the same source at once. Selection and scroll survive each keystroke because the source is reshaped in place."
-                    MinHeight="104"/>
-
-                <TextBlock
-                    Grid.Row="1"
-                    x:Name="ReadoutText"
-                    AutomationProperties.LiveSetting="Polite"
-                    AutomationProperties.AutomationId="FilterReadoutText"
-                    AutomationProperties.Name="Filter readout"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    FontSize="12"/>
-
-                <Border Grid.Row="2" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                    MinHeight="104"
+                    Message="Type eng in Query, then switch Shaping mode to Grouped: the filter and the grouping apply together. Select a row and choose Mutate selected row out of the filter. Choose Filter to zero matches to see the EmptyTemplate, then Clear filter."/>
+                <!-- /scaffold -->
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                    <!-- Columns are added in code: see BuildColumns. -->
                     <tv:TableView
                         x:Name="FilterTable"
-                        AutomationProperties.Name="Filtered people"
                         AutomationProperties.AutomationId="FilterTable"
+                        AutomationProperties.Name="Filtered people"
+                        ItemsSource="{x:Bind Source}"
                         SelectionMode="Single"
                         SelectionChanged="OnTableSelectionChanged"
                         EmptyTemplate="{StaticResource FilterEmptyTemplate}"
@@ -128,157 +72,178 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Filter" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock
-                    Text="The query and the Active only toggle combine into one predicate handed to Filter(). ClearFilter() removes it; the source instance never changes."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <TextBox
-                    x:Name="SearchBox"
-                    Header="Query"
-                    PlaceholderText="name, department, role, email…"
-                    TextChanged="OnSearchChanged"
-                    AutomationProperties.Name="Filter query"
-                    AutomationProperties.AutomationId="FilterQueryBox"
-                    HorizontalAlignment="Stretch"/>
-                <ToggleSwitch
-                    x:Name="ActiveOnlyToggle"
-                    Header="Active only"
-                    OffContent="Off"
-                    OnContent="On"
-                    AutomationProperties.Name="Active only"
-                    AutomationProperties.AutomationId="ActiveOnlyToggle"
-                    Toggled="OnActiveToggled"/>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Grouping is applied to the same TableViewSource the filter is applied to, so the grouped view is already filtered. Hierarchical modes are still in development and are shown greyed out rather than hidden."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <ComboBox
-                    x:Name="ShapingModeSelector"
-                    Header="Shaping mode"
-                    SelectedIndex="0"
-                    SelectionChanged="OnShapingModeChanged"
-                    AutomationProperties.AutomationId="ShapingModeSelector"
-                    AutomationProperties.Name="Shaping mode"
-                    HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Flat" Tag="flat"/>
-                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                    <!-- Hierarchical rows are not available in this release. The options are
-                         shown disabled so the shape of the feature is visible; re-enable when
-                         the control ships hierarchy support. The matching (commented) branch
-                         is in FilterPage.xaml.cs ApplyShaping(). -->
-                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                </ComboBox>
-                <ComboBox
-                    x:Name="GroupKeyCombo"
-                    Header="Group by"
-                    SelectedIndex="0"
-                    IsEnabled="False"
-                    ToolTipService.ToolTip="Available once the shaping mode is Grouped."
-                    SelectionChanged="OnGroupKeyChanged"
-                    AutomationProperties.AutomationId="GroupKeyCombo"
-                    AutomationProperties.Name="Group by key"
-                    HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Department" Tag="Department"/>
-                    <ComboBoxItem Content="Role" Tag="Role"/>
-                    <ComboBoxItem Content="Active status" Tag="Active"/>
-                </ComboBox>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Each action reports what it did in the Status section below. Click a group header to expand or collapse that one group."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <StackPanel Spacing="8">
-                    <Button
-                        x:Name="NoMatchButton"
-                        Content="Filter to zero matches"
-                        Click="OnNoMatchClick"
-                        ToolTipService.ToolTip="Applies a query no row can match, so the empty-state template appears."
-                        AutomationProperties.AutomationId="NoMatchButton"
-                        AutomationProperties.Name="Filter down to zero matches"
-                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button
-                        x:Name="ClearFilterButton"
-                        Content="Clear filter"
-                        Click="OnClearFilterClicked"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Available once a query or the Active only toggle is set."
-                        AutomationProperties.Name="Clear filter"
-                        AutomationProperties.AutomationId="ClearFilterButton"
-                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button
-                        x:Name="DropOutButton"
-                        Content="Mutate selected row out of the filter"
-                        Click="OnMutateOutClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Available once a filter is active and a row is selected."
-                        AutomationProperties.AutomationId="DropOutButton"
-                        AutomationProperties.Name="Mutate the selected row so it no longer matches"
-                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button
-                        x:Name="MoveGroupButton"
-                        Content="Move selected row to another group"
-                        Click="OnMoveSelectedGroupClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Available once a row is selected and the shaping mode is Grouped."
-                        AutomationProperties.AutomationId="MoveGroupButton"
-                        AutomationProperties.Name="Mutate the selected row's group key"
-                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button
-                        x:Name="ExpandAllButton"
-                        Content="Expand all groups"
-                        Click="OnExpandAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Available once a Group by key is selected."
-                        AutomationProperties.AutomationId="ExpandAllButton"
-                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button
-                        x:Name="CollapseAllButton"
-                        Content="Collapse all groups"
-                        Click="OnCollapseAllClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Available once a Group by key is selected."
-                        AutomationProperties.AutomationId="CollapseAllButton"
-                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                <!-- 1. Primary feature -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Filter">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Filter"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="The query and the Active only switch combine into one predicate handed to TableViewSource.Filter. Clearing both calls ClearFilter(); the source instance never changes."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <TextBox
+                        x:Name="SearchBox"
+                        AutomationProperties.AutomationId="FilterQueryBox"
+                        Header="Query"
+                        PlaceholderText="Name, department, role or email"
+                        TextChanged="OnSearchChanged"
+                        HorizontalAlignment="Stretch"/>
+                    <ToggleSwitch
+                        x:Name="ActiveOnlyToggle"
+                        AutomationProperties.AutomationId="FilterActiveOnlyToggle"
+                        Header="Active only"
+                        OffContent="Off"
+                        OnContent="On"
+                        Toggled="OnActiveToggled"/>
                 </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <Grid ColumnSpacing="12" RowSpacing="4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Grouping applies to the filtered rows, so only groups with a match appear and their counts are the filtered counts. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="FilterShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="FilterGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Department" Tag="Department"/>
+                        <ComboBoxItem Content="Role" Tag="Role"/>
+                        <ComboBoxItem Content="Active" Tag="IsActive"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="FilterExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="FilterCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Shaping mode" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="0" Grid.Column="1" x:Name="ShapeModeText" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShapeModeText" TextWrapping="Wrap"/>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Each action changes the predicate or a row's values, then applies the filter again: rows leave and rejoin the view, and an empty result shows the EmptyTemplate. Watch the table and the Last action readout. Actions that change one row need a selected row."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="NoMatchButton"
+                            AutomationProperties.AutomationId="FilterNoMatchButton"
+                            Content="Filter to zero matches"
+                            Click="OnNoMatchClick"
+                            ToolTipService.ToolTip="Types a query no row matches, so the EmptyTemplate appears."
+                            AutomationProperties.HelpText="Types a query no row matches, so the EmptyTemplate appears."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="ClearFilterButton"
+                            AutomationProperties.AutomationId="FilterClearFilterButton"
+                            Content="Clear filter"
+                            Click="OnClearFilterClick"
+                            ToolTipService.ToolTip="Clears the query and Active only, then calls ClearFilter(): every row is back."
+                            AutomationProperties.HelpText="Clears the query and Active only, then calls ClearFilter()."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="MutateOutButton"
+                            AutomationProperties.AutomationId="FilterMutateOutButton"
+                            Content="Mutate selected row out of the filter"
+                            Click="OnMutateOutClick"
+                            ToolTipService.ToolTip="Changes the selected person's Active state, department or role so they stop matching; the row leaves the view."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="MoveGroupButton"
+                            AutomationProperties.AutomationId="FilterMoveGroupButton"
+                            Content="Move selected row to another group"
+                            Click="OnMoveGroupClick"
+                            ToolTipService.ToolTip="Changes the selected person's group-key value to the next real one; grouped, the row moves to that group and stays selected."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Grouped by" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="1" Grid.Column="1" x:Name="GroupedByText" Text="(not grouped)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="GroupedByText" TextWrapping="Wrap"/>
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Filter" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="FilterStateText" AutomationProperties.AutomationId="FilterFilterStateText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Selected" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="SelectedItemText" AutomationProperties.AutomationId="FilterSelectedItemText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="FilterRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="FilterShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="FilterLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Filter" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="1" x:Name="FilterStateText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="FilterStateText" TextWrapping="Wrap"/>
-
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Selected row" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="1" x:Name="SelectedItemText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedItemText" TextWrapping="Wrap"/>
-
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="4" Grid.Column="1" x:Name="LastActionText" Text="(not exercised yet)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="LastActionText" TextWrapping="Wrap"/>
-                </Grid>
+                <muxc:InfoBar
+                    Title="What to look for"
+                    Severity="Informational"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Message="The predicate runs when Filter is called, not on every property change, so the page calls Filter again after an edit: the row then leaves or rejoins the view without the source being rebuilt. Selection survives a query change while the selected row still matches. Grouped, a group with no matching rows is not shown at all, and the header counts are the filtered counts."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
-
     </controls:SamplePresenter>
 </Page>

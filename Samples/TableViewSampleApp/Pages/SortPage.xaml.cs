@@ -4,6 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -11,249 +14,345 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
-// Tabular aliases keep the sample code concise.
+using TableViewSampleApp.Converters;
+using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
+using TableViewSampleApp.Models;
+// Tabular aliases keep the sample code concise. SortDirection is the shared
+// Microsoft.UI.Xaml.Controls.Tabular.SortDirection { None, Ascending, Descending }.
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
-using TableViewSortedEventArgs = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortedEventArgs;
-// #44 enum unification: the per-control TableViewSortDirection was removed; sort direction
-// is now the shared Microsoft.UI.Xaml.Controls.Tabular.SortDirection { None=0, Ascending=1, Descending=2 }.
 using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using TableViewSampleApp.Data;
-using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Demonstrates the aligned TableView single-column sort surface: the control
-/// owns sort STATE — direction, the header SortIndicator chevron, the public
-/// SortByColumn / ToggleSortDirection / ClearSort API, and the Sorted event —
-/// and it also reshapes the rows itself, so a plain collection sorts without
-/// the app re-ordering anything.
-///
-/// The page pairs sorting with <c>TableViewSource.GroupBy</c>, because sorting
-/// WITHIN groups is the interaction only this page can show: group by Group and
-/// click a header, and the rows reorder inside every group rather than the
-/// grouping collapsing.
-///
-/// The dataset is a fictional group-stage standings table where ordering by
-/// Points — with Goal Difference as the tiebreaker — is the canonical sort.
-/// A new sort always replaces the previous one (single-column), matching the
-/// aligned control's scalar sort surface.
+/// Sorting: TableView owns single-column sort STATE (direction, the header arrow, the
+/// SortByColumn / ToggleSortDirection / ClearSort API and the Sorted event) and reorders the
+/// bound rows itself. Template columns (Seeded CheckBox, Next match date picker, Kickoff time
+/// picker, Country and Standing chips) sort through SortMemberPath, by the value behind the
+/// control. Grouped shaping plus a sort reorders rows within each group.
 /// </summary>
 public sealed partial class SortPage : Page
 {
+    private TableViewSource? _source;          // created ONCE; reshaped in place, never rebuilt
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private string _appliedKey = "Group";
+    private bool _isBulkUpdate;
+    private bool _isResorting;
+    private bool _resortQueued;
     private int _sortedFiredCount;
+    private string _lastSortedColumn = "(none)";
+    private int _lateEntrantCount;
 
-    // The shaped projection the table is bound to. Reshaped in place — never rebuilt.
-    private TableViewSource? _source;
-
-    // Requested shaping, straight off the pickers.
-    private string _shapingMode = "flat";
-    private string _groupKey = "Group";
-
-    // Mirrors the requested key only once GroupBy has actually succeeded, so no readout
-    // and no enable/disable guard can claim a grouping the source never took.
-    private string _appliedGroupKey = "none";
+    // Rows removed by "Clear all rows", held so the empty state is reversible.
+    private readonly List<LeagueTeam> _stashedRows = new();
 
     public SortPage()
     {
-        Teams = LeagueData.All();
-        InitializeComponent();
-
         _source = TableViewSource.From(Teams);
-        TeamsTable.ItemsSource = _source;
-
-        ApplyGrouping();
-        Loaded += (_, _) => RefreshReadouts(triggerColumn: null);
+        InitializeComponent();
+        Loaded += OnPageLoaded;
+        Unloaded += OnPageUnloaded;
+        RefreshReadouts();
     }
 
-    public ObservableCollection<LeagueTeam> Teams { get; }
+    public ObservableCollection<LeagueTeam> Teams { get; } = LeagueData.All();
 
-    // ----- Shaping: Flat / Grouped -----
+    public TableViewSource? Source => _source;
 
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
+    private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        if (_source is null || ShapingModeSelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        Teams.CollectionChanged += OnTeamsCollectionChanged;
+        foreach (var team in Teams)
         {
+            team.PropertyChanged += OnTeamChanged;
+        }
+
+        RefreshReadouts();
+    }
+
+    private void OnPageUnloaded(object sender, RoutedEventArgs e)
+    {
+        Teams.CollectionChanged -= OnTeamsCollectionChanged;
+        foreach (var team in Teams)
+        {
+            team.PropertyChanged -= OnTeamChanged;
+        }
+    }
+
+    private void OnTeamsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        foreach (LeagueTeam team in e.OldItems ?? Array.Empty<LeagueTeam>())
+        {
+            team.PropertyChanged -= OnTeamChanged;
+        }
+
+        foreach (LeagueTeam team in e.NewItems ?? Array.Empty<LeagueTeam>())
+        {
+            team.PropertyChanged += OnTeamChanged;
+        }
+    }
+
+    // ---- Programmatic sort -------------------------------------------------------------------
+
+    private void OnSortPointsDescClick(object sender, RoutedEventArgs e) => SortBy(PointsColumn, TableViewSortDirection.Descending);
+
+    private void OnSortGroupAscClick(object sender, RoutedEventArgs e) => SortBy(GroupColumn, TableViewSortDirection.Ascending);
+
+    private void OnSortGoalDifferenceDescClick(object sender, RoutedEventArgs e) => SortBy(GoalDifferenceColumn, TableViewSortDirection.Descending);
+
+    private void OnSortNextMatchClick(object sender, RoutedEventArgs e) => SortBy(NextMatchColumn, TableViewSortDirection.Ascending);
+
+    private void OnSortKickoffClick(object sender, RoutedEventArgs e) => SortBy(KickoffColumn, TableViewSortDirection.Ascending);
+
+    private void OnSortSeededClick(object sender, RoutedEventArgs e) => SortBy(SeededColumn, TableViewSortDirection.Descending);
+
+    private void SortBy(TableViewColumn column, TableViewSortDirection direction)
+    {
+        TeamsTable.SortByColumn(column, direction);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "SortByColumn({0}, {1})", ColumnLabel(column), direction));
+    }
+
+    private void OnTogglePointsClick(object sender, RoutedEventArgs e)
+    {
+        TeamsTable.ToggleSortDirection(PointsColumn);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "ToggleSortDirection(Pts) -> {0}", PointsColumn.SortDirection));
+    }
+
+    private void OnClearSortClick(object sender, RoutedEventArgs e)
+    {
+        TeamsTable.ClearSort();
+        SetLastAction("ClearSort(): rows are back in source order");
+    }
+
+    // Sorted fires after the sort state is applied and the header arrow is published: header
+    // clicks and the API calls above alike. Column is null when the sort was cleared.
+    private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
+    {
+        _sortedFiredCount++;
+        _lastSortedColumn = args.Column is null ? "cleared" : ColumnLabel(args.Column);
+        if (_isResorting)
+        {
+            RefreshReadouts();
             return;
         }
 
-        _shapingMode = tag;
-        ApplyGrouping();
+        SetLastAction(args.Column is null
+            ? "Sort cleared"
+            : string.Format(CultureInfo.CurrentCulture, "Sorted by {0} {1}", ColumnLabel(args.Column), args.Direction));
     }
 
-    private void OnGroupByChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (_source is null || GroupBySelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
-        {
-            return;
-        }
-
-        _groupKey = tag;
-        ApplyGrouping();
-    }
-
-    private void OnExpandAllGroupsClick(object sender, RoutedEventArgs e)
-    {
-        if (_appliedGroupKey == "none")
-        {
-            return;
-        }
-
-        TeamsTable.ExpandAllGroups();
-        RefreshReadouts(triggerColumn: null);
-    }
-
-    private void OnCollapseAllGroupsClick(object sender, RoutedEventArgs e)
-    {
-        if (_appliedGroupKey == "none")
-        {
-            return;
-        }
-
-        TeamsTable.CollapseAllGroups();
-        RefreshReadouts(triggerColumn: null);
-    }
-
-    /// <summary>
-    /// Reshapes the existing <see cref="TableViewSource"/> in place: GroupBy /
-    /// ClearGroupBy mutate and return the same instance, so the source is never
-    /// rebuilt — rebuilding would drop selection, scroll offset, the active sort
-    /// and group expansion.
-    /// </summary>
-    private void ApplyGrouping()
-    {
-        if (_source is null)
-        {
-            return;
-        }
-
-        var requestedKey = _shapingMode == "grouped" ? _groupKey : "none";
-
-        if (requestedKey == "none")
-        {
-            _source.ClearGroupBy();
-            _appliedGroupKey = "none";
-        }
-        else
-        {
-            var key = requestedKey;
-            // The two delegates do NOT receive the same thing despite both parameters being
-            // named `item`: the key selector is handed the ROW ITEM, while the identity
-            // selector is handed the group KEY this selector just returned
-            // (TableViewSource.idl). Testing the argument against LeagueTeam in the identity
-            // selector would yield an empty identity, which fails fast with E_INVALIDARG —
-            // GroupBy throws and grouping silently never applies.
-            _source.GroupBy(
-                item => (object)GroupValue(item, key),
-                groupKey => groupKey?.ToString() ?? "(none)");
-
-            // Only now is grouping genuinely applied; every readout reads this, never _groupKey.
-            _appliedGroupKey = key;
-        }
-
-        // case "hierarchy":
-        // case "groupedhierarchy":
-        //     Hierarchical (tree) rows are not available in this release, which is why the two
-        //     matching ComboBoxItems ship disabled with a tooltip rather than hidden. No
-        //     hierarchy verb exists on TableViewSource or TableView today — the only trace in
-        //     the control source is TableViewRowInfo.h, which reserves row metadata "when
-        //     hierarchical (tree) rows land" — so this stub stays prose rather than naming a
-        //     member that does not exist. When hierarchy ships, apply it to this same source
-        //     here, alongside the GroupBy stage above so grouping and hierarchy compose instead
-        //     of replacing one another, and set the applied-mode field only after it returns.
-
-        var grouped = _appliedGroupKey != "none";
-
-        if (ExpandAllButton is not null)
-        {
-            ExpandAllButton.IsEnabled = grouped;
-            CollapseAllButton.IsEnabled = grouped;
-        }
-
-        if (GroupBySelector is not null)
-        {
-            GroupBySelector.IsEnabled = grouped;
-        }
-
-        if (grouped)
-        {
-            DispatcherQueue.TryEnqueue(() => TeamsTable?.ExpandAllGroups());
-        }
-
-        RefreshReadouts(triggerColumn: null);
-    }
-
-    // Never returns the empty string: an empty group identity is an E_INVALIDARG fail-fast.
-    private static string GroupValue(object item, string key)
-    {
-        if (item is not LeagueTeam team)
-        {
-            return "(none)";
-        }
-
-        var value = key switch
-        {
-            "Standing" => SortChipPalette.Band(team.Points),
-            _ => string.IsNullOrWhiteSpace(team.Group) ? "(none)" : $"Group {team.Group}",
-        };
-
-        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-    }
-
-    private static string GroupKeyLabel(string key) => key switch
-    {
-        "Standing" => "Standing",
-        "Group" => "Group",
-        _ => "(none)",
-    };
-
-    // ----- Actions -----
+    // ---- Re-sorting after a value change -----------------------------------------------------
     //
-    // Each of these probes an INTERACTION between sorting and grouping rather than the
-    // happy path: a mutation that must re-position a row under the active sort (and move it
-    // between groups when grouped on the mutated value), an add and a remove inside a live
-    // group, and grouping an empty set.
+    // The control sorts when asked and when the collection changes. A PropertyChanged on the
+    // sorted value does NOT re-position the row by itself, so the page applies the active sort
+    // again whenever a value it depends on changes.
 
-    // Rows removed by "Clear all rows", held so the empty-set case is reversible.
-    private readonly List<LeagueTeam> _stashedRows = new();
-    private int _addedTeamCount;
+    private TableViewColumn? ActiveSortColumn() =>
+        TeamsTable?.Columns.FirstOrDefault(c => c.SortDirection != TableViewSortDirection.None);
+
+    // SortMemberPath when set; otherwise a text column sorts by its Binding path.
+    private static string? SortPathOf(TableViewColumn column) =>
+        column.SortMemberPath is { Length: > 0 } path
+            ? path
+            : (column as TableViewTextColumn)?.Binding?.Path?.Path;
+
+    private bool ResortIfSortedOn(params string[] propertyNames)
+    {
+        var column = ActiveSortColumn();
+        if (column is null || !propertyNames.Contains(SortPathOf(column)))
+        {
+            return false;
+        }
+
+        // SortByColumn ignores a request for the sort that is already applied, so clear the
+        // column's sort and apply it again: the rows are re-ordered by the new values.
+        var direction = column.SortDirection;
+        _isResorting = true;
+        try
+        {
+            TeamsTable.SortByColumn(column, TableViewSortDirection.None);
+            TeamsTable.SortByColumn(column, direction);
+        }
+        finally
+        {
+            _isResorting = false;
+        }
+
+        return true;
+    }
+
+    private void OnTeamChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not LeagueTeam team || _isBulkUpdate || e.PropertyName is null)
+        {
+            return;
+        }
+
+        switch (e.PropertyName)
+        {
+            case nameof(LeagueTeam.NextMatchDate):
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Next match -> {0} for {1}", team.NextMatchText, team.Team));
+                break;
+            case nameof(LeagueTeam.Kickoff):
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Kickoff -> {0:hh\\:mm} for {1}", team.Kickoff, team.Team));
+                break;
+            case nameof(LeagueTeam.IsSeeded):
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Seeded -> {0} for {1}", team.IsSeeded ? "checked" : "unchecked", team.Team));
+                break;
+            case nameof(LeagueTeam.Team):
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Renamed a team to {0}", team.Team));
+                break;
+            default:
+                return;
+        }
+
+        // Let the in-cell editor finish its own update first, then re-sort and re-group once.
+        var property = e.PropertyName;
+        if (_resortQueued)
+        {
+            return;
+        }
+
+        _resortQueued = true;
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            _resortQueued = false;
+            if (!IsLoaded)
+            {
+                return;
+            }
+
+            ReapplyIfGroupedOn(property);
+            ResortIfSortedOn(property, nameof(LeagueTeam.NextMatchText));
+            SampleShaping.Reselect(TeamsTable, team, Teams.Count + 40);
+            RefreshReadouts();
+        });
+    }
+
+    // ---- Actions ----------------------------------------------------------------------------
 
     private void OnAwardWinClick(object sender, RoutedEventArgs e)
     {
-        if (Teams.Count == 0)
+        // The lowest-ranked team that has a loss to overturn, against the strongest rival in its
+        // group that has a win to give back. Both keep Played = W + D + L, and the two extra goals
+        // count once as goals for and once as goals against, so the group's ΣGF = ΣGA still holds.
+        var team = Teams
+            .Where(t => t.Losses > 0 && Teams.Any(r => r != t && r.Group == t.Group && r.Wins > 0))
+            .OrderBy(t => t.Points).ThenBy(t => t.GoalDifference)
+            .FirstOrDefault();
+        if (team is null)
         {
-            SetLastAction("No rows to mutate.");
+            SetLastAction("No team has a loss to overturn.");
             return;
         }
 
-        // Lowest points first: the row most likely to have to climb under a Points sort, and
-        // to cross a Standing band boundary while grouped on Standing.
-        var team = Teams.OrderBy(t => t.Points).ThenBy(t => t.GoalDifference).First();
-        team.Wins += 1;
-        team.GoalsFor += 2;
+        var rival = Teams
+            .Where(r => r != team && r.Group == team.Group && r.Wins > 0)
+            .OrderByDescending(r => r.Points).ThenByDescending(r => r.GoalDifference)
+            .First();
 
-        SetLastAction($"{team.Team} won a match — now {team.Points} pts ({SortChipPalette.Band(team.Points)}).");
+        _isBulkUpdate = true;
+        try
+        {
+            team.Losses -= 1;
+            team.Wins += 1;
+            team.GoalsFor += 2;
+            rival.Wins -= 1;
+            rival.Losses += 1;
+            rival.GoalsAgainst += 2;
+        }
+        finally
+        {
+            _isBulkUpdate = false;
+        }
+
+        ReapplyIfGroupedOn("Standing");
+        var resorted = ResortIfSortedOn(
+            nameof(LeagueTeam.Points), nameof(LeagueTeam.Wins), nameof(LeagueTeam.Losses),
+            nameof(LeagueTeam.GoalsFor), nameof(LeagueTeam.GoalsAgainst), nameof(LeagueTeam.GoalDifference));
+        SetLastAction(string.Format(
+            CultureInfo.CurrentCulture,
+            "Overturned a loss: {0} now beat {1} and have {2} pts ({3}){4}",
+            team.Team,
+            rival.Team,
+            team.Points,
+            SortChipPalette.Band(team.Points),
+            resorted ? "; re-sorted, so the row moved" : string.Empty));
+    }
+
+    private void OnPostponeClick(object sender, RoutedEventArgs e)
+    {
+        if (TeamsTable.SelectedItem is not LeagueTeam team)
+        {
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        var from = team.NextMatchText;
+        _isBulkUpdate = true;
+        try
+        {
+            team.NextMatchDate = team.NextMatchDate.AddDays(7);
+        }
+        finally
+        {
+            _isBulkUpdate = false;
+        }
+
+        var resorted = ResortIfSortedOn(nameof(LeagueTeam.NextMatchDate), nameof(LeagueTeam.NextMatchText));
+        SampleShaping.Reselect(TeamsTable, team, Teams.Count + 40);
+        SetLastAction(string.Format(
+            CultureInfo.CurrentCulture,
+            "Postponed the {0} match from {1} to {2}{3}",
+            team.Team,
+            from,
+            team.NextMatchText,
+            resorted ? "; re-sorted, so the row moved" : string.Empty));
+    }
+
+    private void OnToggleTextDateClick(object sender, RoutedEventArgs e)
+    {
+        var show = NextMatchTextColumn.Visibility != Visibility.Visible;
+        SetTextDateColumnVisible(show);
+        SetLastAction(show ? "Showed the Next match (text) column" : "Hid the Next match (text) column");
+    }
+
+    private void OnSortAsTextClick(object sender, RoutedEventArgs e)
+    {
+        SetTextDateColumnVisible(true);
+        TeamsTable.SortByColumn(NextMatchTextColumn, TableViewSortDirection.Ascending);
+
+        // Find the first neighbouring pair the alphabetical order gets wrong.
+        var byText = Teams.OrderBy(t => t.NextMatchText, StringComparer.CurrentCulture).ToList();
+        for (var i = 0; i + 1 < byText.Count; i++)
+        {
+            if (byText[i].NextMatchDate.Date > byText[i + 1].NextMatchDate.Date)
+            {
+                SetLastAction(string.Format(
+                    CultureInfo.CurrentCulture,
+                    "Sorted Next match (text): {0} comes before {1}, although {1} is the earlier date",
+                    byText[i].NextMatchText,
+                    byText[i + 1].NextMatchText));
+                return;
+            }
+        }
+
+        SetLastAction("Sorted Next match (text)");
+    }
+
+    private void SetTextDateColumnVisible(bool visible)
+    {
+        NextMatchTextColumn.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        ToggleTextDateButton.Content = visible ? "Hide the text-date column" : "Show the text-date column";
     }
 
     private void OnAddTeamClick(object sender, RoutedEventArgs e)
     {
-        _addedTeamCount++;
-        var team = new LeagueTeam
-        {
-            Group = "A",
-            Team = $"Newcomers {_addedTeamCount}",
-            Played = 6,
-            Wins = 3,
-            Draws = 1,
-            Losses = 2,
-            GoalsFor = 9,
-            GoalsAgainst = 8,
-        };
-
+        var team = LeagueData.LateEntrant(_lateEntrantCount++, "A");
         Teams.Add(team);
-        SetLastAction($"Added {team.Team} to Group A ({team.Points} pts).");
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} to Group A ({1} pts, no games played)", team.Team, team.Points));
     }
 
     private void OnRemoveTeamClick(object sender, RoutedEventArgs e)
@@ -266,7 +365,7 @@ public sealed partial class SortPage : Page
         }
 
         Teams.Remove(team);
-        SetLastAction($"Removed {team.Team} from Group A.");
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0} from Group A", team.Team));
     }
 
     private void OnToggleEmptyClick(object sender, RoutedEventArgs e)
@@ -276,20 +375,211 @@ public sealed partial class SortPage : Page
             _stashedRows.Clear();
             _stashedRows.AddRange(Teams);
             Teams.Clear();
-            SetLastAction("Cleared every row — a grouped empty set projects no groups at all.");
+            SetLastAction("Cleared every row: the EmptyTemplate shows, flat or grouped");
+            return;
+        }
+
+        foreach (var team in _stashedRows)
+        {
+            Teams.Add(team);
+        }
+
+        var restored = _stashedRows.Count;
+        _stashedRows.Clear();
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Restored {0:N0} rows; the sort and grouping apply again", restored));
+    }
+
+    // ---- Readouts ---------------------------------------------------------------------------
+
+    private void RefreshReadouts()
+    {
+        if (TeamsTable is null || ActiveSortText is null || SortedFiredText is null || TopRowsText is null
+            || RowsText is null || ToggleEmptyButton is null)
+        {
+            return;
+        }
+
+        var column = ActiveSortColumn();
+        ActiveSortText.Text = column is null
+            ? "(none)"
+            : string.Format(CultureInfo.CurrentCulture, "{0} {1}", ColumnLabel(column), column.SortDirection);
+        SortedFiredText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} (last: {1})", _sortedFiredCount, _lastSortedColumn);
+        RowsText.Text = SampleShaping.RowCountText(Teams.Count);
+        ToggleEmptyButton.Content = Teams.Count > 0 ? "Clear all rows" : "Restore rows";
+
+        var top = InViewOrder().Take(5).Select((t, i) => string.Format(
+            CultureInfo.CurrentCulture, "{0}. {1} ({2} pts, {3:+0;-0;0} GD)", i + 1, t.Team, t.Points, t.GoalDifference)).ToList();
+        TopRowsText.Text = top.Count > 0 ? string.Join(Environment.NewLine, top) : "(no rows)";
+    }
+
+    /// <summary>
+    /// The rows in the order the table shows them. TableViewSource does not expose its
+    /// projection, so this applies the same rules the control does: a stable sort on the active
+    /// column's key (culture-aware for text), then groups in the order their first row appears.
+    /// </summary>
+    private IEnumerable<LeagueTeam> InViewOrder()
+    {
+        IEnumerable<LeagueTeam> rows = Teams;
+        var column = ActiveSortColumn();
+        if (column is not null && SortPathOf(column) is { } path)
+        {
+            rows = column.SortDirection == TableViewSortDirection.Descending
+                ? rows.OrderByDescending(t => SortKey(t, path), SortKeyComparer.Instance)
+                : rows.OrderBy(t => SortKey(t, path), SortKeyComparer.Instance);
+        }
+
+        if (_appliedMode == "grouped")
+        {
+            var key = _appliedKey;
+            rows = rows.GroupBy(t => KeyOf(t, key)).SelectMany(g => g);
+        }
+
+        return rows;
+    }
+
+    private static IComparable? SortKey(LeagueTeam team, string path) => path switch
+    {
+        nameof(LeagueTeam.Group) => team.Group,
+        nameof(LeagueTeam.Team) => team.Team,
+        nameof(LeagueTeam.Country) => team.Country,
+        nameof(LeagueTeam.IsSeeded) => team.IsSeeded,
+        nameof(LeagueTeam.NextMatchDate) => team.NextMatchDate,
+        nameof(LeagueTeam.NextMatchText) => team.NextMatchText,
+        nameof(LeagueTeam.Kickoff) => team.Kickoff,
+        nameof(LeagueTeam.Wins) => team.Wins,
+        nameof(LeagueTeam.Draws) => team.Draws,
+        nameof(LeagueTeam.Losses) => team.Losses,
+        nameof(LeagueTeam.GoalsFor) => team.GoalsFor,
+        nameof(LeagueTeam.GoalsAgainst) => team.GoalsAgainst,
+        nameof(LeagueTeam.GoalDifference) => team.GoalDifference,
+        nameof(LeagueTeam.Points) => team.Points,
+        _ => null,
+    };
+
+    private sealed class SortKeyComparer : IComparer<IComparable?>
+    {
+        public static readonly SortKeyComparer Instance = new();
+
+        public int Compare(IComparable? x, IComparable? y) => (x, y) switch
+        {
+            (string a, string b) => string.Compare(a, b, StringComparison.CurrentCulture),
+            (null, null) => 0,
+            (null, _) => -1,
+            (_, null) => 1,
+            _ => x!.CompareTo(y),
+        };
+    }
+
+    // GroupBy key for a standings row. Never blank: an empty group identity fails fast.
+    private static object KeyOf(LeagueTeam? team, string key)
+    {
+        if (team is null)
+        {
+            return SampleShaping.NoneKey;
+        }
+
+        var value = key switch
+        {
+            "Standing" => SortChipPalette.Band(team.Points),
+            nameof(LeagueTeam.Country) => team.Country,
+            nameof(LeagueTeam.IsSeeded) => team.IsSeeded ? "Seeded" : "Unseeded",
+            _ => string.IsNullOrWhiteSpace(team.Group) ? string.Empty : string.Format(CultureInfo.CurrentCulture, "Group {0}", team.Group),
+        };
+
+        return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
+    }
+
+    private static string ColumnLabel(TableViewColumn column) =>
+        column.Header?.ToString() ?? "(unnamed)";
+
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
+    {
+        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
+        // later-declared elements exist. Guard EVERY element this path touches.
+        if (_source is null || TeamsTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Group");
+        var selected = TeamsTable.SelectedItem;
+
+        switch (mode)
+        {
+            case "grouped":
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                _source.GroupBy(item => KeyOf(item as LeagueTeam, key), SampleShaping.GroupIdentity);
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
+            //     after the call returns.
+            default:
+                _source.ClearGroupBy();
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+        _appliedKey = key;
+
+        // Re-applying GroupBy can drop the selection when the selected row changed group.
+        SampleShaping.Reselect(TeamsTable, selected, Teams.Count + 40, RefreshReadouts);
+        UpdateShapingGating();
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+                : "Shaping -> Flat");
         }
         else
         {
-            foreach (var team in _stashedRows)
-            {
-                Teams.Add(team);
-            }
-
-            _stashedRows.Clear();
-            SetLastAction("Restored the dataset; the grouping is re-applied to the refilled source.");
+            RefreshReadouts();
         }
     }
 
+    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
+    private void ReapplyIfGroupedOn(string? propertyName)
+    {
+        if (_appliedMode == "grouped" && propertyName == _appliedKey)
+        {
+            ApplyShaping(announce: false);
+        }
+    }
+
+    private void UpdateShapingGating()
+    {
+        var grouped = _appliedMode == "grouped";
+        GroupKeySelector.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
+    }
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        TeamsTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        TeamsTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
+    }
+
+    // The only writer of LastActionText.
     private void SetLastAction(string message)
     {
         if (LastActionText is not null)
@@ -297,125 +587,28 @@ public sealed partial class SortPage : Page
             LastActionText.Text = message;
         }
 
-        RefreshReadouts(triggerColumn: null);
+        RefreshReadouts();
     }
 
-    // ----- Programmatic single-column sort affordances -----
-
-    private void OnSortPointsDescClick(object sender, RoutedEventArgs e)
-        => TeamsTable.SortByColumn(PointsColumn, TableViewSortDirection.Descending);
-
-    private void OnSortGroupAscClick(object sender, RoutedEventArgs e)
-        => TeamsTable.SortByColumn(GroupColumn, TableViewSortDirection.Ascending);
-
-    private void OnSortGoalDifferenceDescClick(object sender, RoutedEventArgs e)
-        => TeamsTable.SortByColumn(GoalDifferenceColumn, TableViewSortDirection.Descending);
-
-    private void OnTogglePointsClick(object sender, RoutedEventArgs e)
-        => TeamsTable.ToggleSortDirection(PointsColumn);
-
-    private void OnClearSortClick(object sender, RoutedEventArgs e)
-        => TeamsTable.ClearSort();
-
-    // ----- Sorted -----
-    //
-    // The control reshapes the rows itself: an ItemsSource that is not already a reshaping view is
-    // projected through one internally, so a plain ObservableCollection sorts without the app
-    // re-ordering anything. Sorting is raised first and can be cancelled to keep the ordering the
-    // app's own; this page lets the control do it, so only Sorted is handled.
-    //
-    // Sorted fires AFTER the sort state has been applied and the header chevron published, so this
-    // only refreshes the readouts.
-    private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
-    {
-        _sortedFiredCount++;
-        RefreshReadouts(args.Column);
-    }
-
-    // ----- Live readouts -----
-
-    private void RefreshReadouts(TableViewColumn? triggerColumn)
-    {
-        if (TeamsTable is null || SortedFiredCountText is null)
-        {
-            return;
-        }
-
-        SortedFiredCountText.Text = _sortedFiredCount.ToString();
-        TriggerColumnText.Text = triggerColumn is null ? "(cleared)" : ColumnLabel(triggerColumn);
-
-        // Sort state lives on the COLUMN now - TableViewColumn.SortDirection - rather than on a
-        // pair of scalar DPs on the table, so the active sort is whichever column is not None.
-        TableViewColumn? column = null;
-        foreach (var candidate in TeamsTable.Columns)
-        {
-            if (candidate.SortDirection != TableViewSortDirection.None)
-            {
-                column = candidate;
-                break;
-            }
-        }
-
-        ActiveSortText.Text = column is null
-            ? "(none)"
-            : $"{ColumnLabel(column)} {column.SortDirection}";
-
-        VisibleRowsText.Text = Teams.Count.ToString();
-
-        if (RemoveTeamButton is not null)
-        {
-            RemoveTeamButton.IsEnabled = Teams.Any(t => t.Group == "A");
-            AwardWinButton.IsEnabled = Teams.Count > 0;
-            ToggleEmptyButton.Content = Teams.Count > 0 ? "Clear all rows" : "Restore rows";
-        }
-
-        ShapingModeText.Text = _appliedGroupKey == "none"
-            ? "Flat"
-            : $"Grouped by {GroupKeyLabel(_appliedGroupKey)}";
-
-        var preview = Teams.Take(5).Select((t, i) =>
-            $"{i + 1}. {t.Group} {t.Team} ({t.Points}pts, {t.GoalDifference:+0;-0;0} GD)");
-        TopRowsPreviewText.Text = preview.Any() ? string.Join(" · ", preview) : "(no rows)";
-    }
-
-    private static string ColumnLabel(TableViewColumn column)
-        => column.Header?.ToString() ?? "(unnamed)";
+    #endregion
 }
 
 /// <summary>
-/// Page-private chip palette for the <c>Standing</c> template column.
-///
-/// Deliberately NOT reusing Pages/ShowcaseConverters.cs: those allocate a new
-/// SolidColorBrush on every Convert call — per-cell churn under virtualization —
-/// and have no HighContrast path. Every brush here is created once into a
-/// static readonly field and shared; Convert never allocates.
+/// Page-private chip palette for the Standing and Country template columns. Every brush is
+/// created once into a static field and shared, so Convert never allocates. Under a Contrast
+/// theme the tint drops to transparent and the dot to the theme text brush (the shared
+/// <see cref="ChipBrushes"/> rule).
 /// </summary>
 internal static class SortChipPalette
 {
-    private static readonly bool s_highContrast =
-        new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
+    private const byte TintAlpha = 0x33;
 
-    private static readonly SolidColorBrush s_transparent = new(Colors.Transparent);
-
-    // HighContrast fallback: the user's guaranteed contrast pair, resolved once. Paired with a
-    // transparent tint so the chip never fights the HighContrast theme's own colours.
-    private static readonly SolidColorBrush s_ink =
-        Application.Current.Resources["TextFillColorPrimaryBrush"] as SolidColorBrush
-        ?? new SolidColorBrush(Colors.Gray);
-
-    private static readonly Dictionary<string, SolidColorBrush> s_tints = new(StringComparer.Ordinal)
-    {
-        ["Qualified"] = new SolidColorBrush(ColorHelper.FromArgb(0x4D, 0x16, 0xA3, 0x4A)),
-        ["Playoff"] = new SolidColorBrush(ColorHelper.FromArgb(0x4D, 0xF5, 0x9E, 0x0B)),
-        ["Eliminated"] = new SolidColorBrush(ColorHelper.FromArgb(0x4D, 0x64, 0x74, 0x8B)),
-    };
-
-    private static readonly Dictionary<string, SolidColorBrush> s_dots = new(StringComparer.Ordinal)
-    {
-        ["Qualified"] = new SolidColorBrush(ColorHelper.FromArgb(0xFF, 0x16, 0xA3, 0x4A)),
-        ["Playoff"] = new SolidColorBrush(ColorHelper.FromArgb(0xFF, 0xF5, 0x9E, 0x0B)),
-        ["Eliminated"] = new SolidColorBrush(ColorHelper.FromArgb(0xFF, 0x64, 0x74, 0x8B)),
-    };
+    private static readonly Dictionary<string, SolidColorBrush> s_standingTints = BuildStanding(TintAlpha);
+    private static readonly Dictionary<string, SolidColorBrush> s_standingDots = BuildStanding(0xFF);
+    private static readonly Dictionary<string, SolidColorBrush> s_countryTints = BuildCountry(TintAlpha);
+    private static readonly Dictionary<string, SolidColorBrush> s_countryDots = BuildCountry(0xFF);
+    private static readonly SolidColorBrush s_fallbackTint = new(ColorHelper.FromArgb(TintAlpha, 0x64, 0x74, 0x8B));
+    private static readonly SolidColorBrush s_fallbackDot = new(ColorHelper.FromArgb(0xFF, 0x64, 0x74, 0x8B));
 
     /// <summary>Qualification band for a points total. Never returns the empty string,
     /// so it is also safe as a GroupBy key.</summary>
@@ -424,23 +617,50 @@ internal static class SortChipPalette
         int points when points >= 12 => "Qualified",
         int points when points >= 7 => "Playoff",
         int => "Eliminated",
-        _ => "(none)",
+        _ => SampleShaping.NoneKey,
     };
 
-    internal static Brush Tint(string band) => s_highContrast
-        ? s_transparent
-        : s_tints.TryGetValue(band, out var brush) ? brush : s_transparent;
+    internal static Brush StandingTint(string band) => Tint(s_standingTints, band);
 
-    internal static Brush Dot(string band) => s_highContrast
-        ? s_ink
-        : s_dots.TryGetValue(band, out var brush) ? brush : s_ink;
+    internal static Brush StandingDot(string band) => Dot(s_standingDots, band);
+
+    internal static Brush CountryTint(string? country) => Tint(s_countryTints, country);
+
+    internal static Brush CountryDot(string? country) => Dot(s_countryDots, country);
+
+    private static Brush Tint(Dictionary<string, SolidColorBrush> map, string? key) =>
+        ChipBrushes.IsHighContrast ? ChipBrushes.Transparent
+        : key is not null && map.TryGetValue(key, out var brush) ? brush : s_fallbackTint;
+
+    private static Brush Dot(Dictionary<string, SolidColorBrush> map, string? key) =>
+        ChipBrushes.IsHighContrast ? ChipBrushes.HighContrastForeground
+        : key is not null && map.TryGetValue(key, out var brush) ? brush : s_fallbackDot;
+
+    private static Dictionary<string, SolidColorBrush> BuildStanding(byte alpha) => new(StringComparer.Ordinal)
+    {
+        ["Qualified"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x16, 0xA3, 0x4A)),
+        ["Playoff"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xF5, 0x9E, 0x0B)),
+        ["Eliminated"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x64, 0x74, 0x8B)),
+    };
+
+    private static Dictionary<string, SolidColorBrush> BuildCountry(byte alpha) => new(StringComparer.Ordinal)
+    {
+        ["England"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xEF, 0x44, 0x44)),
+        ["Spain"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xF5, 0x9E, 0x0B)),
+        ["Italy"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x0E, 0xA5, 0xE9)),
+        ["Germany"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x64, 0x74, 0x8B)),
+        ["France"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x63, 0x66, 0xF1)),
+        ["Portugal"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x22, 0xC5, 0x5E)),
+        ["Netherlands"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xF9, 0x73, 0x16)),
+        ["Belgium"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xA8, 0x55, 0xF7)),
+    };
 }
 
 /// <summary>Chip background tint for the Standing template column. Returns a shared brush.</summary>
 public sealed partial class SortStandingTintConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
-        => SortChipPalette.Tint(SortChipPalette.Band(value));
+        => SortChipPalette.StandingTint(SortChipPalette.Band(value));
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
         => throw new NotSupportedException();
@@ -450,17 +670,37 @@ public sealed partial class SortStandingTintConverter : IValueConverter
 public sealed partial class SortStandingDotConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
-        => SortChipPalette.Dot(SortChipPalette.Band(value));
+        => SortChipPalette.StandingDot(SortChipPalette.Band(value));
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
         => throw new NotSupportedException();
 }
 
-/// <summary>Chip label — "Qualified" / "Playoff" / "Eliminated".</summary>
+/// <summary>Chip label: "Qualified", "Playoff" or "Eliminated".</summary>
 public sealed partial class SortStandingTextConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
         => SortChipPalette.Band(value);
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        => throw new NotSupportedException();
+}
+
+/// <summary>Chip background tint for the Country template column. Returns a shared brush.</summary>
+public sealed partial class SortCountryTintConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+        => SortChipPalette.CountryTint(value as string);
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        => throw new NotSupportedException();
+}
+
+/// <summary>Solid dot fill for the Country chip. Returns a shared brush.</summary>
+public sealed partial class SortCountryDotConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+        => SortChipPalette.CountryDot(value as string);
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
         => throw new NotSupportedException();

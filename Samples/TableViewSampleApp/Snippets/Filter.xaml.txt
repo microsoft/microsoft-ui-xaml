@@ -1,79 +1,22 @@
-<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
-      xmlns:models="using:TableViewSampleApp.Models"
-      xmlns:pages="using:TableViewSampleApp.Pages">
+<!-- FilterPage.xaml: the columns are added in code (BuildColumns). The EmptyTemplate shows
+     when the filter leaves no rows. -->
+<tv:TableView x:Name="FilterTable"
+              AutomationProperties.AutomationId="FilterTable"
+              AutomationProperties.Name="Filtered people"
+              ItemsSource="{x:Bind Source}"
+              SelectionMode="Single"
+              SelectionChanged="OnTableSelectionChanged"
+              EmptyTemplate="{StaticResource FilterEmptyTemplate}"
+              VerticalAlignment="Stretch" MinHeight="320"/>
 
-  <Page.Resources>
-    <pages:FilterChipTintConverter x:Key="FilterChipTintConverter"/>
-    <pages:FilterChipDotConverter x:Key="FilterChipDotConverter"/>
-
-    <!-- Templated cell, attached to a code-created TableViewTemplateColumn. -->
-    <DataTemplate x:Key="FilterDepartmentChipTemplate" x:DataType="models:Person">
-      <Border Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource FilterChipTintConverter}}"
-              BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-              BorderThickness="1" CornerRadius="10" Padding="8,2"
-              HorizontalAlignment="Left" VerticalAlignment="Center">
-        <StackPanel Orientation="Horizontal" Spacing="7">
-          <Ellipse Width="8" Height="8" VerticalAlignment="Center"
-                   AutomationProperties.AccessibilityView="Raw"
-                   Fill="{x:Bind Department, Mode=OneWay, Converter={StaticResource FilterChipDotConverter}}"/>
-          <TextBlock Text="{x:Bind Department, Mode=OneWay}" VerticalAlignment="Center"
-                     Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-        </StackPanel>
-      </Border>
-    </DataTemplate>
-
-    <!-- Shown when the filter narrows the projection to zero rows. -->
-    <DataTemplate x:Key="FilterEmptyTemplate">
-      <StackPanel Spacing="4" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+<DataTemplate x:Key="FilterEmptyTemplate" x:DataType="system:Object">
+    <StackPanel Spacing="4" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
         <TextBlock Text="No rows match the filter" Style="{ThemeResource SubtitleTextBlockStyle}"/>
-        <TextBlock Text="The underlying collection is untouched — clear the filter to bring every row back."
-                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
-      </StackPanel>
-    </DataTemplate>
-  </Page.Resources>
+        <TextBlock Text="The underlying collection is untouched. Clear the filter to bring every row back."
+                   TextWrapping="Wrap"/>
+    </StackPanel>
+</DataTemplate>
 
-  <TextBox x:Name="SearchBox" Header="Query"
-           PlaceholderText="name, department, role, email…"
-           TextChanged="OnSearchChanged"
-           AutomationProperties.Name="Filter query"/>
-  <ToggleSwitch x:Name="ActiveOnlyToggle" Header="Active only"
-                OffContent="Off" OnContent="On" Toggled="OnActiveToggled"/>
-
-  <!-- Four shaping modes. Hierarchical rows are not available in this release: the
-       options are shown disabled so the shape of the feature is visible, and the
-       matching branch is left commented in ApplyShaping(). -->
-  <ComboBox x:Name="ShapingModeSelector" Header="Shaping mode" SelectedIndex="0"
-            SelectionChanged="OnShapingModeChanged">
-    <ComboBoxItem Content="Flat"              Tag="flat"/>
-    <ComboBoxItem Content="Grouped"           Tag="grouped"/>
-    <ComboBoxItem Content="Hierarchy"         Tag="hierarchy"        IsEnabled="False"
-                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
-                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-  </ComboBox>
-
-  <!-- Enabled from code only once grouping is actually applied. -->
-  <ComboBox x:Name="GroupKeyCombo" Header="Group by" SelectedIndex="0" IsEnabled="False"
-            ToolTipService.ToolTip="Available once the shaping mode is Grouped."
-            SelectionChanged="OnGroupKeyChanged">
-    <ComboBoxItem Content="Department"    Tag="Department"/>
-    <ComboBoxItem Content="Role"          Tag="Role"/>
-    <ComboBoxItem Content="Active status" Tag="Active"/>
-  </ComboBox>
-
-  <Button x:Name="NoMatchButton"   Content="Filter to zero matches" Click="OnNoMatchClick"/>
-  <Button x:Name="ClearFilterButton" Content="Clear filter" Click="OnClearFilterClicked"
-          IsEnabled="False" ToolTipService.ToolTip="Available once a query or the Active only toggle is set."/>
-  <Button x:Name="DropOutButton" Content="Mutate selected row out of the filter" Click="OnMutateOutClick"
-          IsEnabled="False" ToolTipService.ToolTip="Available once a filter is active and a row is selected."/>
-  <Button x:Name="ExpandAllButton" Content="Expand all groups" Click="OnExpandAllClick"
-          IsEnabled="False" ToolTipService.ToolTip="Available once a Group by key is selected."/>
-
-  <TextBlock x:Name="ReadoutText" AutomationProperties.LiveSetting="Polite"/>
-
-  <tv:TableView x:Name="FilterTable"
-                SelectionMode="Single"
-                SelectionChanged="OnTableSelectionChanged"
-                EmptyTemplate="{StaticResource FilterEmptyTemplate}"/>
-</Page>
+<TextBox x:Name="SearchBox" Header="Query" PlaceholderText="Name, department, role or email"
+         TextChanged="OnSearchChanged"/>
+<ToggleSwitch x:Name="ActiveOnlyToggle" Header="Active only" Toggled="OnActiveToggled"/>

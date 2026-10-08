@@ -6,10 +6,10 @@ using Microsoft.UI.Xaml.Controls;
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Placeholder for hierarchical rows, which are in development but not part of
-/// this release. The page deliberately has no behaviour: it describes the axis
-/// in prose and shows the intended options disabled, rather than shipping
-/// controls that no-op or naming an API that does not exist yet.
+/// Placeholder for hierarchical rows, which are not available in this release.
+/// The page deliberately has no behaviour: it describes the axis in prose and shows
+/// the canonical Shaping section with every option except Flat disabled, rather than
+/// shipping controls that no-op or naming an API that does not exist.
 /// </summary>
 public sealed partial class HierarchyPage : Page
 {

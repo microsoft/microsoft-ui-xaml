@@ -4,329 +4,310 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Demonstrates the control's built-in in-place cell editing. When
-/// <c>TableView.IsReadOnly</c> is <c>false</c>, a <c>TableViewTextColumn</c>
-/// cell enters edit on double-tap (or F2 on the focused row); Enter / Tab
-/// commit the edited value back to the bound model and Esc cancels.
-///
-/// Unlike <see cref="DensityReadOnlyPage"/> — which demonstrates the density
-/// presets — this page is the single home for the read-only story: a table-level
-/// gate that locks or unlocks every text column at once. Because editing is a
-/// model-first, two-way write, every committed edit lands directly on the
-/// <see cref="Person"/> model (INotifyPropertyChanged) and is surfaced live in
-/// the edit log. Grouping is enabled here as well so that committing an edit
-/// inside a grouped projection — a distinct code path — is exercised too.
+/// Cell editing: built-in in-place editing of text columns, a TableViewTemplateColumn editor
+/// supplied through CellEditingTemplate, the table-wide TableView.IsReadOnly gate, CommitEdit /
+/// CancelEdit, and edits to the grouped-on value re-grouping the row.
 /// </summary>
-public sealed partial class CellEditingPage : Page, INotifyPropertyChanged
+public sealed partial class CellEditingPage : Page
 {
-    // Property names that map to an editable text column on this page.
+    // Properties that an editable column on this page writes.
     private static readonly string[] s_editableProperties =
     {
         nameof(Person.FirstName),
         nameof(Person.LastName),
         nameof(Person.Role),
         nameof(Person.Department),
-        nameof(Person.Email),
     };
 
-    private string _statusText = string.Empty;
-    private TableViewSource? _source;
-    private string _mode = "flat";
-    private string _groupKey = "Department";
-
-    // Set only once GroupBy / ClearGroupBy has actually returned, so the readout
-    // cannot claim a mode the source never took.
-    private string _appliedMode = "Flat";
-    private string _lastAction = "no action yet";
+    private TableViewSource? _source;          // created ONCE; reshaped in place, never rebuilt
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private string _appliedKey = "Department";
+    private int _editsCommitted;
+    private string _openEdit = "(none)";
 
     public CellEditingPage()
     {
-        InitializeComponent();
-
-        foreach (var person in PersonData.Take(20))
-        {
-            person.PropertyChanged += OnPersonPropertyChanged;
-            People.Add(person);
-        }
-
         _source = TableViewSource.From(People);
-        DemoTable.ItemsSource = _source;
-
-        // Start editable so double-tap / F2 works without first flipping the toggle.
-        DemoTable.IsReadOnly = false;
-
-        UpdateStatus();
+        InitializeComponent();
+        Loaded += OnPageLoaded;
+        Unloaded += OnPageUnloaded;
+        RefreshReadouts();
     }
 
-    public ObservableCollection<Person> People { get; } = new();
+    public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
-    /// <summary>Rolling log of committed edits, newest first (bound in XAML).</summary>
+    public TableViewSource? Source => _source;
+
+    /// <summary>Values written to the model, newest first (bound in XAML).</summary>
     public ObservableCollection<string> EditLog { get; } = new();
 
-    public string StatusText
+    private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        get => _statusText;
-        private set
+        foreach (var person in People)
         {
-            if (_statusText != value)
-            {
-                _statusText = value;
-                OnPropertyChanged();
-            }
+            person.PropertyChanged += OnPersonChanged;
+        }
+
+        RefreshReadouts();
+    }
+
+    private void OnPageUnloaded(object sender, RoutedEventArgs e)
+    {
+        foreach (var person in People)
+        {
+            person.PropertyChanged -= OnPersonChanged;
         }
     }
+
+    // ---- Editing ------------------------------------------------------------------------
 
     private void OnReadOnlyToggled(object sender, RoutedEventArgs e)
     {
-        if (DemoTable is null || ReadOnlyToggle is null)
+        if (PeopleTable is null || ReadOnlyToggle is null)
         {
             return;
         }
 
-        DemoTable.IsReadOnly = ReadOnlyToggle.IsOn;
-        UpdateStatus();
+        PeopleTable.IsReadOnly = ReadOnlyToggle.IsOn;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "IsReadOnly -> {0}", PeopleTable.IsReadOnly));
     }
 
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
+    private void OnBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
     {
-        if (_source is null || ShapingModeSelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
-        {
-            return;
-        }
-
-        _mode = tag;
-        ApplyGrouping();
+        _openEdit = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName);
+        SetEditButtonsEnabled(true);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Began editing {0}", _openEdit));
     }
 
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e)
+    // Raised for every close, with EditAction saying whether it committed or cancelled.
+    private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
     {
-        if (_source is null || GroupKeySelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
-        {
-            return;
-        }
-
-        _groupKey = tag;
-        ApplyGrouping();
+        var what = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName);
+        _openEdit = "(none)";
+        SetEditButtonsEnabled(false);
+        SetLastAction(args.EditAction == TableViewEditAction.Commit
+            ? string.Format(CultureInfo.CurrentCulture, "Committed {0}", what)
+            : string.Format(CultureInfo.CurrentCulture, "Cancelled the edit of {0}; the model keeps its value", what));
     }
 
-    private void OnExpandAllGroupsClick(object sender, RoutedEventArgs e)
+    private void SetEditButtonsEnabled(bool enabled)
     {
-        if (_appliedMode == "Flat")
-        {
-            return;
-        }
-
-        DemoTable.ExpandAllGroups();
+        CommitEditButton.IsEnabled = enabled;
+        CancelEditButton.IsEnabled = enabled;
     }
 
-    private void OnCollapseAllGroupsClick(object sender, RoutedEventArgs e)
+    // The buttons set AllowFocusOnInteraction="False", so clicking one leaves focus, and the
+    // open editor, where they are.
+    private void OnCommitEditClick(object sender, RoutedEventArgs e)
     {
-        if (_appliedMode == "Flat")
+        if (!PeopleTable.CommitEdit())
         {
-            return;
+            SetLastAction("CommitEdit returned false: no edit was open, or the value was rejected.");
         }
-
-        DemoTable.CollapseAllGroups();
     }
 
-    /// <summary>
-    /// Reshapes the existing <see cref="TableViewSource"/> in place. GroupBy /
-    /// ClearGroupBy mutate and return the same instance, so the source is never
-    /// rebuilt — rebuilding would drop selection, scroll offset and expansion.
-    /// </summary>
-    private void ApplyGrouping()
+    private void OnCancelEditClick(object sender, RoutedEventArgs e)
     {
-        if (_source is null)
+        if (!PeopleTable.CancelEdit())
         {
-            return;
+            SetLastAction("CancelEdit returned false: no edit was open.");
         }
-
-        var grouped = _mode == "grouped";
-        switch (_mode)
-        {
-            case "grouped":
-            {
-                var key = _groupKey;
-                // The key selector receives the item; the identity selector receives the
-                // group KEY produced above, so it only has to stringify it.
-                _source.GroupBy(
-                    item => (object)GroupValue(item, key),
-                    groupKey => groupKey?.ToString() ?? "(none)");
-
-                _appliedMode = $"Grouped by {key}";
-                break;
-            }
-
-            // case "hierarchy":
-            // case "groupedhierarchy":
-            //     Hierarchical rows are not available in this release. TableViewSource.idl
-            //     exposes only Filter / GroupBy / Sort and their Clear* counterparts, so
-            //     there is no hierarchy verb to call here yet and nothing is written rather
-            //     than naming an API that does not exist. When the control ships hierarchy
-            //     support, apply it to THIS same source instance alongside the GroupBy stage
-            //     above so the two axes compose rather than replace one another, then remove
-            //     IsEnabled="False" from the two hierarchy items in the Shaping mode selector.
-            //     break;
-
-            default:
-                _source.ClearGroupBy();
-                _appliedMode = "Flat";
-                break;
-        }
-
-        if (ExpandAllButton is not null)
-        {
-            GroupKeySelector.IsEnabled = grouped;
-            ExpandAllButton.IsEnabled = grouped;
-            CollapseAllButton.IsEnabled = grouped;
-        }
-
-        if (grouped)
-        {
-            DispatcherQueue.TryEnqueue(() => DemoTable?.ExpandAllGroups());
-        }
-
-        UpdateStatus();
     }
 
-    private static string GroupValue(object item, string key)
+    private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (item is not Person person)
-        {
-            return "(none)";
-        }
-
-        var value = key switch
-        {
-            "Role" => person.Role,
-            _ => person.Department,
-        };
-
-        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-    }
-
-    private void OnPersonPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (sender is not Person person || e.PropertyName is null)
+        if (sender is not Person person || Array.IndexOf(s_editableProperties, e.PropertyName) < 0)
         {
             return;
         }
 
-        // Only surface edits to the columns this page actually exposes; skip
-        // derived-property notifications (FullName / Initial / JoinDateText).
-        if (Array.IndexOf(s_editableProperties, e.PropertyName) < 0)
-        {
-            return;
-        }
-
-        var newValue = e.PropertyName switch
+        var value = e.PropertyName switch
         {
             nameof(Person.FirstName) => person.FirstName,
             nameof(Person.LastName) => person.LastName,
             nameof(Person.Role) => person.Role,
-            nameof(Person.Department) => person.Department,
-            nameof(Person.Email) => person.Email,
-            _ => string.Empty,
+            _ => person.Department,
         };
 
-        // Newest first; cap the log so it stays readable in the fixed-height rail.
-        EditLog.Insert(0, $"{person.FullName} · {e.PropertyName} = {newValue}");
+        _editsCommitted++;
+        EditLog.Insert(0, string.Format(CultureInfo.CurrentCulture, "{0} · {1} = {2}", person.FullName, e.PropertyName, value));
         while (EditLog.Count > 50)
         {
             EditLog.RemoveAt(EditLog.Count - 1);
         }
 
-        UpdateStatus();
-    }
-
-    private void UpdateStatus()
-    {
-        var mode = ReadOnlyToggle is not null && ReadOnlyToggle.IsOn ? "read-only" : "editable";
-        var grouping = _appliedMode == "Flat" ? "not grouped" : _appliedMode.ToLowerInvariant();
-        StatusText = $"Table: {mode} · {grouping} · {People.Count:N0} rows · {EditLog.Count:N0} edits committed · {_lastAction}";
-    }
-
-    // ---- actions -------------------------------------------------------------------
-
-    private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
-    {
-        if (EditGroupedValueButton is not null)
+        // The write arrives from inside the control's commit. Re-group after it returns, so the
+        // reshape never runs while the edit is still closing.
+        var property = e.PropertyName;
+        DispatcherQueue.TryEnqueue(() =>
         {
-            EditGroupedValueButton.IsEnabled = DemoTable.SelectedItem is Person;
-        }
+            if (IsLoaded)
+            {
+                ReapplyIfGroupedOn(property);
+                RefreshReadouts();
+            }
+        });
+        RefreshReadouts();
     }
 
-    /// <summary>
-    /// Edits the property the table is currently grouped on. The edit lands on
-    /// the model, the edit log records it, and the row re-groups — the one
-    /// editing/grouping interaction the rest of the gallery never exercises.
-    /// </summary>
+    // ---- Actions ------------------------------------------------------------------------
+
     private void OnEditGroupedValueClick(object sender, RoutedEventArgs e)
     {
-        if (DemoTable.SelectedItem is not Person person)
+        if (PeopleTable.SelectedItem is not Person person)
         {
+            SetLastAction("No row selected.");
             return;
         }
 
-        var byRole = _appliedMode.EndsWith("Role", StringComparison.Ordinal);
-        var pool = byRole
-            ? People.Select(p => p.Role).Distinct(StringComparer.Ordinal).OrderBy(r => r, StringComparer.Ordinal).ToList()
-            : PersonData.Departments.ToList();
-
-        if (pool.Count == 0)
+        var from = SampleShaping.KeyOf(person, _appliedKey);
+        if (_appliedKey == nameof(Person.Role))
         {
-            return;
-        }
-
-        var current = byRole ? person.Role : person.Department;
-        var next = pool[(pool.IndexOf(current) + 1) % pool.Count];
-
-        if (byRole)
-        {
-            person.Role = next;
+            person.Role = SampleShaping.Next(PersonData.Roles, person.Role);
         }
         else
         {
-            person.Department = next;
+            person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
         }
 
-        _lastAction = $"edited the grouped-on value to {next}";
-        UpdateStatus();
-    }
-
-    private void OnCommitEditClick(object sender, RoutedEventArgs e)
-    {
-        _lastAction = $"CommitEdit returned {DemoTable.CommitEdit()}";
-        UpdateStatus();
-    }
-
-    private void OnCancelEditClick(object sender, RoutedEventArgs e)
-    {
-        _lastAction = $"CancelEdit returned {DemoTable.CancelEdit()}";
-        UpdateStatus();
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Edited {0}'s {1} from {2} to {3}",
+            person.FullName, SampleShaping.Label(GroupKeySelector), from, SampleShaping.KeyOf(person, _appliedKey)));
     }
 
     private void OnClearLogClick(object sender, RoutedEventArgs e)
     {
         EditLog.Clear();
-        _lastAction = "cleared the edit log";
-        UpdateStatus();
+        SetLastAction("Cleared the edit log");
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
+    {
+        if (!SampleShaping.IsReselecting)
+        {
+            RefreshReadouts();
+        }
+    }
 
-    private void OnPropertyChanged([CallerMemberName] string? name = null) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    private void RefreshReadouts()
+    {
+        if (RowsText is null || ReadOnlyText is null || OpenEditText is null || EditsCommittedText is null)
+        {
+            return;
+        }
+
+        RowsText.Text = SampleShaping.RowCountText(People.Count);
+        ReadOnlyText.Text = PeopleTable.IsReadOnly ? "Yes" : "No";
+        OpenEditText.Text = _openEdit;
+        EditsCommittedText.Text = _editsCommitted.ToString("N0", CultureInfo.CurrentCulture);
+    }
+
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
+    {
+        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
+        // later-declared elements exist. Guard every element this path touches.
+        if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || EditGroupedValueButton is null || ShapingModeText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+        var selected = PeopleTable.SelectedItem;
+
+        switch (mode)
+        {
+            case "grouped":
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
+            //     after the call returns.
+            default:
+                _source.ClearGroupBy();
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+        _appliedKey = key;
+
+        // Re-applying GroupBy can drop the selection when the selected row changed group.
+        SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Roles.Count, RefreshReadouts);
+
+        UpdateShapingGating();
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+                : "Shaping -> Flat");
+        }
+    }
+
+    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
+    private void ReapplyIfGroupedOn(string? propertyName)
+    {
+        if (_appliedMode == "grouped" && propertyName == _appliedKey)
+        {
+            ApplyShaping(announce: false);
+        }
+    }
+
+    private void UpdateShapingGating()
+    {
+        var grouped = _appliedMode == "grouped";
+        GroupKeySelector.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        EditGroupedValueButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
+    }
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        PeopleTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        PeopleTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
+    }
+
+    // The only writer of LastActionText.
+    private void SetLastAction(string message)
+    {
+        if (LastActionText is not null)
+        {
+            LastActionText.Text = message;
+        }
+
+        RefreshReadouts();
+    }
+
+    #endregion
 }

@@ -1,82 +1,57 @@
-private void ShowFileProperties(FileInfo file)
+// FilePropertiesPage.xaml.cs. One source over one collection, created once; it is never rebuilt.
+public ObservableCollection<FilePropertyEntry> Entries { get; } = new();
+
+public TableViewSource? Source => _source;
+
+public FilePropertiesPage()
 {
-    // One source per selected file (the items collection genuinely changes); shaping is then
-    // applied IN PLACE on it. Changing the shaping mode never re-reads the file.
-    _entries = BuildEntries(file);
-    _source = TableViewSource.From(_entries);
-    PropTable.ItemsSource = _source;
-    ApplyShaping();
-    SelectedFileText.Text = file.Name;
+    _source = TableViewSource.From(Entries);
+    InitializeComponent();
+
+    // This page starts Grouped by section (ShapingModeSelector SelectedIndex="1"). The
+    // SelectionChanged that InitializeComponent raised was ignored by the guard, so apply it now.
+    ApplyShaping(announce: false);
+    Loaded += OnPageLoaded;
 }
 
-private void ApplyShaping()
+// Picking a file refills the one collection; the source re-projects it under the current
+// filter and grouping. Every value comes from FileVersionInfo or FileInfo, so none is blank.
+private void ShowFile(FileInfo file)
 {
-    switch (_filter)
+    _currentFile = file;
+    Entries.Clear();
+    foreach (var entry in ReadProperties(file))
     {
-        case "filled":
-            _source.Filter(item => item is FilePropertyEntry e && !string.IsNullOrWhiteSpace(e.Value));
-            break;
-        case "none":
-            _source.Filter(_ => false);     // filter down to zero rows
-            break;
-        default:
-            _source.ClearFilter();
-            break;
+        Entries.Add(entry);
     }
+}
 
-    switch (_mode)
+// Remove is a collection change: the source drops the row (and an emptied section) by itself.
+Entries.Remove(entry);
+
+// Move rewrites the grouped-on value. GroupBy takes a delegate, not a property path, so it is
+// re-applied; ApplyShaping then restores the selection, so the row stays selected.
+var from = entry.Section;
+entry.Section = SampleShaping.Next(s_sections, from);
+ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
+
+private void ApplyShaping(bool announce)
+{
+    // ...guards, then:
+    var selected = PropTable.SelectedItem;
+    switch (mode)
     {
         case "grouped":
-            var key = _groupKey;
-            // TableViewKeySelector receives the ROW ITEM; TableViewIdentitySelector receives
-            // the GROUP KEY (TableViewSource.idl:12-16). Keying the identity lambda off the
-            // item would yield an empty identity and fail fast with E_INVALIDARG.
-            _source.GroupBy(
-                item => (object)GroupValue(item, key),
-                groupKey => groupKey?.ToString() ?? "(none)");
+            _source.GroupBy(item => KeyOf(item as FilePropertyEntry, key), SampleShaping.GroupIdentity);
             break;
-
-        // case "hierarchy":
-        // case "groupedhierarchy":
-        //     Hierarchical rows are not available in this release, and no hierarchy API
-        //     exists on TableViewSource or TableView yet, so there is deliberately no call
-        //     written here to copy. When the control ships hierarchy support, apply it to
-        //     this same source instance alongside the GroupBy stage above so the two compose.
-        //     break;
-
         default:
             _source.ClearGroupBy();
+            mode = "flat";
             break;
     }
 
-    _appliedMode = _mode;   // set ONLY after the shaping call returns
-
-    UpdateShapingUi();
-    UpdateStatusText();
-}
-
-// The rows are already sectioned - Description / Origin / File - which is exactly how a real
-// properties dialog is laid out, so Section is the natural group key.
-// Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
-private static string GroupValue(object item, string key)
-{
-    if (item is not FilePropertyEntry entry) { return "(none)"; }
-
-    var value = key switch
-    {
-        "Filled" => string.IsNullOrWhiteSpace(entry.Value) ? "Empty" : "Has a value",
-        _ => entry.Section,
-    };
-
-    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-}
-
-// Rewrites the row's Section, then re-applies GroupBy so the row moves between sections.
-private void OnMoveSelectedSectionClick(object sender, RoutedEventArgs e)
-{
-    if (PropTable.SelectedItem is not FilePropertyEntry selected) { return; }
-
-    var index = Array.IndexOf(s_sections, selected.Section);
-    selected.Section = s_sections[(index + 1 + s_sections.Length) % s_sections.Length];
-    ApplyShaping();
+    _appliedMode = mode;
+    _appliedKey = key;
+    SampleShaping.Reselect(PropTable, selected, Entries.Count + s_sections.Length + 2);
+    UpdateShapingGating();
 }

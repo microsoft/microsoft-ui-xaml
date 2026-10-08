@@ -51,6 +51,13 @@ Test-SnippetReferences
 
 $sha       = Run-Git -Args @('rev-parse','HEAD')
 $shaShort  = if ($sha.Length -ge 10) { $sha.Substring(0,10) } else { $sha }
+# A build from a modified working tree is not the commit it names; say so, so a bug report
+# filed from About does not point triage at the wrong source.
+$porcelain = Run-Git -Args @('status','--porcelain','--','.')
+if ($porcelain -ne '(unknown)' -and -not [string]::IsNullOrWhiteSpace($porcelain)) {
+    $sha      = "$sha-dirty"
+    $shaShort = "$shaShort-dirty"
+}
 $subject   = Run-Git -Args @('log','-1','--format=%s','HEAD')
 $timestamp = Run-Git -Args @('log','-1','--format=%cI','HEAD')
 $branch    = Run-Git -Args @('rev-parse','--abbrev-ref','HEAD')

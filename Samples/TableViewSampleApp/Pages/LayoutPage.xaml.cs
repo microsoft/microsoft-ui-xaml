@@ -9,23 +9,24 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
+using TableViewTemplateColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTemplateColumn;
 using TableViewTextColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColumn;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Consolidates every column-width lesson into one page (absorbs the former
-/// "Column resize" page):
-///   * Width — the user-configured target, as Pixel, Auto, Star, or a Mixed layout.
-///   * MinWidth / MaxWidth — clamp bounds driven live from sliders.
-///   * ActualWidth (read-only) — the rendered, clamped value.
-///   * CanResize — one column opts out of the per-header resize gripper.
-///   * CanUserResizeColumns — the table-level gate for every gripper at once.
+/// Every column-width lesson on one page:
+///   * Width: the intent, as Pixel, Auto, Star, or a Mixed layout.
+///   * MinWidth / MaxWidth: clamp bounds driven live from sliders.
+///   * ActualWidth (read-only): the rendered, clamped value.
+///   * CanResize: one column opts out of the per-header resize gripper.
+///   * CanUserResizeColumns: the table-level gate for every gripper at once.
 ///
-/// Dragging a header edge and moving the sliders feed the same ActualWidth
-/// pipeline, so both paths are visible in one readout.
+/// Dragging a header edge and moving the sliders both change ActualWidth; the readout follows
+/// TableViewColumn.ActualWidthProperty, so both paths show up in it after layout.
 /// </summary>
 public sealed partial class LayoutPage : Page
 {
@@ -33,21 +34,23 @@ public sealed partial class LayoutPage : Page
     private const string LockedRoleHeader = "Role (locked)";
 
     private bool _suppressSliderHandlers;
-    private TableViewTextColumn? _activeColumn;
+    private TableViewColumn? _activeColumn;
+    private long _actualWidthToken = -1;
 
     public LayoutPage()
     {
-        People = PersonData.Take(50);
         InitializeComponent();
-        WidthsTable.ItemsSource = People;
-
-        Loaded += (_, _) =>
-        {
-            ApplySelectedMode();
-        };
+        Loaded += OnPageLoaded;
+        Unloaded += OnPageUnloaded;
     }
 
-    public ObservableCollection<Person> People { get; }
+    public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+
+    private void OnPageLoaded(object sender, RoutedEventArgs e) => ApplySelectedMode();
+
+    private void OnPageUnloaded(object sender, RoutedEventArgs e) => SetActiveColumn(null);
+
+    // ---- Column factories ---------------------------------------------------------------
 
     private static TableViewTextColumn Text(string header, string path, GridLength width) =>
         new()
@@ -58,10 +61,20 @@ public sealed partial class LayoutPage : Page
             CanSort = false,
         };
 
+    // Template columns use the shared cells from Templates\PersonCellTemplates.xaml.
+    private static TableViewTemplateColumn Templated(string header, string templateKey, GridLength width) =>
+        new()
+        {
+            Header = header,
+            CellTemplate = (DataTemplate)Application.Current.Resources[templateKey],
+            Width = width,
+            CanSort = false,
+        };
+
     private static TableViewTextColumn LockedRole(GridLength width)
     {
         var column = Text(LockedRoleHeader, nameof(Person.Role), width);
-        // Per-column opt-out of the resize gripper. Programmatic Width still applies.
+        // Per-column opt-out of the resize gripper. Setting Width from code still applies.
         column.CanResize = false;
         return column;
     }
@@ -70,65 +83,57 @@ public sealed partial class LayoutPage : Page
     private static GridLength Star(double factor = 1) => new(factor, GridUnitType.Star);
     private static GridLength Px(double px) => new(px, GridUnitType.Pixel);
 
-    private void OnModeChanged(object sender, SelectionChangedEventArgs e)
+    // ---- Width intent -------------------------------------------------------------------
+
+    private void OnWidthModeChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (WidthsTable is null || PlaygroundPanel is null)
+        // Fires during InitializeComponent (SelectedIndex="0"); Loaded builds the first layout.
+        if (!IsLoaded)
         {
             return;
         }
 
         ApplySelectedMode();
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Width intent -> {0}", SampleShaping.Label(WidthModeSelector)));
     }
 
     private void ApplySelectedMode()
     {
-        if (ModeSelector.SelectedItem is not string mode || ModeDescription is null || PlaygroundPanel is null)
-        {
-            return;
-        }
+        var mode = SampleShaping.SelectedTag(WidthModeSelector, PlaygroundMode);
+        var previousHeader = _activeColumn?.Header?.ToString();
 
-        var previousHeader = (_activeColumn?.Header?.ToString()) ?? (ColumnCombo.SelectedItem as string);
-
+        SetActiveColumn(null);
         WidthsTable.Columns.Clear();
-        PlaygroundPanel.Visibility = mode == PlaygroundMode ? Visibility.Visible : Visibility.Collapsed;
 
         switch (mode)
         {
-            case PlaygroundMode:
-                WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Px(160)));
-                WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Px(160)));
-                WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Px(220)));
-                WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Px(140)));
-                WidthsTable.Columns.Add(LockedRole(Px(200)));
-                ModeDescription.Text = "Playground — pick a column and tweak MinWidth, Width, and MaxWidth live while watching ActualWidth clamp.";
-                break;
-
             case "Auto":
                 WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Auto()));
-                WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Auto()));
-                WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Auto()));
-                WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Auto()));
                 WidthsTable.Columns.Add(LockedRole(Auto()));
-                ModeDescription.Text = "All Auto columns — every column uses GridUnitType.Auto and sizes to the widest realized header or cell content.";
+                WidthsTable.Columns.Add(Templated("Department", "DepartmentChipTemplate", Auto()));
+                WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Auto()));
+                WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Auto()));
+                ModeDescription.Text = "Auto: every column sizes to its header and the widest cell on screen, including the Department chip template. Only realized rows are measured, so scrolling can widen a column, and when the columns need less than the table an empty band is left on the right.";
                 break;
 
             case "Star":
                 WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Star(1)));
+                WidthsTable.Columns.Add(LockedRole(Star(2)));
                 WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Star(1)));
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Star(3)));
-                WidthsTable.Columns.Add(LockedRole(Star(2)));
-                ModeDescription.Text = "All Star columns — every column shares remaining width by factor, so Email (*3) gets three times First name (*1).";
+                ModeDescription.Text = "Star: the columns share the table width by factor, so Email (3*) gets three times First name (1*). There is no empty band and no horizontal scrolling.";
                 break;
 
             case "Pixel":
+                WidthsTable.Columns.Add(Templated("Photo", "AvatarTemplate", Px(56)));
                 WidthsTable.Columns.Add(Text("First name", nameof(Person.FirstName), Px(180)));
+                WidthsTable.Columns.Add(LockedRole(Px(220)));
                 WidthsTable.Columns.Add(Text("Last name", nameof(Person.LastName), Px(180)));
+                WidthsTable.Columns.Add(Templated("Join date", "JoinDatePickerTemplate", Px(200)));
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Px(320)));
                 WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Px(220)));
-                WidthsTable.Columns.Add(LockedRole(Px(260)));
-                WidthsTable.Columns.Add(Text("Join date", nameof(Person.JoinDateText), Px(180)));
                 WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Px(520)));
-                ModeDescription.Text = "All Pixel columns — every column has a fixed GridUnitType.Pixel width, independent of content. Their combined width exceeds a narrow window, so the body scrolls horizontally and the sticky header stays in sync.";
+                ModeDescription.Text = "Pixel: every column has a fixed width, whatever its content. The total is wider than the table, so the body scrolls horizontally and the header stays in step with it.";
                 break;
 
             case "Mixed":
@@ -137,84 +142,116 @@ public sealed partial class LayoutPage : Page
                 WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Star(1)));
                 WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Star(2)));
                 WidthsTable.Columns.Add(Text("Bio", nameof(Person.Bio), Star(3)));
-                ModeDescription.Text = "Mixed columns — Auto and fixed Pixel columns are sized first, then Star columns split the remaining width.";
+                ModeDescription.Text = "Mixed: the Auto and Pixel columns are sized first, then the Star columns split what is left by factor.";
+                break;
+
+            default:
+                WidthsTable.Columns.Add(Templated("Photo", "AvatarTemplate", Px(56)));
+                WidthsTable.Columns.Add(Text("Name", nameof(Person.FullName), Px(160)));
+                WidthsTable.Columns.Add(LockedRole(Px(160)));
+                WidthsTable.Columns.Add(Templated("Join date", "JoinDatePickerTemplate", Px(200)));
+                WidthsTable.Columns.Add(Text("Department", nameof(Person.Department), Px(140)));
+                WidthsTable.Columns.Add(Text("Email", nameof(Person.Email), Px(220)));
+                ModeDescription.Text = "Playground: fixed Pixel widths you change with the sliders below. The Join date column holds a full date picker in 200 px, so it clips until Width passes about 310.";
                 break;
         }
 
-        PopulateColumnCombo(previousHeader);
+        PopulateColumnSelector(previousHeader);
         ApplyCanUserResizeColumns();
-        UpdateLabelsAndReadout();
+        RefreshReadouts();
     }
 
-    private void PopulateColumnCombo(string? preferredHeader)
+    private void PopulateColumnSelector(string? preferredHeader)
     {
-        ColumnCombo.Items.Clear();
+        ColumnSelector.Items.Clear();
         foreach (var column in WidthsTable.Columns)
         {
-            ColumnCombo.Items.Add(column.Header?.ToString() ?? "(unnamed)");
+            ColumnSelector.Items.Add(column.Header?.ToString() ?? "(unnamed)");
         }
 
         // Keep the reader's pick across a mode rebuild when the same header still exists.
-        var index = preferredHeader is null ? -1 : ColumnCombo.Items.IndexOf(preferredHeader);
-        ColumnCombo.SelectedIndex = index >= 0 ? index : (ColumnCombo.Items.Count > 0 ? 0 : -1);
+        var index = preferredHeader is null ? -1 : ColumnSelector.Items.IndexOf(preferredHeader);
+        ColumnSelector.SelectedIndex = index >= 0 ? index : (ColumnSelector.Items.Count > 1 ? 1 : 0);
     }
 
-    private void OnColumnComboChanged(object sender, SelectionChangedEventArgs e)
+    // ---- Column sizing ------------------------------------------------------------------
+
+    private void OnColumnSelectorChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (WidthsTable is null || ColumnCombo.SelectedItem is not string label)
+        if (WidthsTable is null || ColumnSelector.SelectedItem is not string header)
         {
             return;
         }
 
-        SetActiveColumn(FindColumn(label));
+        SetActiveColumn(FindColumn(header));
     }
 
-    private TableViewTextColumn? FindColumn(string header)
+    private TableViewColumn? FindColumn(string header)
     {
         foreach (var column in WidthsTable.Columns)
         {
-            if (column is TableViewTextColumn textColumn
-                && string.Equals(textColumn.Header?.ToString(), header, StringComparison.Ordinal))
+            if (string.Equals(column.Header?.ToString(), header, StringComparison.Ordinal))
             {
-                return textColumn;
+                return column;
             }
         }
 
         return null;
     }
 
-    private void SetActiveColumn(TableViewTextColumn? column)
+    private void SetActiveColumn(TableViewColumn? column)
     {
+        if (_activeColumn is not null && _actualWidthToken >= 0)
+        {
+            _activeColumn.UnregisterPropertyChangedCallback(TableViewColumn.ActualWidthProperty, _actualWidthToken);
+            _actualWidthToken = -1;
+        }
+
         _activeColumn = column;
         if (column is null)
         {
-            SelectedColumnText.Text = "(none)";
-            WidthReadoutText.Text = "?";
-            UpdateResizeStateText();
+            RefreshReadouts();
             return;
         }
 
-        // Push the column's current values into the sliders without echoing back
-        // into the column. MaxWidth defaults to +inf, which a finite slider cannot
-        // represent — pin to slider max in that case.
+        // ActualWidth is resolved during layout, after this call returns, and changes again while
+        // the user drags the header edge. Follow it instead of reading it once.
+        _actualWidthToken = column.RegisterPropertyChangedCallback(TableViewColumn.ActualWidthProperty, OnActualWidthChanged);
+        SeedSliders();
+        RefreshReadouts();
+    }
+
+    private void OnActualWidthChanged(DependencyObject sender, DependencyProperty dp)
+    {
+        // Covers drag-resize too: the gripper writes Width, then layout resolves ActualWidth.
+        SeedSliders();
+        RefreshReadouts();
+    }
+
+    // Push the column's current values into the sliders without echoing back into the column.
+    private void SeedSliders()
+    {
+        if (_activeColumn is not { } column)
+        {
+            return;
+        }
+
         _suppressSliderHandlers = true;
         try
         {
-            var maxForSlider = double.IsInfinity(column.MaxWidth)
-                ? MaxWidthSlider.Maximum
-                : Math.Min(column.MaxWidth, MaxWidthSlider.Maximum);
-
+            // MaxWidth defaults to +inf, which a finite slider cannot show: pin to the slider max.
             MinWidthSlider.Value = Math.Min(column.MinWidth, MinWidthSlider.Maximum);
-            WidthSlider.Value = Math.Min(column.Width.Value, WidthSlider.Maximum);
-            MaxWidthSlider.Value = maxForSlider;
+            MaxWidthSlider.Value = double.IsInfinity(column.MaxWidth) ? MaxWidthSlider.Maximum : Math.Min(column.MaxWidth, MaxWidthSlider.Maximum);
+
+            // For Auto and Star, Width.Value is a factor (1, 2, 3), not pixels; show ActualWidth
+            // and disable the slider so moving it cannot silently turn the column into Pixel.
+            WidthSlider.IsEnabled = column.Width.IsAbsolute;
+            WidthSlider.Value = Math.Min(column.Width.IsAbsolute ? column.Width.Value : column.ActualWidth, WidthSlider.Maximum);
         }
         finally
         {
             _suppressSliderHandlers = false;
         }
-
-        SelectedColumnText.Text = column.Header?.ToString() ?? "(unnamed)";
-        UpdateLabelsAndReadout();
     }
 
     private void OnMinWidthSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
@@ -225,8 +262,7 @@ public sealed partial class LayoutPage : Page
         }
 
         _activeColumn.MinWidth = e.NewValue;
-        SetLastAction($"MinWidth of \"{_activeColumn.Header}\" set to {e.NewValue:0}.");
-        UpdateLabelsAndReadout();
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "MinWidth of {0} -> {1:N0}", _activeColumn.Header, e.NewValue));
     }
 
     private void OnWidthSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
@@ -236,9 +272,8 @@ public sealed partial class LayoutPage : Page
             return;
         }
 
-        _activeColumn.Width = new GridLength(e.NewValue);
-        SetLastAction($"Width of \"{_activeColumn.Header}\" set to {e.NewValue:0}.");
-        UpdateLabelsAndReadout();
+        _activeColumn.Width = Px(e.NewValue);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Width of {0} -> {1:N0} px", _activeColumn.Header, e.NewValue));
     }
 
     private void OnMaxWidthSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
@@ -249,55 +284,44 @@ public sealed partial class LayoutPage : Page
         }
 
         _activeColumn.MaxWidth = e.NewValue;
-        SetLastAction($"MaxWidth of \"{_activeColumn.Header}\" set to {e.NewValue:0}.");
-        UpdateLabelsAndReadout();
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "MaxWidth of {0} -> {1:N0}", _activeColumn.Header, e.NewValue));
     }
 
-    private void OnCanUserResizeColumnsChanged(object sender, RoutedEventArgs e)
+    // ---- Resize gates -------------------------------------------------------------------
+
+    private void OnCanUserResizeColumnsToggled(object sender, RoutedEventArgs e)
     {
-        // CheckBox IsChecked="True" raises Checked during InitializeComponent, before the
-        // rest of the Options rail exists. WidthsTable lives in the Example slot and is
-        // already created, but LastActionText is declared below this checkbox and is still
-        // null — writing to it here threw, and an exception out of a XAML-raised handler
-        // surfaces as XamlParseException 0x802B000A. The constructor re-applies the state.
-        if (WidthsTable is null || LastActionText is null)
+        // Fires during InitializeComponent (IsOn="True"); Loaded applies the state.
+        if (!IsLoaded)
         {
             return;
         }
 
         ApplyCanUserResizeColumns();
-        SetLastAction($"CanUserResizeColumns set to {WidthsTable.CanUserResizeColumns}.");
-        UpdateLabelsAndReadout();
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "CanUserResizeColumns -> {0}", WidthsTable.CanUserResizeColumns));
     }
 
-    private void ApplyCanUserResizeColumns()
-    {
-        if (WidthsTable is null || CanUserResizeColumnsCheckBox is null)
-        {
-            return;
-        }
+    private void ApplyCanUserResizeColumns() =>
+        WidthsTable.CanUserResizeColumns = CanUserResizeColumnsToggle.IsOn;
 
-        WidthsTable.CanUserResizeColumns = CanUserResizeColumnsCheckBox.IsChecked == true;
-    }
-
-    // ----- Actions -----
+    // ---- Actions ------------------------------------------------------------------------
     //
-    // The single autosize implementation for the gallery: setting Width to
-    // GridUnitType.Auto asks the control to size from realized content.
+    // Autosize is GridUnitType.Auto: the control sizes the column from its realized content.
 
-    private static void Autosize(TableViewColumn column) => column.Width = new GridLength(1, GridUnitType.Auto);
+    private static void Autosize(TableViewColumn column) => column.Width = Auto();
 
     private void OnAutosizeSelectedClick(object sender, RoutedEventArgs e)
     {
-        if (_activeColumn is null)
+        if (_activeColumn is not { } column)
         {
-            SetLastAction("Autosize skipped — no column selected.");
+            SetLastAction("No column selected.");
             return;
         }
 
-        Autosize(_activeColumn);
-        SetLastAction($"Set \"{_activeColumn.Header}\" width to Auto -> ActualWidth={_activeColumn.ActualWidth:0}.");
-        UpdateLabelsAndReadout();
+        Autosize(column);
+        SeedSliders();
+        SetLastActionAfterLayout(() => string.Format(CultureInfo.CurrentCulture,
+            "Width of {0} -> Auto; ActualWidth {1:N0}", column.Header, column.ActualWidth));
     }
 
     private void OnAutosizeAllClick(object sender, RoutedEventArgs e)
@@ -307,88 +331,95 @@ public sealed partial class LayoutPage : Page
             Autosize(column);
         }
 
-        SetLastAction($"Set all {WidthsTable.Columns.Count} column widths to Auto.");
-        UpdateLabelsAndReadout();
+        SeedSliders();
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Width of all {0:N0} columns -> Auto", WidthsTable.Columns.Count));
     }
 
     private void OnClampSelectedClick(object sender, RoutedEventArgs e)
     {
-        if (_activeColumn is null)
+        if (_activeColumn is not { } column)
         {
-            SetLastAction("Clamp skipped — no column selected.");
+            SetLastAction("No column selected.");
             return;
         }
 
-        // Deliberately below a typical MinWidth so ActualWidth visibly refuses to follow Width.
-        _activeColumn.Width = new GridLength(80);
-        _suppressSliderHandlers = true;
-        try
-        {
-            WidthSlider.Value = 80;
-        }
-        finally
-        {
-            _suppressSliderHandlers = false;
-        }
-
-        SetLastAction(
-            $"Width of \"{_activeColumn.Header}\" forced to 80; MinWidth={_activeColumn.MinWidth:0} clamps ActualWidth to {_activeColumn.ActualWidth:0}.");
-        UpdateLabelsAndReadout();
+        // Deliberately small, so a raised MinWidth visibly stops ActualWidth from following.
+        column.Width = Px(80);
+        SeedSliders();
+        SetLastActionAfterLayout(() => string.Format(CultureInfo.CurrentCulture,
+            "Width of {0} -> 80 px; MinWidth {1:N0} gives ActualWidth {2:N0}", column.Header, column.MinWidth, column.ActualWidth));
     }
 
     private void OnResetWidthsClick(object sender, RoutedEventArgs e)
     {
         ApplySelectedMode();
-        SetLastAction($"Rebuilt the columns for {ModeSelector.SelectedItem} with their declared widths.");
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Rebuilt the {0} columns with their declared widths", SampleShaping.Label(WidthModeSelector)));
     }
 
-    // Null-safe because several handlers can be raised from XAML during
-    // InitializeComponent, before this TextBlock exists.
+    // ActualWidth is only known after the next layout pass: write the message now, then once more
+    // when layout has run, so the reported ActualWidth is never the stale pre-layout value.
+    private void SetLastActionAfterLayout(Func<string> message)
+    {
+        SetLastAction(message());
+
+        EventHandler<object>? handler = null;
+        handler = (_, _) =>
+        {
+            WidthsTable.LayoutUpdated -= handler;
+            if (IsLoaded)
+            {
+                SetLastAction(message());
+            }
+        };
+        WidthsTable.LayoutUpdated += handler;
+    }
+
+    private void RefreshReadouts()
+    {
+        if (WidthReadoutText is null || ClampText is null || SelectedColumnText is null || RowsText is null || ResizeStateText is null || WidthsTable is null)
+        {
+            return;
+        }
+
+        RowsText.Text = SampleShaping.RowCountText(People.Count);
+
+        if (_activeColumn is { } column)
+        {
+            SelectedColumnText.Text = column.Header?.ToString() ?? "(unnamed)";
+            var width = column.Width.GridUnitType switch
+            {
+                GridUnitType.Auto => "Auto",
+                GridUnitType.Star => string.Format(CultureInfo.CurrentCulture, "{0:0.##}* (Star)", column.Width.Value),
+                _ => string.Format(CultureInfo.CurrentCulture, "{0:N0} px", column.Width.Value),
+            };
+            WidthReadoutText.Text = string.Format(CultureInfo.CurrentCulture, "{0} / {1:N0}", width, column.ActualWidth);
+            ClampText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} / {1}",
+                column.MinWidth, double.IsInfinity(column.MaxWidth) ? "none" : column.MaxWidth.ToString("N0", CultureInfo.CurrentCulture));
+        }
+        else
+        {
+            SelectedColumnText.Text = "(none)";
+            WidthReadoutText.Text = "-";
+            ClampText.Text = "-";
+        }
+
+        var tableGate = WidthsTable.CanUserResizeColumns ? "CanUserResizeColumns on" : "CanUserResizeColumns off (every gripper)";
+        var columnGate = _activeColumn is null ? string.Empty : _activeColumn.CanResize ? "; CanResize on" : "; CanResize off";
+        ResizeStateText.Text = tableGate + columnGate;
+    }
+
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    // The only writer of LastActionText.
     private void SetLastAction(string message)
     {
         if (LastActionText is not null)
         {
             LastActionText.Text = message;
         }
+
+        RefreshReadouts();
     }
 
-    private void UpdateLabelsAndReadout()
-    {
-        if (MinWidthValue is null)
-        {
-            return;
-        }
-
-        var inv = CultureInfo.InvariantCulture;
-        MinWidthValue.Text = MinWidthSlider.Value.ToString("0", inv);
-        WidthValue.Text = WidthSlider.Value.ToString("0", inv);
-        MaxWidthValue.Text = MaxWidthSlider.Value.ToString("0", inv);
-
-        if (_activeColumn is not null)
-        {
-            // Format identical to the API-test-friendly "W / A" so behaviour is
-            // easy to copy into automation later.
-            WidthReadoutText.Text =
-                $"{_activeColumn.Width.Value.ToString("0", inv)} ({_activeColumn.Width.GridUnitType}) / {_activeColumn.ActualWidth.ToString("0", inv)}";
-        }
-
-        UpdateResizeStateText();
-    }
-
-    private void UpdateResizeStateText()
-    {
-        if (ResizeStateText is null || WidthsTable is null)
-        {
-            return;
-        }
-
-        var tableGate = WidthsTable.CanUserResizeColumns
-            ? "CanUserResizeColumns=True"
-            : "CanUserResizeColumns=False (all grippers off)";
-        var columnGate = _activeColumn is null
-            ? "no column selected"
-            : $"CanResize={_activeColumn.CanResize}";
-
-        ResizeStateText.Text = $"{tableGate} · {columnGate}";
-    }
+    #endregion
 }

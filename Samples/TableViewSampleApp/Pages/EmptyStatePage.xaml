@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Empty state: TableView.EmptyTemplate, reached three ways (a null ItemsSource, a source emptied
+    in place, and a filter that matches nothing), flat or grouped. Structure follows the golden
+    page (CellFlyoutsPage): Try it, one stretched table, then the rail in the order Data source,
+    Shaping, Actions, Status, What to look for. Generic blocks carry scaffold markers.
+-->
 <Page
     x:Class="TableViewSampleApp.Pages.EmptyStatePage"
     NavigationCacheMode="Disabled"
@@ -12,14 +18,14 @@
     <Page.Resources>
         <!-- EmptyTemplate content is TEXT + SHAPES only. A FontIcon inside the
              EmptyTemplate crashes at startup (known issue), so the empty-state
-             glyph is drawn with a Border/Ellipse instead of a FontIcon. -->
+             glyph is drawn with an Ellipse and Rectangles instead of a FontIcon. -->
         <DataTemplate x:Key="EmptyStateTemplate" x:DataType="system:Object">
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 MaxWidth="320"
                 Spacing="12">
-                <Grid Width="64" Height="64" HorizontalAlignment="Center">
+                <Grid Width="64" Height="64" HorizontalAlignment="Center" AutomationProperties.AccessibilityView="Raw">
                     <Ellipse
                         Fill="{ThemeResource SubtleFillColorSecondaryBrush}"
                         Stroke="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -32,7 +38,6 @@
                         StrokeThickness="2"/>
                     <Rectangle
                         Width="26" Height="1.5"
-                        Margin="0,0,0,0"
                         Fill="{ThemeResource TextFillColorTertiaryBrush}"/>
                 </Grid>
                 <TextBlock
@@ -40,7 +45,7 @@
                     HorizontalAlignment="Center"
                     Style="{ThemeResource SubtitleTextBlockStyle}"/>
                 <TextBlock
-                    Text="The table's ItemsSource is null or empty. Load the sample data to populate the rows."
+                    Text="There are no people to show. Choose Populated as the data source, or press Restore the rows."
                     TextAlignment="Center"
                     TextWrapping="Wrap"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
@@ -50,7 +55,7 @@
 
     <controls:SamplePresenter
         Header="Empty state"
-        Description="TableView.EmptyTemplate supplies a DataTemplate shown (centered over the row area) whenever ItemsSource is null or resolves to zero rows. Toggle the data source to clear the rows and reveal the empty state."
+        Description="TableView.EmptyTemplate is a DataTemplate the control centres over the row area whenever there are no rows to show. A table can be empty in three ways: ItemsSource is null, the bound source holds zero rows, or TableViewSource.Filter matches nothing. Pick each data source, remove rows one at a time, or filter to zero matches, and the same template takes over. Switch Shaping to Grouped first to see that an empty grouped set shows the template too, not an empty group band."
         SourceCaption="EmptyStatePage.xaml (excerpt)"
         SourceSnippet="EmptyState.xaml.txt"
         AdditionalSnippetCaption="EmptyStatePage.xaml.cs (excerpt)"
@@ -63,31 +68,31 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+                <!-- scaffold:tryit -->
                 <muxc:InfoBar
                     Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Try it"
-                    Message="Switch the data source to clear the rows — either by nulling ItemsSource or by emptying a source that stays attached. The EmptyTemplate takes over the row area either way. Then try the same while shaping is Grouped."
-                    MinHeight="104"/>
-                <Border
-                    Grid.Row="1"
-                    Style="{StaticResource TableHostBorderStyle}"
-                    Padding="0"
-                    VerticalAlignment="Stretch">
+                    MinHeight="104"
+                    Message="Set Data source to Null ItemsSource, then to Zero rows: the empty template appears both times. Choose Populated, switch Shaping to Grouped, and press Filter to zero matches: every group disappears and the template takes over. Press Restore the rows to bring the people back."/>
+                <!-- /scaffold -->
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
-                        x:Name="DemoTable"
-                        AutomationProperties.Name="Empty state people"
+                        x:Name="PeopleTable"
                         AutomationProperties.AutomationId="EmptyStateTable"
+                        AutomationProperties.Name="People, with an empty state"
+                        ItemsSource="{x:Bind Source}"
                         SelectionMode="Single"
                         EmptyTemplate="{StaticResource EmptyStateTemplate}"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <tv:TableViewTextColumn Header="Name"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding FullName}"   CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding Role}"       CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Email"      Width="*" MinWidth="200"                    Binding="{Binding Email}"      CanSort="False"/>
+                        <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                        <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                        <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+                        <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
                     </tv:TableView>
                 </Border>
             </Grid>
@@ -95,70 +100,182 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <StackPanel Spacing="4" AutomationProperties.Name="Empty state data source options">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Data source" Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <TextBlock
-                        Text="Clear ItemsSource to show the EmptyTemplate."
-                        Style="{StaticResource SectionDescriptionTextStyle}"
-                        TextWrapping="Wrap"/>
-                    <muxc:RadioButtons
-                        x:Name="DataSourceRadioButtons"
-                        AutomationProperties.Name="Data source"
+                <!-- 1. Primary feature -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Data source">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Data source"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Null ItemsSource sets TableView.ItemsSource to null. Zero rows keeps the TableViewSource attached and clears the collection behind it. Both show the EmptyTemplate."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="DataSourceSelector"
+                        AutomationProperties.AutomationId="EmptyStateDataSourceSelector"
+                        Header="Data source"
                         SelectedIndex="0"
-                        SelectionChanged="OnDataSourceSelectionChanged">
-                        <RadioButton Content="Populated" Tag="Populated" AutomationProperties.AutomationId="EmptyStatePopulatedRadio"/>
-                        <RadioButton Content="Empty (null ItemsSource)" Tag="Null" AutomationProperties.AutomationId="EmptyStateEmptyRadio"/>
-                        <RadioButton Content="Empty (source with 0 rows)" Tag="ZeroRows" AutomationProperties.AutomationId="EmptyStateZeroRowsRadio"/>
-                    </muxc:RadioButtons>
+                        SelectionChanged="OnDataSourceChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Populated" Tag="Populated"/>
+                        <ComboBoxItem Content="Null ItemsSource" Tag="Null"/>
+                        <ComboBoxItem Content="Zero rows" Tag="ZeroRows"/>
+                    </ComboBox>
                 </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"
-                           Text="Flat leaves the source unshaped. Grouped calls TableViewSource.GroupBy on the same source instance, so selection, scroll offset and group expansion survive the reshape. Grouping an empty set is the interesting case: the empty template has to win over an empty group band."/>
-                <ComboBox x:Name="ShapingModeSelector"
-                          AutomationProperties.AutomationId="ShapingModeSelector"
-                          Header="Shaping mode"
-                          SelectedIndex="0"
-                          SelectionChanged="OnShapingModeChanged"
-                          HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Flat" Tag="flat"/>
-                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                    <!-- Hierarchical rows are not available in this release. Shown disabled so the
-                         shape of the feature is visible; re-enable when the control ships support
-                         (TableViewSource exposes only Filter / GroupBy / Sort today). -->
-                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                </ComboBox>
-                <ComboBox x:Name="GroupKeyCombo" Header="Group by" IsEnabled="False" SelectedIndex="0"
-                          SelectionChanged="OnGroupKeyChanged"
-                          AutomationProperties.AutomationId="GroupKeyCombo"
-                          AutomationProperties.Name="Group key"
-                          ToolTipService.ToolTip="Available once Grouped mode is selected."
-                          HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Department" Tag="Department"/>
-                    <ComboBoxItem Content="Role" Tag="Role"/>
-                    <ComboBoxItem Content="Active status" Tag="Active"/>
-                </ComboBox>
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Grouping an empty set is legal: the projection yields no groups, and the empty template wins over an empty group band. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="EmptyStateShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="EmptyStateGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Department" Tag="Department"/>
+                        <ComboBoxItem Content="Active" Tag="IsActive"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="EmptyStateExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="EmptyStateCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <StackPanel Spacing="8">
-                    <Button x:Name="RemoveAllRowsButton" Content="Remove every row" Click="OnRemoveAllRowsClick" AutomationProperties.AutomationId="RemoveAllRowsButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="RestoreRowsButton" Content="Restore the rows" Click="OnRestoreRowsClick" IsEnabled="False" AutomationProperties.AutomationId="RestoreRowsButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="ExpandAllButton" Content="Expand all groups" Click="OnExpandAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." AutomationProperties.AutomationId="ExpandAllButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="CollapseAllButton" Content="Collapse all groups" Click="OnCollapseAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." AutomationProperties.AutomationId="CollapseAllButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="ReassignRowButton" Content="Move first row to another group" Click="OnReassignRowClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." AutomationProperties.AutomationId="ReassignRowButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Each action empties or refills the table a different way, so you can compare how the empty template appears and goes away. Watch the table and the Last action readout. Actions that change one row need a selected row."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="RemoveAllRowsButton"
+                            AutomationProperties.AutomationId="EmptyStateRemoveAllRowsButton"
+                            Content="Remove every row"
+                            Click="OnRemoveAllRowsClick"
+                            ToolTipService.ToolTip="Clears the collection behind the attached source and switches Data source to Zero rows."
+                            AutomationProperties.HelpText="Clears the collection behind the attached source and switches Data source to Zero rows."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RemoveLastRowButton"
+                            AutomationProperties.AutomationId="EmptyStateRemoveLastRowButton"
+                            Content="Remove the last row"
+                            Click="OnRemoveLastRowClick"
+                            ToolTipService.ToolTip="Removes the last person in the collection. Removing the last member of a group removes the group; removing the last row shows the empty template."
+                            AutomationProperties.HelpText="Removes the last person in the collection. Removing the last row shows the empty template."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="FilterToZeroButton"
+                            AutomationProperties.AutomationId="EmptyStateFilterToZeroButton"
+                            Content="Filter to zero matches"
+                            Click="OnFilterToZeroClick"
+                            ToolTipService.ToolTip="Calls TableViewSource.Filter with 'joined after today', which matches nobody. The collection keeps its rows, yet the empty template shows."
+                            AutomationProperties.HelpText="Calls TableViewSource.Filter with a predicate that matches nobody."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="MoveSelectedRowButton"
+                            AutomationProperties.AutomationId="EmptyStateMoveSelectedRowButton"
+                            Content="Move selected row to the next group"
+                            Click="OnMoveSelectedRowClick"
+                            ToolTipService.ToolTip="Gives the selected person the next department (or flips Active when grouped by Active). Grouped, the row moves to that group."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RestoreRowsButton"
+                            AutomationProperties.AutomationId="EmptyStateRestoreRowsButton"
+                            Content="Restore the rows"
+                            Click="OnRestoreRowsClick"
+                            ToolTipService.ToolTip="Clears the filter, reloads 40 people and switches Data source back to Populated."
+                            AutomationProperties.HelpText="Clears the filter, reloads 40 people and switches Data source back to Populated."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
                 </StackPanel>
 
-                <muxc:InfoBar AutomationProperties.LiveSetting="Polite"
-                    AutomationProperties.AutomationId="EmptyStateStatusInfoBar"
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="ItemsSource" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ItemsSourceText" AutomationProperties.AutomationId="EmptyStateItemsSourceText"
+                                   AutomationProperties.LiveSetting="Polite" Text="TableViewSource" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Empty template" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="EmptyTemplateText" AutomationProperties.AutomationId="EmptyStateEmptyTemplateText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Hidden" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="EmptyStateRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="EmptyStateShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="EmptyStateLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
+
+                <muxc:InfoBar
+                    Title="What to look for"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Status"
-                    Message="{x:Bind StatusText, Mode=OneWay}"
-                    MinHeight="64"/>
+                    Message="A null ItemsSource, an emptied source and a filter that matches nothing all look the same to the user: the column headers stay and the empty template fills the row area. When grouped, groups vanish with their last member; with zero rows there is no group band at all, only the template. Filtering keeps the 40 people in the collection, so Restore brings them back without reloading."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
 

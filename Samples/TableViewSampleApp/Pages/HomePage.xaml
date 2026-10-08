@@ -8,25 +8,35 @@
     xmlns:controls="using:TableViewSampleApp.Controls"
     xmlns:system="using:System">
 
+    <Page.Resources>
+        <!-- Shortcut tiles share one size so the wrap grid lines them up. -->
+        <Style x:Key="HomeShortcutButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+        </Style>
+    </Page.Resources>
+
     <ScrollViewer
         Padding="{StaticResource PageContentMargin}"
         VerticalScrollBarVisibility="Visible"
         HorizontalScrollMode="Disabled">
         <StackPanel
             Spacing="{StaticResource SectionSpacing}"
-            HorizontalAlignment="Stretch"
+            HorizontalAlignment="Left"
             MaxWidth="{StaticResource PageMaxContentWidth}">
 
             <controls:SamplePageHeader
                 Title="TableView"
-                Description="Microsoft.UI.Xaml.Controls.Tabular.TableView is a native WinUI 3 tabular control for data-heavy desktop experiences — model-first data shaping with TableViewSource, lightweight text and template columns, sorting, selection, grouped rows, headers, grid lines, density, column layout &amp; sizing, column lifecycle, virtualization, keyboard navigation, accessibility, and right-to-left support."/>
+                Description="Microsoft.UI.Xaml.Controls.Tabular.TableView is a native WinUI 3 tabular control for data-heavy desktop experiences: model-first data shaping with TableViewSource, text and template columns, sorting, filtering, grouped rows, selection, in-place cell editing, headers, grid lines, density, column layout and sizing, column lifecycle, virtualization, keyboard navigation, accessibility and right-to-left support."/>
 
             <muxc:InfoBar
                 IsOpen="True"
                 IsClosable="False"
                 Severity="Informational"
                 Title="About this gallery"
-                Message="C# WinUI 3 desktop app (.NET 8, Windows App SDK preview). 23 pages cover the TableView control — TableViewSource.From(items).Filter(...).GroupBy(..., identity).Sort(...), text and template columns, header-click sort, selection, column-header visibility, grid lines, density, column layout &amp; sizing, column lifecycle, cell templating, grouped rows, virtualization, keyboard navigation, RTL, performance, and a Task Manager-style dashboard. Use the theme toggle in the title bar — or the Settings page — to flip Default / Light / Dark and the choice persists across launches."/>
+                Message="A C# WinUI 3 desktop app (.NET 8, Windows App SDK preview). 23 feature pages cover the TableView control; every one is listed below and in the navigation pane. Use the theme button in the title bar, or the Settings page, to switch between Use system setting, Light and Dark; the choice persists across launches."/>
 
             <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="What's supported today" Style="{StaticResource SectionHeaderTextStyle}"/>
@@ -44,60 +54,66 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                     <x:String>Control type — Microsoft.UI.Xaml.Controls.Tabular.TableView</x:String>
-                    <x:String>Model-first source — TableViewSource.From(items).Filter(...).GroupBy(..., identity).Sort(...); assign the source to ItemsSource in code-behind</x:String>
-                    <x:String>Use grouped rows to organize related data with collapsible group headers</x:String>
-                    <x:String>Columns — TableViewTextColumn for lightweight bound text and TableViewTemplateColumn for DataTemplate cells</x:String>
-                    <x:String>Header-click sort via SortMemberPath with a direction indicator</x:String>
-                    <x:String>None / Single row selection</x:String>
-                    <x:String>Column layout &amp; sizing — Pixel / Star widths, MinWidth / MaxWidth clamps, and drag-to-resize grippers</x:String>
-                    <x:String>Column lifecycle — add, remove and reorder TableViewColumn entries in the Columns vector at runtime</x:String>
+                    <x:String>Model-first source — TableViewSource.From(items) with Filter, GroupBy and Sort, reshaped in place</x:String>
+                    <x:String>Columns — TableViewTextColumn for bound text and TableViewTemplateColumn for DataTemplate cells</x:String>
+                    <x:String>Template cells with editors — CheckBox, date and time pickers, ComboBox and Button with a Flyout, two-way bound and reachable with Tab</x:String>
+                    <x:String>Cell editing — double-click or F2 edits a cell in place, CellEditingTemplate supplies a custom editor, and TableView.IsReadOnly locks the whole table</x:String>
+                    <x:String>Header-click sort via SortMemberPath, with a direction indicator</x:String>
+                    <x:String>Filtering — TableViewSource.Filter(predicate)</x:String>
                     <x:String>Grouped rows with collapsible group headers</x:String>
+                    <x:String>None / Single row selection</x:String>
+                    <x:String>Column layout and sizing — Pixel, Auto and Star widths, MinWidth / MaxWidth clamps, and drag-to-resize grippers</x:String>
+                    <x:String>Column lifecycle — add, remove and hide TableViewColumn entries at run time</x:String>
                     <x:String>HeadersVisibility — None / Column</x:String>
-                    <x:String>Density — Compact / Standard / Comfortable</x:String>
-                    <x:String>Hierarchical rows — not available in this release; the Hierarchy page describes the planned axis</x:String>
-                    <x:String>Row virtualization — realizes only the visible rows, so large datasets scroll smoothly</x:String>
                     <x:String>GridLinesVisibility — None / Horizontal / Vertical / All</x:String>
+                    <x:String>Density — Compact / Standard / Comfortable</x:String>
+                    <x:String>Tooltips — HeaderToolTip and per-cell CellToolTipBinding</x:String>
+                    <x:String>Text wrapping with variable row heights</x:String>
+                    <x:String>Empty state — EmptyTemplate shown when the source has no rows</x:String>
+                    <x:String>Row virtualization — realizes only the visible rows, so large datasets scroll smoothly</x:String>
+                    <x:String>Keyboard navigation and UI Automation peers for tables, rows, cells and headers</x:String>
                     <x:String>RTL flow — mirrored layout and resize gripper placement</x:String>
-                    <x:String>Cell templating — custom DataTemplate content via TableViewTemplateColumn</x:String>
-                    <x:String>Filtering — TableViewSource.Filter(predicate) with live query + active-only toggle</x:String>
-                    <x:String>Task Manager showcase — grouped categories by default, live telemetry heat-map cells, search filter, and dark/light support</x:String>
+                    <x:String>Hierarchical rows — not available in this release; the Hierarchy page describes the planned axis</x:String>
                 </ItemsControl>
             </StackPanel>
 
             <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Explore the current samples" Style="{StaticResource SectionHeaderTextStyle}"/>
+                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Explore the samples" Style="{StaticResource SectionHeaderTextStyle}"/>
                 <TextBlock
-                    Text="These shortcuts match the current NavigationView pages and avoid removed preview features."
+                    Text="One shortcut per feature page, in navigation order."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Showcase" Tag="Showcase" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Showcase sample."/>
-                    <Button Content="Task Manager" Tag="TaskManager" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Task Manager sample."/>
-                    <Button Content="File Explorer" Tag="FileExplorer" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the File Explorer sample."/>
-                    <Button Content="File properties" Tag="FileProperties" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the File properties sample."/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Sorting" Tag="Sort" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Sorting sample."/>
-                    <Button Content="Filtering" Tag="Filter" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Filtering sample."/>
-                    <Button Content="Grouped rows" Tag="Groups" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grouped rows sample."/>
-                    <Button Content="Selection" Tag="Selection" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Selection sample."/>
-                    <Button Content="Headers visibility" Tag="HeadersVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Headers visibility sample."/>
-                    <Button Content="Grid lines visibility" Tag="GridLinesVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grid lines visibility sample."/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Column layout &amp; sizing" Tag="Layout" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Column layout and sizing sample."/>
-                    <Button Content="Column lifecycle" Tag="DynamicColumns" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Column lifecycle sample."/>
-                    <Button Content="Cell templating" Tag="CellFlyouts" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Cell templating sample."/>
-                    <Button Content="Hierarchy" Tag="Hierarchy" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Hierarchy placeholder page."/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Virtualization" Tag="Virtualization" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Virtualization sample."/>
-                    <Button Content="Performance" Tag="Performance" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Performance sample."/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Keyboard navigation + accessibility" Tag="KeyboardNav" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Keyboard navigation and accessibility sample."/>
-                    <Button Content="Right-to-left layout" Tag="RTLPlayground" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Right-to-left layout sample."/>
-                </StackPanel>
+                <VariableSizedWrapGrid
+                    x:Name="ShortcutGrid"
+                    AutomationProperties.Name="Sample pages"
+                    Orientation="Horizontal"
+                    ItemWidth="240"
+                    ItemHeight="44"
+                    Margin="0,4,0,0">
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Showcase" Tag="Showcase" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Showcase sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Task Manager" Tag="TaskManager" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Task Manager sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="File Explorer" Tag="FileExplorer" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the File Explorer sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="File properties" Tag="FileProperties" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the File properties sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Selection" Tag="Selection" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Selection sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Sorting" Tag="Sort" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Sorting sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Filtering" Tag="Filter" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Filtering sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Keyboard navigation" Tag="KeyboardNav" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Keyboard navigation and accessibility sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Column layout &amp; sizing" Tag="Layout" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Column layout and sizing sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Column lifecycle" Tag="DynamicColumns" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Column lifecycle sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Headers visibility" Tag="HeadersVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Headers visibility sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Tooltips" Tag="ToolTips" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Tooltips sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Grouped rows" Tag="Groups" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grouped rows sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Hierarchy" Tag="Hierarchy" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Hierarchy placeholder page."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Grid lines visibility" Tag="GridLinesVisibility" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Grid lines visibility sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Text wrap + row height" Tag="TextWrap" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Text wrap and row height sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Cell templating" Tag="CellFlyouts" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Cell templating sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Cell editing" Tag="CellEditing" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Cell editing sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Empty state" Tag="EmptyState" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Empty state sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Density" Tag="DensityReadOnly" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Density sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Right-to-left layout" Tag="RTLPlayground" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Right-to-left layout sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Virtualization" Tag="Virtualization" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Virtualization sample."/>
+                    <Button Style="{StaticResource HomeShortcutButtonStyle}" Content="Performance" Tag="Performance" Click="OnNavigateButtonClick" AutomationProperties.HelpText="Opens the Performance sample."/>
+                </VariableSizedWrapGrid>
             </StackPanel>
 
             <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
@@ -154,7 +170,7 @@
             <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Accessibility &amp; input" Style="{StaticResource SectionHeaderTextStyle}"/>
                 <TextBlock
-                    Text="Full keyboard navigation (arrows, Tab, Enter, Esc, Home / End, Page Up / Down), narrator support via TableView and TableViewRow automation peers, and None / Single row selection out of the box."
+                    Text="Keyboard navigation (arrows, Tab, Enter, Esc, Home / End, Page Up / Down), Narrator support through the TableView, row, cell and header automation peers, and None / Single row selection out of the box."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
             </StackPanel>
@@ -162,7 +178,7 @@
             <StackPanel Spacing="{StaticResource SectionInnerSpacing}">
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Scales to large data" Style="{StaticResource SectionHeaderTextStyle}"/>
                 <TextBlock
-                    Text="Row virtualization realizes only the rows currently in view, so tens of thousands of rows scroll smoothly without holding every off-screen row's cell controls in memory. See the Virtualization page for a live 10,000-row demo."
+                    Text="Row virtualization realizes only the rows currently in view, so tens of thousands of rows scroll smoothly without holding every off-screen row's cell controls in memory. The Virtualization page shows it live."
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"/>
             </StackPanel>
@@ -176,10 +192,18 @@
                 <Button x:Name="ReportIssueButton"
                     Content="Report on GitHub"
                     HorizontalAlignment="Left"
+                    Click="OnReportIssueClick"
                     AutomationProperties.AutomationId="HomeReportIssueButton"
                     AutomationProperties.Name="Report an issue on GitHub"
                     AutomationProperties.HelpText="Opens the public Microsoft UI XAML bug report template to log a TableView samples issue."
                     ToolTipService.ToolTip="Opens the public Microsoft UI XAML bug report template on GitHub."/>
+                <TextBlock x:Name="ReportIssueFallbackText"
+                    AutomationProperties.AutomationId="HomeReportIssueFallbackText"
+                    AutomationProperties.LiveSetting="Polite"
+                    Visibility="Collapsed"
+                    IsTextSelectionEnabled="True"
+                    TextWrapping="Wrap"
+                    Style="{StaticResource SectionDescriptionTextStyle}"/>
             </StackPanel>
 
         </StackPanel>

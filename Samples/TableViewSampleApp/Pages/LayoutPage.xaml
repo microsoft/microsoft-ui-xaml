@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Column layout & sizing: Width intent (Pixel / Auto / Star / Mixed), the MinWidth / MaxWidth
+    clamp, the resulting ActualWidth, and the resize gates. Structure follows the golden page
+    (CellFlyoutsPage): Try it, one stretched table, then the rail. Shaping is excluded on purpose
+    (grouping does not change column widths). The columns are built in code per mode, so this is
+    the one page where Width="Auto" is allowed: Auto is the thing being demonstrated.
+-->
 <Page
     x:Class="TableViewSampleApp.Pages.LayoutPage"
     NavigationCacheMode="Disabled"
@@ -10,7 +17,7 @@
 
     <controls:SamplePresenter
         Header="Column layout &amp; sizing"
-        Description="Everything that decides how wide a column ends up: the width intent (Pixel / Auto / Star / Mixed), the MinWidth and MaxWidth clamp, the read-only ActualWidth that results, the interactive resize gripper, and the two gates that turn that gripper off — TableViewColumn.CanResize for one column and TableView.CanUserResizeColumns for all of them."
+        Description="A TableViewColumn's Width states an intent: a fixed Pixel width, Auto (size to the realized content), or a Star share of the space left over. MinWidth and MaxWidth clamp that intent, and the read-only ActualWidth reports the width the column really got. Pick a width intent, then drag a header edge or move the sliders and watch ActualWidth follow, or refuse to. TableView.CanUserResizeColumns turns off every resize gripper at once, and TableViewColumn.CanResize turns off one."
         SourceCaption="LayoutPage.xaml (excerpt)"
         SourceSnippet="Layout.xaml.txt"
         AdditionalSnippetCaption="LayoutPage.xaml.cs (excerpt)"
@@ -18,108 +25,201 @@
         StretchExample="True">
 
         <controls:SamplePresenter.Example>
-            <Grid Padding="12" RowSpacing="12">
+            <Grid RowSpacing="12">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-
-                <TextBlock AutomationProperties.LiveSetting="Polite"
-                    Grid.Row="0"
-                    x:Name="ModeDescription"
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    AutomationProperties.AutomationId="ModeDescription"/>
-
+                <!-- scaffold:tryit -->
                 <muxc:InfoBar
-                    Grid.Row="1"
+                    Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Try it"
-                    Message="Drag the right edge of any header to resize interactively — every mode keeps a &quot;Role (locked)&quot; column with CanResize=&quot;False&quot; so you can feel the difference. Select Pixel mode, then scroll horizontally to validate that the sticky header tracks the body. TableView owns that synchronization; this release does not expose a public horizontal-offset readout."/>
-
-                <Border
-                    Grid.Row="2"
-                    Style="{StaticResource TableHostBorderStyle}"
-                    Padding="0"
-                    VerticalAlignment="Stretch">
+                    MinHeight="104"
+                    Message="Drag the right edge of the Name header and watch Width / ActualWidth update; the Role (locked) column has CanResize off, so its edge does not move. Pick Join date in Column and drag the Width slider past 310 to see the date picker stop clipping. Then switch Width intent to Auto and scroll down: Auto columns size to the rows on screen."/>
+                <!-- /scaffold -->
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
                         x:Name="WidthsTable"
+                        AutomationProperties.AutomationId="LayoutTable"
+                        AutomationProperties.Name="People, with columns sized by the chosen width intent"
+                        ItemsSource="{x:Bind People}"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
-                        MinHeight="320"
-                        AutomationProperties.AutomationId="WidthsTable"
-                        AutomationProperties.Name="Column width layout records"/>
+                        MinHeight="320"/>
                 </Border>
             </Grid>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Width intent" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock Text="Choose the column-layout scenario to rebuild the table." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                <muxc:RadioButtons
-                    x:Name="ModeSelector"
-                    MaxColumns="1"
-                    SelectedIndex="0"
-                    SelectionChanged="OnModeChanged"
-                    AutomationProperties.Name="Column width strategy">
-                    <x:String>Playground</x:String>
-                    <x:String>Auto</x:String>
-                    <x:String>Star</x:String>
-                    <x:String>Pixel</x:String>
-                    <x:String>Mixed</x:String>
-                </muxc:RadioButtons>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Resize gates" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock Text="CanUserResizeColumns gates the gripper for the whole table; the Role column also sets CanResize=&quot;False&quot; for itself. Programmatic Width still works either way." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                <CheckBox
-                    x:Name="CanUserResizeColumnsCheckBox"
-                    Content="TableView.CanUserResizeColumns"
-                    IsChecked="True"
-                    Checked="OnCanUserResizeColumnsChanged"
-                    Unchecked="OnCanUserResizeColumnsChanged"
-                    AutomationProperties.AutomationId="CanUserResizeColumnsCheckBox"
-                    AutomationProperties.Name="Allow the user to resize columns"/>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Column sizing" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock Text="Pick the column that the sliders and the Actions below apply to." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                <ComboBox x:Name="ColumnCombo" SelectionChanged="OnColumnComboChanged" AutomationProperties.AutomationId="ColumnCombo" AutomationProperties.Name="Column to adjust" HorizontalAlignment="Stretch"/>
-
-                <StackPanel x:Name="PlaygroundPanel" Spacing="12">
-                    <TextBlock Text="MinWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <Slider x:Name="MinWidthSlider" Minimum="0" Maximum="400" StepFrequency="10" Value="20" ValueChanged="OnMinWidthSliderChanged" AutomationProperties.AutomationId="MinWidthSlider" AutomationProperties.Name="Minimum column width" HorizontalAlignment="Stretch"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="MinWidthValue" Text="20" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="MinWidthValue" TextAlignment="Right"/>
-                    <TextBlock Text="Width" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <Slider x:Name="WidthSlider" Minimum="0" Maximum="500" StepFrequency="10" Value="160" ValueChanged="OnWidthSliderChanged" AutomationProperties.AutomationId="WidthSlider" AutomationProperties.Name="Column width" HorizontalAlignment="Stretch"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="WidthValue" Text="160" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="WidthValue" TextAlignment="Right"/>
-                    <TextBlock Text="MaxWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <Slider x:Name="MaxWidthSlider" Minimum="50" Maximum="500" StepFrequency="10" Value="500" ValueChanged="OnMaxWidthSliderChanged" AutomationProperties.AutomationId="MaxWidthSlider" AutomationProperties.Name="Maximum column width" HorizontalAlignment="Stretch"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="MaxWidthValue" Text="500" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="MaxWidthValue" TextAlignment="Right"/>
+                <!-- 1. Primary feature -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Width intent">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Width intent"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock x:Name="ModeDescription"
+                               AutomationProperties.AutomationId="LayoutModeDescriptionText"
+                               AutomationProperties.LiveSetting="Polite"
+                               Text="Playground: fixed Pixel widths you can change with the sliders below."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="WidthModeSelector"
+                        AutomationProperties.AutomationId="LayoutWidthModeSelector"
+                        Header="Width intent"
+                        SelectedIndex="0"
+                        SelectionChanged="OnWidthModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Playground" Tag="Playground"/>
+                        <ComboBoxItem Content="Auto" Tag="Auto"/>
+                        <ComboBoxItem Content="Star" Tag="Star"/>
+                        <ComboBoxItem Content="Pixel" Tag="Pixel"/>
+                        <ComboBoxItem Content="Mixed" Tag="Mixed"/>
+                    </ComboBox>
                 </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <StackPanel Spacing="8">
-                    <Button x:Name="AutosizeSelectedButton" Content="Autosize selected column" Click="OnAutosizeSelectedClick" AutomationProperties.AutomationId="AutosizeSelectedButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="AutosizeAllButton" Content="Autosize all columns" Click="OnAutosizeAllClick" AutomationProperties.AutomationId="AutosizeAllButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="ClampSelectedButton" Content="Force selected width to 80 px" Click="OnClampSelectedClick" AutomationProperties.AutomationId="ClampSelectedButton" ToolTipService.ToolTip="Sets Width to 80. Raise MinWidth above 80 first to watch ActualWidth refuse to follow." HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="ResetWidthsButton" Content="Reset widths for this mode" Click="OnResetWidthsClick" AutomationProperties.AutomationId="ResetWidthsButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Resize gates">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Resize gates"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="TableView.CanUserResizeColumns turns the header gripper on or off for the whole table. The Role (locked) column also sets TableViewColumn.CanResize to false for itself. Setting Width from code works either way."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ToggleSwitch
+                        x:Name="CanUserResizeColumnsToggle"
+                        AutomationProperties.AutomationId="LayoutCanUserResizeColumnsToggle"
+                        Header="Users can resize columns"
+                        IsOn="True"
+                        Toggled="OnCanUserResizeColumnsToggled"/>
                 </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <Grid ColumnSpacing="12" RowSpacing="4">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Selected column" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="0" Grid.Column="1" x:Name="SelectedColumnText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedColumnText"/>
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Width / ActualWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="1" Grid.Column="1" x:Name="WidthReadoutText" Text="?" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="WidthReadoutText"/>
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Resize" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="1" x:Name="ResizeStateText" Text="?" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ResizeStateText" TextWrapping="Wrap"/>
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="1" x:Name="LastActionText" Text="(idle)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="LastActionText" TextWrapping="Wrap"/>
-                </Grid>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Column sizing">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Column sizing"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Pick a column; the sliders and the Actions below apply to it. MinWidth and MaxWidth clamp whatever Width asks for."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ColumnSelector"
+                        AutomationProperties.AutomationId="LayoutColumnSelector"
+                        Header="Column"
+                        SelectionChanged="OnColumnSelectorChanged"
+                        HorizontalAlignment="Stretch"/>
+                    <Slider x:Name="MinWidthSlider" AutomationProperties.AutomationId="LayoutMinWidthSlider"
+                            Header="MinWidth" Minimum="0" Maximum="400" StepFrequency="10" Value="20"
+                            ValueChanged="OnMinWidthSliderChanged" HorizontalAlignment="Stretch"/>
+                    <Slider x:Name="WidthSlider" AutomationProperties.AutomationId="LayoutWidthSlider"
+                            Header="Width (Pixel)" Minimum="0" Maximum="500" StepFrequency="10" Value="160"
+                            ValueChanged="OnWidthSliderChanged" HorizontalAlignment="Stretch"
+                            AutomationProperties.HelpText="Sets a Pixel width. Enabled only when the selected column has a Pixel width."/>
+                    <Slider x:Name="MaxWidthSlider" AutomationProperties.AutomationId="LayoutMaxWidthSlider"
+                            Header="MaxWidth" Minimum="50" Maximum="500" StepFrequency="10" Value="500"
+                            ValueChanged="OnMaxWidthSliderChanged" HorizontalAlignment="Stretch"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="The Width slider sets a Pixel width, so it is enabled only when the selected column has one; it starts at the column's ActualWidth. Auto and Star columns keep their intent until you use Force selected width to 80 px."/>
+                </StackPanel>
+
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               AutomationProperties.AutomationId="LayoutShapingExclusionText"
+                               Text="Grouping does not change column widths, so this page has no Shaping options; see Grouped rows."/>
+                </StackPanel>
+
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Each action changes the selected column's Width from code, which works even when resizing is turned off. Watch the table and the Width / ActualWidth readout."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="AutosizeSelectedButton"
+                            AutomationProperties.AutomationId="LayoutAutosizeSelectedButton"
+                            Content="Autosize selected column"
+                            Click="OnAutosizeSelectedClick"
+                            ToolTipService.ToolTip="Sets the selected column's Width to Auto, so it sizes to its header and the rows on screen."
+                            AutomationProperties.HelpText="Sets the selected column's Width to Auto."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="AutosizeAllButton"
+                            AutomationProperties.AutomationId="LayoutAutosizeAllButton"
+                            Content="Autosize all columns"
+                            Click="OnAutosizeAllClick"
+                            ToolTipService.ToolTip="Sets every column's Width to Auto. Wide content can leave an empty band on the right, or push the table into horizontal scrolling."
+                            AutomationProperties.HelpText="Sets every column's Width to Auto."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="ClampSelectedButton"
+                            AutomationProperties.AutomationId="LayoutClampSelectedButton"
+                            Content="Force selected width to 80 px"
+                            Click="OnClampSelectedClick"
+                            ToolTipService.ToolTip="Sets Width to 80. Raise MinWidth above 80 first to watch ActualWidth refuse to follow."
+                            AutomationProperties.HelpText="Sets the selected column's Width to 80 pixels."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="ResetWidthsButton"
+                            AutomationProperties.AutomationId="LayoutResetWidthsButton"
+                            Content="Reset widths for this mode"
+                            Click="OnResetWidthsClick"
+                            ToolTipService.ToolTip="Rebuilds the columns of the current width intent with their declared widths."
+                            AutomationProperties.HelpText="Rebuilds the columns with their declared widths."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Column" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SelectedColumnText" AutomationProperties.AutomationId="LayoutSelectedColumnText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Width / ActualWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="WidthReadoutText" AutomationProperties.AutomationId="LayoutWidthReadoutText"
+                                   AutomationProperties.LiveSetting="Polite" Text="-" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="MinWidth / MaxWidth" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ClampText" AutomationProperties.AutomationId="LayoutClampText"
+                                   AutomationProperties.LiveSetting="Polite" Text="-" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Resize" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ResizeStateText" AutomationProperties.AutomationId="LayoutResizeStateText"
+                                   AutomationProperties.LiveSetting="Polite" Text="-" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="LayoutRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="5" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="LayoutShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="6" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="6" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="LayoutLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
+
+                <muxc:InfoBar
+                    Title="What to look for"
+                    Severity="Informational"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Message="ActualWidth is the width after the MinWidth and MaxWidth clamp, so it can differ from Width; the readout updates after layout and while you drag. A full date picker needs about 310 px, so the 200 px Join date column clips it. Auto measures only the realized rows, so scrolling can change an Auto width and Auto mode can leave an empty band on the right. Width is the lesson here, so this page scrolls horizontally in Playground and Pixel modes on purpose."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
 

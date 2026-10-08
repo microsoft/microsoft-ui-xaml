@@ -1,86 +1,74 @@
-private readonly FileSystemBrowser _browser = new();
+// FileSystemEntry.cs: folders-first sort keys. The "0 "/"1 " prefix keeps folders together, and
+// the fixed-width digits make the size compare as a number, not as display text.
+public string NameSortKey => SortPrefix + Name;
+public string SizeSortKey => SortPrefix + Size.ToString("D19", CultureInfo.InvariantCulture);
+private string SortPrefix => IsFolder ? "0 " : "1 ";
+
+// DateTimeOffset, not DateTime: it projects to Windows.Foundation.DateTime, which the sort
+// compares as a point in time. A System.DateTime has no WinRT projection and would sort as text.
+public DateTimeOffset DateModified { get; set; }
+
+// FileExplorerPage.xaml.cs. One source over one collection; a folder's entries replace its items.
 public ObservableCollection<FileSystemEntry> Entries { get; } = new();
 
-// Reshaped IN PLACE: Filter / GroupBy mutate and return the same TableViewSource
-// (TableViewSource.cpp:49-50). Built ONCE over Entries, so a shaping change never re-enters
-// FileSystemBrowser.GetEntries and never touches the file system.
-private TableViewSource? _source;
-private string _mode = "flat";          // requested
-private string _appliedMode = "flat";   // applied
-private string _groupKey = "Type";
-
-private void RefreshEntries()
+public FileExplorerPage()
 {
-    // The ONLY path that hits the disk. Back / Up / Refresh / Enter reach it; shaping does not.
-    var entries = ApplyActiveSort(_browser.GetEntries(_currentDir)).ToList();
+    _source = TableViewSource.From(Entries);
+    InitializeComponent();
+    // handledEventsToo: the table consumes Enter for its own row navigation.
+    FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
+    Loaded += OnPageLoaded;  // opens FileSystemBrowser.InitialDirectory (AppContext.BaseDirectory)
+}
+
+// The folder is read on a background thread; only the result is applied on the UI thread.
+private async Task NavigateAsync(string path, bool addToHistory, string verb)
+{
+    var version = ++_navigationVersion;
+    var listing = await Task.Run(() => FileSystemBrowser.Read(path));
+
+    // A newer navigation started while this one was reading; drop the stale result.
+    if (version != _navigationVersion)
+    {
+        return;
+    }
+
+    if (listing.Error is not null)
+    {
+        AddressBar.Text = _currentDir;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Cannot open {0}: {1}", listing.FullPath, listing.Error));
+        return;
+    }
+
+    // ...push history, then refill the one collection.
+    _currentDir = listing.FullPath;
     Entries.Clear();
-    foreach (var entry in entries) { Entries.Add(entry); }
-
-    if (_source is null)
+    foreach (var entry in listing.Entries)
     {
-        _source = TableViewSource.From(Entries);
-        FileTable.ItemsSource = _source;
+        Entries.Add(entry);
     }
-
-    ApplyShaping();
-    FileTable.DeselectAll();
-    AddressBar.Text = _currentDir;
 }
 
-private void ApplyShaping()
+// Enter opens the selected folder; Backspace goes up.
+private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
 {
-    switch (_filter)
+    if (e.Key == VirtualKey.Enter)
     {
-        case "folders": _source.Filter(item => item is FileSystemEntry { IsFolder: true }); break;
-        case "files":   _source.Filter(item => item is FileSystemEntry { IsFolder: false }); break;
-        case "none":    _source.Filter(_ => false); break;   // filter down to zero rows
-        default:        _source.ClearFilter(); break;
+        e.Handled = true;
+        OpenSelectedFolder();
     }
-
-    switch (_mode)
+    else if (e.Key == VirtualKey.Back)
     {
-        case "grouped":
-            var key = _groupKey;
-            // TableViewKeySelector receives the ROW ITEM; TableViewIdentitySelector receives
-            // the GROUP KEY (TableViewSource.idl:12-16). An item-typed identity lambda
-            // returns an empty identity and fails fast with E_INVALIDARG.
-            _source.GroupBy(
-                item => (object)GroupValue(item, key),
-                groupKey => groupKey?.ToString() ?? "(none)");
-            break;
-
-        // case "hierarchy":
-        // case "groupedhierarchy":
-        //     Hierarchical rows are not available in this release, and no hierarchy API
-        //     exists on TableViewSource or TableView yet, so there is deliberately no call
-        //     written here to copy. When the control ships hierarchy support, apply it to
-        //     this same source instance alongside the GroupBy stage above so the two compose
-        //     - folder rows parenting their children is the natural shape for this page.
-        //     break;
-
-        default:
-            _source.ClearGroupBy();
-            break;
+        e.Handled = true;
+        GoUp();
     }
-
-    _appliedMode = _mode;   // set ONLY after the shaping call returns
-
-    UpdateShapingUi();
-    RefreshStatusText();
 }
 
-// Explorer's own grouping is by type / date modified / size, so item type is the natural key.
-// Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
-private static string GroupValue(object item, string key)
+// Grouped by date: a sort declared BEFORE GroupBy orders the groups, so sorting newest first
+// makes the buckets read Today, Yesterday, ... The key selector receives the ROW; the identity
+// selector receives the KEY.
+if (key == nameof(FileSystemEntry.DateModified))
 {
-    if (item is not FileSystemEntry entry) { return "(none)"; }
-
-    var value = key switch
-    {
-        "Kind"     => entry.IsFolder ? "Folders" : "Files",
-        "Modified" => ModifiedBucket(entry.DateModified),
-        _          => entry.IsFolder ? "File folder" : entry.TypeDisplay,
-    };
-
-    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+    FileTable.SortByColumn(DateModifiedColumn, SortDirection.Descending);
 }
+
+_source.GroupBy(item => KeyOf(item as FileSystemEntry, key), SampleShaping.GroupIdentity);

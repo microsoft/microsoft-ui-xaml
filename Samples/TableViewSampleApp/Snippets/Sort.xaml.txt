@@ -1,101 +1,45 @@
-<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
-      xmlns:models="using:TableViewSampleApp.Models"
-      xmlns:local="using:TableViewSampleApp.Pages">
+<!-- SortPage.xaml: the table. The template renders a control; SortMemberPath names the value
+     that orders the rows. A text column without SortMemberPath sorts by its Binding path. -->
+<tv:TableView x:Name="TeamsTable"
+              AutomationProperties.AutomationId="SortTable"
+              AutomationProperties.Name="League standings"
+              ItemsSource="{x:Bind Source}"
+              SelectionMode="Single" IsReadOnly="False"
+              EmptyTemplate="{StaticResource SortEmptyTemplate}"
+              Sorted="OnTableSorted"
+              VerticalAlignment="Stretch" MinHeight="320">
+    <tv:TableViewTextColumn     x:Name="TeamColumn"      Header="Team"       Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Team, Mode=TwoWay}"/>
+    <tv:TableViewTemplateColumn x:Name="SeededColumn"    Header="Seeded"     Width="{StaticResource ColWidthBoolean}"      CellTemplate="{StaticResource SeededCheckBoxTemplate}" SortMemberPath="IsSeeded"/>
+    <tv:TableViewTemplateColumn x:Name="NextMatchColumn" Header="Next match" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource NextMatchDateTemplate}"  SortMemberPath="NextMatchDate"/>
+    <tv:TableViewTemplateColumn x:Name="KickoffColumn"   Header="Kickoff"    Width="{StaticResource ColWidthTimeCompact}"  CellTemplate="{StaticResource KickoffTimeTemplate}"    SortMemberPath="Kickoff"/>
+    <tv:TableViewTextColumn     x:Name="NextMatchTextColumn" Header="Next match (text)" Width="{StaticResource ColWidthDate}" Visibility="Collapsed" IsReadOnly="True" Binding="{Binding NextMatchText}"/>
+    <tv:TableViewTextColumn     x:Name="PlayedColumn"    Header="P"          Width="{StaticResource ColWidthStatNarrow}"   IsReadOnly="True" CanSort="False" Binding="{Binding Played}"/>
+    <tv:TableViewTextColumn     x:Name="PointsColumn"    Header="Pts"        Width="{StaticResource ColWidthStat}"         IsReadOnly="True" Binding="{Binding Points}"/>
+    <tv:TableViewTemplateColumn x:Name="StandingColumn"  Header="Standing"   Width="{StaticResource ColWidthChip}"         IsReadOnly="True" CellTemplate="{StaticResource StandingChipTemplate}" SortMemberPath="Points"/>
+</tv:TableView>
 
-  <Page.Resources>
-    <!-- Converters return SHARED, cached brushes; they never allocate in Convert,
-         which would churn a brush per cell under virtualization. -->
-    <local:SortStandingTintConverter x:Key="SortStandingTintConverter"/>
-    <local:SortStandingDotConverter  x:Key="SortStandingDotConverter"/>
-    <local:SortStandingTextConverter x:Key="SortStandingTextConverter"/>
+<!-- Page resources: editors typed to LeagueTeam. CalendarDatePicker.Date is nullable, so it
+     binds the NextMatchDateOrNull shim; the column still sorts by NextMatchDate. -->
+<DataTemplate x:Key="NextMatchDateTemplate" x:DataType="models:LeagueTeam">
+    <CalendarDatePicker Date="{x:Bind NextMatchDateOrNull, Mode=TwoWay}"
+                        DateFormat="{}{day.integer} {month.abbreviated} {year.full}"
+                        Margin="6,2" HorizontalAlignment="Stretch"
+                        AutomationProperties.Name="{x:Bind Team, Mode=OneWay,
+                            Converter={StaticResource RowAutomationNameConverter},
+                            ConverterParameter='Next match for {0}'}"/>
+</DataTemplate>
 
-    <DataTemplate x:Key="StandingChipTemplate" x:DataType="models:LeagueTeam">
-      <Border Background="{x:Bind Points, Mode=OneWay, Converter={StaticResource SortStandingTintConverter}}"
-              CornerRadius="10" Padding="8,2" HorizontalAlignment="Left">
-        <StackPanel Orientation="Horizontal" Spacing="6">
-          <!-- Decorative: hidden from the automation tree. -->
-          <Ellipse Width="8" Height="8"
-                   Fill="{x:Bind Points, Mode=OneWay, Converter={StaticResource SortStandingDotConverter}}"
-                   AutomationProperties.AccessibilityView="Raw"/>
-          <TextBlock Text="{x:Bind Points, Mode=OneWay, Converter={StaticResource SortStandingTextConverter}}"
-                     Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-        </StackPanel>
-      </Border>
-    </DataTemplate>
-  </Page.Resources>
+<DataTemplate x:Key="KickoffTimeTemplate" x:DataType="models:LeagueTeam">
+    <TimePicker Time="{x:Bind Kickoff, Mode=TwoWay}" ClockIdentifier="24HourClock"
+                MinuteIncrement="15" MinWidth="0" Margin="6,2" HorizontalAlignment="Stretch"
+                AutomationProperties.Name="{x:Bind Team, Mode=OneWay,
+                    Converter={StaticResource RowAutomationNameConverter},
+                    ConverterParameter='Kickoff for {0}'}"/>
+</DataTemplate>
 
-  <tv:TableView
-      x:Name="TeamsTable"
-      SelectionMode="Single"
-      Sorted="OnTableSorted">
-
-    <!-- SortMemberPath identifies the property to sort by. When omitted,
-         TableViewTextColumn falls back to its Binding.Path. -->
-    <tv:TableViewTextColumn Header="Group"
-                              SortMemberPath="Group"
-                              Binding="{Binding Group}"/>
-    <tv:TableViewTextColumn Header="Team"
-                              SortMemberPath="Team"
-                              Binding="{Binding Team}"/>
-
-    <!-- CanSort=False hides the SortIndicator and makes the header
-         non-interactive. Programmatic SortByColumn can still target it. -->
-    <tv:TableViewTextColumn Header="P"
-                              CanSort="False"
-                              Binding="{Binding Played}"/>
-
-    <tv:TableViewTextColumn Header="W"
-                              SortMemberPath="Wins"
-                              Binding="{Binding Wins}"/>
-    <tv:TableViewTextColumn Header="D"
-                              SortMemberPath="Draws"
-                              Binding="{Binding Draws}"/>
-    <tv:TableViewTextColumn Header="L"
-                              SortMemberPath="Losses"
-                              Binding="{Binding Losses}"/>
-    <tv:TableViewTextColumn Header="GF"
-                              SortMemberPath="GoalsFor"
-                              Binding="{Binding GoalsFor}"/>
-    <tv:TableViewTextColumn Header="GA"
-                              SortMemberPath="GoalsAgainst"
-                              Binding="{Binding GoalsAgainst}"/>
-    <tv:TableViewTextColumn Header="GD"
-                              SortMemberPath="GoalDifference"
-                              Binding="{Binding GoalDifference}"/>
-    <tv:TableViewTextColumn Header="Pts"
-                              SortMemberPath="Points"
-                              Binding="{Binding Points}"/>
-
-    <!-- A templated cell does NOT opt out of sorting: SortMemberPath names the
-         property behind the template, so the chip column sorts like any other. -->
-    <tv:TableViewTemplateColumn Header="Standing"
-                              CanSort="True"
-                              SortMemberPath="Points"
-                              CellTemplate="{StaticResource StandingChipTemplate}"/>
-  </tv:TableView>
-
-  <!-- Shaping mode. Hierarchy is not available in this release, so those two
-       options ship disabled with a tooltip rather than hidden or as enabled
-       no-ops; re-enable them when the control ships hierarchy support. -->
-  <ComboBox x:Name="ShapingModeSelector" Header="Shaping mode"
-            SelectedIndex="0" SelectionChanged="OnShapingModeChanged">
-    <ComboBoxItem Content="Flat"              Tag="flat"/>
-    <ComboBoxItem Content="Grouped"           Tag="grouped"/>
-    <ComboBoxItem Content="Hierarchy"         Tag="hierarchy"        IsEnabled="False"
-                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
-                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-  </ComboBox>
-
-</Page>
-
-<!--
-  Header click   → ToggleSortDirection(col). Opens at Ascending, then cycles
-                   Ascending -> Descending and replaces any prior sort
-                   (single-column).
-  SortByColumn   → Sets the sort to one column + direction in a single call.
-  ClearSort      → Clears the sort; Sorted fires with no sorted columns.
-  Sort + group   → Sorting a GROUPED source reorders rows WITHIN each group;
-                   the grouping is not disturbed.
--->
+<DataTemplate x:Key="SeededCheckBoxTemplate" x:DataType="models:LeagueTeam">
+    <CheckBox IsChecked="{x:Bind IsSeeded, Mode=TwoWay}" MinWidth="0" Margin="14,2"
+              AutomationProperties.Name="{x:Bind Team, Mode=OneWay,
+                  Converter={StaticResource RowAutomationNameConverter},
+                  ConverterParameter='Seeded: {0}'}"/>
+</DataTemplate>

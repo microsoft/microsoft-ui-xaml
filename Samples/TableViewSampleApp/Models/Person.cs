@@ -12,10 +12,9 @@ using TableViewTextColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColu
 namespace TableViewSampleApp.Models;
 
 /// <summary>
-/// Realistic POCO used by the gallery's "directory of people" sample.
-/// Implements INotifyPropertyChanged so future capability pages (live updates,
-/// live updates, sort/filter) can mutate properties and have the table
-/// reflect changes once the corresponding TableView phase ships.
+/// The person row used by most gallery pages. Implements INotifyPropertyChanged so in-cell
+/// editors (two-way bound) and page actions that mutate a row are reflected by the table.
+/// Shared cell templates for this model live in Templates\PersonCellTemplates.xaml.
 /// </summary>
 public sealed class Person : INotifyPropertyChanged
 {
@@ -29,6 +28,9 @@ public sealed class Person : INotifyPropertyChanged
     private TimeSpan _shiftStart;
     private double _salary;
     private bool _isActive;
+    private string? _avatarPath;
+    private int _employeeId;
+    private string _office = string.Empty;
 
     public string FirstName
     {
@@ -45,8 +47,8 @@ public sealed class Person : INotifyPropertyChanged
     public string FullName => $"{_firstName} {_lastName}";
 
     /// <summary>
-    /// Single-character initial used by the avatar visual in the
-    /// row-template sample. Falls back to '?' when neither name is set.
+    /// Single-character initial. Falls back to '?' when neither name is set. The shared
+    /// AvatarTemplate does not need it (PersonPicture derives initials from FullName).
     /// </summary>
     public string Initial => _firstName.Length > 0
         ? _firstName.Substring(0, 1)
@@ -91,9 +93,24 @@ public sealed class Person : INotifyPropertyChanged
     public string JoinDateText => _joinDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
     /// <summary>
-    /// Start of the daily work shift. Used by the MixedControlsPage sample
-    /// to demonstrate a TimePicker hosted directly inside a
-    /// TableViewTemplateColumn cell.
+    /// <see cref="JoinDate"/> as a nullable value, for <c>CalendarDatePicker.Date</c> two-way
+    /// binding (x:Bind does not convert DateTimeOffset to DateTimeOffset?). Clearing the picker
+    /// (null) is ignored, so the row always keeps a join date.
+    /// </summary>
+    public DateTimeOffset? JoinDateOrNull
+    {
+        get => _joinDate;
+        set
+        {
+            if (value is { } date)
+            {
+                JoinDate = date;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Start of the daily work shift; edited by the TimePicker cell templates.
     /// </summary>
     public TimeSpan ShiftStart
     {
@@ -111,6 +128,30 @@ public sealed class Person : INotifyPropertyChanged
     {
         get => _isActive;
         set => Set(ref _isActive, value);
+    }
+
+    /// <summary>
+    /// Optional photo as an <c>ms-appx:///</c> URI string, or null. Bind it only through
+    /// AvatarImageConverter; the AvatarTemplate shows initials when it is null.
+    /// </summary>
+    public string? AvatarPath
+    {
+        get => _avatarPath;
+        set => Set(ref _avatarPath, value);
+    }
+
+    /// <summary>Stable employee number (1001, 1002, ...).</summary>
+    public int EmployeeId
+    {
+        get => _employeeId;
+        set => Set(ref _employeeId, value);
+    }
+
+    /// <summary>Office location; one of <c>PersonData.Offices</c>.</summary>
+    public string Office
+    {
+        get => _office;
+        set => Set(ref _office, value);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -131,6 +172,7 @@ public sealed class Person : INotifyPropertyChanged
         if (propertyName is nameof(JoinDate))
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(JoinDateText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(JoinDateOrNull)));
         }
     }
 }

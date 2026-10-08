@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    File properties scenario, on the canonical page template (FIX-PLAN §1.2): Try it, then the
+    scenario's two panes (Files list and the property table) in the stretched row, then the rail
+    in the order Filter, Shaping, Actions, Status, What to look for. Starts Grouped by section.
+-->
 <Page
     x:Class="TableViewSampleApp.Pages.FilePropertiesPage"
     NavigationCacheMode="Disabled"
@@ -7,246 +12,253 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:io="using:System.IO"
-    xmlns:controls="using:TableViewSampleApp.Controls"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
         Header="File properties"
-        Description="A properties-dialog scenario: select a file, then display name/value metadata in a compact TableView."
+        Description="A Properties dialog for this sample's own binaries: pick a file and the table lists 22 properties read from its version resource and from the file system, grouped into Description, Origin and File sections the way the Details tab is. The table is bound to one TableViewSource over one ObservableCollection; picking another file refills the collection, and filtering, grouping, moving and removing rows all reshape that same source in place."
         SourceCaption="FilePropertiesPage.xaml (excerpt)"
         SourceSnippet="FileProperties.xaml.txt"
         AdditionalSnippetCaption="FilePropertiesPage.xaml.cs (excerpt)"
         AdditionalSnippet="FileProperties.cs.txt"
         StretchExample="True">
-        <controls:SamplePresenter.Example>
-    <Grid Padding="24" ColumnSpacing="12">
-        <!-- Star-sized, not pinned to a fixed pixel width, so the panels reflow with the window.
-             The Files list only ever shows file names, so it is capped; the Details panel is where
-             the content is and takes the rest. -->
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="180" MaxWidth="280"/>
-            <ColumnDefinition Width="3*" MinWidth="420"/>
-        </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="{StaticResource ControlCornerRadius}"
-                Padding="16">
+        <controls:SamplePresenter.Example>
             <Grid RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+                <!-- scaffold:tryit -->
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
+                    IsOpen="True"
+                    IsClosable="False"
+                    MinHeight="104"
+                    Message="The table starts grouped by section. Pick another file in the Files list and the same table refills with its properties. Select a property and choose Move selected to next section: it changes section and stays selected. Then set Filter to Dates only and watch two sections disappear."/>
+                <!-- /scaffold -->
 
-                <StackPanel Grid.Row="0" Spacing="4">
-                    <TextBlock Text="Files" FontSize="18" FontWeight="SemiBold"/>
-                    <TextBlock Text="Select a file from the app folder" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
-                </StackPanel>
-
-                <ListView x:Name="FileList"
-                          Grid.Row="1"
-                          AutomationProperties.AutomationId="FilePropertiesFileList"
-                          SelectionChanged="OnFileSelectionChanged"
-                          SelectionMode="Single"
-                          MinHeight="420">
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                        </Style>
-                    </ListView.ItemContainerStyle>
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="io:FileInfo">
-                            <Grid
-                                AutomationProperties.Name="{x:Bind Name}"
-                                ToolTipService.ToolTip="{x:Bind Name}">
-                                <TextBlock
-                                    Text="{x:Bind Name}"
-                                    TextTrimming="CharacterEllipsis"
-                                    TextWrapping="NoWrap"/>
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Grid>
-        </Border>
-
-        <Grid Grid.Column="1" RowSpacing="12">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <Border Grid.Row="0"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource ControlCornerRadius}"
-                    Padding="16,10">
-                <StackPanel Spacing="2">
-                    <TextBlock Text="Details" FontSize="18" FontWeight="SemiBold"/>
-                    <TextBlock x:Name="SelectedFileText"
-                               AutomationProperties.AutomationId="FilePropertiesSelectedFileText"
-                               AutomationProperties.LiveSetting="Polite"
-                               Text="Select a file to see its details"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               TextTrimming="CharacterEllipsis"/>
-                </StackPanel>
-            </Border>
-
-            <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
-                <tv:TableView
-                    x:Name="PropTable"
-                    AutomationProperties.AutomationId="FilePropertiesTable"
-                    AutomationProperties.Name="Sample file properties"
-                    SelectionMode="Single"
-                    SelectionChanged="OnPropSelectionChanged"
-                    MinHeight="420"
-                    VerticalAlignment="Stretch">
-                    <!-- Property is fixed, sized to its longest label ("Revision number").
-                         Value is star-sized with a MinWidth so it absorbs the remaining space.
-                         Deliberately NOT Auto: TableView_Layout.cpp:25-29 and :267-269 resolve Auto
-                         from REALIZED rows only and allow shrinking, so an Auto column re-derives
-                         its width every measure pass and oscillates while scrolling. -->
-                    <tv:TableViewTextColumn Header="Property" Width="170" MinWidth="150" Binding="{Binding Property}"/>
-                    <tv:TableViewTextColumn Header="Value" Width="*" MinWidth="320" Binding="{Binding Value}"/>
-                </tv:TableView>
-            </Border>
-
-            <Border Grid.Row="2"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource ControlCornerRadius}"
-                    Padding="16,6">
-                <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="StatusText" AutomationProperties.AutomationId="FilePropertiesStatusText" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-            </Border>
-        </Grid>
-    </Grid>
-        </controls:SamplePresenter.Example>
-
-        <controls:SamplePresenter.Options>
-            <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock
-                    Text="The property rows are already sectioned - Description / Origin / File - so Grouped reshapes the SAME TableViewSource with GroupBy over that existing section key. No file is re-read when the mode changes."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <ComboBox
-                    x:Name="ShapingModeSelector"
-                    AutomationProperties.AutomationId="ShapingModeSelector"
-                    AutomationProperties.Name="Shaping mode"
-                    Header="Shaping mode"
-                    SelectedIndex="0"
-                    HorizontalAlignment="Stretch"
-                    SelectionChanged="OnShapingModeChanged">
-                    <ComboBoxItem Content="Flat" Tag="flat"/>
-                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                    <!-- Hierarchical rows are not available in this release. The options stay
-                         VISIBLE and disabled so the full shape of the shaping axis is honest
-                         signposting rather than a silent omission; re-enable them when the
-                         control ships hierarchy support. -->
-                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                </ComboBox>
-                <ComboBox
-                    x:Name="ShapingGroupKeyCombo"
-                    AutomationProperties.AutomationId="FilePropertiesShapingGroupKeyCombo"
-                    AutomationProperties.Name="Group key"
-                    Header="Group by"
-                    SelectedIndex="0"
-                    IsEnabled="False"
-                    ToolTipService.ToolTip="Available once Grouped mode is selected."
-                    HorizontalAlignment="Stretch"
-                    SelectionChanged="OnShapingGroupKeyChanged">
-                    <ComboBoxItem Content="Section" Tag="Section"/>
-                    <ComboBoxItem Content="Filled / empty" Tag="Filled"/>
-                </ComboBox>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Filtering runs on the same source as grouping, so you can watch a section empty out and disappear, filter down to zero rows, and move a single property between sections."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <StackPanel Spacing="8">
-                    <Button x:Name="ExpandAllButton"
-                            AutomationProperties.AutomationId="FilePropertiesExpandAllButton"
-                            Content="Expand all groups"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Available once Grouped mode is selected."
-                            Click="OnExpandAllClick"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="CollapseAllButton"
-                            AutomationProperties.AutomationId="FilePropertiesCollapseAllButton"
-                            Content="Collapse all groups"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Available once Grouped mode is selected."
-                            Click="OnCollapseAllClick"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <ComboBox x:Name="FilterCombo"
-                              AutomationProperties.AutomationId="FilePropertiesFilterCombo"
-                              AutomationProperties.Name="Row filter"
-                              Header="Filter"
-                              SelectedIndex="0"
-                              HorizontalAlignment="Stretch"
-                              SelectionChanged="OnFilterChanged">
-                        <ComboBoxItem Content="Show all properties" Tag="all"/>
-                        <ComboBoxItem Content="Only properties with a value" Tag="filled"/>
-                        <ComboBoxItem Content="Match nothing (empty result)" Tag="none"/>
-                    </ComboBox>
-                    <Button x:Name="MoveSectionButton"
-                            AutomationProperties.AutomationId="FilePropertiesMoveSectionButton"
-                            Content="Move selected to next section"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Select a property row first."
-                            Click="OnMoveSelectedSectionClick"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="RemoveRowButton"
-                            AutomationProperties.AutomationId="FilePropertiesRemoveRowButton"
-                            Content="Remove selected property"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Select a property row first."
-                            Click="OnRemoveSelectedClick"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="ReloadButton"
-                            AutomationProperties.AutomationId="FilePropertiesReloadButton"
-                            Content="Restore property list"
-                            Click="OnReloadClick"
-                            ToolTipService.ToolTip="Rebuilds the property rows for the selected file."
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                </StackPanel>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <Grid ColumnSpacing="12" RowSpacing="4">
+                <!-- The scenario's two panes: the file picker and the properties table. -->
+                <Grid Grid.Row="1" ColumnSpacing="12" RowSpacing="4">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto" MinWidth="220"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Applied" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="AppliedModeText" Grid.Row="0" Grid.Column="1" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="FilePropertiesAppliedModeText" TextWrapping="Wrap"/>
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Groups" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="GroupCountText" Grid.Row="1" Grid.Column="1" Text="(n/a)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="FilePropertiesGroupCountText" TextWrapping="Wrap"/>
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="LastActionText" Grid.Row="2" Grid.Column="1" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="FilePropertiesLastActionText" TextWrapping="Wrap"/>
-                </Grid>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="What to look for" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Files" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Width="220" VerticalAlignment="Stretch">
+                        <ListView
+                            x:Name="FileList"
+                            AutomationProperties.AutomationId="FilePropertiesFileList"
+                            AutomationProperties.Name="Files"
+                            SelectionMode="Single"
+                            SelectionChanged="OnFileSelectionChanged">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="io:FileInfo">
+                                    <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Name}"/>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Border>
+
+                    <TextBlock Grid.Column="1" Text="Properties" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                        <tv:TableView
+                            x:Name="PropTable"
+                            AutomationProperties.AutomationId="FilePropertiesTable"
+                            AutomationProperties.Name="File properties"
+                            ItemsSource="{x:Bind Source}"
+                            SelectionMode="Single"
+                            IsReadOnly="True"
+                            SelectionChanged="OnPropSelectionChanged"
+                            VerticalAlignment="Stretch"
+                            MinHeight="320">
+                            <!-- Property is fixed; Value takes the rest. Not Auto: an Auto column is
+                                 measured from the realized rows only, so it changes width while you scroll. -->
+                            <tv:TableViewTextColumn Header="Property" Width="{StaticResource ColWidthPropertyName}" Binding="{Binding Property}"/>
+                            <tv:TableViewTextColumn Header="Value" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Value}"/>
+                        </tv:TableView>
+                    </Border>
+                </Grid>
+            </Grid>
+        </controls:SamplePresenter.Example>
+
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <!-- 1. Primary feature -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Filter">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Filter"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="TableViewSource.Filter keeps only the properties a predicate accepts, on the same source that groups them. A section whose rows are all filtered out disappears; Match nothing shows the empty result."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="FilterSelector"
+                        AutomationProperties.AutomationId="FilePropertiesFilterSelector"
+                        Header="Show"
+                        SelectedIndex="0"
+                        SelectionChanged="OnFilterChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="All properties" Tag="all"/>
+                        <ComboBoxItem Content="Dates only" Tag="dates"/>
+                        <ComboBoxItem Content="Version resource only" Tag="version"/>
+                        <ComboBoxItem Content="Match nothing (empty result)" Tag="none"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Grouped by Section is this page's natural shape, so it opens that way; Source splits the version resource from the file system. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="FilePropertiesShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="1"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="FilePropertiesGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Section" Tag="Section"/>
+                        <ComboBoxItem Content="Source" Tag="Source"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="FilePropertiesExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="FilePropertiesCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
+
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Each action changes the one collection or a row in it, and the source re-projects without being rebuilt. Watch the table and the Last action readout. Actions that change one row need a selected row."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="MoveSectionButton"
+                            AutomationProperties.AutomationId="FilePropertiesMoveSectionButton"
+                            Content="Move selected to next section"
+                            Click="OnMoveSectionClick"
+                            ToolTipService.ToolTip="Rewrites the selected row's Section and re-applies GroupBy; the row moves to the next section and stays selected."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RemoveSelectedButton"
+                            AutomationProperties.AutomationId="FilePropertiesRemoveSelectedButton"
+                            Content="Remove selected property"
+                            Click="OnRemoveSelectedClick"
+                            ToolTipService.ToolTip="Removes the row from the collection; the source drops it, and its section when it was the last row."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RestoreButton"
+                            AutomationProperties.AutomationId="FilePropertiesRestoreButton"
+                            Content="Re-read the file's properties"
+                            Click="OnRestoreClick"
+                            ToolTipService.ToolTip="Reads the selected file again and refills the collection, undoing moves and removals."
+                            AutomationProperties.HelpText="Reads the selected file again and refills the collection."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="NextFileButton"
+                            AutomationProperties.AutomationId="FilePropertiesNextFileButton"
+                            Content="Show the next file"
+                            Click="OnNextFileClick"
+                            ToolTipService.ToolTip="Selects the next file in the Files list; the table keeps its filter and grouping."
+                            AutomationProperties.HelpText="Selects the next file in the Files list."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="File" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="FileText" AutomationProperties.AutomationId="FilePropertiesFileText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Sections" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="SectionsText" AutomationProperties.AutomationId="FilePropertiesSectionsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="FilePropertiesRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="FilePropertiesShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Grouped by Section" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="FilePropertiesLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
+
                 <muxc:InfoBar
-                    AutomationProperties.AutomationId="FilePropertiesWhatToLookForInfoBar"
+                    Title="What to look for"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="What to look for"
-                    Message="Switch to Grouped and the flat property list becomes Description / Origin / File bands with a count each - the same three sections the footer has always counted. Set Filter to Only properties with a value and the Description band vanishes entirely, because every one of its rows is blank."/>
+                    Message="Picking another file keeps the filter and the grouping, because the same source re-projects the refilled collection. A moved property stays selected in its new section, since the page restores the selection after re-applying GroupBy. Removing the last row of a section removes its header, and Match nothing leaves zero groups."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
     </controls:SamplePresenter>

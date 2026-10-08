@@ -4,129 +4,134 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
-// Tabular aliases keep the sample code concise.
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
-using TableViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// The gallery's single accessibility page, merged from the former
-/// KeyboardNav and AccessibilityRegression pages.
+/// Keyboard navigation + accessibility.
 ///
-/// Top half — the user-facing lesson: keyboard navigation over a read-only
-/// TableView, with focus sentinels either side so tab order in and out can be
-/// verified, plus row/column counts read from the bound source and Columns
-/// collection.
+/// Top: keyboard navigation over a table of mixed cells (text, chip, CheckBox, ComboBox, Button)
+/// with focus sentinels either side, so the tab order in and out can be checked.
 ///
-/// Bottom half — a manual UIA / Narrator assessment fixture. Four scenarios
-/// (text columns, template cells with intrinsic names, template cells with
-/// explicit <c>AutomationProperties.Name</c>, and a deliberately unlabeled
-/// table) run over the same 24 deterministic records so an assessor can compare
-/// what the provider reports in each shape. The fixture's determinism is the
-/// point: stable IDs and source order, in-place mutation that changes a group
-/// key and raises PropertyChanged, remove/restore that preserves object
-/// identity and original order, and a reset that restores edited values and
-/// membership without duplicating rows. Nothing here measures accessibility;
-/// the on-page readout reports app/model state only.
+/// Bottom: a manual UIA / Narrator assessment fixture. Four scenarios (text columns, template
+/// cells with intrinsic names, template cells with an explicit AutomationProperties.Name, and an
+/// unlabeled table) run over the same 24 deterministic records. The fixture's determinism is
+/// the point: stable IDs and source order, in-place mutation that changes a group key and raises
+/// PropertyChanged, remove/restore that keeps object identity and order, and a reset that
+/// restores values and membership without duplicating rows. Nothing here measures
+/// accessibility; the readouts report app and model state only.
 /// </summary>
 public sealed partial class KeyboardNavPage : Page
 {
     private readonly AccessibilityFixtureData _data = new();
-    private TableViewSource? _source;
+    private TableViewSource? _source;          // top table: created ONCE; reshaped in place
+    private TableViewSource? _fixtureSource;
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private string _appliedKey = "Department";
     private bool _updating = true;
     private bool _listening;
-    private string _lastAction = "Reset";
 
     public KeyboardNavPage()
     {
+        _source = TableViewSource.From(People);
         InitializeComponent();
-
-        // Person has no Id/Index property, so project the shared dataset into
-        // a lightweight row that carries a stable 1-based "#" for the leading
-        // column (same idiom as RTLPlaygroundPage). The ordinal also makes
-        // Home/End/PageUp/PageDown movement obvious.
-        int number = 1;
-        foreach (var p in PersonData.All)
-        {
-            People.Add(new KeyboardNavRow
-            {
-                Number = number++,
-                FirstName = p.FirstName,
-                LastName = p.LastName,
-                Email = p.Email,
-                Department = p.Department,
-                Role = p.Role,
-            });
-        }
-
-        PeopleTable.ItemsSource = People;
-        PeopleTable.SizeChanged += (_, _) => UpdateReadout();
-
+        PeopleTable.ItemsSource = _source;
         Loaded += OnPageLoaded;
         Unloaded += OnPageUnloaded;
-
-        ResetFixture();
+        ResetFixture(announce: false);
+        RefreshReadouts();
     }
 
-    public ObservableCollection<KeyboardNavRow> People { get; } = new();
+    public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        UpdateReadout();
-
-        if (_listening)
+        PeopleTable.SelectionChanged += OnPeopleSelectionChanged;
+        foreach (var person in People)
         {
-            return;
+            person.PropertyChanged += OnPersonChanged;
         }
 
-        foreach (var row in _data.OriginalRows)
+        if (!_listening)
         {
-            row.PropertyChanged += OnRowPropertyChanged;
+            foreach (var row in _data.OriginalRows)
+            {
+                row.PropertyChanged += OnFixtureRowChanged;
+            }
+
+            _listening = true;
         }
 
-        _listening = true;
-        UpdateFixtureReadout();
+        RefreshReadouts();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
+        PeopleTable.SelectionChanged -= OnPeopleSelectionChanged;
+        foreach (var person in People)
+        {
+            person.PropertyChanged -= OnPersonChanged;
+        }
+
         foreach (var row in _data.OriginalRows)
         {
-            row.PropertyChanged -= OnRowPropertyChanged;
+            row.PropertyChanged -= OnFixtureRowChanged;
         }
 
         _listening = false;
     }
 
-    // ---- keyboard navigation half -------------------------------------------------
+    // ---- Keyboard navigation table ----------------------------------------------------------
 
-    private void OnSelectionChanged(TableView sender, TableViewSelectionChangedEventArgs args)
+    private void OnPeopleSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        SelectedIndexText.Text = PeopleTable.SelectedIndex.ToString();
+        if (!SampleShaping.IsReselecting)
+        {
+            RefreshReadouts();
+        }
     }
 
-    private void UpdateReadout()
+    // In-cell editors write the model; re-bucket when the grouped-on value changed.
+    private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
-        RowCountText.Text = People.Count.ToString();
-        ColumnCountText.Text = PeopleTable.Columns.Count.ToString();
-        MajorText.Text = "RowMajor";
+        if (sender is not Person person)
+        {
+            return;
+        }
+
+        switch (e.PropertyName)
+        {
+            case nameof(Person.IsActive):
+                ReapplyIfGroupedOn(e.PropertyName);
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Active -> {0} for {1}", person.IsActive ? "checked" : "unchecked", person.FullName));
+                break;
+            case nameof(Person.Office):
+                ReapplyIfGroupedOn(e.PropertyName);
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Office -> {0} for {1}", person.Office, person.FullName));
+                break;
+        }
     }
 
-    // ---- assessment fixture half --------------------------------------------------
+    // ---- Assessment fixture -----------------------------------------------------------------
 
-    private string Scenario => (ScenarioSelector.SelectedItem as ComboBoxItem)?.Tag as string ?? "Text";
+    private string Scenario => SampleShaping.SelectedTag(ScenarioSelector, "Text");
 
-    private void ResetFixture()
+    private void ResetFixture(bool announce)
     {
-        if (!CloseEditForSetup()) return;
+        if (!CloseEditForSetup())
+        {
+            return;
+        }
 
         _updating = true;
         try
@@ -138,20 +143,23 @@ public sealed partial class KeyboardNavPage : Page
             GroupingToggle.IsOn = false;
             EditingToggle.IsOn = false;
             EnabledToggle.IsOn = true;
-            SelectionModeSelector.SelectedIndex = 0;
+            FixtureSelectionModeSelector.SelectedIndex = 0;
             AssessmentTable.IsEnabled = true;
             AssessmentTable.IsReadOnly = true;
             AssessmentTable.SelectionMode = TableViewSelectionMode.Single;
             ConfigureColumns();
-            _source = TableViewSource.From(_data.Rows);
-            AssessmentTable.ItemsSource = _source;
+            _fixtureSource = TableViewSource.From(_data.Rows);
+            AssessmentTable.ItemsSource = _fixtureSource;
         }
         finally
         {
             _updating = false;
         }
 
-        SetAction("Reset to baseline; no rows selected by the app.");
+        if (announce)
+        {
+            SetLastAction("Reset the fixture to its baseline; no rows selected by the app.");
+        }
     }
 
     private void ConfigureColumns()
@@ -159,39 +167,43 @@ public sealed partial class KeyboardNavPage : Page
         AssessmentTable.ClearSort();
         AssessmentTable.Columns.Clear();
 
+        // Record takes two thirds of the width and Department one third, so the two columns
+        // fill the table in every scenario instead of leaving an empty filler band.
         if (Scenario is "Intrinsic" or "Explicit")
         {
             AssessmentTable.Columns.Add(new TableViewTemplateColumn
             {
                 Header = "Record",
-                Width = new GridLength(240),
-                CellTemplate = (DataTemplate)Resources[Scenario == "Explicit"
-                    ? "ExplicitRecordTemplate" : "IntrinsicRecordTemplate"],
+                Width = new GridLength(2, GridUnitType.Star),
+                MinWidth = 240,
+                CellTemplate = (DataTemplate)Resources[Scenario == "Explicit" ? "ExplicitRecordTemplate" : "IntrinsicRecordTemplate"],
                 CanSort = false,
             });
             AssessmentTable.Columns.Add(new TableViewTemplateColumn
             {
                 Header = "Department",
-                Width = new GridLength(220),
+                Width = new GridLength(1, GridUnitType.Star),
+                MinWidth = 160,
                 CellTemplate = (DataTemplate)Resources["DepartmentTemplate"],
                 CanSort = false,
             });
         }
         else
         {
+            // Text columns sort by their Binding path; no SortMemberPath needed.
             AssessmentTable.Columns.Add(new TableViewTextColumn
             {
                 Header = "Record",
-                Width = new GridLength(240),
+                Width = new GridLength(2, GridUnitType.Star),
+                MinWidth = 240,
                 Binding = new Binding { Path = new PropertyPath(nameof(AccessibilityRow.DisplayText)) },
-                SortMemberPath = nameof(AccessibilityRow.DisplayText),
             });
             AssessmentTable.Columns.Add(new TableViewTextColumn
             {
                 Header = "Department",
-                Width = new GridLength(220),
+                Width = new GridLength(1, GridUnitType.Star),
+                MinWidth = 160,
                 Binding = new Binding { Path = new PropertyPath(nameof(AccessibilityRow.Department)) },
-                SortMemberPath = nameof(AccessibilityRow.Department),
             });
         }
 
@@ -208,196 +220,333 @@ public sealed partial class KeyboardNavPage : Page
         ExpectedObservationsText.Text = Scenario switch
         {
             "Intrinsic" =>
-                "Two template columns only. With baseline values, inspect row names containing Record 01 and Design, " +
-                "and the Record cell name Record, Record 01. The inner buttons derive their names from displayed content. " +
-                "Activate one to log an app Click event. Template cells do not offer the cell Value pattern in this preview, " +
-                "even when Allow text editing is on; inspect the buttons' Invoke pattern separately.",
+                "Two template columns only. With baseline values, check whether the row names contain Record 01 and Design, " +
+                "and whether the Record cell name reads Record, Record 01. The inner buttons take their names from the displayed text. " +
+                "Activate one to log an app Click event in Last action. Template cells do not offer the cell Value pattern in this preview, " +
+                "even when text editing is allowed; inspect the buttons' Invoke pattern separately.",
             "Explicit" =>
                 "With baseline values, the Record button displays Record 01 but has the explicit app name " +
-                "Explicit label for record 01. The Record cell name should include that label. Also check whether " +
-                "the row name includes Department (Design) before and after inspecting the child buttons. " +
-                "Source caveat: the cheap row-name pass may omit the Department button until its peer exists. " +
-                "Department retains its intrinsic name. This tests Name precedence, NOT Value: template cells do not offer " +
+                "Explicit label for record 01. Check whether the Record cell name includes that label; record what you see. " +
+                "Also check whether the row name includes the Department (Design) before and after you inspect the child buttons, " +
+                "because the row name may omit the Department button until its peer exists. " +
+                "Department keeps its intrinsic name. This tests Name precedence, not Value: template cells do not offer " +
                 "the cell Value pattern. Compare with Template-only: intrinsic without resetting the objects.",
             "Unlabeled" =>
-                "No app AutomationProperties.Name or LabeledBy is supplied on this table; A11yTable remains its stable ID. " +
-                "Record the provider's default/empty Name without treating AutomationId as a spoken label. " +
-                "Rows and cells should still describe their contents. Compare with Text columns for the app-named case.",
+                "No app AutomationProperties.Name or LabeledBy is set on this table; its AutomationId stays KeyboardNavFixtureTable. " +
+                "Record the provider's default or empty Name without treating the AutomationId as a spoken label. " +
+                "Check whether rows and cells still describe their contents. Compare with Text columns for the app-named case.",
             _ =>
                 "Baseline: 24 source records and two text columns. Inspect the app-provided table Name " +
-                "Accessibility regression records and ID A11yTable. For the first flat row, compare row text " +
-                "Record 01, Design with cell Name Record, Record 01. With Allow text editing on, plain text cells " +
-                "can offer Value with the displayed text (Record 01), not the composed cell Name. Turning it off removes " +
-                "that editable Value pattern; verify externally rather than assuming a read-only Value provider exists.",
+                "Accessibility regression records and the AutomationId KeyboardNavFixtureTable. For the first flat row, check whether the row " +
+                "name reads Record 01, Design and the cell name Record, Record 01. With text editing allowed, plain text cells " +
+                "can offer the Value pattern with the displayed text (Record 01), not the composed cell name. Turning editing off removes " +
+                "that editable Value pattern; verify it with an inspector rather than assuming a read-only Value provider exists.",
         };
     }
 
     private bool CloseEditForSetup()
     {
-        if (!AssessmentTable.IsEditing || AssessmentTable.CancelEdit()) return true;
-        SetAction("Setup not applied: CancelEdit did not close the editor. Finish or cancel the edit in the table.");
+        if (!AssessmentTable.IsEditing || AssessmentTable.CancelEdit())
+        {
+            return true;
+        }
+
+        SetLastAction("Setup not applied: CancelEdit did not close the editor. Finish or cancel the edit in the table.");
         return false;
     }
 
     private void OnScenarioChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_updating || !CloseEditForSetup()) return;
+        if (_updating || AssessmentTable is null || !CloseEditForSetup())
+        {
+            return;
+        }
+
         ConfigureColumns();
-        SetAction($"Scenario changed to {Scenario}; source objects retained.");
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Fixture scenario -> {0}; source objects kept.", SampleShaping.Label(ScenarioSelector)));
     }
 
-    private void OnResetClick(object sender, RoutedEventArgs e) => ResetFixture();
+    private void OnResetClick(object sender, RoutedEventArgs e) => ResetFixture(announce: true);
 
     private void OnGroupingToggled(object sender, RoutedEventArgs e)
     {
-        if (_updating || _source is null || !CloseEditForSetup()) return;
+        if (_updating || _fixtureSource is null || !CloseEditForSetup())
+        {
+            return;
+        }
 
         if (GroupingToggle.IsOn)
         {
-            // Department is a reference-type (string) key, so the current API requires the
-            // two-selector overload: the built-in value-type identity does not cover it and
-            // the single-selector form would fail fast at projection time.
-            _source.GroupBy(GroupKeySelector, GroupIdentity);
+            // The key selector receives the ROW; the identity selector receives the KEY.
+            _fixtureSource.GroupBy(item => ((AccessibilityRow)item).Department, SampleShaping.GroupIdentity);
         }
         else
         {
-            _source.ClearGroupBy();
+            _fixtureSource.ClearGroupBy();
         }
 
-        SetAction("Grouping setup changed on the same TableViewSource.");
-    }
-
-    private static object GroupKeySelector(object item) => ((AccessibilityRow)item).Department;
-
-    private static string GroupIdentity(object key)
-    {
-        var identity = key?.ToString();
-        return string.IsNullOrWhiteSpace(identity) ? "(none)" : identity;
+        SetLastAction(GroupingToggle.IsOn
+            ? "Fixture grouped by Department on the same TableViewSource."
+            : "Fixture grouping cleared on the same TableViewSource.");
     }
 
     private void OnEditingToggled(object sender, RoutedEventArgs e)
     {
-        if (_updating || !CloseEditForSetup()) return;
+        if (_updating || !CloseEditForSetup())
+        {
+            return;
+        }
+
         AssessmentTable.IsReadOnly = !EditingToggle.IsOn;
-        SetAction("Table IsReadOnly changed; template scenarios still have no cell editor.");
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Fixture IsReadOnly -> {0}; template scenarios still have no cell editor.", AssessmentTable.IsReadOnly));
     }
 
     private void OnEnabledToggled(object sender, RoutedEventArgs e)
     {
-        if (_updating || !CloseEditForSetup()) return;
+        if (_updating || !CloseEditForSetup())
+        {
+            return;
+        }
+
         AssessmentTable.IsEnabled = EnabledToggle.IsOn;
-        SetAction("Table IsEnabled changed; setup controls remain enabled.");
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Fixture IsEnabled -> {0}; the setup controls stay enabled.", AssessmentTable.IsEnabled));
     }
 
-    private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
+    private void OnFixtureSelectionModeChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_updating) return;
-        AssessmentTable.SelectionMode = SelectionModeSelector.SelectedIndex == 1
-            ? TableViewSelectionMode.None : TableViewSelectionMode.Single;
-        SetAction("Selection mode setup changed (only None and Single are supported).");
+        if (_updating || AssessmentTable is null)
+        {
+            return;
+        }
+
+        var none = SampleShaping.SelectedTag(FixtureSelectionModeSelector, "Single") == "None";
+        AssessmentTable.SelectionMode = none ? TableViewSelectionMode.None : TableViewSelectionMode.Single;
+        SetLastAction(none ? "Fixture selection mode -> None" : "Fixture selection mode -> Single");
     }
 
     private void OnMutateSelectedClick(object sender, RoutedEventArgs e)
     {
-        if (!CloseEditForSetup()) return;
+        if (!CloseEditForSetup())
+        {
+            return;
+        }
+
         var row = AssessmentTable.SelectedItem as AccessibilityRow;
-        SetAction(_data.Mutate(row)
-            ? $"Mutated selected record {row!.Id} in place."
-            : "No present data record is selected; select one in the table first.");
+        SetLastAction(_data.Mutate(row)
+            ? string.Format(CultureInfo.CurrentCulture, "Mutated selected record {0} in place.", row!.Id)
+            : "No row selected.");
     }
 
     private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
     {
-        if (!CloseEditForSetup()) return;
+        if (!CloseEditForSetup())
+        {
+            return;
+        }
+
         var row = AssessmentTable.SelectedItem as AccessibilityRow;
-        SetAction(_data.Remove(row)
-            ? $"Removed selected record {row!.Id}; the control owns selection reconciliation."
-            : "No present data record is selected; select one in the table first.");
+        SetLastAction(_data.Remove(row)
+            ? string.Format(CultureInfo.CurrentCulture, "Removed selected record {0}; the control owns what happens to the selection.", row!.Id)
+            : "No row selected.");
     }
 
     private void OnMutateLastClick(object sender, RoutedEventArgs e)
     {
-        if (!CloseEditForSetup()) return;
-        SetAction(_data.Mutate(_data.LastRow)
-            ? "Mutated record 24 in place; its actual offscreen/realization state was not queried."
+        if (!CloseEditForSetup())
+        {
+            return;
+        }
+
+        SetLastAction(_data.Mutate(_data.LastRow)
+            ? "Mutated record 24 in place; whether it was realized was not checked."
             : "Record 24 is removed. Restore it first.");
     }
 
     private void OnRemoveLastClick(object sender, RoutedEventArgs e)
     {
-        if (!CloseEditForSetup()) return;
-        SetAction(_data.Remove(_data.LastRow) ? "Removed record 24." : "Record 24 is already removed.");
+        if (!CloseEditForSetup())
+        {
+            return;
+        }
+
+        SetLastAction(_data.Remove(_data.LastRow) ? "Removed record 24." : "Record 24 is already removed.");
     }
 
     private void OnRestoreClick(object sender, RoutedEventArgs e)
     {
-        if (!CloseEditForSetup()) return;
-        SetAction($"Restored {_data.RestoreRemoved()} original objects in source order; their edited values were retained.");
+        if (!CloseEditForSetup())
+        {
+            return;
+        }
+
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Restored {0} original objects in source order; their edited values were kept.", _data.RestoreRemoved()));
     }
 
     private void OnCommitEditClick(object sender, RoutedEventArgs e) =>
-        SetAction($"CommitEdit returned {AssessmentTable.CommitEdit()}. Focus loss may already have committed.");
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "CommitEdit returned {0}. Leaving the editor may already have committed.", AssessmentTable.CommitEdit()));
 
     private void OnCancelEditClick(object sender, RoutedEventArgs e) =>
-        SetAction($"CancelEdit returned {AssessmentTable.CancelEdit()}. Use Esc inside the editor to assess rollback.");
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "CancelEdit returned {0}. Use Esc inside the editor to assess rollback.", AssessmentTable.CancelEdit()));
 
     private void OnTemplateContentClick(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement { DataContext: AccessibilityRow row })
         {
-            SetAction($"Template button Click event for record {row.Id}; input origin was not measured.");
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Template button Click event for record {0}; the input source was not measured.", row.Id));
         }
     }
 
-    private void OnTableSelectionChanged(TableView sender, TableViewSelectionChangedEventArgs args)
+    private void OnFixtureSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        if (!_updating) UpdateFixtureReadout();
+        if (!_updating)
+        {
+            RefreshReadouts();
+        }
     }
 
     private void OnBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args) =>
-        SetAction("BeginningEdit event observed; this is not an edit-completion signal.");
+        SetLastAction("BeginningEdit raised; this does not mean the edit completed.");
 
     private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
     {
-        SetAction($"CellEditEnding: {args.EditAction} (pre-close event).");
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "CellEditEnding: {0} (raised before the editor closes).", args.EditAction));
         DispatcherQueue.TryEnqueue(() =>
         {
-            if (_listening) UpdateFixtureReadout();
+            if (_listening)
+            {
+                RefreshReadouts();
+            }
         });
     }
 
-    private void OnRowPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void OnFixtureRowChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (!_updating) UpdateFixtureReadout();
+        if (!_updating)
+        {
+            RefreshReadouts();
+        }
     }
 
-    private void SetAction(string action)
+    // ---- Readouts ---------------------------------------------------------------------------
+
+    private void RefreshReadouts()
     {
-        _lastAction = action;
-        if (!_updating) UpdateFixtureReadout();
+        if (PeopleTable is null || RowsText is null || SelectedIndexText is null || AssessmentTable is null)
+        {
+            return;
+        }
+
+        var index = PeopleTable.SelectedIndex;
+        SelectedIndexText.Text = index >= 0
+            ? index.ToString(CultureInfo.CurrentCulture)
+            : string.Format(CultureInfo.CurrentCulture, "{0} (none)", -1);
+        ColumnsText.Text = PeopleTable.Columns.Count.ToString(CultureInfo.CurrentCulture);
+        RowsText.Text = SampleShaping.RowCountText(People.Count);
+
+        FixtureRecordsText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} in the source, {1:N0} removed", _data.Rows.Count, _data.RemovedCount);
+        FixtureSelectionText.Text = AssessmentTable.SelectedItem is AccessibilityRow selected
+            ? string.Format(CultureInfo.CurrentCulture, "Record {0:00}, SelectedIndex {1}", selected.Id, AssessmentTable.SelectedIndex)
+            : string.Format(CultureInfo.CurrentCulture, "(none), SelectedIndex {0}", AssessmentTable.SelectedIndex);
+        FixtureEditingText.Text = string.Format(
+            CultureInfo.CurrentCulture,
+            "{0} (IsReadOnly {1}, IsEnabled {2})",
+            AssessmentTable.IsEditing,
+            AssessmentTable.IsReadOnly,
+            AssessmentTable.IsEnabled);
     }
 
-    private void UpdateFixtureReadout()
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
     {
-        var selected = AssessmentTable.SelectedItem as AccessibilityRow;
-        ModelStatusText.Text =
-            $"Source objects: {_data.Rows.Count}; removed: {_data.RemovedCount}; declared columns: {AssessmentTable.Columns.Count}.\n" +
-            $"SelectedItem record ID: {selected?.Id.ToString() ?? "(none)"}; control SelectedIndex: {AssessmentTable.SelectedIndex}.\n" +
-            $"IsEnabled: {AssessmentTable.IsEnabled}; IsReadOnly: {AssessmentTable.IsReadOnly}; IsEditing: {AssessmentTable.IsEditing}.\n" +
-            $"Last app action: {_lastAction}\nNo focus, UIA, or screen-reader result is inferred.";
+        // Fires during InitializeComponent, before the later-declared elements exist.
+        if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+        var selected = PeopleTable.SelectedItem;
+
+        switch (mode)
+        {
+            case "grouped":
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
+            //     after the call returns.
+            default:
+                _source.ClearGroupBy();
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+        _appliedKey = key;
+
+        // Re-applying GroupBy can drop the selection when the selected row changed group.
+        SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Departments.Count + PersonData.Offices.Count, RefreshReadouts);
+        UpdateShapingGating();
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+                : "Shaping -> Flat");
+        }
     }
 
-    /// <summary>
-    /// Lightweight row for the keyboard-navigation table: carries a stable
-    /// 1-based ordinal so Home/End/PageUp/PageDown movement is obvious.
-    /// </summary>
-    public sealed class KeyboardNavRow
+    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
+    private void ReapplyIfGroupedOn(string? propertyName)
     {
-        public int Number { get; set; }
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Department { get; set; } = string.Empty;
-        public string Role { get; set; } = string.Empty;
+        if (_appliedMode == "grouped" && propertyName == _appliedKey)
+        {
+            ApplyShaping(announce: false);
+        }
     }
+
+    private void UpdateShapingGating()
+    {
+        var grouped = _appliedMode == "grouped";
+        GroupKeySelector.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
+    }
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        PeopleTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        PeopleTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
+    }
+
+    // The only writer of LastActionText.
+    private void SetLastAction(string message)
+    {
+        if (LastActionText is not null)
+        {
+            LastActionText.Text = message;
+        }
+
+        RefreshReadouts();
+    }
+
+    #endregion
 }

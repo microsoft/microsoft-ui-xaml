@@ -1,199 +1,83 @@
-private readonly ObservableCollection<Person> _people = new(PersonData.Take(60));
+// FilterPage.xaml.cs. ONE source for the page's lifetime: Filter / ClearFilter / GroupBy /
+// ClearGroupBy change it in place, so selection, scroll and group state survive each keystroke.
+public ObservableCollection<Person> People { get; } = PersonData.Take(60);
 
-// ONE source for the lifetime of the page. Filter / ClearFilter / GroupBy / ClearGroupBy
-// mutate and return this same instance, so the projection is reshaped IN PLACE.
-// Constructing a new TableViewSource and reassigning ItemsSource per keystroke — which this
-// page used to do — discards selection, scroll offset and any group state on every character.
-private TableViewSource? _source;
-
-// Requested vs applied. Readouts and enable/disable guards read the APPLIED fields, which
-// are assigned only after the shaping call returns.
-private string _shapeMode = "flat";
-private string _appliedShapeMode = "flat";
-private string _groupKey = "Department";
-private string _appliedGroupKey = "none";
+public TableViewSource? Source => _source;
 
 public FilterPage()
 {
+    _source = TableViewSource.From(People);
     InitializeComponent();
     BuildColumns();
-
-    _source = TableViewSource.From(_people);
-    FilterTable.ItemsSource = _source;
-
-    ApplyShaping();
+    Loaded += OnPageLoaded;
+    Unloaded += OnPageUnloaded;
+    ApplyFilter();
 }
 
+// Columns built in code from the shared templates in Application.Current.Resources.
 private void BuildColumns()
 {
-    FilterTable.Columns.Add(Col("First name", nameof(Person.FirstName), new GridLength(1, GridUnitType.Auto)));
-    FilterTable.Columns.Add(Col("Last name", nameof(Person.LastName), new GridLength(1, GridUnitType.Auto)));
+    var resources = Application.Current.Resources;
 
-    // Templated cell whose tint and dot come from cached, page-private converters (no
-    // per-Convert brush allocation). SortMemberPath keeps the header sortable.
+    FilterTable.Columns.Add(new TableViewTextColumn
+    {
+        Header = "Name",
+        Binding = new Binding { Path = new PropertyPath(nameof(Person.FullName)) },
+        Width = new GridLength(1, GridUnitType.Star),
+        MinWidth = (double)resources["ColMinWidthStar"],
+    });
+    // A template column sorts by SortMemberPath, the value behind the template.
     FilterTable.Columns.Add(new TableViewTemplateColumn
     {
-        Header = "Department",
-        CellTemplate = (DataTemplate)Resources["FilterDepartmentChipTemplate"],
-        SortMemberPath = nameof(Person.Department),
-        CanSort = true,
-        Width = new GridLength(1, GridUnitType.Auto),
+        Header = "Role",
+        CellTemplate = (DataTemplate)resources["RoleTextBoxTemplate"],
+        SortMemberPath = nameof(Person.Role),
+        Width = Token("ColWidthLongName"),
     });
-
-    FilterTable.Columns.Add(Col("Role", nameof(Person.Role), new GridLength(1, GridUnitType.Star)));
-    FilterTable.Columns.Add(Col("Email", nameof(Person.Email), new GridLength(2, GridUnitType.Star)));
 }
+
+// Width tokens live in App.xaml as doubles; a column width is a GridLength in pixels.
+private static GridLength Token(string key) => new((double)Application.Current.Resources[key]);
 
 private void ApplyFilter()
 {
-    if (_source is null) return;
-
-    string query = SearchBox?.Text?.Trim() ?? string.Empty;
-    bool activeOnly = ActiveOnlyToggle?.IsOn == true;
-    bool filtered = query.Length > 0 || activeOnly;
-
-    // Reshape in place. The ItemsSource is never reassigned, so selection, scroll offset
-    // and group state all survive.
-    if (filtered)
+    var query = Query;
+    var activeOnly = ActiveOnly;
+    if (query.Length > 0 || activeOnly)
     {
-        _source.Filter(item => Match((Person)item, query, activeOnly));
+        _source.Filter(item => Matches((Person)item, query, activeOnly));
     }
     else
     {
         _source.ClearFilter();
     }
-
-    // This re-runs the predicate app-side purely to print "Showing N of M": it duplicates
-    // work the projection has already done. A TableViewSource.Count (or a projected row
-    // count on the control) would let the readout come straight off the projection and make
-    // this second pass unnecessary.
-    int matched = _people.Count(p => Match(p, query, activeOnly));
-
-    ReadoutText.Text = filtered
-        ? $"Showing {matched} of {_people.Count} rows (filtered)"
-        : $"Showing all {_people.Count} rows";
-
-    RefreshReadout();
 }
 
-// Filtering and grouping compose on the SAME source, so the grouped view is already
-// filtered and empty groups simply do not appear.
-private void ApplyShaping()
+// An in-cell edit changes the Person but does not re-run the predicate (or the group key
+// selector), so apply both again once the edit has settled.
+private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
 {
-    if (_source is null) return;
-
-    var requestedKey = _shapeMode == "grouped" ? _groupKey : "none";
-
-    switch (_shapeMode)
+    if (sender is not Person person || _isBulkUpdate || _refreshQueued
+        || e.PropertyName is not (nameof(Person.Role) or nameof(Person.IsActive)))
     {
-        case "grouped":
-        {
-            var key = requestedKey;
-            // The two delegates receive DIFFERENT things despite both parameters being
-            // named `item` (TableViewSource.idl:12-16):
-            //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
-            //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
-            // An item-typed identity lambda returns the empty string, which is an
-            // unresolvable identity: GroupBy fails fast with E_INVALIDARG and grouping
-            // silently never applies.
-            _source.GroupBy(
-                item => (object)GroupValue(item, key),
-                groupKey => groupKey?.ToString() ?? "(none)");
-            break;
-        }
-
-        // case "hierarchy":
-        // case "groupedhierarchy":
-        //     Hierarchical rows are not available in this release, which is why the two
-        //     matching ComboBoxItems ship IsEnabled="False" with a tooltip. No call is
-        //     written here on purpose: TableViewSource.idl has no hierarchy verb and
-        //     TableView.idl has no hierarchy property, so any code here would name a
-        //     member that does not exist. The intended shape, per TableViewRowInfo.h:27
-        //     ("when hierarchical (tree) rows land"), is to apply the hierarchy stage to
-        //     THIS SAME _source alongside the Filter and GroupBy stages so all three
-        //     compose into one projection. When that ships, write the real call here and
-        //     drop IsEnabled="False" from the two items.
-        //     break;
-
-        default:
-            _source.ClearGroupBy();
-            break;
+        return;
     }
 
-    // Applied state is committed only once the shaping call has returned.
-    _appliedGroupKey = requestedKey;
-    _appliedShapeMode = requestedKey == "none" ? "flat" : "grouped";
-
-    RefreshReadout();
-}
-
-// Never returns string.Empty: the empty string is not a usable group identity and makes
-// the projection fail fast.
-private static string GroupValue(object item, string key)
-{
-    if (item is not Person person) return "(none)";
-
-    string? raw = key switch
+    var property = e.PropertyName;
+    _refreshQueued = true;
+    DispatcherQueue.TryEnqueue(() =>
     {
-        "Role"   => person.Role,
-        "Active" => person.IsActive ? "Active" : "Inactive",
-        _        => person.Department,
-    };
+        _refreshQueued = false;
+        if (!IsLoaded)
+        {
+            return;
+        }
 
-    return string.IsNullOrWhiteSpace(raw) ? "(none)" : raw;
+        ReapplyIfGroupedOn(property);
+        ApplyFilter();
+    });
 }
 
-private static bool Match(Person person, string query, bool activeOnly)
-{
-    if (activeOnly && !person.IsActive) return false;
-    if (query.Length == 0) return true;
-
-    return Contains(person.FirstName, query)
-        || Contains(person.LastName, query)
-        || Contains(person.Department, query)
-        || Contains(person.Role, query)
-        || Contains(person.Email, query);
-}
-
-private static bool Contains(string? value, string query) =>
-    value is not null && value.Contains(query, StringComparison.OrdinalIgnoreCase);
-
-private void RefreshReadout()
-{
-    bool grouped = _appliedGroupKey != "none";          // applied, never requested
-
-    ShapeModeText.Text = grouped ? $"Grouped by {GroupLabel(_appliedGroupKey)}" : "Flat";
-    GroupKeyCombo.IsEnabled = _appliedShapeMode == "grouped";
-    ExpandAllButton.IsEnabled = grouped;
-    CollapseAllButton.IsEnabled = grouped;
-    ClearFilterButton.IsEnabled = HasFilter;
-    DropOutButton.IsEnabled = HasFilter && FilterTable.SelectedItem is not null;
-    MoveGroupButton.IsEnabled = grouped && FilterTable.SelectedItem is not null;
-}
-
-// Page-private chip converters: brushes are cached in static readonly state and built
-// exactly once, so Convert never allocates under virtualization. In HighContrast the tint
-// drops to transparent and the chip relies on the theme foreground plus its border.
-internal static class FilterChipPalette
-{
-    internal static readonly bool HighContrast =
-        new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
-
-    internal static readonly SolidColorBrush TransparentBrush = new(Colors.Transparent);
-
-    private static readonly IReadOnlyDictionary<string, SolidColorBrush> s_tints = Build(0x40);
-    private static readonly IReadOnlyDictionary<string, SolidColorBrush> s_dots = Build(0xFF);
-
-    internal static SolidColorBrush Tint(object? value) =>
-        HighContrast ? TransparentBrush : Lookup(s_tints, value, s_fallbackTint);
-}
-
-// partial, or the build emits CsWinRT1028.
-public sealed partial class FilterChipTintConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language) =>
-        FilterChipPalette.Tint(value);
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language) =>
-        throw new NotSupportedException();
-}
+// Grouping applies to the same source, so only matching rows are grouped.
+// The key selector receives the ROW; the identity selector receives the KEY.
+_source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);

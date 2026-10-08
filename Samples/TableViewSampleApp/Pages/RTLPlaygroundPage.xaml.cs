@@ -6,339 +6,368 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
-// Tabular aliases keep the sample code concise.
-using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
-using TableViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
+using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
+using TableViewSampleApp.Models;
+using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Single-page RTL fixture for the TableView's RTL-sensitive call sites: column flow,
-/// resize gripper alignment, sort-chevron edge, group-header indent, and the in-place
-/// editor's caret order.
-///
-/// Sorting, filtering, grouping and editing are all enabled here deliberately. RTL bugs
-/// surface in the adornments those features add - the chevron, the group header, the
-/// editor caret - not in a plain grid, so a read-only unsorted table cannot expose them.
-///
-/// Data is fully synthetic (Row N, Dept N). 50 rows so virtualization engages.
+/// Right-to-left layout: TableView.FlowDirection on a people table that mixes text and template
+/// cells, with Arabic and Hebrew rows, editing, sorting, filtering, grouping and column moves, so
+/// every right-to-left-sensitive adornment can be checked.
 /// </summary>
 public sealed partial class RTLPlaygroundPage : Page
 {
-    public ObservableCollection<RtlRow> Rows { get; } = new();
+    // Page-local seed (FIX-PLAN R6 exception): people with Arabic and Hebrew names and notes. The
+    // first five are mixed into the table; "Add a person" adds the rest in turn.
+    private static readonly (string First, string Last, string Department, string Role, string Office, string Notes)[] s_rtlPeople =
+    {
+        ("ليلى", "حداد", "Design", "Design Lead", "Dublin", "تقود فريق التصميم وتراجع ملاحظات المستخدمين كل أسبوع."),
+        ("נועה", "כהן", "Engineering", "QA Engineer", "London", "מובילה את צוות הבדיקות ואחראית על נגישות המוצר."),
+        ("يوسف", "الخطيب", "Engineering", "Senior Engineer", "Singapore", "يعمل على تحسين أداء تطبيق Contoso على الأجهزة المحمولة."),
+        ("אורי", "לוי", "Operations", "Ops Manager", "Toronto", "מתחזק את מערכת הניטור ומתאם את סבב הכוננויות."),
+        ("نور", "منصور", "Marketing", "Brand Manager", "London", "تنسق مواعيد الإطلاق مع فرق التسويق والمبيعات."),
+        ("תמר", "אברהם", "Product", "Product Manager", "Seattle", "מתאמת בין צוותי העיצוב והפיתוח לקראת כל גרסה."),
+        ("عمر", "صالح", "Finance", "Financial Analyst", "Dublin", "يعد تقارير الميزانية الربعية ويتابع النفقات."),
+        ("מיכל", "פרץ", "HR", "Recruiter", "Redmond", "אחראית על גיוס מהנדסים ועל תהליך הקליטה."),
+    };
 
-    // One source for the page. Filter/GroupBy mutate in place and return the same
-    // instance (TableViewSource.cpp:49-50), so the projection reshapes live rather than
-    // being rebuilt and reassigned - which would drop selection, scroll offset and group
-    // expansion on every keystroke.
-    private TableViewSource? _source;
+    // First names the "Rename selected person" action cycles through.
+    private static readonly string[] s_renames = ["سارة", "רוני", "كريم", "דניאל"];
 
-    // Requested shaping, straight off the pickers.
-    private string _shapingMode = "flat";
-    private string _groupKey = "Department";
-
-    // Mirror the request only once GroupBy / ClearGroupBy has actually returned, so no
-    // readout and no enable/disable guard can claim a grouping the source never took.
-    private string _appliedMode = "flat";
-    private string _appliedGroupKey = "none";
+    private TableViewSource? _source;          // created ONCE; reshaped in place, never rebuilt
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private string _appliedKey = "Department";
+    private TableViewColumn[] _originalColumnOrder = Array.Empty<TableViewColumn>();
+    private int _nextRtlPerson;
+    private int _nextRename;
 
     public RTLPlaygroundPage()
     {
+        People = SeedPeople();
+        _source = TableViewSource.From(People);
         InitializeComponent();
-
-        for (int i = 0; i < 50; i++)
-        {
-            Rows.Add(new RtlRow
-            {
-                Index = i + 1,
-                Name = $"Row {i + 1}",
-                Department = $"Dept {(i % 6) + 1}",
-                Role = $"Role {(i % 4) + 1}",
-                Region = $"Region {(i % 5) + 1}",
-                JoinDate = $"2026-{((i % 12) + 1):D2}-{((i % 28) + 1):D2}",
-                Notes = $"Notes for row {i + 1}",
-                Salary = 50000 + (i * 750),
-                Status = (i % 3 == 0) ? "Active" : "Inactive",
-            });
-        }
-
-        _source = TableViewSource.From(Rows);
-        PlaygroundTable.ItemsSource = _source;
-
+        _originalColumnOrder = PeopleTable.Columns.ToArray();
         Loaded += OnPageLoaded;
         Unloaded += OnPageUnloaded;
+        RefreshReadouts();
+    }
+
+    public ObservableCollection<Person> People { get; }
+
+    public TableViewSource? Source => _source;
+
+    // PersonData.Take(40) with the first five Arabic / Hebrew people mixed into the top rows.
+    private ObservableCollection<Person> SeedPeople()
+    {
+        var people = PersonData.Take(40);
+        for (var i = 0; i < 5; i++)
+        {
+            people.Insert(i * 2, NextRtlPerson(1041 + i));
+        }
+
+        return people;
+    }
+
+    private Person NextRtlPerson(int employeeId)
+    {
+        var seed = s_rtlPeople[_nextRtlPerson++ % s_rtlPeople.Length];
+        return new Person
+        {
+            FirstName = seed.First,
+            LastName = seed.Last,
+            Email = string.Format(CultureInfo.CurrentCulture, "employee{0}@contoso.com", employeeId),
+            Department = seed.Department,
+            Role = seed.Role,
+            Office = seed.Office,
+            Bio = seed.Notes,
+            EmployeeId = employeeId,
+            IsActive = employeeId % 5 != 0,
+            JoinDate = new DateTimeOffset(DateTimeOffset.Now.Date.AddDays(-97 * (employeeId % 13 + 1)), TimeSpan.Zero),
+            ShiftStart = new TimeSpan(8 + employeeId % 3, 0, 0),
+            Salary = 120_000 + 2_500 * (employeeId % 9),
+        };
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        PlaygroundTable.SelectionChanged += OnSelectionChanged;
-        UpdateReadout();
+        foreach (var person in People)
+        {
+            person.PropertyChanged += OnPersonChanged;
+        }
+
+        PeopleTable.Sorted += OnTableSorted;
+        RefreshReadouts();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
-        if (PlaygroundTable != null)
+        foreach (var person in People)
         {
-            PlaygroundTable.SelectionChanged -= OnSelectionChanged;
+            person.PropertyChanged -= OnPersonChanged;
         }
+
+        PeopleTable.Sorted -= OnTableSorted;
     }
+
+    // ---- Flow direction and filter ------------------------------------------------------
 
     private void OnRtlToggled(object sender, RoutedEventArgs e)
     {
-        if (sender is ToggleSwitch toggle && PlaygroundTable != null)
+        // Toggled fires during InitializeComponent (IsOn="True"); the XAML already sets RightToLeft.
+        if (!IsLoaded || PeopleTable is null)
         {
-            PlaygroundTable.FlowDirection = toggle.IsOn
-                ? FlowDirection.RightToLeft
-                : FlowDirection.LeftToRight;
-            UpdateReadout();
+            return;
+        }
+
+        PeopleTable.FlowDirection = RtlToggle.IsOn ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "FlowDirection -> {0}", PeopleTable.FlowDirection));
+    }
+
+    private void OnFilterChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_source is null || FilterBox is null)
+        {
+            return;
+        }
+
+        var term = FilterBox.Text.Trim();
+        if (term.Length == 0)
+        {
+            _source.ClearFilter();
+            SetLastAction("ClearFilter()");
+        }
+        else
+        {
+            // Filter reshapes the same source in place and composes with GroupBy and the sort.
+            _source.Filter(item => item is Person person && Matches(person, term));
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> \"{0}\"", term));
         }
     }
 
-    private void OnResetClick(object sender, RoutedEventArgs e)
+    private static bool Matches(Person person, string term) =>
+        person.FullName.Contains(term, StringComparison.CurrentCultureIgnoreCase)
+        || person.Department.Contains(term, StringComparison.CurrentCultureIgnoreCase)
+        || person.Office.Contains(term, StringComparison.CurrentCultureIgnoreCase)
+        || person.Bio.Contains(term, StringComparison.CurrentCultureIgnoreCase);
+
+    // ---- In-cell edits ------------------------------------------------------------------
+
+    private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
-        var order = new[] { IndexColumn, NameColumn, DepartmentColumn, RoleColumn, RegionColumn, JoinDateColumn, NotesColumn, SalaryColumn, StatusColumn };
-        for (int target = 0; target < order.Length; target++)
+        if (sender is not Person person)
         {
-            var current = PlaygroundTable.Columns.IndexOf(order[target]);
+            return;
+        }
+
+        switch (e.PropertyName)
+        {
+            case nameof(Person.FirstName):
+            case nameof(Person.LastName):
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Name -> {0}", person.FullName));
+                break;
+            case nameof(Person.IsActive):
+                ReapplyIfGroupedOn(e.PropertyName);
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Active -> {0} for {1}", person.IsActive ? "checked" : "unchecked", person.FullName));
+                break;
+            case nameof(Person.JoinDate):
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Join date -> {0:d} for {1}", person.JoinDate, person.FullName));
+                break;
+        }
+    }
+
+    // ---- Actions ------------------------------------------------------------------------
+
+    private void OnSortFirstNameClick(object sender, RoutedEventArgs e)
+    {
+        var direction = FirstNameColumn.SortDirection == TableViewSortDirection.Ascending
+            ? TableViewSortDirection.Descending
+            : TableViewSortDirection.Ascending;
+        PeopleTable.SortByColumn(FirstNameColumn, direction);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "SortByColumn(First name, {0})", direction));
+    }
+
+    // Raised for header clicks and for SortByColumn alike.
+    private void OnTableSorted(TableView sender, TableViewSortedEventArgs e)
+    {
+        SortText.Text = e.Column is null || e.Direction == TableViewSortDirection.None
+            ? "None"
+            : string.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Column.Header, e.Direction);
+    }
+
+    private void OnRenameClick(object sender, RoutedEventArgs e)
+    {
+        if (PeopleTable.SelectedItem is not Person person)
+        {
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        // OnPersonChanged reports the new name.
+        person.FirstName = s_renames[_nextRename++ % s_renames.Length];
+    }
+
+    private void OnAddPersonClick(object sender, RoutedEventArgs e)
+    {
+        var person = NextRtlPerson(1041 + People.Count);
+        person.PropertyChanged += OnPersonChanged;
+        People.Add(person);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} ({1})", person.FullName, person.Department));
+    }
+
+    private void OnMoveColumnEarlierClick(object sender, RoutedEventArgs e) => MoveColumn(DepartmentColumn, -1);
+
+    private void OnMoveColumnLaterClick(object sender, RoutedEventArgs e) => MoveColumn(DepartmentColumn, +1);
+
+    // TableView.Columns is the live column collection: moving an entry moves the column.
+    private void MoveColumn(TableViewColumn column, int offset)
+    {
+        var columns = PeopleTable.Columns;
+        var from = columns.IndexOf(column);
+        var to = from + offset;
+        if (from < 0 || to < 0 || to >= columns.Count)
+        {
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} is already the {1} column", column.Header, offset < 0 ? "first" : "last"));
+            return;
+        }
+
+        columns.RemoveAt(from);
+        columns.Insert(to, column);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} to column {1} of {2}", column.Header, to + 1, columns.Count));
+    }
+
+    private void OnResetColumnOrderClick(object sender, RoutedEventArgs e)
+    {
+        var columns = PeopleTable.Columns;
+        for (var target = 0; target < _originalColumnOrder.Length; target++)
+        {
+            var current = columns.IndexOf(_originalColumnOrder[target]);
             if (current >= 0 && current != target)
             {
-                var moved = PlaygroundTable.Columns[current];
-                PlaygroundTable.Columns.RemoveAt(current);
-                PlaygroundTable.Columns.Insert(target, moved);
+                var column = columns[current];
+                columns.RemoveAt(current);
+                columns.Insert(target, column);
             }
         }
 
-        LastReorderText.Text = "Reset column order.";
+        SetLastAction("Reset the column order");
     }
 
-    private void OnFilterChanged(object sender, TextChangedEventArgs e) => ApplyShaping();
-
-    // ShapingModeSelector / GroupBySelector set SelectedIndex in XAML, which raises
-    // SelectionChanged during InitializeComponent — before _source, the table and the
-    // later-declared buttons and readouts exist. ApplyShaping bails while _source is null
-    // and every control it touches is null-guarded.
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
+    private void RefreshReadouts()
     {
-        if (ShapingModeSelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        if (RowsText is null || ShownText is null || FlowDirectionText is null || ColumnOrderText is null || PeopleTable is null)
         {
             return;
         }
 
-        _shapingMode = tag;
-        ApplyShaping();
+        RowsText.Text = SampleShaping.RowCountText(People.Count);
+        var term = FilterBox?.Text.Trim() ?? string.Empty;
+        var shown = term.Length == 0 ? People.Count : People.Count(p => Matches(p, term));
+        ShownText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} of {1:N0}", shown, People.Count);
+        FlowDirectionText.Text = PeopleTable.FlowDirection.ToString();
+        ColumnOrderText.Text = PeopleTable.Columns.SequenceEqual(_originalColumnOrder)
+            ? "Original"
+            : string.Join(", ", PeopleTable.Columns.Select(c => c.Header));
     }
 
-    private void OnGroupByChanged(object sender, SelectionChangedEventArgs e)
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
     {
-        if (GroupBySelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
+        // later-declared elements exist. Guard every element this path touches.
+        if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
         {
             return;
         }
 
-        _groupKey = tag;
-        ApplyShaping();
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+        var selected = PeopleTable.SelectedItem;
+
+        switch (mode)
+        {
+            case "grouped":
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the Filter and GroupBy stages rather than replacing them, and set
+            //     _appliedMode only after the call returns.
+            default:
+                _source.ClearGroupBy();
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+        _appliedKey = key;
+
+        // Re-applying GroupBy can drop the selection when the selected row changed group.
+        SampleShaping.Reselect(PeopleTable, selected, People.Count * 2, RefreshReadouts);
+        UpdateShapingGating();
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+                : "Shaping -> Flat");
+        }
+    }
+
+    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
+    private void ReapplyIfGroupedOn(string? propertyName)
+    {
+        if (_appliedMode == "grouped" && propertyName == _appliedKey)
+        {
+            ApplyShaping(announce: false);
+        }
+    }
+
+    private void UpdateShapingGating()
+    {
+        var grouped = _appliedMode == "grouped";
+        GroupKeySelector.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
     }
 
     private void OnExpandAllClick(object sender, RoutedEventArgs e)
     {
-        if (_appliedMode != "grouped")
-        {
-            return;
-        }
-
-        PlaygroundTable?.ExpandAllGroups();
+        PeopleTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
     }
 
     private void OnCollapseAllClick(object sender, RoutedEventArgs e)
     {
-        if (_appliedMode != "grouped")
-        {
-            return;
-        }
-
-        PlaygroundTable?.CollapseAllGroups();
+        PeopleTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
     }
 
-    private void OnClearShapingClick(object sender, RoutedEventArgs e)
+    // The only writer of LastActionText.
+    private void SetLastAction(string message)
     {
-        if (FilterBox is not null) { FilterBox.Text = string.Empty; }
-        if (ShapingModeSelector is not null) { ShapingModeSelector.SelectedIndex = 0; }
-        _shapingMode = "flat";
-        ApplyShaping();
+        if (LastActionText is not null)
+        {
+            LastActionText.Text = message;
+        }
+
+        RefreshReadouts();
     }
 
-    /// <summary>
-    /// Reshapes the single source in place. Filter and GroupBy compose, so a filtered
-    /// grouped view is one projection rather than two passes over the data.
-    /// </summary>
-    private void ApplyShaping()
-    {
-        if (_source is null || PlaygroundTable is null)
-        {
-            return;
-        }
-
-        var term = FilterBox?.Text?.Trim() ?? string.Empty;
-        if (string.IsNullOrEmpty(term))
-        {
-            _source.ClearFilter();
-        }
-        else
-        {
-            _source.Filter(item => item is RtlRow r && Matches(r, term));
-        }
-
-        if (_shapingMode != "grouped")
-        {
-            _source.ClearGroupBy();
-            _appliedMode = "flat";
-            _appliedGroupKey = "none";
-        }
-        else
-        {
-            var key = _groupKey;
-            // The identity overload is used so group identity survives a reshape instead
-            // of groups being recreated on every filter keystroke. The two delegates do NOT
-            // receive the same thing: the key selector is handed the row item, the identity
-            // selector is handed the group KEY produced above (TableViewSource.idl). Testing
-            // the argument against RtlRow here would yield an empty identity, which fails
-            // fast with E_INVALIDARG.
-            _source.GroupBy(
-                item => (object)GroupValue(item, key),
-                groupKey => groupKey?.ToString() ?? "(none)");
-
-            // Only now is grouping genuinely applied; every readout reads these, never the
-            // requested _shapingMode / _groupKey.
-            _appliedMode = "grouped";
-            _appliedGroupKey = key;
-        }
-
-        // case "hierarchy":
-        // case "groupedhierarchy":
-        //     Hierarchical (tree) rows are not available in this release, which is why the two
-        //     matching ComboBoxItems ship disabled with a tooltip rather than hidden. No
-        //     hierarchy verb exists on TableViewSource or TableView today — the only trace in
-        //     the control source is TableViewRowInfo.h, which reserves row metadata "when
-        //     hierarchical (tree) rows land" — so this stub stays prose rather than naming a
-        //     member that does not exist. When hierarchy ships, apply it to this same source
-        //     here, alongside the Filter and GroupBy stages above so they compose instead of
-        //     replacing one another, and set the applied-mode field only after it returns.
-
-        UpdateReadout();
-    }
-
-    private static bool Matches(RtlRow r, string term) =>
-        r.Name.Contains(term, StringComparison.CurrentCultureIgnoreCase)
-        || r.Department.Contains(term, StringComparison.CurrentCultureIgnoreCase)
-        || r.Role.Contains(term, StringComparison.CurrentCultureIgnoreCase)
-        || r.Region.Contains(term, StringComparison.CurrentCultureIgnoreCase)
-        || r.Status.Contains(term, StringComparison.CurrentCultureIgnoreCase);
-
-    // Never returns the empty string: an empty group identity is an E_INVALIDARG fail-fast.
-    private static string GroupValue(object item, string key)
-    {
-        if (item is not RtlRow r)
-        {
-            return "(none)";
-        }
-
-        var value = key switch
-        {
-            "Department" => r.Department,
-            "Region" => r.Region,
-            "Status" => r.Status,
-            _ => null,
-        };
-
-        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-    }
-
-    private void OnSelectionChanged(TableView sender, TableViewSelectionChangedEventArgs e) => UpdateReadout();
-
-    private void UpdateReadout()
-    {
-        // Reachable during InitializeComponent (the RTL ToggleSwitch sets IsOn in XAML,
-        // raising Toggled before the Options-rail readout TextBlocks exist). Guard so the
-        // init-time call no-ops; OnPageLoaded re-runs UpdateReadout.
-        if (PlaygroundTable is null || FlowDirectionText is null
-            || RowsLoadedText is null || SelectedCountText is null)
-        {
-            return;
-        }
-
-        var grouped = _appliedMode == "grouped";
-        var term = FilterBox?.Text?.Trim() ?? string.Empty;
-        var filtered = !string.IsNullOrEmpty(term);
-
-        // Expand/Collapse act on group containers, so they mean nothing on a flat table.
-        // Disabled rather than hidden: hiding shifts the rail's layout every time the
-        // shaping mode changes, and a disabled control still teaches the dependency.
-        if (GroupBySelector is not null) { GroupBySelector.IsEnabled = grouped; }
-        if (ExpandAllButton is not null) { ExpandAllButton.IsEnabled = grouped; }
-        if (CollapseAllButton is not null) { CollapseAllButton.IsEnabled = grouped; }
-        if (ClearShapingButton is not null) { ClearShapingButton.IsEnabled = grouped || filtered; }
-
-        FlowDirectionText.Text = PlaygroundTable.FlowDirection.ToString();
-        RowsLoadedText.Text = Rows.Count.ToString(CultureInfo.CurrentCulture);
-        SelectedCountText.Text = (PlaygroundTable.SelectedItem is null ? 0 : 1).ToString(CultureInfo.CurrentCulture);
-
-        if (GroupedByText is not null)
-        {
-            GroupedByText.Text = grouped ? _appliedGroupKey : "(none)";
-        }
-
-        if (ShownRowsText is not null)
-        {
-            // The projection exposes no count, so the predicate is re-run here purely for
-            // the readout. A TableViewSource.Count would remove this duplicate work.
-            var shown = filtered ? Rows.Count(r => Matches(r, term)) : Rows.Count;
-            ShownRowsText.Text = shown.ToString(CultureInfo.CurrentCulture);
-        }
-    }
-}
-
-/// <summary>
-/// Local row record for the RTL playground. Implements INotifyPropertyChanged so in-place
-/// edits committed by the built-in text editor are reflected back in the cell. Without it
-/// an edit writes to the object but the cell keeps showing the stale value, which reads as
-/// "the column is not editable".
-/// </summary>
-public sealed class RtlRow : INotifyPropertyChanged
-{
-    private int _index;
-    private string _name = string.Empty;
-    private string _department = string.Empty;
-    private string _role = string.Empty;
-    private string _region = string.Empty;
-    private string _joinDate = string.Empty;
-    private string _notes = string.Empty;
-    private double _salary;
-    private string _status = string.Empty;
-
-    public int Index { get => _index; set => Set(ref _index, value); }
-    public string Name { get => _name; set => Set(ref _name, value); }
-    public string Department { get => _department; set => Set(ref _department, value); }
-    public string Role { get => _role; set => Set(ref _role, value); }
-    public string Region { get => _region; set => Set(ref _region, value); }
-    public string JoinDate { get => _joinDate; set => Set(ref _joinDate, value); }
-    public string Notes { get => _notes; set => Set(ref _notes, value); }
-    public double Salary { get => _salary; set => Set(ref _salary, value); }
-    public string Status { get => _status; set => Set(ref _status, value); }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
-    {
-        if (Equals(field, value))
-        {
-            return;
-        }
-
-        field = value;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-    }
+    #endregion
 }

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Performance: time the common TableView workloads on the UI thread. Each Action is one timed
+    run; results go to the Status grid. Navigation cache stays disabled because a run can hold a
+    100,000-row dataset.
+-->
 <Page
     x:Class="TableViewSampleApp.Pages.PerformancePage"
     NavigationCacheMode="Disabled"
@@ -8,180 +13,280 @@
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
-    <!-- Navigation cache stays disabled because the timing scenarios can allocate 100,000-row datasets. -->
-    <ScrollViewer Padding="{StaticResource PageContentMargin}">
-        <Grid RowSpacing="16" HorizontalAlignment="Left" MaxWidth="{StaticResource PageMaxContentWidth}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+    <controls:SamplePresenter
+        Header="Performance"
+        Description="Times the workloads that decide whether a large TableView feels responsive: binding 10,000 or 100,000 rows, sorting with TableView.SortByColumn, filtering and grouping with TableViewSource, and the per-item Add pattern to avoid. Each run builds its data off the clock, then measures the call plus one synchronous layout pass with a Stopwatch. Run a scenario twice and read the second number, because the first includes JIT warm-up. The numbers are quick triage on this machine, not a benchmark."
+        SourceCaption="PerformancePage.xaml (excerpt)"
+        SourceSnippet="Performance.xaml.txt"
+        AdditionalSnippetCaption="PerformancePage.xaml.cs (excerpt)"
+        AdditionalSnippet="Performance.cs.txt"
+        StretchExample="True">
 
-            <controls:SamplePageHeader
-                Grid.Row="0"
-                Title="Performance scenarios"
-                Description="Repeatable timing + memory measurements for the most common TableView workloads. Hover any Run button to see exactly what is measured. Click each Run to execute; the readout shows elapsed wall-clock ms."/>
-
-            <muxc:InfoBar
-                Grid.Row="1"
-                IsOpen="True"
-                IsClosable="False"
-                Severity="Informational"
-                Title="Try it"
-                Message="Click each Run button to time that operation; the readout shows elapsed milliseconds. Run a scenario twice and use the second number — the first includes JIT warmup."/>
-
-            <muxc:InfoBar
-                Grid.Row="2"
-                IsOpen="True"
-                IsClosable="False"
-                Severity="Informational"
-                Title="How these numbers are captured">
-                <muxc:InfoBar.Content>
-                    <ItemsControl Margin="0,8,0,0">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Spacing="4"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <TextBlock TextWrapping="Wrap" Text="Each scenario:"/>
-                        <TextBlock TextWrapping="Wrap"><Run FontWeight="SemiBold">1.</Run><Run Text=" builds the data into a List&lt;T&gt; OFF the clock"/></TextBlock>
-                        <TextBlock TextWrapping="Wrap"><Run FontWeight="SemiBold">2.</Run><Run Text=" forces two GC passes to settle the heap"/></TextBlock>
-                        <TextBlock TextWrapping="Wrap"><Run FontWeight="SemiBold">3.</Run><Run Text=" starts Stopwatch"/></TextBlock>
-                        <TextBlock TextWrapping="Wrap"><Run FontWeight="SemiBold">4.</Run><Run Text=" reassigns / repopulates the bound ObservableCollection"/></TextBlock>
-                        <TextBlock TextWrapping="Wrap"><Run FontWeight="SemiBold">5.</Run><Run Text=" calls TableView.UpdateLayout() to synchronously drain measure+arrange so the elapsed window covers the user-visible 'I see the new rows' moment"/></TextBlock>
-                        <TextBlock TextWrapping="Wrap"><Run FontWeight="SemiBold">6.</Run><Run Text=" stops Stopwatch"/></TextBlock>
-                        <TextBlock TextWrapping="Wrap" Text="Memory snapshots use GC.GetTotalMemory(forceFullCollection: true) for managed heap (deterministic) PLUS Process.WorkingSet64 for OS view (lazy, but reflects unmanaged growth too). Hover any Run button below for the per-scenario specifics."/>
-                    </ItemsControl>
-                </muxc:InfoBar.Content>
-            </muxc:InfoBar>
-
-            <Border Grid.Row="3" Style="{StaticResource TableHostBorderStyle}" Padding="16">
-                <Grid ColumnSpacing="16" RowSpacing="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="260"/>
-                        <ColumnDefinition Width="160"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Scenario" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Action" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
-                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Result" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
-
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Load 10,000 rows" VerticalAlignment="Center"/>
-                    <Button Grid.Row="1" Grid.Column="1" Content="Run" Click="OnLoad10kClick" AutomationProperties.AutomationId="Load10kButton" AutomationProperties.Name="Run load 10,000 rows" HorizontalAlignment="Stretch">
-                        <ToolTipService.ToolTip>
-                            <TextBlock TextWrapping="Wrap" MaxWidth="360"
-                                Text="Measures: Clear() + 10,000 Add() events on the bound ObservableCollection + TableView.UpdateLayout(). Data is generated into a List&lt;T&gt; off the clock. Two GC passes precede the Stopwatch start."/>
-                        </ToolTipService.ToolTip>
-                    </Button>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="1" Grid.Column="2" x:Name="Load10kResult" Text="—" AutomationProperties.AutomationId="Load10kResult" VerticalAlignment="Center"/>
-
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Load 100,000 rows" VerticalAlignment="Center"/>
-                    <Button Grid.Row="2" Grid.Column="1" Content="Run" Click="OnLoad100kClick" AutomationProperties.AutomationId="Load100kButton" AutomationProperties.Name="Run load 100,000 rows" HorizontalAlignment="Stretch">
-                        <ToolTipService.ToolTip>
-                            <TextBlock TextWrapping="Wrap" MaxWidth="360"
-                                Text="Same as Load 10K but 100,000 rows. Stresses the ItemsRepeater realization budget under heavier collection-change pressure. With virtualization, only the visible viewport realizes — most of the cost is the CollectionChanged event marshalling, not UI."/>
-                        </ToolTipService.ToolTip>
-                    </Button>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="2" x:Name="Load100kResult" Text="—" AutomationProperties.AutomationId="Load100kResult" VerticalAlignment="Center"/>
-
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Sort current dataset by Name asc" VerticalAlignment="Center"/>
-                    <Button Grid.Row="3" Grid.Column="1" Content="Run" Click="OnSortClick" AutomationProperties.AutomationId="SortButton" AutomationProperties.Name="Run sort current dataset by Name ascending" HorizontalAlignment="Stretch">
-                        <ToolTipService.ToolTip>
-                            <TextBlock TextWrapping="Wrap" MaxWidth="360"
-                                Text="LINQ OrderBy runs off the clock (pure C# cost — not what we are measuring). On the clock: Clear() + Add() each sorted row + UpdateLayout(). Mirrors 'user clicked a header, the sort key is already computed, now repopulate'."/>
-                        </ToolTipService.ToolTip>
-                    </Button>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="2" x:Name="SortResult" Text="—" AutomationProperties.AutomationId="SortResult" VerticalAlignment="Center"/>
-
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Filter current dataset (Salary 100k+)" VerticalAlignment="Center"/>
-                    <Button Grid.Row="4" Grid.Column="1" Content="Run" Click="OnFilterClick" AutomationProperties.AutomationId="FilterButton" AutomationProperties.Name="Run filter current dataset" HorizontalAlignment="Stretch">
-                        <ToolTipService.ToolTip>
-                            <TextBlock TextWrapping="Wrap" MaxWidth="360"
-                                Text="LINQ Where runs off the clock. On the clock: Clear() + Add() each matching row + UpdateLayout(). Result shows matched/total rows so you can tell how heavy the predicate filtered."/>
-                        </ToolTipService.ToolTip>
-                    </Button>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="4" Grid.Column="2" x:Name="FilterResult" Text="—" AutomationProperties.AutomationId="FilterResult" VerticalAlignment="Center"/>
-
-                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Clear filter (restore full dataset)" VerticalAlignment="Center"/>
-                    <Button Grid.Row="5" Grid.Column="1" Content="Run" Click="OnClearFilterClick" AutomationProperties.AutomationId="ClearFilterButton" AutomationProperties.Name="Run clear filter" HorizontalAlignment="Stretch">
-                        <ToolTipService.ToolTip>
-                            <TextBlock TextWrapping="Wrap" MaxWidth="360"
-                                Text="Reverses the Filter: re-binds the full dataset. Useful for comparing 'large -> small' vs 'small -> large' transition cost; the ItemsRepeater realization budget differs."/>
-                        </ToolTipService.ToolTip>
-                    </Button>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="5" Grid.Column="2" x:Name="ClearFilterResult" Text="—" AutomationProperties.AutomationId="ClearFilterResult" VerticalAlignment="Center"/>
-
-                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Snapshot memory (delta from baseline)" VerticalAlignment="Center"/>
-                    <Button Grid.Row="6" Grid.Column="1" Content="Snapshot" Click="OnSnapshotClick" AutomationProperties.AutomationId="SnapshotButton" AutomationProperties.Name="Snapshot memory delta from baseline" HorizontalAlignment="Stretch">
-                        <ToolTipService.ToolTip>
-                            <TextBlock TextWrapping="Wrap" MaxWidth="360"
-                                Text="Forces two GC passes, then reads GC.GetTotalMemory(forceFullCollection: true) for managed heap (deterministic) AND Process.WorkingSet64 for the OS view (lazy; reflects unmanaged growth like XAML composition surfaces). Delta is from the baseline captured when the page first loaded; click Re-baseline to reset."/>
-                        </ToolTipService.ToolTip>
-                    </Button>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="6" Grid.Column="2" x:Name="SnapshotResult" Text="—" AutomationProperties.AutomationId="SnapshotResult" VerticalAlignment="Center" TextWrapping="Wrap"/>
-
-                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Re-baseline memory" VerticalAlignment="Center"/>
-                    <Button Grid.Row="7" Grid.Column="1" Content="Re-baseline" Click="OnRebaselineClick" AutomationProperties.AutomationId="RebaselineButton" AutomationProperties.Name="Re-baseline memory" HorizontalAlignment="Stretch">
-                        <ToolTipService.ToolTip>
-                            <TextBlock TextWrapping="Wrap" MaxWidth="360"
-                                Text="Re-captures the WorkingSet + managed heap baseline. Use this AFTER you have completed a Load scenario, to measure incremental growth from subsequent operations."/>
-                        </ToolTipService.ToolTip>
-                    </Button>
-                    <TextBlock Grid.Row="7" Grid.Column="2" Text="(click Snapshot to see deltas from the current baseline)" AutomationProperties.AutomationId="RebaselineResult" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-
-                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Run all (sequential)" VerticalAlignment="Center"/>
-                    <Button Grid.Row="8" Grid.Column="1" Content="Run all" Click="OnRunAllClick" AutomationProperties.AutomationId="RunAllButton" AutomationProperties.Name="Run all performance scenarios" HorizontalAlignment="Stretch" Style="{ThemeResource AccentButtonStyle}">
-                        <ToolTipService.ToolTip>
-                            <TextBlock TextWrapping="Wrap" MaxWidth="360"
-                                Text="Runs Load 10K, Load 100K, Sort, Filter, Clear, and Snapshot in sequence on the UI thread. Each step uses its own GC settle pass. Per-row readouts show individual timings; the bottom-right summary confirms completion and which build flavor produced the numbers."/>
-                        </ToolTipService.ToolTip>
-                    </Button>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="8" Grid.Column="2" x:Name="RunAllResult" Text="—" AutomationProperties.AutomationId="RunAllResult" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                </Grid>
-            </Border>
-
-            <StackPanel Grid.Row="4" Spacing="8">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Live data preview" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock
-                    Text="The TableView below binds to the scenario's working dataset. After Load 100K + Filter, the row count drops to the filtered subset; after Sort, the order changes visibly. Scroll fast — virtualization keeps memory flat after the load."
-                    Style="{StaticResource SectionDescriptionTextStyle}"/>
-                <Border Style="{StaticResource TableHostBorderStyle}">
+        <controls:SamplePresenter.Example>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <!-- scaffold:tryit -->
+                <muxc:InfoBar
+                    Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
+                    IsOpen="True"
+                    IsClosable="False"
+                    MinHeight="104"
+                    Message="Click Load 100,000 rows, then Sort by Name, Filter to Engineering and Clear filter, and read each time in Status. Switch Shaping to Grouped to time GroupBy. Then run Add 10,000 rows one at a time and compare it with Load 10,000 rows."/>
+                <!-- /scaffold -->
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
                         x:Name="PerfTable"
-                        AutomationProperties.AutomationId="PerfTable"
-                        AutomationProperties.Name="Performance measurement records"
+                        AutomationProperties.AutomationId="PerformanceTable"
+                        AutomationProperties.Name="Performance run dataset"
                         SelectionMode="Single"
-                        Height="320">
-                        <tv:TableViewTextColumn Header="Id"         Width="{StaticResource ColWidthId}"  Binding="{Binding Id}"     SortMemberPath="Id" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Name"       Width="{StaticResource ColWidthLongName}" Binding="{Binding Name}"   SortMemberPath="Name" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" SortMemberPath="Department" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Salary"     Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary}" SortMemberPath="Salary" CanSort="False"/>
+                        IsReadOnly="True"
+                        VerticalAlignment="Stretch"
+                        MinHeight="320">
+                        <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}" Binding="{Binding EmployeeId}"/>
+                        <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                        <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"/>
+                        <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}" Binding="{Binding Office}"/>
+                        <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
                     </tv:TableView>
                 </Border>
-            </StackPanel>
+            </Grid>
+        </controls:SamplePresenter.Example>
 
-            <StackPanel Grid.Row="5" Spacing="8">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="What this page is NOT" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock
-                    Text="This is a partner-share triage tool, not a benchmark. For production-grade numbers use WPR / WPA traces around the ItemsRepeater and TableView ETW providers; the readouts here are wall-clock and include UI-thread layout, which is the right shape for 'is this responsive?' but the wrong shape for 'what is the per-row arrange cost?'. For per-row cost, instrument TableViewRow.MeasureOverride with an ETW event and aggregate across thousands of rows."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
+        <controls:SamplePresenter.Options>
+            <StackPanel Spacing="12">
+                <!-- 1. Primary feature -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Column set">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Column set"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Text columns render one TextBlock per cell. Template columns add the shared Photo (PersonPicture) and Department chip templates, so each realized row builds more elements. Every Load run reports which set it measured."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ColumnSetSelector"
+                        AutomationProperties.AutomationId="PerformanceColumnSetSelector"
+                        Header="Column set"
+                        SelectedIndex="0"
+                        SelectionChanged="OnColumnSetChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Text columns" Tag="text"/>
+                        <ComboBoxItem Content="Template columns" Tag="template"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Grouping is timed too: Last action reports how long GroupBy or ClearGroupBy took on the current dataset. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="PerformanceShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="PerformanceGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Department" Tag="Department"/>
+                        <ComboBoxItem Content="Office" Tag="Office"/>
+                        <ComboBoxItem Content="Active" Tag="IsActive"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="PerformanceExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="PerformanceCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
+
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Each run is timed with a Stopwatch around the call and one TableView.UpdateLayout(), after two GC passes. Data is generated on a background thread before the clock starts. Watch the table and the Status times."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="Load10kButton"
+                            AutomationProperties.AutomationId="PerformanceLoad10kButton"
+                            Content="Load 10,000 rows"
+                            Click="OnLoad10kClick"
+                            ToolTipService.ToolTip="Wraps a pre-built list in one ObservableCollection, calls TableViewSource.From and assigns ItemsSource once."
+                            AutomationProperties.HelpText="Wraps a pre-built list in one ObservableCollection, calls TableViewSource.From and assigns ItemsSource once."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="Load100kButton"
+                            AutomationProperties.AutomationId="PerformanceLoad100kButton"
+                            Content="Load 100,000 rows"
+                            Click="OnLoad100kClick"
+                            ToolTipService.ToolTip="The same bulk assignment with 100,000 rows. Only the visible rows are realized."
+                            AutomationProperties.HelpText="The same bulk assignment with 100,000 rows. Only the visible rows are realized."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="SortButton"
+                            AutomationProperties.AutomationId="PerformanceSortButton"
+                            Content="Sort by Name"
+                            Click="OnSortClick"
+                            ToolTipService.ToolTip="Calls TableView.SortByColumn on the Name column; each click flips between ascending and descending."
+                            AutomationProperties.HelpText="Calls TableView.SortByColumn on the Name column; each click flips between ascending and descending."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="FilterButton"
+                            AutomationProperties.AutomationId="PerformanceFilterButton"
+                            Content="Filter to Engineering"
+                            Click="OnFilterClick"
+                            ToolTipService.ToolTip="Calls TableViewSource.Filter with a Department predicate on the same source."
+                            AutomationProperties.HelpText="Calls TableViewSource.Filter with a Department predicate on the same source."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="ClearFilterButton"
+                            AutomationProperties.AutomationId="PerformanceClearFilterButton"
+                            Content="Clear filter"
+                            Click="OnClearFilterClick"
+                            ToolTipService.ToolTip="Calls TableViewSource.ClearFilter, so every row returns."
+                            AutomationProperties.HelpText="Calls TableViewSource.ClearFilter, so every row returns."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="PerItemAddButton"
+                            AutomationProperties.AutomationId="PerformancePerItemAddButton"
+                            Content="Add 10,000 rows one at a time"
+                            Click="OnPerItemAddClick"
+                            ToolTipService.ToolTip="The pattern to avoid: Clear() and then Add() per row into the bound collection, one change notification per row. Capped at 10,000 rows."
+                            AutomationProperties.HelpText="The pattern to avoid: Clear() and then Add() per row into the bound collection, one change notification per row. Capped at 10,000 rows."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="SnapshotButton"
+                            AutomationProperties.AutomationId="PerformanceSnapshotButton"
+                            Content="Snapshot memory"
+                            Click="OnSnapshotClick"
+                            ToolTipService.ToolTip="Reads the managed heap (after a full GC) and the process working set, as deltas from the baseline."
+                            AutomationProperties.HelpText="Reads the managed heap (after a full GC) and the process working set, as deltas from the baseline."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RebaselineButton"
+                            AutomationProperties.AutomationId="PerformanceRebaselineButton"
+                            Content="Reset memory baseline"
+                            Click="OnRebaselineClick"
+                            ToolTipService.ToolTip="Captures a new baseline, so the next snapshot measures growth from here."
+                            AutomationProperties.HelpText="Captures a new baseline, so the next snapshot measures growth from here."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Build" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="BuildText" AutomationProperties.AutomationId="PerformanceBuildText"
+                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Load 10,000" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="Load10kText" AutomationProperties.AutomationId="PerformanceLoad10kText"
+                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Load 100,000" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="Load100kText" AutomationProperties.AutomationId="PerformanceLoad100kText"
+                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Sort" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="SortText" AutomationProperties.AutomationId="PerformanceSortText"
+                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Filter" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="FilterText" AutomationProperties.AutomationId="PerformanceFilterText"
+                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="5" Text="Group" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="GroupText" AutomationProperties.AutomationId="PerformanceGroupText"
+                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="6" Text="Per-item Add" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="6" Grid.Column="1" x:Name="PerItemAddText" AutomationProperties.AutomationId="PerformancePerItemAddText"
+                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="7" Text="Memory" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="7" Grid.Column="1" x:Name="MemoryText" AutomationProperties.AutomationId="PerformanceMemoryText"
+                                   AutomationProperties.LiveSetting="Polite" Text="—" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="8" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="8" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="PerformanceRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="9" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="9" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="PerformanceShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="10" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="10" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="PerformanceLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
+
+                <muxc:InfoBar
+                    Title="What to look for"
+                    Severity="Informational"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Message="A bulk load of 100,000 rows finishes in well under a second, because only the visible rows are realized. Adding rows one at a time raises one change notification per row, so 10,000 Adds take far longer than the 10,000-row bulk load. Sorting, filtering and grouping all 100,000 rows does real work inside the control and takes longer than loading them. Debug builds are several times slower than Release builds. For per-row costs, record a trace with WPR and open it in WPA."/>
             </StackPanel>
-        </Grid>
-    </ScrollViewer>
+        </controls:SamplePresenter.Options>
+    </controls:SamplePresenter>
 </Page>

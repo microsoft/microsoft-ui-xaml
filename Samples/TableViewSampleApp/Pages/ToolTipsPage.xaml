@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Tooltips: TableViewColumn.HeaderToolTip and TableViewColumn.CellToolTipBinding, both opt-in and
+    per column. Structure follows the golden page (CellFlyoutsPage): Try it, one stretched table,
+    then the rail in the order Cell tooltips, Header tooltips, Shaping, Actions, Status,
+    What to look for. Generic blocks carry scaffold markers.
+-->
 <Page
     x:Class="TableViewSampleApp.Pages.ToolTipsPage"
     NavigationCacheMode="Disabled"
@@ -7,26 +13,24 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls"
-    xmlns:local="using:TableViewSampleApp.Pages"
     xmlns:models="using:TableViewSampleApp.Models">
 
     <Page.Resources>
-        <local:RowCardConverter x:Key="RowCard"/>
-
-        <!-- A cell whose OWN content carries an app-set tooltip. The control must never replace or
-             clear this one: hovering the text shows the app's tooltip, not a control-owned one. -->
-        <DataTemplate x:Key="AppToolTipCell" x:DataType="models:Person">
-            <TextBlock
-                Text="{x:Bind Email, Mode=OneWay}"
-                Margin="8,0"
-                VerticalAlignment="Center"
-                ToolTipService.ToolTip="App-owned tooltip, set in the cell template"/>
+        <!-- A cell whose OWN content carries an app-set tooltip (the e-mail address). The control
+             never replaces or clears it: hovering the envelope shows the app's tooltip. -->
+        <DataTemplate x:Key="EmailIconCellTemplate" x:DataType="models:Person">
+            <Grid Background="Transparent"
+                  ToolTipService.ToolTip="{x:Bind Email, Mode=OneWay}"
+                  AutomationProperties.Name="{x:Bind Email, Mode=OneWay}">
+                <FontIcon Glyph="&#xE715;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"
+                          AutomationProperties.AccessibilityView="Raw"/>
+            </Grid>
         </DataTemplate>
     </Page.Resources>
 
     <controls:SamplePresenter
         Header="Tooltips"
-        Description="Both tooltips are opt-in and both are per column. HeaderToolTip is a plain object — a header is not bound against a row, so there is nothing to defer and no binding involved. CellToolTipBinding is a Binding evaluated against each row's data item, which is why it is a CLR property rather than a dependency property: XAML has to hand the Binding over unevaluated instead of resolving it once. Set neither and no tooltip appears — the control never invents one, and never touches a tooltip the cell's own template already set."
+        Description="TableView has two opt-in tooltip surfaces, both set per column. TableViewColumn.HeaderToolTip is a plain object shown over the column header; a string is also reported to UI Automation as help text. TableViewColumn.CellToolTipBinding is a Binding evaluated against each row, so a cell tooltip can repeat the cell's text, show a different property, or build rich content from the whole row, and it follows the data when a value changes. Set neither and no tooltip appears: the control never invents one, and never touches a tooltip the cell template already set."
         SourceCaption="ToolTipsPage.xaml (excerpt)"
         SourceSnippet="ToolTips.xaml.txt"
         AdditionalSnippetCaption="ToolTipsPage.xaml.cs (excerpt)"
@@ -39,48 +43,42 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-
+                <!-- scaffold:tryit -->
                 <muxc:InfoBar
                     Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Try it"
-                    Message="Hover a Name cell for rich content built from the whole row, a Department cell to see a DIFFERENT property, and a Salary cell to see nothing at all. Then press Mutate role and hover Department again: the tooltip followed the data with no invalidation call."
-                    MinHeight="104"/>
-
+                    MinHeight="104"
+                    Message="Hover a Name cell for a card built from the whole row, a Department chip for the person's role, and a Salary cell for nothing at all. Press Give the first 10 people their next role, then hover a Department chip again: the tooltip followed the data. Turn Cell tooltips off and hover again."/>
+                <!-- /scaffold -->
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
                         x:Name="PeopleTable"
                         AutomationProperties.AutomationId="ToolTipsTable"
                         AutomationProperties.Name="People with tooltips"
+                        ItemsSource="{x:Bind Source}"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <!-- Rich, non-string cell tooltip built from the whole row by a converter. -->
-                        <tv:TableViewTextColumn x:Name="NameColumn" Header="Name"
+                        <!-- CellToolTipBinding is set in code (AttachCellToolTips) so it can be detached. -->
+                        <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                                                     CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                        <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="{StaticResource ColWidthShortName}"
                                                  Binding="{Binding FullName}"
-                                                 Width="{StaticResource ColWidthLongName}"
                                                  HeaderToolTip="Full name, as entered"/>
-                        <!-- Cell tooltip repeats the cell's own text: right for a column that
-                             truncates, and the automation peer drops the duplicate so a screen
-                             reader reads it once. -->
-                        <tv:TableViewTextColumn x:Name="BioColumn" Header="Bio"
-                                                 Binding="{Binding Bio}"
-                                                 Width="{StaticResource ColWidthWrappedText}"
-                                                 CanSort="False"/>
-                        <!-- Cell tooltip shows a DIFFERENT property, so it survives as help text
-                             and updates in place when the underlying value changes. -->
-                        <tv:TableViewTextColumn x:Name="DepartmentColumn" Header="Department"
-                                                 Binding="{Binding Department}"
-                                                 Width="{StaticResource ColWidthDepartment}"
-                                                 HeaderToolTip="Team the person reports into"/>
-                        <!-- No CellToolTipBinding at all: nothing should appear over these cells. -->
-                        <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary"
-                                                 Binding="{Binding Salary}"
-                                                 Width="{StaticResource ColWidthNumber}"/>
-                        <tv:TableViewTemplateColumn Header="Email" Width="*" CanSort="False"
-                                                     CellTemplate="{StaticResource AppToolTipCell}"/>
+                        <tv:TableViewTextColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
+                                                 Binding="{Binding Bio}" CanSort="False"/>
+                        <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}"
+                                                     CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"
+                                                     HeaderToolTip="Team the person reports into"/>
+                        <!-- No CellToolTipBinding at all: nothing appears over these cells. -->
+                        <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}"
+                                                 Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"
+                                                 HeaderToolTip="Salary"/>
+                        <tv:TableViewTemplateColumn x:Name="EmailColumn" Header="Email" Width="{StaticResource ColWidthNarrow}"
+                                                     CellTemplate="{StaticResource EmailIconCellTemplate}" CanSort="False"/>
                     </tv:TableView>
                 </Border>
             </Grid>
@@ -88,105 +86,177 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"
-                    Text="Flat leaves the source unshaped. Grouped calls TableViewSource.GroupBy on the same source instance, so selection, scroll offset and group expansion survive the reshape. Group header bands are not cells, so they never acquire a cell tooltip."/>
-                <ComboBox x:Name="ShapingModeSelector"
-                          AutomationProperties.AutomationId="ShapingModeSelector"
-                          Header="Shaping mode"
-                          SelectedIndex="0"
-                          SelectionChanged="OnShapingModeChanged"
-                          HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Flat" Tag="flat"/>
-                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                    <!-- Hierarchical rows are not available in this release. Shown disabled so the
-                         shape of the feature is visible; re-enable when the control ships support
-                         (TableViewSource exposes only Filter / GroupBy / Sort today). -->
-                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                </ComboBox>
-                <ComboBox x:Name="GroupKeyCombo" Header="Group by" IsEnabled="False" SelectedIndex="0"
-                          SelectionChanged="OnGroupKeyChanged"
-                          AutomationProperties.AutomationId="GroupKeyCombo"
-                          AutomationProperties.Name="Group key"
-                          ToolTipService.ToolTip="Available once Grouped mode is selected."
-                          HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Department" Tag="Department"/>
-                    <ComboBoxItem Content="Role" Tag="Role"/>
-                    <ComboBoxItem Content="Active status" Tag="Active"/>
-                </ComboBox>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Clearing a binding retracts the tooltip; there is no separate remove call. Header tooltips are changed in place on one column and retracted on another, to exercise both update paths."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <StackPanel Spacing="8">
-                    <Button x:Name="ToggleButton" Content="Detach cell tooltips" Click="OnToggleClick"
-                            AutomationProperties.AutomationId="ToggleToolTipsButton"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button Content="Mutate role" Click="OnMutateClick"
-                            AutomationProperties.AutomationId="MutateRoleButton"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button Content="Change header tooltips" Click="OnMutateHeadersClick"
-                            AutomationProperties.AutomationId="MutateHeaderToolTipsButton"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button Content="What is attached?" Click="OnInspectClick"
-                            AutomationProperties.AutomationId="InspectToolTipsButton"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="ExpandAllButton" Content="Expand all groups" Click="OnExpandAllClick"
-                            IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected."
-                            AutomationProperties.AutomationId="ExpandAllButton"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="CollapseAllButton" Content="Collapse all groups" Click="OnCollapseAllClick"
-                            IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected."
-                            AutomationProperties.AutomationId="CollapseAllButton"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="ReassignRowButton" Content="Move first row to another group" Click="OnReassignRowClick"
-                            IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected."
-                            AutomationProperties.AutomationId="ReassignRowButton"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                <!-- 1. Primary feature -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Cell tooltips">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Cell tooltips"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Sets TableViewColumn.CellToolTipBinding on Photo (the name), Name (a card built from the row), Bio (its own text) and Department (the role). Off sets them to null, which retracts every cell tooltip; there is no separate remove call. The Email envelope keeps its own template tooltip either way."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ToggleSwitch
+                        x:Name="CellToolTipsToggle"
+                        AutomationProperties.AutomationId="ToolTipsCellToolTipsToggle"
+                        Header="Cell tooltips"
+                        IsOn="True"
+                        Toggled="OnCellToolTipsToggled"/>
                 </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <Grid ColumnSpacing="12" RowSpacing="4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Header tooltips">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Header tooltips"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Sets TableViewColumn.HeaderToolTip. Original uses the strings from XAML plus a rich card on Bio. Changed in place rewrites Name's string and retracts Department's. None clears every header tooltip."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="HeaderToolTipsSelector"
+                        AutomationProperties.AutomationId="ToolTipsHeaderToolTipsSelector"
+                        Header="Header tooltips"
+                        SelectedIndex="0"
+                        SelectionChanged="OnHeaderToolTipsChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Original" Tag="original"/>
+                        <ComboBoxItem Content="Changed in place" Tag="changed"/>
+                        <ComboBoxItem Content="None" Tag="none"/>
+                    </ComboBox>
+                </StackPanel>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Cell bindings" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="0" Grid.Column="1" x:Name="AttachedText" Text="attached"
-                               Style="{StaticResource StatusReadoutValueStyle}"
-                               AutomationProperties.AutomationId="AttachedText"/>
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Grouping leaves the columns alone, so every tooltip survives it, and group header bands are not cells, so they never get a cell tooltip. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="ToolTipsShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="ToolTipsGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Department" Tag="Department"/>
+                        <ComboBoxItem Content="Role" Tag="Role"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="ToolTipsExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="ToolTipsCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Data revision" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="1" Grid.Column="1" x:Name="RevisionText" Text="0"
-                               Style="{StaticResource StatusReadoutValueStyle}"
-                               AutomationProperties.AutomationId="RevisionText"/>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Each action changes the data behind a tooltip; hover the cell afterwards and the tooltip shows the new value with no invalidation call. Watch the table and the Last action readout. Actions that change one row need a selected row."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="NextRoleButton"
+                            AutomationProperties.AutomationId="ToolTipsNextRoleButton"
+                            Content="Give the first 10 people their next role"
+                            Click="OnNextRoleClick"
+                            ToolTipService.ToolTip="Sets Role to the next real role on the first 10 rows. Hover their Department chips: the tooltip shows the new role."
+                            AutomationProperties.HelpText="Sets Role to the next real role on the first 10 rows."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="LongBioButton"
+                            AutomationProperties.AutomationId="ToolTipsLongBioButton"
+                            Content="Give the selected row a long bio"
+                            Click="OnLongBioClick"
+                            ToolTipService.ToolTip="Writes a bio longer than the Bio column, so the cell truncates and its tooltip shows the full text."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="ChangeDepartmentButton"
+                            AutomationProperties.AutomationId="ToolTipsChangeDepartmentButton"
+                            Content="Move selected row to the next department"
+                            Click="OnChangeDepartmentClick"
+                            ToolTipService.ToolTip="Gives the selected person the next department. Grouped by Department, the row moves to that group and keeps its tooltips."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="1" x:Name="ShapingText" Text="Flat (no grouping)"
-                               Style="{StaticResource StatusReadoutValueStyle}"
-                               AutomationProperties.AutomationId="ShapingText"
-                               TextWrapping="Wrap"/>
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Cell tooltips" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="CellToolTipsText" AutomationProperties.AutomationId="ToolTipsCellToolTipsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Attached" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Per column" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="PerColumnText" AutomationProperties.AutomationId="ToolTipsPerColumnText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="ToolTipsRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="ToolTipsShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="ToolTipsLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
 
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Per column" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="1" x:Name="InspectText" Text="(press &quot;What is attached?&quot;)"
-                               Style="{StaticResource StatusReadoutValueStyle}"
-                               AutomationProperties.AutomationId="InspectText"
-                               TextWrapping="Wrap"/>
-                </Grid>
+                <muxc:InfoBar
+                    Title="What to look for"
+                    Severity="Informational"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Message="A cell tooltip is evaluated against the row, so after an action the Department chip's tooltip shows the new role without the app refreshing anything. The Name card's binding has no Path, so it is built from the row item when the binding evaluates and does not track individual property changes. Salary has no CellToolTipBinding and stays silent. Its header tooltip repeats the header text, so UI Automation reads it once, not twice. The Email envelope's tooltip belongs to the cell template and survives Cell tooltips Off."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
     </controls:SamplePresenter>

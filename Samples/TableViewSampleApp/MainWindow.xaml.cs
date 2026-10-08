@@ -21,7 +21,9 @@ namespace TableViewSampleApp;
 
 public sealed partial class MainWindow : Window
 {
-    private static readonly Dictionary<string, Type> s_pageMap = new()
+    // Tags are matched case-insensitively (so --page=keyboardnav works); the key as written
+    // here is the canonical Tag, which is also the NavigationViewItem.Tag.
+    private static readonly Dictionary<string, Type> s_pageMap = new(StringComparer.OrdinalIgnoreCase)
     {
         ["Home"] = typeof(HomePage),
         ["Showcase"] = typeof(ShowcasePage),
@@ -56,6 +58,7 @@ public sealed partial class MainWindow : Window
     private bool _shouldFocusContentAfterNavigation;
     private FocusState _contentNavigationFocusState = FocusState.Programmatic;
     private readonly AccessibilitySettings _accessibilitySettings = new();
+    private readonly UISettings _uiSettings = new();
 
     public MainWindow(IReadOnlyList<string>? launchArguments = null)
     {
@@ -87,6 +90,14 @@ public sealed partial class MainWindow : Window
         Services.AppSettings.ThemeChanged += OnPersistedThemeChanged;
         Closed += (_, _) => Services.AppSettings.ThemeChanged -= OnPersistedThemeChanged;
 
+        // The caption buttons are drawn by the system; follow a Contrast theme switched on or off
+        // while the app runs, not only the state at startup (D:S7). AccessibilitySettings.
+        // HighContrastChanged throws ELEMENT_NOT_FOUND in a desktop (non-CoreWindow) app, so listen
+        // to UISettings.ColorValuesChanged, which a Contrast switch also raises, and re-read
+        // AccessibilitySettings.HighContrast in UpdateCaptionButtonColors.
+        _uiSettings.ColorValuesChanged += OnColorValuesChanged;
+        Closed += (_, _) => _uiSettings.ColorValuesChanged -= OnColorValuesChanged;
+
         var initialTag = ResolveInitialTag(launchArguments);
         App.AppendVerificationLog($"MainWindowCtor InitialTag={initialTag}");
         App.AppendSelectionVerificationLog($"MainWindowCtor InitialTag={initialTag}");
@@ -105,9 +116,39 @@ public sealed partial class MainWindow : Window
     /// </summary>
     public void NavigateTo(string tag)
     {
+        if (TryGetCanonicalTag(tag, out var canonical))
+        {
+            tag = canonical;
+        }
+
         SelectNavItem(tag);
         Navigate(tag, new DrillInNavigationTransitionInfo(), true);
     }
+
+    /// <summary>Resolves a tag in any casing to the canonical s_pageMap key.</summary>
+    private static bool TryGetCanonicalTag(string? tag, out string canonical)
+    {
+        canonical = string.Empty;
+        if (string.IsNullOrEmpty(tag) || !s_pageMap.ContainsKey(tag))
+        {
+            return false;
+        }
+
+        foreach (var key in s_pageMap.Keys)
+        {
+            if (string.Equals(key, tag, StringComparison.OrdinalIgnoreCase))
+            {
+                canonical = key;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Raised on a background thread.
+    private void OnColorValuesChanged(UISettings sender, object args) =>
+        DispatcherQueue.TryEnqueue(UpdateCaptionButtonColors);
 
 
     private void ContentFrame_NavigationFailed(object sender, NavigationFailedEventArgs e)
@@ -128,10 +169,15 @@ public sealed partial class MainWindow : Window
             if (token.StartsWith(pagePrefix, StringComparison.OrdinalIgnoreCase))
             {
                 var candidate = token[pagePrefix.Length..];
-                if (s_pageMap.ContainsKey(candidate))
+                if (TryGetCanonicalTag(candidate, out var canonical))
                 {
-                    return candidate;
+                    return canonical;
                 }
+
+                // An unknown tag opens Home, but leaves a trace instead of failing silently (D:S4).
+                App.AppendVerificationLog($"NavigateMissingTag {candidate}");
+                App.AppendSelectionVerificationLog($"NavigateMissingTag {candidate}");
+                return "Home";
             }
         }
 
@@ -565,7 +611,7 @@ public sealed partial class MainWindow : Window
         {
             ElementTheme.Light => "Light",
             ElementTheme.Dark => "Dark",
-            _ => "Default",
+            _ => "Use system setting",
         };
     }
 
@@ -576,7 +622,7 @@ public sealed partial class MainWindow : Window
         peer?.RaiseNotificationEvent(
             AutomationNotificationKind.ActionCompleted,
             AutomationNotificationProcessing.ImportantMostRecent,
-            $"{GetThemeName(theme)} theme selected.",
+            $"Theme: {GetThemeName(theme)}.",
             "ThemeChanged");
     }
 
@@ -587,7 +633,7 @@ public sealed partial class MainWindow : Window
             _isUpdatingSelection = true;
             foreach (var item in NavView.MenuItems)
             {
-                if (item is NavigationViewItem navItem && (navItem.Tag as string) == tag)
+                if (item is NavigationViewItem navItem && string.Equals(navItem.Tag as string, tag, StringComparison.OrdinalIgnoreCase))
                 {
                     NavView.SelectedItem = navItem;
                     return;
@@ -595,7 +641,7 @@ public sealed partial class MainWindow : Window
             }
             foreach (var item in NavView.FooterMenuItems)
             {
-                if (item is NavigationViewItem navItem && (navItem.Tag as string) == tag)
+                if (item is NavigationViewItem navItem && string.Equals(navItem.Tag as string, tag, StringComparison.OrdinalIgnoreCase))
                 {
                     NavView.SelectedItem = navItem;
                     return;

@@ -9,332 +9,271 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
+using TableViewSampleApp.Converters;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
+using Windows.UI;
+using SortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
-using TableViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
-using TableViewSortedEventArgs = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortedEventArgs;
-// #44 enum unification: TableViewSortDirection was removed in favor of the shared Data enum.
-using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
-
-using TableViewSampleApp.Data;
+using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Task Manager-style process dashboard backed by the aligned TableViewSource surface.
+/// Task Manager scenario: template columns (icon + name, status, four heat-map metric cells),
+/// live data from a DispatcherTimer that stays sorted, search through TableViewSource.Filter and
+/// the Task Manager category bands through TableViewSource.GroupBy. The page follows the app
+/// theme; the title-bar button owns it.
 /// </summary>
 public sealed partial class TaskManagerPage : Page
 {
-    private readonly DispatcherTimer _timer;
-    private readonly Random _rng = new();
-    private string? _searchText;
+    private static readonly string[] s_categories = { "Apps", "Background processes", "Windows processes" };
 
-    // Reshaping happens IN PLACE on this one instance: Filter / GroupBy / Sort mutate and return
-    // the same TableViewSource (TableViewSource.cpp:49-50), so rebuilding it per change would
-    // needlessly drop selection, scroll offset and group expansion.
-    private TableViewSource? _source;
-    private string _mode = "flat";          // requested
-    private string _appliedMode = "flat";   // applied - every readout and guard reads THIS
-    private string _groupKey = "Category";
-    private readonly List<ProcessItem> _stashedProcesses = new();
-    private int _addedProcessCount;
-
-    private static readonly string[] s_categories =
+    // Run new task cycles through real inbox apps.
+    private static readonly (string Name, string Glyph, double Memory)[] s_newTasks =
     {
-        "Apps",
-        "Background processes",
-        "Windows processes",
+        ("Paint", "\uE790", 62.4),
+        ("Snipping Tool", "\uE722", 38.9),
+        ("Calculator", "\uE8EF", 21.7),
+        ("Clock", "\uE823", 17.3),
+        ("Photos", "\uEB9F", 148.2),
+        ("Media Player", "\uE8D6", 74.6),
     };
 
-    public ObservableCollection<ProcessItem> Processes { get; } = new();
+    private const int SimulatedCores = 12;
+    private const double SimulatedMemoryMB = 16 * 1024;
+
+    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(2) };
+    private readonly Random _rng = new();
+    private readonly List<ProcessItem> _stashedProcesses = new();
+    private TableViewSource? _source;          // created ONCE; filtered, sorted and grouped in place
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private string _appliedKey = "Category";
+    private string? _searchText;
+    private int _newTaskCount;
+    private (TableViewColumn? Column, SortDirection Direction) _reportedSort;
 
     public TaskManagerPage()
     {
+        PopulateProcesses();
+        _source = TableViewSource.From(Processes);
         InitializeComponent();
+
         ProcessTable.HeadersVisibility = TableViewHeadersVisibility.Column;
         ProcessTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
         ProcessTable.Density = TableViewDensity.Compact;
-        // No AlternatingRowBackground: real Task Manager doesn't zebra-stripe its rows,
-        // so banding stays off — only the per-cell heat map tints rows by load.
+        // Metrics open descending, as in Task Manager: the busiest process comes first.
+        foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColumn })
+        {
+            column.SortCycle = TableViewSortCycle.DescendingAscending;
+        }
 
-        PopulateProcesses();
-        ApplyProcessSource();
-        UpdateStatusBar();
-        UpdateSummary();
-
-        _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _timer.Tick += OnTimerTick;
-
         Loaded += OnPageLoaded;
         Unloaded += OnPageUnloaded;
+        UpdateTotals();
+        RefreshReadouts();
     }
 
-    private bool _syncingTheme;
+    public ObservableCollection<ProcessItem> Processes { get; } = new();
+
+    public TableViewSource? Source => _source;
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        if (!_timer.IsEnabled)
+        if (LiveUpdatesToggle.IsOn)
         {
             _timer.Start();
         }
 
-        // Default to the system / inherited theme; reflect it on the toggle WITHOUT forcing
-        // RequestedTheme, so the page stays on the system theme until the user explicitly
-        // switches to dark or light.
-        _syncingTheme = true;
-        ThemeToggle.IsOn = ActualTheme == ElementTheme.Dark;
-        _syncingTheme = false;
+        RefreshReadouts();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e) => _timer.Stop();
 
-    private void ApplyProcessSource()
+    // ---- Live data ----------------------------------------------------------------------
+
+    private void OnLiveUpdatesToggled(object sender, RoutedEventArgs e)
     {
-        if (ProcessTable is null)
+        // Toggled can fire while InitializeComponent applies IsOn; Loaded starts the timer then.
+        if (!IsLoaded)
         {
             return;
         }
 
-        if (_source is null)
+        if (LiveUpdatesToggle.IsOn)
         {
-            _source = TableViewSource.From(Processes);
-            ProcessTable.ItemsSource = _source;
-        }
-
-        var searchText = _searchText;
-        if (string.IsNullOrEmpty(searchText))
-        {
-            _source.ClearFilter();
+            _timer.Start();
+            SetLastAction("Live updates -> resumed");
         }
         else
         {
-            _source.Filter(item => MatchesSearch((ProcessItem)item, searchText));
+            _timer.Stop();
+            SetLastAction("Live updates -> paused");
         }
-
-        switch (_mode)
-        {
-            case "grouped":
-                var key = _groupKey;
-                // The two delegates receive DIFFERENT things despite both parameters being named
-                // `item`: TableViewKeySelector gets the ROW ITEM, TableViewIdentitySelector gets
-                // the GROUP KEY (TableViewSource.idl:12-16). An item-typed identity lambda would
-                // return an empty identity, which fails fast with E_INVALIDARG.
-                _source.GroupBy(
-                    item => (object)GroupValue(item, key),
-                    groupKey => groupKey?.ToString() ?? "(none)");
-                break;
-
-            // case "hierarchy":
-            // case "groupedhierarchy":
-            //     Hierarchical rows are not available in this release, and no hierarchy API exists
-            //     on TableViewSource or TableView yet - so there is deliberately no call written
-            //     out here to copy. When the control ships hierarchy support, apply it to this
-            //     same source instance alongside the GroupBy stage above so the two compose, and
-            //     drop the IsEnabled="False" from the matching options in the XAML.
-            //     break;
-
-            default:
-                _source.ClearGroupBy();
-                break;
-        }
-
-        // Set ONLY after the shaping call returns: a readout driven by the REQUESTED mode lies
-        // about the table whenever GroupBy throws.
-        _appliedMode = _mode;
-
-        ApplyActiveSort(_source);
-        UpdateShapingUi();
-        UpdateStatusBar();
     }
 
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
+    private void OnUpdateIntervalChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (ProcessTable is null || ShapingModeSelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        if (!IsLoaded)
         {
             return;
         }
 
-        _mode = tag;
-        ApplyProcessSource();
-        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Shaping mode -> {0}", ModeLabel(_appliedMode)));
+        var seconds = int.Parse(SampleShaping.SelectedTag(UpdateIntervalSelector, "2"), CultureInfo.InvariantCulture);
+        _timer.Interval = TimeSpan.FromSeconds(seconds);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Update interval -> {0}", SampleShaping.Label(UpdateIntervalSelector)));
     }
 
-    private void OnShapingGroupKeyChanged(object sender, SelectionChangedEventArgs e)
+    private void OnTimerTick(object? sender, object e)
     {
-        if (ProcessTable is null || ShapingGroupKeyCombo?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        foreach (var process in Processes)
+        {
+            if (process.Children.Count > 0)
+            {
+                foreach (var child in process.Children)
+                {
+                    RandomizeValues(child);
+                }
+
+                AggregateFromChildren(process);
+            }
+            else
+            {
+                RandomizeValues(process);
+            }
+        }
+
+        UpdateTotals();
+        ResortIfMetricSorted();
+    }
+
+    // A value change raised through INotifyPropertyChanged updates the cell but does not move the
+    // row: the projection re-sorts on collection changes only. Re-declaring the active sort with
+    // the column's own path re-sorts the same source and keeps that column's sort indicator.
+    private void ResortIfMetricSorted()
+    {
+        var column = ActiveSortColumn();
+        if (_source is null || column is null || column.SortMemberPath is not
+            (nameof(ProcessItem.CpuPercent) or nameof(ProcessItem.MemoryMB) or nameof(ProcessItem.DiskMBps) or nameof(ProcessItem.NetworkMbps)))
         {
             return;
         }
 
-        _groupKey = tag;
-        ApplyProcessSource();
-        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Group key -> {0}", tag));
+        _source.Sort(column.SortMemberPath, column.SortDirection);
     }
 
-    private void UpdateShapingUi()
+    private TableViewColumn? ActiveSortColumn() =>
+        ProcessTable?.Columns.FirstOrDefault(column => column.SortDirection != SortDirection.None);
+
+    private void OnProcessTableSorted(TableView sender, TableViewSortedEventArgs args)
     {
-        var grouped = _appliedMode == "grouped";
-        var hasSelection = ProcessTable?.SelectedItem is ProcessItem;
-
-        if (ShapingGroupKeyCombo is not null)
-        {
-            ShapingGroupKeyCombo.IsEnabled = grouped;
-            ToolTipService.SetToolTip(ShapingGroupKeyCombo, grouped
-                ? "Change the GroupBy key while grouped - expansion and selection survive."
-                : "Available once Grouped mode is selected.");
-        }
-
-        SetGroupActionState(ExpandAllButton, grouped, "Expand every group.");
-        SetGroupActionState(CollapseAllButton, grouped, "Collapse every group.");
-
-        if (MoveCategoryButton is not null)
-        {
-            MoveCategoryButton.IsEnabled = hasSelection;
-            ToolTipService.SetToolTip(MoveCategoryButton, hasSelection
-                ? "Rewrites the selected process's Category, then re-applies GroupBy so the row moves to another group."
-                : "Select a process first.");
-        }
-
-        if (EmptyToggleButton is not null)
-        {
-            EmptyToggleButton.Content = _stashedProcesses.Count > 0
-                ? "Restore all rows"
-                : "Remove all rows (group an empty set)";
-        }
-
-        if (AppliedModeText is null)
+        // The live re-sort raises Sorted with the same column and direction on every tick; report
+        // only real changes.
+        if (_reportedSort == (args.Column, args.Direction))
         {
             return;
         }
 
-        AppliedModeText.Text = grouped
-            ? string.Format(CultureInfo.InvariantCulture, "Grouped by {0}", _groupKey)
-            : "Flat (no shaping)";
-
-        var groups = GroupCounts().ToList();
-        GroupCountText.Text = !grouped
-            ? "(n/a - flat)"
-            : groups.Count == 0
-                ? "0 (empty result)"
-                : string.Join(", ", groups.Select(g => string.Format(CultureInfo.InvariantCulture, "{0} ({1})", g.Key, g.Count)));
-        RowCountText.Text = VisibleProcesses().Count().ToString(CultureInfo.InvariantCulture);
+        _reportedSort = (args.Column, args.Direction);
+        SetLastAction(args.Column is null || args.Direction == SortDirection.None
+            ? "Sort cleared"
+            : string.Format(CultureInfo.CurrentCulture, "Sorted by {0}, {1}", args.Column.Header, args.Direction == SortDirection.Descending ? "descending" : "ascending"));
     }
 
-    private static void SetGroupActionState(Button? button, bool grouped, string enabledTip)
+    // ---- Search (TableViewSource.Filter) ------------------------------------------------
+
+    private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
-        if (button is null)
+        if (_source is null || args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
         {
             return;
         }
 
-        button.IsEnabled = grouped;
-        ToolTipService.SetToolTip(button, grouped ? enabledTip : "Available once Grouped mode is selected.");
-    }
-
-    private IEnumerable<ProcessItem> VisibleProcesses()
-    {
-        var searchText = _searchText;
-        return string.IsNullOrEmpty(searchText)
-            ? Processes
-            : Processes.Where(process => MatchesSearch(process, searchText));
-    }
-
-    private IEnumerable<(string Key, int Count)> GroupCounts()
-    {
-        var key = _groupKey;
-        return VisibleProcesses()
-            .GroupBy(process => GroupValue(process, key), StringComparer.Ordinal)
-            .OrderBy(group => group.Key, StringComparer.Ordinal)
-            .Select(group => (group.Key, group.Count()));
-    }
-
-    // Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
-    private static string GroupValue(object item, string key)
-    {
-        if (item is not ProcessItem process)
+        var query = sender.Text?.Trim();
+        _searchText = string.IsNullOrEmpty(query) ? null : query;
+        if (_searchText is null)
         {
-            return "(none)";
-        }
-
-        var value = key switch
-        {
-            "Status" => process.IsEfficiency
-                ? "Efficiency mode"
-                : (string.IsNullOrWhiteSpace(process.StatusText) ? "Running" : process.StatusText),
-            _ => process.Category,
-        };
-
-        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-    }
-
-    private static string ModeLabel(string mode) => mode == "grouped" ? "Grouped" : "Flat";
-
-    private void SetLastAction(string text)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = text;
-        }
-    }
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        if (_appliedMode != "grouped")
-        {
+            _source.ClearFilter();
+            SetLastAction("Search cleared");
             return;
         }
 
-        ProcessTable.ExpandAllGroups();
-        SetLastAction("Expanded all groups");
+        var text = _searchText;
+        _source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Search \"{0}\" -> {1:N0} of {2:N0} processes", text, VisibleCount(), Processes.Count));
     }
 
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    private static bool MatchesSearch(ProcessItem process, string query) =>
+        process.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+        || process.Category.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+        || process.StatusText.Contains(query, StringComparison.CurrentCultureIgnoreCase);
+
+    private int VisibleCount() =>
+        _searchText is { } text ? Processes.Count(process => MatchesSearch(process, text)) : Processes.Count;
+
+    // ---- Actions ------------------------------------------------------------------------
+
+    private void OnRunNewTaskClick(object sender, RoutedEventArgs e)
     {
-        if (_appliedMode != "grouped")
+        var template = s_newTasks[_newTaskCount % s_newTasks.Length];
+        var round = (_newTaskCount / s_newTasks.Length) + 1;
+        _newTaskCount++;
+
+        var process = new ProcessItem
         {
-            return;
-        }
-
-        ProcessTable.CollapseAllGroups();
-        SetLastAction("Collapsed all groups");
-    }
-
-    private void OnMoveSelectedCategoryClick(object sender, RoutedEventArgs e)
-    {
-        if (ProcessTable?.SelectedItem is not ProcessItem selected)
-        {
-            return;
-        }
-
-        var index = Array.IndexOf(s_categories, selected.Category);
-        var next = s_categories[(index + 1 + s_categories.Length) % s_categories.Length];
-        var previous = string.IsNullOrWhiteSpace(selected.Category) ? "(none)" : selected.Category;
-        selected.Category = next;
-
-        // Re-running the shaping stage re-reads every key, so the mutated row re-buckets.
-        ApplyProcessSource();
-        SetLastAction(string.Format(CultureInfo.InvariantCulture, "{0}: {1} -> {2}", selected.Name, previous, next));
-    }
-
-    private void OnAddProcessClick(object sender, RoutedEventArgs e)
-    {
-        _addedProcessCount++;
-        var added = new ProcessItem
-        {
-            Name = string.Format(CultureInfo.InvariantCulture, "Sample app {0}", _addedProcessCount),
+            Name = round == 1 ? template.Name : string.Format(CultureInfo.CurrentCulture, "{0} ({1})", template.Name, round),
             Category = "Apps",
-            IconGlyph = "\uE7B8",
-            MemoryBaseline = 18 + (_addedProcessCount * 3),
+            IconGlyph = template.Glyph,
+            MemoryBaseline = template.Memory,
+            StatusText = ProcessItem.Running,
         };
-        RandomizeValues(added);
-        Processes.Insert(0, added);
+        RandomizeValues(process);
 
-        ApplyProcessSource();
-        UpdateSummary();
-        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Added {0} to the Apps group", added.Name));
+        // The projection places the new row by the active sort and into its group.
+        Processes.Add(process);
+        UpdateTotals();
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Started {0} in Apps", process.Name));
     }
 
-    private void OnEmptyToggleClick(object sender, RoutedEventArgs e)
+    private void OnEndTaskClick(object sender, RoutedEventArgs e)
+    {
+        if (ProcessTable.SelectedItem is not ProcessItem process)
+        {
+            SetLastAction("No process selected.");
+            return;
+        }
+
+        Processes.Remove(process);
+        UpdateTotals();
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Ended {0} ({1})", process.Name, process.Category));
+    }
+
+    private void OnSortByCpuClick(object sender, RoutedEventArgs e)
+    {
+        ProcessTable.SortByColumn(CpuColumn, SortDirection.Descending);
+        SetLastAction("Sorted by CPU, highest first; each live tick re-sorts");
+    }
+
+    private void OnMoveCategoryClick(object sender, RoutedEventArgs e)
+    {
+        if (ProcessTable.SelectedItem is not ProcessItem process)
+        {
+            SetLastAction("No process selected.");
+            return;
+        }
+
+        var from = process.Category;
+        process.Category = SampleShaping.Next(s_categories, from);
+
+        // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row.
+        ReapplyIfGroupedOn(nameof(ProcessItem.Category));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", process.Name, from, process.Category));
+    }
+
+    private void OnRemoveAllClick(object sender, RoutedEventArgs e)
     {
         if (_stashedProcesses.Count > 0)
         {
@@ -345,215 +284,99 @@ public sealed partial class TaskManagerPage : Page
 
             var restored = _stashedProcesses.Count;
             _stashedProcesses.Clear();
-            ApplyProcessSource();
-            UpdateSummary();
-            SetLastAction(string.Format(CultureInfo.InvariantCulture, "Restored {0} rows", restored));
+            RemoveAllButton.Content = "Remove all rows";
+            UpdateTotals();
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Restored {0:N0} processes", restored));
             return;
         }
 
         _stashedProcesses.AddRange(Processes);
         Processes.Clear();
-        ApplyProcessSource();
-        UpdateSummary();
-        SetLastAction("Removed all rows - the grouped projection now has zero groups");
+        RemoveAllButton.Content = "Restore all rows";
+        UpdateTotals();
+        SetLastAction(_appliedMode == "grouped"
+            ? "Removed all rows; the grouped projection now has zero groups"
+            : "Removed all rows");
     }
 
-    private void ApplyActiveSort(TableViewSource source)
+    private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        // Clear first: the keySelector Sort overload declares an ANONYMOUS axis, so re-declaring
-        // one without clearing would stack a second axis rather than replace the first.
-        source.ClearSort();
-
-        var sortColumn = SampleShape.ActiveSortColumn(ProcessTable);
-        if (ProcessTable is null ||
-            sortColumn is null ||
-            SampleShape.ActiveSortDirection(ProcessTable) == TableViewSortDirection.None ||
-            string.IsNullOrEmpty(sortColumn.SortMemberPath))
+        if (SampleShaping.IsReselecting)
         {
             return;
         }
 
-        var path = sortColumn.SortMemberPath;
-        source.Sort(item => SortKey(item, path), SampleShape.ActiveSortDirection(ProcessTable));
+        RefreshReadouts();
     }
 
-    private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+    // ---- Simulation ---------------------------------------------------------------------
+
+    private void RandomizeValues(ProcessItem process)
     {
-        if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
+        var memoryDrift = (_rng.NextDouble() - 0.5) * process.MemoryBaseline * 0.08;
+        process.MemoryMB = Math.Max(0.5, Math.Round(process.MemoryBaseline + memoryDrift, 1));
+
+        if (process.IsSuspended)
         {
+            // A suspended process holds its memory but uses no CPU, disk or network.
+            process.CpuPercent = 0;
+            process.DiskMBps = 0;
+            process.NetworkMbps = 0;
             return;
         }
 
-        _searchText = SearchBox.Text?.Trim();
-        ApplyProcessSource();
-    }
-
-    private static object? SortKey(object item, string path)
-    {
-        if (item is not ProcessItem process)
-        {
-            return null;
-        }
-
-        return path switch
-        {
-            nameof(ProcessItem.Name) => process.Name,
-            nameof(ProcessItem.StatusText) => process.StatusText,
-            nameof(ProcessItem.CpuPercent) => process.CpuPercent,
-            nameof(ProcessItem.MemoryMB) => process.MemoryMB,
-            nameof(ProcessItem.DiskMBps) => process.DiskMBps,
-            nameof(ProcessItem.NetworkMbps) => process.NetworkMbps,
-            _ => null,
-        };
-    }
-
-    private static string ProcessIdentity(object item) => item is ProcessItem process ? process.Key : string.Empty;
-
-    private void OnProcessTableSorted(TableView sender, TableViewSortedEventArgs args)
-    {
-        ApplyProcessSource();
-    }
-
-    private void OnThemeToggled(object sender, RoutedEventArgs e)
-    {
-        if (_syncingTheme)
-        {
-            return;
-        }
-
-        RequestedTheme = ThemeToggle.IsOn ? ElementTheme.Dark : ElementTheme.Light;
-    }
-
-    private void OnTimerTick(object? sender, object e)
-    {
-        foreach (var process in Processes)
-        {
-            RandomizeValues(process);
-            if (process.Children is { Count: > 0 })
-            {
-                foreach (var child in process.Children)
-                {
-                    RandomizeValues(child);
-                }
-
-                AggregateFromChildren(process);
-            }
-        }
-
-        UpdateSummary();
-    }
-
-    private void RandomizeValues(ProcessItem p)
-    {
-        var cpuBase = p.IsHighCpu ? _rng.NextDouble() * 15 + 5 : _rng.NextDouble() * 3;
-        p.CpuPercent = Math.Round(cpuBase, 1);
-
-        var memDrift = (_rng.NextDouble() - 0.5) * p.MemoryBaseline * 0.08;
-        p.MemoryMB = Math.Max(0.5, Math.Round(p.MemoryBaseline + memDrift, 1));
-
-        var diskBase = p.IsHighDisk ? _rng.NextDouble() * 2 : _rng.NextDouble() * 0.3;
-        p.DiskMBps = Math.Round(diskBase, 1);
-
-        var netBase = p.IsHighNetwork ? _rng.NextDouble() * 1.5 : _rng.NextDouble() * 0.2;
-        p.NetworkMbps = Math.Round(netBase, 1);
+        process.CpuPercent = Math.Round(process.IsHighCpu ? (_rng.NextDouble() * 15) + 5 : _rng.NextDouble() * 3, 1);
+        process.DiskMBps = Math.Round(process.IsHighDisk ? _rng.NextDouble() * 2 : _rng.NextDouble() * 0.3, 1);
+        process.NetworkMbps = Math.Round(process.IsHighNetwork ? _rng.NextDouble() * 1.5 : _rng.NextDouble() * 0.2, 1);
     }
 
     private static void AggregateFromChildren(ProcessItem parent)
     {
-        if (parent.Children is not { Count: > 0 }) return;
-
-        double cpu = 0, mem = 0, disk = 0, net = 0;
-        foreach (var child in parent.Children)
-        {
-            cpu += child.CpuPercent;
-            mem += child.MemoryMB;
-            disk += child.DiskMBps;
-            net += child.NetworkMbps;
-        }
-
-        parent.CpuPercent = Math.Round(cpu, 1);
-        parent.MemoryMB = Math.Round(mem, 1);
-        parent.DiskMBps = Math.Round(disk, 1);
-        parent.NetworkMbps = Math.Round(net, 1);
+        parent.CpuPercent = Math.Round(parent.Children.Sum(child => child.CpuPercent), 1);
+        parent.MemoryMB = Math.Round(parent.Children.Sum(child => child.MemoryMB), 1);
+        parent.DiskMBps = Math.Round(parent.Children.Sum(child => child.DiskMBps), 1);
+        parent.NetworkMbps = Math.Round(parent.Children.Sum(child => child.NetworkMbps), 1);
     }
 
-    private void UpdateSummary()
+    private void UpdateTotals()
     {
-        var totalCpu = Processes.Sum(p => p.CpuPercent);
-        var totalMem = Processes.Sum(p => p.MemoryMB);
-        var totalDisk = Processes.Sum(p => p.DiskMBps);
-        var totalNet = Processes.Sum(p => p.NetworkMbps);
-
-        // Per-process CpuPercent is modeled per-core (a process can exceed 100% individually and
-        // the set sums well above 100%), so overall utilization = total / core count — NOT a raw
-        // clamped sum, which pinned this readout at 100%.
-        const int simulatedCores = 12;
-        CpuSummary.Text = $"{Math.Min(totalCpu / simulatedCores, 100):F0}%";
-        MemorySummary.Text = $"{totalMem / 1024 / 16 * 100:F0}%";
-        DiskSummary.Text = $"{Math.Min(totalDisk, 100):F0}%";
-        NetworkSummary.Text = $"{Math.Min(totalNet, 100):F0}%";
-    }
-
-    private void UpdateStatusBar()
-    {
-        var total = Processes.Sum(p => 1 + p.Children.Count);
-        var processCount = Processes.Count.ToString(CultureInfo.InvariantCulture);
-        var searchText = _searchText;
-        if (!string.IsNullOrEmpty(searchText))
-        {
-            processCount = string.Format(CultureInfo.InvariantCulture,
-                "{0} (filtered)",
-                Processes.Count(process => MatchesSearch(process, searchText)));
-        }
-
-        StatusBar.Text = string.Format(CultureInfo.InvariantCulture,
-            "Processes: {0}   Threads: {1}   Handles: {2}",
-            processCount,
-            total * 12,
-            total * 347);
-    }
-
-    private static bool MatchesSearch(ProcessItem process, string query)
-    {
-        return (process.Name?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false)
-            || (process.Category?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false)
-            || (process.StatusText?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false);
-    }
-
-    private void OnEndTaskClick(object sender, RoutedEventArgs e)
-    {
-        if (ProcessTable.SelectedItem is not ProcessItem selected)
+        if (TotalsText is null)
         {
             return;
         }
 
-        foreach (var process in Processes)
-        {
-            if (process.Children.Remove(selected))
-            {
-                UpdateStatusBar();
-                SelectedProcessText.Text = "(none)";
-                ApplyProcessSource();
-                SetLastAction(string.Format(CultureInfo.InvariantCulture, "Removed child {0}", selected.Name));
-                return;
-            }
-        }
-
-        if (Processes.Remove(selected))
-        {
-            UpdateStatusBar();
-            SelectedProcessText.Text = "(none)";
-            ApplyProcessSource();
-            SetLastAction(string.Format(CultureInfo.InvariantCulture, "Removed {0} from its group", selected.Name));
-        }
+        // CpuPercent is per core, so overall utilization is the sum over the core count.
+        TotalsText.Text = string.Format(
+            CultureInfo.CurrentCulture,
+            "CPU {0:N0}%, memory {1:N0}%, disk {2:N1} MB/s, network {3:N1} Mbps",
+            Math.Min(Processes.Sum(p => p.CpuPercent) / SimulatedCores, 100),
+            Math.Min(Processes.Sum(p => p.MemoryMB) / SimulatedMemoryMB * 100, 100),
+            Processes.Sum(p => p.DiskMBps),
+            Processes.Sum(p => p.NetworkMbps));
     }
 
-    private void OnSelectionChanged(TableView sender, TableViewSelectionChangedEventArgs args)
+    private void RefreshReadouts()
     {
-        SelectedProcessText.Text = ProcessTable.SelectedItem is ProcessItem process
-            ? process.Name
-            : "(none)";
-        UpdateShapingUi();
+        if (RowsText is null || SelectedProcessText is null || LiveText is null || ProcessTable is null)
+        {
+            return;
+        }
+
+        var visible = VisibleCount();
+        RowsText.Text = visible == Processes.Count
+            ? SampleShaping.RowCountText(visible)
+            : string.Format(CultureInfo.CurrentCulture, "{0:N0} of {1:N0} (search)", visible, Processes.Count);
+        SelectedProcessText.Text = ProcessTable.SelectedItem is ProcessItem process ? process.Name : "(none)";
+        LiveText.Text = LiveUpdatesToggle?.IsOn == false
+            ? "Paused"
+            : string.Format(CultureInfo.CurrentCulture, "Every {0}", SampleShaping.Label(UpdateIntervalSelector).ToLower(CultureInfo.CurrentCulture));
+    }
+
+    // Group key resolution for this page's model (FIX-PLAN §1.6 R2). Never returns a blank key.
+    private static object KeyOf(ProcessItem? process, string key)
+    {
+        var value = key == nameof(ProcessItem.StatusText) ? process?.StatusText : process?.Category;
+        return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
     }
 
     private void PopulateProcesses()
@@ -573,7 +396,7 @@ public sealed partial class TaskManagerPage : Page
                 new() { Name = "WebView2 Manager", Category = "Apps", IconGlyph = "\uE912", MemoryBaseline = 10.9 },
                 new() { Name = "WebView2 Utility: Network Service", Category = "Apps", IconGlyph = "\uE968", MemoryBaseline = 2.4 },
                 new() { Name = "WebView2 Utility: Storage Service", Category = "Apps", IconGlyph = "\uEDA2", MemoryBaseline = 1.4 },
-                new() { Name = "WebView2: Calendar in Taskbar", Category = "Apps", IconGlyph = "\uE774", MemoryBaseline = 0.8, StatusText = "Efficiency …", IsEfficiency = true },
+                new() { Name = "WebView2: Calendar in Taskbar", Category = "Apps", IconGlyph = "\uE774", MemoryBaseline = 0.8, StatusText = ProcessItem.EfficiencyMode, IsEfficiency = true },
             ]
         });
 
@@ -591,7 +414,7 @@ public sealed partial class TaskManagerPage : Page
                 new() { Name = "WebView2 Manager", Category = "Apps", IconGlyph = "\uE912", MemoryBaseline = 12.7 },
                 new() { Name = "WebView2 Utility: Network Service", Category = "Apps", IconGlyph = "\uE968", MemoryBaseline = 3.9 },
                 new() { Name = "WebView2 Utility: Storage Service", Category = "Apps", IconGlyph = "\uEDA2", MemoryBaseline = 1.8 },
-                new() { Name = "WebView2: Files Search App", Category = "Apps", IconGlyph = "\uE774", MemoryBaseline = 0.5, StatusText = "Efficiency …", IsEfficiency = true },
+                new() { Name = "WebView2: Files Search App", Category = "Apps", IconGlyph = "\uE774", MemoryBaseline = 0.5, StatusText = ProcessItem.EfficiencyMode, IsEfficiency = true },
             ]
         });
 
@@ -648,7 +471,7 @@ public sealed partial class TaskManagerPage : Page
             MemoryBaseline = 264.8,
             IsHighCpu = true,
             IsHighNetwork = true,
-            StatusText = "Efficiency …",
+            StatusText = ProcessItem.EfficiencyMode,
             IsEfficiency = true,
             Children =
             [
@@ -1030,5 +853,170 @@ public sealed partial class TaskManagerPage : Page
             MemoryBaseline = 112.5,
             IsHighCpu = true,
         });
+
+        // Every row states its status: Task Manager shows Running unless a process is suspended or
+        // in efficiency mode. Suspended UWP hosts use no CPU (see RandomizeValues).
+        foreach (var process in Processes.Concat(Processes.SelectMany(parent => parent.Children)))
+        {
+            process.StatusText = process.IsEfficiency
+                ? ProcessItem.EfficiencyMode
+                : process.Name is "Search Host" or "Widget Platform" ? ProcessItem.Suspended : ProcessItem.Running;
+        }
+
+        foreach (var process in Processes)
+        {
+            if (process.Children.Count > 0)
+            {
+                foreach (var child in process.Children)
+                {
+                    RandomizeValues(child);
+                }
+
+                AggregateFromChildren(process);
+            }
+            else
+            {
+                RandomizeValues(process);
+            }
+        }
     }
+
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
+    {
+        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
+        // later-declared elements exist. Guard every element this path touches.
+        if (_source is null || ProcessTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Category");
+        var selected = ProcessTable.SelectedItem;
+
+        switch (mode)
+        {
+            case "grouped":
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                _source.GroupBy(item => KeyOf(item as ProcessItem, key), SampleShaping.GroupIdentity);
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the GroupBy stage above rather than replacing it, so each process expands
+            //     into its Children; set _appliedMode only after the call returns.
+            default:
+                _source.ClearGroupBy();
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+        _appliedKey = key;
+
+        // Re-applying GroupBy can drop the selection when the selected row changed group.
+        SampleShaping.Reselect(ProcessTable, selected, Processes.Count + s_categories.Length + 3, RefreshReadouts);
+        UpdateShapingGating();
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+                : "Shaping -> Flat");
+        }
+    }
+
+    // Call after ANY write to the grouped-on property.
+    private void ReapplyIfGroupedOn(string? propertyName)
+    {
+        if (_appliedMode == "grouped" && propertyName == _appliedKey)
+        {
+            ApplyShaping(announce: false);
+        }
+    }
+
+    private void UpdateShapingGating()
+    {
+        var grouped = _appliedMode == "grouped";
+        GroupKeySelector.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
+    }
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        ProcessTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        ProcessTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
+    }
+
+    // The only writer of LastActionText.
+    private void SetLastAction(string message)
+    {
+        if (LastActionText is not null)
+        {
+            LastActionText.Text = message;
+        }
+
+        RefreshReadouts();
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// Heat-map tint for a Task Manager metric cell: one blue hue whose opacity deepens with load, as
+/// in Windows 11 Task Manager. ConverterParameter names the metric (Cpu, Memory, Disk, Network).
+/// In a high-contrast theme the tint is dropped so the system colours apply.
+/// </summary>
+public sealed partial class ProcessHeatBrushConverter : IValueConverter
+{
+    private static SolidColorBrush[]? s_levels;
+
+    // Thresholds for the four steps above the base tint, per metric.
+    private static readonly double[] s_cpu = { 0.5, 2, 5, 10 };
+    private static readonly double[] s_memory = { 50, 200, 500, 1000 };
+    private static readonly double[] s_disk = { 0.1, 0.5, 2, 5 };
+    private static readonly double[] s_network = { 0.05, 0.3, 1, 5 };
+
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (ChipBrushes.IsHighContrast)
+        {
+            return ChipBrushes.Transparent;
+        }
+
+        // Created on first use, on the UI thread, and shared by every cell.
+        s_levels ??= new[] { 22, 38, 58, 82, 110 }
+            .Select(alpha => new SolidColorBrush(Color.FromArgb((byte)alpha, 96, 160, 240)))
+            .ToArray();
+
+        var thresholds = (parameter as string) switch
+        {
+            "Memory" => s_memory,
+            "Disk" => s_disk,
+            "Network" => s_network,
+            _ => s_cpu,
+        };
+
+        var load = value is double d ? d : 0;
+        return s_levels[thresholds.Count(threshold => load > threshold)];
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) =>
+        throw new NotSupportedException();
 }

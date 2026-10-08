@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Virtualization: tens of thousands of in-memory rows, of which only the visible ones are
+    realized. Navigation cache stays disabled because this page can hold 50,000 rows.
+-->
 <Page
     x:Class="TableViewSampleApp.Pages.VirtualizationPage"
     NavigationCacheMode="Disabled"
@@ -8,10 +12,9 @@
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
-    <!-- Navigation cache stays disabled because this page can allocate 50,000 in-memory rows. -->
     <controls:SamplePresenter
         Header="Virtualization"
-        Description="Bind tens of thousands of in-memory rows — the TableView realizes only the rows in the viewport, so memory and scroll responsiveness stay flat. Pick a dataset size below."
+        Description="TableView virtualizes its rows by default: bind 50,000 people and only the rows in the viewport get a TableViewRow, which is recycled as you scroll. Pick a row count in the rail, scroll, and watch Realized rows stay near the number of visible rows while Rows grows. The Template columns switch adds a photo, a chip and a checkbox to every realized row, so you can compare the realized-row cost with plain text. Grouping with TableViewSource.GroupBy keeps the same behaviour, because group headers are realized only when visible."
         SourceCaption="VirtualizationPage.xaml (excerpt)"
         SourceSnippet="Virtualization.xaml.txt"
         AdditionalSnippetCaption="VirtualizationPage.xaml.cs (excerpt)"
@@ -24,18 +27,17 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+                <!-- scaffold:tryit -->
                 <muxc:InfoBar
                     Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Try it"
-                    Message="Bind tens of thousands of in-memory rows and scroll fast — the TableView realizes only the viewport rows, so memory and responsiveness stay flat."
-                    MinHeight="104"/>
-
-                <!-- The virtualized TableView. A fixed min-height gives the body a
-                     real viewport so only the visible rows are realized. -->
-                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
+                    MinHeight="104"
+                    Message="Pick 50,000 rows and drag the scroll thumb quickly; Realized rows stays near the visible count. Click Scroll to row 25,000, then switch Shaping to Grouped and click Collapse all: Realized rows drops to zero while only group headers show."/>
+                <!-- /scaffold -->
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
                         x:Name="PeopleTable"
                         AutomationProperties.AutomationId="VirtualizationTable"
@@ -43,12 +45,12 @@
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <tv:TableViewTextColumn Header="#"          Width="{StaticResource ColWidthId}"         Binding="{Binding Id}"         CanSort="False"/>
-                        <tv:TableViewTextColumn Header="First name" Width="{StaticResource ColWidthShortName}"  Binding="{Binding FirstName}"  CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Last name"  Width="{StaticResource ColWidthShortName}"  Binding="{Binding LastName}"   CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Email"      Width="{StaticResource ColWidthEmail}"      Binding="{Binding Email}"      CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}" CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding Role}"       CanSort="False"/>
+                        <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}" Binding="{Binding EmployeeId}" CanSort="False"/>
+                        <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Name" Width="{StaticResource ColWidthLongName}" Binding="{Binding FullName}" CanSort="False"/>
+                        <tv:TableViewTemplateColumn x:Name="DepartmentChipColumn" Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" CanSort="False"/>
+                        <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Role}" CanSort="False"/>
                     </tv:TableView>
                 </Border>
             </Grid>
@@ -56,119 +58,198 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Source and dataset" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock
-                    Text="Pick an in-memory dataset size. The table only realizes the rows you can see, so scrolling stays responsive even with tens of thousands of bound rows."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-
-                <ComboBox
-                    x:Name="SizeSelector"
-                    AutomationProperties.AutomationId="SizeSelector"
-                    Header="Row count (in-memory)"
-                    SelectedIndex="2"
-                    SelectionChanged="OnRowCountChanged"
-                    HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="100"    Tag="100"/>
-                    <ComboBoxItem Content="1,000"  Tag="1000"/>
-                    <ComboBoxItem Content="10,000" Tag="10000"/>
-                    <ComboBoxItem Content="50,000" Tag="50000"/>
-                </ComboBox>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Group the virtualized set to check that group headers are realized alongside rows: 'Realized rows' should keep tracking the viewport, not the group count. TableViewSource.GroupBy reshapes the same source in place."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <ComboBox
-                    x:Name="ShapingModeSelector"
-                    AutomationProperties.AutomationId="ShapingModeSelector"
-                    Header="Shaping mode"
-                    SelectedIndex="0"
-                    SelectionChanged="OnShapingModeChanged"
-                    HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Flat" Tag="flat"/>
-                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                    <!-- Hierarchical rows are not available in this release. The options are shown
-                         disabled so the shape of the feature is visible; re-enable when the control
-                         ships hierarchy support. No hierarchy API exists on TableView or
-                         TableViewSource yet — TableViewRowInfo.h only reserves room for it — so the
-                         code-behind stub in ApplyGrouping is prose, not a call. -->
-                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                </ComboBox>
-                <ComboBox
-                    x:Name="GroupBySelector"
-                    AutomationProperties.AutomationId="GroupBySelector"
-                    Header="Group by"
-                    SelectedIndex="0"
-                    IsEnabled="False"
-                    ToolTipService.ToolTip="Available once the shaping mode is Grouped."
-                    SelectionChanged="OnGroupByChanged"
-                    HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Department" Tag="Department"/>
-                    <ComboBoxItem Content="Role"       Tag="Role"/>
-                </ComboBox>
-
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button x:Name="ExpandAllButton" AutomationProperties.AutomationId="ExpandAllButton" Content="Expand all" Click="OnExpandAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once the shaping mode is Grouped."/>
-                    <Button x:Name="CollapseAllButton" AutomationProperties.AutomationId="CollapseAllButton" Content="Collapse all" Click="OnCollapseAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once the shaping mode is Grouped."/>
+                <!-- 1. Primary feature -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Dataset">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Dataset"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Changing the row count builds a new list off the bind path and assigns it once through TableViewSource.From. Template columns adds the shared Photo, Department chip and Active checkbox templates; off, every cell is plain text."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="RowCountSelector"
+                        AutomationProperties.AutomationId="VirtualizationRowCountSelector"
+                        Header="Row count"
+                        SelectedIndex="2"
+                        SelectionChanged="OnRowCountChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="100" Tag="100"/>
+                        <ComboBoxItem Content="1,000" Tag="1000"/>
+                        <ComboBoxItem Content="10,000" Tag="10000"/>
+                        <ComboBoxItem Content="50,000" Tag="50000"/>
+                    </ComboBox>
+                    <ToggleSwitch
+                        x:Name="TemplateColumnsToggle"
+                        AutomationProperties.AutomationId="VirtualizationTemplateColumnsToggle"
+                        Header="Template columns"
+                        IsOn="True"
+                        Toggled="OnTemplateColumnsToggled"/>
                 </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <Grid ColumnSpacing="12" RowSpacing="4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Grouping the large set adds header rows, and Realized rows should still follow the viewport rather than the group count. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="VirtualizationShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="VirtualizationGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Department" Tag="Department"/>
+                        <ComboBoxItem Content="Office" Tag="Office"/>
+                        <ComboBoxItem Content="Role" Tag="Role"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="VirtualizationExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="VirtualizationCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Source mode" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="0" Grid.Column="1" x:Name="SourceModeText" Text="In-memory" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SourceModeText"/>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="These actions reach rows that are not realized yet: the row is selected by index and the table scrolls to it, so its row is realized on arrival. In Grouped mode they expand all groups first. Watch the table and the Last action readout."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="ScrollToMiddleButton"
+                            AutomationProperties.AutomationId="VirtualizationScrollToMiddleButton"
+                            Content="Scroll to the middle row"
+                            Click="OnScrollToMiddleClick"
+                            ToolTipService.ToolTip="Selects the middle row and scrolls the table to it."
+                            AutomationProperties.HelpText="Selects the middle row and scrolls the table to it."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RenameFarRowButton"
+                            AutomationProperties.AutomationId="VirtualizationRenameFarRowButton"
+                            Content="Rename a far row and scroll to it"
+                            Click="OnRenameFarRowClick"
+                            ToolTipService.ToolTip="Changes the Role of a row that is not realized, then scrolls to it: the recycled row shows the new value."
+                            AutomationProperties.HelpText="Changes the Role of a row that is not realized, then scrolls to it: the recycled row shows the new value."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="JumpToLastButton"
+                            AutomationProperties.AutomationId="VirtualizationJumpToLastButton"
+                            Content="Jump to the last row"
+                            Click="OnJumpToLastClick"
+                            ToolTipService.ToolTip="Selects the last row and scrolls the table to the end."
+                            AutomationProperties.HelpText="Selects the last row and scrolls the table to the end."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="JumpToFirstButton"
+                            AutomationProperties.AutomationId="VirtualizationJumpToFirstButton"
+                            Content="Jump to the first row"
+                            Click="OnJumpToFirstClick"
+                            ToolTipService.ToolTip="Selects the first row and scrolls the table back to the top."
+                            AutomationProperties.HelpText="Selects the first row and scrolls the table back to the top."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Total rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="1" Grid.Column="1" x:Name="TotalRowsText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TotalRowsText"/>
-
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Realized rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="1" x:Name="RealizedRowsText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="RealizedRowsText"/>
-
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Realized share" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="1" x:Name="RealizedShareText" Text="0%" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="RealizedShareText"/>
-
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Peak realized" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="4" Grid.Column="1" x:Name="PeakRealizedText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="PeakRealizedText"/>
-
-                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Row height" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="5" Grid.Column="1" x:Name="RowHeightText" Text="—" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="RowHeightText"/>
-
-                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Selected rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="6" Grid.Column="1" x:Name="SelectedRowsText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedRowsText"/>
-
-                    <TextBlock Grid.Row="7" Grid.Column="0" Text="Columns" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="7" Grid.Column="1" x:Name="ColumnCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ColumnCountText"/>
-
-                    <TextBlock Grid.Row="8" Grid.Column="0" Text="Grouped by" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="8" Grid.Column="1" x:Name="GroupedByText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="GroupedByText"/>
-                </Grid>
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Realized rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="RealizedRowsText" AutomationProperties.AutomationId="VirtualizationRealizedRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Realized share" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RealizedShareText" AutomationProperties.AutomationId="VirtualizationRealizedShareText"
+                                   AutomationProperties.LiveSetting="Polite" Text="—" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Row pool" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="RowPoolText" AutomationProperties.AutomationId="VirtualizationRowPoolText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Peak pool" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="PeakPoolText" AutomationProperties.AutomationId="VirtualizationPeakPoolText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Row height" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="RowHeightText" AutomationProperties.AutomationId="VirtualizationRowHeightText"
+                                   AutomationProperties.LiveSetting="Polite" Text="—" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="5" Text="Columns" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="ColumnsText" AutomationProperties.AutomationId="VirtualizationColumnsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="6" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="6" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="VirtualizationRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="7" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="7" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="VirtualizationShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="8" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="8" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="VirtualizationLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
 
                 <muxc:InfoBar
+                    Title="What to look for"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="How virtualization works here"
-                    Message="The TableView pools row visuals: only the rows that fit the viewport are materialized, and off-screen rows are re-bound to new data items as you scroll. Watch 'Realized rows' stay flat while 'Total rows' grows into the tens of thousands — that gap is virtualization. 'Peak realized' shows the pool never grows with the data set."/>
+                    Message="Realized rows counts the TableViewRow containers that are visible in the viewport; Row pool counts every container the table keeps, including spares parked off screen. Neither grows with Rows: 100 or 50,000 rows realize about the same number. After Collapse all, Realized rows drops to zero while the pool stays, ready for the next expand. Renaming a far row costs nothing until you scroll to it."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
-
     </controls:SamplePresenter>
 </Page>

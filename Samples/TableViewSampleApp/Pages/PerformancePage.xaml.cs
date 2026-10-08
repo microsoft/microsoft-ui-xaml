@@ -5,225 +5,444 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Tabular;
 using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
+using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Pages;
 
+/// <summary>
+/// Performance: timed runs of the common TableView workloads. Data is generated on a background
+/// thread before the clock starts; the clock covers the call plus one synchronous layout pass.
+/// The load runs assign a pre-built collection once (the pattern to use); the per-item Add run
+/// shows the pattern to avoid.
+/// </summary>
 public sealed partial class PerformancePage : Page
 {
-    public sealed class PerfRow
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Department { get; set; } = string.Empty;
-        public int Salary { get; set; }
-    }
+    private const int InitialRows = 1_000;
+    private const int PerItemCap = 10_000;
+    private const string FilterDepartment = "Engineering";
 
-    // We hold the working dataset in a plain List<T> (off the bind path) so
-    // measurements include ONLY the cost of binding + first-layout, not the
-    // cost of building the data. Real-world apps prep data on a background
-    // thread and bind on the UI thread, which is the shape this mimics.
-    private List<PerfRow> _allRows = new();
-    private ObservableCollection<PerfRow> _displayRows = new();
+    private ObservableCollection<Person> _people;
+    private TableViewSource? _source;          // one per loaded dataset; reshaped in place
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private TableViewTemplateColumn? _photoColumn;
+    private TableViewTemplateColumn? _departmentChipColumn;
+    private bool _templateColumns;
+    private bool _sortDescending = true;       // the first Sort click sorts ascending
+    private bool _isRunning;
     private long _baselineWorkingSet;
     private long _baselineManagedHeap;
-    private bool _hasBaseline;
 
     public PerformancePage()
     {
+        _people = new ObservableCollection<Person>(BuildPeople(InitialRows));
+        _source = TableViewSource.From(_people);
         InitializeComponent();
-        PerfTable.ItemsSource = _displayRows;
+        PerfTable.ItemsSource = _source;
+        BuildText.Text = string.Format(CultureInfo.CurrentCulture, "{0}, {1}", IsDebugBuild ? "Debug" : "Release", RuntimeInformation.ProcessArchitecture);
         CaptureBaseline();
+        RefreshReadouts();
     }
+
+    private static bool IsDebugBuild
+    {
+        get
+        {
+#if DEBUG
+            return true;
+#else
+            return false;
+#endif
+        }
+    }
+
+    // ---- Column set ---------------------------------------------------------------------
+
+    private void OnColumnSetChanged(object sender, SelectionChangedEventArgs e)
+    {
+        // Fires during InitializeComponent (SelectedIndex="0"); the XAML already shows text columns.
+        if (PerfTable is null || !IsLoaded)
+        {
+            return;
+        }
+
+        var useTemplates = SampleShaping.SelectedTag(ColumnSetSelector, "text") == "template";
+        if (useTemplates == _templateColumns)
+        {
+            return;
+        }
+
+        var resources = Application.Current.Resources;
+        _photoColumn ??= new TableViewTemplateColumn
+        {
+            Header = "Photo",
+            Width = new GridLength((double)resources["ColWidthAvatar"]),
+            CellTemplate = (DataTemplate)resources["AvatarTemplate"],
+            CanSort = false,
+        };
+        _departmentChipColumn ??= new TableViewTemplateColumn
+        {
+            Header = "Department",
+            Width = new GridLength((double)resources["ColWidthChip"]),
+            CellTemplate = (DataTemplate)resources["DepartmentChipTemplate"],
+            SortMemberPath = nameof(Person.Department),
+        };
+
+        var columns = PerfTable.Columns;
+        if (useTemplates)
+        {
+            var departmentIndex = columns.IndexOf(DepartmentTextColumn);
+            columns[departmentIndex] = _departmentChipColumn;
+            columns.Insert(columns.IndexOf(IdColumn) + 1, _photoColumn);
+        }
+        else
+        {
+            columns.Remove(_photoColumn);
+            columns[columns.IndexOf(_departmentChipColumn)] = DepartmentTextColumn;
+        }
+
+        _templateColumns = useTemplates;
+        SetLastAction(useTemplates
+            ? "Column set -> Template columns (Photo and Department chip)"
+            : "Column set -> Text columns");
+    }
+
+    private string ColumnSetLabel => _templateColumns ? "template columns" : "text columns";
+
+    // ---- Timed runs ---------------------------------------------------------------------
+
+    // Settles the heap, then times the mutation plus one synchronous measure and arrange, so the
+    // window ends when the new rows are laid out rather than when the C# call returns.
+    private long Timed(Action mutation)
+    {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        var stopwatch = Stopwatch.StartNew();
+        mutation();
+        PerfTable.UpdateLayout();
+        stopwatch.Stop();
+        return stopwatch.ElapsedMilliseconds;
+    }
+
+    private bool BeginRun()
+    {
+        if (_isRunning)
+        {
+            SetLastAction("A run is already in progress.");
+            return false;
+        }
+
+        _isRunning = true;
+        return true;
+    }
+
+    private async void OnLoad10kClick(object sender, RoutedEventArgs e) => await LoadAsync(10_000, Load10kText);
+
+    private async void OnLoad100kClick(object sender, RoutedEventArgs e) => await LoadAsync(100_000, Load100kText);
+
+    private async Task LoadAsync(int count, TextBlock result)
+    {
+        if (!BeginRun())
+        {
+            return;
+        }
+
+        try
+        {
+            // DO: build the rows off the UI thread and off the clock, then bind them once.
+            var rows = await Task.Run(() => BuildPeople(count));
+            var ms = Timed(() =>
+            {
+                _people = new ObservableCollection<Person>(rows);
+                _source = TableViewSource.From(_people);
+                PerfTable.ItemsSource = _source;
+            });
+
+            _sortDescending = true;
+            result.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms, {1}", ms, ColumnSetLabel);
+
+            // A new dataset gets the current shaping; GroupBy is timed separately (Group row).
+            if (_appliedMode == "grouped")
+            {
+                ApplyShaping(announce: false);
+            }
+
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Loaded {0:N0} rows in one assignment: {1:N0} ms ({2})", count, ms, ColumnSetLabel));
+        }
+        finally
+        {
+            _isRunning = false;
+        }
+    }
+
+    private void OnSortClick(object sender, RoutedEventArgs e)
+    {
+        if (!BeginRun())
+        {
+            return;
+        }
+
+        try
+        {
+            var direction = _sortDescending ? SortDirection.Ascending : SortDirection.Descending;
+            var ms = Timed(() => PerfTable.SortByColumn(NameColumn, direction));
+            _sortDescending = direction == SortDirection.Descending;
+            var label = direction == SortDirection.Ascending ? "ascending" : "descending";
+            SortText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms, {1:N0} rows {2}", ms, _people.Count, label);
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Sorted {0:N0} rows by Name ({1}): {2:N0} ms", _people.Count, label, ms));
+        }
+        finally
+        {
+            _isRunning = false;
+        }
+    }
+
+    private void OnFilterClick(object sender, RoutedEventArgs e)
+    {
+        if (_source is null || !BeginRun())
+        {
+            return;
+        }
+
+        try
+        {
+            var source = _source;
+            var ms = Timed(() => source.Filter(item => item is Person { Department: FilterDepartment }));
+            var matches = _people.Count(p => p.Department == FilterDepartment);   // off the clock
+            FilterText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms, {1:N0} of {2:N0} rows match", ms, matches, _people.Count);
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filtered to {0}: {1:N0} of {2:N0} rows in {3:N0} ms", FilterDepartment, matches, _people.Count, ms));
+        }
+        finally
+        {
+            _isRunning = false;
+        }
+    }
+
+    private void OnClearFilterClick(object sender, RoutedEventArgs e)
+    {
+        if (_source is null || !BeginRun())
+        {
+            return;
+        }
+
+        try
+        {
+            var source = _source;
+            var ms = Timed(() => source.ClearFilter());
+            FilterText.Text = string.Format(CultureInfo.CurrentCulture, "Cleared in {0:N0} ms, {1:N0} rows", ms, _people.Count);
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Cleared the filter: {0:N0} rows in {1:N0} ms", _people.Count, ms));
+        }
+        finally
+        {
+            _isRunning = false;
+        }
+    }
+
+    private async void OnPerItemAddClick(object sender, RoutedEventArgs e)
+    {
+        if (!BeginRun())
+        {
+            return;
+        }
+
+        try
+        {
+            var rows = await Task.Run(() => BuildPeople(PerItemCap));
+            var people = _people;
+            // DON'T: one CollectionChanged notification, and one projection update, per row.
+            var ms = Timed(() =>
+            {
+                people.Clear();
+                foreach (var person in rows)
+                {
+                    people.Add(person);
+                }
+            });
+
+            _sortDescending = true;
+            PerItemAddText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms for {1:N0} Add calls, {2}", ms, PerItemCap, ColumnSetLabel);
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0:N0} rows one at a time: {1:N0} ms. Compare with Load 10,000.", PerItemCap, ms));
+        }
+        finally
+        {
+            _isRunning = false;
+        }
+    }
+
+    // ---- Memory -------------------------------------------------------------------------
 
     private void CaptureBaseline()
     {
-        // Force two GC passes so the baseline reflects steady-state heap, not
-        // the spike from page construction.
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         _baselineWorkingSet = Process.GetCurrentProcess().WorkingSet64;
         _baselineManagedHeap = GC.GetTotalMemory(forceFullCollection: true);
-        _hasBaseline = true;
-    }
-
-    // ----- Methodology --------------------------------------------------
-    //
-    // Every scenario:
-    //   1. PRE-CLOCK: build the data + force a GC pass so the measurement
-    //      window starts from a clean heap and no JIT-pending code paths.
-    //   2. CLOCK BEGIN: Stopwatch.StartNew()
-    //   3. Mutate the bound collection (Clear + repopulate, or swap
-    //      ItemsSource).
-    //   4. UpdateLayout(): SYNCHRONOUSLY runs measure+arrange on the
-    //      TableView so the elapsed window covers the user-visible "I see
-    //      the new rows" moment, not just the C# data assignment.
-    //   5. CLOCK END: Stopwatch.Stop()
-    //   6. Report elapsed milliseconds.
-    //
-    // Why this matches user-perceived performance:
-    //   - Data prep happens off the clock, mimicking apps that load data
-    //     on a background thread.
-    //   - UpdateLayout() drains the layout queue immediately so we don't
-    //     stop the clock before the rows are visible.
-    //   - Two GC passes pre-clock isolate the measurement from background
-    //     finalizer noise from prior scenarios.
-    //
-    // Caveats:
-    //   - Debug builds are ~3-5x slower than Release; partner-share
-    //     timings should use the Release MSIX.
-    //   - First run of any scenario includes JIT warmup; the readout
-    //     shows the most recent run, so click twice and use the second
-    //     number.
-    //   - Memory deltas are reported as managed-heap-only AND total
-    //     working set. Managed heap is deterministic (GC.GetTotalMemory
-    //     with forceFullCollection); working set is OS-lazy and may lag.
-
-    private long TimedMutation(Action mutation)
-    {
-        // Pre-clock: settle the heap so background finalizers / GC don't
-        // bleed into the measurement window.
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-
-        var sw = Stopwatch.StartNew();
-        mutation();
-        // Drain pending layout work synchronously so the clock includes
-        // the first user-visible measure+arrange pass.
-        PerfTable.UpdateLayout();
-        sw.Stop();
-        return sw.ElapsedMilliseconds;
-    }
-
-    private static List<PerfRow> GeneratePeople(int count)
-    {
-        var seed = PersonData.All;
-        var depts = new[] { "Sales", "Engineering", "Design", "Finance", "HR", "Marketing", "Support", "Legal" };
-        var list = new List<PerfRow>(capacity: count);
-        for (int i = 0; i < count; i++)
-        {
-            var p = seed[i % seed.Count];
-            list.Add(new PerfRow
-            {
-                Id = i,
-                Name = $"{p.FirstName} {p.LastName} #{i:D6}",
-                Department = depts[i % depts.Length],
-                Salary = 40_000 + (i * 137) % 160_000,
-            });
-        }
-        return list;
-    }
-
-    private void Repopulate(IEnumerable<PerfRow> rows)
-    {
-        // Single bound reassignment is faster than per-item Add but loses
-        // bound-collection identity. Real ObservableCollection consumers
-        // typically Clear() + AddRange-equivalent. We do the same so the
-        // CollectionChanged events fire and ItemsRepeater realizes rows
-        // through its standard incremental path.
-        _displayRows.Clear();
-        foreach (var r in rows)
-        {
-            _displayRows.Add(r);
-        }
-    }
-
-    private void OnLoad10kClick(object sender, RoutedEventArgs e)
-    {
-        var data = GeneratePeople(10_000);                  // off-clock
-        var ms = TimedMutation(() =>                          // on-clock
-        {
-            _allRows = data;
-            Repopulate(_allRows);
-        });
-        Load10kResult.Text = $"{ms} ms  ·  {_allRows.Count:N0} rows bound + first layout";
-    }
-
-    private void OnLoad100kClick(object sender, RoutedEventArgs e)
-    {
-        var data = GeneratePeople(100_000);
-        var ms = TimedMutation(() =>
-        {
-            _allRows = data;
-            Repopulate(_allRows);
-        });
-        Load100kResult.Text = $"{ms} ms  ·  {_allRows.Count:N0} rows bound + first layout";
-    }
-
-    private void OnSortClick(object sender, RoutedEventArgs e)
-    {
-        if (_allRows.Count == 0) { SortResult.Text = "Run a Load scenario first"; return; }
-        // Sort happens off-clock (pure C#); on-clock we time only the
-        // collection swap + layout. That mirrors "user clicked a header,
-        // the sort key was already computed, now repopulate".
-        var sorted = _allRows.OrderBy(r => r.Name, StringComparer.Ordinal).ToList();
-        var ms = TimedMutation(() => Repopulate(sorted));
-        SortResult.Text = $"{ms} ms  ·  {sorted.Count:N0} rows repopulated post-sort";
-    }
-
-    private void OnFilterClick(object sender, RoutedEventArgs e)
-    {
-        if (_allRows.Count == 0) { FilterResult.Text = "Run a Load scenario first"; return; }
-        var filtered = _allRows.Where(r => r.Salary >= 100_000).ToList();
-        var ms = TimedMutation(() => Repopulate(filtered));
-        FilterResult.Text = $"{ms} ms  ·  {filtered.Count:N0} / {_allRows.Count:N0} rows match predicate";
-    }
-
-    private void OnClearFilterClick(object sender, RoutedEventArgs e)
-    {
-        if (_allRows.Count == 0) { ClearFilterResult.Text = "Nothing to clear"; return; }
-        var ms = TimedMutation(() => Repopulate(_allRows));
-        ClearFilterResult.Text = $"{ms} ms  ·  restored {_allRows.Count:N0} rows";
     }
 
     private void OnSnapshotClick(object sender, RoutedEventArgs e)
     {
-        if (!_hasBaseline) CaptureBaseline();
-        // Force two GC passes; managed heap is then deterministic. Working
-        // set is OS-lazy so the delta is informative but not exact.
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        var ws = Process.GetCurrentProcess().WorkingSet64;
+        // The managed heap is exact after a full collection; the working set is the OS view and
+        // also covers native growth such as XAML element trees, but it can lag.
+        var workingSet = Process.GetCurrentProcess().WorkingSet64;
         var heap = GC.GetTotalMemory(forceFullCollection: true);
-        var wsDelta = ws - _baselineWorkingSet;
-        var heapDelta = heap - _baselineManagedHeap;
-        var sign = (long v) => v >= 0 ? "+" : "";
-        SnapshotResult.Text =
-            $"WorkingSet {ws / (1024 * 1024)} MB (Δ {sign(wsDelta)}{wsDelta / (1024 * 1024)} MB)" +
-            $"  ·  Managed heap {heap / (1024 * 1024)} MB (Δ {sign(heapDelta)}{heapDelta / (1024 * 1024)} MB)";
+        const double MB = 1024 * 1024;
+        MemoryText.Text = string.Format(
+            CultureInfo.CurrentCulture,
+            "Managed heap {0:N0} MB ({1:+0;-0;0} MB), working set {2:N0} MB ({3:+0;-0;0} MB)",
+            heap / MB,
+            (heap - _baselineManagedHeap) / MB,
+            workingSet / MB,
+            (workingSet - _baselineWorkingSet) / MB);
+        SetLastAction("Took a memory snapshot (deltas from the baseline)");
     }
 
     private void OnRebaselineClick(object sender, RoutedEventArgs e)
     {
         CaptureBaseline();
-        SnapshotResult.Text = $"Baseline reset @ {DateTime.Now:HH:mm:ss}. New deltas will be measured from here.";
+        MemoryText.Text = "Baseline reset; take a snapshot to see growth from here.";
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Reset the memory baseline at {0:T}", DateTime.Now));
     }
 
-    private void OnRunAllClick(object sender, RoutedEventArgs e)
+    // ---- Data -----------------------------------------------------------------------------
+
+    // Workaround until PersonData offers a bulk generator (requested from WP0): cycle the 1,000
+    // canonical people; each copy is numbered by its row. Safe on a background thread.
+    private static List<Person> BuildPeople(int count)
     {
-        OnLoad10kClick(sender, e);
-        OnLoad100kClick(sender, e);
-        OnSortClick(sender, e);
-        OnFilterClick(sender, e);
-        OnClearFilterClick(sender, e);
-        OnSnapshotClick(sender, e);
-        RunAllResult.Text =
-            $"Completed at {DateTime.Now:HH:mm:ss}. See per-row timings above.  " +
-            $"Build flavor: {(IsDebugBuild() ? "Debug (numbers are ~3-5x slower than Release)" : "Release")}";
+        var seed = PersonData.All;
+        var list = new List<Person>(count);
+        for (var i = 0; i < count; i++)
+        {
+            var p = seed[i % seed.Count];
+            list.Add(new Person
+            {
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                Email = p.Email,
+                Department = p.Department,
+                Role = p.Role,
+                Office = p.Office,
+                Salary = p.Salary,
+                IsActive = p.IsActive,
+                JoinDate = p.JoinDate,
+                AvatarPath = p.AvatarPath,
+                EmployeeId = i + 1,   // the # column doubles as the row number
+            });
+        }
+
+        return list;
     }
 
-    private static bool IsDebugBuild()
+    private void RefreshReadouts()
     {
-#if DEBUG
-        return true;
-#else
-        return false;
-#endif
+        if (RowsText is null)
+        {
+            return;
+        }
+
+        RowsText.Text = SampleShaping.RowCountText(_people.Count);
     }
+
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
+    {
+        // Fires during InitializeComponent, before the later-declared elements exist.
+        if (_source is null || PerfTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null || GroupText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+        var source = _source;
+        long ms;
+
+        switch (mode)
+        {
+            case "grouped":
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                ms = Timed(() => source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity));
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
+            //     after the call returns.
+            default:
+                ms = Timed(() => source.ClearGroupBy());
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+
+        // No Reselect here: no action on this page edits a group key, and a plain reshape keeps
+        // the selection on its item. Probing 100,000 indexes would also defeat the measurement.
+        UpdateShapingGating();
+        GroupText.Text = mode == "grouped"
+            ? string.Format(CultureInfo.CurrentCulture, "GroupBy {0}: {1:N0} ms, {2:N0} rows", SampleShaping.Label(GroupKeySelector), ms, _people.Count)
+            : string.Format(CultureInfo.CurrentCulture, "ClearGroupBy: {0:N0} ms, {1:N0} rows", ms, _people.Count);
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0} in {1:N0} ms", SampleShaping.Label(GroupKeySelector), ms)
+                : string.Format(CultureInfo.CurrentCulture, "Shaping -> Flat in {0:N0} ms", ms));
+        }
+    }
+
+    private void UpdateShapingGating()
+    {
+        var grouped = _appliedMode == "grouped";
+        GroupKeySelector.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
+    }
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        var ms = Timed(() => PerfTable.ExpandAllGroups());
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Expanded all groups in {0:N0} ms", ms));
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        var ms = Timed(() => PerfTable.CollapseAllGroups());
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Collapsed all groups in {0:N0} ms", ms));
+    }
+
+    // The only writer of LastActionText.
+    private void SetLastAction(string message)
+    {
+        if (LastActionText is not null)
+        {
+            LastActionText.Text = message;
+        }
+
+        RefreshReadouts();
+    }
+
+    #endregion
 }

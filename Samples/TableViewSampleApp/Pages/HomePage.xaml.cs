@@ -2,10 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using TableViewSampleApp;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace TableViewSampleApp.Pages;
 
@@ -17,10 +19,6 @@ public sealed partial class HomePage : Page
     public HomePage()
     {
         InitializeComponent();
-        ReportIssueButton.Click += async (_, __) =>
-        {
-            try { await Windows.System.Launcher.LaunchUriAsync(ReportIssueUri); } catch { }
-        };
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -35,5 +33,33 @@ public sealed partial class HomePage : Page
         {
             _mainWindow?.NavigateTo(tag);
         }
+    }
+
+    private async void OnReportIssueClick(object sender, RoutedEventArgs e)
+    {
+        var launched = false;
+        try
+        {
+            launched = await Windows.System.Launcher.LaunchUriAsync(ReportIssueUri);
+        }
+        catch (Exception)
+        {
+            // No browser registered, or the launch was blocked: fall through to the copy below.
+        }
+
+        if (launched)
+        {
+            ReportIssueFallbackText.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        var package = new DataPackage();
+        package.SetText(ReportIssueUri.AbsoluteUri);
+        Clipboard.SetContent(package);
+        ReportIssueFallbackText.Text = string.Format(
+            CultureInfo.CurrentCulture,
+            "Could not open a browser. The link was copied to the clipboard: {0}",
+            ReportIssueUri.AbsoluteUri);
+        ReportIssueFallbackText.Visibility = Visibility.Visible;
     }
 }

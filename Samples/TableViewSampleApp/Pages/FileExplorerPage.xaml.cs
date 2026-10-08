@@ -7,138 +7,188 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Input;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 using TableViewSampleApp.Services;
 using Windows.System;
+using SortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
-using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
-using TableViewSortedEventArgs = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortedEventArgs;
-using TableViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
-using TableViewDensity = Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity;
-using TableViewGridLinesVisibility = Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility;
-// #44 enum unification: TableViewSortDirection was removed in favor of the shared Data enum.
-using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
-
-using TableViewSampleApp.Data;
 
 namespace TableViewSampleApp.Pages;
 
+/// <summary>
+/// File Explorer scenario: a folder listing that opens in the sample's install folder, reads
+/// each folder off the UI thread, keeps folders first through computed SortMemberPath keys, and
+/// filters and groups one TableViewSource in place. Enter opens a folder, Backspace goes up.
+/// </summary>
 public sealed partial class FileExplorerPage : Page
 {
-    private static readonly Dictionary<string, Func<FileSystemEntry, IComparable?>> s_keySelectors =
-        new(StringComparer.Ordinal)
-        {
-            ["Name"] = entry => entry.Name,
-            ["TypeDisplay"] = entry => entry.TypeDisplay,
-            ["DateModified"] = entry => entry.DateModified,
-            ["Size"] = entry => entry.Size,
-        };
-
-    private readonly FileSystemBrowser _browser = new();
     private readonly Stack<string> _history = new();
+    private TableViewSource? _source;          // created ONCE over Entries; filtered and grouped in place
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
     private string _currentDir = string.Empty;
-
-    // Reshaped IN PLACE: Filter / GroupBy mutate and return the same TableViewSource
-    // (TableViewSource.cpp:49-50). Built ONCE over the Entries collection, so a shaping change
-    // never re-enters FileSystemBrowser.GetEntries and never touches the file system.
-    private TableViewSource? _source;
-    private string _mode = "flat";          // requested
-    private string _appliedMode = "flat";   // applied
-    private string _groupKey = "Type";
-    private string _filter = "all";
+    private int _navigationVersion;
 
     public FileExplorerPage()
     {
+        _source = TableViewSource.From(Entries);
         InitializeComponent();
+
         FileTable.HeadersVisibility = TableViewHeadersVisibility.Column;
         FileTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
         FileTable.Density = TableViewDensity.Compact;
+        // handledEventsToo: the table consumes Enter for its own row navigation.
+        FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
+
         Loaded += OnPageLoaded;
     }
 
+    // Folder contents replace the items of this one collection; the source is never rebuilt.
     public ObservableCollection<FileSystemEntry> Entries { get; } = new();
+
+    public TableViewSource? Source => _source;
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrEmpty(_currentDir))
+        if (_currentDir.Length == 0)
         {
-            Navigate(FileSystemBrowser.GetInitialDirectory(), addToHistory: false);
+            _ = NavigateAsync(FileSystemBrowser.InitialDirectory, addToHistory: false, verb: "Opened the app folder");
         }
     }
 
-    private void Navigate(string directoryPath) => Navigate(directoryPath, addToHistory: true);
+    // ---- Navigation (the folder is read on a background thread) ---------------------------
 
-    private void Navigate(string directoryPath, bool addToHistory)
+    private async Task NavigateAsync(string path, bool addToHistory, string verb)
     {
-        if (string.IsNullOrWhiteSpace(directoryPath))
+        var version = ++_navigationVersion;
+        var listing = await Task.Run(() => FileSystemBrowser.Read(path));
+
+        // A newer navigation started while this one was reading; drop the stale result.
+        if (version != _navigationVersion)
         {
             return;
         }
 
-        string fullPath;
-        try
+        if (listing.Error is not null)
         {
-            fullPath = Path.GetFullPath(Environment.ExpandEnvironmentVariables(directoryPath));
-        }
-        catch
-        {
+            AddressBar.Text = _currentDir;
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Cannot open {0}: {1}", listing.FullPath, listing.Error));
             return;
         }
 
-        if (!Directory.Exists(fullPath))
-        {
-            return;
-        }
-
-        if (addToHistory && !string.IsNullOrEmpty(_currentDir) && !PathsEqual(_currentDir, fullPath))
+        if (addToHistory && _currentDir.Length > 0 && !string.Equals(_currentDir, listing.FullPath, StringComparison.OrdinalIgnoreCase))
         {
             _history.Push(_currentDir);
         }
 
-        _currentDir = fullPath;
-        RefreshEntries();
-    }
-
-    private void RefreshEntries()
-    {
-        if (FileTable is null)
-        {
-            return;
-        }
-
-        var entries = ApplyActiveSort(_browser.GetEntries(_currentDir)).ToList();
+        _currentDir = listing.FullPath;
         Entries.Clear();
-        foreach (var entry in entries)
+        foreach (var entry in listing.Entries)
         {
             Entries.Add(entry);
         }
 
-        if (_source is null)
-        {
-            _source = TableViewSource.From(Entries);
-            FileTable.ItemsSource = _source;
-        }
-
-        ApplyShaping();
-        FileTable.DeselectAll();
         AddressBar.Text = _currentDir;
-        RefreshStatusText();
-        RefreshNavigationButtons();
-        RefreshSelectionText();
+        BackButton.IsEnabled = _history.Count > 0;
+        UpButton.IsEnabled = Directory.GetParent(_currentDir) is not null;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0}: {1} ({2:N0} items)", verb, DisplayName(_currentDir), Entries.Count));
     }
 
-    private void ApplyShaping()
+    private static string DisplayName(string path) =>
+        Path.GetFileName(path) is { Length: > 0 } name ? name : path;
+
+    private void OpenSelectedFolder()
     {
-        if (FileTable is null || _source is null)
+        switch (FileTable.SelectedItem)
+        {
+            case FileSystemEntry { IsFolder: true } folder:
+                _ = NavigateAsync(folder.FullPath, addToHistory: true, verb: "Opened");
+                break;
+            case FileSystemEntry file:
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} is a file; only folders open here.", file.Name));
+                break;
+            default:
+                SetLastAction("No row selected.");
+                break;
+        }
+    }
+
+    private void GoUp()
+    {
+        if (_currentDir.Length > 0 && Directory.GetParent(_currentDir) is { } parent)
+        {
+            _ = NavigateAsync(parent.FullName, addToHistory: true, verb: "Up to");
+        }
+        else
+        {
+            SetLastAction("Already at the top of the drive.");
+        }
+    }
+
+    private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Enter)
+        {
+            e.Handled = true;
+            OpenSelectedFolder();
+        }
+        else if (e.Key == VirtualKey.Back)
+        {
+            e.Handled = true;
+            GoUp();
+        }
+    }
+
+    private void OnRowDoubleTapped(object sender, DoubleTappedRoutedEventArgs e) => OpenSelectedFolder();
+
+    private void OnBackClick(object sender, RoutedEventArgs e)
+    {
+        if (_history.Count > 0)
+        {
+            _ = NavigateAsync(_history.Pop(), addToHistory: false, verb: "Back to");
+        }
+    }
+
+    private void OnUpClick(object sender, RoutedEventArgs e) => GoUp();
+
+    private void OnRefreshClick(object sender, RoutedEventArgs e) =>
+        _ = NavigateAsync(_currentDir, addToHistory: false, verb: "Re-read");
+
+    private void OnAddressBarKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key != VirtualKey.Enter)
         {
             return;
         }
 
-        switch (_filter)
+        e.Handled = true;
+        var path = AddressBar.Text?.Trim();
+        if (string.IsNullOrEmpty(path))
+        {
+            SetLastAction("Type a folder path first.");
+            return;
+        }
+
+        // An invalid or unreadable path is reported in Last action by NavigateAsync.
+        _ = NavigateAsync(path, addToHistory: true, verb: "Opened");
+    }
+
+    // ---- Filter (TableViewSource.Filter) ---------------------------------------------------
+
+    private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_source is null || FilterSelector is null)
+        {
+            return;
+        }
+
+        var filter = SampleShaping.SelectedTag(FilterSelector, "all");
+        switch (filter)
         {
             case "folders":
                 _source.Filter(item => item is FileSystemEntry { IsFolder: true });
@@ -154,210 +204,103 @@ public sealed partial class FileExplorerPage : Page
                 break;
         }
 
-        switch (_mode)
+        // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only.
+        if (IsLoaded)
         {
-            case "grouped":
-                var key = _groupKey;
-                // TableViewKeySelector receives the ROW ITEM; TableViewIdentitySelector receives
-                // the GROUP KEY (TableViewSource.idl:12-16). An item-typed identity lambda returns
-                // an empty identity and fails fast with E_INVALIDARG.
-                _source.GroupBy(
-                    item => (object)GroupValue(item, key),
-                    groupKey => groupKey?.ToString() ?? "(none)");
-                break;
-
-            // case "hierarchy":
-            // case "groupedhierarchy":
-            //     Hierarchical rows are not available in this release, and no hierarchy API exists
-            //     on TableViewSource or TableView yet, so there is deliberately no call written
-            //     here to copy. When the control ships hierarchy support, apply it to this same
-            //     source instance alongside the GroupBy stage above so the two compose - folder
-            //     rows parenting their children is the natural shape for this page - and drop the
-            //     IsEnabled="False" from the matching options in the XAML.
-            //     break;
-
-            default:
-                _source.ClearGroupBy();
-                break;
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> {0} ({1:N0} rows)", SampleShaping.Label(FilterSelector), VisibleCount()));
         }
-
-        // Set ONLY after the shaping call returns.
-        _appliedMode = _mode;
-
-        UpdateShapingUi();
-        RefreshStatusText();
     }
 
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
+    private int VisibleCount() => SampleShaping.SelectedTag(FilterSelector, "all") switch
     {
-        if (ShapingModeSelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
-        {
-            return;
-        }
+        "folders" => Entries.Count(entry => entry.IsFolder),
+        "files" => Entries.Count(entry => !entry.IsFolder),
+        "none" => 0,
+        _ => Entries.Count,
+    };
 
-        _mode = tag;
-        ApplyShaping();
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Shaping mode -> {0} (no re-enumeration)", _appliedMode == "grouped" ? "Grouped" : "Flat"));
-    }
+    // ---- Actions ------------------------------------------------------------------------
 
-    private void OnShapingGroupKeyChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (ShapingGroupKeyCombo?.SelectedItem is not ComboBoxItem { Tag: string tag })
-        {
-            return;
-        }
-
-        _groupKey = tag;
-        ApplyShaping();
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Group key -> {0}", GroupKeyLabel(tag)));
-    }
-
-    private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (FilterCombo?.SelectedItem is not ComboBoxItem { Tag: string tag })
-        {
-            return;
-        }
-
-        _filter = tag;
-        ApplyShaping();
-        SetLastAction(tag switch
-        {
-            "folders" => "Filtered to folders only",
-            "files" => "Filtered to files only",
-            "none" => "Filtered to zero rows",
-            _ => "Filter cleared",
-        });
-    }
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        if (_appliedMode != "grouped")
-        {
-            return;
-        }
-
-        FileTable.ExpandAllGroups();
-        SetLastAction("Expanded all groups");
-    }
-
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
-    {
-        if (_appliedMode != "grouped")
-        {
-            return;
-        }
-
-        FileTable.CollapseAllGroups();
-        SetLastAction("Collapsed all groups");
-    }
+    private void OnOpenSelectedClick(object sender, RoutedEventArgs e) => OpenSelectedFolder();
 
     private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
     {
-        if (FileTable?.SelectedItem is not FileSystemEntry selected)
+        if (FileTable.SelectedItem is not FileSystemEntry entry)
+        {
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        // Listing only: nothing is deleted on disk, and Refresh brings the row back.
+        Entries.Remove(entry);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0} from the listing (not from disk)", entry.Name));
+    }
+
+    private void OnGoToAppFolderClick(object sender, RoutedEventArgs e) =>
+        _ = NavigateAsync(FileSystemBrowser.InitialDirectory, addToHistory: true, verb: "Opened the app folder");
+
+    private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
+    {
+        SetLastAction(args.Column is null || args.Direction == SortDirection.None
+            ? "Sort cleared"
+            : string.Format(
+                CultureInfo.CurrentCulture,
+                "Sorted by {0}, {1}{2}",
+                args.Column.Header,
+                args.Direction == SortDirection.Descending ? "descending" : "ascending",
+                args.Column == DateModifiedColumn ? string.Empty : ", folders kept together"));
+    }
+
+    private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
+    {
+        if (SampleShaping.IsReselecting)
         {
             return;
         }
 
-        // Listing-only: nothing is deleted on disk. Refresh re-reads the folder.
-        Entries.Remove(selected);
-        RefreshStatusText();
-        RefreshSelectionText();
-        UpdateShapingUi();
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed \"{0}\" from the listing", selected.Name));
+        RefreshReadouts();
     }
 
-    private void UpdateShapingUi()
+    private void RefreshReadouts()
     {
-        var grouped = _appliedMode == "grouped";
-        var hasSelection = FileTable?.SelectedItem is FileSystemEntry;
-
-        if (ShapingGroupKeyCombo is not null)
-        {
-            ShapingGroupKeyCombo.IsEnabled = grouped;
-            ToolTipService.SetToolTip(ShapingGroupKeyCombo, grouped
-                ? "Change the GroupBy key while grouped - expansion and selection survive."
-                : "Available once Grouped mode is selected.");
-        }
-
-        SetGroupActionState(ExpandAllButton, grouped, "Expand every group.");
-        SetGroupActionState(CollapseAllButton, grouped, "Collapse every group.");
-
-        if (RemoveRowButton is not null)
-        {
-            RemoveRowButton.IsEnabled = hasSelection;
-            ToolTipService.SetToolTip(RemoveRowButton, hasSelection
-                ? "Removes the row from this listing only; its group disappears when it was the last one."
-                : "Select a row first.");
-        }
-
-        if (AppliedModeText is null)
+        if (RowsText is null || FolderText is null || ItemsText is null || SelectedText is null || FileTable is null)
         {
             return;
         }
 
-        AppliedModeText.Text = grouped
-            ? string.Format(CultureInfo.CurrentCulture, "Grouped by {0}", GroupKeyLabel(_groupKey))
-            : "Flat (no shaping)";
-
-        var groups = GroupCounts().ToList();
-        GroupCountText.Text = !grouped
-            ? "(n/a - flat)"
-            : groups.Count == 0
-                ? "0 (empty result)"
-                : string.Format(CultureInfo.CurrentCulture, "{0}: {1}", groups.Count, string.Join(", ", groups.Take(6).Select(g => string.Format(CultureInfo.CurrentCulture, "{0} ({1})", g.Key, g.Count))));
-    }
-
-    private static void SetGroupActionState(Button? button, bool grouped, string enabledTip)
-    {
-        if (button is null)
+        FolderText.Text = _currentDir.Length > 0 ? _currentDir : "(reading)";
+        ItemsText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} items ({1:N0} folders)", Entries.Count, Entries.Count(entry => entry.IsFolder));
+        SelectedText.Text = FileTable.SelectedItem switch
         {
-            return;
-        }
-
-        button.IsEnabled = grouped;
-        ToolTipService.SetToolTip(button, grouped ? enabledTip : "Available once Grouped mode is selected.");
+            FileSystemEntry { IsFolder: true } folder => string.Format(CultureInfo.CurrentCulture, "{0} (folder)", folder.Name),
+            FileSystemEntry file => string.Format(CultureInfo.CurrentCulture, "{0} ({1})", file.Name, file.SizeDisplay),
+            _ => "(none)",
+        };
+        RowsText.Text = SampleShaping.RowCountText(VisibleCount());
     }
 
-    private IEnumerable<FileSystemEntry> VisibleEntries() => _filter switch
+    // Group key resolution for this page's model (FIX-PLAN §1.6 R2). Never returns a blank key.
+    private static object KeyOf(FileSystemEntry? entry, string key)
     {
-        "folders" => Entries.Where(entry => entry.IsFolder),
-        "files" => Entries.Where(entry => !entry.IsFolder),
-        "none" => Enumerable.Empty<FileSystemEntry>(),
-        _ => Entries,
-    };
-
-    private IEnumerable<(string Key, int Count)> GroupCounts()
-    {
-        var key = _groupKey;
-        return VisibleEntries()
-            .GroupBy(entry => GroupValue(entry, key), StringComparer.Ordinal)
-            .OrderBy(group => group.Key, StringComparer.Ordinal)
-            .Select(group => (group.Key, group.Count()));
-    }
-
-    // Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
-    private static string GroupValue(object item, string key)
-    {
-        if (item is not FileSystemEntry entry)
+        if (entry is null)
         {
-            return "(none)";
+            return SampleShaping.NoneKey;
         }
 
         var value = key switch
         {
-            "Kind" => entry.IsFolder ? "Folders" : "Files",
-            "Modified" => ModifiedBucket(entry.DateModified),
-            _ => entry.IsFolder ? "File folder" : entry.TypeDisplay,
+            nameof(FileSystemEntry.IsFolder) => entry.IsFolder ? "Folders" : "Files",
+            nameof(FileSystemEntry.DateModified) => ModifiedBucket(entry.DateModified),
+            _ => entry.TypeDisplay,
         };
 
-        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+        return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
     }
 
-    private static string ModifiedBucket(DateTime modified)
+    private static string ModifiedBucket(DateTimeOffset modified)
     {
-        var age = DateTime.Now.Date - modified.Date;
-        return age.TotalDays switch
+        var days = (DateTime.Now.Date - modified.LocalDateTime.Date).TotalDays;
+        return days switch
         {
             < 1 => "Today",
             < 2 => "Yesterday",
@@ -368,152 +311,97 @@ public sealed partial class FileExplorerPage : Page
         };
     }
 
-    private static string GroupKeyLabel(string key) => key switch
-    {
-        "Kind" => "folders / files",
-        "Modified" => "date modified",
-        _ => "item type",
-    };
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
 
-    private void SetLastAction(string text)
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
+    {
+        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
+        // later-declared elements exist. Guard every element this path touches.
+        if (_source is null || FileTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "TypeDisplay");
+        var selected = FileTable.SelectedItem;
+
+        switch (mode)
+        {
+            case "grouped":
+                if (key == nameof(FileSystemEntry.DateModified))
+                {
+                    // Groups appear in the order of their first row, and a sort declared BEFORE
+                    // GroupBy orders them. Sorting newest first makes the buckets read Today,
+                    // Yesterday, ... and the Date modified header shows that sort.
+                    FileTable.SortByColumn(DateModifiedColumn, SortDirection.Descending);
+                }
+
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                _source.GroupBy(item => KeyOf(item as FileSystemEntry, key), SampleShaping.GroupIdentity);
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the GroupBy stage above rather than replacing it (folders parenting their
+            //     contents is the natural shape), and set _appliedMode only after the call returns.
+            default:
+                _source.ClearGroupBy();
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+
+        // Re-applying GroupBy can drop the selection when the selected row changed group.
+        SampleShaping.Reselect(FileTable, selected, Entries.Count + 64, RefreshReadouts);
+        UpdateShapingGating();
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+                : "Shaping -> Flat");
+        }
+    }
+
+    private void UpdateShapingGating()
+    {
+        var grouped = _appliedMode == "grouped";
+        GroupKeySelector.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
+    }
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        FileTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        FileTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
+    }
+
+    // The only writer of LastActionText.
+    private void SetLastAction(string message)
     {
         if (LastActionText is not null)
         {
-            LastActionText.Text = text;
+            LastActionText.Text = message;
         }
+
+        RefreshReadouts();
     }
 
-    private void OnBackClick(object sender, RoutedEventArgs e)
-    {
-        if (_history.Count == 0)
-        {
-            return;
-        }
-
-        Navigate(_history.Pop(), addToHistory: false);
-    }
-
-    private void OnUpClick(object sender, RoutedEventArgs e)
-    {
-        var parent = string.IsNullOrEmpty(_currentDir) ? null : Directory.GetParent(_currentDir);
-        if (parent is not null)
-        {
-            Navigate(parent.FullName);
-        }
-    }
-
-    private void OnRefreshClick(object sender, RoutedEventArgs e)
-    {
-        if (!string.IsNullOrEmpty(_currentDir))
-        {
-            RefreshEntries();
-        }
-    }
-
-    private void OnAddressBarKeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (e.Key != VirtualKey.Enter)
-        {
-            return;
-        }
-
-        e.Handled = true;
-        var path = AddressBar.Text?.Trim();
-        if (!string.IsNullOrEmpty(path) && Directory.Exists(Environment.ExpandEnvironmentVariables(path)))
-        {
-            Navigate(path);
-        }
-    }
-
-    private void OnRowDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-    {
-        if (FileTable.SelectedItem is FileSystemEntry entry && entry.IsFolder)
-        {
-            Navigate(entry.FullPath);
-        }
-    }
-
-    private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
-    {
-        if (FileTable is null || Entries is null)
-        {
-            return;
-        }
-
-        var snapshot = ApplyActiveSort(Entries).ToList();
-        Entries.Clear();
-        foreach (var entry in snapshot)
-        {
-            Entries.Add(entry);
-        }
-    }
-
-    private void OnSelectionChanged(TableView sender, TableViewSelectionChangedEventArgs args)
-    {
-        RefreshSelectionText();
-        UpdateShapingUi();
-    }
-
-    private IEnumerable<FileSystemEntry> ApplyActiveSort(IEnumerable<FileSystemEntry> source)
-    {
-        IOrderedEnumerable<FileSystemEntry> ordered = source.OrderByDescending(entry => entry.IsFolder);
-        var column = SampleShape.ActiveSortColumn(FileTable);
-        if (FileTable is null ||
-            column is null ||
-            SampleShape.ActiveSortDirection(FileTable) == TableViewSortDirection.None ||
-            string.IsNullOrEmpty(column.SortMemberPath) ||
-            !s_keySelectors.TryGetValue(column.SortMemberPath, out var keySelector))
-        {
-            return ordered;
-        }
-
-        return SampleShape.ActiveSortDirection(FileTable) == TableViewSortDirection.Descending
-            ? ordered.ThenByDescending(keySelector)
-            : ordered.ThenBy(keySelector);
-    }
-
-    private void RefreshStatusText()
-    {
-        if (StatusText is null)
-        {
-            return;
-        }
-
-        var folderCount = Entries.Count(entry => entry.IsFolder);
-        var visible = VisibleEntries().ToList();
-        StatusText.Text = visible.Count == Entries.Count
-            ? $"{Entries.Count} items ({folderCount} folders)"
-            : $"{visible.Count} of {Entries.Count} items shown ({folderCount} folders)";
-    }
-
-    private void RefreshSelectionText()
-    {
-        if (FileTable is null || SelectionText is null)
-        {
-            return;
-        }
-
-        var selectedItems = FileTable.SelectedItem is FileSystemEntry selected ? new List<FileSystemEntry> { selected } : new List<FileSystemEntry>();
-        var totalSize = selectedItems.Where(entry => !entry.IsFolder).Sum(entry => entry.Size);
-        SelectionText.Text = $"{selectedItems.Count} selected ({FileSystemEntry.FormatSize(totalSize)})";
-    }
-
-    private void RefreshNavigationButtons()
-    {
-        if (BackButton is not null)
-        {
-            BackButton.IsEnabled = _history.Count > 0;
-        }
-
-        if (UpButton is not null)
-        {
-            UpButton.IsEnabled = !string.IsNullOrEmpty(_currentDir) && Directory.GetParent(_currentDir) is not null;
-        }
-    }
-
-    private static bool PathsEqual(string left, string right)
-        => string.Equals(NormalizePath(left), NormalizePath(right), StringComparison.OrdinalIgnoreCase);
-
-    private static string NormalizePath(string path)
-        => Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+    #endregion
 }

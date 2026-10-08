@@ -78,12 +78,24 @@ public static class PersonData
     };
 
     /// <summary>
-    /// Public list of department names — used by the MixedControlsPage's
-    /// in-cell ComboBox binding so the picker stays in sync with the
-    /// data-generator's department vocabulary.
+    /// Department vocabulary of the generator. The shared DeptComboTemplate binds its
+    /// ItemsSource here, and page actions cycle through it ("next department").
     /// </summary>
     public static IReadOnlyList<string> Departments { get; } =
         s_departments.Select(d => d.Department).ToArray();
+
+    /// <summary>
+    /// Office vocabulary. The shared OfficeComboTemplate binds its ItemsSource here, and
+    /// pages offer Office as a group key.
+    /// </summary>
+    public static IReadOnlyList<string> Offices { get; } = new[]
+    {
+        "Seattle", "Redmond", "London", "Dublin", "Bangalore", "Singapore", "Toronto", "Sydney",
+    };
+
+    /// <summary>Every distinct role, ordered, for actions that cycle to the "next role".</summary>
+    public static IReadOnlyList<string> Roles { get; } =
+        s_departments.SelectMany(d => d.Roles).Distinct(StringComparer.Ordinal).OrderBy(r => r, StringComparer.Ordinal).ToArray();
 
     private static List<Person>? s_cache;
 
@@ -95,8 +107,10 @@ public static class PersonData
 
     /// <summary>
     /// Returns a fresh ObservableCollection of <paramref name="count"/> people
-    /// taken from the cached dataset. Callers get their own collection so they
-    /// can mutate it without affecting other pages.
+    /// taken from the cached dataset. Callers get their own collection (and their own
+    /// Person instances) so they can mutate it without affecting other pages.
+    /// Every Person property is copied here; a property added to Person must be added
+    /// to this copy too, or it is silently empty on every page.
     /// </summary>
     public static ObservableCollection<Person> Take(int count)
     {
@@ -117,6 +131,9 @@ public static class PersonData
                 ShiftStart = p.ShiftStart,
                 Salary = p.Salary,
                 IsActive = p.IsActive,
+                AvatarPath = p.AvatarPath,
+                EmployeeId = p.EmployeeId,
+                Office = p.Office,
             });
         }
         return list;
@@ -151,6 +168,11 @@ public static class PersonData
             // (digits arg must be 0..15) so do the divide/multiply trick.
             double salary = Math.Round((baseSalary + (random.NextDouble() - 0.5) * 30_000) / 100.0) * 100.0;
 
+            // The bio draw is kept (and discarded) so every later random value stays the same.
+            // The bio itself is index-derived so neighbouring rows never repeat: i * 3 visits all
+            // ten bios in turn because 3 and 10 are coprime.
+            _ = random.Next(s_bios.Length);
+
             list.Add(new Person
             {
                 FirstName = first,
@@ -158,11 +180,17 @@ public static class PersonData
                 Email = email,
                 Department = dept.Department,
                 Role = role,
-                Bio = s_bios[(i + random.Next(s_bios.Length)) % s_bios.Length],
+                Bio = s_bios[(i * 3) % s_bios.Length],
                 JoinDate = new DateTimeOffset(joinDate, TimeSpan.Zero),
                 ShiftStart = new TimeSpan(7 + random.Next(0, 4), random.Next(0, 4) * 15, 0),
                 Salary = salary,
                 IsActive = random.NextDouble() > 0.07,
+
+                // Index-derived, no extra Random draws, so existing values are unchanged.
+                EmployeeId = 1001 + i,
+                Office = Offices[(i * 7 + 3) % Offices.Count],
+                // Every 4th person has a photo; the rest show initials, so both states appear.
+                AvatarPath = (i % 4 == 0) ? $"ms-appx:///Assets/avatar{(i / 4) % 3 + 1}.png" : null,
             });
         }
         return list;

@@ -1,83 +1,71 @@
-// HeadersVisibility gates the column header strip only.
-DemoTable.HeadersVisibility = tag switch
+private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
 {
-    "None" => TableViewHeadersVisibility.None,
-    _ => TableViewHeadersVisibility.Column,
-};
-
-// One source, reshaped in place: GroupBy / ClearGroupBy mutate and return the
-// SAME instance, so grouping the ticket queue never rebuilds the source.
-_source = TableViewSource.From(Rows);
-DemoTable.ItemsSource = _source;
-
-private void ApplyShaping()
-{
-    if (_mode != "grouped")
+    // Fires during InitializeComponent (SelectedIndex="0") before the table exists.
+    if (TicketsTable is null || HeadersText is null)
     {
-        _source.ClearGroupBy();
-    }
-    else
-    {
-        var key = _groupKey;
-        // The two delegates receive DIFFERENT things despite both parameters
-        // being named `item`:
-        //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
-        //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
-        // An item-typed identity lambda returns empty, which is a fail-fast, so
-        // grouping would silently never apply.
-        _source.GroupBy(
-            item => (object)GroupValue(item, key),
-            groupKey => groupKey?.ToString() ?? "(none)");
+        return;
     }
 
-    // case "hierarchy":
-    // case "groupedhierarchy":
-    //     Hierarchical rows are not available in this release: neither
-    //     TableViewSource.idl nor TableView.idl exposes a hierarchy verb (the
-    //     only shaping verbs are Filter / GroupBy / Sort and their Clear*
-    //     counterparts). When the control ships hierarchy support, apply it to
-    //     this same source here, alongside the GroupBy stage above so the two
-    //     compose, then set _appliedMode as below.
-
-    // Set ONLY after the shaping call returns. Every readout and every
-    // enable/disable guard on this page reads _appliedMode, never _mode.
-    _appliedMode = _mode;
-
-    if (_appliedMode == "grouped")
-    {
-        DemoTable.ExpandAllGroups();
-    }
+    TicketsTable.HeadersVisibility = SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column") == "None"
+        ? TableViewHeadersVisibility.None
+        : TableViewHeadersVisibility.Column;
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "HeadersVisibility -> {0}", TicketsTable.HeadersVisibility));
 }
 
-// GroupValue never returns the empty string — "" is not a usable group identity
-// and GroupBy fails fast on it, so a blank property is coalesced.
-private static string GroupValue(object item, string key)
+private void OnSortByDueClick(object sender, RoutedEventArgs e)
 {
-    if (item is not SupportTicket ticket) return "(none)";
-
-    var value = key == "Priority" ? ticket.Priority : ticket.Queue;
-    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+    // The header click does the same thing; SortByColumn is the only way while it is hidden.
+    var direction = DueColumn.SortDirection == TableViewSortDirection.Ascending
+        ? TableViewSortDirection.Descending
+        : TableViewSortDirection.Ascending;
+    TicketsTable.SortByColumn(DueColumn, direction);
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "SortByColumn(Due, {0})", direction));
 }
 
-// Only ExpandAllGroups / CollapseAllGroups are public in this release; a single
-// group is expanded or collapsed from its header chevron, or with Left / Right
-// while the group header has focus.
-DemoTable.ExpandAllGroups();
-DemoTable.CollapseAllGroups();
-
-// The row model raises PropertyChanged for everything a cell editor binds to,
-// so an edit made in a recycled container is written to the model and re-read
-// when the container is reused — the value survives scrolling.
-public bool IsResolved
+// Raised for header clicks and for SortByColumn / ClearSort alike.
+private void OnTableSorted(TableView sender, TableViewSortedEventArgs e)
 {
-    get => _isResolved;
-    set
+    SortText.Text = e.Column is null || e.Direction == TableViewSortDirection.None
+        ? "None"
+        : string.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Column.Header, e.Direction);
+}
+
+private void OnEscalateClick(object sender, RoutedEventArgs e)
+{
+    if (TicketsTable.SelectedItem is not SupportTicket ticket)
     {
-        if (_isResolved != value)
-        {
-            _isResolved = value;
-            Raise(nameof(IsResolved));
-            Raise(nameof(ResolvedAutomationName));
-        }
+        SetLastAction("No row selected.");
+        return;
     }
+
+    var from = ticket.Priority;
+    var to = SupportTicket.Escalate(from);
+    if (to == from)
+    {
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} is already {1}, the most urgent level", ticket.TicketId, from));
+        return;
+    }
+
+    ticket.Priority = to;
+
+    // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
+    // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+    ReapplyIfGroupedOn(nameof(SupportTicket.Priority));
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Escalated {0} from {1} to {2}", ticket.TicketId, from, to));
+}
+
+// In ApplyShaping, grouped: the key selector receives the ROW; the identity selector the KEY.
+_source.GroupBy(item => KeyOf(item as SupportTicket, key), SampleShaping.GroupIdentity);
+
+// Group key for a ticket. Never empty: GroupBy fails fast on an empty group identity.
+private static object KeyOf(SupportTicket? ticket, string key)
+{
+    var value = key switch
+    {
+        nameof(SupportTicket.Priority) => ticket?.Priority,
+        nameof(SupportTicket.Assignee) => ticket?.Assignee,
+        _ => ticket?.Queue,
+    };
+
+    return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
 }

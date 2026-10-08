@@ -1,76 +1,70 @@
-// GridLinesVisibility is a single DP. Case-sensitive parse on purpose, so a
-// typo in the Tag trips Debug.Fail rather than silently defaulting.
-if (!Enum.TryParse<TableViewGridLinesVisibility>(tag, ignoreCase: false, out var value))
+private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
 {
-    Debug.Fail($"GridLinesVisibilityPage: unrecognised grid-lines Tag '{tag}'.");
-    return;
-}
-
-_lines = value;
-DemoTable.GridLinesVisibility = value;
-
-// The grouped mode is REAL grouping. An earlier version of this page bound a
-// pre-bucketed flat list and never called GroupBy, so there were no group
-// header bands for the grid lines to be checked against at all.
-_source = TableViewSource.From(_rows);
-DemoTable.ItemsSource = _source;
-
-private void ApplyShaping()
-{
-    // Reshape IN PLACE: GroupBy / ClearGroupBy mutate and return the SAME
-    // instance, so the rows are never rebuilt and the grid lines are the only
-    // thing that changes.
-    if (_mode != "grouped")
+    // Fires during InitializeComponent (SelectedIndex="3") before the table exists.
+    if (PeopleTable is null || GridLinesText is null)
     {
-        _source.ClearGroupBy();
-    }
-    else
-    {
-        var key = _groupKey;
-        // The two delegates receive DIFFERENT things despite both parameters
-        // being named `item`:
-        //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
-        //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
-        // An item-typed identity lambda returns empty, which is a fail-fast, so
-        // grouping would silently never apply — exactly the failure this page
-        // used to ship.
-        _source.GroupBy(
-            item => (object)GroupValue(item, key),
-            groupKey => groupKey?.ToString() ?? "(none)");
+        return;
     }
 
-    // case "hierarchy":
-    // case "groupedhierarchy":
-    //     Hierarchical rows are not available in this release: neither
-    //     TableViewSource.idl nor TableView.idl exposes a hierarchy verb (the
-    //     only shaping verbs are Filter / GroupBy / Sort and their Clear*
-    //     counterparts). When the control ships hierarchy support, apply it to
-    //     this same source here, alongside the GroupBy stage above so the two
-    //     compose, then set _appliedMode as below.
-
-    // Set ONLY after the shaping call returns. Every readout and guard on this
-    // page reads _appliedMode, so a failed GroupBy can never be reported as
-    // "Grouped".
-    _appliedMode = _mode;
-
-    if (_appliedMode == "grouped")
+    PeopleTable.GridLinesVisibility = SampleShaping.SelectedTag(GridLinesSelector, "All") switch
     {
-        DemoTable.ExpandAllGroups();
-    }
-}
-
-// Never the empty string: "" is not a usable group identity and GroupBy fails
-// fast on it.
-private static string GroupValue(object item, string key)
-{
-    if (item is not Person person) return "(none)";
-
-    var value = key switch
-    {
-        "Role" => person.Role,
-        "Active" => person.IsActive ? "Active" : "Inactive",
-        _ => person.Department,
+        "None" => TableViewGridLinesVisibility.None,
+        "Horizontal" => TableViewGridLinesVisibility.Horizontal,
+        "Vertical" => TableViewGridLinesVisibility.Vertical,
+        _ => TableViewGridLinesVisibility.All,
     };
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "GridLinesVisibility -> {0}", PeopleTable.GridLinesVisibility));
+}
 
-    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (PeopleTable is null || RowBandingText is null)
+    {
+        return;
+    }
+
+    var custom = SampleShaping.SelectedTag(RowBandingSelector, "default") == "custom";
+    PeopleTable.Style = custom ? (Style)Resources["CustomBandingTableViewStyle"] : null;
+    SetLastAction(custom
+        ? "Row banding -> custom RowBackground / AlternatingRowBackground"
+        : "Row banding -> default theme");
+}
+
+private void OnMoveToNextGroupClick(object sender, RoutedEventArgs e)
+{
+    if (PeopleTable.SelectedItem is not Person person)
+    {
+        SetLastAction("No row selected.");
+        return;
+    }
+
+    // Moves along the key the Group key selector names, so the row always changes group
+    // when grouped (and the same value changes when flat).
+    var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+    var from = SampleShaping.KeyOf(person, key);
+    _isBulkUpdate = true;
+    try
+    {
+        switch (key)
+        {
+            case nameof(Person.Office):
+                person.Office = SampleShaping.Next(PersonData.Offices, person.Office);
+                break;
+            case nameof(Person.IsActive):
+                person.IsActive = !person.IsActive;
+                break;
+            default:
+                person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
+                break;
+        }
+    }
+    finally
+    {
+        _isBulkUpdate = false;
+    }
+
+    // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
+    // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+    ReapplyIfGroupedOn(key);
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
 }

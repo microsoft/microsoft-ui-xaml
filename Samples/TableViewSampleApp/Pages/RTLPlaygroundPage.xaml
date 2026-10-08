@@ -10,7 +10,7 @@
 
     <controls:SamplePresenter
         Header="Right-to-left layout"
-        Description="Set FlowDirection on the TableView and the whole layout mirrors: columns flow right-to-left, and the resize gripper moves to the visual-left edge of each header."
+        Description="Setting FlowDirection to RightToLeft on a TableView mirrors the whole grid: the first column moves to the right edge, resize grippers and sort glyphs swap sides, and template cells such as the chip, the checkbox and the date picker mirror with it. A few people have Arabic or Hebrew names and notes, so you can judge right-to-left text and the caret while editing a name (F2). Sorting, filtering and grouping all stay available, because right-to-left bugs show up in the adornments those features add."
         SourceCaption="RTLPlaygroundPage.xaml (excerpt)"
         SourceSnippet="RTLPlayground.xaml.txt"
         AdditionalSnippetCaption="RTLPlaygroundPage.xaml.cs (excerpt)"
@@ -23,39 +23,35 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+                <!-- scaffold:tryit -->
                 <muxc:InfoBar
                     Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Try it"
-                    Message="Toggle FlowDirection to flip the page right-to-left. Columns and resize grippers mirror."
-                    MinHeight="104"/>
-
-                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Padding="0" VerticalAlignment="Stretch">
+                    MinHeight="104"
+                    Message="Turn FlowDirection off and on and watch the columns, the chip dots and the checkboxes mirror. Click the First name header to sort, select an Arabic or Hebrew name and press F2 to edit it, then type in Filter and set Shaping to Grouped to see the group headers mirrored too."/>
+                <!-- /scaffold -->
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
-                        x:Name="PlaygroundTable"
-                        AutomationProperties.AutomationId="PlaygroundTable"
-                        AutomationProperties.Name="Right-to-left people"
-                        SelectionMode="Single"
+                        x:Name="PeopleTable"
+                        AutomationProperties.AutomationId="RTLPlaygroundTable"
+                        AutomationProperties.Name="People, right-to-left"
+                        ItemsSource="{x:Bind Source}"
                         FlowDirection="RightToLeft"
+                        SelectionMode="Single"
                         IsReadOnly="False"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <!-- RTL mirrors column flow, resize grippers AND sort chevrons.
-                             CanSort is on so the chevron side can be verified; IsReadOnly
-                             is false so the built-in text editor is reachable (F2 or
-                             double-tap) and caret/selection behaviour can be checked
-                             under RTL. -->
-                        <tv:TableViewTextColumn x:Name="IndexColumn" Header="Index"        Width="{StaticResource ColWidthId}"  Binding="{Binding Index}" SortMemberPath="Index"/>
-                        <tv:TableViewTextColumn x:Name="NameColumn" Header="Name"         Width="{StaticResource ColWidthLongName}"  Binding="{Binding Name}" SortMemberPath="Name"/>
-                        <tv:TableViewTextColumn x:Name="DepartmentColumn" Header="Department"   Width="{StaticResource ColWidthDepartment}" CanResize="True"  Binding="{Binding Department}" SortMemberPath="Department"/>
-                        <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role"         Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" SortMemberPath="Role"/>
-                        <tv:TableViewTextColumn x:Name="RegionColumn" Header="Region"       Width="{StaticResource ColWidthLocation}" Binding="{Binding Region}" SortMemberPath="Region"/>
-                        <tv:TableViewTextColumn x:Name="JoinDateColumn" Header="Join date"     Width="{StaticResource ColWidthDate}" Binding="{Binding JoinDate}" SortMemberPath="JoinDate"/>
-                        <tv:TableViewTextColumn x:Name="NotesColumn" Header="Notes"        Width="{StaticResource ColWidthNotes}" Binding="{Binding Notes}" SortMemberPath="Notes"/>
-                        <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary"       Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary}" SortMemberPath="Salary"/>
-                        <tv:TableViewTextColumn x:Name="StatusColumn" Header="Status"       Width="{StaticResource ColWidthDepartment}" Binding="{Binding Status}" SortMemberPath="Status"/>
+                        <!-- The name columns are editable text (F2 or double-tap) so caret order and
+                             bidi text can be checked; the template columns keep their own editors. -->
+                        <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                        <tv:TableViewTextColumn x:Name="FirstNameColumn" Header="First name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FirstName}" CellToolTipBinding="{Binding Bio}" HeaderToolTip="Editable. Hover a name for that person's notes."/>
+                        <tv:TableViewTextColumn x:Name="LastNameColumn" Header="Last name" Width="{StaticResource ColWidthStatus}" Binding="{Binding LastName}" HeaderToolTip="Editable."/>
+                        <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                        <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+                        <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
                     </tv:TableView>
                 </Border>
             </Grid>
@@ -63,121 +59,210 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Flow direction" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock
-                    Text="Toggle FlowDirection on the TableView below to flip between left-to-right and right-to-left. The data and gestures stay the same — only the visual layout mirrors."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <ToggleSwitch
-                    x:Name="RtlToggle"
-                    AutomationProperties.AutomationId="RtlToggle"
-                    Header="FlowDirection"
-                    IsOn="True"
-                    OnContent="RightToLeft"
-                    OffContent="LeftToRight"
-                    Toggled="OnRtlToggled"/>
-                <Button
-                    x:Name="ResetButton"
-                    AutomationProperties.AutomationId="ResetButton"
-                    Content="Reset column order"
-                    Click="OnResetClick"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"/>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Filtering, grouping and sorting all compose on one TableViewSource. Apply them with RTL on to check that group headers, the filter result and the sort chevron all mirror correctly."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-
-                <TextBox
-                    x:Name="FilterBox"
-                    AutomationProperties.AutomationId="FilterBox"
-                    Header="Filter (name, dept, role, region, status)"
-                    PlaceholderText="Type to filter…"
-                    TextChanged="OnFilterChanged"/>
-
-                <ComboBox
-                    x:Name="ShapingModeSelector"
-                    AutomationProperties.AutomationId="ShapingModeSelector"
-                    Header="Shaping mode"
-                    SelectedIndex="0"
-                    SelectionChanged="OnShapingModeChanged"
-                    HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Flat" Tag="flat"/>
-                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                    <!-- Hierarchical rows are not available in this release. The options are shown
-                         disabled so the shape of the feature is visible; re-enable when the control
-                         ships hierarchy support. No hierarchy API exists on TableView or
-                         TableViewSource yet — TableViewRowInfo.h only reserves room for it — so the
-                         code-behind stub in ApplyShaping is prose, not a call. -->
-                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                </ComboBox>
-                <ComboBox
-                    x:Name="GroupBySelector"
-                    AutomationProperties.AutomationId="GroupBySelector"
-                    Header="Group by"
-                    SelectedIndex="0"
-                    IsEnabled="False"
-                    ToolTipService.ToolTip="Available once the shaping mode is Grouped."
-                    SelectionChanged="OnGroupByChanged"
-                    HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Department" Tag="Department"/>
-                    <ComboBoxItem Content="Region"     Tag="Region"/>
-                    <ComboBoxItem Content="Status"     Tag="Status"/>
-                </ComboBox>
-
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button x:Name="ExpandAllButton" AutomationProperties.AutomationId="ExpandAllButton" Content="Expand all" Click="OnExpandAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once the shaping mode is Grouped."/>
-                    <Button x:Name="CollapseAllButton" AutomationProperties.AutomationId="CollapseAllButton" Content="Collapse all" Click="OnCollapseAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once the shaping mode is Grouped."/>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Flow direction">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Flow direction"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Sets TableView.FlowDirection. The data, selection and keyboard behaviour stay the same; only the visual layout mirrors."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ToggleSwitch
+                        x:Name="RtlToggle"
+                        AutomationProperties.AutomationId="RTLPlaygroundFlowDirectionToggle"
+                        Header="FlowDirection"
+                        IsOn="True"
+                        OnContent="RightToLeft"
+                        OffContent="LeftToRight"
+                        Toggled="OnRtlToggled"/>
                 </StackPanel>
-                <Button
-                    x:Name="ClearShapingButton"
-                    AutomationProperties.AutomationId="ClearShapingButton"
-                    Content="Clear filter + grouping"
-                    Click="OnClearShapingClick"
-                    IsEnabled="False"
-                    ToolTipService.ToolTip="Available once a filter is set or the shaping mode is Grouped."
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"/>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <Grid ColumnSpacing="12" RowSpacing="4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="FlowDirection" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="0" Grid.Column="1" x:Name="FlowDirectionText" Text="RightToLeft" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="FlowDirectionText"/>
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Rows loaded" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="1" Grid.Column="1" x:Name="RowsLoadedText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="RowsLoadedText"/>
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Shown" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="1" x:Name="ShownRowsText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShownRowsText"/>
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Grouped by" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="1" x:Name="GroupedByText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="GroupedByText"/>
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Selected count" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="4" Grid.Column="1" x:Name="SelectedCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SelectedCountText"/>
-                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Last reorder" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="5" Grid.Column="1" x:Name="LastReorderText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="LastReorderText" TextWrapping="Wrap"/>
-                </Grid>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Filter">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Filter"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="TableViewSource.Filter keeps the rows whose name, department, office or notes contain the text. It composes with grouping and sorting on the same source."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <TextBox
+                        x:Name="FilterBox"
+                        AutomationProperties.AutomationId="RTLPlaygroundFilterBox"
+                        Header="Filter"
+                        PlaceholderText="For example: Design, Dublin or ليلى"
+                        TextChanged="OnFilterChanged"/>
+                </StackPanel>
+
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Grouped shows group headers indented from the right edge, with the chevron mirrored. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="RTLPlaygroundShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="RTLPlaygroundGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Department" Tag="Department"/>
+                        <ComboBoxItem Content="Office" Tag="Office"/>
+                        <ComboBoxItem Content="Active" Tag="IsActive"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="RTLPlaygroundExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="RTLPlaygroundCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
+
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Each action changes the table from code, so you can check that the change lands in mirrored order. Earlier and later are logical: in right-to-left, earlier means further right. Watch the table and the Last action readout. Actions that change one row need a selected row."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="SortFirstNameButton"
+                            AutomationProperties.AutomationId="RTLPlaygroundSortFirstNameButton"
+                            Content="Sort by first name"
+                            Click="OnSortFirstNameClick"
+                            ToolTipService.ToolTip="Calls TableView.SortByColumn on First name; a second click reverses the order. The sort glyph sits on the mirrored side."
+                            AutomationProperties.HelpText="Calls TableView.SortByColumn on First name; a second click reverses the order. The sort glyph sits on the mirrored side."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RenameButton"
+                            AutomationProperties.AutomationId="RTLPlaygroundRenameButton"
+                            Content="Rename selected person"
+                            Click="OnRenameClick"
+                            ToolTipService.ToolTip="Gives the selected person the next Arabic or Hebrew first name; the cell re-renders right-to-left text in place."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="AddPersonButton"
+                            AutomationProperties.AutomationId="RTLPlaygroundAddPersonButton"
+                            Content="Add a person"
+                            Click="OnAddPersonClick"
+                            ToolTipService.ToolTip="Adds a person with an Arabic or Hebrew name; grouped, they join their department's group."
+                            AutomationProperties.HelpText="Adds a person with an Arabic or Hebrew name; grouped, they join their department's group."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="MoveColumnEarlierButton"
+                            AutomationProperties.AutomationId="RTLPlaygroundMoveColumnEarlierButton"
+                            Content="Move Department column earlier"
+                            Click="OnMoveColumnEarlierClick"
+                            ToolTipService.ToolTip="Moves the Department column one place earlier in TableView.Columns; in right-to-left that is one place to the right."
+                            AutomationProperties.HelpText="Moves the Department column one place earlier in TableView.Columns; in right-to-left that is one place to the right."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="MoveColumnLaterButton"
+                            AutomationProperties.AutomationId="RTLPlaygroundMoveColumnLaterButton"
+                            Content="Move Department column later"
+                            Click="OnMoveColumnLaterClick"
+                            ToolTipService.ToolTip="Moves the Department column one place later in TableView.Columns; in right-to-left that is one place to the left."
+                            AutomationProperties.HelpText="Moves the Department column one place later in TableView.Columns; in right-to-left that is one place to the left."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="ResetColumnOrderButton"
+                            AutomationProperties.AutomationId="RTLPlaygroundResetColumnOrderButton"
+                            Content="Reset column order"
+                            Click="OnResetColumnOrderClick"
+                            ToolTipService.ToolTip="Puts every column back in its original place."
+                            AutomationProperties.HelpText="Puts every column back in its original place."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="FlowDirection" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="FlowDirectionText" AutomationProperties.AutomationId="RTLPlaygroundFlowDirectionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="RightToLeft" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Shown" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="ShownText" AutomationProperties.AutomationId="RTLPlaygroundShownText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0 of 0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Sort" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="SortText" AutomationProperties.AutomationId="RTLPlaygroundSortText"
+                                   AutomationProperties.LiveSetting="Polite" Text="None" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Column order" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ColumnOrderText" AutomationProperties.AutomationId="RTLPlaygroundColumnOrderText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Original" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="RTLPlaygroundRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="5" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="RTLPlaygroundShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="6" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="6" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="RTLPlaygroundLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
 
                 <muxc:InfoBar
+                    Title="What to look for"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="What to look for"
-                    Message="With RTL on the whole grid mirrors: column flow reverses, the Department resize gripper moves to the left of its header, the sort chevron sits on the logical trailing edge, and group headers indent from the right. Edits (F2 or double-tap) keep logical caret order."/>
+                    Message="In right-to-left the Photo column sits at the right edge, resize grippers sit on the left of each header, the sort glyph and group chevrons mirror, and the chip dot moves to the right of its label. Arabic and Hebrew names read right-to-left in either direction; Latin names stay left-to-right inside a mirrored grid, and the caret follows the text, not the grid, while editing."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
-
     </controls:SamplePresenter>
 </Page>

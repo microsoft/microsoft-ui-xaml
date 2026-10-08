@@ -1,83 +1,96 @@
-private readonly ObservableCollection<Person> _people = new();
-
-// Reshaped IN PLACE: GroupBy / ClearGroupBy / Sort mutate and return the same TableViewSource
-// (TableViewSource.cpp:49-50). Rebuilding the source per change - which this page used to do -
-// drops selection, scroll offset and group expansion on every toggle.
-private TableViewSource? _source;
-private string _mode = "flat";          // requested
-private string _appliedMode = "flat";   // applied - every readout and guard reads THIS
-private string _groupKey = "Department";
-
-private void ApplyCurrentSource()
+// ShowcasePage.xaml.cs. One TableViewSource, created once and reshaped in place.
+public ShowcasePage()
 {
-    if (_source is null)
-    {
-        _source = TableViewSource.From(_people);
-        PeopleTable.ItemsSource = _source;
-    }
-
-    switch (_mode)
-    {
-        case "grouped":
-            var key = _groupKey;
-            // The two delegates receive DIFFERENT things despite both parameters being named
-            // `item`: TableViewKeySelector gets the ROW ITEM, TableViewIdentitySelector gets
-            // the GROUP KEY (TableViewSource.idl:12-16). The old item-typed identity lambda
-            // here could return the empty string, which is an E_INVALIDARG fail-fast.
-            _source.GroupBy(
-                item => (object)GroupValue(item, key),
-                groupKey => groupKey?.ToString() ?? "(none)");
-            break;
-
-        // case "hierarchy":
-        // case "groupedhierarchy":
-        //     Hierarchical rows are not available in this release, and no hierarchy API
-        //     exists on TableViewSource or TableView yet, so there is deliberately no call
-        //     written here to copy. When the control ships hierarchy support, apply it to
-        //     this same source instance alongside the GroupBy stage above so the two compose.
-        //     break;
-
-        default:
-            _source.ClearGroupBy();
-            break;
-    }
-
-    _appliedMode = _mode;   // set ONLY after the shaping call returns
-
-    ApplyActiveSort(_source);
+    Vibrant = true;
+    FillPeople(100);
+    _source = TableViewSource.From(People);
+    InitializeComponent();
+    // ...
 }
 
-private void ApplyActiveSort(TableViewSource source)
+private void OnLiveTimerTick(object? sender, object e)
 {
-    // Clear first: the keySelector Sort overload declares an ANONYMOUS axis, so re-declaring
-    // one without clearing would stack a second axis rather than replace the first.
-    source.ClearSort();
+    var flipped = false;
+    _isBulkUpdate = true;
+    try
+    {
+        foreach (var person in People.Take(LiveRowCount))
+        {
+            // Nudge Salary within the dataset band and flip Active now and then. Person raises
+            // PropertyChanged, so only these cells re-run their bindings and tint converters.
+            var next = Math.Clamp(person.Salary + ((_liveRandom.NextDouble() - 0.5) * 12_000), 110_000, MaxSalary);
+            person.Salary = Math.Round(next / 100.0) * 100.0;
+            if (_liveRandom.NextDouble() < 0.15)
+            {
+                person.IsActive = !person.IsActive;
+                flipped = true;
+            }
+        }
+    }
+    finally
+    {
+        _isBulkUpdate = false;
+    }
 
-    var sortColumn = SampleShape.ActiveSortColumn(PeopleTable);
-    if (sortColumn is null ||
-        SampleShape.ActiveSortDirection(PeopleTable) == SortDirection.None ||
-        string.IsNullOrEmpty(sortColumn.SortMemberPath))
+    // Neither grouping nor sorting observes PropertyChanged, so re-apply whichever one is
+    // keyed on a value the tick just changed.
+    if (flipped)
+    {
+        ReapplyIfGroupedOn(nameof(Person.IsActive));
+    }
+
+    ResortIfSortedOn(nameof(Person.Salary), nameof(Person.IsActive));
+    RefreshReadouts();
+}
+
+// The control sorts once, when the sort is applied. Re-declaring the same path on the source
+// re-reads every key (TableViewSource.Sort replaces that axis in place), so a row whose sorted
+// value changed moves to its new position.
+private void ResortIfSortedOn(params string[] propertyNames)
+{
+    var column = ActiveSortColumn();
+    if (_source is null || column is null || Array.IndexOf(propertyNames, column.SortMemberPath) < 0)
     {
         return;
     }
 
-    var path = sortColumn.SortMemberPath;
-    source.Sort(item => SortKey(item, path), SampleShape.ActiveSortDirection(PeopleTable));
+    var selected = PeopleTable.SelectedItem;
+    _isResorting = true;
+    try
+    {
+        _source.Sort(column.SortMemberPath, column.SortDirection);
+    }
+    finally
+    {
+        _isResorting = false;
+    }
+
+    SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex);
 }
 
-// Doubles the selected row's Salary, then re-applies the sort axis so a row sorted on Salary
-// visibly re-positions. Sorting while Grouped sorts WITHIN each group.
-private void OnBumpSalaryClick(object sender, RoutedEventArgs e)
+private TableViewColumn? ActiveSortColumn() =>
+    PeopleTable.Columns.FirstOrDefault(column => column.SortDirection != TableViewSortDirection.None);
+
+private void OnColumnCheckBoxClick(object sender, RoutedEventArgs e)
 {
-    if (PeopleTable.SelectedItem is not Person selected) { return; }
+    if (sender is not CheckBox checkBox || !_columnToggles.TryGetValue(checkBox, out var column))
+    {
+        return;
+    }
 
-    selected.Salary = Math.Round(selected.Salary * 2, 0);
-    ApplyCurrentSource();
-    UpdateStatus();
+    var show = checkBox.IsChecked == true;
+    column.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} column -> {1}", column.Header, show ? "shown" : "hidden"));
 }
 
-// ----- Selection -----
-// Row-scoped and single-item: SelectedItem and SelectedIndex are read-only projections that
-// stay coherent with each other. Drive selection through Select / Deselect / DeselectAll.
-PeopleTable.Select(0);
-PeopleTable.DeselectAll();
+private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (!_ready)
+    {
+        return;
+    }
+
+    var visibility = Enum.Parse<TableViewHeadersVisibility>(SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column"));
+    PeopleTable.HeadersVisibility = visibility;
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "HeadersVisibility -> {0}", visibility));
+}

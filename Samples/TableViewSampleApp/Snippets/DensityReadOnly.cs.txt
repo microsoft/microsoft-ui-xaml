@@ -1,62 +1,43 @@
-private TableViewSource? _source;
-private string _groupKey = "none";
-
-// TableViewSource.From(...) once; everything after this reshapes it in place.
-_source = TableViewSource.From(People);
-DemoTable.ItemsSource = _source;
-DemoTable.Density = TableViewDensity.Standard;
-
-private void OnDensitySelectionChanged(object sender, SelectionChangedEventArgs e)
+// DensityReadOnlyPage.xaml.cs
+private void OnDensityChanged(object sender, SelectionChangedEventArgs e)
 {
-    if (sender is RadioButtons { SelectedItem: FrameworkElement { Tag: string tag } } &&
-        Enum.TryParse<TableViewDensity>(tag, out var density))
+    // Fires during InitializeComponent (SelectedIndex="1"), when the table already uses the
+    // Standard default.
+    if (PeopleTable is null || DensitySelector is null || !IsLoaded)
     {
-        DemoTable.Density = density;   // table-level DP: row height + cell padding
+        return;
     }
+
+    var density = Enum.Parse<TableViewDensity>(SampleShaping.SelectedTag(DensitySelector, "Standard"));
+    PeopleTable.Density = density;
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Density -> {0}", density));
 }
 
-/// Filter / GroupBy mutate and return the SAME TableViewSource instance, so the
-/// source is reshaped rather than rebuilt. Rebuilding would drop selection,
-/// scroll offset and group expansion.
-private void ApplyGrouping()
+private void OnMoveGroupClick(object sender, RoutedEventArgs e)
 {
-    var grouped = _groupKey != "none";
-    if (grouped)
+    if (PeopleTable.SelectedItem is not Person person)
     {
-        var key = _groupKey;
-        // The delegate types differ: TableViewKeySelector returns Object and
-        // TableViewIdentitySelector returns String, so the cast is required.
-        // The key selector receives the ITEM; the identity selector receives the
-        // group KEY the first one produced, so it only has to stringify it.
-        _source.GroupBy(
-            item => (object)GroupValue(item, key),
-            groupKey => groupKey?.ToString() ?? "(none)");
-    }
-    else
-    {
-        _source.ClearGroupBy();
+        SetLastAction("No row selected.");
+        return;
     }
 
-    // Expand all / Collapse all only mean something while grouped.
-    ExpandAllButton.IsEnabled = grouped;
-    CollapseAllButton.IsEnabled = grouped;
-
-    if (grouped)
+    var key = _appliedMode == "grouped" ? _appliedKey : nameof(Person.Department);
+    var from = SampleShaping.KeyOf(person, key);
+    switch (key)
     {
-        DispatcherQueue.TryEnqueue(() => DemoTable?.ExpandAllGroups());
+        case nameof(Person.Role):
+            person.Role = SampleShaping.Next(PersonData.Roles, person.Role);
+            break;
+        case nameof(Person.IsActive):
+            person.IsActive = !person.IsActive;
+            break;
+        default:
+            person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
+            break;
     }
+
+    // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
+    // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+    ReapplyIfGroupedOn(key);
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
 }
-
-private static string GroupValue(object item, string key)
-{
-    if (item is not Person person)
-    {
-        return "(none)";
-    }
-
-    var value = key switch { "Role" => person.Role, _ => person.Department };
-    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-}
-
-private void OnExpandAllGroupsClick(object sender, RoutedEventArgs e) => DemoTable.ExpandAllGroups();
-private void OnCollapseAllGroupsClick(object sender, RoutedEventArgs e) => DemoTable.CollapseAllGroups();

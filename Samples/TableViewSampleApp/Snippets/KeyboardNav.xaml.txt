@@ -1,43 +1,57 @@
-<!-- Keyboard navigation half: focus sentinels either side of the table make
-     tab order in and out verifiable without a mouse. -->
+<!-- Two tables on one page, so StretchExample="False": every Example row is Auto and each
+     table has a fixed Height, which keeps it bounded (and virtualized) while the page scrolls.
+     Focus sentinels either side make the tab order in and out checkable without a mouse. -->
+<!-- <controls:SamplePresenter ... StretchExample="False"> -->
+
 <Button Content="Before table" AutomationProperties.AutomationId="KeyboardNavBeforeTable"/>
-
-<tv:TableView x:Name="PeopleTable" SelectionMode="Single" SelectionChanged="OnSelectionChanged"
-              AutomationProperties.Name="Keyboard navigation people"
-              AutomationProperties.AutomationId="PeopleTable">
-    <tv:TableViewTextColumn Header="#"          Binding="{Binding Number}"    CanSort="False"/>
-    <tv:TableViewTextColumn Header="First name" Binding="{Binding FirstName}" CanSort="False"/>
-    <tv:TableViewTextColumn Header="Last name"  Binding="{Binding LastName}"  CanSort="False"/>
-    <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="{StaticResource ColWidthLongName}"
-                            Binding="{Binding Role}" CanSort="False"/>
-</tv:TableView>
-
+<Border Style="{StaticResource TableHostBorderStyle}">
+    <tv:TableView x:Name="PeopleTable"
+                  AutomationProperties.AutomationId="KeyboardNavTable"
+                  AutomationProperties.Name="Keyboard navigation people"
+                  SelectionMode="Single" Height="360">
+        <!-- Decorative: the avatar template is never a tab stop. -->
+        <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                                    CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+        <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
+                                Binding="{Binding FullName}" IsReadOnly="True"/>
+        <!-- Sortable template column: Enter or Space on its focused header sorts by Department. -->
+        <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}"
+                                    CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+        <!-- Editors: Tab moves into them inside the focused row. -->
+        <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}"
+                                    CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanSort="False"/>
+        <tv:TableViewTemplateColumn Header="Office" Width="{StaticResource ColWidthCombo}"
+                                    CellTemplate="{StaticResource OfficeComboTemplate}" CanSort="False"/>
+        <tv:TableViewTemplateColumn Header="Details" Width="{StaticResource ColWidthAction}"
+                                    CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False"/>
+    </tv:TableView>
+</Border>
 <Button Content="After table" AutomationProperties.AutomationId="KeyboardNavAfterTable"/>
 
-<!-- Assessment fixture half. The templates are the fixture: the intrinsic one
-     deliberately supplies NO AutomationProperties.Name so the provider must
-     compose a name from displayed content, and the explicit one supplies a name
-     that differs from the displayed text. That asymmetry is what is under
-     assessment - do not "fix" the intrinsic template by naming it. -->
-<DataTemplate x:Key="IntrinsicRecordTemplate">
+<!-- Assessment fixture. The templates ARE the fixture: the intrinsic one deliberately sets NO
+     AutomationProperties.Name, so the provider must compose a name from the displayed content,
+     and the explicit one sets a name that differs from the displayed text. Do not "fix" the
+     intrinsic template by naming it. -->
+<DataTemplate x:Key="IntrinsicRecordTemplate" x:DataType="models:AccessibilityRow">
     <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch">
-        <TextBlock Text="{Binding DisplayText}" TextWrapping="Wrap"/>
+        <TextBlock Text="{x:Bind DisplayText, Mode=OneWay}" TextWrapping="Wrap"/>
     </Button>
 </DataTemplate>
 
-<DataTemplate x:Key="ExplicitRecordTemplate">
+<DataTemplate x:Key="ExplicitRecordTemplate" x:DataType="models:AccessibilityRow">
     <Button Click="OnTemplateContentClick" HorizontalAlignment="Stretch"
-            AutomationProperties.Name="{Binding ExplicitName}">
-        <TextBlock Text="{Binding DisplayText}" TextWrapping="Wrap"/>
+            AutomationProperties.Name="{x:Bind ExplicitName}">
+        <TextBlock Text="{x:Bind DisplayText, Mode=OneWay}" TextWrapping="Wrap"/>
     </Button>
 </DataTemplate>
 
-<!-- Columns are built in code so one fixture table can switch between the four
-     scenarios without re-creating the control or the 24 source objects. -->
+<!-- Columns are built in code, so one fixture table switches between the four scenarios
+     without re-creating the control or the 24 source objects. Height 248 shows about five
+     rows, which keeps record 24 off screen. -->
 <tv:TableView x:Name="AssessmentTable"
-              AutomationProperties.AutomationId="A11yTable"
+              AutomationProperties.AutomationId="KeyboardNavFixtureTable"
               AutomationProperties.Name="Accessibility regression records"
-              SelectionMode="Single" IsReadOnly="True" Height="360"
-              SelectionChanged="OnTableSelectionChanged"
+              SelectionMode="Single" IsReadOnly="True" Height="248"
+              SelectionChanged="OnFixtureSelectionChanged"
               BeginningEdit="OnBeginningEdit"
               CellEditEnding="OnCellEditEnding"/>

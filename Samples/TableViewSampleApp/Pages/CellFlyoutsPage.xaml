@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Cell templating: the golden reference page (FIX-PLAN §2, WP0 item 0.10). Every other feature
+    page copies its structure: Try it, one stretched table, then the rail in the order
+    Primary feature, Shaping, Actions, Status, What to look for. The generic blocks are marked
+    with scaffold comments so they can later be extracted unchanged (FIX-PLAN §1.6 R4).
+    The cell templates come from Templates\PersonCellTemplates.xaml; this page declares none.
+-->
 <Page
     x:Class="TableViewSampleApp.Pages.CellFlyoutsPage"
     NavigationCacheMode="Disabled"
@@ -6,155 +13,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
-    xmlns:controls="using:TableViewSampleApp.Controls"
-    xmlns:local="using:TableViewSampleApp.Pages"
-    xmlns:models="using:TableViewSampleApp.Models">
-
-    <Page.Resources>
-        <local:DepartmentChipTintConverter x:Key="DepartmentChipTintConverter"/>
-        <local:DepartmentChipDotConverter x:Key="DepartmentChipDotConverter"/>
-        <local:PersonAvatarBrushConverter x:Key="PersonAvatarBrushConverter"/>
-        <local:PersonAvatarColorNameConverter x:Key="PersonAvatarColorNameConverter"/>
-        <local:RowAutomationNameConverter x:Key="RowAutomationNameConverter"/>
-
-        <!-- Headline template: a read-only visual. The tint and dot brushes are
-             cached singletons resolved by the converters (never allocated per
-             cell), and they collapse to transparent under a Windows Contrast
-             theme so the user's guaranteed contrast pair wins. The dot is
-             decorative, so it is hidden from the automation tree; the label
-             carries the accessible name, and the chip never relies on colour
-             alone to convey the value. -->
-        <DataTemplate x:Key="DepartmentChipCell" x:DataType="models:Person">
-            <Border
-                CornerRadius="10"
-                Padding="8,2"
-                Margin="6,2"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource DepartmentChipTintConverter}}"
-                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                AutomationProperties.AccessibilityView="Raw">
-                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                    <Ellipse
-                        Width="8"
-                        Height="8"
-                        VerticalAlignment="Center"
-                        Fill="{x:Bind Department, Mode=OneWay, Converter={StaticResource DepartmentChipDotConverter}}"
-                        AutomationProperties.AccessibilityView="Raw"/>
-                    <TextBlock
-                        Text="{x:Bind Department, Mode=OneWay}"
-                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                        VerticalAlignment="Center"
-                        AutomationProperties.AutomationId="CellFlyoutsDepartmentChip"
-                        AutomationProperties.Name="{x:Bind Department, Mode=OneWay}"/>
-                </StackPanel>
-            </Border>
-        </DataTemplate>
-
-        <!-- Counterpart to the chip: a genuinely interactive template cell.
-             IsTabStop is left at its default and hit testing is untouched, so
-             the box is reachable with Tab and toggles with Space. The binding
-             is TwoWay against Person.IsActive, which raises PropertyChanged, so
-             the value survives row recycling instead of being mutated onto a
-             realized element. The box has no visible label, so the per-row
-             accessible name is announced exactly once. -->
-        <DataTemplate x:Key="ActiveCheckBoxCell" x:DataType="models:Person">
-            <CheckBox
-                IsChecked="{x:Bind IsActive, Mode=TwoWay}"
-                MinWidth="0"
-                Margin="14,2"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Left"
-                AutomationProperties.AutomationId="CellFlyoutsActiveCheckBox"
-                AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Active for {0}'}"/>
-        </DataTemplate>
-
-        <DataTemplate x:Key="AvatarCell" x:DataType="models:Person">
-            <Border
-                Width="28"
-                Height="28"
-                CornerRadius="14"
-                Background="{Binding Department, Converter={StaticResource PersonAvatarBrushConverter}}"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                IsHitTestVisible="False"
-                AutomationProperties.AutomationId="CellFlyoutsAvatar"
-                AutomationProperties.Name="{Binding FullName}"
-                AutomationProperties.HelpText="{Binding Department, Converter={StaticResource PersonAvatarColorNameConverter}}">
-                <TextBlock
-                    Text="{Binding Initial}"
-                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
-                    FontWeight="SemiBold"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"/>
-            </Border>
-        </DataTemplate>
-
-        <DataTemplate x:Key="DatePickerCell" x:DataType="models:Person">
-            <DatePicker
-                Date="{Binding JoinDate, Mode=TwoWay}"
-                IsTabStop="True"
-                Loaded="OnDatePickerLoaded"
-                Margin="6,2"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Stretch"
-                AutomationProperties.AutomationId="CellFlyoutsDatePicker"
-                AutomationProperties.Name="{Binding FullName, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Join date for {0}'}"/>
-        </DataTemplate>
-
-        <DataTemplate x:Key="DepartmentComboCell" x:DataType="models:Person">
-            <ComboBox
-                SelectedItem="{Binding Department, Mode=TwoWay}"
-                IsTabStop="True"
-                Loaded="OnDepartmentComboBoxLoaded"
-                Margin="6,2"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Stretch"
-                AutomationProperties.AutomationId="CellFlyoutsDepartmentComboBox"
-                AutomationProperties.Name="{Binding FullName, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Department for {0}'}"/>
-        </DataTemplate>
-
-        <DataTemplate x:Key="DetailsButtonCell" x:DataType="models:Person">
-            <Button
-                Content="Details"
-                IsTabStop="True"
-                Click="OnDetailsButtonClick"
-                Margin="6,2"
-                HorizontalAlignment="Stretch"
-                AutomationProperties.AutomationId="CellFlyoutsDetailsButton"
-                AutomationProperties.Name="{Binding FullName, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Details for {0}'}">
-                <FlyoutBase.AttachedFlyout>
-                    <Flyout>
-                        <StackPanel Spacing="6" MaxWidth="280">
-                            <TextBlock Text="Details flyout from a table cell" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
-                            <TextBlock Text="This Button uses FlyoutBase.AttachedFlyout and opens from inside a TableViewTemplateColumn." TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </Flyout>
-                </FlyoutBase.AttachedFlyout>
-            </Button>
-        </DataTemplate>
-
-        <!-- ShiftStart is a time value, so the editor is a TimePicker rather than a
-             menu of canned times. Fully interactive: IsTabStop is left at its
-             default, hit testing is untouched, the bind is TwoWay against a
-             property that raises PropertyChanged, and the name identifies the row. -->
-        <DataTemplate x:Key="ShiftTimeCell" x:DataType="models:Person">
-            <TimePicker
-                Time="{x:Bind ShiftStart, Mode=TwoWay}"
-                ClockIdentifier="24HourClock"
-                MinuteIncrement="15"
-                Margin="6,2"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Stretch"
-                AutomationProperties.AutomationId="CellFlyoutsShiftTimePicker"
-                AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Shift start for {0}'}"/>
-        </DataTemplate>
-    </Page.Resources>
+    xmlns:controls="using:TableViewSampleApp.Controls">
 
     <controls:SamplePresenter
         Header="Cell templating"
-        Description="TableViewTemplateColumn hosting a DataTemplate per cell. The headline is the Department chip — a rounded tinted Border with a colour dot and a text label, a purely decorative template. Next to it sits a genuinely interactive template: a CheckBox two-way bound to Person.IsActive, tab-reachable and Space-toggleable, so the contrast between a decorative template and an interactive one is explicit. The remaining columns pick the editor that fits the data — a DatePicker for the join date, a TimePicker for the shift start, a ComboBox for the constrained department list, and a Button.Flyout — all with hit testing and keyboard focus left enabled so popup placement can be verified from inside cells. Every column is sized to its content and Name takes the leftover space with Width=&quot;*&quot;; no column uses Auto, which resolves from realized rows only and oscillates while scrolling."
+        Description="TableViewTemplateColumn renders each cell from a DataTemplate: a read-only visual such as the Department chip, or an editor such as a CheckBox, a date or time picker, a ComboBox or a Button with a Flyout. Each editor is two-way bound to its Person row and reachable with Tab, so an edit survives scrolling and sorting. Sorting a template column uses its SortMemberPath, the value behind the control. The Join date editor option swaps that column's CellTemplate at run time."
         SourceCaption="CellFlyoutsPage.xaml (excerpt)"
         SourceSnippet="CellFlyouts.xaml.txt"
         AdditionalSnippetCaption="CellFlyoutsPage.xaml.cs (excerpt)"
@@ -167,35 +30,35 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+                <!-- scaffold:tryit -->
                 <muxc:InfoBar
                     Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Try it"
-                    Message="Tab into the Active checkbox and press Space — the checked count updates because the cell is two-way bound to the model, and the state survives scrolling the row out of view. Open a date picker, shift time picker, department combo, or details flyout directly from a cell; popups should anchor to the invoking cell and remain visible."
-                    MinHeight="104"/>
-                <Border
-                    Grid.Row="1"
-                    Style="{StaticResource TableHostBorderStyle}"
-                    Padding="0"
-                    VerticalAlignment="Stretch">
+                    MinHeight="104"
+                    Message="Tab into a row's Active checkbox and press Space, then open its Join date, Shift, Office or Details editor. Scroll the row out of view and back: the value you set is still there. Click the Join date header to sort by the date value, then switch the Join date editor in the rail."/>
+                <!-- /scaffold -->
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
                         x:Name="PeopleTable"
-                        AutomationProperties.Name="People with templated cells"
                         AutomationProperties.AutomationId="CellFlyoutsTable"
+                        AutomationProperties.Name="People with templated cells"
+                        ItemsSource="{x:Bind Source}"
                         SelectionMode="Single"
-                        SelectionChanged="OnTableSelectionChanged"
                         IsReadOnly="False"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="120" Binding="{Binding FullName}" CanSort="False" HeaderToolTip="Read-only text column — the row's full name. Takes the leftover width."/>
-                        <tv:TableViewTemplateColumn Header="Department" Width="110" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentChipCell}" CanSort="False" HeaderToolTip="Read-only chip template: a tinted badge with a colour dot and the department name."/>
-                        <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" SortMemberPath="IsActive" CellTemplate="{StaticResource ActiveCheckBoxCell}" CanSort="False" HeaderToolTip="Whether the person is an active employee. Editable CheckBox cell — Tab to it and press Space."/>
-                        <tv:TableViewTemplateColumn Header="Join date" Width="220" SortMemberPath="JoinDate" CellTemplate="{StaticResource DatePickerCell}" CanSort="False" HeaderToolTip="The date the person joined. Editable DatePicker cell."/>
-                        <tv:TableViewTemplateColumn Header="Shift" Width="140" SortMemberPath="ShiftStart" CellTemplate="{StaticResource ShiftTimeCell}" CanSort="False" HeaderToolTip="Start of the daily shift, 24-hour clock. Editable TimePicker cell."/>
-                        <tv:TableViewTemplateColumn Header="Edit dept" Width="{StaticResource ColWidthStatus}" SortMemberPath="Department" CellTemplate="{StaticResource DepartmentComboCell}" CanSort="False" HeaderToolTip="The same department value as the chip, in an editable ComboBox constrained to the known department list."/>
-                        <tv:TableViewTemplateColumn Header="Details" Width="90" SortMemberPath="FullName" CellTemplate="{StaticResource DetailsButtonCell}" CanSort="False" HeaderToolTip="Opens a Flyout anchored to the invoking cell, so popup placement and clipping can be checked."/>
+                        <!-- The template renders a control; SortMemberPath names the value that orders the rows. -->
+                        <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
+                        <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}" IsReadOnly="True" HeaderToolTip="Read-only text column. Takes the width the other columns leave."/>
+                        <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department" HeaderToolTip="Read-only chip template: a tinted badge with a colour dot and the department name."/>
+                        <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" HeaderToolTip="Editable CheckBox. Tab to it and press Space."/>
+                        <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate" HeaderToolTip="Editable date. Sorts by the JoinDate value, not by the text the picker shows."/>
+                        <tv:TableViewTemplateColumn Header="Shift" Width="{StaticResource ColWidthTimeCompact}" CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart" HeaderToolTip="Start of the daily shift, 24-hour clock. Editable TimePicker; sorts by the TimeSpan."/>
+                        <tv:TableViewTemplateColumn Header="Office" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office" HeaderToolTip="Editable ComboBox constrained to the office list."/>
+                        <tv:TableViewTemplateColumn Header="Details" Width="{StaticResource ColWidthAction}" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" HeaderToolTip="Opens a Flyout anchored to the invoking cell."/>
                     </tv:TableView>
                 </Border>
             </Grid>
@@ -203,107 +66,136 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <StackPanel Spacing="4" AutomationProperties.Name="Shaping options">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <TextBlock
-                        Text="TableViewSource.GroupBy reshapes the same source in place, so templated cells are re-realized from the pool rather than rebuilt. Hierarchy is a separate shaping axis and is not available in this release."
-                        Style="{StaticResource SectionDescriptionTextStyle}"
-                        TextWrapping="Wrap"/>
+                <!-- 1. Primary feature -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Join date editor">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Join date editor"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Sets TableViewTemplateColumn.CellTemplate on the Join date column; the visible rows regenerate their cells. The compact CalendarDatePicker fits a 170 px column, the full DatePicker needs 310 px."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="JoinDateEditorSelector"
+                        AutomationProperties.AutomationId="CellFlyoutsJoinDateEditorSelector"
+                        Header="Join date editor"
+                        SelectedIndex="0"
+                        SelectionChanged="OnJoinDateEditorChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Calendar date picker (compact)" Tag="calendar"/>
+                        <ComboBoxItem Content="Date picker (full)" Tag="datepicker"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Grouping re-realizes the templated cells from the pool, and every editor keeps its value. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
                     <ComboBox
                         x:Name="ShapingModeSelector"
-                        AutomationProperties.AutomationId="ShapingModeSelector"
+                        AutomationProperties.AutomationId="CellFlyoutsShapingModeSelector"
                         Header="Shaping mode"
                         SelectedIndex="0"
                         SelectionChanged="OnShapingModeChanged"
                         HorizontalAlignment="Stretch">
                         <ComboBoxItem Content="Flat" Tag="flat"/>
                         <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                        <!-- Hierarchical rows are not available in this release. The options stay
-                             visible but disabled so the shape of the feature is discoverable;
-                             re-enable them when the control ships hierarchy support, and uncomment
-                             the matching branch in ApplyGrouping. -->
-                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
                     </ComboBox>
                     <ComboBox
                         x:Name="GroupKeySelector"
                         AutomationProperties.AutomationId="CellFlyoutsGroupKeySelector"
                         Header="Group key"
                         SelectedIndex="0"
-                        SelectionChanged="OnGroupKeyChanged"
                         IsEnabled="False"
-                        ToolTipService.ToolTip="Available in the Grouped shaping mode."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
                         HorizontalAlignment="Stretch">
                         <ComboBoxItem Content="Department" Tag="Department"/>
-                        <ComboBoxItem Content="Role" Tag="Role"/>
+                        <ComboBoxItem Content="Office" Tag="Office"/>
+                        <ComboBoxItem Content="Active" Tag="IsActive"/>
                     </ComboBox>
                     <Button
                         x:Name="ExpandAllButton"
                         AutomationProperties.AutomationId="CellFlyoutsExpandAllGroupsButton"
                         Content="Expand all"
-                        Click="OnExpandAllGroupsClick"
+                        Click="OnExpandAllClick"
                         IsEnabled="False"
-                        ToolTipService.ToolTip="Available in the Grouped shaping mode."
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"/>
                     <Button
                         x:Name="CollapseAllButton"
                         AutomationProperties.AutomationId="CellFlyoutsCollapseAllGroupsButton"
                         Content="Collapse all"
-                        Click="OnCollapseAllGroupsClick"
+                        Click="OnCollapseAllClick"
                         IsEnabled="False"
-                        ToolTipService.ToolTip="Available in the Grouped shaping mode."
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
+
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Each action writes the Person model, and the templates follow through their two-way bindings, including rows scrolled out of view. Watch the table and the Last action readout. Actions that change one row need a selected row."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="CheckAllActiveButton"
+                            AutomationProperties.AutomationId="CellFlyoutsCheckAllActiveButton"
+                            Content="Check all Active"
+                            Click="OnCheckAllActiveClick"
+                            ToolTipService.ToolTip="Sets IsActive on every row; every Active checkbox checks, including recycled rows."
+                            AutomationProperties.HelpText="Sets IsActive on every row; every Active checkbox checks, including recycled rows."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="UncheckAllActiveButton"
+                            AutomationProperties.AutomationId="CellFlyoutsUncheckAllActiveButton"
+                            Content="Uncheck all Active"
+                            Click="OnUncheckAllActiveClick"
+                            ToolTipService.ToolTip="Clears IsActive on every row; scroll a recycled row back to confirm it re-binds."
+                            AutomationProperties.HelpText="Clears IsActive on every row; scroll a recycled row back to confirm it re-binds."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="ChangeDepartmentButton"
+                            AutomationProperties.AutomationId="CellFlyoutsChangeDepartmentButton"
+                            Content="Change selected row's department"
+                            Click="OnChangeDepartmentClick"
+                            ToolTipService.ToolTip="Moves the selected person to the next department. The chip re-tints; grouped by Department, the row moves to that group."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="OpenDetailsButton"
+                            AutomationProperties.AutomationId="CellFlyoutsOpenDetailsButton"
+                            Content="Open selected row's details"
+                            Click="OnOpenDetailsClick"
+                            ToolTipService.ToolTip="Opens the Details flyout of the selected row, anchored to its cell."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
                 </StackPanel>
 
-                <StackPanel Spacing="4" AutomationProperties.Name="Actions">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock
-                        Text="Model mutations that the templates must pick up. Each one changes the table on screen and moves the readout below — nothing here is a no-op."
-                        Style="{StaticResource SectionDescriptionTextStyle}"
-                        TextWrapping="Wrap"/>
-                    <Button
-                        x:Name="RecolourChipButton"
-                        Content="Change selected row's department"
-                        Click="OnRecolourChipClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Select a row first."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"
-                        AutomationProperties.AutomationId="CellFlyoutsRecolourChipButton"
-                        AutomationProperties.HelpText="Rewrites Department on the model, so the chip re-tints and the row moves group when grouped by Department."/>
-                    <Button
-                        x:Name="ToggleSelectedActiveButton"
-                        Content="Toggle selected row's Active"
-                        Click="OnToggleSelectedActiveClick"
-                        IsEnabled="False"
-                        ToolTipService.ToolTip="Select a row first."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"
-                        AutomationProperties.AutomationId="CellFlyoutsToggleSelectedActiveButton"
-                        AutomationProperties.HelpText="Writes IsActive on the model; the checkbox cell follows because the binding is two-way."/>
-                    <Button
-                        x:Name="CheckAllButton"
-                        Content="Check every row"
-                        Click="OnCheckAllClick"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"
-                        AutomationProperties.AutomationId="CellFlyoutsCheckAllButton"
-                        AutomationProperties.HelpText="Sets IsActive on every row, including rows scrolled out of view."/>
-                    <Button
-                        x:Name="UncheckAllButton"
-                        Content="Uncheck every row"
-                        Click="OnUncheckAllClick"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"
-                        AutomationProperties.AutomationId="CellFlyoutsUncheckAllButton"
-                        AutomationProperties.HelpText="Clears IsActive on every row; scroll a recycled row back to confirm it re-binds."/>
-                </StackPanel>
-
-                <StackPanel Spacing="4" AutomationProperties.Name="Status">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <Grid ColumnSpacing="12" RowSpacing="4">
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
@@ -311,36 +203,32 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Rows checked" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="CheckedCountText" Grid.Row="0" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="CellFlyoutsCheckedCountText"/>
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Grouped by" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="GroupedByValueText" Grid.Row="1" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="CellFlyoutsGroupedByText" TextWrapping="Wrap"/>
+                        <TextBlock Grid.Row="0" Text="Active" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ActiveCountText" AutomationProperties.AutomationId="CellFlyoutsActiveCountText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0 of 0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="CellFlyoutsRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="CellFlyoutsShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="CellFlyoutsLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
                     </Grid>
                 </StackPanel>
+                <!-- /scaffold -->
 
-                <StackPanel Spacing="4" AutomationProperties.Name="Live data readout">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Live data readout" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <TextBlock Text="The first row updates when an interactive cell commits a value." Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite"
-                        x:Name="LiveReadout"
-                        AutomationProperties.AutomationId="CellFlyoutsLiveReadout"
-                        AutomationProperties.Name="Live data readout"
-                        FontFamily="Consolas"
-                        FontSize="12"
-                        TextWrapping="Wrap"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                </StackPanel>
-
-                <muxc:InfoBar AutomationProperties.LiveSetting="Polite"
-                    AutomationProperties.AutomationId="CellFlyoutsStatusInfoBar"
+                <muxc:InfoBar
+                    Title="What to look for"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Status"
-                    Message="{x:Bind StatusText, Mode=OneWay}"
-                    MinHeight="64"/>
+                    Message="Scrolling recycles the chip, checkbox and picker elements, yet each row shows its own value again, because every editor is bound to the model rather than to the element. Template columns sort by SortMemberPath (JoinDate, ShiftStart, Office), not by the text a control displays. This page shows the full editor catalogue, so the table is wider than the window and scrolls horizontally on purpose."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
     </controls:SamplePresenter>

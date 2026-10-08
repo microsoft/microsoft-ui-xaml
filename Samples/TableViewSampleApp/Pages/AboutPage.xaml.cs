@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using TableViewSampleApp.Services;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 
@@ -29,11 +30,17 @@ public sealed partial class AboutPage : Page
 
     private static readonly Uri ReportIssueUri = new("https://github.com/microsoft/microsoft-ui-xaml/issues/new?template=bug_report.yaml");
 
-    private static string GetTheme()
+    private string GetTheme()
     {
-        // Read app-level theme via Application.Current.RequestedTheme is the
-        // global default; users may also be on "system" if SystemSettings inherits.
-        try { return Application.Current.RequestedTheme.ToString(); } catch { return "(unknown)"; }
+        // The persisted choice, not Application.RequestedTheme: "Use system setting" leaves the
+        // app default untouched, so report what the user picked and what it resolved to.
+        var chosen = AppSettings.LoadTheme() switch
+        {
+            ElementTheme.Light => "Light",
+            ElementTheme.Dark => "Dark",
+            _ => "Use system setting",
+        };
+        return $"{chosen} (showing {ActualTheme})";
     }
 
     private string BuildAutoFillMarkdown()
@@ -70,9 +77,8 @@ public sealed partial class AboutPage : Page
         dp.SetText(BuildAutoFillMarkdown());
         Clipboard.SetContent(dp);
         // Cheap visual ack — relabel briefly.
-        var orig = CopyAutoFillButton.Content;
-        CopyAutoFillButton.Content = "✓ Copied";
-        DispatcherQueue.TryEnqueue(async () => { await System.Threading.Tasks.Task.Delay(1500); CopyAutoFillButton.Content = orig; });
+        CopyAutoFillLabel.Text = "Copied";
+        DispatcherQueue.TryEnqueue(async () => { await System.Threading.Tasks.Task.Delay(1500); CopyAutoFillLabel.Text = "Copy auto-fill"; });
     }
 
     private static async System.Threading.Tasks.Task LaunchAsync(Uri uri)

@@ -1,48 +1,36 @@
-<!-- Width intent. The columns themselves are built in code so the page can
-     rebuild them per mode; the table is declared empty. -->
-<tv:TableView x:Name="WidthsTable"
-               SelectionMode="Single"
-               AutomationProperties.AutomationId="WidthsTable"/>
+<!-- The columns are built in code for each width intent; see LayoutPage.xaml.cs. -->
 
-<muxc:RadioButtons x:Name="ModeSelector"
-                   SelectionChanged="OnModeChanged"
-                   AutomationProperties.Name="Column width strategy">
-    <x:String>Playground</x:String>
-    <x:String>Auto</x:String>
-    <x:String>Star</x:String>
-    <x:String>Pixel</x:String>
-    <x:String>Mixed</x:String>
-</muxc:RadioButtons>
+<tv:TableView
+    x:Name="WidthsTable"
+    AutomationProperties.AutomationId="LayoutTable"
+    AutomationProperties.Name="People, with columns sized by the chosen width intent"
+    ItemsSource="{x:Bind People}"
+    SelectionMode="Single"
+    VerticalAlignment="Stretch"
+    MinHeight="320"/>
 
-<!-- Table-level resize gate. The "Role (locked)" column additionally sets
-     CanResize="False" for itself, so both gates are visible side by side. -->
-<CheckBox x:Name="CanUserResizeColumnsCheckBox"
-          Content="TableView.CanUserResizeColumns"
-          IsChecked="True"
-          Checked="OnCanUserResizeColumnsChanged"
-          Unchecked="OnCanUserResizeColumnsChanged"
-          AutomationProperties.AutomationId="CanUserResizeColumnsCheckBox"/>
+<ComboBox
+    x:Name="WidthModeSelector"
+    AutomationProperties.AutomationId="LayoutWidthModeSelector"
+    Header="Width intent"
+    SelectedIndex="0"
+    SelectionChanged="OnWidthModeChanged"
+    HorizontalAlignment="Stretch">
+    <ComboBoxItem Content="Playground" Tag="Playground"/>
+    <ComboBoxItem Content="Auto" Tag="Auto"/>
+    <ComboBoxItem Content="Star" Tag="Star"/>
+    <ComboBoxItem Content="Pixel" Tag="Pixel"/>
+    <ComboBoxItem Content="Mixed" Tag="Mixed"/>
+</ComboBox>
 
-<ComboBox x:Name="ColumnCombo"
-          SelectionChanged="OnColumnComboChanged"
-          AutomationProperties.Name="Column to adjust"
-          HorizontalAlignment="Stretch"/>
+<ToggleSwitch
+    x:Name="CanUserResizeColumnsToggle"
+    AutomationProperties.AutomationId="LayoutCanUserResizeColumnsToggle"
+    Header="Users can resize columns"
+    IsOn="True"
+    Toggled="OnCanUserResizeColumnsToggled"/>
 
-<StackPanel x:Name="PlaygroundPanel">
-    <Slider x:Name="MinWidthSlider"
-            ValueChanged="OnMinWidthSliderChanged"
-            AutomationProperties.AutomationId="MinWidthSlider"/>
-    <Slider x:Name="WidthSlider"
-            ValueChanged="OnWidthSliderChanged"
-            AutomationProperties.AutomationId="WidthSlider"/>
-    <Slider x:Name="MaxWidthSlider"
-            ValueChanged="OnMaxWidthSliderChanged"
-            AutomationProperties.AutomationId="MaxWidthSlider"/>
-</StackPanel>
-
-<!-- Actions: autosize one column, autosize all, force a width down to 80 px
-     to watch ActualWidth refuse to follow, and rebuild the mode's declared widths. -->
-<Button Content="Autosize selected column" Click="OnAutosizeSelectedClick"/>
-<Button Content="Autosize all columns" Click="OnAutosizeAllClick"/>
-<Button Content="Force selected width to 80 px" Click="OnClampSelectedClick"/>
-<Button Content="Reset widths for this mode" Click="OnResetWidthsClick"/>
+<Slider x:Name="WidthSlider" AutomationProperties.AutomationId="LayoutWidthSlider"
+        Header="Width (Pixel)" Minimum="0" Maximum="500" StepFrequency="10" Value="160"
+        ValueChanged="OnWidthSliderChanged" HorizontalAlignment="Stretch"
+        AutomationProperties.HelpText="Sets a Pixel width. Enabled only when the selected column has a Pixel width."/>

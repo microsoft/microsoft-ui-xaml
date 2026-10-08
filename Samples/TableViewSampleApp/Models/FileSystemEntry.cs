@@ -17,7 +17,9 @@ public class FileSystemEntry
 
     public string TypeDisplay { get; set; } = string.Empty;
 
-    public DateTime DateModified { get; set; }
+    // DateTimeOffset, not DateTime: it projects to Windows.Foundation.DateTime, which the sort
+    // compares as a point in time. A System.DateTime has no WinRT projection and would sort as text.
+    public DateTimeOffset DateModified { get; set; }
 
     public string DateModifiedDisplay => DateModified.ToString("g", CultureInfo.CurrentCulture);
 
@@ -26,6 +28,21 @@ public class FileSystemEntry
     public string SizeDisplay => IsFolder ? string.Empty : FormatSize(Size);
 
     public string IconGlyph => IsFolder ? "\uE8B7" : GetFileGlyph(FullPath);
+
+    public const string FolderType = "File folder";
+
+    // Folders-first sort keys. File Explorer keeps folders together when it sorts by name, type
+    // or size, so those columns' SortMemberPath names one of these instead of the raw value: the
+    // "0 "/"1 " prefix puts folders ahead of files ascending (and after them descending, as
+    // Explorer does), and the fixed-width digits make the size compare as a number, not as
+    // display text. Date modified sorts the raw DateModified value, folders and files mixed.
+    public string NameSortKey => SortPrefix + Name;
+
+    public string TypeSortKey => SortPrefix + TypeDisplay;
+
+    public string SizeSortKey => SortPrefix + Size.ToString("D19", CultureInfo.InvariantCulture);
+
+    private string SortPrefix => IsFolder ? "0 " : "1 ";
 
     public static string GetFileType(string path)
     {

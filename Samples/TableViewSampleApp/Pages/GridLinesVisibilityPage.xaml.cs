@@ -4,318 +4,323 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
-using TableViewGridLinesVisibility = Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Demonstrates TableView.GridLinesVisibility (None / Horizontal / Vertical / All)
-/// for WPF DataGrid parity. The same DP is exercised across flat and grouped
-/// modes — and against both default theme banding and a custom row background —
-/// so reviewers can verify the lines stay correct through group headers and tinted rows.
-///
-/// The grouped mode is real grouping: one TableViewSource is reshaped in place
-/// with GroupBy / ClearGroupBy, so the group header bands that the grid lines
-/// have to coexist with are actually present.
+/// Grid lines visibility: TableView.GridLinesVisibility (None / Horizontal / Vertical / All)
+/// across text and template cells, against default or custom row banding, flat or grouped.
 /// </summary>
-public sealed partial class GridLinesVisibilityPage : Page, INotifyPropertyChanged
+public sealed partial class GridLinesVisibilityPage : Page
 {
-    private readonly ObservableCollection<Person> _rows = new();
+    private const int InitialRows = 40;
 
-    private TableViewSource? _source;
-
-    // Requested shaping mode versus the mode actually applied to the source.
-    // GroupBy fails fast, so these can differ; every readout and every
-    // enable/disable guard reads _appliedMode.
-    private string _mode = "flat";
-    private string _appliedMode = "flat";
-    private string _groupKey = "Department";
-    private bool _allGroupsCollapsed;
-
-    private TableViewGridLinesVisibility _lines = TableViewGridLinesVisibility.All;
-    private string _statusText = string.Empty;
+    private TableViewSource? _source;          // created ONCE; reshaped in place, never rebuilt
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private string _appliedKey = "Department";
+    private int _nextPersonIndex = InitialRows;
+    private bool _isBulkUpdate;
 
     public GridLinesVisibilityPage()
     {
-        foreach (var person in PersonData.Take(40))
-        {
-            _rows.Add(person);
-        }
-
+        _source = TableViewSource.From(People);
         InitializeComponent();
-
-        DemoTable.HeadersVisibility = TableViewHeadersVisibility.Column;
-
-        _source = TableViewSource.From(_rows);
-        DemoTable.ItemsSource = _source;
-
-        ApplyShaping();
-        ApplyBanding();
+        Loaded += OnPageLoaded;
+        Unloaded += OnPageUnloaded;
+        RefreshReadouts();
     }
 
-    public string StatusText
+    public ObservableCollection<Person> People { get; } = PersonData.Take(InitialRows);
+
+    public TableViewSource? Source => _source;
+
+    private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        get => _statusText;
-        private set
+        foreach (var person in People)
         {
-            if (_statusText != value)
+            person.PropertyChanged += OnPersonChanged;
+        }
+
+        RefreshReadouts();
+    }
+
+    private void OnPageUnloaded(object sender, RoutedEventArgs e)
+    {
+        foreach (var person in People)
+        {
+            person.PropertyChanged -= OnPersonChanged;
+        }
+    }
+
+    // ---- Grid lines and banding ---------------------------------------------------------
+
+    private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
+    {
+        // Fires during InitializeComponent (SelectedIndex="3") before the table exists.
+        if (PeopleTable is null || GridLinesText is null)
+        {
+            return;
+        }
+
+        PeopleTable.GridLinesVisibility = SampleShaping.SelectedTag(GridLinesSelector, "All") switch
+        {
+            "None" => TableViewGridLinesVisibility.None,
+            "Horizontal" => TableViewGridLinesVisibility.Horizontal,
+            "Vertical" => TableViewGridLinesVisibility.Vertical,
+            _ => TableViewGridLinesVisibility.All,
+        };
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "GridLinesVisibility -> {0}", PeopleTable.GridLinesVisibility));
+    }
+
+    private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (PeopleTable is null || RowBandingText is null)
+        {
+            return;
+        }
+
+        var custom = SampleShaping.SelectedTag(RowBandingSelector, "default") == "custom";
+        PeopleTable.Style = custom ? (Style)Resources["CustomBandingTableViewStyle"] : null;
+        SetLastAction(custom
+            ? "Row banding -> custom RowBackground / AlternatingRowBackground"
+            : "Row banding -> default theme");
+    }
+
+    // ---- In-cell edits ------------------------------------------------------------------
+
+    private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not Person person || _isBulkUpdate)
+        {
+            return;
+        }
+
+        switch (e.PropertyName)
+        {
+            case nameof(Person.IsActive):
+                ReapplyIfGroupedOn(e.PropertyName);
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Active -> {0} for {1}", person.IsActive ? "checked" : "unchecked", person.FullName));
+                break;
+            case nameof(Person.JoinDate):
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Join date -> {0:d} for {1}", person.JoinDate, person.FullName));
+                break;
+        }
+    }
+
+    // ---- Actions ------------------------------------------------------------------------
+
+    private void OnSelectThirdClick(object sender, RoutedEventArgs e)
+    {
+        if (People.Count < 3)
+        {
+            SetLastAction("There are fewer than three people; restore the rows first.");
+            return;
+        }
+
+        var person = People[2];
+        SetLastAction(SampleShaping.Reselect(PeopleTable, person, People.Count * 2)
+            ? string.Format(CultureInfo.CurrentCulture, "Selected {0}", person.FullName)
+            : string.Format(CultureInfo.CurrentCulture, "{0} is not displayed (collapsed group?); expand the groups first.", person.FullName));
+    }
+
+    private void OnMoveToNextGroupClick(object sender, RoutedEventArgs e)
+    {
+        if (PeopleTable.SelectedItem is not Person person)
+        {
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        // Moves along the key the Group key selector names, so the row always changes group
+        // when grouped (and the same value changes when flat).
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+        var from = SampleShaping.KeyOf(person, key);
+        _isBulkUpdate = true;
+        try
+        {
+            switch (key)
             {
-                _statusText = value;
-                OnPropertyChanged();
+                case nameof(Person.Office):
+                    person.Office = SampleShaping.Next(PersonData.Offices, person.Office);
+                    break;
+                case nameof(Person.IsActive):
+                    person.IsActive = !person.IsActive;
+                    break;
+                default:
+                    person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
+                    break;
             }
         }
+        finally
+        {
+            _isBulkUpdate = false;
+        }
+
+        // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
+        // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+        ReapplyIfGroupedOn(key);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
     }
 
-    private void OnGridLinesVisibilitySelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void OnAddPersonClick(object sender, RoutedEventArgs e)
     {
-        if (DemoTable is null ||
-            sender is not RadioButtons { SelectedItem: FrameworkElement { Tag: string tag } })
+        if (_nextPersonIndex >= PersonData.All.Count)
         {
+            SetLastAction("No more people in the sample data.");
             return;
         }
 
-        // Case-sensitive on purpose so a typo trips Debug.Fail rather than
-        // silently defaulting to Horizontal.
-        if (!Enum.TryParse<TableViewGridLinesVisibility>(tag, ignoreCase: false, out var value))
-        {
-            Debug.Fail($"GridLinesVisibilityPage: unrecognised grid-lines Tag '{tag}'.");
-            return;
-        }
-
-        _lines = value;
-        DemoTable.GridLinesVisibility = value;
-        UpdateStatus();
+        var person = PersonData.Take(_nextPersonIndex + 1)[_nextPersonIndex];
+        _nextPersonIndex++;
+        person.PropertyChanged += OnPersonChanged;
+        People.Add(person);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} ({1})", person.FullName, person.Department));
     }
 
-    private void OnBandingSelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void OnRemovePersonClick(object sender, RoutedEventArgs e)
     {
-        if (DemoTable is null)
+        if (PeopleTable.SelectedItem is not Person person)
         {
+            SetLastAction("No row selected.");
             return;
         }
 
-        ApplyBanding();
-        UpdateStatus();
+        person.PropertyChanged -= OnPersonChanged;
+        People.Remove(person);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0}", person.FullName));
     }
 
-    private void ApplyBanding()
+    private void OnRestoreRowsClick(object sender, RoutedEventArgs e)
     {
-        if (DemoTable is null || CustomBandingRadio is null) return;
-
-        if (CustomBandingRadio.IsChecked == true)
+        foreach (var person in People)
         {
-            DemoTable.Style = (Style)Resources["CustomBandingTableViewStyle"];
-            return;
+            person.PropertyChanged -= OnPersonChanged;
         }
 
-        DemoTable.Style = null;
+        // The same collection is refilled, so the TableViewSource and its grouping stay in place.
+        People.Clear();
+        foreach (var person in PersonData.Take(InitialRows))
+        {
+            person.PropertyChanged += OnPersonChanged;
+            People.Add(person);
+        }
+
+        _nextPersonIndex = InitialRows;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Restored the original {0:N0} people", InitialRows));
     }
 
-    // ----- Shaping -----
-
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
+    private void RefreshReadouts()
     {
-        if (_source is null ||
-            sender is not ComboBox { SelectedItem: ComboBoxItem { Tag: string tag } })
+        if (RowsText is null || GridLinesText is null || RowBandingText is null || PeopleTable is null)
         {
             return;
         }
 
-        _mode = tag;
-        ApplyShaping();
+        RowsText.Text = SampleShaping.RowCountText(People.Count);
+        GridLinesText.Text = PeopleTable.GridLinesVisibility.ToString();
+        RowBandingText.Text = SampleShaping.Label(RowBandingSelector);
     }
 
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e)
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
     {
-        if (_source is null || GroupKeyCombo?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
+        // later-declared elements exist. Guard every element this path touches.
+        if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
         {
             return;
         }
 
-        _groupKey = tag;
-        // Re-applying with the same mode proves the grouped state survives a key change.
-        ApplyShaping();
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+        var selected = PeopleTable.SelectedItem;
+
+        switch (mode)
+        {
+            case "grouped":
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
+            //     after the call returns.
+            default:
+                _source.ClearGroupBy();
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+        _appliedKey = key;
+
+        // Re-applying GroupBy can drop the selection when the selected row changed group.
+        SampleShaping.Reselect(PeopleTable, selected, People.Count * 2, RefreshReadouts);
+        UpdateShapingGating();
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+                : "Shaping -> Flat");
+        }
     }
 
-    private void ApplyShaping()
+    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
+    private void ReapplyIfGroupedOn(string? propertyName)
     {
-        if (_source is null)
+        if (_appliedMode == "grouped" && propertyName == _appliedKey)
         {
-            return;
+            ApplyShaping(announce: false);
         }
-
-        // Reshape IN PLACE: Filter/GroupBy mutate and return the same instance,
-        // so the source is never rebuilt per change.
-        if (_mode != "grouped")
-        {
-            _source.ClearGroupBy();
-        }
-        else
-        {
-            var key = _groupKey;
-            // The two delegates receive DIFFERENT things despite both parameters
-            // being named `item`:
-            //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
-            //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
-            // An item-typed identity lambda returns empty, which is a fail-fast,
-            // so grouping would silently never apply.
-            _source.GroupBy(
-                item => (object)GroupValue(item, key),
-                groupKey => groupKey?.ToString() ?? "(none)");
-        }
-
-        // case "hierarchy":
-        // case "groupedhierarchy":
-        //     Hierarchical rows are not available in this release: neither
-        //     TableViewSource.idl nor TableView.idl exposes a hierarchy verb
-        //     (the only shaping verbs are Filter / GroupBy / Sort and their
-        //     Clear* counterparts). When the control ships hierarchy support,
-        //     apply it to this same source here, alongside the GroupBy stage
-        //     above so the two compose, then set _appliedMode as below.
-
-        _appliedMode = _mode;
-        _allGroupsCollapsed = false;
-
-        if (_appliedMode == "grouped")
-        {
-            DemoTable.ExpandAllGroups();
-        }
-
-        UpdateShapingGates();
-        UpdateStatus();
     }
 
-    private void UpdateShapingGates()
+    private void UpdateShapingGating()
     {
-        if (GroupKeyCombo is null)
-        {
-            return;
-        }
-
         var grouped = _appliedMode == "grouped";
-
-        GroupKeyCombo.IsEnabled = grouped;
+        GroupKeySelector.IsEnabled = grouped;
         ExpandAllButton.IsEnabled = grouped;
         CollapseAllButton.IsEnabled = grouped;
-        ReassignRowButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
     }
-
-    // ----- Actions -----
 
     private void OnExpandAllClick(object sender, RoutedEventArgs e)
     {
-        if (_appliedMode != "grouped") return;
-
-        DemoTable.ExpandAllGroups();
-        _allGroupsCollapsed = false;
-        UpdateStatus("Expanded all groups");
+        PeopleTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
     }
 
     private void OnCollapseAllClick(object sender, RoutedEventArgs e)
     {
-        if (_appliedMode != "grouped") return;
-
-        DemoTable.CollapseAllGroups();
-        _allGroupsCollapsed = true;
-        UpdateStatus("Collapsed all groups");
+        PeopleTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
     }
 
-    private void OnReassignRowClick(object sender, RoutedEventArgs e)
+    // The only writer of LastActionText.
+    private void SetLastAction(string message)
     {
-        if (_appliedMode != "grouped" || _rows.Count == 0) return;
-
-        var person = _rows[0];
-        var before = GroupValue(person, _groupKey);
-
-        if (_groupKey == "Active")
+        if (LastActionText is not null)
         {
-            person.IsActive = !person.IsActive;
-        }
-        else
-        {
-            person.Department = PersonData.Departments
-                .FirstOrDefault(d => !string.Equals(d, person.Department, StringComparison.Ordinal))
-                ?? person.Department;
+            LastActionText.Text = message;
         }
 
-        UpdateStatus($"Moved \"{person.FullName}\" from {before} to {GroupValue(person, _groupKey)}");
+        RefreshReadouts();
     }
 
-    private void OnRemoveRowClick(object sender, RoutedEventArgs e)
-    {
-        if (_rows.Count == 0)
-        {
-            UpdateStatus("Remove skipped — no rows left");
-            return;
-        }
-
-        var person = _rows[0];
-        _rows.RemoveAt(0);
-        UpdateStatus($"Removed \"{person.FullName}\" — watch the row separator above it close up");
-    }
-
-    // ----- Helpers -----
-    //
-    // GroupValue never returns the empty string: an empty group identity is a
-    // fail-fast in GroupBy, so a blank property has to be coalesced.
-
-    private static string GroupValue(object item, string key)
-    {
-        if (item is not Person person)
-        {
-            return "(none)";
-        }
-
-        var value = key switch
-        {
-            "Role" => person.Role,
-            "Active" => person.IsActive ? "Active" : "Inactive",
-            _ => person.Department,
-        };
-
-        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-    }
-
-    private static string ModeLabel(string mode) => mode switch
-    {
-        "grouped" => "Grouped",
-        "hierarchy" => "Hierarchy",
-        "groupedhierarchy" => "Grouped hierarchy",
-        _ => "Flat",
-    };
-
-    private void UpdateStatus(string? message = null)
-    {
-        var banding = CustomBandingRadio is not null && CustomBandingRadio.IsChecked == true ? "custom banding" : "theme banding";
-        var lines = _lines switch
-        {
-            TableViewGridLinesVisibility.None       => "no grid lines",
-            TableViewGridLinesVisibility.Horizontal => "horizontal lines (row separators)",
-            TableViewGridLinesVisibility.Vertical   => "vertical lines (column separators)",
-            TableViewGridLinesVisibility.All        => "all grid lines (rows + columns)",
-            _ => _lines.ToString(),
-        };
-
-        // Readouts describe the APPLIED mode, never the requested one.
-        var key = _groupKey;
-        var shaping = _appliedMode == "grouped"
-            ? $"{ModeLabel(_appliedMode)} by {key} · {_rows.Select(p => GroupValue(p, key)).Distinct(StringComparer.Ordinal).Count():N0} groups · {(_allGroupsCollapsed ? "all collapsed" : "all expanded")}"
-            : ModeLabel(_appliedMode);
-
-        var prefix = message is null ? string.Empty : $"{message}. ";
-        StatusText = $"{prefix}{shaping} · {_rows.Count:N0} rows · {lines} · {banding}";
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void OnPropertyChanged([CallerMemberName] string? name = null) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    #endregion
 }

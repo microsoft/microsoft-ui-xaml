@@ -4,314 +4,134 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
+using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewDensity = Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Demonstrates <c>TableView.Density</c> — the Compact / Standard / Comfortable
-/// row-height and cell-padding presets — switched live over plain text columns.
-///
-/// Grouping is demonstrated on the same table on purpose: a group header has its
-/// own height, so density and grouping are a real interaction rather than two
-/// unrelated knobs. Read-only / in-place editing lives on the Cell editing page.
+/// Density: TableView.Density (Compact / Standard / Comfortable) switched live over text and
+/// read-only template cells, alongside grouping, whose headers keep a fixed height.
 /// </summary>
 public sealed partial class DensityReadOnlyPage : Page
 {
-    private TableViewDensity _density = TableViewDensity.Standard;
-    private TableViewSource? _source;
-    private string _mode = "flat";
-    private string _groupKey = "Department";
-    private string _appliedMode = "Flat";
+    private readonly Queue<Person> _spares = new(PersonData.Take(60).Skip(40));
     private readonly List<Person> _stash = new();
+    private TableViewSource? _source;          // created ONCE; reshaped in place, never rebuilt
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private string _appliedKey = "Department";
 
     public DensityReadOnlyPage()
     {
-        InitializeComponent();
-
-        foreach (var person in PersonData.Take(20))
-        {
-            People.Add(person);
-        }
-
         _source = TableViewSource.From(People);
-        DemoTable.ItemsSource = _source;
-
-        // Re-apply the XAML defaults now that DemoTable exists (the Standard radio's
-        // Checked handler ran during InitializeComponent while DemoTable was still null).
-        DemoTable.Density = _density;
-
-        ApplyGrouping();
+        InitializeComponent();
+        RefreshReadouts();
     }
 
-    public ObservableCollection<Person> People { get; } = new();
+    public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
-    private void OnDensitySelectionChanged(object sender, SelectionChangedEventArgs e)
+    public TableViewSource? Source => _source;
+
+    private int MaxProbeIndex => People.Count + PersonData.Roles.Count;
+
+    // ---- Density ------------------------------------------------------------------------
+
+    private void OnDensityChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (DemoTable is null ||
-            sender is not RadioButtons { SelectedItem: FrameworkElement { Tag: string tag } })
+        // Fires during InitializeComponent (SelectedIndex="1"), when the table already uses the
+        // Standard default.
+        if (PeopleTable is null || DensitySelector is null || !IsLoaded)
         {
             return;
         }
 
-        if (!Enum.TryParse<TableViewDensity>(tag, ignoreCase: false, out var density))
-        {
-            Debug.Fail($"DensityReadOnlyPage: unrecognised density Tag '{tag}'.");
-            return;
-        }
-
-        _density = density;
-        DemoTable.Density = density;
-        UpdateStatus();
+        var density = Enum.Parse<TableViewDensity>(SampleShaping.SelectedTag(DensitySelector, "Standard"));
+        PeopleTable.Density = density;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Density -> {0}", density));
     }
 
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
+    // ---- Actions ------------------------------------------------------------------------
+
+    private void OnMoveGroupClick(object sender, RoutedEventArgs e)
     {
-        if (_source is null || ShapingModeSelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        if (PeopleTable.SelectedItem is not Person person)
         {
+            SetLastAction("No row selected.");
             return;
         }
 
-        _mode = tag;
-        ApplyGrouping();
-    }
-
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (_source is null || GroupKeySelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        var key = _appliedMode == "grouped" ? _appliedKey : nameof(Person.Department);
+        var from = SampleShaping.KeyOf(person, key);
+        switch (key)
         {
-            return;
-        }
-
-        _groupKey = tag;
-        ApplyGrouping();
-    }
-
-    private void OnExpandAllGroupsClick(object sender, RoutedEventArgs e)
-    {
-        if (_appliedMode == "Flat")
-        {
-            return;
-        }
-
-        DemoTable.ExpandAllGroups();
-        UpdateStatus();
-    }
-
-    private void OnCollapseAllGroupsClick(object sender, RoutedEventArgs e)
-    {
-        if (_appliedMode == "Flat")
-        {
-            return;
-        }
-
-        DemoTable.CollapseAllGroups();
-        UpdateStatus();
-    }
-
-    /// <summary>
-    /// Reshapes the existing <see cref="TableViewSource"/> in place. GroupBy /
-    /// ClearGroupBy mutate and return the same instance, so the source is never
-    /// rebuilt — rebuilding would drop selection, scroll offset and expansion.
-    /// </summary>
-    private void ApplyGrouping()
-    {
-        if (_source is null)
-        {
-            return;
-        }
-
-        var grouped = _mode == "grouped";
-        switch (_mode)
-        {
-            case "grouped":
-            {
-                var key = _groupKey;
-                // The key selector receives the item; the identity selector receives the
-                // group KEY produced above, so it only has to stringify it.
-                _source.GroupBy(
-                    item => (object)GroupValue(item, key),
-                    groupKey => groupKey?.ToString() ?? "(none)");
-
-                // Applied state is recorded only after the reshape returns, so the readout
-                // can never claim a mode the source never took.
-                _appliedMode = $"Grouped by {key}";
+            case nameof(Person.Role):
+                person.Role = SampleShaping.Next(PersonData.Roles, person.Role);
                 break;
-            }
-
-            // case "hierarchy":
-            // case "groupedhierarchy":
-            //     Hierarchical rows are not available in this release. TableViewSource.idl
-            //     exposes only Filter / GroupBy / Sort and their Clear* counterparts, so
-            //     there is no hierarchy verb to call here yet and nothing is written rather
-            //     than naming an API that does not exist. When the control ships hierarchy
-            //     support, apply it to THIS same source instance alongside the GroupBy stage
-            //     above so the two axes compose rather than replace one another, then remove
-            //     IsEnabled="False" from the two hierarchy items in the Shaping mode selector.
-            //     break;
-
+            case nameof(Person.IsActive):
+                person.IsActive = !person.IsActive;
+                break;
             default:
-                _source.ClearGroupBy();
-                _appliedMode = "Flat";
+                person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
                 break;
         }
 
-        if (ExpandAllButton is not null)
-        {
-            GroupKeySelector.IsEnabled = grouped;
-            ExpandAllButton.IsEnabled = grouped;
-            CollapseAllButton.IsEnabled = grouped;
-        }
-
-        if (grouped)
-        {
-            DispatcherQueue.TryEnqueue(() => DemoTable?.ExpandAllGroups());
-        }
-
-        UpdateStatus();
+        // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
+        // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+        ReapplyIfGroupedOn(key);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
     }
 
-    private static string GroupValue(object item, string key)
+    private void OnAddPersonClick(object sender, RoutedEventArgs e)
     {
-        if (item is not Person person)
+        if (PeopleTable.SelectedItem is not Person selected)
         {
-            return "(none)";
-        }
-
-        var value = key switch
-        {
-            "Role" => person.Role,
-            _ => person.Department,
-        };
-
-        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-    }
-
-    private void UpdateStatus()
-    {
-        if (DensityValueText is null)
-        {
+            SetLastAction("No row selected.");
             return;
         }
 
-        DensityValueText.Text = _density.ToString();
-        RowCountValueText.Text = People.Count.ToString("N0", CultureInfo.CurrentCulture);
-        GroupedByValueText.Text = _appliedMode;
-    }
-
-    // ---- actions -------------------------------------------------------------------
-
-    private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args) =>
-        UpdateActionAvailability();
-
-    private void UpdateActionAvailability()
-    {
-        if (ChangeGroupValueButton is null)
+        if (!_spares.TryDequeue(out var person))
         {
+            SetLastAction("Every spare person has been added already.");
             return;
         }
 
-        var hasSelection = DemoTable.SelectedItem is Person;
-        ChangeGroupValueButton.IsEnabled = hasSelection;
-        DuplicateRowButton.IsEnabled = hasSelection;
-        RemoveRowButton.IsEnabled = hasSelection;
-    }
-
-    /// <summary>
-    /// Rewrites whichever property the table is grouped on, so the row moves
-    /// between groups in place rather than through a source rebuild.
-    /// </summary>
-    private void OnChangeGroupValueClick(object sender, RoutedEventArgs e)
-    {
-        if (DemoTable.SelectedItem is not Person person)
-        {
-            return;
-        }
-
-        var byRole = _appliedMode.EndsWith("Role", StringComparison.Ordinal);
-        var pool = byRole
-            ? People.Select(p => p.Role).Distinct(StringComparer.Ordinal).OrderBy(r => r, StringComparer.Ordinal).ToList()
-            : PersonData.Departments.ToList();
-
-        if (pool.Count == 0)
-        {
-            return;
-        }
-
-        var current = byRole ? person.Role : person.Department;
-        var next = pool[(pool.IndexOf(current) + 1) % pool.Count];
-
-        if (byRole)
-        {
-            person.Role = next;
-            SetLastAction($"{person.FullName} moved to role {next}.");
-        }
-        else
-        {
-            person.Department = next;
-            SetLastAction($"{person.FullName} moved to department {next}.");
-        }
-    }
-
-    private void OnDuplicateRowClick(object sender, RoutedEventArgs e)
-    {
-        if (DemoTable.SelectedItem is not Person person)
-        {
-            return;
-        }
-
-        var copy = new Person
-        {
-            FirstName = person.FirstName,
-            LastName = person.LastName + " (copy)",
-            Email = person.Email,
-            Department = person.Department,
-            Role = person.Role,
-            JoinDate = person.JoinDate,
-            Salary = person.Salary,
-            IsActive = person.IsActive,
-        };
-
-        People.Insert(People.IndexOf(person) + 1, copy);
-        SetLastAction($"Added {copy.FullName} to {copy.Department}.");
+        // Give the newcomer the selected row's grouped-on value so they land in its group.
+        person.Department = selected.Department;
+        person.Role = selected.Role;
+        person.IsActive = selected.IsActive;
+        People.Insert(People.IndexOf(selected) + 1, person);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} to {1}", person.FullName, SampleShaping.KeyOf(person, _appliedKey)));
     }
 
     private void OnRemoveRowClick(object sender, RoutedEventArgs e)
     {
-        if (DemoTable.SelectedItem is not Person person)
+        if (PeopleTable.SelectedItem is not Person person)
         {
+            SetLastAction("No row selected.");
             return;
         }
 
         People.Remove(person);
-        SetLastAction($"Removed {person.FullName} from {person.Department}.");
-        UpdateActionAvailability();
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0} from {1}", person.FullName, SampleShaping.KeyOf(person, _appliedKey)));
     }
 
-    /// <summary>
-    /// Edge case: grouping over an empty set, then over a repopulated one.
-    /// </summary>
     private void OnToggleEmptyClick(object sender, RoutedEventArgs e)
     {
         if (People.Count > 0)
         {
             _stash.Clear();
-            foreach (var person in People)
-            {
-                _stash.Add(person);
-            }
-
+            _stash.AddRange(People);
             People.Clear();
             EmptyToggleButton.Content = "Restore rows";
-            SetLastAction("Cleared every row; the source is now grouped over an empty set.");
+            SetLastAction("Cleared every row");
         }
         else
         {
@@ -322,19 +142,123 @@ public sealed partial class DensityReadOnlyPage : Page
 
             _stash.Clear();
             EmptyToggleButton.Content = "Clear all rows";
-            SetLastAction("Restored the original rows in source order.");
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Restored {0:N0} rows", People.Count));
         }
-
-        UpdateActionAvailability();
     }
 
-    private void SetLastAction(string action)
+    private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
+    {
+        if (!SampleShaping.IsReselecting)
+        {
+            RefreshReadouts();
+        }
+    }
+
+    private void RefreshReadouts()
+    {
+        if (RowsText is null || DensityText is null)
+        {
+            return;
+        }
+
+        RowsText.Text = SampleShaping.RowCountText(People.Count);
+        DensityText.Text = PeopleTable.Density.ToString();
+    }
+
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
+    {
+        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
+        // later-declared elements exist. Guard every element this path touches.
+        if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+        var selected = PeopleTable.SelectedItem;
+
+        switch (mode)
+        {
+            case "grouped":
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
+            //     after the call returns.
+            default:
+                _source.ClearGroupBy();
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+        _appliedKey = key;
+
+        // Re-applying GroupBy can drop the selection when the selected row changed group.
+        SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex, RefreshReadouts);
+
+        UpdateShapingGating();
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+                : "Shaping -> Flat");
+        }
+    }
+
+    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
+    private void ReapplyIfGroupedOn(string? propertyName)
+    {
+        if (_appliedMode == "grouped" && propertyName == _appliedKey)
+        {
+            ApplyShaping(announce: false);
+        }
+    }
+
+    private void UpdateShapingGating()
+    {
+        var grouped = _appliedMode == "grouped";
+        GroupKeySelector.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
+    }
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        PeopleTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        PeopleTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
+    }
+
+    // The only writer of LastActionText.
+    private void SetLastAction(string message)
     {
         if (LastActionText is not null)
         {
-            LastActionText.Text = action;
+            LastActionText.Text = message;
         }
 
-        UpdateStatus();
+        RefreshReadouts();
     }
+
+    #endregion
 }

@@ -9,11 +9,7 @@
             control grid. Same visual rhythm, no new dependency.
         -->
         <x:Double x:Key="SettingsCardSpacing">4</x:Double>
-        <Style x:Key="SettingsSectionHeaderTextBlockStyle"
-               BasedOn="{StaticResource BodyStrongTextBlockStyle}"
-               TargetType="TextBlock">
-            <Setter Property="Margin" Value="1,30,0,6"/>
-        </Style>
+
     </Page.Resources>
 
     <ScrollViewer VerticalScrollMode="Auto"
@@ -26,11 +22,11 @@
                         Spacing="{StaticResource SettingsCardSpacing}">
 
                 <controls:SamplePageHeader
-                    Title="Settings"
+                    Title="Theme &amp; settings"
                     Description="Choose how the app renders. Your theme choice persists across launches in a small text file under %LocalAppData%\TableViewSampleApp."/>
 
                 <!-- Appearance -->
-                <TextBlock Text="Appearance" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" AutomationProperties.HeadingLevel="Level2"/>
+                <TextBlock Text="Appearance" Style="{StaticResource SectionHeaderTextStyle}" Margin="1,24,0,6" AutomationProperties.HeadingLevel="Level2"/>
                 <Border Style="{StaticResource TableHostBorderStyle}" Padding="16,12">
                     <Grid ColumnSpacing="16" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
@@ -66,7 +62,7 @@
                 </Border>
 
                 <TextBlock Text="Windows contrast themes"
-                           Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                           Style="{StaticResource SectionHeaderTextStyle}" Margin="1,24,0,6"
                            TextWrapping="Wrap"
                            AutomationProperties.HeadingLevel="Level2"/>
                 <Border Style="{StaticResource TableHostBorderStyle}" Padding="16,12">
@@ -75,7 +71,7 @@
                                    Style="{StaticResource BodyStrongTextBlockStyle}"
                                    TextWrapping="Wrap"
                                    AutomationProperties.HeadingLevel="Level3"/>
-                        <TextBlock Text="1. Set App theme to &quot;Use system setting&quot; above. The title-bar theme button only cycles the app's Default / Light / Dark appearance; it does not enable a Windows contrast theme."
+                        <TextBlock Text="1. Set App theme to &quot;Use system setting&quot; above. The title-bar theme button only cycles the app's Use system setting / Light / Dark appearance; it does not enable a Windows contrast theme."
                                    TextWrapping="Wrap"/>
                         <TextBlock Text="2. Open Windows Settings (Win+I) → Accessibility → Contrast themes, choose a contrast theme, and select Apply. Make this Windows change manually; this app does not change system settings."
                                    TextWrapping="Wrap"/>
@@ -93,7 +89,7 @@
                 </Border>
 
                 <!-- Storage -->
-                <TextBlock Text="Storage" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" AutomationProperties.HeadingLevel="Level2"/>
+                <TextBlock Text="Storage" Style="{StaticResource SectionHeaderTextStyle}" Margin="1,24,0,6" AutomationProperties.HeadingLevel="Level2"/>
                 <Border x:Name="StorageCard"
                         AutomationProperties.AutomationId="StorageCard"
                         Style="{StaticResource TableHostBorderStyle}"

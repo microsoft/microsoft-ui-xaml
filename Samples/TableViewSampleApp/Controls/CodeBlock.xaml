@@ -32,6 +32,7 @@
                     x:Name="CopyButton"
                     Grid.Column="1"
                     Click="OnCopyClick"
+                    AutomationProperties.AutomationId="CopyCodeButton"
                     AutomationProperties.Name="Copy code"
                     Style="{ThemeResource SubtleButtonStyle}"
                     Padding="8,4">
@@ -45,10 +46,13 @@
             <!--
                 Code scrolls in both axes inside a capped viewport. Vertical scroll was
                 previously Disabled, so a long snippet grew the block without limit and
-                pushed the rest of the page off-screen. MaxHeight keeps the Source
-                expander a predictable size; IsTabStop keeps it keyboard-reachable.
+                pushed the rest of the page off-screen. MaxHeight (CodeMaxHeight) keeps a
+                standalone block a predictable size; SamplePresenter lifts the cap because its
+                own Source scroller is already bounded, so there is only one vertical scroller.
+                IsTabStop keeps it keyboard-reachable.
             -->
             <ScrollViewer
+                x:Name="CodeScroller"
                 Grid.Row="1"
                 MaxHeight="360"
                 HorizontalScrollMode="Auto"

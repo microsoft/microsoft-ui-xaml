@@ -1,56 +1,67 @@
-<!-- TableView.EmptyTemplate renders (centered over the row area) whenever
-     ItemsSource is null or resolves to zero rows. Keep the content to text +
-     shapes — a FontIcon inside EmptyTemplate crashes at startup. -->
+<!-- TableView.EmptyTemplate is shown, centred over the row area, whenever there are no rows to
+     show. Keep its content to text and shapes: a FontIcon inside EmptyTemplate crashes at startup. -->
 
-<Page.Resources>
-    <DataTemplate x:Key="EmptyStateTemplate">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
-            <Grid Width="64" Height="64" HorizontalAlignment="Center">
-                <Ellipse Fill="{ThemeResource SubtleFillColorSecondaryBrush}"
-                         Stroke="{ThemeResource CardStrokeColorDefaultBrush}" StrokeThickness="1"/>
-                <Rectangle Width="26" Height="20" RadiusX="3" RadiusY="3"
-                           Stroke="{ThemeResource TextFillColorTertiaryBrush}" StrokeThickness="2"/>
-            </Grid>
-            <TextBlock Text="No rows to display" HorizontalAlignment="Center"
-                       Style="{ThemeResource SubtitleTextBlockStyle}"/>
-            <TextBlock Text="The table's ItemsSource is null or empty. Load the sample data."
-                       TextAlignment="Center" TextWrapping="Wrap"
-                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-        </StackPanel>
-    </DataTemplate>
-</Page.Resources>
+<DataTemplate x:Key="EmptyStateTemplate" x:DataType="system:Object">
+    <StackPanel
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        MaxWidth="320"
+        Spacing="12">
+        <Grid Width="64" Height="64" HorizontalAlignment="Center" AutomationProperties.AccessibilityView="Raw">
+            <Ellipse
+                Fill="{ThemeResource SubtleFillColorSecondaryBrush}"
+                Stroke="{ThemeResource CardStrokeColorDefaultBrush}"
+                StrokeThickness="1"/>
+            <Rectangle
+                Width="26" Height="20"
+                RadiusX="3" RadiusY="3"
+                Fill="Transparent"
+                Stroke="{ThemeResource TextFillColorTertiaryBrush}"
+                StrokeThickness="2"/>
+            <Rectangle
+                Width="26" Height="1.5"
+                Fill="{ThemeResource TextFillColorTertiaryBrush}"/>
+        </Grid>
+        <TextBlock
+            Text="No rows to display"
+            HorizontalAlignment="Center"
+            Style="{ThemeResource SubtitleTextBlockStyle}"/>
+        <TextBlock
+            Text="There are no people to show. Choose Populated as the data source, or press Restore the rows."
+            TextAlignment="Center"
+            TextWrapping="Wrap"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+    </StackPanel>
+</DataTemplate>
 
-<tv:TableView x:Name="DemoTable"
-               SelectionMode="Single"
-               EmptyTemplate="{StaticResource EmptyStateTemplate}">
-    <tv:TableViewTextColumn Header="Name"       Binding="{Binding FullName}"/>
-    <tv:TableViewTextColumn Header="Department" Binding="{Binding Department}"/>
-    <tv:TableViewTextColumn Header="Role"       Binding="{Binding Role}"/>
-    <tv:TableViewTextColumn Header="Email"      Binding="{Binding Email}"/>
+<!-- The template columns come from Templates\PersonCellTemplates.xaml. -->
+
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.AutomationId="EmptyStateTable"
+    AutomationProperties.Name="People, with an empty state"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    EmptyTemplate="{StaticResource EmptyStateTemplate}"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
 </tv:TableView>
 
-<!-- Three data sources, because there are two different ways of being empty:
-     a null ItemsSource, and a live shaped source that holds no items. -->
-<muxc:RadioButtons x:Name="DataSourceRadioButtons"
-                   SelectedIndex="0"
-                   SelectionChanged="OnDataSourceSelectionChanged"
-                   AutomationProperties.Name="Data source">
-    <RadioButton Content="Populated"                  Tag="Populated"/>
-    <RadioButton Content="Empty (null ItemsSource)"   Tag="Null"/>
-    <RadioButton Content="Empty (source with 0 rows)" Tag="ZeroRows"/>
-</muxc:RadioButtons>
+<!-- Two different ways of being empty: a null ItemsSource, and a live source that holds no rows. -->
 
-<!-- The shaping selector is a ComboBox on every page in this gallery. The two
-     hierarchy entries stay visible but disabled, with a tooltip saying why. -->
-<ComboBox x:Name="ShapingModeSelector"
-          Header="Shaping mode"
-          SelectedIndex="0"
-          SelectionChanged="OnShapingModeChanged"
-          HorizontalAlignment="Stretch">
-    <ComboBoxItem Content="Flat" Tag="flat"/>
-    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
-                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+<ComboBox
+    x:Name="DataSourceSelector"
+    AutomationProperties.AutomationId="EmptyStateDataSourceSelector"
+    Header="Data source"
+    SelectedIndex="0"
+    SelectionChanged="OnDataSourceChanged"
+    HorizontalAlignment="Stretch">
+    <ComboBoxItem Content="Populated" Tag="Populated"/>
+    <ComboBoxItem Content="Null ItemsSource" Tag="Null"/>
+    <ComboBoxItem Content="Zero rows" Tag="ZeroRows"/>
 </ComboBox>

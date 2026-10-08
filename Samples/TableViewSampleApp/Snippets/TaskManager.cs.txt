@@ -1,97 +1,76 @@
+// TaskManagerPage.xaml.cs. The source is created once; search, sort and grouping reshape it in place.
 public ObservableCollection<ProcessItem> Processes { get; } = new();
 
-// Reshaping happens IN PLACE on this one instance: Filter / GroupBy / Sort mutate and return
-// the same TableViewSource (TableViewSource.cpp:49-50).
-private TableViewSource? _source;
-private string _mode = "flat";          // requested
-private string _appliedMode = "flat";   // applied
+public TableViewSource? Source => _source;
 
-private void ApplyProcessSource()
+public TaskManagerPage()
 {
-    if (_source is null)
+    PopulateProcesses();
+    _source = TableViewSource.From(Processes);
+    InitializeComponent();
+    // Metrics open descending, as in Task Manager: the busiest process comes first.
+    foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColumn })
     {
-        _source = TableViewSource.From(Processes);
-        ProcessTable.ItemsSource = _source;
+        column.SortCycle = TableViewSortCycle.DescendingAscending;
     }
 
-    var searchText = _searchText;
-    if (string.IsNullOrEmpty(searchText)) { _source.ClearFilter(); }
-    else { _source.Filter(item => MatchesSearch((ProcessItem)item, searchText)); }
-
-    switch (_mode)
-    {
-        case "grouped":
-            var key = _groupKey;
-            // TableViewKeySelector receives the ROW ITEM; TableViewIdentitySelector receives
-            // the GROUP KEY (TableViewSource.idl:12-16). An item-typed identity lambda
-            // returns an empty identity and fails fast with E_INVALIDARG.
-            _source.GroupBy(
-                item => (object)GroupValue(item, key),
-                groupKey => groupKey?.ToString() ?? "(none)");
-            break;
-
-        // case "hierarchy":
-        // case "groupedhierarchy":
-        //     Hierarchical rows are not available in this release, and no hierarchy API
-        //     exists on TableViewSource or TableView yet, so there is deliberately no call
-        //     written here to copy. When the control ships hierarchy support, apply it to
-        //     this same source instance alongside the GroupBy stage above so the two compose.
-        //     break;
-
-        default:
-            _source.ClearGroupBy();
-            break;
-    }
-
-    _appliedMode = _mode;   // set ONLY after the shaping call returns
-
-    ApplyActiveSort(_source);
-    UpdateShapingUi();
-    UpdateStatusBar();
+    _timer.Tick += OnTimerTick;
+    Loaded += OnPageLoaded;      // starts the timer
+    Unloaded += OnPageUnloaded;  // stops it
 }
 
-// Real Task Manager bands its processes into Apps / Background processes / Windows processes,
-// and ProcessItem already carries that as Category - so that is the group key.
-// Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
-private static string GroupValue(object item, string key)
+// A value change raised through INotifyPropertyChanged updates the cell but does not move the
+// row: the projection re-sorts on collection changes only. Re-declaring the active sort with
+// the column's own path re-sorts the same source and keeps that column's sort indicator.
+private void ResortIfMetricSorted()
 {
-    if (item is not ProcessItem process) { return "(none)"; }
-
-    var value = key switch
-    {
-        "Status" => process.IsEfficiency
-            ? "Efficiency mode"
-            : (string.IsNullOrWhiteSpace(process.StatusText) ? "Running" : process.StatusText),
-        _ => process.Category,
-    };
-
-    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-}
-
-private void ApplyActiveSort(TableViewSource source)
-{
-    // Clear first: the keySelector Sort overload declares an ANONYMOUS axis, so re-declaring
-    // one without clearing would stack a second axis rather than replace the first.
-    source.ClearSort();
-
-    var sortColumn = SampleShape.ActiveSortColumn(ProcessTable);
-    if (sortColumn is null ||
-        SampleShape.ActiveSortDirection(ProcessTable) == SortDirection.None ||
-        string.IsNullOrEmpty(sortColumn.SortMemberPath))
+    var column = ActiveSortColumn();
+    if (_source is null || column is null || column.SortMemberPath is not
+        (nameof(ProcessItem.CpuPercent) or nameof(ProcessItem.MemoryMB) or nameof(ProcessItem.DiskMBps) or nameof(ProcessItem.NetworkMbps)))
     {
         return;
     }
 
-    var path = sortColumn.SortMemberPath;
-    source.Sort(item => SortKey(item, path), SampleShape.ActiveSortDirection(ProcessTable));
+    _source.Sort(column.SortMemberPath, column.SortDirection);
 }
 
-// Rewrites the selected row's Category, then re-applies GroupBy so the row re-buckets.
-private void OnMoveSelectedCategoryClick(object sender, RoutedEventArgs e)
-{
-    if (ProcessTable.SelectedItem is not ProcessItem selected) { return; }
+// Search filters the same source; clearing the text removes the predicate.
+var text = _searchText;
+_source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
 
-    var index = Array.IndexOf(s_categories, selected.Category);
-    selected.Category = s_categories[(index + 1 + s_categories.Length) % s_categories.Length];
-    ApplyProcessSource();
+// End task reports when nothing is selected instead of doing nothing.
+private void OnEndTaskClick(object sender, RoutedEventArgs e)
+{
+    if (ProcessTable.SelectedItem is not ProcessItem process)
+    {
+        SetLastAction("No process selected.");
+        return;
+    }
+
+    Processes.Remove(process);
+    UpdateTotals();
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Ended {0} ({1})", process.Name, process.Category));
+}
+
+// GroupBy: the key selector receives the ROW; the identity selector receives the KEY.
+_source.GroupBy(item => KeyOf(item as ProcessItem, key), SampleShaping.GroupIdentity);
+
+// Heat-map tint: one blue hue whose opacity deepens with load; no tint in high contrast.
+public object Convert(object value, Type targetType, object parameter, string language)
+{
+    if (ChipBrushes.IsHighContrast)
+    {
+        return ChipBrushes.Transparent;
+    }
+
+    var thresholds = (parameter as string) switch
+    {
+        "Memory" => s_memory,
+        "Disk" => s_disk,
+        "Network" => s_network,
+        _ => s_cpu,
+    };
+
+    var load = value is double d ? d : 0;
+    return s_levels[thresholds.Count(threshold => load > threshold)];
 }

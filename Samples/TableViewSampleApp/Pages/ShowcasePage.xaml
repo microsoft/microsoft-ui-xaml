@@ -11,30 +11,38 @@
     xmlns:models="using:TableViewSampleApp.Models">
 
     <Page.Resources>
-        <ResourceDictionary>
-            <!-- Data-bound conditional cell tints: each tinted cell binds its Border
-                 background (or text) to the row value through a value converter, so a
-                 live mutation recolors just that one cell with no per-column rebuild.
-                 The shared ShowcasePage.Vibrant flag gates whether the tints are drawn. -->
-            <local:ShowcaseDepartmentTintConverter x:Key="ShowcaseDepartmentTintConverter"/>
-            <local:ShowcaseDepartmentDotConverter x:Key="ShowcaseDepartmentDotConverter"/>
-            <local:ShowcaseActiveChipConverter x:Key="ShowcaseActiveChipConverter"/>
-            <local:ShowcaseActiveTextConverter x:Key="ShowcaseActiveTextConverter"/>
-            <local:ShowcaseSalaryTintConverter x:Key="ShowcaseSalaryTintConverter"/>
-            <local:ShowcaseSalaryTextConverter x:Key="ShowcaseSalaryTextConverter"/>
+        <!-- Vibrant tints: each tinted cell binds its Border background to the row value through a
+             converter, so a live update recolors only that cell. ShowcasePage.Vibrant gates them. -->
+        <local:ShowcaseDepartmentTintConverter x:Key="ShowcaseDepartmentTintConverter"/>
+        <local:ShowcaseDepartmentDotConverter x:Key="ShowcaseDepartmentDotConverter"/>
+        <local:ShowcaseSalaryTintConverter x:Key="ShowcaseSalaryTintConverter"/>
 
-            <DataTemplate x:Key="ShowcaseNameTemplate" x:DataType="models:Person">
-                <TextBlock Text="{x:Bind FirstName, Mode=OneWay}"
-                           VerticalAlignment="Center"
-                           TextTrimming="CharacterEllipsis"
-                           Margin="12,0,8,0"/>
-            </DataTemplate>
-        </ResourceDictionary>
+        <DataTemplate x:Key="ShowcaseDepartmentPillTemplate" x:DataType="models:Person">
+            <Border Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource ShowcaseDepartmentTintConverter}}"
+                    CornerRadius="10" Padding="10,3" Margin="6,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                    <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                             Fill="{x:Bind Department, Mode=OneWay, Converter={StaticResource ShowcaseDepartmentDotConverter}}"
+                             AutomationProperties.AccessibilityView="Raw"/>
+                    <TextBlock Text="{x:Bind Department, Mode=OneWay}" VerticalAlignment="Center"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ShowcaseSalaryTemplate" x:DataType="models:Person">
+            <Border Background="{x:Bind Salary, Mode=OneWay, Converter={StaticResource ShowcaseSalaryTintConverter}}"
+                    CornerRadius="4" Padding="8,2" Margin="2,2" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                <TextBlock Text="{x:Bind Salary, Mode=OneWay, Converter={StaticResource SalaryTextConverter}}"
+                           VerticalAlignment="Center" HorizontalAlignment="Right"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+            </Border>
+        </DataTemplate>
     </Page.Resources>
 
     <controls:SamplePresenter
         Header="Showcase"
-        Description="A rich people-directory dashboard composing the aligned TableView feature set in one control: vibrant data-bound Department pills and stoplight Salary tints that animate as live updates run by default, status chips, a command toolbar, single-column header sort, column resize with per-column opt-outs, dynamic show/hide columns, selection modes, and column-header visibility."
+        Description="A people directory that combines the TableView features in one table. The Department pills and Salary tints are template cells bound through converters, so a live update recolors only the cells whose values changed. Click a header to sort, drag a header edge to resize (the Active column opts out with CanResize), and show or hide columns at run time with TableViewColumn.Visibility. SelectionMode switches between None and Single, HeadersVisibility hides the header row, and TableViewSource.GroupBy groups the same rows in place."
         SourceCaption="ShowcasePage.xaml (excerpt)"
         SourceSnippet="Showcase.xaml.txt"
         AdditionalSnippetCaption="ShowcasePage.xaml.cs (excerpt)"
@@ -45,128 +53,43 @@
             <Grid RowSpacing="12">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-
-                <!-- Command toolbar: flyout-driven actions sit above the table so the
-                     page demonstrates realistic data-grid chrome without crowding the
-                     Options pane. The selection count tracks SelectedItem live. -->
-                <Border Grid.Row="0"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="{StaticResource ControlCornerRadius}"
-                        Padding="8,6">
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
-                            <muxc:DropDownButton x:Name="SelectButton" AutomationProperties.AutomationId="ShowcaseSelectButton" AutomationProperties.Name="Selection actions">
-                                <muxc:DropDownButton.Content>
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <FontIcon Glyph="&#xE762;" FontSize="16" AutomationProperties.AccessibilityView="Raw"/>
-                                        <TextBlock Text="Select"/>
-                                    </StackPanel>
-                                </muxc:DropDownButton.Content>
-                                <muxc:DropDownButton.Flyout>
-                                    <MenuFlyout>
-                                        <MenuFlyoutItem Text="Select first row" Click="OnSelectFirstClick">
-                                            <MenuFlyoutItem.Icon>
-                                                <FontIcon Glyph="&#xE8B3;" AutomationProperties.AccessibilityView="Raw"/>
-                                            </MenuFlyoutItem.Icon>
-                                        </MenuFlyoutItem>
-                                        <!-- No "Select all": TableViewSelectionMode is None/Single only,
-                                             so a multi-select command would always be inert. -->
-                                        <MenuFlyoutItem Text="Clear selection" Click="OnClearSelectionClick">
-                                            <MenuFlyoutItem.Icon>
-                                                <FontIcon Glyph="&#xE8E6;" AutomationProperties.AccessibilityView="Raw"/>
-                                            </MenuFlyoutItem.Icon>
-                                        </MenuFlyoutItem>
-                                    </MenuFlyout>
-                                </muxc:DropDownButton.Flyout>
-                            </muxc:DropDownButton>
-
-                            <Button x:Name="AutosizeButton" Click="OnAutosizeAllClick" AutomationProperties.AutomationId="ShowcaseAutosizeButton" AutomationProperties.Name="Autosize all columns">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <FontIcon Glyph="&#xE9A6;" FontSize="16" AutomationProperties.AccessibilityView="Raw"/>
-                                    <TextBlock Text="Autosize"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-
-                        <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Column="1"
-                                   x:Name="SelectionCountText"
-                                   Text="No rows selected"
-                                   VerticalAlignment="Center"
-                                   Margin="8,0,4,0"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                   Style="{StaticResource CaptionTextBlockStyle}"/>
-                    </Grid>
-                </Border>
-
+                <!-- scaffold:tryit -->
                 <muxc:InfoBar
-                    Grid.Row="1"
+                    Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Try it"
-                    Message="Live updates are running — watch the Salary and Status cells animate. Click a header to sort, and drag a header edge to resize. Use the Options to change selection mode and headers visibility, show or hide columns, or pause live updates."
-                    MinHeight="104"/>
-
-                <Border Grid.Row="2" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+                    MinHeight="104"
+                    Message="Live updates are on: watch the Salary tints and Active checkboxes change on the first rows. Click the Salary header to sort, select a row and give it a raise, and watch it move to its sorted place. Then switch Shaping to Grouped, or turn on the Shift, Office or Email column in the rail."/>
+                <!-- /scaffold -->
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
                         x:Name="PeopleTable"
-                        AutomationProperties.AutomationId="ShowcasePeopleTable"
-                        AutomationProperties.Name="People showcase"
+                        AutomationProperties.AutomationId="ShowcaseTable"
+                        AutomationProperties.Name="People directory"
+                        ItemsSource="{x:Bind Source}"
                         AlternatingRowBackground="{ThemeResource SubtleFillColorSecondaryBrush}"
                         Sorted="OnPeopleTableSorted"
                         SelectionChanged="OnSelectionChanged"
                         SelectionMode="Single"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <tv:TableViewTemplateColumn x:Name="FirstNameColumn" Header="First name" Width="{StaticResource ColWidthShortName}" SortMemberPath="FirstName" CellTemplate="{StaticResource ShowcaseNameTemplate}"/>
-                        <!-- Rich columns are front-loaded so the colorful, data-bound cells
-                             are visible without horizontal scrolling. Department + Status +
-                             Salary are template columns whose Border background comes from a
-                             value converter, so live updates recolor in place with no
-                             rebuild; SortMemberPath keeps header sort working. -->
-                        <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" SortMemberPath="Department">
-                            <tv:TableViewTemplateColumn.CellTemplate>
-                                <DataTemplate x:DataType="models:Person">
-                                    <Border Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource ShowcaseDepartmentTintConverter}}" CornerRadius="10" Padding="10,3" Margin="2,2" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                        <StackPanel Orientation="Horizontal" Spacing="7">
-                                            <Ellipse Width="8" Height="8" Fill="{x:Bind Department, Mode=OneWay, Converter={StaticResource ShowcaseDepartmentDotConverter}}" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{x:Bind Department, Mode=OneWay}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </tv:TableViewTemplateColumn.CellTemplate>
-                        </tv:TableViewTemplateColumn>
-                        <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Status" Width="{StaticResource ColWidthStatus}" SortMemberPath="IsActive">
-                            <tv:TableViewTemplateColumn.CellTemplate>
-                                <DataTemplate x:DataType="models:Person">
-                                    <Border Background="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ShowcaseActiveChipConverter}}" CornerRadius="10" Padding="10,3" Margin="2,2" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                        <TextBlock Text="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ShowcaseActiveTextConverter}}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                                    </Border>
-                                </DataTemplate>
-                            </tv:TableViewTemplateColumn.CellTemplate>
-                        </tv:TableViewTemplateColumn>
-                        <tv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" SortMemberPath="Salary">
-                            <tv:TableViewTemplateColumn.CellTemplate>
-                                <DataTemplate x:DataType="models:Person">
-                                    <Border Background="{x:Bind Salary, Mode=OneWay, Converter={StaticResource ShowcaseSalaryTintConverter}}" CornerRadius="4" Padding="8,2" Margin="2,2" HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                                        <TextBlock Text="{x:Bind Salary, Mode=OneWay, Converter={StaticResource ShowcaseSalaryTextConverter}}" VerticalAlignment="Center" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                                    </Border>
-                                </DataTemplate>
-                            </tv:TableViewTemplateColumn.CellTemplate>
-                        </tv:TableViewTemplateColumn>
-                        <tv:TableViewTextColumn x:Name="LastNameColumn" Header="Last name" Width="{StaticResource ColWidthShortName}" SortMemberPath="LastName" Binding="{Binding LastName}"/>
-                        <tv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="*" MinWidth="200" SortMemberPath="Email" Binding="{Binding Email}"/>
-                        <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role" Width="{StaticResource ColWidthLongName}" SortMemberPath="Role" Binding="{Binding Role}"/>
-                        <tv:TableViewTextColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthDate}" SortMemberPath="JoinDate" Binding="{Binding JoinDateText}"/>
+                        <!-- Visible by default: fits the table width at the default window size. -->
+                        <tv:TableViewTemplateColumn x:Name="AvatarColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                        <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                        <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource ShowcaseDepartmentPillTemplate}" SortMemberPath="Department"/>
+                        <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" CanResize="False" HeaderToolTip="Fixed width: this column sets CanResize to False."/>
+                        <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+                        <tv:TableViewTemplateColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource ShowcaseSalaryTemplate}" SortMemberPath="Salary"/>
+                        <!-- Hidden by default; the Columns section turns them on. -->
+                        <tv:TableViewTemplateColumn x:Name="ShiftColumn" Header="Shift" Width="{StaticResource ColWidthTimeCompact}" CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart" Visibility="Collapsed"/>
+                        <tv:TableViewTemplateColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office" Visibility="Collapsed"/>
+                        <tv:TableViewTextColumn x:Name="EmailColumn" Header="Email" Width="{StaticResource ColWidthEmail}" Binding="{Binding Email}" Visibility="Collapsed"/>
+                        <tv:TableViewTextColumn x:Name="RoleColumn" Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}" Visibility="Collapsed"/>
+                        <tv:TableViewTemplateColumn x:Name="DetailsColumn" Header="Details" Width="{StaticResource ColWidthAction}" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" Visibility="Collapsed"/>
                     </tv:TableView>
                 </Border>
             </Grid>
@@ -174,232 +97,205 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Row count" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Flat mode only — grouped mode reuses the same rows grouped by Department."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <ComboBox
-                    x:Name="RowCountCombo"
-                    AutomationProperties.AutomationId="ShowcaseRowCountCombo"
-                    Header="Flat row count"
-                    SelectedIndex="0"
-                    HorizontalAlignment="Stretch"
-                    SelectionChanged="OnRowCountChanged"
-                    AutomationProperties.Name="Flat row count">
-                    <ComboBoxItem Content="10"   Tag="10"/>
-                    <ComboBoxItem Content="100"  Tag="100"/>
-                    <ComboBoxItem Content="500"  Tag="500"/>
-                    <ComboBoxItem Content="1000" Tag="1000"/>
-                </ComboBox>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Selection" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Switch SelectionMode. None disables selection; Single picks one row."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <ComboBox
-                    x:Name="SelectionModeCombo"
-                    AutomationProperties.AutomationId="ShowcaseSelectionModeCombo"
-                    Header="Selection mode"
-                    SelectedIndex="1"
-                    HorizontalAlignment="Stretch"
-                    SelectionChanged="OnSelectionModeChanged"
-                    AutomationProperties.Name="Selection mode">
-                    <ComboBoxItem Content="None"/>
-                    <ComboBoxItem Content="Single"/>
-                </ComboBox>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Columns" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Show or hide the column headers, and add or remove the Email / Role columns."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <ComboBox
-                    x:Name="HeadersVisibilityCombo"
-                    AutomationProperties.AutomationId="ShowcaseHeadersVisibilityCombo"
-                    Header="Headers visibility"
-                    SelectedIndex="1"
-                    HorizontalAlignment="Stretch"
-                    SelectionChanged="OnHeadersVisibilityChanged"
-                    AutomationProperties.Name="Headers visibility">
-                    <ComboBoxItem Content="Column" Tag="Column"/>
-                    <ComboBoxItem Content="None"   Tag="None"/>
-                </ComboBox>
-                <ToggleSwitch
-                    x:Name="EmailColumnToggle"
-                    AutomationProperties.AutomationId="ShowcaseEmailColumnToggle"
-                    Header="Show Email column"
-                    IsOn="True"
-                    OnContent="Shown"
-                    OffContent="Hidden"
-                    Toggled="OnEmailColumnToggled"/>
-                <ToggleSwitch
-                    x:Name="RoleColumnToggle"
-                    AutomationProperties.AutomationId="ShowcaseRoleColumnToggle"
-                    Header="Show Role column"
-                    IsOn="True"
-                    OnContent="Shown"
-                    OffContent="Hidden"
-                    Toggled="OnRoleColumnToggled"/>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Live updates" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Vibrant cells tint Department, Status, and Salary. Live updates refresh a few rows' Salary and Status on a timer; the bound tints re-run per cell."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <ToggleSwitch
-                    x:Name="VibrantToggle"
-                    AutomationProperties.AutomationId="ShowcaseVibrantToggle"
-                    Header="Vibrant cells"
-                    IsOn="True"
-                    OnContent="On"
-                    OffContent="Off"
-                    Toggled="OnVibrantToggled"/>
-                <ToggleSwitch
-                    x:Name="LiveToggle"
-                    AutomationProperties.AutomationId="ShowcaseLiveToggle"
-                    Header="Live updates"
-                    IsOn="True"
-                    OnContent="On"
-                    OffContent="Off"
-                    Toggled="OnLiveToggled"/>
-                <Slider
-                    x:Name="UpdateIntervalSlider"
-                    AutomationProperties.AutomationId="ShowcaseUpdateIntervalSlider"
-                    Header="Update interval (ms)"
-                    Minimum="100"
-                    Maximum="2000"
-                    StepFrequency="50"
-                    Value="700"/>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Flat leaves the source unshaped. Grouped calls TableViewSource.GroupBy(keySelector, groupIdentitySelector) on the SAME source instance, so selection, scroll offset and group expansion survive the reshape."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <ComboBox
-                    x:Name="ShapingModeSelector"
-                    AutomationProperties.Name="Shaping mode"
-                    AutomationProperties.AutomationId="ShapingModeSelector"
-                    Header="Shaping mode"
-                    SelectedIndex="0"
-                    HorizontalAlignment="Stretch"
-                    SelectionChanged="OnModeSelectionChanged">
-                    <ComboBoxItem Content="Flat" Tag="flat" AutomationProperties.AutomationId="ShowcaseModeFlatItem"/>
-                    <ComboBoxItem Content="Grouped" Tag="grouped" AutomationProperties.AutomationId="ShowcaseModeGroupedItem"/>
-                    <!-- Hierarchical rows are not available in this release. The options stay
-                         VISIBLE and disabled so the full shape of the shaping axis is honest
-                         signposting rather than a silent omission; re-enable them when the
-                         control ships hierarchy support. -->
-                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                </ComboBox>
-                <ComboBox
-                    x:Name="ShapingGroupKeyCombo"
-                    AutomationProperties.AutomationId="ShowcaseShapingGroupKeyCombo"
-                    AutomationProperties.Name="Group key"
-                    Header="Group by"
-                    SelectedIndex="0"
-                    IsEnabled="False"
-                    ToolTipService.ToolTip="Available once Grouped mode is selected."
-                    HorizontalAlignment="Stretch"
-                    SelectionChanged="OnShapingGroupKeyChanged">
-                    <ComboBoxItem Content="Department" Tag="Department"/>
-                    <ComboBoxItem Content="Role" Tag="Role"/>
-                    <ComboBoxItem Content="Active status" Tag="Active"/>
-                </ComboBox>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Sorting a header while Grouped sorts WITHIN each group. The mutation actions rewrite a row's group key or its sorted Salary, then re-apply the shaping, so you can watch a row move between groups or re-position under an active sort."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <StackPanel Spacing="8">
-                    <Button x:Name="ExpandAllButton"
-                            AutomationProperties.AutomationId="ShowcaseExpandAllButton"
-                            Content="Expand all groups"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Available once Grouped mode is selected."
-                            Click="OnExpandAllClick"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="CollapseAllButton"
-                            AutomationProperties.AutomationId="ShowcaseCollapseAllButton"
-                            Content="Collapse all groups"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Available once Grouped mode is selected."
-                            Click="OnCollapseAllClick"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="MoveGroupButton"
-                            AutomationProperties.AutomationId="ShowcaseMoveSelectedButton"
-                            Content="Move selected row to next group"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Select a row first."
-                            Click="OnMoveSelectedGroupClick"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="BumpSalaryButton"
-                            AutomationProperties.AutomationId="ShowcaseBumpSalaryButton"
-                            Content="Double selected row's salary"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Select a row first."
-                            Click="OnBumpSalaryClick"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="RemoveRowButton"
-                            AutomationProperties.AutomationId="ShowcaseRemoveSelectedButton"
-                            Content="Remove selected row"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Select a row first."
-                            Click="OnRemoveSelectedClick"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                <!-- 1. Primary feature sections -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Live updates">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Live updates"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="A timer changes the Salary and Active values of the first five rows. Person raises PropertyChanged, so only those cells re-run their bindings and tints. Vibrant cells turns the Department and Salary tints on or off."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ToggleSwitch x:Name="LiveToggle" AutomationProperties.AutomationId="ShowcaseLiveToggle"
+                                  Header="Live updates" IsOn="True" OnContent="On" OffContent="Off" Toggled="OnLiveToggled"/>
+                    <Slider x:Name="UpdateIntervalSlider" AutomationProperties.AutomationId="ShowcaseUpdateIntervalSlider"
+                            Header="Update interval (ms)" Minimum="200" Maximum="2000" StepFrequency="100" Value="700"
+                            ValueChanged="OnUpdateIntervalChanged"/>
+                    <ToggleSwitch x:Name="VibrantToggle" AutomationProperties.AutomationId="ShowcaseVibrantToggle"
+                                  Header="Vibrant cells" IsOn="True" OnContent="On" OffContent="Off" Toggled="OnVibrantToggled"/>
                 </StackPanel>
 
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Table">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Table"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Row count refills the same collection. SelectionMode is None or Single. HeadersVisibility hides or shows the header row."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox x:Name="RowCountSelector" AutomationProperties.AutomationId="ShowcaseRowCountSelector"
+                              Header="Row count" SelectedIndex="1" SelectionChanged="OnRowCountChanged" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="10" Tag="10"/>
+                        <ComboBoxItem Content="100" Tag="100"/>
+                        <ComboBoxItem Content="500" Tag="500"/>
+                        <ComboBoxItem Content="1,000" Tag="1000"/>
+                    </ComboBox>
+                    <ComboBox x:Name="SelectionModeSelector" AutomationProperties.AutomationId="ShowcaseSelectionModeSelector"
+                              Header="Selection mode" SelectedIndex="1" SelectionChanged="OnSelectionModeChanged" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="None" Tag="None"/>
+                        <ComboBoxItem Content="Single" Tag="Single"/>
+                    </ComboBox>
+                    <ComboBox x:Name="HeadersVisibilitySelector" AutomationProperties.AutomationId="ShowcaseHeadersVisibilitySelector"
+                              Header="Headers visibility" SelectedIndex="0" SelectionChanged="OnHeadersVisibilityChanged" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Column" Tag="Column"/>
+                        <ComboBoxItem Content="None" Tag="None"/>
+                    </ComboBox>
+                </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <Grid ColumnSpacing="12" RowSpacing="4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Columns">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Columns"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Sets TableViewColumn.Visibility. The extra columns start hidden so the table fits the window; turning them on makes it scroll horizontally."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <CheckBox x:Name="ShiftColumnCheckBox" AutomationProperties.AutomationId="ShowcaseShiftColumnCheckBox"
+                              Content="Shift (time picker)" Click="OnColumnCheckBoxClick"/>
+                    <CheckBox x:Name="OfficeColumnCheckBox" AutomationProperties.AutomationId="ShowcaseOfficeColumnCheckBox"
+                              Content="Office (combo box)" Click="OnColumnCheckBoxClick"/>
+                    <CheckBox x:Name="EmailColumnCheckBox" AutomationProperties.AutomationId="ShowcaseEmailColumnCheckBox"
+                              Content="Email" Click="OnColumnCheckBoxClick"/>
+                    <CheckBox x:Name="RoleColumnCheckBox" AutomationProperties.AutomationId="ShowcaseRoleColumnCheckBox"
+                              Content="Role" Click="OnColumnCheckBoxClick"/>
+                    <CheckBox x:Name="DetailsColumnCheckBox" AutomationProperties.AutomationId="ShowcaseDetailsColumnCheckBox"
+                              Content="Details (button with flyout)" Click="OnColumnCheckBoxClick"/>
+                </StackPanel>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Mode" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="0" Grid.Column="1" x:Name="ModeReadoutText" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseModeReadoutText" TextWrapping="Wrap"/>
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Grouped, a header sort orders the rows within each group, and live updates keep running. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="ShowcaseShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="ShowcaseGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Department" Tag="Department"/>
+                        <ComboBoxItem Content="Role" Tag="Role"/>
+                        <ComboBoxItem Content="Active" Tag="IsActive"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="ShowcaseExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="ShowcaseCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="1" Grid.Column="1" x:Name="RowsReadoutText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseRowsReadoutText" TextWrapping="Wrap"/>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Each action writes the Person model or the selection, then re-applies the active sort or grouping so the row moves to where it now belongs. Watch the table and the Last action readout. Actions that change one row need a selected row."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button x:Name="SelectFirstButton" AutomationProperties.AutomationId="ShowcaseSelectFirstButton"
+                                Content="Select first row" Click="OnSelectFirstClick"
+                                ToolTipService.ToolTip="Calls TableView.Select(0). Does nothing when SelectionMode is None."
+                                AutomationProperties.HelpText="Calls TableView.Select(0). Does nothing when SelectionMode is None."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button x:Name="ClearSelectionButton" AutomationProperties.AutomationId="ShowcaseClearSelectionButton"
+                                Content="Clear selection" Click="OnClearSelectionClick"
+                                ToolTipService.ToolTip="Calls TableView.DeselectAll()."
+                                AutomationProperties.HelpText="Calls TableView.DeselectAll()."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button x:Name="MoveGroupButton" AutomationProperties.AutomationId="ShowcaseMoveSelectedButton"
+                                Content="Move selected row to the next group" Click="OnMoveSelectedGroupClick"
+                                ToolTipService.ToolTip="Changes the grouped-on value (Department when flat) to the next real value, then re-applies GroupBy so the row moves to its new group."
+                                AutomationProperties.HelpText="Select a row first."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button x:Name="RaiseSalaryButton" AutomationProperties.AutomationId="ShowcaseRaiseSalaryButton"
+                                Content="Give selected row a 10% raise" Click="OnRaiseSalaryClick"
+                                ToolTipService.ToolTip="Raises Salary by 10%, up to 230,000. Sorted by Salary, the sort is re-applied and the row moves."
+                                AutomationProperties.HelpText="Select a row first."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button x:Name="RemoveRowButton" AutomationProperties.AutomationId="ShowcaseRemoveSelectedButton"
+                                Content="Remove selected row" Click="OnRemoveSelectedClick"
+                                ToolTipService.ToolTip="Removes the row from the collection; a group disappears when it loses its last row."
+                                AutomationProperties.HelpText="Select a row first."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Selection" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="1" x:Name="SelectionReadoutText" Text="0 (Single)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseSelectionReadoutText" TextWrapping="Wrap"/>
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Selection" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="SelectionText" AutomationProperties.AutomationId="ShowcaseSelectionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Sort" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="SortText" AutomationProperties.AutomationId="ShowcaseSortText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Columns" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ColumnsText" AutomationProperties.AutomationId="ShowcaseColumnsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="6 of 11 shown" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="ShowcaseRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="ShowcaseShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="5" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="ShowcaseLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
 
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Sort" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="1" x:Name="SortReadoutText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseSortReadoutText" TextWrapping="Wrap"/>
-
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Columns" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="4" Grid.Column="1" x:Name="ColumnsReadoutText" Text="" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseColumnsReadoutText" TextWrapping="Wrap"/>
-
-                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="5" Grid.Column="1" x:Name="LastActionText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ShowcaseLastActionText" TextWrapping="Wrap"/>
-                </Grid>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="What to look for" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                 <muxc:InfoBar
-                    AutomationProperties.AutomationId="ShowcaseWhatToLookForInfoBar"
+                    Title="What to look for"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="What to look for"
-                    Message="Select a row, switch to Grouped, and the selection survives - the source is reshaped in place, not rebuilt. Sort by Salary while grouped and the rows order WITHIN each department band; then double the selected row's salary and watch it re-position inside its own band rather than jumping to the top of the table."/>
+                    Message="Select a row, then switch to Grouped: the selection survives because the source is reshaped in place, not rebuilt. Sorted by Salary, each live update and raise re-applies the sort, so the rows stay in order; grouped, they sort within each group. The template columns sort by their SortMemberPath (Department, IsActive, JoinDate, Salary), not by the control they show."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
-
     </controls:SamplePresenter>
 </Page>

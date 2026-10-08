@@ -1,42 +1,59 @@
-<Page.Resources>
-    <!-- A cell whose OWN content carries an app-set tooltip. The control never replaces or
-         clears this one. -->
-    <DataTemplate x:Key="AppToolTipCell">
-        <TextBlock Text="{Binding Email}" Margin="8,0" VerticalAlignment="Center"
-                   ToolTipService.ToolTip="App-owned tooltip, set in the cell template" />
-    </DataTemplate>
-</Page.Resources>
+<!-- A cell whose OWN template sets a tooltip. The control never replaces or clears it. -->
 
-<tv:TableView x:Name="PeopleTable">
+<DataTemplate x:Key="EmailIconCellTemplate" x:DataType="models:Person">
+    <Grid Background="Transparent"
+          ToolTipService.ToolTip="{x:Bind Email, Mode=OneWay}"
+          AutomationProperties.Name="{x:Bind Email, Mode=OneWay}">
+        <FontIcon Glyph="&#xE715;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"
+                  AutomationProperties.AccessibilityView="Raw"/>
+    </Grid>
+</DataTemplate>
 
-    <!-- HeaderToolTip is a plain OBJECT, not a binding: a header is not bound against a row,
-         so there is nothing to defer. A string is reported as help text alongside the sort
-         state; non-string content is mouse-only. -->
-    <tv:TableViewTextColumn Header="Name" Binding="{Binding FullName}"
-                             HeaderToolTip="Full name, as entered" Width="200" />
+<!-- HeaderToolTip is a plain object, set here in XAML. CellToolTipBinding is set in code
+     (AttachCellToolTips) so the page can detach it. -->
 
-    <!-- Repeats the header's own text, so the automation peer drops it rather than
-         announcing it twice. -->
-    <tv:TableViewTextColumn Header="Salary" Binding="{Binding Salary}"
-                             HeaderToolTip="Salary" Width="100" />
-
-    <!-- No CellToolTipBinding and no HeaderToolTip: nothing appears. The control never
-         invents a tooltip. -->
-    <tv:TableViewTextColumn Header="Department" Binding="{Binding Department}" Width="140" />
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.AutomationId="ToolTipsTable"
+    AutomationProperties.Name="People with tooltips"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <!-- CellToolTipBinding is set in code (AttachCellToolTips) so it can be detached. -->
+    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                                 CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="{StaticResource ColWidthShortName}"
+                             Binding="{Binding FullName}"
+                             HeaderToolTip="Full name, as entered"/>
+    <tv:TableViewTextColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
+                             Binding="{Binding Bio}" CanSort="False"/>
+    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}"
+                                 CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"
+                                 HeaderToolTip="Team the person reports into"/>
+    <!-- No CellToolTipBinding at all: nothing appears over these cells. -->
+    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}"
+                             Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"
+                             HeaderToolTip="Salary"/>
+    <tv:TableViewTemplateColumn x:Name="EmailColumn" Header="Email" Width="{StaticResource ColWidthNarrow}"
+                                 CellTemplate="{StaticResource EmailIconCellTemplate}" CanSort="False"/>
 </tv:TableView>
 
-<!-- The shaping selector is a ComboBox on every page in this gallery. A reshape
-     leaves the COLUMNS alone, so every HeaderToolTip and CellToolTipBinding
-     survives it. The two hierarchy entries stay visible but disabled. -->
-<ComboBox x:Name="ShapingModeSelector"
-          Header="Shaping mode"
-          SelectedIndex="0"
-          SelectionChanged="OnShapingModeChanged"
-          HorizontalAlignment="Stretch">
-    <ComboBoxItem Content="Flat" Tag="flat"/>
-    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
-                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
+<ToggleSwitch
+    x:Name="CellToolTipsToggle"
+    AutomationProperties.AutomationId="ToolTipsCellToolTipsToggle"
+    Header="Cell tooltips"
+    IsOn="True"
+    Toggled="OnCellToolTipsToggled"/>
+
+<ComboBox
+    x:Name="HeaderToolTipsSelector"
+    AutomationProperties.AutomationId="ToolTipsHeaderToolTipsSelector"
+    Header="Header tooltips"
+    SelectedIndex="0"
+    SelectionChanged="OnHeaderToolTipsChanged"
+    HorizontalAlignment="Stretch">
+    <ComboBoxItem Content="Original" Tag="original"/>
+    <ComboBoxItem Content="Changed in place" Tag="changed"/>
+    <ComboBoxItem Content="None" Tag="none"/>
 </ComboBox>

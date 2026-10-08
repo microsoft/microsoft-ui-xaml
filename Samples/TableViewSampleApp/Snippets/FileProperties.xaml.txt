@@ -1,41 +1,36 @@
-<Page
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:io="using:System.IO"
-    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+<!-- FilePropertiesPage.xaml: the two panes. The Files list is named for screen readers and wide
+     enough for the binaries' names; the table takes the rest of the width. -->
+<TextBlock Text="Files" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
+<ListView x:Name="FileList"
+          AutomationProperties.AutomationId="FilePropertiesFileList"
+          AutomationProperties.Name="Files"
+          SelectionMode="Single"
+          SelectionChanged="OnFileSelectionChanged"/>
 
-  <!-- Star-sized, not pinned to fixed pixels, so the panels reflow with the window. The Files
-       list only ever shows file names so it is capped; the Details panel takes the rest. -->
-  <Grid ColumnSpacing="12">
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*"  MinWidth="180" MaxWidth="280"/>
-      <ColumnDefinition Width="3*" MinWidth="420"/>
-    </Grid.ColumnDefinitions>
+<tv:TableView x:Name="PropTable"
+              AutomationProperties.AutomationId="FilePropertiesTable"
+              AutomationProperties.Name="File properties"
+              ItemsSource="{x:Bind Source}"
+              SelectionMode="Single"
+              IsReadOnly="True"
+              SelectionChanged="OnPropSelectionChanged"
+              VerticalAlignment="Stretch" MinHeight="320">
+    <!-- Property is fixed; Value takes the rest. Not Auto: an Auto column is measured from the
+         realized rows only, so it changes width while you scroll. -->
+    <tv:TableViewTextColumn Header="Property" Width="{StaticResource ColWidthPropertyName}" Binding="{Binding Property}"/>
+    <tv:TableViewTextColumn Header="Value" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Value}"/>
+</tv:TableView>
 
-    <!-- x:DataType + x:Bind, so a model-shape change fails at COMPILE time rather than
-         silently rendering blank at runtime. -->
-    <ListView x:Name="FileList" SelectionChanged="OnFileSelectionChanged">
-      <ListView.ItemTemplate>
-        <DataTemplate x:DataType="io:FileInfo">
-          <Grid AutomationProperties.Name="{x:Bind Name}"
-                ToolTipService.ToolTip="{x:Bind Name}">
-            <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis"/>
-          </Grid>
-        </DataTemplate>
-      </ListView.ItemTemplate>
-    </ListView>
-
-    <tv:TableView x:Name="PropTable" Grid.Column="1" SelectionMode="Single">
-      <!-- Property is fixed, sized to its longest label ("Revision number").
-           Value is star-sized with a MinWidth so it absorbs the remaining space.
-           Deliberately NOT Auto: TableView_Layout.cpp:25-29 and :267-269 resolve Auto from
-           REALIZED rows only and allow shrinking, so an Auto column re-derives its width
-           every measure pass and oscillates while scrolling. -->
-      <tv:TableViewTextColumn Header="Property" Width="170" MinWidth="150"
-                               Binding="{Binding Property}"/>
-      <tv:TableViewTextColumn Header="Value"    Width="*"   MinWidth="320"
-                               Binding="{Binding Value}"/>
-    </tv:TableView>
-  </Grid>
-
-</Page>
+<!-- This page starts Grouped (SelectedIndex="1"): sections are its natural shape. -->
+<ComboBox x:Name="ShapingModeSelector" Header="Shaping mode" SelectedIndex="1"
+          SelectionChanged="OnShapingModeChanged">
+    <ComboBoxItem Content="Flat" Tag="flat"/>
+    <ComboBoxItem Content="Grouped" Tag="grouped"/>
+    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"/>
+    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"/>
+</ComboBox>
+<ComboBox x:Name="GroupKeySelector" Header="Group key" SelectedIndex="0" IsEnabled="False"
+          SelectionChanged="OnGroupKeyChanged">
+    <ComboBoxItem Content="Section" Tag="Section"/>
+    <ComboBoxItem Content="Source" Tag="Source"/>
+</ComboBox>

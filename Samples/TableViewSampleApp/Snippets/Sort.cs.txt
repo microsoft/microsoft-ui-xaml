@@ -1,121 +1,97 @@
-// The control owns sort state and reshapes the bound rows. Sorted fires after
-// the column's SortDirection and header chevron have been updated.
+// SortPage.xaml.cs. The source is created once; the table owns the sort state.
+public ObservableCollection<LeagueTeam> Teams { get; } = LeagueData.All();
+
+public TableViewSource? Source => _source;
+
+public SortPage()
+{
+    _source = TableViewSource.From(Teams);
+    InitializeComponent();
+    Loaded += OnPageLoaded;
+    Unloaded += OnPageUnloaded;
+}
+
+// Programmatic sort: one column at a time; a new sort replaces the previous one.
+private void OnSortNextMatchClick(object sender, RoutedEventArgs e) => SortBy(NextMatchColumn, TableViewSortDirection.Ascending);
+
+private void SortBy(TableViewColumn column, TableViewSortDirection direction)
+{
+    TeamsTable.SortByColumn(column, direction);
+}
+
+private void OnTogglePointsClick(object sender, RoutedEventArgs e)
+{
+    TeamsTable.ToggleSortDirection(PointsColumn);
+}
+
+private void OnClearSortClick(object sender, RoutedEventArgs e)
+{
+    TeamsTable.ClearSort();
+}
+
+// Sorted fires after the sort state is applied and the header arrow is published: header
+// clicks and the API calls above alike. Column is null when the sort was cleared.
 private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
 {
-    var trigger = args.Column;
-    var active = TeamsTable.Columns
-        .FirstOrDefault(c => c.SortDirection != SortDirection.None);
-
-    ActiveSortText.Text = active is null
-        ? "(none)"
-        : $"{active.Header} {active.SortDirection}";
-
-    TriggerColumnText.Text = trigger is null
-        ? "(cleared)"
-        : trigger.Header?.ToString();
+    _sortedFiredCount++;
+    _lastSortedColumn = args.Column is null ? "cleared" : ColumnLabel(args.Column);
 }
 
-// Programmatic single-column sort APIs:
-TeamsTable.SortByColumn(PointsColumn, SortDirection.Descending);
-TeamsTable.ToggleSortDirection(PointsColumn);
-TeamsTable.ClearSort();
-
-// ----- Sorting COMBINED with grouping -----
-//
-// The source is reshaped IN PLACE: GroupBy / ClearGroupBy mutate and return the
-// same TableViewSource, so the active sort, selection, scroll offset and group
-// expansion all survive a shaping change. Rebuilding the source would drop them.
-private void ApplyGrouping()
+// A PropertyChanged on the sorted value does NOT re-position the row by itself, so apply the
+// active sort again whenever a value it depends on changes.
+private bool ResortIfSortedOn(params string[] propertyNames)
 {
-    var requestedKey = _shapingMode == "grouped" ? _groupKey : "none";
-
-    if (requestedKey == "none")
+    var column = ActiveSortColumn();
+    if (column is null || !propertyNames.Contains(SortPathOf(column)))
     {
-        _source.ClearGroupBy();
-        _appliedGroupKey = "none";
-    }
-    else
-    {
-        var key = requestedKey;
-        // The two delegates do NOT receive the same thing, despite both parameters
-        // being named `item` in the IDL:
-        //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
-        //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
-        // Passing an item-typed lambda as the identity selector yields an empty
-        // identity, which is an E_INVALIDARG fail-fast: GroupBy throws and the
-        // grouping silently never applies.
-        _source.GroupBy(
-            item => (object)GroupValue(item, key),
-            groupKey => groupKey?.ToString() ?? "(none)");
-
-        // Set ONLY after the call returns, so no readout can claim a grouping
-        // the source never took.
-        _appliedGroupKey = key;
+        return false;
     }
 
-    // case "hierarchy":
-    // case "groupedhierarchy":
-    //     Hierarchical (tree) rows are not available in this release, which is why
-    //     those two ComboBoxItems ship disabled with a tooltip. No hierarchy verb
-    //     exists on TableViewSource or TableView today, so this stub is prose
-    //     rather than a fabricated call. When hierarchy ships, apply it to this
-    //     same source here, alongside the GroupBy stage so the two compose.
-
-    var grouped = _appliedGroupKey != "none";
-    ExpandAllButton.IsEnabled = grouped;      // gated on the APPLIED key, never the requested one
-    CollapseAllButton.IsEnabled = grouped;
-    GroupBySelector.IsEnabled = grouped;
+    // SortByColumn ignores a request for the sort that is already applied, so clear the
+    // column's sort and apply it again: the rows are re-ordered by the new values.
+    var direction = column.SortDirection;
+    TeamsTable.SortByColumn(column, TableViewSortDirection.None);
+    TeamsTable.SortByColumn(column, direction);
+    return true;
 }
 
-// Never returns the empty string: an empty group identity is a fail-fast.
-private static string GroupValue(object item, string key)
+private TableViewColumn? ActiveSortColumn() =>
+    TeamsTable?.Columns.FirstOrDefault(c => c.SortDirection != TableViewSortDirection.None);
+
+// SortMemberPath when set; otherwise a text column sorts by its Binding path.
+private static string? SortPathOf(TableViewColumn column) =>
+    column.SortMemberPath is { Length: > 0 } path
+        ? path
+        : (column as TableViewTextColumn)?.Binding?.Path?.Path;
+
+private void OnPostponeClick(object sender, RoutedEventArgs e)
 {
-    if (item is not LeagueTeam team)
+    if (TeamsTable.SelectedItem is not LeagueTeam team)
     {
-        return "(none)";
+        SetLastAction("No row selected.");
+        return;
     }
 
-    var value = key switch
+    team.NextMatchDate = team.NextMatchDate.AddDays(7);
+    ResortIfSortedOn(nameof(LeagueTeam.NextMatchDate), nameof(LeagueTeam.NextMatchText));
+}
+
+// Models\LeagueTeam.cs: the value the date column sorts by, and the text the text column sorts by.
+public DateTimeOffset NextMatchDate
+{
+    get => _nextMatchDate;
+    set
     {
-        "Standing" => SortChipPalette.Band(team.Points),
-        _ => string.IsNullOrWhiteSpace(team.Group) ? "(none)" : $"Group {team.Group}",
-    };
-
-    return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
+        if (Set(ref _nextMatchDate, value))
+        {
+            Raise(nameof(NextMatchDateOrNull));
+            Raise(nameof(NextMatchText));
+        }
+    }
 }
 
-// Bulk expansion. Individual groups expand/collapse through the group header
-// itself (or its ExpandCollapse automation pattern); these are the programmatic
-// bulk counterparts and no-op when the source is not grouped.
-TeamsTable.ExpandAllGroups();
-TeamsTable.CollapseAllGroups();
+public string NextMatchText => _nextMatchDate.ToString("d MMM", CultureInfo.CurrentCulture);
 
-// ----- Templated cell brushes -----
-//
-// Cached once into static readonly fields and shared; Convert NEVER allocates.
-// HighContrast falls back to a transparent tint plus TextFillColorPrimaryBrush so
-// the user's guaranteed contrast pair survives.
-internal static class SortChipPalette
-{
-    private static readonly bool s_highContrast =
-        new Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
-
-    private static readonly SolidColorBrush s_transparent = new(Colors.Transparent);
-    private static readonly SolidColorBrush s_ink =
-        Application.Current.Resources["TextFillColorPrimaryBrush"] as SolidColorBrush
-        ?? new SolidColorBrush(Colors.Gray);
-
-    internal static Brush Tint(string band) => s_highContrast
-        ? s_transparent
-        : s_tints.TryGetValue(band, out var brush) ? brush : s_transparent;
-}
-
-// Converter classes must be `partial`, or the build emits CsWinRT1028.
-public sealed partial class SortStandingTintConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language)
-        => SortChipPalette.Tint(SortChipPalette.Band(value));
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-        => throw new NotSupportedException();
-}
+// Grouped shaping composes with the sort: rows reorder within each group.
+// The key selector receives the ROW; the identity selector receives the KEY.
+_source.GroupBy(item => KeyOf(item as LeagueTeam, key), SampleShaping.GroupIdentity);

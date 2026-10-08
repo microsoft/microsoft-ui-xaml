@@ -12,513 +12,585 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
+using Windows.System;
+using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
+using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
+using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Demonstrates grouped rows with the public TableViewSource.GroupBy overload,
-/// TableView.GroupHeaderTemplate, and ExpandAllGroups / CollapseAllGroups.
+/// Grouped rows: TableViewSource.GroupBy reshapes one source in place, TableView.GroupHeaderTemplate
+/// customises the header, and ExpandAllGroups / CollapseAllGroups drive every group. The page
+/// starts Grouped by Department. Edits and actions that change a group key re-apply GroupBy,
+/// because the key selector is a delegate the control cannot observe.
 /// </summary>
 public sealed partial class GroupsPage : Page
 {
-    private enum GroupExpansionState
-    {
-        AllExpanded,
-        AllCollapsed,
-        Flat,
-    }
+    private const string AllExpanded = "All expanded";
+    private const string AllCollapsed = "All collapsed";
 
-    private readonly ObservableCollection<Person> _people;
-    private readonly List<Person> _stashedPeople = new();
+    private TableViewSource? _source;          // created ONCE; reshaped in place, never rebuilt
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private string _appliedKey = "Department";
+    private bool _isBulkUpdate;
+    private string _expansion = AllExpanded;
 
-    // Reshaped IN PLACE: GroupBy / ClearGroupBy mutate and return the same TableViewSource
-    // (TableViewSource.cpp:49-50), so selection, scroll offset and group expansion survive.
-    private TableViewSource? _source;
-    private string _mode = "grouped";          // requested
-    private string _appliedMode = "grouped";   // applied - every readout and guard reads THIS
-    private string _keyName = "Department";
-    private int _addedPersonCount;
-    private bool _suppressAutoReshape;
-    private GroupExpansionState _expansionState = GroupExpansionState.AllExpanded;
+    // New hires for "Add a person": realistic PersonData rows that are not in the table yet.
+    private readonly Queue<Person> _newHires;
+
+    // Every removed row, so "Restore all rows" brings back exactly what the actions removed.
+    private readonly List<Person> _removed = new();
+
+    private readonly TappedEventHandler _tappedHandler;
+    private readonly KeyEventHandler _keyUpHandler;
 
     public GroupsPage()
     {
-        _people = new ObservableCollection<Person>(PersonData.Take(60));
+        var pool = PersonData.Take(80);
+        People = new ObservableCollection<Person>(pool.Take(60));
+        _newHires = new Queue<Person>(pool.Skip(60));
+        _source = TableViewSource.From(People);
+        _tappedHandler = OnTableTapped;
+        _keyUpHandler = OnTableKeyUp;
 
         InitializeComponent();
-        ApplyGroupHeaderTemplate();
-        ApplyShaping();
+        Loaded += OnPageLoaded;
+        Unloaded += OnPageUnloaded;
 
-        // The in-cell Department ComboBox / Active CheckBox edit the very value the table may be
-        // grouped on, so listen for the commit and re-run the shaping stage - otherwise the row
-        // keeps its old group until something else reshapes.
-        _people.CollectionChanged += OnPeopleCollectionChanged;
-        foreach (var person in _people)
+        // Grouping is this page's subject, so it starts Grouped (ShapingModeSelector
+        // SelectedIndex="1"). The SelectionChanged that fired during InitializeComponent was
+        // ignored by the init guard; apply the grouping now that every element exists.
+        ApplyGroupHeaderTemplate();
+        ApplyShaping(announce: false);
+    }
+
+    public ObservableCollection<Person> People { get; }
+
+    public TableViewSource? Source => _source;
+
+    private void OnPageLoaded(object sender, RoutedEventArgs e)
+    {
+        People.CollectionChanged += OnPeopleCollectionChanged;
+        foreach (var person in People)
         {
-            person.PropertyChanged += OnPersonPropertyChanged;
+            person.PropertyChanged += OnPersonChanged;
         }
+
+        // There is no table-level event for one group being toggled from its header, so listen
+        // for the input that toggles it (handledEventsToo: the header marks the input handled).
+        PeopleTable.AddHandler(UIElement.TappedEvent, _tappedHandler, true);
+        PeopleTable.AddHandler(UIElement.KeyUpEvent, _keyUpHandler, true);
+        RefreshReadouts();
+    }
+
+    private void OnPageUnloaded(object sender, RoutedEventArgs e)
+    {
+        People.CollectionChanged -= OnPeopleCollectionChanged;
+        foreach (var person in People)
+        {
+            person.PropertyChanged -= OnPersonChanged;
+        }
+
+        PeopleTable.RemoveHandler(UIElement.TappedEvent, _tappedHandler);
+        PeopleTable.RemoveHandler(UIElement.KeyUpEvent, _keyUpHandler);
     }
 
     private void OnPeopleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (e.OldItems is not null)
+        foreach (Person person in e.OldItems ?? Array.Empty<Person>())
         {
-            foreach (Person person in e.OldItems)
-            {
-                person.PropertyChanged -= OnPersonPropertyChanged;
-            }
+            person.PropertyChanged -= OnPersonChanged;
         }
 
-        if (e.NewItems is not null)
+        foreach (Person person in e.NewItems ?? Array.Empty<Person>())
         {
-            foreach (Person person in e.NewItems)
-            {
-                person.PropertyChanged += OnPersonPropertyChanged;
-            }
+            person.PropertyChanged += OnPersonChanged;
         }
     }
 
-    private void OnPersonPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    // ---- Group header template ----------------------------------------------------------
+
+    private void OnHeaderTemplateChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_suppressAutoReshape || _appliedMode != "grouped")
-        {
-            return;
-        }
-
-        var affectsGroupKey = e.PropertyName switch
-        {
-            nameof(Person.Department) => _keyName == "Department",
-            nameof(Person.Role) => _keyName == "Role",
-            nameof(Person.IsActive) => _keyName == "Active",
-            _ => false,
-        };
-
-        if (!affectsGroupKey)
-        {
-            return;
-        }
-
-        var person = sender as Person;
-        ApplyShaping();
-        if (person is not null)
-        {
-            SetLastAction(string.Format(
-                CultureInfo.InvariantCulture,
-                "Edited in cell - {0} {1} moved to {2}",
-                person.FirstName,
-                person.LastName,
-                GroupValue(person, _keyName)));
-        }
-    }
-
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (PeopleTableControl is null || ShapingModeSelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
-        {
-            return;
-        }
-
-        _mode = tag;
-        ApplyShaping();
-        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Shaping mode -> {0}", _appliedMode == "grouped" ? "Grouped" : "Flat"));
-    }
-
-    private void OnGroupByChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (PeopleTableControl is null)
-        {
-            return;
-        }
-
-        if (GroupBySelector?.SelectedItem is ComboBoxItem item && item.Tag is string tag)
-        {
-            _keyName = tag;
-            ApplyShaping();
-            SetLastAction(string.Format(CultureInfo.InvariantCulture, "Group key -> {0}", GroupLabel(tag)));
-        }
-    }
-
-    private void OnPeopleSelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateReadout();
-
-    private void OnGroupHeaderTemplateToggled(object sender, RoutedEventArgs e)
-    {
-        if (PeopleTableControl is null)
+        if (PeopleTable is null || HeaderTemplateSelector is null)
         {
             return;
         }
 
         ApplyGroupHeaderTemplate();
-        UpdateReadout();
-    }
-
-    private void ApplyShaping()
-    {
-        if (PeopleTableControl is null)
+        if (IsLoaded)
         {
-            return;
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Group header template -> {0}", SampleShaping.Label(HeaderTemplateSelector)));
         }
-
-        if (_source is null)
-        {
-            _source = TableViewSource.From(_people);
-            PeopleTableControl.ItemsSource = _source;
-        }
-
-        switch (_mode)
-        {
-            case "grouped":
-                var key = _keyName;
-                // TableViewKeySelector receives the ROW ITEM; TableViewIdentitySelector receives
-                // the GROUP KEY (TableViewSource.idl:12-16). An item-typed identity lambda returns
-                // an empty identity and fails fast with E_INVALIDARG, so grouping would silently
-                // never apply.
-                _source.GroupBy(
-                    item => (object)GroupValue(item, key),
-                    groupKey => groupKey?.ToString() ?? "(none)");
-                break;
-
-            // case "hierarchy":
-            // case "groupedhierarchy":
-            //     Hierarchical rows are not available in this release, and no hierarchy API exists
-            //     on TableViewSource or TableView yet, so there is deliberately no call written
-            //     here to copy. When the control ships hierarchy support, apply it to this same
-            //     source instance alongside the GroupBy stage above so the two compose, and drop
-            //     the IsEnabled="False" from the matching options in the XAML.
-            //     break;
-
-            default:
-                _source.ClearGroupBy();
-                break;
-        }
-
-        // Set ONLY after the shaping call returns.
-        _appliedMode = _mode;
-
-        if (_appliedMode == "grouped")
-        {
-            if (_expansionState == GroupExpansionState.Flat)
-            {
-                _expansionState = GroupExpansionState.AllExpanded;
-            }
-
-            ApplyExpansionState();
-        }
-        else
-        {
-            _expansionState = GroupExpansionState.Flat;
-        }
-
-        UpdateReadout();
     }
 
     private void ApplyGroupHeaderTemplate()
     {
-        // Null-guarded: Toggled fires from the declarative IsOn="True" DURING InitializeComponent,
-        // before the rest of the Options rail exists.
-        if (PeopleTableControl is null || UseCustomHeaderTemplateToggle is null)
-        {
-            return;
-        }
-
-        PeopleTableControl.GroupHeaderTemplate = UseCustomHeaderTemplateToggle.IsOn
+        PeopleTable.GroupHeaderTemplate = SampleShaping.SelectedTag(HeaderTemplateSelector, "custom") == "custom"
             ? (DataTemplate)Resources["CustomGroupHeaderTemplate"]
             : null;
     }
 
-    private void OnExpandAllGroupsClick(object sender, RoutedEventArgs e)
-    {
-        if (_appliedMode != "grouped")
-        {
-            UpdateReadout();
-            return;
-        }
+    // ---- One group toggled from its header ----------------------------------------------
 
-        PeopleTableControl.ExpandAllGroups();
-        _expansionState = GroupExpansionState.AllExpanded;
-        UpdateReadout();
-        SetLastAction("Expanded all groups");
+    private void OnTableTapped(object sender, TappedRoutedEventArgs e) => NoteHeaderToggle(e.OriginalSource as DependencyObject);
+
+    private void OnTableKeyUp(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key is VirtualKey.Enter or VirtualKey.Space)
+        {
+            NoteHeaderToggle(e.OriginalSource as DependencyObject);
+        }
     }
 
-    private void OnCollapseAllGroupsClick(object sender, RoutedEventArgs e)
+    private void NoteHeaderToggle(DependencyObject? source)
     {
-        if (_appliedMode != "grouped")
+        while (source is not null && source is not TableViewGroupHeader)
         {
-            UpdateReadout();
-            return;
+            source = VisualTreeHelper.GetParent(source);
         }
 
-        PeopleTableControl.CollapseAllGroups();
-        _expansionState = GroupExpansionState.AllCollapsed;
-        UpdateReadout();
-        SetLastAction("Collapsed all groups");
-    }
-
-    private void OnMoveSelectedGroupClick(object sender, RoutedEventArgs e)
-    {
-        if (PeopleTableControl?.SelectedItem is not Person selected)
+        if (source is not TableViewGroupHeader header)
         {
             return;
         }
 
-        var before = GroupValue(selected, _keyName);
-        _suppressAutoReshape = true;
-        switch (_keyName)
-        {
-            case "Role":
-                selected.Role = NextInRing(PersonData.All.Select(p => p.Role).Distinct(StringComparer.Ordinal).OrderBy(r => r, StringComparer.Ordinal).ToList(), selected.Role);
-                break;
-            case "Active":
-                selected.IsActive = !selected.IsActive;
-                break;
-            default:
-                selected.Department = NextInRing(PersonData.Departments, selected.Department);
-                break;
-        }
-
-        // Re-running the shaping stage re-reads every key, so the mutated row re-buckets.
-        _suppressAutoReshape = false;
-        ApplyShaping();
-        SetLastAction(string.Format(
-            CultureInfo.InvariantCulture,
-            "{0} {1}: {2} -> {3}",
-            selected.FirstName,
-            selected.LastName,
-            before,
-            GroupValue(selected, _keyName)));
-    }
-
-    private static string NextInRing(IReadOnlyList<string> ring, string current)
-    {
-        if (ring.Count == 0)
-        {
-            return current;
-        }
-
-        var index = -1;
-        for (var i = 0; i < ring.Count; i++)
-        {
-            if (string.Equals(ring[i], current, StringComparison.Ordinal))
-            {
-                index = i;
-                break;
-            }
-        }
-
-        return ring[(index + 1 + ring.Count) % ring.Count];
-    }
-
-    private void OnAddPersonClick(object sender, RoutedEventArgs e)
-    {
-        _addedPersonCount++;
-        var departments = PersonData.Departments;
-        var added = new Person
-        {
-            FirstName = "New",
-            LastName = string.Format(CultureInfo.InvariantCulture, "Hire {0}", _addedPersonCount),
-            Email = string.Format(CultureInfo.InvariantCulture, "new.hire{0}@contoso.com", _addedPersonCount),
-            Department = departments.Count > 0 ? departments[0] : "Engineering",
-            Role = "Associate",
-            JoinDate = DateTimeOffset.Now,
-            Salary = 65000,
-            IsActive = true,
-        };
-
-        _people.Insert(0, added);
-        ApplyShaping();
-        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Added a row to {0}", added.Department));
-    }
-
-    private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
-    {
-        if (PeopleTableControl?.SelectedItem is not Person selected)
-        {
-            return;
-        }
-
-        var group = GroupValue(selected, _keyName);
-        if (_people.Remove(selected))
-        {
-            ApplyShaping();
-            SetLastAction(string.Format(CultureInfo.InvariantCulture, "Removed {0} {1} from {2}", selected.FirstName, selected.LastName, group));
-        }
-    }
-
-    private void OnEmptyToggleClick(object sender, RoutedEventArgs e)
-    {
-        if (_stashedPeople.Count > 0)
-        {
-            foreach (var person in _stashedPeople)
-            {
-                _people.Add(person);
-            }
-
-            var restored = _stashedPeople.Count;
-            _stashedPeople.Clear();
-            ApplyShaping();
-            SetLastAction(string.Format(CultureInfo.InvariantCulture, "Restored {0} rows", restored));
-            return;
-        }
-
-        _stashedPeople.AddRange(_people);
-        _people.Clear();
-        ApplyShaping();
-        SetLastAction("Removed all rows - the grouped projection now has zero groups");
-    }
-
-    private void SetLastAction(string text)
-    {
-        if (LastActionTextBlock is not null)
-        {
-            LastActionTextBlock.Text = text;
-        }
-    }
-
-    private void OnShuffleClick(object sender, RoutedEventArgs e)
-    {
-        var random = new Random();
-        var departments = PersonData.Departments;
-        var touched = 0;
-        _suppressAutoReshape = true;
-        for (int i = 0; i < _people.Count; i += 4)
-        {
-            _people[i].Department = departments[random.Next(departments.Count)];
-            touched++;
-        }
-
-        _suppressAutoReshape = false;
-        ApplyShaping();
-        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Reassigned {0} rows across departments", touched));
-    }
-
-    private void ApplyExpansionState()
-    {
+        // Read the state once the header has applied the toggle.
         DispatcherQueue.TryEnqueue(() =>
         {
-            if (PeopleTableControl is null || _appliedMode != "grouped")
+            if (!IsLoaded || _appliedMode != "grouped")
             {
                 return;
             }
 
-            if (_expansionState == GroupExpansionState.AllCollapsed)
-            {
-                PeopleTableControl.CollapseAllGroups();
-            }
-            else
-            {
-                PeopleTableControl.ExpandAllGroups();
-            }
-
-            UpdateReadout();
+            _expansion = "Mixed";
+            var group = header.Content as TableViewGroupInfo;
+            SetLastAction(string.Format(
+                CultureInfo.CurrentCulture,
+                "{0} the {1} group from its header",
+                header.IsExpanded ? "Expanded" : "Collapsed",
+                group?.KeyText ?? SampleShaping.NoneKey));
         });
     }
 
-    private void UpdateReadout()
+    // ---- In-cell edits --------------------------------------------------------------------
+
+    private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (SourceModeTextBlock is null)
+        if (sender is not Person person || _isBulkUpdate)
         {
             return;
         }
 
-        var grouped = _appliedMode == "grouped";
-        var hasSelection = PeopleTableControl?.SelectedItem is Person;
-
-        SetActionState(ExpandAllButton, grouped, "Expand every group.");
-        SetActionState(CollapseAllButton, grouped, "Collapse every group.");
-        SetActionState(MoveGroupButton, hasSelection, "Rewrites the selected row's group key, then re-applies GroupBy so the row moves between groups.", "Select a row first.");
-        SetActionState(RemovePersonButton, hasSelection, "Removes the row; its group disappears when it was the last one.", "Select a row first.");
-
-        if (EmptyToggleButton is not null)
+        switch (e.PropertyName)
         {
-            EmptyToggleButton.Content = _stashedPeople.Count > 0
-                ? "Restore all rows"
-                : "Remove all rows (group an empty set)";
+            case nameof(Person.Department):
+            case nameof(Person.IsActive):
+                // GroupBy takes a delegate, not a property path, so the control cannot re-bucket
+                // the row on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+                ReapplyIfGroupedOn(e.PropertyName);
+                SetLastAction(string.Format(
+                    CultureInfo.CurrentCulture,
+                    "Edited in the cell: {0} is now in {1}",
+                    person.FullName,
+                    SampleShaping.KeyOf(person, e.PropertyName)));
+                break;
+            case nameof(Person.JoinDate):
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Join date -> {0:d} for {1}", person.JoinDate, person.FullName));
+                break;
+        }
+    }
+
+    // ---- Actions ----------------------------------------------------------------------------
+
+    // The key the actions act on: the applied one when grouped, the selected one when flat.
+    private string ActionKey => _appliedMode == "grouped" ? _appliedKey : SampleShaping.SelectedTag(GroupKeySelector, "Department");
+
+    private void OnMoveSelectedClick(object sender, RoutedEventArgs e)
+    {
+        if (PeopleTable.SelectedItem is not Person person)
+        {
+            SetLastAction("No row selected.");
+            return;
         }
 
-        if (UseCustomHeaderTemplateToggle is not null)
+        var key = ActionKey;
+        var from = SampleShaping.KeyOf(person, key);
+        _isBulkUpdate = true;
+        try
         {
-            HeaderTemplateTextBlock.Text = UseCustomHeaderTemplateToggle.IsOn ? "Custom GroupHeaderTemplate" : "Built-in group header template";
+            switch (key)
+            {
+                case nameof(Person.Office):
+                    person.Office = SampleShaping.Next(PersonData.Offices, person.Office);
+                    break;
+                case nameof(Person.Role):
+                    person.Role = SampleShaping.Next(PersonData.Roles, person.Role);
+                    break;
+                case nameof(Person.IsActive):
+                    person.IsActive = !person.IsActive;
+                    break;
+                default:
+                    person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
+                    break;
+            }
+        }
+        finally
+        {
+            _isBulkUpdate = false;
         }
 
-        if (grouped)
-        {
-            var groups = GetGroupCounts().ToList();
-            int groupCount = groups.Count;
-            int totalCount = groups.Sum(g => g.Count);
+        ReapplyIfGroupedOn(key);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
+    }
 
-            SourceModeTextBlock.Text = string.Format(CultureInfo.InvariantCulture, "Grouped by {0}", GroupLabel(_keyName));
-            ExpansionStateTextBlock.Text = _expansionState == GroupExpansionState.AllCollapsed
-                ? "All groups collapsed"
-                : "All groups expanded";
-            GroupCountTextBlock.Text = groupCount.ToString(CultureInfo.InvariantCulture);
-            TotalPeopleTextBlock.Text = totalCount.ToString(CultureInfo.InvariantCulture);
-            SourceShapeTextBlock.Text = string.Format(
-                CultureInfo.InvariantCulture,
-                "_source.GroupBy({0} key selector, group-key identity selector)",
-                GroupLabel(_keyName));
-            PerGroupCountsTextBlock.Text = groupCount == 0
-                ? "(no rows - empty grouped projection)"
-                : string.Join(", ", groups.Select(g => string.Format(CultureInfo.InvariantCulture, "{0}: {1}", g.Key, g.Count)));
+    private void OnMoveEveryFourthClick(object sender, RoutedEventArgs e)
+    {
+        var moved = 0;
+        _isBulkUpdate = true;
+        try
+        {
+            for (var i = 0; i < People.Count; i += 4)
+            {
+                People[i].Department = SampleShaping.Next(PersonData.Departments, People[i].Department);
+                moved++;
+            }
+        }
+        finally
+        {
+            _isBulkUpdate = false;
+        }
+
+        ReapplyIfGroupedOn(nameof(Person.Department));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0:N0} rows (every 4th) to the next department", moved));
+    }
+
+    private void OnAddPersonClick(object sender, RoutedEventArgs e)
+    {
+        if (!_newHires.TryDequeue(out var person))
+        {
+            SetLastAction("No more new hires to add.");
+            return;
+        }
+
+        // Give the new hire the first group's key, so the row joins a live group.
+        var key = ActionKey;
+        var firstKey = InViewOrder().Select(p => SampleShaping.KeyOf(p, key) as string).FirstOrDefault();
+        if (firstKey is not null)
+        {
+            switch (key)
+            {
+                case nameof(Person.Office):
+                    person.Office = firstKey;
+                    break;
+                case nameof(Person.Role):
+                    person.Role = firstKey;
+                    break;
+                case nameof(Person.IsActive):
+                    person.IsActive = firstKey == "Active";
+                    break;
+                default:
+                    person.Department = firstKey;
+                    break;
+            }
+        }
+
+        People.Add(person);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} to {1}", person.FullName, SampleShaping.KeyOf(person, key)));
+    }
+
+    private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
+    {
+        if (PeopleTable.SelectedItem is not Person person)
+        {
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        var key = ActionKey;
+        var group = SampleShaping.KeyOf(person, key);
+        var wasLast = People.Count(p => Equals(SampleShaping.KeyOf(p, key), group)) == 1;
+        People.Remove(person);
+        _removed.Add(person);
+        SetLastAction(string.Format(
+            CultureInfo.CurrentCulture,
+            wasLast ? "Removed {0}, the last person in {1}: that group is gone" : "Removed {0} from {1}",
+            person.FullName,
+            group));
+    }
+
+    private void OnRemoveSmallestGroupClick(object sender, RoutedEventArgs e)
+    {
+        var key = ActionKey;
+        var smallest = InViewOrder()
+            .GroupBy(p => SampleShaping.KeyOf(p, key))
+            .OrderBy(g => g.Count())
+            .FirstOrDefault();
+        if (smallest is null)
+        {
+            SetLastAction("There are no groups to remove.");
+            return;
+        }
+
+        var members = smallest.ToList();
+        foreach (var person in members)
+        {
+            People.Remove(person);
+        }
+
+        _removed.AddRange(members);
+        SetLastAction(string.Format(
+            CultureInfo.CurrentCulture,
+            members.Count == 1 ? "Removed the {0} group ({1:N0} person): its header is gone" : "Removed the {0} group ({1:N0} people): its header is gone",
+            smallest.Key,
+            members.Count));
+    }
+
+    private void OnEmptyToggleClick(object sender, RoutedEventArgs e)
+    {
+        if (People.Count > 0)
+        {
+            _removed.AddRange(People);
+            People.Clear();
+            SetLastAction("Removed all rows: the grouped projection has no groups and the EmptyTemplate shows");
+            return;
+        }
+
+        foreach (var person in _removed)
+        {
+            People.Add(person);
+        }
+
+        var restored = _removed.Count;
+        _removed.Clear();
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Restored {0:N0} rows; the grouping applies to them again", restored));
+    }
+
+    // ---- Readouts ---------------------------------------------------------------------------
+
+    private void RefreshReadouts()
+    {
+        if (PeopleTable is null || GroupsText is null || ExpansionText is null || RowsText is null || EmptyToggleButton is null)
+        {
+            return;
+        }
+
+        RowsText.Text = SampleShaping.RowCountText(People.Count);
+        EmptyToggleButton.Content = People.Count > 0 ? "Remove all rows" : "Restore all rows";
+
+        if (_appliedMode != "grouped")
+        {
+            GroupsText.Text = "(grouping off)";
+            ExpansionText.Text = "(grouping off)";
+            return;
+        }
+
+        var key = _appliedKey;
+        var groups = InViewOrder()
+            .GroupBy(p => SampleShaping.KeyOf(p, key))
+            .Select(g => string.Format(CultureInfo.CurrentCulture, "{0} {1:N0}", g.Key, g.Count()))
+            .ToList();
+        GroupsText.Text = groups.Count == 0
+            ? "0 (empty source)"
+            : string.Format(CultureInfo.CurrentCulture, "{0:N0}: {1}", groups.Count, string.Join(", ", groups));
+        ExpansionText.Text = _expansion;
+    }
+
+    /// <summary>
+    /// The rows in the order the table shows them. TableViewSource does not expose its
+    /// projection, so this applies the same rules the control does: a stable sort on the active
+    /// column's key, then groups in the order their first row appears.
+    /// </summary>
+    private IEnumerable<Person> InViewOrder()
+    {
+        IEnumerable<Person> rows = People;
+        var column = PeopleTable?.Columns.FirstOrDefault(c => c.SortDirection != TableViewSortDirection.None);
+        if (column is not null && SortPathOf(column) is { } path)
+        {
+            rows = column.SortDirection == TableViewSortDirection.Descending
+                ? rows.OrderByDescending(p => SortKey(p, path), SortKeyComparer.Instance)
+                : rows.OrderBy(p => SortKey(p, path), SortKeyComparer.Instance);
+        }
+
+        if (_appliedMode == "grouped")
+        {
+            var key = _appliedKey;
+            rows = rows.GroupBy(p => SampleShaping.KeyOf(p, key)).SelectMany(g => g);
+        }
+
+        return rows;
+    }
+
+    // SortMemberPath when set; otherwise a text column sorts by its Binding path.
+    private static string? SortPathOf(TableViewColumn column) =>
+        column.SortMemberPath is { Length: > 0 } path
+            ? path
+            : (column as TableViewTextColumn)?.Binding?.Path?.Path;
+
+    private static IComparable? SortKey(Person person, string path) => path switch
+    {
+        nameof(Person.FullName) => person.FullName,
+        nameof(Person.Department) => person.Department,
+        nameof(Person.IsActive) => person.IsActive,
+        nameof(Person.JoinDate) => person.JoinDate,
+        nameof(Person.Salary) => person.Salary,
+        _ => null,
+    };
+
+    private sealed class SortKeyComparer : IComparer<IComparable?>
+    {
+        public static readonly SortKeyComparer Instance = new();
+
+        public int Compare(IComparable? x, IComparable? y) => (x, y) switch
+        {
+            (string a, string b) => string.Compare(a, b, StringComparison.CurrentCulture),
+            (null, null) => 0,
+            (null, _) => -1,
+            (_, null) => 1,
+            _ => x!.CompareTo(y),
+        };
+    }
+
+    // Called by ApplyShaping after every reshape. Re-applying GroupBy rebuilds the groups, so
+    // restore the bulk expansion state the readout reports; a mixed state resets to expanded.
+    private void OnShapingApplied()
+    {
+        if (_appliedMode != "grouped")
+        {
+            return;
+        }
+
+        var collapse = _expansion == AllCollapsed;
+        _expansion = collapse ? AllCollapsed : AllExpanded;
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (!IsLoaded || _appliedMode != "grouped")
+            {
+                return;
+            }
+
+            if (collapse)
+            {
+                PeopleTable.CollapseAllGroups();
+            }
+            else
+            {
+                PeopleTable.ExpandAllGroups();
+            }
+        });
+    }
+
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
+    {
+        // Fires during InitializeComponent (each selector's SelectedIndex), before the
+        // later-declared elements exist. Guard EVERY element this path touches.
+        if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+        var selected = PeopleTable.SelectedItem;
+
+        switch (mode)
+        {
+            case "grouped":
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
+            //     after the call returns.
+            default:
+                _source.ClearGroupBy();
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+        _appliedKey = key;
+
+        // Re-applying GroupBy can drop the selection when the selected row changed group.
+        SampleShaping.Reselect(PeopleTable, selected, People.Count + 64, RefreshReadouts);
+        UpdateShapingGating();
+        OnShapingApplied();
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+                : "Shaping -> Flat");
         }
         else
         {
-            SourceModeTextBlock.Text = "Flat TableViewSource";
-            ExpansionStateTextBlock.Text = "Grouping off";
-            GroupCountTextBlock.Text = "(n/a)";
-            TotalPeopleTextBlock.Text = _people.Count.ToString(CultureInfo.InvariantCulture);
-            SourceShapeTextBlock.Text = "_source.ClearGroupBy()";
-            PerGroupCountsTextBlock.Text = "(grouping off)";
+            RefreshReadouts();
         }
     }
 
-    private static void SetActionState(Button? button, bool enabled, string enabledTip, string disabledTip = "Available once Grouped mode is selected.")
+    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
+    private void ReapplyIfGroupedOn(string? propertyName)
     {
-        if (button is null)
+        if (_appliedMode == "grouped" && propertyName == _appliedKey)
         {
-            return;
+            ApplyShaping(announce: false);
+        }
+    }
+
+    private void UpdateShapingGating()
+    {
+        var grouped = _appliedMode == "grouped";
+        GroupKeySelector.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
+    }
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        PeopleTable.ExpandAllGroups();
+        _expansion = AllExpanded;
+        SetLastAction("Expanded all groups");
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        PeopleTable.CollapseAllGroups();
+        _expansion = AllCollapsed;
+        SetLastAction("Collapsed all groups");
+    }
+
+    // The only writer of LastActionText.
+    private void SetLastAction(string message)
+    {
+        if (LastActionText is not null)
+        {
+            LastActionText.Text = message;
         }
 
-        button.IsEnabled = enabled;
-        ToolTipService.SetToolTip(button, enabled ? enabledTip : disabledTip);
+        RefreshReadouts();
     }
 
-    private IEnumerable<(string Key, int Count)> GetGroupCounts()
-    {
-        var keyName = _keyName;
-
-        return _people
-            .GroupBy(person => GroupValue(person, keyName), StringComparer.Ordinal)
-            .OrderBy(g => g.Key, StringComparer.Ordinal)
-            .Select(g => (g.Key, g.Count()));
-    }
-
-    // Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
-    private static string GroupValue(object item, string keyName)
-    {
-        if (item is not Person person)
-        {
-            return "(none)";
-        }
-
-        var value = keyName switch
-        {
-            "Role" => person.Role,
-            "Active" => person.IsActive ? "Active" : "Inactive",
-            _ => person.Department,
-        };
-
-        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-    }
-
-    private static string GroupLabel(string keyName) => keyName switch
-    {
-        "Role" => "role",
-        "Active" => "active status",
-        _ => "department",
-    };
+    #endregion
 }
 
+/// <summary>Expansion chip text for the custom group header.</summary>
 public sealed partial class GroupExpansionTextConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
@@ -526,15 +598,6 @@ public sealed partial class GroupExpansionTextConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
         => throw new NotImplementedException();
-}
-
-/// <summary>
-/// The department vocabulary for the in-cell Department ComboBox. Exposed as a page resource
-/// because WinUI has no x:Array, and a cell template cannot reach a page property by ElementName.
-/// </summary>
-public sealed class DepartmentChoices : List<string>
-{
-    public DepartmentChoices() => AddRange(PersonData.Departments);
 }
 
 /// <summary>
@@ -548,21 +611,6 @@ public sealed partial class GroupCountTextConverter : IValueConverter
         var count = value is int number ? number : 0;
         return string.Format(CultureInfo.CurrentCulture, count == 1 ? "{0} item" : "{0} items", count);
     }
-
-    public object ConvertBack(object value, Type targetType, object parameter, string language)
-        => throw new NotImplementedException();
-}
-
-/// <summary>
-/// Formats a numeric salary as whole currency units so the column reads as money rather than a
-/// bare integer.
-/// </summary>
-public sealed partial class CurrencyTextConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, string language)
-        => value is double amount
-            ? amount.ToString("C0", CultureInfo.CurrentCulture)
-            : value?.ToString() ?? string.Empty;
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
         => throw new NotImplementedException();

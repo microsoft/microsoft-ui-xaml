@@ -1,5 +1,20 @@
-<tv:TableView x:Name="PlaygroundTable" FlowDirection="RightToLeft" SelectionMode="Single">
-    <tv:TableViewTextColumn Header="Index"      Binding="{Binding Index}"      CanSort="False"/>
-    <tv:TableViewTextColumn Header="Name"       Binding="{Binding Name}"       CanSort="False"/>
-    <tv:TableViewTextColumn Header="Department" Binding="{Binding Department}" CanResize="True" CanSort="False"/>
+<!-- FlowDirection on the TableView mirrors columns, resize grippers, sort glyphs, group
+     headers and the template cells. The name columns are editable text (F2), so caret order
+     and Arabic / Hebrew text can be checked. -->
+<tv:TableView x:Name="PeopleTable"
+              ItemsSource="{x:Bind Source}"
+              FlowDirection="RightToLeft"
+              SelectionMode="Single"
+              IsReadOnly="False">
+    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn x:Name="FirstNameColumn" Header="First name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FirstName}" CellToolTipBinding="{Binding Bio}"/>
+    <tv:TableViewTextColumn x:Name="LastNameColumn" Header="Last name" Width="{StaticResource ColWidthStatus}" Binding="{Binding LastName}"/>
+    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn x:Name="JoinDateColumn" Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
 </tv:TableView>
+
+<ToggleSwitch x:Name="RtlToggle" Header="FlowDirection" IsOn="True"
+              OnContent="RightToLeft" OffContent="LeftToRight" Toggled="OnRtlToggled"/>
+
+<TextBox x:Name="FilterBox" Header="Filter" TextChanged="OnFilterChanged"/>

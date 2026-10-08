@@ -9,8 +9,8 @@
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <Page.Resources>
-        <!-- App.xaml owns these ThemeResource keys so Light, Dark, and HighContrast
-             can resolve different brushes without code-behind resource lookup. -->
+        <!-- App.xaml owns these ThemeResource keys, so Light, Dark and a Contrast theme each
+             resolve their own row brushes without code-behind. -->
         <Style x:Key="CustomBandingTableViewStyle" TargetType="tv:TableView">
             <Setter Property="RowBackground" Value="{ThemeResource SampleCustomRowBackgroundBrush}"/>
             <Setter Property="AlternatingRowBackground" Value="{ThemeResource SampleCustomAlternatingRowBackgroundBrush}"/>
@@ -19,7 +19,7 @@
 
     <controls:SamplePresenter
         Header="Grid lines visibility"
-        Description="GridLinesVisibility property — None / Horizontal / Vertical / All — controls per-row bottom borders and per-cell right borders for WPF DataGrid parity. The same property works across flat and grouped modes, with default theme banding or custom row colors."
+        Description="TableView.GridLinesVisibility draws a bottom border under each row (Horizontal), a right border on each cell (Vertical), both (All, the default) or neither (None). The lines run through every kind of cell on this page: a photo, text, a chip, a checkbox, a date picker and a number. Row banding swaps RowBackground and AlternatingRowBackground through a Style, so you can check the lines against tinted rows, and Grouped shaping adds group header bands for them to meet."
         SourceCaption="GridLinesVisibilityPage.xaml (excerpt)"
         SourceSnippet="GridLinesVisibility.xaml.txt"
         AdditionalSnippetCaption="GridLinesVisibilityPage.xaml.cs (excerpt)"
@@ -32,32 +32,33 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+                <!-- scaffold:tryit -->
                 <muxc:InfoBar
                     Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Try it"
-                    Message="Choose which grid lines show — All, Horizontal, Vertical, or None. Switch shaping to Grouped to run the same lines through real group header bands, or switch banding to see the lines stay on-theme."
-                    MinHeight="104"/>
-                <Border
-                    Grid.Row="1"
-                    Style="{StaticResource TableHostBorderStyle}"
-                    Padding="0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Stretch">
+                    MinHeight="104"
+                    Message="Choose Horizontal, Vertical or None under Grid lines and watch the borders around the chip, checkbox and date picker cells. Switch Row banding to Custom colors, then set Shaping to Grouped and check where the lines meet the group header bands."/>
+                <!-- /scaffold -->
+                <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
-                        x:Name="DemoTable"
-                        AutomationProperties.AutomationId="GridLinesDemoTable"
-                        AutomationProperties.Name="People grid line visibility"
+                        x:Name="PeopleTable"
+                        AutomationProperties.AutomationId="GridLinesVisibilityTable"
+                        AutomationProperties.Name="People with grid lines"
+                        ItemsSource="{x:Bind Source}"
+                        GridLinesVisibility="All"
                         SelectionMode="Single"
+                        IsReadOnly="True"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <tv:TableViewTextColumn Header="First"      Width="{StaticResource ColWidthShortName}"  Binding="{Binding FirstName}"     CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Last"       Width="{StaticResource ColWidthShortName}"  Binding="{Binding LastName}"      CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"    CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Role"       Width="{StaticResource ColWidthLongName}"   Binding="{Binding Role}"          CanSort="False"/>
-                        <tv:TableViewTextColumn Header="Email"      Width="*" MinWidth="200"      Binding="{Binding Email}"         CanSort="False"/>
+                        <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                        <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                        <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                        <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+                        <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+                        <tv:TableViewTextColumn Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
                     </tv:TableView>
                 </Border>
             </Grid>
@@ -65,84 +66,201 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <StackPanel Spacing="4" AutomationProperties.Name="Grid lines visibility options">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Grid lines" Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <muxc:RadioButtons
-                        x:Name="GridLinesVisibilityRadioButtons"
-                        AutomationProperties.Name="Grid lines"
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Grid lines">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Grid lines"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Sets TableView.GridLinesVisibility. Horizontal separates rows, Vertical separates columns, All draws both and None draws neither."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="GridLinesSelector"
+                        AutomationProperties.AutomationId="GridLinesVisibilityGridLinesSelector"
+                        Header="Grid lines"
                         SelectedIndex="3"
-                        SelectionChanged="OnGridLinesVisibilitySelectionChanged">
-                        <RadioButton Content="None"          Tag="None"        AutomationProperties.AutomationId="GridLinesRadioNone"/>
-                        <RadioButton Content="Horizontal"    Tag="Horizontal"  AutomationProperties.AutomationId="GridLinesRadioHorizontal"/>
-                        <RadioButton Content="Vertical"      Tag="Vertical"    AutomationProperties.AutomationId="GridLinesRadioVertical"/>
-                        <RadioButton Content="All (default)" Tag="All"         AutomationProperties.AutomationId="GridLinesRadioAll"/>
-                    </muxc:RadioButtons>
+                        SelectionChanged="OnGridLinesChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="None" Tag="None"/>
+                        <ComboBoxItem Content="Horizontal" Tag="Horizontal"/>
+                        <ComboBoxItem Content="Vertical" Tag="Vertical"/>
+                        <ComboBoxItem Content="All (default)" Tag="All"/>
+                    </ComboBox>
                 </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"
-                           Text="Flat leaves the source unshaped. Grouped calls TableViewSource.GroupBy on the same source instance, so selection, scroll offset and group expansion survive the reshape — and the grid lines have real group header bands to run through."/>
-                <ComboBox x:Name="ShapingModeSelector"
-                          AutomationProperties.AutomationId="ShapingModeSelector"
-                          Header="Shaping mode"
-                          SelectedIndex="0"
-                          SelectionChanged="OnShapingModeChanged"
-                          HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Flat" Tag="flat"/>
-                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                    <!-- Hierarchical rows are not available in this release. Shown disabled so the
-                         shape of the feature is visible; re-enable when the control ships support
-                         (TableViewSource exposes only Filter / GroupBy / Sort today). -->
-                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                </ComboBox>
-                <ComboBox x:Name="GroupKeyCombo" Header="Group by" IsEnabled="False" SelectedIndex="0"
-                          SelectionChanged="OnGroupKeyChanged"
-                          AutomationProperties.AutomationId="GroupKeyCombo"
-                          AutomationProperties.Name="Group key"
-                          ToolTipService.ToolTip="Available once Grouped mode is selected."
-                          HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Department" Tag="Department"/>
-                    <ComboBoxItem Content="Role" Tag="Role"/>
-                    <ComboBoxItem Content="Active status" Tag="Active"/>
-                </ComboBox>
-
-                <StackPanel Spacing="4" AutomationProperties.Name="Row banding options">
-                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Row banding" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                    <muxc:RadioButtons
-                        x:Name="BandingRadioButtons"
-                        AutomationProperties.Name="Row banding"
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Row banding">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Row banding"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Custom colors applies a Style that sets RowBackground and AlternatingRowBackground. The grid lines keep their theme brush on top of either banding."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="RowBandingSelector"
+                        AutomationProperties.AutomationId="GridLinesVisibilityRowBandingSelector"
+                        Header="Row banding"
                         SelectedIndex="0"
-                        SelectionChanged="OnBandingSelectionChanged">
-                        <RadioButton Content="Default theme"
-                                     x:Name="DefaultBandingRadio"
-                                     AutomationProperties.AutomationId="GridLinesBandingDefaultRadio"/>
-                        <RadioButton Content="Custom colors"
-                                     x:Name="CustomBandingRadio"
-                                     AutomationProperties.AutomationId="GridLinesBandingCustomRadio"/>
-                    </muxc:RadioButtons>
+                        SelectionChanged="OnRowBandingChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Default theme" Tag="default"/>
+                        <ComboBoxItem Content="Custom colors" Tag="custom"/>
+                    </ComboBox>
                 </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <StackPanel Spacing="8">
-                    <Button x:Name="ExpandAllButton" Content="Expand all groups" Click="OnExpandAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." AutomationProperties.AutomationId="ExpandAllButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="CollapseAllButton" Content="Collapse all groups" Click="OnCollapseAllClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." AutomationProperties.AutomationId="CollapseAllButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="ReassignRowButton" Content="Move first row to another group" Click="OnReassignRowClick" IsEnabled="False" ToolTipService.ToolTip="Available once Grouped mode is selected." AutomationProperties.AutomationId="ReassignRowButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="RemoveRowButton" Content="Remove first row" Click="OnRemoveRowClick" AutomationProperties.AutomationId="RemoveRowButton" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Grouping adds group header bands, so you can see how row and cell borders meet them. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="GridLinesVisibilityShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="GridLinesVisibilityGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Department" Tag="Department"/>
+                        <ComboBoxItem Content="Office" Tag="Office"/>
+                        <ComboBoxItem Content="Active" Tag="IsActive"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="GridLinesVisibilityExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="GridLinesVisibilityCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
+
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Adding, removing and moving rows makes the table redraw its separators; selecting a row shows the selection visual against the lines. Watch the table and the Last action readout. Actions that change one row need a selected row."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="SelectThirdButton"
+                            AutomationProperties.AutomationId="GridLinesVisibilitySelectThirdButton"
+                            Content="Select the third person"
+                            Click="OnSelectThirdClick"
+                            ToolTipService.ToolTip="Selects the third person in the list, wherever grouping or sorting has placed them."
+                            AutomationProperties.HelpText="Selects the third person in the list, wherever grouping or sorting has placed them."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="MoveToNextGroupButton"
+                            AutomationProperties.AutomationId="GridLinesVisibilityMoveToNextGroupButton"
+                            Content="Move selected person to the next group"
+                            Click="OnMoveToNextGroupClick"
+                            ToolTipService.ToolTip="Changes the selected person's group key value (next department, next office, or Active toggled). Grouped, the row moves to that group."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="AddPersonButton"
+                            AutomationProperties.AutomationId="GridLinesVisibilityAddPersonButton"
+                            Content="Add a person"
+                            Click="OnAddPersonClick"
+                            ToolTipService.ToolTip="Appends the next person from the sample data; a new row and its separators appear."
+                            AutomationProperties.HelpText="Appends the next person from the sample data; a new row and its separators appear."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RemovePersonButton"
+                            AutomationProperties.AutomationId="GridLinesVisibilityRemovePersonButton"
+                            Content="Remove selected person"
+                            Click="OnRemovePersonClick"
+                            ToolTipService.ToolTip="Removes the selected row; the separators close up around the gap."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RestoreRowsButton"
+                            AutomationProperties.AutomationId="GridLinesVisibilityRestoreRowsButton"
+                            Content="Restore rows"
+                            Click="OnRestoreRowsClick"
+                            ToolTipService.ToolTip="Puts back the original 40 people, undoing adds, removes and moves."
+                            AutomationProperties.HelpText="Puts back the original 40 people, undoing adds, removes and moves."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
                 </StackPanel>
 
-                <muxc:InfoBar AutomationProperties.LiveSetting="Polite"
-                    AutomationProperties.AutomationId="GridLinesStatusInfoBar"
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Grid lines" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="GridLinesText" AutomationProperties.AutomationId="GridLinesVisibilityGridLinesText"
+                                   AutomationProperties.LiveSetting="Polite" Text="All" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Row banding" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowBandingText" AutomationProperties.AutomationId="GridLinesVisibilityRowBandingText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Default theme" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="GridLinesVisibilityRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="GridLinesVisibilityShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="GridLinesVisibilityLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
+
+                <muxc:InfoBar
+                    Title="What to look for"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Status"
-                    Message="{x:Bind StatusText, Mode=OneWay}"
-                    MinHeight="64"/>
+                    Message="Vertical lines run the full height of template cells too, so the chip, checkbox and date picker sit inside their cell borders, not on top of them. Under a Contrast theme the custom banding falls back to the theme's row brushes and the chips lose their tint, yet the lines stay visible."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
-
     </controls:SamplePresenter>
 </Page>

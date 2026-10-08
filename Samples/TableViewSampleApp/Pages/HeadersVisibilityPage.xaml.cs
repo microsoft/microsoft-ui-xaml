@@ -7,451 +7,320 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Media;
+using TableViewSampleApp.Converters;
+using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
+using TableViewSampleApp.Models;
+using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Demonstrates TableView.HeadersVisibility for the column-header strip, and
-/// how that gate interacts with the separate group-header surface: hiding the
-/// column headers never hides the group header bands.
-///
-/// The rows are a synthetic support-ticket queue rather than placeholder text,
-/// so grouping by queue or priority produces buckets a reader recognises, and
-/// two columns carry real cell editors (a ComboBox for the constrained priority
-/// vocabulary and a CheckBox for the resolved flag).
+/// Headers visibility: TableView.HeadersVisibility (Column / None) on a support-ticket queue,
+/// how the hidden header strip interacts with group headers, and sorting from code
+/// (TableView.SortByColumn) while there is no header to click.
 /// </summary>
-public sealed partial class HeadersVisibilityPage : Page, INotifyPropertyChanged
+public sealed partial class HeadersVisibilityPage : Page
 {
-    private static readonly (string Queue, string Summary, string Assignee, string Priority, int DueInDays, bool Resolved)[] s_seed =
+    private static readonly Dictionary<string, (SolidColorBrush Tint, SolidColorBrush Dot)> s_priorityBrushes = new(StringComparer.Ordinal)
     {
-        ("Identity",     "SSO sign-in loops after password reset",           "Marta Oyelaran",  "Sev 1", 0,  false),
-        ("Identity",     "MFA push notifications arrive twice",              "Devin Ashworth",  "Sev 3", 6,  false),
-        ("Identity",     "Service principal secret expired in staging",      "Priya Raghunath", "Sev 2", 2,  true),
-        ("Billing",      "Invoice PDF renders blank for EU customers",       "Tomas Lindqvist", "Sev 2", 1,  false),
-        ("Billing",      "Proration miscalculated on mid-cycle upgrade",     "Hana Okabe",      "Sev 2", 4,  false),
-        ("Billing",      "Refund webhook retries forever on 409",            "Marta Oyelaran",  "Sev 3", 9,  true),
-        ("Platform",     "Deploy ring 2 stuck behind a wedged health probe", "Owen Castellano", "Sev 1", 0,  false),
-        ("Platform",     "Container image pull throttled in west region",    "Priya Raghunath", "Sev 2", 3,  false),
-        ("Platform",     "Log ingestion lagging by eleven minutes",          "Devin Ashworth",  "Sev 3", 7,  false),
-        ("Platform",     "Nightly backup job skipped two shards",            "Hana Okabe",      "Sev 2", 2,  true),
-        ("Data",         "Daily export drops rows with null tenant id",      "Tomas Lindqvist", "Sev 2", 5,  false),
-        ("Data",         "Schema migration lock blocks reporting reads",     "Owen Castellano", "Sev 1", 1,  false),
-        ("Data",         "Stale materialized view after timezone change",    "Marta Oyelaran",  "Sev 4", 14, true),
-        ("Support tools","Agent console loses draft on tab switch",          "Hana Okabe",      "Sev 3", 8,  false),
-        ("Support tools","Macro insert strips trailing whitespace",          "Devin Ashworth",  "Sev 4", 12, true),
-        ("Support tools","Queue filter resets when the page refreshes",      "Priya Raghunath", "Sev 3", 6,  false),
-        ("Mobile",       "Attachment upload fails over cellular",            "Owen Castellano", "Sev 2", 3,  false),
-        ("Mobile",       "Push token not refreshed after reinstall",         "Tomas Lindqvist", "Sev 3", 10, false),
-        ("Mobile",       "Dark theme contrast fails on the detail sheet",    "Marta Oyelaran",  "Sev 4", 15, true),
-        ("Mobile",       "Offline queue replays in the wrong order",         "Hana Okabe",      "Sev 2", 4,  false),
+        ["Sev 1"] = (new SolidColorBrush(ColorHelper.FromArgb(0x33, 0xDC, 0x26, 0x26)), new SolidColorBrush(ColorHelper.FromArgb(0xFF, 0xDC, 0x26, 0x26))),
+        ["Sev 2"] = (new SolidColorBrush(ColorHelper.FromArgb(0x33, 0xEA, 0x58, 0x0C)), new SolidColorBrush(ColorHelper.FromArgb(0xFF, 0xEA, 0x58, 0x0C))),
+        ["Sev 3"] = (new SolidColorBrush(ColorHelper.FromArgb(0x33, 0xCA, 0x8A, 0x04)), new SolidColorBrush(ColorHelper.FromArgb(0xFF, 0xCA, 0x8A, 0x04))),
+        ["Sev 4"] = (new SolidColorBrush(ColorHelper.FromArgb(0x33, 0x64, 0x74, 0x8B)), new SolidColorBrush(ColorHelper.FromArgb(0xFF, 0x64, 0x74, 0x8B))),
     };
 
-    private TableViewSource? _source;
-
-    // Requested shaping mode versus the mode actually applied to the source.
-    // GroupBy fails fast, so these can differ; every readout and every
-    // enable/disable guard reads _appliedMode.
-    private string _mode = "flat";
-    private string _appliedMode = "flat";
-    private string _groupKey = "Queue";
-    private bool _allGroupsCollapsed;
-    private int _nextTicket = 1040;
-    private string _statusText = string.Empty;
+    private TableViewSource? _source;          // created ONCE; reshaped in place, never rebuilt
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private string _appliedKey = "Queue";
+    private int _nextTicket = TicketData.FirstTicketNumber + 20;
 
     public HeadersVisibilityPage()
     {
+        _source = TableViewSource.From(Tickets);
         InitializeComponent();
-
-        foreach (var seed in s_seed)
-        {
-            Rows.Add(new SupportTicket
-            {
-                TicketId = $"INC-{_nextTicket++}",
-                Summary = seed.Summary,
-                Queue = seed.Queue,
-                Assignee = seed.Assignee,
-                Priority = seed.Priority,
-                Due = DateTimeOffset.Now.Date.AddDays(seed.DueInDays),
-                IsResolved = seed.Resolved,
-            });
-        }
-
-        DemoTable.HeadersVisibility = TableViewHeadersVisibility.Column;
-
-        _source = TableViewSource.From(Rows);
-        DemoTable.ItemsSource = _source;
-
-        ApplyShaping();
+        Loaded += OnPageLoaded;
+        Unloaded += OnPageUnloaded;
+        RefreshReadouts();
     }
 
-    public ObservableCollection<SupportTicket> Rows { get; } = new();
+    public ObservableCollection<SupportTicket> Tickets { get; } = TicketData.Queue();
 
-    public string StatusText
+    public TableViewSource? Source => _source;
+
+    // x:Bind functions for the Priority chip: cached brushes, transparent / theme text under a
+    // Contrast theme so the chip never relies on colour alone.
+    public static Brush PriorityTint(string priority) =>
+        ChipBrushes.IsHighContrast ? ChipBrushes.Transparent
+        : s_priorityBrushes.TryGetValue(priority ?? string.Empty, out var brushes) ? brushes.Tint : ChipBrushes.Transparent;
+
+    public static Brush PriorityDot(string priority) =>
+        ChipBrushes.IsHighContrast ? ChipBrushes.HighContrastForeground
+        : s_priorityBrushes.TryGetValue(priority ?? string.Empty, out var brushes) ? brushes.Dot : ChipBrushes.HighContrastForeground;
+
+    private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        get => _statusText;
-        private set
+        foreach (var ticket in Tickets)
         {
-            if (_statusText != value)
-            {
-                _statusText = value;
-                OnPropertyChanged();
-            }
+            ticket.PropertyChanged += OnTicketChanged;
         }
+
+        TicketsTable.Sorted += OnTableSorted;
+        RefreshReadouts();
     }
 
-    private void OnHeadersVisibilityChecked(object sender, RoutedEventArgs e)
+    private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
-        if (DemoTable is null || sender is not FrameworkElement { Tag: string tag })
+        foreach (var ticket in Tickets)
+        {
+            ticket.PropertyChanged -= OnTicketChanged;
+        }
+
+        TicketsTable.Sorted -= OnTableSorted;
+    }
+
+    // ---- Headers visibility -------------------------------------------------------------
+
+    private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
+    {
+        // Fires during InitializeComponent (SelectedIndex="0") before the table exists.
+        if (TicketsTable is null || HeadersText is null)
         {
             return;
         }
 
-        DemoTable.HeadersVisibility = tag switch
-        {
-            "None" => TableViewHeadersVisibility.None,
-            _ => TableViewHeadersVisibility.Column,
-        };
-
-        UpdateStatus($"HeadersVisibility set to {DemoTable.HeadersVisibility}");
+        TicketsTable.HeadersVisibility = SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column") == "None"
+            ? TableViewHeadersVisibility.None
+            : TableViewHeadersVisibility.Column;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "HeadersVisibility -> {0}", TicketsTable.HeadersVisibility));
     }
 
-    // ----- Shaping -----
+    // ---- Sorting from code --------------------------------------------------------------
 
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
+    private void OnSortByDueClick(object sender, RoutedEventArgs e)
     {
-        if (_source is null ||
-            sender is not ComboBox { SelectedItem: ComboBoxItem { Tag: string tag } })
+        // The header click does the same thing; SortByColumn is the only way while it is hidden.
+        var direction = DueColumn.SortDirection == TableViewSortDirection.Ascending
+            ? TableViewSortDirection.Descending
+            : TableViewSortDirection.Ascending;
+        TicketsTable.SortByColumn(DueColumn, direction);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "SortByColumn(Due, {0})", direction));
+    }
+
+    private void OnClearSortClick(object sender, RoutedEventArgs e)
+    {
+        TicketsTable.ClearSort();
+        SetLastAction("ClearSort(): rows back in filing order");
+    }
+
+    // Raised for header clicks and for SortByColumn / ClearSort alike.
+    private void OnTableSorted(TableView sender, TableViewSortedEventArgs e)
+    {
+        SortText.Text = e.Column is null || e.Direction == TableViewSortDirection.None
+            ? "None"
+            : string.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Column.Header, e.Direction);
+    }
+
+    // ---- Edits and actions --------------------------------------------------------------
+
+    private void OnTicketChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not SupportTicket ticket)
         {
             return;
         }
 
-        _mode = tag;
-        ApplyShaping();
+        switch (e.PropertyName)
+        {
+            case nameof(SupportTicket.IsResolved):
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} marked {1}", ticket.TicketId, ticket.IsResolved ? "resolved" : "open"));
+                break;
+            case nameof(SupportTicket.Due):
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} due date -> {1}", ticket.TicketId, ticket.DueText));
+                break;
+        }
     }
 
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e)
+    private void OnEscalateClick(object sender, RoutedEventArgs e)
     {
-        if (_source is null || GroupKeyCombo?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        if (TicketsTable.SelectedItem is not SupportTicket ticket)
         {
+            SetLastAction("No row selected.");
             return;
         }
 
-        _groupKey = tag;
-        // Re-applying with the same mode proves the grouped state survives a key change.
-        ApplyShaping();
-    }
-
-    private void ApplyShaping()
-    {
-        if (_source is null)
+        var from = ticket.Priority;
+        var to = SupportTicket.Escalate(from);
+        if (to == from)
         {
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} is already {1}, the most urgent level", ticket.TicketId, from));
             return;
         }
 
-        // Reshape IN PLACE: Filter/GroupBy mutate and return the same instance,
-        // so the source is never rebuilt per change.
-        if (_mode != "grouped")
+        ticket.Priority = to;
+
+        // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
+        // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+        ReapplyIfGroupedOn(nameof(SupportTicket.Priority));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Escalated {0} from {1} to {2}", ticket.TicketId, from, to));
+    }
+
+    private void OnFileTicketClick(object sender, RoutedEventArgs e)
+    {
+        var ticket = TicketData.Incoming(_nextTicket++);
+        ticket.PropertyChanged += OnTicketChanged;
+        Tickets.Add(ticket);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filed {0} in the {1} queue as {2}", ticket.TicketId, ticket.Queue, ticket.Priority));
+    }
+
+    private void OnCloseTicketClick(object sender, RoutedEventArgs e)
+    {
+        if (TicketsTable.SelectedItem is not SupportTicket ticket)
         {
-            _source.ClearGroupBy();
-        }
-        else
-        {
-            var key = _groupKey;
-            // The two delegates receive DIFFERENT things despite both parameters
-            // being named `item`:
-            //   TableViewKeySelector(Object item)      -> receives the ROW ITEM
-            //   TableViewIdentitySelector(Object item) -> receives the GROUP KEY
-            // An item-typed identity lambda returns empty, which is a fail-fast,
-            // so grouping would silently never apply.
-            _source.GroupBy(
-                item => (object)GroupValue(item, key),
-                groupKey => groupKey?.ToString() ?? "(none)");
+            SetLastAction("No row selected.");
+            return;
         }
 
-        // case "hierarchy":
-        // case "groupedhierarchy":
-        //     Hierarchical rows are not available in this release: neither
-        //     TableViewSource.idl nor TableView.idl exposes a hierarchy verb
-        //     (the only shaping verbs are Filter / GroupBy / Sort and their
-        //     Clear* counterparts). When the control ships hierarchy support,
-        //     apply it to this same source here, alongside the GroupBy stage
-        //     above so the two compose, then set _appliedMode as below.
-
-        _appliedMode = _mode;
-        _allGroupsCollapsed = false;
+        ticket.PropertyChanged -= OnTicketChanged;
+        Tickets.Remove(ticket);
 
         if (_appliedMode == "grouped")
         {
-            DemoTable.ExpandAllGroups();
+            var group = KeyOf(ticket, _appliedKey);
+            var remaining = Tickets.Count(t => Equals(KeyOf(t, _appliedKey), group));
+            SetLastAction(remaining == 0
+                ? string.Format(CultureInfo.CurrentCulture, "Closed {0}; it was the last ticket in {1}, so that group is gone", ticket.TicketId, group)
+                : string.Format(CultureInfo.CurrentCulture, "Closed {0}; {1} keeps {2:N0} ticket(s)", ticket.TicketId, group, remaining));
         }
-
-        UpdateShapingGates();
-        UpdateStatus($"Shaping applied: {ModeLabel(_appliedMode)}");
+        else
+        {
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Closed {0}", ticket.TicketId));
+        }
     }
 
-    private void UpdateShapingGates()
+    // Group key for a ticket. Never empty: GroupBy fails fast on an empty group identity.
+    private static object KeyOf(SupportTicket? ticket, string key)
     {
-        if (GroupKeyCombo is null)
+        var value = key switch
+        {
+            nameof(SupportTicket.Priority) => ticket?.Priority,
+            nameof(SupportTicket.Assignee) => ticket?.Assignee,
+            _ => ticket?.Queue,
+        };
+
+        return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
+    }
+
+    private void RefreshReadouts()
+    {
+        if (RowsText is null || ResolvedCountText is null || HeadersText is null || TicketsTable is null)
         {
             return;
         }
 
-        var grouped = _appliedMode == "grouped";
-
-        GroupKeyCombo.IsEnabled = grouped;
-        ExpandAllButton.IsEnabled = grouped;
-        CollapseAllButton.IsEnabled = grouped;
-        ReassignRowButton.IsEnabled = grouped;
+        RowsText.Text = SampleShaping.RowCountText(Tickets.Count);
+        ResolvedCountText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} of {1:N0}", Tickets.Count(t => t.IsResolved), Tickets.Count);
+        HeadersText.Text = TicketsTable.HeadersVisibility.ToString();
     }
 
-    // ----- Actions -----
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
+    {
+        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
+        // later-declared elements exist. Guard every element this path touches.
+        if (_source is null || TicketsTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Queue");
+        var selected = TicketsTable.SelectedItem;
+
+        switch (mode)
+        {
+            case "grouped":
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                _source.GroupBy(item => KeyOf(item as SupportTicket, key), SampleShaping.GroupIdentity);
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
+            //     after the call returns.
+            default:
+                _source.ClearGroupBy();
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+        _appliedKey = key;
+
+        // Re-applying GroupBy can drop the selection when the selected row changed group.
+        SampleShaping.Reselect(TicketsTable, selected, Tickets.Count * 2, RefreshReadouts);
+        UpdateShapingGating();
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+                : "Shaping -> Flat");
+        }
+    }
+
+    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
+    private void ReapplyIfGroupedOn(string? propertyName)
+    {
+        if (_appliedMode == "grouped" && propertyName == _appliedKey)
+        {
+            ApplyShaping(announce: false);
+        }
+    }
+
+    private void UpdateShapingGating()
+    {
+        var grouped = _appliedMode == "grouped";
+        GroupKeySelector.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
+    }
 
     private void OnExpandAllClick(object sender, RoutedEventArgs e)
     {
-        if (_appliedMode != "grouped") return;
-
-        DemoTable.ExpandAllGroups();
-        _allGroupsCollapsed = false;
-        UpdateStatus("Expanded all groups");
+        TicketsTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
     }
 
     private void OnCollapseAllClick(object sender, RoutedEventArgs e)
     {
-        if (_appliedMode != "grouped") return;
-
-        DemoTable.CollapseAllGroups();
-        _allGroupsCollapsed = true;
-        UpdateStatus("Collapsed all groups");
+        TicketsTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
     }
 
-    private void OnReassignRowClick(object sender, RoutedEventArgs e)
+    // The only writer of LastActionText.
+    private void SetLastAction(string message)
     {
-        if (_appliedMode != "grouped" || Rows.Count == 0) return;
-
-        var ticket = Rows[0];
-        var before = GroupValue(ticket, _groupKey);
-
-        if (_groupKey == "Priority")
+        if (LastActionText is not null)
         {
-            ticket.Priority = SupportTicket.Escalate(ticket.Priority);
-        }
-        else
-        {
-            ticket.Queue = NextQueue(ticket.Queue);
+            LastActionText.Text = message;
         }
 
-        UpdateStatus($"{ticket.TicketId} moved from {before} to {GroupValue(ticket, _groupKey)}");
+        RefreshReadouts();
     }
 
-    private void OnAddRowClick(object sender, RoutedEventArgs e)
-    {
-        var ticket = new SupportTicket
-        {
-            TicketId = $"INC-{_nextTicket++}",
-            Summary = "Customer reports intermittent 503 on checkout",
-            Queue = _groupKey == "Queue" ? NextQueue(Rows.Count > 0 ? Rows[0].Queue : "Platform") : "Platform",
-            Assignee = "Unassigned",
-            Priority = "Sev 2",
-            Due = DateTimeOffset.Now.Date.AddDays(3),
-        };
-
-        Rows.Add(ticket);
-        UpdateStatus($"Filed {ticket.TicketId} into {GroupValue(ticket, _groupKey)}");
-    }
-
-    private void OnRemoveRowClick(object sender, RoutedEventArgs e)
-    {
-        if (Rows.Count == 0)
-        {
-            UpdateStatus("Nothing to close — the queue is empty");
-            return;
-        }
-
-        var ticket = Rows[0];
-        Rows.RemoveAt(0);
-        UpdateStatus($"Closed {ticket.TicketId}; its group disappears when it was the last member of {GroupValue(ticket, _groupKey)}");
-    }
-
-    // ----- Helpers -----
-    //
-    // GroupValue never returns the empty string: an empty group identity is a
-    // fail-fast in GroupBy, so a blank property has to be coalesced.
-
-    private static string GroupValue(object item, string key)
-    {
-        if (item is not SupportTicket ticket)
-        {
-            return "(none)";
-        }
-
-        var value = key == "Priority" ? ticket.Priority : ticket.Queue;
-        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-    }
-
-    private string NextQueue(string current)
-    {
-        var queues = Rows.Select(r => r.Queue).Distinct(StringComparer.Ordinal).OrderBy(q => q, StringComparer.Ordinal).ToList();
-        if (queues.Count == 0)
-        {
-            return "Platform";
-        }
-
-        var index = queues.IndexOf(current);
-        return queues[(index < 0 ? 0 : index + 1) % queues.Count];
-    }
-
-    private static string ModeLabel(string mode) => mode switch
-    {
-        "grouped" => "Grouped",
-        "hierarchy" => "Hierarchy",
-        "groupedhierarchy" => "Grouped hierarchy",
-        _ => "Flat",
-    };
-
-    private void UpdateStatus(string? message = null)
-    {
-        if (DemoTable is null)
-        {
-            return;
-        }
-
-        var headers = DemoTable.HeadersVisibility == TableViewHeadersVisibility.None
-            ? "column headers hidden"
-            : "column headers shown";
-
-        // Readouts describe the APPLIED mode, never the requested one.
-        var key = _groupKey;
-        var shaping = _appliedMode == "grouped"
-            ? $"Grouped by {key} · {Rows.Select(r => GroupValue(r, key)).Distinct(StringComparer.Ordinal).Count()} groups · {(_allGroupsCollapsed ? "all collapsed" : "all expanded")}"
-            : "Flat (no grouping)";
-
-        var prefix = message is null ? string.Empty : $"{message}. ";
-        StatusText = $"{prefix}{headers} · {shaping} · {Rows.Count} tickets · {Rows.Count(r => r.IsResolved)} resolved.";
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void OnPropertyChanged([CallerMemberName] string? name = null) =>
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-}
-
-/// <summary>
-/// One row of the synthetic support queue. Every property a cell editor binds
-/// to raises PropertyChanged, so an edit made in a recycled row container is
-/// written to the model and re-read when the container is reused — the value
-/// survives scrolling instead of reverting.
-/// </summary>
-public sealed class SupportTicket : INotifyPropertyChanged
-{
-    private static readonly string[] s_priorities = ["Sev 1", "Sev 2", "Sev 3", "Sev 4"];
-
-    private string _ticketId = string.Empty;
-    private string _queue = string.Empty;
-    private string _priority = "Sev 3";
-    private DateTimeOffset _due;
-    private bool _isResolved;
-
-    public string TicketId
-    {
-        get => _ticketId;
-        set
-        {
-            if (_ticketId != value)
-            {
-                _ticketId = value;
-                Raise(nameof(TicketId));
-                Raise(nameof(PriorityAutomationName));
-                Raise(nameof(ResolvedAutomationName));
-            }
-        }
-    }
-
-    public string Summary { get; set; } = string.Empty;
-
-    public string Assignee { get; set; } = string.Empty;
-
-    /// <summary>Group key candidate; mutating it moves the row between groups.</summary>
-    public string Queue
-    {
-        get => _queue;
-        set
-        {
-            if (_queue != value)
-            {
-                _queue = value;
-                Raise(nameof(Queue));
-            }
-        }
-    }
-
-    /// <summary>
-    /// Second group key candidate, and the ComboBox cell editor's bound value.
-    /// </summary>
-    public string Priority
-    {
-        get => _priority;
-        set
-        {
-            if (_priority != value)
-            {
-                _priority = value;
-                Raise(nameof(Priority));
-                Raise(nameof(PriorityAutomationName));
-            }
-        }
-    }
-
-    public DateTimeOffset Due
-    {
-        get => _due;
-        set
-        {
-            if (_due != value)
-            {
-                _due = value;
-                Raise(nameof(Due));
-                Raise(nameof(DueText));
-            }
-        }
-    }
-
-    public string DueText => _due.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-
-    /// <summary>The CheckBox cell editor's bound value.</summary>
-    public bool IsResolved
-    {
-        get => _isResolved;
-        set
-        {
-            if (_isResolved != value)
-            {
-                _isResolved = value;
-                Raise(nameof(IsResolved));
-                Raise(nameof(ResolvedAutomationName));
-            }
-        }
-    }
-
-    /// <summary>Fixed vocabulary behind the ComboBox cell editor.</summary>
-    public IReadOnlyList<string> PriorityOptions => s_priorities;
-
-    // Per-row accessible names: without these, twenty checkboxes all announce
-    // the same thing and a screen-reader user cannot tell which row they are on.
-    public string PriorityAutomationName => $"Priority for {_ticketId}, currently {_priority}";
-
-    public string ResolvedAutomationName => $"Resolved — {_ticketId}";
-
-    public static string Escalate(string priority)
-    {
-        var index = Array.IndexOf(s_priorities, priority);
-        return index <= 0 ? s_priorities[^1] : s_priorities[index - 1];
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void Raise(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    #endregion
 }

@@ -4,631 +4,129 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
-// Tabular aliases keep the sample code concise.
-using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
-using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
-using TableViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs;
-using TableViewSelectionMode = Microsoft.UI.Xaml.Controls.Tabular.TableViewSelectionMode;
-using TableViewSortedEventArgs = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortedEventArgs;
-using TableViewTemplateColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTemplateColumn;
-// #44 enum unification: TableViewSortDirection was removed in favor of the shared Data enum.
-using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Navigation;
 using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
+using TableViewSampleApp.Templates;
+using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
+using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
+using TableViewSelectionMode = Microsoft.UI.Xaml.Controls.Tabular.TableViewSelectionMode;
+using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
-/// Flagship composite page that exercises the aligned TableView feature set
-/// with TableViewSource-backed flat and grouped modes.
+/// Showcase: one people directory that combines live-updating template cells, header sort,
+/// column resize and visibility, selection modes, headers visibility and grouping over a single
+/// TableViewSource that is reshaped in place.
 /// </summary>
 public sealed partial class ShowcasePage : Page
 {
-    // Active preset for the cell-tint converters. They are instantiated by XAML
-    // as page resources, so they read this static rather than holding a page
-    // back-reference (matches the conditional-styling sample's pattern).
+    // Read by the Showcase tint converters, which XAML instantiates as page resources.
     public static bool Vibrant = true;
 
-
-    // A few leading rows whose Salary / IsActive the live timer mutates so the
-    // bound stoplight + status-chip tints re-run for just those cells — no
-    // per-column rebuild, the INotifyPropertyChanged on Person drives it.
-    private static readonly int[] s_liveRows = { 0, 1, 2, 3, 4 };
-
-    private readonly ObservableCollection<Person> _people = new();
-
-    // Reshaped IN PLACE: GroupBy / ClearGroupBy / Sort mutate and return the same TableViewSource
-    // (TableViewSource.cpp:49-50). Rebuilding the source per change - which this page used to do -
-    // drops selection, scroll offset and group expansion on every toggle.
-    private TableViewSource? _source;
-    private string _mode = "flat";          // requested
-    private string _appliedMode = "flat";   // applied - every readout and guard reads THIS
-    private string _groupKey = "Department";
+    private const double MaxSalary = 230_000;
+    private const int LiveRowCount = 5;
 
     private readonly Random _liveRandom = new();
+    private readonly Dictionary<CheckBox, TableViewColumn> _columnToggles = new();
     private DispatcherTimer? _liveTimer;
+    private TableViewSource? _source;          // created ONCE; reshaped in place, never rebuilt
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private string _appliedKey = "Department";
+    private bool _isBulkUpdate;                // suppresses per-row PropertyChanged handling
+    private bool _isResorting;                 // suppresses the Sorted readout for code re-sorts
+    private bool _ready;                       // false while InitializeComponent fires handlers
 
     public ShowcasePage()
     {
-        // Populate BEFORE InitializeComponent so the declarative IsOn / SelectedIndex
-        // callbacks that fire DURING parse see real data. Those handlers still
-        // null-guard later-declared fields and bail; the constructor does the
-        // authoritative wiring below.
+        Vibrant = true;
         FillPeople(100);
-
+        _source = TableViewSource.From(People);
         InitializeComponent();
-        PeopleTable.HeadersVisibility = TableViewHeadersVisibility.Column;
 
-        ApplyMode();
+        _columnToggles[ShiftColumnCheckBox] = ShiftColumn;
+        _columnToggles[OfficeColumnCheckBox] = OfficeColumn;
+        _columnToggles[EmailColumnCheckBox] = EmailColumn;
+        _columnToggles[RoleColumnCheckBox] = RoleColumn;
+        _columnToggles[DetailsColumnCheckBox] = DetailsColumn;
 
-        Vibrant = VibrantToggle?.IsOn ?? true;
-        UpdateStatus();
-
+        _ready = true;
         Loaded += OnPageLoaded;
         Unloaded += OnPageUnloaded;
+        RefreshReadouts();
     }
+
+    public ObservableCollection<Person> People { get; } = new();
+
+    public TableViewSource? Source => _source;
+
+    private int MaxProbeIndex => People.Count + PersonData.Roles.Count + PersonData.Departments.Count;
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        // Live updates ship ON: the declarative IsOn="True" fired OnLiveToggled
-        // during parse before the table existed (so it bailed). Start the loop
-        // here, once the table is realized. StartLiveUpdates is idempotent.
-        if (LiveToggle?.IsOn == true)
+        Track(People, attach: true);
+        PersonCellTemplates.DetailsOpened += OnDetailsOpened;
+        if (LiveToggle.IsOn)
         {
             StartLiveUpdates();
         }
-        UpdateStatus();
-        UpdateStatus();
+
+        RefreshReadouts();
     }
 
-    // ----- Source shaping (flat / grouped) -----
-
-    private void OnModeSelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
-        if (PeopleTable is null ||
-            ShapingModeSelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
-        {
-            return;
-        }
-
-        _mode = tag;
-        ApplyMode();
-        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Shaping mode -> {0}", _appliedMode == "grouped" ? "Grouped" : "Flat"));
+        StopLiveUpdates();
+        Track(People, attach: false);
+        PersonCellTemplates.DetailsOpened -= OnDetailsOpened;
     }
 
-    private void OnShapingGroupKeyChanged(object sender, SelectionChangedEventArgs e)
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
-        if (PeopleTable is null || ShapingGroupKeyCombo?.SelectedItem is not ComboBoxItem { Tag: string tag })
-        {
-            return;
-        }
-
-        _groupKey = tag;
-        ApplyMode();
-        SetLastAction(string.Format(CultureInfo.InvariantCulture, "Group key -> {0}", GroupKeyLabel(tag)));
+        StopLiveUpdates();
+        base.OnNavigatedFrom(e);
     }
 
-    private void ApplyMode()
+    private void Track(IEnumerable<Person> people, bool attach)
     {
-        if (PeopleTable is null)
+        foreach (var person in people)
         {
-            return;
-        }
-
-        if (FirstNameColumn is not null)
-        {
-            FirstNameColumn.Header = "First name";
-            FirstNameColumn.CellTemplate = (DataTemplate)Resources["ShowcaseNameTemplate"];
-        }
-
-        foreach (var column in CanonicalOrder())
-        {
-            if (column is not null)
+            person.PropertyChanged -= OnPersonChanged;
+            if (attach)
             {
-                column.CanSort = true;
+                person.PropertyChanged += OnPersonChanged;
             }
-        }
-
-        ApplyCurrentSource();
-
-        if (RowCountCombo is not null)
-        {
-            RowCountCombo.IsEnabled = _appliedMode != "grouped";
-        }
-
-        UpdateStatus();
-    }
-
-    private void ApplyCurrentSource()
-    {
-        if (PeopleTable is null)
-        {
-            return;
-        }
-
-        if (_source is null)
-        {
-            _source = TableViewSource.From(_people);
-            PeopleTable.ItemsSource = _source;
-        }
-
-        switch (_mode)
-        {
-            case "grouped":
-                var key = _groupKey;
-                // The two delegates receive DIFFERENT things despite both parameters being named
-                // `item`: TableViewKeySelector gets the ROW ITEM, TableViewIdentitySelector gets
-                // the GROUP KEY (TableViewSource.idl:12-16). The old item-typed identity lambda
-                // here could return the empty string, which is an E_INVALIDARG fail-fast.
-                _source.GroupBy(
-                    item => (object)GroupValue(item, key),
-                    groupKey => groupKey?.ToString() ?? "(none)");
-                break;
-
-            // case "hierarchy":
-            // case "groupedhierarchy":
-            //     Hierarchical rows are not available in this release, and no hierarchy API exists
-            //     on TableViewSource or TableView yet, so there is deliberately no call written
-            //     here to copy. When the control ships hierarchy support, apply it to this same
-            //     source instance alongside the GroupBy stage above so the two compose, and drop
-            //     the IsEnabled="False" from the matching options in the XAML.
-            //     break;
-
-            default:
-                _source.ClearGroupBy();
-                break;
-        }
-
-        // Set ONLY after the shaping call returns: a readout driven by the REQUESTED mode lies
-        // about the table whenever GroupBy throws.
-        _appliedMode = _mode;
-
-        ApplyActiveSort(_source);
-    }
-
-    // Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
-    private static string GroupValue(object item, string key)
-    {
-        if (item is not Person person)
-        {
-            return "(none)";
-        }
-
-        var value = key switch
-        {
-            "Role" => person.Role,
-            "Active" => person.IsActive ? "Active" : "Inactive",
-            _ => person.Department,
-        };
-
-        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-    }
-
-    private static string GroupKeyLabel(string key) => key switch
-    {
-        "Role" => "Role",
-        "Active" => "Active status",
-        _ => "Department",
-    };
-
-    private void ApplyActiveSort(TableViewSource source)
-    {
-        // Clear first: the keySelector Sort overload declares an ANONYMOUS axis, so re-declaring
-        // one without clearing would stack a second axis rather than replace the first.
-        source.ClearSort();
-
-        var sortColumn = SampleShape.ActiveSortColumn(PeopleTable);
-        if (PeopleTable is null ||
-            sortColumn is null ||
-            SampleShape.ActiveSortDirection(PeopleTable) == TableViewSortDirection.None ||
-            string.IsNullOrEmpty(sortColumn.SortMemberPath))
-        {
-            return;
-        }
-
-        var path = sortColumn.SortMemberPath;
-        source.Sort(item => SortKey(item, path), SampleShape.ActiveSortDirection(PeopleTable));
-    }
-
-    // ----- Actions -----
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        if (_appliedMode != "grouped")
-        {
-            return;
-        }
-
-        PeopleTable.ExpandAllGroups();
-        SetLastAction("Expanded all groups");
-    }
-
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
-    {
-        if (_appliedMode != "grouped")
-        {
-            return;
-        }
-
-        PeopleTable.CollapseAllGroups();
-        SetLastAction("Collapsed all groups");
-    }
-
-    private void OnMoveSelectedGroupClick(object sender, RoutedEventArgs e)
-    {
-        if (PeopleTable?.SelectedItem is not Person selected)
-        {
-            return;
-        }
-
-        var before = GroupValue(selected, _groupKey);
-        switch (_groupKey)
-        {
-            case "Role":
-                selected.Role = NextInRing(_people.Select(p => p.Role).Distinct(StringComparer.Ordinal).OrderBy(r => r, StringComparer.Ordinal).ToList(), selected.Role);
-                break;
-            case "Active":
-                selected.IsActive = !selected.IsActive;
-                break;
-            default:
-                selected.Department = NextInRing(PersonData.Departments, selected.Department);
-                break;
-        }
-
-        // Re-running the shaping stage re-reads every key, so the mutated row re-buckets.
-        ApplyCurrentSource();
-        UpdateStatus();
-        SetLastAction(string.Format(
-            CultureInfo.InvariantCulture,
-            "{0} {1}: {2} -> {3}",
-            selected.FirstName,
-            selected.LastName,
-            before,
-            GroupValue(selected, _groupKey)));
-    }
-
-    private void OnBumpSalaryClick(object sender, RoutedEventArgs e)
-    {
-        if (PeopleTable?.SelectedItem is not Person selected)
-        {
-            return;
-        }
-
-        var before = selected.Salary;
-        selected.Salary = Math.Round(before * 2, 0);
-
-        // Re-applying the sort axis re-reads the key, so a row sorted on Salary re-positions.
-        ApplyCurrentSource();
-        UpdateStatus();
-        SetLastAction(string.Format(
-            CultureInfo.InvariantCulture,
-            "{0} {1} salary {2:N0} -> {3:N0}",
-            selected.FirstName,
-            selected.LastName,
-            before,
-            selected.Salary));
-    }
-
-    private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
-    {
-        if (PeopleTable?.SelectedItem is not Person selected)
-        {
-            return;
-        }
-
-        var group = GroupValue(selected, _groupKey);
-        if (_people.Remove(selected))
-        {
-            ApplyCurrentSource();
-            UpdateStatus();
-            SetLastAction(string.Format(CultureInfo.InvariantCulture, "Removed {0} {1} from {2}", selected.FirstName, selected.LastName, group));
-        }
-    }
-
-    private static string NextInRing(IReadOnlyList<string> ring, string current)
-    {
-        if (ring.Count == 0)
-        {
-            return current;
-        }
-
-        var index = -1;
-        for (var i = 0; i < ring.Count; i++)
-        {
-            if (string.Equals(ring[i], current, StringComparison.Ordinal))
-            {
-                index = i;
-                break;
-            }
-        }
-
-        return ring[(index + 1 + ring.Count) % ring.Count];
-    }
-
-    private void SetLastAction(string text)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = text;
-        }
-    }
-
-    private static object? SortKey(object item, string path) => item switch
-    {
-        Person p => path switch
-        {
-            "FirstName" => p.FirstName,
-            "LastName" => p.LastName,
-            "Email" => p.Email,
-            "Department" => p.Department,
-            "Role" => p.Role,
-            "JoinDate" => p.JoinDate,
-            "Salary" => p.Salary,
-            "IsActive" => p.IsActive,
-            _ => null,
-        },
-        _ => null,
-    };
-
-    private void OnRowCountChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (PeopleTable is null)
-        {
-            return;
-        }
-
-        if (RowCountCombo?.SelectedItem is ComboBoxItem { Tag: string tag } &&
-            int.TryParse(tag, NumberStyles.Integer, CultureInfo.InvariantCulture, out var count))
-        {
-            FillPeople(count);
-            ApplyMode();
         }
     }
 
     private void FillPeople(int count)
     {
-        _people.Clear();
+        Track(People, attach: false);
+        People.Clear();
         foreach (var person in PersonData.Take(count))
         {
-            _people.Add(person);
+            People.Add(person);
+        }
+
+        if (IsLoaded)
+        {
+            Track(People, attach: true);
         }
     }
 
-    // ----- Selection -----
-
-    private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (PeopleTable is null)
-        {
-            return;
-        }
-
-        if (SelectionModeCombo?.SelectedItem is ComboBoxItem item &&
-            item.Content is string name &&
-            Enum.TryParse<TableViewSelectionMode>(name, out var mode))
-        {
-            PeopleTable.SelectionMode = mode;
-            UpdateSelectionCount();
-            UpdateStatus();
-        }
-    }
-
-    private void OnSelectFirstClick(object sender, RoutedEventArgs e)
-    {
-        if (PeopleTable is null || PeopleTable.SelectionMode == TableViewSelectionMode.None)
-        {
-            return;
-        }
-
-        PeopleTable.Select(0);
-    }
-
-    private void OnClearSelectionClick(object sender, RoutedEventArgs e) => PeopleTable?.DeselectAll();
-
-    private static void SelectComboByTag(ComboBox? combo, string tag)
-    {
-        if (combo is null)
-        {
-            return;
-        }
-
-        for (var i = 0; i < combo.Items.Count; i++)
-        {
-            if (combo.Items[i] is ComboBoxItem { Tag: string t } && t == tag)
-            {
-                combo.SelectedIndex = i;
-                return;
-            }
-        }
-    }
-
-    private void OnSelectionChanged(TableView sender, TableViewSelectionChangedEventArgs args)
-    {
-        UpdateSelectionCount();
-        UpdateStatus();
-    }
-
-    private void UpdateSelectionCount()
-    {
-        if (PeopleTable is null || SelectionCountText is null)
-        {
-            return;
-        }
-
-        var count = (PeopleTable.SelectedItem is null ? 0 : 1);
-        SelectionCountText.Text = count switch
-        {
-            0 => "No rows selected",
-            1 => "1 row selected",
-            _ => $"{count} rows selected",
-        };
-    }
-
-    // ----- Columns: headers visibility, show / hide, auto-size -----
-
-    private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (PeopleTable is null)
-        {
-            return;
-        }
-
-        if (HeadersVisibilityCombo?.SelectedItem is ComboBoxItem { Tag: string tag } &&
-            Enum.TryParse<TableViewHeadersVisibility>(tag, out var visibility))
-        {
-            PeopleTable.HeadersVisibility = visibility;
-            UpdateStatus();
-        }
-    }
-
-    private void OnEmailColumnToggled(object sender, RoutedEventArgs e)
-    {
-        if (PeopleTable is null || EmailColumn is null || EmailColumnToggle is null)
-        {
-            return;
-        }
-
-        SetColumnVisible(EmailColumn, EmailColumnToggle.IsOn);
-        UpdateStatus();
-    }
-
-    private void OnRoleColumnToggled(object sender, RoutedEventArgs e)
-    {
-        if (PeopleTable is null || RoleColumn is null || RoleColumnToggle is null)
-        {
-            return;
-        }
-
-        SetColumnVisible(RoleColumn, RoleColumnToggle.IsOn);
-        UpdateStatus();
-    }
-
-    private void OnAutosizeAllClick(object sender, RoutedEventArgs e)
-    {
-        if (PeopleTable is null)
-        {
-            return;
-        }
-
-        // Width carries sizing INTENT (TableView.idl:123-126). Auto tracks the widest
-        // *realized* cell continuously and is shrink-capable, so widths re-derive on every
-        // measure pass as rows scroll in and out - it is a persistent mode, not a one-shot
-        // fit-to-content command. Prefer Pixel/Star for large virtualized grids.
-        foreach (var column in PeopleTable.Columns)
-        {
-            column.Width = new GridLength(1, GridUnitType.Auto);
-        }
-    }
-
-    // The canonical left-to-right column order. Used to re-insert a toggled
-    // column at a sensible slot (before the first still-present successor) so a
-    // show / hide preserves the current order of the other columns.
-    private TableViewColumn[] CanonicalOrder() => new TableViewColumn[]
-    {
-        FirstNameColumn,
-        DepartmentColumn,
-        ActiveColumn,
-        SalaryColumn,
-        LastNameColumn,
-        EmailColumn,
-        RoleColumn,
-        JoinDateColumn,
-    };
-
-    private void SetColumnVisible(TableViewColumn column, bool show)
-    {
-        if (PeopleTable is null || column is null)
-        {
-            return;
-        }
-
-        var present = PeopleTable.Columns.IndexOf(column) >= 0;
-        if (show && !present)
-        {
-            var order = CanonicalOrder();
-            var canonicalIndex = Array.IndexOf(order, column);
-            var insertAt = PeopleTable.Columns.Count;
-            for (var i = canonicalIndex + 1; i < order.Length; i++)
-            {
-                var idx = PeopleTable.Columns.IndexOf(order[i]);
-                if (idx >= 0)
-                {
-                    insertAt = idx;
-                    break;
-                }
-            }
-
-            PeopleTable.Columns.Insert(insertAt, column);
-        }
-        else if (!show && present)
-        {
-            var idx = PeopleTable.Columns.IndexOf(column);
-            if (idx >= 0)
-            {
-                PeopleTable.Columns.RemoveAt(idx);
-            }
-        }
-    }
-
-    // ----- Sort -----
-
-    private void OnPeopleTableSorted(TableView sender, TableViewSortedEventArgs args)
-    {
-        ApplyCurrentSource();
-        UpdateStatus();
-    }
-
-    // Column reordering is not part of this release.
-
-    // ----- Vibrant cell tints -----
-
-    private void OnVibrantToggled(object sender, RoutedEventArgs e)
-    {
-        if (PeopleTable is null || VibrantToggle is null)
-        {
-            return;
-        }
-
-        Vibrant = VibrantToggle.IsOn;
-        ReevaluateTintedColumns();
-        UpdateStatus();
-    }
-
-    private void ReevaluateTintedColumns()
-    {
-        // The tint converters are pure functions of (value, Vibrant). Toggling
-        // Vibrant touches no bound value, so already-realized cells won't re-run
-        // on their own. Clearing + restoring the CellTemplate re-realizes just the
-        // tinted columns once — a per-click cost, never per-tick.
-        ReassignCellTemplate(DepartmentColumn);
-        ReassignCellTemplate(ActiveColumn);
-        ReassignCellTemplate(SalaryColumn);
-    }
-
-    private static void ReassignCellTemplate(TableViewTemplateColumn? column)
-    {
-        if (column is null)
-        {
-            return;
-        }
-
-        var template = column.CellTemplate;
-        column.CellTemplate = null;
-        column.CellTemplate = template;
-    }
-
-    // ----- Live updates -----
+    // ---- Live updates -------------------------------------------------------------------
 
     private void OnLiveToggled(object sender, RoutedEventArgs e)
     {
-        if (PeopleTable is null || LiveToggle is null)
+        if (!_ready)
         {
             return;
         }
@@ -642,16 +140,28 @@ public sealed partial class ShowcasePage : Page
             StopLiveUpdates();
         }
 
-        UpdateStatus();
+        SetLastAction(LiveToggle.IsOn ? "Live updates -> On" : "Live updates -> Off");
+    }
+
+    private void OnUpdateIntervalChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+    {
+        if (!_ready)
+        {
+            return;
+        }
+
+        if (_liveTimer is not null)
+        {
+            _liveTimer.Interval = TimeSpan.FromMilliseconds(e.NewValue);
+        }
+
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Update interval -> {0:N0} ms", e.NewValue));
     }
 
     private void StartLiveUpdates()
     {
         StopLiveUpdates();
-        _liveTimer = new DispatcherTimer
-        {
-            Interval = TimeSpan.FromMilliseconds(UpdateIntervalSlider?.Value ?? 700),
-        };
+        _liveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(UpdateIntervalSlider.Value) };
         _liveTimer.Tick += OnLiveTimerTick;
         _liveTimer.Start();
     }
@@ -670,146 +180,406 @@ public sealed partial class ShowcasePage : Page
 
     private void OnLiveTimerTick(object? sender, object e)
     {
-        var targets = GetLiveTargets();
-        if (targets.Count == 0)
+        var flipped = false;
+        _isBulkUpdate = true;
+        try
+        {
+            foreach (var person in People.Take(LiveRowCount))
+            {
+                // Nudge Salary within the dataset band and flip Active now and then. Person raises
+                // PropertyChanged, so only these cells re-run their bindings and tint converters.
+                var next = Math.Clamp(person.Salary + ((_liveRandom.NextDouble() - 0.5) * 12_000), 110_000, MaxSalary);
+                person.Salary = Math.Round(next / 100.0) * 100.0;
+                if (_liveRandom.NextDouble() < 0.15)
+                {
+                    person.IsActive = !person.IsActive;
+                    flipped = true;
+                }
+            }
+        }
+        finally
+        {
+            _isBulkUpdate = false;
+        }
+
+        // Neither grouping nor sorting observes PropertyChanged, so re-apply whichever one is
+        // keyed on a value the tick just changed.
+        if (flipped)
+        {
+            ReapplyIfGroupedOn(nameof(Person.IsActive));
+        }
+
+        ResortIfSortedOn(nameof(Person.Salary), nameof(Person.IsActive));
+        RefreshReadouts();
+    }
+
+    private void OnVibrantToggled(object sender, RoutedEventArgs e)
+    {
+        if (!_ready)
         {
             return;
         }
 
-        // Keep the cadence responsive to the slider between ticks.
-        if (_liveTimer is not null && UpdateIntervalSlider is not null)
+        Vibrant = VibrantToggle.IsOn;
+
+        // The tint converters read Vibrant, which no binding observes. Re-assigning the
+        // CellTemplate regenerates the realized cells of just the two tinted columns.
+        foreach (var column in new[] { DepartmentColumn, SalaryColumn })
         {
-            _liveTimer.Interval = TimeSpan.FromMilliseconds(UpdateIntervalSlider.Value);
+            var template = column.CellTemplate;
+            column.CellTemplate = null;
+            column.CellTemplate = template;
         }
 
-        foreach (var i in s_liveRows)
-        {
-            if (i >= targets.Count)
-            {
-                continue;
-            }
-
-            var row = targets[i];
-
-            // Nudge Salary within the dataset band; flip Active occasionally.
-            // INPC on Person re-runs just these cells' bound tint converters — no per-column rebuild.
-            var delta = (_liveRandom.NextDouble() - 0.5) * 12_000;
-            var next = Math.Clamp(GetSalary(row) + delta, 110_000, 230_000);
-            SetSalary(row, Math.Round(next / 100.0) * 100.0);
-
-            if (_liveRandom.NextDouble() < 0.15)
-            {
-                ToggleActive(row);
-            }
-        }
-
-        UpdateStatus();
+        SetLastAction(Vibrant ? "Vibrant cells -> On" : "Vibrant cells -> Off");
     }
 
-    // The rows whose tints the live timer animates.
-    private IReadOnlyList<object> GetLiveTargets() => _people.Cast<object>().ToList();
+    // ---- Table options --------------------------------------------------------------------
 
-    private int CountGroups()
+    private void OnRowCountChanged(object sender, SelectionChangedEventArgs e)
     {
-        var key = _groupKey;
-        return _people.Select(person => GroupValue(person, key)).Distinct(StringComparer.Ordinal).Count();
-    }
-
-    private static double GetSalary(object row) => row is Person p ? p.Salary : 0;
-
-    private static void SetSalary(object row, double value)
-    {
-        if (row is Person p)
-        {
-            p.Salary = value;
-        }
-    }
-
-    private static void ToggleActive(object row)
-    {
-        if (row is Person p)
-        {
-            p.IsActive = !p.IsActive;
-        }
-    }
-
-    private void OnPageUnloaded(object sender, RoutedEventArgs e) => StopLiveUpdates();
-
-    protected override void OnNavigatedFrom(NavigationEventArgs e)
-    {
-        StopLiveUpdates();
-        base.OnNavigatedFrom(e);
-    }
-
-    // ----- Status readout -----
-
-    private void UpdateStatus()
-    {
-        // Bail until the readout TextBlocks are inflated (declarative callbacks
-        // fire mid-parse before the Options pane exists).
-        if (ModeReadoutText is null || RowsReadoutText is null || SelectionReadoutText is null ||
-            SortReadoutText is null || ColumnsReadoutText is null)
+        if (!_ready)
         {
             return;
         }
 
+        var count = int.Parse(SampleShaping.SelectedTag(RowCountSelector, "100"), NumberStyles.Integer, CultureInfo.InvariantCulture);
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        // Grouped, every Add re-buckets the projection; refill flat and group once at the end.
         var grouped = _appliedMode == "grouped";
-        var hasSelection = PeopleTable?.SelectedItem is Person;
-
-        SetActionState(ExpandAllButton, grouped, "Expand every group.");
-        SetActionState(CollapseAllButton, grouped, "Collapse every group.");
-        SetActionState(MoveGroupButton, hasSelection, "Rewrites the selected row's group key, then re-applies GroupBy so the row moves between groups.", "Select a row first.");
-        SetActionState(BumpSalaryButton, hasSelection, "Doubles Salary, then re-applies the sort axis - sort by Salary first to watch the row re-position.", "Select a row first.");
-        SetActionState(RemoveRowButton, hasSelection, "Removes the row; its group disappears when it was the last one.", "Select a row first.");
-
-        if (ShapingGroupKeyCombo is not null)
+        if (grouped)
         {
-            ShapingGroupKeyCombo.IsEnabled = grouped;
-            ToolTipService.SetToolTip(ShapingGroupKeyCombo, grouped
-                ? "Change the GroupBy key while grouped - expansion and selection survive."
-                : "Available once Grouped mode is selected.");
+            _source?.ClearGroupBy();
         }
 
-        // Readouts describe the APPLIED mode, never the requested one.
-        ModeReadoutText.Text = grouped
-            ? $"Grouped by {GroupKeyLabel(_groupKey)} ({CountGroups()} groups)"
-            : "Flat";
-
-        var rowCount = _people.Count;
-        RowsReadoutText.Text = rowCount.ToString(CultureInfo.InvariantCulture);
-
-        var selectionMode = PeopleTable?.SelectionMode ?? TableViewSelectionMode.Single;
-        var selectionCount = (PeopleTable?.SelectedItem is null ? 0 : 1);
-        SelectionReadoutText.Text = $"{selectionCount} ({selectionMode})";
-
-        var sortColumn = SampleShape.ActiveSortColumn(PeopleTable);
-        SortReadoutText.Text = sortColumn is null || SampleShape.ActiveSortDirection(PeopleTable) == TableViewSortDirection.None
-            ? "(none)"
-            : $"{HeaderText(sortColumn)} ({SampleShape.ActiveSortDirection(PeopleTable)})";
-
-
-        if (PeopleTable is not null)
+        FillPeople(count);
+        if (grouped)
         {
-            var visible = CanonicalOrder()
-                .Where(c => c is not null && PeopleTable.Columns.IndexOf(c) >= 0)
-                .Select(HeaderText);
-            ColumnsReadoutText.Text = string.Join(", ", visible);
+            ApplyShaping(announce: false);
         }
+
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Row count -> {0:N0} (refilled in {1:N0} ms)", count, stopwatch.ElapsedMilliseconds));
     }
 
-    private static void SetActionState(Button? button, bool enabled, string enabledTip, string disabledTip = "Available once Grouped mode is selected.")
+    private void OnSelectionModeChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (button is null)
+        if (!_ready)
         {
             return;
         }
 
-        button.IsEnabled = enabled;
-        ToolTipService.SetToolTip(button, enabled ? enabledTip : disabledTip);
+        var mode = Enum.Parse<TableViewSelectionMode>(SampleShaping.SelectedTag(SelectionModeSelector, "Single"));
+        PeopleTable.SelectionMode = mode;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "SelectionMode -> {0}", mode));
     }
 
-    private static string HeaderText(TableViewColumn column) => column.Header?.ToString() ?? "(column)";
+    private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_ready)
+        {
+            return;
+        }
 
-    private static string PersonIdentity(object item) => item is Person person ? person.Email : string.Empty;
+        var visibility = Enum.Parse<TableViewHeadersVisibility>(SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column"));
+        PeopleTable.HeadersVisibility = visibility;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "HeadersVisibility -> {0}", visibility));
+    }
 
+    private void OnColumnCheckBoxClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is not CheckBox checkBox || !_columnToggles.TryGetValue(checkBox, out var column))
+        {
+            return;
+        }
+
+        var show = checkBox.IsChecked == true;
+        column.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} column -> {1}", column.Header, show ? "shown" : "hidden"));
+    }
+
+    // ---- Sorting ----------------------------------------------------------------------------
+
+    private void OnPeopleTableSorted(TableView sender, TableViewSortedEventArgs args)
+    {
+        if (_isResorting)
+        {
+            return;
+        }
+
+        SetLastAction(args.Column is null || args.Direction == TableViewSortDirection.None
+            ? "Sort cleared"
+            : string.Format(CultureInfo.CurrentCulture, "Sorted by {0} ({1})", args.Column.Header, args.Direction));
+    }
+
+    private TableViewColumn? ActiveSortColumn() =>
+        PeopleTable.Columns.FirstOrDefault(column => column.SortDirection != TableViewSortDirection.None);
+
+    // The control sorts once, when the sort is applied. Re-declaring the same path on the source
+    // re-reads every key (TableViewSource.Sort replaces that axis in place), so a row whose sorted
+    // value changed moves to its new position.
+    private void ResortIfSortedOn(params string[] propertyNames)
+    {
+        var column = ActiveSortColumn();
+        if (_source is null || column is null || Array.IndexOf(propertyNames, column.SortMemberPath) < 0)
+        {
+            return;
+        }
+
+        var selected = PeopleTable.SelectedItem;
+        _isResorting = true;
+        try
+        {
+            _source.Sort(column.SortMemberPath, column.SortDirection);
+        }
+        finally
+        {
+            _isResorting = false;
+        }
+
+        SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex, RefreshReadouts);
+    }
+
+    // ---- In-cell edits ----------------------------------------------------------------------
+
+    private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not Person person || _isBulkUpdate)
+        {
+            return;
+        }
+
+        switch (e.PropertyName)
+        {
+            case nameof(Person.IsActive):
+            case nameof(Person.JoinDate):
+            case nameof(Person.ShiftStart):
+            case nameof(Person.Office):
+                ReapplyIfGroupedOn(e.PropertyName);
+                ResortIfSortedOn(e.PropertyName);
+                SetLastAction(string.Format(CultureInfo.CurrentCulture, "Edited {0} for {1}", e.PropertyName, person.FullName));
+                break;
+        }
+    }
+
+    private void OnDetailsOpened(object? sender, Person person) =>
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Opened the details flyout for {0}", person.FullName));
+
+    // ---- Actions ------------------------------------------------------------------------
+
+    private void OnSelectFirstClick(object sender, RoutedEventArgs e)
+    {
+        if (PeopleTable.SelectionMode == TableViewSelectionMode.None)
+        {
+            SetLastAction("SelectionMode is None, so no row can be selected.");
+            return;
+        }
+
+        // Select ignores group-header indexes, so walk forward to the first data row.
+        for (var i = 0; i <= MaxProbeIndex && PeopleTable.SelectedItem is null; i++)
+        {
+            PeopleTable.Select(i);
+        }
+
+        SetLastAction(PeopleTable.SelectedItem is Person person
+            ? string.Format(CultureInfo.CurrentCulture, "Selected {0}", person.FullName)
+            : "There is no row to select.");
+    }
+
+    private void OnClearSelectionClick(object sender, RoutedEventArgs e)
+    {
+        PeopleTable.DeselectAll();
+        SetLastAction("Cleared the selection");
+    }
+
+    private void OnMoveSelectedGroupClick(object sender, RoutedEventArgs e)
+    {
+        if (PeopleTable.SelectedItem is not Person person)
+        {
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        var key = _appliedMode == "grouped" ? _appliedKey : nameof(Person.Department);
+        var from = SampleShaping.KeyOf(person, key);
+        _isBulkUpdate = true;
+        try
+        {
+            switch (key)
+            {
+                case nameof(Person.Role):
+                    person.Role = SampleShaping.Next(PersonData.Roles, person.Role);
+                    break;
+                case nameof(Person.IsActive):
+                    person.IsActive = !person.IsActive;
+                    break;
+                default:
+                    person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
+                    break;
+            }
+        }
+        finally
+        {
+            _isBulkUpdate = false;
+        }
+
+        ReapplyIfGroupedOn(key);
+        ResortIfSortedOn(key);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
+    }
+
+    private void OnRaiseSalaryClick(object sender, RoutedEventArgs e)
+    {
+        if (PeopleTable.SelectedItem is not Person person)
+        {
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        var before = person.Salary;
+        person.Salary = Math.Min(MaxSalary, Math.Round(before * 1.1 / 100.0) * 100.0);
+        ResortIfSortedOn(nameof(Person.Salary));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Raised {0} from {1:C0} to {2:C0}", person.FullName, before, person.Salary));
+    }
+
+    private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
+    {
+        if (PeopleTable.SelectedItem is not Person person)
+        {
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        person.PropertyChanged -= OnPersonChanged;
+        People.Remove(person);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0} ({1})", person.FullName, SampleShaping.KeyOf(person, _appliedKey)));
+    }
+
+    // ---- Readouts ---------------------------------------------------------------------------
+
+    private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
+    {
+        if (!SampleShaping.IsReselecting)
+        {
+            RefreshReadouts();
+        }
+    }
+
+    private void RefreshReadouts()
+    {
+        if (RowsText is null || SelectionText is null || SortText is null || ColumnsText is null)
+        {
+            return;
+        }
+
+        RowsText.Text = SampleShaping.RowCountText(People.Count);
+        SelectionText.Text = PeopleTable.SelectedItem is Person person
+            ? string.Format(CultureInfo.CurrentCulture, "{0} ({1})", person.FullName, PeopleTable.SelectionMode)
+            : string.Format(CultureInfo.CurrentCulture, "(none) ({0})", PeopleTable.SelectionMode);
+
+        var sortColumn = ActiveSortColumn();
+        SortText.Text = sortColumn is null
+            ? "(none)"
+            : string.Format(CultureInfo.CurrentCulture, "{0} ({1})", sortColumn.Header, sortColumn.SortDirection);
+
+        var shown = PeopleTable.Columns.Count(column => column.Visibility == Visibility.Visible);
+        ColumnsText.Text = string.Format(CultureInfo.CurrentCulture, "{0} of {1} shown", shown, PeopleTable.Columns.Count);
+    }
+
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
+    {
+        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
+        // later-declared elements exist. Guard every element this path touches.
+        if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+        var selected = PeopleTable.SelectedItem;
+
+        switch (mode)
+        {
+            case "grouped":
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
+            //     after the call returns.
+            default:
+                _source.ClearGroupBy();
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+        _appliedKey = key;
+
+        // Re-applying GroupBy can drop the selection when the selected row changed group.
+        SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex, RefreshReadouts);
+
+        UpdateShapingGating();
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+                : "Shaping -> Flat");
+        }
+    }
+
+    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
+    private void ReapplyIfGroupedOn(string? propertyName)
+    {
+        if (_appliedMode == "grouped" && propertyName == _appliedKey)
+        {
+            ApplyShaping(announce: false);
+        }
+    }
+
+    private void UpdateShapingGating()
+    {
+        var grouped = _appliedMode == "grouped";
+        GroupKeySelector.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
+    }
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        PeopleTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        PeopleTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
+    }
+
+    // The only writer of LastActionText.
+    private void SetLastAction(string message)
+    {
+        if (LastActionText is not null)
+        {
+            LastActionText.Text = message;
+        }
+
+        RefreshReadouts();
+    }
+
+    #endregion
 }

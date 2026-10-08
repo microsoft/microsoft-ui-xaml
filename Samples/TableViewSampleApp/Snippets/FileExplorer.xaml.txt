@@ -1,51 +1,27 @@
-<Page.Resources>
-    <DataTemplate x:Key="NameCellTemplate" x:DataType="models:FileSystemEntry">
-        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
-            <FontIcon Glyph="{x:Bind IconGlyph, Mode=OneWay}" FontSize="14"/>
-            <TextBlock Text="{x:Bind Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-        </StackPanel>
-    </DataTemplate>
-</Page.Resources>
+<!-- FileExplorerPage.xaml: the table. Name, Type and Size sort by a folders-first key
+     (FileSystemEntry.NameSortKey and so on); Date modified sorts by the DateModified value, not
+     by its display text. The control sorts by itself and shows the direction on the header.
+     Name is the one star column. -->
+<tv:TableView x:Name="FileTable"
+              AutomationProperties.AutomationId="FileExplorerTable"
+              AutomationProperties.Name="Folder contents"
+              ItemsSource="{x:Bind Source}"
+              SelectionMode="Single"
+              IsReadOnly="True"
+              Sorted="OnTableSorted"
+              SelectionChanged="OnSelectionChanged"
+              DoubleTapped="OnRowDoubleTapped"
+              VerticalAlignment="Stretch" MinHeight="320">
+    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource FileNameTemplate}" SortMemberPath="NameSortKey"/>
+    <tv:TableViewTextColumn Header="Type" Width="{StaticResource ColWidthDepartment}" Binding="{Binding TypeDisplay}" SortMemberPath="TypeSortKey"/>
+    <tv:TableViewTextColumn x:Name="DateModifiedColumn" Header="Date modified" Width="{StaticResource ColWidthDateTime}" Binding="{Binding DateModifiedDisplay}" SortMemberPath="DateModified"/>
+    <tv:TableViewTextColumn Header="Size" Width="{StaticResource ColWidthNumber}" Binding="{Binding SizeDisplay}" SortMemberPath="SizeSortKey"/>
+</tv:TableView>
 
-<Grid RowSpacing="12">
-    <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="*"/>
-        <RowDefinition Height="Auto"/>
-    </Grid.RowDefinitions>
-
-    <Grid Grid.Row="0" ColumnSpacing="8">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-
-        <Button x:Name="BackButton" Click="OnBackClick" AutomationProperties.Name="Back"/>
-        <Button x:Name="UpButton" Grid.Column="1" Click="OnUpClick" AutomationProperties.Name="Up"/>
-        <TextBox x:Name="AddressBar" Grid.Column="2" PlaceholderText="Enter a folder path" KeyDown="OnAddressBarKeyDown"/>
-        <Button Grid.Column="3" Click="OnRefreshClick" AutomationProperties.Name="Refresh"/>
-    </Grid>
-
-    <tv:TableView x:Name="FileTable"
-                   Grid.Row="1"
-                   SelectionMode="Single"
-                   Sorted="OnTableSorted"
-                   SelectionChanged="OnSelectionChanged"
-                   DoubleTapped="OnRowDoubleTapped">
-        <tv:TableViewTemplateColumn Header="Name" CellTemplate="{StaticResource NameCellTemplate}" MinWidth="260" Width="*" CanSort="True" SortMemberPath="Name"/>
-        <tv:TableViewTextColumn Header="Type" Width="180" SortMemberPath="TypeDisplay" Binding="{Binding TypeDisplay}"/>
-        <tv:TableViewTextColumn Header="Date modified" Width="170" SortMemberPath="DateModified" Binding="{Binding DateModifiedDisplay}"/>
-        <tv:TableViewTextColumn Header="Size" Width="110" SortMemberPath="Size" Binding="{Binding SizeDisplay}"/>
-    </tv:TableView>
-
-    <Grid Grid.Row="2" ColumnSpacing="16">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <TextBlock x:Name="StatusText" AutomationProperties.LiveSetting="Polite"/>
-        <TextBlock x:Name="SelectionText" Grid.Column="1" Text="0 selected (0 bytes)" AutomationProperties.LiveSetting="Polite"/>
-    </Grid>
-</Grid>
+<!-- Filter is the page's primary option; it runs on the same source that groups. -->
+<ComboBox x:Name="FilterSelector" Header="Show" SelectedIndex="0" SelectionChanged="OnFilterChanged">
+    <ComboBoxItem Content="All items" Tag="all"/>
+    <ComboBoxItem Content="Folders only" Tag="folders"/>
+    <ComboBoxItem Content="Files only" Tag="files"/>
+    <ComboBoxItem Content="Match nothing (empty result)" Tag="none"/>
+</ComboBox>

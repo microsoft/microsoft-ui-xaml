@@ -3,146 +3,195 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
-using TableViewGridLinesVisibility = Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility;
-using TableViewDensity = Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity;
+using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 
 namespace TableViewSampleApp.Pages;
 
+/// <summary>
+/// File properties scenario: a properties dialog for the sample's own binaries. Every one of the
+/// 22 values is read from the file's version resource (FileVersionInfo) or the file system
+/// (FileInfo), so none is blank. The page starts grouped by section; one TableViewSource over one
+/// ObservableCollection is refilled per file and filtered, grouped and edited in place.
+/// </summary>
 public sealed partial class FilePropertiesPage : Page
 {
     private static readonly string[] s_sections = { "Description", "Origin", "File" };
 
-    // One source per selected file (the items collection genuinely changes); shaping is then
-    // applied IN PLACE on it, because Filter / GroupBy mutate and return the same instance
-    // (TableViewSource.cpp:49-50). Changing shaping never re-reads the file system.
-    private TableViewSource? _source;
-    private List<FilePropertyEntry> _entries = new();
-    private string _mode = "flat";          // requested
-    private string _appliedMode = "flat";   // applied
-    private string _groupKey = "Section";
-    private string _filter = "all";
+    private TableViewSource? _source;          // created ONCE over Entries; never rebuilt
+    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
+    private string _appliedKey = "Section";
+    private FileInfo? _currentFile;
 
     public FilePropertiesPage()
     {
+        _source = TableViewSource.From(Entries);
         InitializeComponent();
 
-        if (PropTable is not null)
-        {
-            PropTable.HeadersVisibility = TableViewHeadersVisibility.Column;
-            PropTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
-            PropTable.Density = TableViewDensity.Compact;
-        }
+        PropTable.HeadersVisibility = TableViewHeadersVisibility.Column;
+        PropTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
+        PropTable.Density = TableViewDensity.Compact;
 
-        Loaded += OnLoaded;
+        // This page starts Grouped by section (ShapingModeSelector SelectedIndex="1"). The
+        // SelectionChanged that InitializeComponent raised was ignored by the guard, so apply it now.
+        ApplyShaping(announce: false);
+        Loaded += OnPageLoaded;
     }
 
-    private void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        PopulateFiles();
-    }
+    public ObservableCollection<FilePropertyEntry> Entries { get; } = new();
 
-    private void PopulateFiles()
+    public TableViewSource? Source => _source;
+
+    private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        if (FileList is null)
+        if (FileList.ItemsSource is not null)
         {
             return;
         }
 
-        var files = EnumerateFiles(AppContext.BaseDirectory);
-        if (files.Count < 1)
-        {
-            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            if (!string.IsNullOrWhiteSpace(userProfile))
-            {
-                files = EnumerateFiles(userProfile);
-            }
-        }
-
+        // Reading version resources touches every binary in the folder: do it off the UI thread.
+        var folder = AppContext.BaseDirectory;
+        var files = await Task.Run(() => FindDescribedFiles(folder));
         FileList.ItemsSource = files;
-
         if (files.Count > 0)
         {
             FileList.SelectedIndex = 0;
         }
-        else
-        {
-            if (SelectedFileText is not null)
-            {
-                SelectedFileText.Text = "No readable files found";
-            }
 
-            if (StatusText is not null)
-            {
-                StatusText.Text = "0 properties across 0 sections";
-            }
-        }
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Listed {0:N0} files from the app folder", files.Count));
     }
 
-    private static List<FileInfo> EnumerateFiles(string folder)
+    // Binaries whose version resource fills every Description and Origin row.
+    private static List<FileInfo> FindDescribedFiles(string folder)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder))
-            {
-                return new List<FileInfo>();
-            }
-
             return new DirectoryInfo(folder)
                 .EnumerateFiles()
-                .OrderBy(file => file.Name, StringComparer.OrdinalIgnoreCase)
-                .Take(100)
+                .Where(file => file.Extension.Equals(".dll", StringComparison.OrdinalIgnoreCase)
+                    || file.Extension.Equals(".exe", StringComparison.OrdinalIgnoreCase))
+                .Where(file => IsFullyDescribed(FileVersionInfo.GetVersionInfo(file.FullName)))
+                .OrderBy(file => file.Name, StringComparer.CurrentCultureIgnoreCase)
+                .Take(40)
                 .ToList();
         }
-        catch
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return new List<FileInfo>();
         }
     }
 
+    private static bool IsFullyDescribed(FileVersionInfo version) =>
+        new[]
+        {
+            version.FileDescription, version.FileVersion, version.ProductName, version.ProductVersion,
+            version.LegalCopyright, version.Language, version.CompanyName, version.OriginalFilename, version.InternalName,
+        }.All(value => !string.IsNullOrWhiteSpace(value));
+
     private void OnFileSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (FileList?.SelectedItem is FileInfo file)
-        {
-            ShowFileProperties(file);
-        }
-    }
-
-    private void ShowFileProperties(FileInfo file)
-    {
-        if (PropTable is null)
+        if (FileList.SelectedItem is not FileInfo file)
         {
             return;
         }
 
-        _entries = BuildEntries(file);
-        _source = TableViewSource.From(_entries);
-        PropTable.ItemsSource = _source;
-        ApplyShaping();
-
-        if (SelectedFileText is not null)
+        var announce = _currentFile is not null;
+        ShowFile(file);
+        if (announce)
         {
-            SelectedFileText.Text = file.Name;
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Showing {0}: {1:N0} properties", file.Name, Entries.Count));
         }
     }
 
-    private void ApplyShaping()
+    // Refills the one collection; the source re-projects it under the current filter and grouping.
+    private void ShowFile(FileInfo file)
     {
-        if (PropTable is null || _source is null)
+        _currentFile = file;
+        Entries.Clear();
+        foreach (var entry in ReadProperties(file))
+        {
+            Entries.Add(entry);
+        }
+
+        RefreshReadouts();
+    }
+
+    private static IEnumerable<FilePropertyEntry> ReadProperties(FileInfo file)
+    {
+        file.Refresh();
+        var version = FileVersionInfo.GetVersionInfo(file.FullName);
+        const string vr = FilePropertyEntry.VersionResource;
+        const string fs = FilePropertyEntry.FileSystem;
+
+        return new[]
+        {
+            new FilePropertyEntry("Description", "File description", version.FileDescription ?? string.Empty, vr),
+            new FilePropertyEntry("Description", "Type", FileType(file.Extension), fs),
+            new FilePropertyEntry("Description", "File version", version.FileVersion ?? string.Empty, vr),
+            new FilePropertyEntry("Description", "Product name", version.ProductName ?? string.Empty, vr),
+            new FilePropertyEntry("Description", "Product version", version.ProductVersion ?? string.Empty, vr),
+            new FilePropertyEntry("Description", "Copyright", version.LegalCopyright ?? string.Empty, vr),
+            new FilePropertyEntry("Description", "Language", version.Language ?? string.Empty, vr),
+
+            new FilePropertyEntry("Origin", "Company", version.CompanyName ?? string.Empty, vr),
+            new FilePropertyEntry("Origin", "Original filename", version.OriginalFilename ?? string.Empty, vr),
+            new FilePropertyEntry("Origin", "Internal name", version.InternalName ?? string.Empty, vr),
+            new FilePropertyEntry("Origin", "Build", version.IsDebug ? "Debug" : version.IsPrivateBuild ? "Private" : "Release", vr),
+            new FilePropertyEntry("Origin", "Pre-release", YesNo(version.IsPreRelease), vr),
+            new FilePropertyEntry("Origin", "Patched", YesNo(version.IsPatched), vr),
+
+            new FilePropertyEntry("File", "Name", file.Name, fs),
+            new FilePropertyEntry("File", "Folder path", file.DirectoryName ?? string.Empty, fs),
+            new FilePropertyEntry("File", "Size", SizeText(file.Length), fs),
+            // Rounded up to the 4 KB allocation unit of an NTFS volume.
+            new FilePropertyEntry("File", "Size on disk", SizeText((file.Length + 4095) / 4096 * 4096), fs),
+            new FilePropertyEntry("File", "Date created", file.CreationTime.ToString("F", CultureInfo.CurrentCulture), fs, isDate: true),
+            new FilePropertyEntry("File", "Date modified", file.LastWriteTime.ToString("F", CultureInfo.CurrentCulture), fs, isDate: true),
+            new FilePropertyEntry("File", "Date accessed", file.LastAccessTime.ToString("F", CultureInfo.CurrentCulture), fs, isDate: true),
+            new FilePropertyEntry("File", "Attributes", file.Attributes.ToString(), fs),
+            new FilePropertyEntry("File", "Read-only", YesNo(file.IsReadOnly), fs),
+        };
+    }
+
+    private static string YesNo(bool value) => value ? "Yes" : "No";
+
+    private static string FileType(string extension) => extension.ToLowerInvariant() switch
+    {
+        ".dll" => "Application extension",
+        ".exe" => "Application",
+        _ => string.Format(CultureInfo.CurrentCulture, "{0} File", extension.TrimStart('.').ToUpperInvariant()),
+    };
+
+    // "1.25 MB (1,310,720 bytes)", as the Properties dialog shows it.
+    private static string SizeText(long bytes) =>
+        string.Format(CultureInfo.CurrentCulture, "{0} ({1:N0} bytes)", FileSystemEntry.FormatSize(bytes), bytes);
+
+    // ---- Filter (TableViewSource.Filter) ---------------------------------------------------
+
+    private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_source is null || FilterSelector is null)
         {
             return;
         }
 
-        switch (_filter)
+        switch (SampleShaping.SelectedTag(FilterSelector, "all"))
         {
-            case "filled":
-                _source.Filter(item => item is FilePropertyEntry entry && !string.IsNullOrWhiteSpace(entry.Value));
+            case "dates":
+                _source.Filter(item => item is FilePropertyEntry { IsDate: true });
+                break;
+            case "version":
+                _source.Filter(item => item is FilePropertyEntry { Source: FilePropertyEntry.VersionResource });
                 break;
             case "none":
                 _source.Filter(_ => false);
@@ -152,347 +201,206 @@ public sealed partial class FilePropertiesPage : Page
                 break;
         }
 
-        switch (_mode)
+        // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only.
+        if (IsLoaded)
         {
-            case "grouped":
-                var key = _groupKey;
-                // TableViewKeySelector receives the ROW ITEM; TableViewIdentitySelector receives
-                // the GROUP KEY (TableViewSource.idl:12-16). Keying the identity lambda off the
-                // item would yield an empty identity and fail fast with E_INVALIDARG.
-                _source.GroupBy(
-                    item => (object)GroupValue(item, key),
-                    groupKey => groupKey?.ToString() ?? "(none)");
-                break;
-
-            // case "hierarchy":
-            // case "groupedhierarchy":
-            //     Hierarchical rows are not available in this release, and no hierarchy API exists
-            //     on TableViewSource or TableView yet, so there is deliberately no call written
-            //     here to copy. When the control ships hierarchy support, apply it to this same
-            //     source instance alongside the GroupBy stage above so the two compose, and drop
-            //     the IsEnabled="False" from the matching options in the XAML.
-            //     break;
-
-            default:
-                _source.ClearGroupBy();
-                break;
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> {0} ({1:N0} rows)", SampleShaping.Label(FilterSelector), VisibleEntries().Count()));
         }
-
-        // Set ONLY after the shaping call returns.
-        _appliedMode = _mode;
-
-        UpdateShapingUi();
-        UpdateStatusText();
     }
 
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e)
+    private IEnumerable<FilePropertyEntry> VisibleEntries() => SampleShaping.SelectedTag(FilterSelector, "all") switch
     {
-        if (ShapingModeSelector?.SelectedItem is not ComboBoxItem { Tag: string tag })
+        "dates" => Entries.Where(entry => entry.IsDate),
+        "version" => Entries.Where(entry => entry.Source == FilePropertyEntry.VersionResource),
+        "none" => Enumerable.Empty<FilePropertyEntry>(),
+        _ => Entries,
+    };
+
+    // ---- Actions ------------------------------------------------------------------------
+
+    private void OnMoveSectionClick(object sender, RoutedEventArgs e)
+    {
+        if (PropTable.SelectedItem is not FilePropertyEntry entry)
         {
+            SetLastAction("No row selected.");
             return;
         }
 
-        _mode = tag;
-        ApplyShaping();
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Shaping mode -> {0}", _appliedMode == "grouped" ? "Grouped" : "Flat"));
-    }
+        var from = entry.Section;
+        entry.Section = SampleShaping.Next(s_sections, from);
 
-    private void OnShapingGroupKeyChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (ShapingGroupKeyCombo?.SelectedItem is not ComboBoxItem { Tag: string tag })
-        {
-            return;
-        }
-
-        _groupKey = tag;
-        ApplyShaping();
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Group key -> {0}", tag));
-    }
-
-    private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (FilterCombo?.SelectedItem is not ComboBoxItem { Tag: string tag })
-        {
-            return;
-        }
-
-        _filter = tag;
-        ApplyShaping();
-        SetLastAction(tag switch
-        {
-            "filled" => "Filtered to properties that have a value",
-            "none" => "Filtered to zero rows",
-            _ => "Filter cleared",
-        });
-    }
-
-    private void OnPropSelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateShapingUi();
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        if (_appliedMode != "grouped")
-        {
-            return;
-        }
-
-        PropTable.ExpandAllGroups();
-        SetLastAction("Expanded all sections");
-    }
-
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
-    {
-        if (_appliedMode != "grouped")
-        {
-            return;
-        }
-
-        PropTable.CollapseAllGroups();
-        SetLastAction("Collapsed all sections");
-    }
-
-    private void OnMoveSelectedSectionClick(object sender, RoutedEventArgs e)
-    {
-        if (PropTable?.SelectedItem is not FilePropertyEntry selected)
-        {
-            return;
-        }
-
-        var index = Array.IndexOf(s_sections, selected.Section);
-        var next = s_sections[(index + 1 + s_sections.Length) % s_sections.Length];
-        var previous = string.IsNullOrWhiteSpace(selected.Section) ? "(none)" : selected.Section;
-        selected.Section = next;
-
-        // Re-running the shaping stage re-reads every key, so the mutated row re-buckets.
-        ApplyShaping();
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0}: {1} -> {2}", selected.Property, previous, next));
+        // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row;
+        // ApplyShaping re-selects it in its new section.
+        ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", entry.Property, from, entry.Section));
     }
 
     private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
     {
-        if (PropTable?.SelectedItem is not FilePropertyEntry selected)
+        if (PropTable.SelectedItem is not FilePropertyEntry entry)
+        {
+            SetLastAction("No row selected.");
+            return;
+        }
+
+        // A collection change: the source drops the row (and an emptied section) by itself.
+        Entries.Remove(entry);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0} from {1}", entry.Property, entry.Section));
+    }
+
+    private void OnRestoreClick(object sender, RoutedEventArgs e)
+    {
+        if (_currentFile is null)
+        {
+            SetLastAction("No file selected.");
+            return;
+        }
+
+        ShowFile(_currentFile);
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Re-read all {0:N0} properties of {1}", Entries.Count, _currentFile.Name));
+    }
+
+    private void OnNextFileClick(object sender, RoutedEventArgs e)
+    {
+        if (FileList.Items.Count == 0)
+        {
+            SetLastAction("No files to show.");
+            return;
+        }
+
+        // Announced by OnFileSelectionChanged.
+        FileList.SelectedIndex = (FileList.SelectedIndex + 1) % FileList.Items.Count;
+        FileList.ScrollIntoView(FileList.SelectedItem);
+    }
+
+    private void OnPropSelectionChanged(TableView sender, SelectionChangedEventArgs args)
+    {
+        if (SampleShaping.IsReselecting)
         {
             return;
         }
 
-        // The projection is built over this List, so rebuild the source over the shortened list.
-        _entries.Remove(selected);
-        _source = TableViewSource.From(_entries);
-        PropTable.ItemsSource = _source;
-        ApplyShaping();
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed \"{0}\" from {1}", selected.Property, selected.Section));
+        RefreshReadouts();
     }
 
-    private void OnReloadClick(object sender, RoutedEventArgs e)
+    private void RefreshReadouts()
     {
-        if (FileList?.SelectedItem is FileInfo file)
-        {
-            ShowFileProperties(file);
-            SetLastAction("Rebuilt the property list");
-        }
-    }
-
-    private void UpdateShapingUi()
-    {
-        var grouped = _appliedMode == "grouped";
-        var hasSelection = PropTable?.SelectedItem is FilePropertyEntry;
-
-        if (ShapingGroupKeyCombo is not null)
-        {
-            ShapingGroupKeyCombo.IsEnabled = grouped;
-            ToolTipService.SetToolTip(ShapingGroupKeyCombo, grouped
-                ? "Change the GroupBy key while grouped - expansion and selection survive."
-                : "Available once Grouped mode is selected.");
-        }
-
-        SetGroupActionState(ExpandAllButton, grouped, "Expand every section.");
-        SetGroupActionState(CollapseAllButton, grouped, "Collapse every section.");
-
-        if (MoveSectionButton is not null)
-        {
-            MoveSectionButton.IsEnabled = hasSelection;
-            ToolTipService.SetToolTip(MoveSectionButton, hasSelection
-                ? "Rewrites the row's Section, then re-applies GroupBy so the row moves between groups."
-                : "Select a property row first.");
-        }
-
-        if (RemoveRowButton is not null)
-        {
-            RemoveRowButton.IsEnabled = hasSelection;
-            ToolTipService.SetToolTip(RemoveRowButton, hasSelection
-                ? "Removes the row; its group disappears when it was the last one."
-                : "Select a property row first.");
-        }
-
-        if (AppliedModeText is null)
-        {
-            return;
-        }
-
-        AppliedModeText.Text = grouped
-            ? string.Format(CultureInfo.CurrentCulture, "Grouped by {0}", GroupKeyLabel(_groupKey))
-            : "Flat (no shaping)";
-
-        var groups = GroupCounts().ToList();
-        GroupCountText.Text = !grouped
-            ? "(n/a - flat)"
-            : groups.Count == 0
-                ? "0 (empty result)"
-                : string.Join(", ", groups.Select(g => string.Format(CultureInfo.CurrentCulture, "{0} ({1})", g.Key, g.Count)));
-    }
-
-    private static void SetGroupActionState(Button? button, bool grouped, string enabledTip)
-    {
-        if (button is null)
-        {
-            return;
-        }
-
-        button.IsEnabled = grouped;
-        ToolTipService.SetToolTip(button, grouped ? enabledTip : "Available once Grouped mode is selected.");
-    }
-
-    private IEnumerable<FilePropertyEntry> VisibleEntries() => _filter switch
-    {
-        "filled" => _entries.Where(entry => !string.IsNullOrWhiteSpace(entry.Value)),
-        "none" => Enumerable.Empty<FilePropertyEntry>(),
-        _ => _entries,
-    };
-
-    private IEnumerable<(string Key, int Count)> GroupCounts()
-    {
-        var key = _groupKey;
-        return VisibleEntries()
-            .GroupBy(entry => GroupValue(entry, key), StringComparer.Ordinal)
-            .Select(group => (group.Key, group.Count()));
-    }
-
-    // Never returns string.Empty: an empty group identity is an E_INVALIDARG fail-fast.
-    private static string GroupValue(object item, string key)
-    {
-        if (item is not FilePropertyEntry entry)
-        {
-            return "(none)";
-        }
-
-        var value = key switch
-        {
-            "Filled" => string.IsNullOrWhiteSpace(entry.Value) ? "Empty" : "Has a value",
-            _ => entry.Section,
-        };
-
-        return string.IsNullOrWhiteSpace(value) ? "(none)" : value;
-    }
-
-    private static string GroupKeyLabel(string key) => key == "Filled" ? "filled / empty" : "section";
-
-    private void SetLastAction(string text)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = text;
-        }
-    }
-
-    private void UpdateStatusText()
-    {
-        if (StatusText is null)
+        if (RowsText is null || FileText is null || SectionsText is null)
         {
             return;
         }
 
         var visible = VisibleEntries().ToList();
-        var sectionCount = visible.Select(entry => entry.Section).Distinct(StringComparer.Ordinal).Count();
-        StatusText.Text = string.Format(
-            CultureInfo.CurrentCulture,
-            "{0} properties across {1} sections ({2})",
-            visible.Count,
-            sectionCount,
-            _appliedMode == "grouped" ? "grouped" : "flat");
+        FileText.Text = _currentFile?.Name ?? "(none)";
+        SectionsText.Text = visible.Count == 0
+            ? "(none)"
+            : string.Join(", ", s_sections
+                .Select(section => (section, count: visible.Count(entry => entry.Section == section)))
+                .Where(pair => pair.count > 0)
+                .Select(pair => string.Format(CultureInfo.CurrentCulture, "{0} {1:N0}", pair.section, pair.count)));
+        RowsText.Text = SampleShaping.RowCountText(visible.Count);
     }
 
-    private static List<FilePropertyEntry> BuildEntries(FileInfo file)
+    // Group key resolution for this page's model (FIX-PLAN §1.6 R2). Never returns a blank key.
+    private static object KeyOf(FilePropertyEntry? entry, string key)
     {
-        return new List<FilePropertyEntry>
-        {
-            new("Description", "Title"),
-            new("Description", "Subject"),
-            new("Description", "Tags"),
-            new("Description", "Categories"),
-            new("Description", "Comments"),
-
-            new("Origin", "Authors"),
-            new("Origin", "Last saved by"),
-            new("Origin", "Revision number"),
-            new("Origin", "Version number"),
-            new("Origin", "Program name"),
-            new("Origin", "Company"),
-            new("Origin", "Manager"),
-            new("Origin", "Content created", SafeRead(() => file.CreationTime.ToString("g", CultureInfo.CurrentCulture))),
-            new("Origin", "Date last saved", SafeRead(() => file.LastWriteTime.ToString("g", CultureInfo.CurrentCulture))),
-            new("Origin", "Last printed"),
-
-            new("File", "Name", SafeRead(() => file.Name)),
-            new("File", "Item type", SafeRead(() => GetFileType(file.Extension))),
-            new("File", "Folder path", SafeRead(() => file.DirectoryName ?? string.Empty)),
-            new("File", "Size", SafeRead(() => FormatSize(file.Length))),
-            new("File", "Date created", SafeRead(() => file.CreationTime.ToString("g", CultureInfo.CurrentCulture))),
-            new("File", "Date modified", SafeRead(() => file.LastWriteTime.ToString("g", CultureInfo.CurrentCulture))),
-            new("File", "Attributes", SafeRead(() => file.Attributes.ToString())),
-        };
+        var value = key == nameof(FilePropertyEntry.Source) ? entry?.Source : entry?.Section;
+        return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
     }
 
-    private static string SafeRead(Func<string> read)
+    #region Sample scaffolding (generic; see FIX-PLAN §6)
+
+    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
+
+    private void ApplyShaping(bool announce)
     {
-        try
+        // Fires during InitializeComponent (the selectors' SelectedIndex), before the
+        // later-declared elements exist. Guard every element this path touches.
+        if (_source is null || PropTable is null || ShapingModeSelector is null || GroupKeySelector is null
+            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
         {
-            return read() ?? string.Empty;
+            return;
         }
-        catch
+
+        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Section");
+        var selected = PropTable.SelectedItem;
+
+        switch (mode)
         {
-            return string.Empty;
+            case "grouped":
+                // The key selector receives the ROW; the identity selector receives the KEY.
+                _source.GroupBy(item => KeyOf(item as FilePropertyEntry, key), SampleShaping.GroupIdentity);
+                break;
+            // case "hierarchy":
+            // case "groupedHierarchy":
+            //     Hierarchical (tree) rows are not available in this release, so the two matching
+            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+            //     member today. When hierarchy ships, apply it to this same source here, composed
+            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
+            //     after the call returns.
+            default:
+                _source.ClearGroupBy();
+                mode = "flat";
+                break;
+        }
+
+        _appliedMode = mode;
+        _appliedKey = key;
+
+        // Re-applying GroupBy can drop the selection when the selected row changed group.
+        SampleShaping.Reselect(PropTable, selected, Entries.Count + s_sections.Length + 2, RefreshReadouts);
+        UpdateShapingGating();
+        if (announce)
+        {
+            SetLastAction(mode == "grouped"
+                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+                : "Shaping -> Flat");
         }
     }
 
-    private static string GetFileType(string extension)
+    // Call after ANY write to the grouped-on property.
+    private void ReapplyIfGroupedOn(string? propertyName)
     {
-        if (string.IsNullOrWhiteSpace(extension))
+        if (_appliedMode == "grouped" && propertyName == _appliedKey)
         {
-            return "File";
+            ApplyShaping(announce: false);
         }
-
-        return extension.ToLowerInvariant() switch
-        {
-            ".cs" => "C# Source File",
-            ".dll" => "Application extension",
-            ".exe" => "Application",
-            ".json" => "JSON File",
-            ".pdb" => "Program Debug Database",
-            ".pri" => "PRI File",
-            ".txt" => "Text Document",
-            ".winmd" => "Windows Metadata File",
-            ".xaml" => "XAML File",
-            ".xml" => "XML Document",
-            _ => string.Format(CultureInfo.InvariantCulture, "{0} File", extension.TrimStart('.').ToUpperInvariant()),
-        };
     }
 
-    private static string FormatSize(long bytes)
+    private void UpdateShapingGating()
     {
-        string[] units = { "bytes", "KB", "MB", "GB" };
-        var size = (double)bytes;
-        var unit = 0;
-
-        while (size >= 1024 && unit < units.Length - 1)
-        {
-            size /= 1024;
-            unit++;
-        }
-
-        if (unit == 0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, "{0:N0} {1}", bytes, units[unit]);
-        }
-
-        return string.Format(CultureInfo.CurrentCulture, "{0:N1} {1}", size, units[unit]);
+        var grouped = _appliedMode == "grouped";
+        GroupKeySelector.IsEnabled = grouped;
+        ExpandAllButton.IsEnabled = grouped;
+        CollapseAllButton.IsEnabled = grouped;
+        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
     }
+
+    private void OnExpandAllClick(object sender, RoutedEventArgs e)
+    {
+        PropTable.ExpandAllGroups();
+        SetLastAction("Expanded all groups");
+    }
+
+    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
+    {
+        PropTable.CollapseAllGroups();
+        SetLastAction("Collapsed all groups");
+    }
+
+    // The only writer of LastActionText.
+    private void SetLastAction(string message)
+    {
+        if (LastActionText is not null)
+        {
+            LastActionText.Text = message;
+        }
+
+        RefreshReadouts();
+    }
+
+    #endregion
 }

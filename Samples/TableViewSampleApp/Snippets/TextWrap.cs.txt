@@ -1,47 +1,69 @@
-foreach (var person in PersonData.Take(24))
-{
-    People.Add(person);
-}
+/// <summary>Wrapping, trimming and line limit shared by every Bio cell.</summary>
+public static TextWrapState WrapState { get; } = new();
 
-DemoTable.ItemsSource = People;
-BioColumn.Width = new GridLength(_columnWidth);
-ApplyTextState();
-
-// Single owner of the shared TextWrapState. Both the wrap toggle and the max-lines
-// picker funnel through here, so neither overwrites the other's contribution, and every
-// value lands on the state object the cell DataTemplate binds to -- which is what makes
-// the setting survive row recycling.
+// The one writer of WrapState, so the toggle and the max-lines picker never overwrite each
+// other. Every Bio cell binds WrapState, which is what makes the setting survive recycling.
 private void ApplyTextState()
 {
-    var wrapOn = WrapToggle?.IsOn ?? true;
-    var state = GetTextWrapState();
+    var wrapOn = WrapToggle.IsOn;
+    WrapState.TextWrapping = wrapOn ? TextWrapping.Wrap : TextWrapping.NoWrap;
 
-    state.TextWrapping = wrapOn ? TextWrapping.Wrap : TextWrapping.NoWrap;
-
-    // TextBlock.MaxLines only clamps text that actually wraps, so it is deliberately not
-    // applied in NoWrap mode -- and the picker is disabled to say so.
-    state.MaxLines = wrapOn ? _maxLines : 0;
-    state.TextTrimming = !wrapOn || _maxLines > 0
-        ? TextTrimming.CharacterEllipsis
-        : TextTrimming.None;
-
-    MaxLinesComboBox.IsEnabled = wrapOn;
+    // TextBlock.MaxLines only clamps text that wraps, so it is not applied for NoWrap and the
+    // picker is disabled to say so.
+    WrapState.MaxLines = wrapOn ? _maxLines : 0;
+    WrapState.TextTrimming = !wrapOn || _maxLines > 0 ? TextTrimming.CharacterEllipsis : TextTrimming.None;
+    MaxLinesSelector.IsEnabled = wrapOn;
+    QueueRowMeasure();
 }
 
-private void OnWrapToggled(object sender, RoutedEventArgs e)
+private void OnBioWidthChanged(object sender, RangeBaseValueChangedEventArgs e)
 {
-    ApplyTextState();
+    // Fires during InitializeComponent when Value is set; the XAML Width already matches.
+    if (!IsLoaded || BioColumn is null || BioWidthText is null)
+    {
+        return;
+    }
+
+    BioColumn.Width = new GridLength(e.NewValue);
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Bio column Width -> {0:N0} px", e.NewValue));
+    QueueRowMeasure();
 }
 
-private void OnMaxLinesSelectionChanged(object sender, SelectionChangedEventArgs e)
+// Coalesced: many cells change size in one layout pass, but the rows are measured once,
+// after layout, at low priority.
+private void QueueRowMeasure()
 {
-    var item = (ComboBoxItem)MaxLinesComboBox.SelectedItem;
-    _maxLines = int.Parse((string)item.Tag, CultureInfo.InvariantCulture);
-    ApplyTextState();
+    if (_measureQueued)
+    {
+        return;
+    }
+
+    _measureQueued = true;
+    DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+    {
+        _measureQueued = false;
+        if (IsLoaded)
+        {
+            RefreshRowHeights();
+        }
+    });
 }
 
-private void OnColumnWidthChanged(object sender, RangeBaseValueChangedEventArgs e)
+private static void CollectRowHeights(DependencyObject node, SortedSet<double> heights)
 {
-    _columnWidth = e.NewValue;
-    BioColumn.Width = new GridLength(_columnWidth);
+    if (node is TableViewRow row)
+    {
+        if (row.ActualHeight > 0 && row.Visibility == Visibility.Visible)
+        {
+            heights.Add(Math.Round(row.ActualHeight));
+        }
+
+        return;
+    }
+
+    var count = VisualTreeHelper.GetChildrenCount(node);
+    for (var i = 0; i < count; i++)
+    {
+        CollectRowHeights(VisualTreeHelper.GetChild(node, i), heights);
+    }
 }

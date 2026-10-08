@@ -7,7 +7,7 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:controls="using:TableViewSampleApp.Controls">
 <ScrollViewer Padding="{StaticResource PageContentMargin}">
-        <Grid RowSpacing="16" HorizontalAlignment="Stretch" MaxWidth="{StaticResource PageMaxContentWidth}">
+        <Grid RowSpacing="16" HorizontalAlignment="Left" MaxWidth="{StaticResource PageMaxContentWidth}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -16,8 +16,8 @@
 
             <controls:SamplePageHeader
                 Grid.Row="0"
-                Title="About this gallery"
-                Description="A focused samples app that ships alongside the in-development Microsoft.UI.Xaml.Controls.Tabular.TableView control — a partner-share preview of the aligned, model-first TableView surface."/>
+                Title="About"
+                Description="A samples app that ships alongside the in-development Microsoft.UI.Xaml.Controls.Tabular.TableView control and shows its model-first TableView and TableViewSource surface page by page."/>
 
             <Grid Grid.Row="1" RowSpacing="12" ColumnSpacing="32">
                 <Grid.ColumnDefinitions>
@@ -58,7 +58,7 @@
                            Style="{ThemeResource BodyStrongTextBlockStyle}"/>
                 <StackPanel Grid.Row="2" Grid.Column="1" Spacing="2">
                     <TextBlock Text="Samples\TableViewSampleApp\" Style="{ThemeResource BodyTextBlockStyle}"/>
-                    <TextBlock Text="19 pages: Home + Settings + About + 16 feature demos"
+                    <TextBlock Text="26 pages: Home + Settings + About + 23 feature demos"
                                Style="{ThemeResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
@@ -113,11 +113,16 @@
                                 AutomationProperties.Name="Report an issue on GitHub"
                                 AutomationProperties.HelpText="Opens the public Microsoft UI XAML bug report template in a browser."
                                 ToolTipService.ToolTip="Opens the public Microsoft UI XAML bug report template on GitHub."/>
-                        <Button x:Name="CopyAutoFillButton" Content="📋 Copy auto-fill"
+                        <Button x:Name="CopyAutoFillButton"
                                 AutomationProperties.AutomationId="AboutCopyAutoFillButton"
                                 AutomationProperties.Name="Copy auto-fill details"
                                 AutomationProperties.HelpText="Copies a Markdown block with commit, branch, build, theme, and OS details to the clipboard."
-                                ToolTipService.ToolTip="Copies a Markdown block ready to paste into the GitHub issue."/>
+                                ToolTipService.ToolTip="Copies a Markdown block ready to paste into the GitHub issue.">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE8C8;" FontSize="16" AutomationProperties.AccessibilityView="Raw"/>
+                                <TextBlock x:Name="CopyAutoFillLabel" Text="Copy auto-fill"/>
+                            </StackPanel>
+                        </Button>
                     </StackPanel>
                     <TextBlock Text="Auto-fill includes: commit SHA, branch, build timestamp, current theme, and OS / .NET version — everything a triager needs to reproduce."
                                Style="{ThemeResource CaptionTextBlockStyle}"
@@ -136,7 +141,7 @@
                 <TextBlock Grid.Row="7" Grid.Column="0" Text="Theme" VerticalAlignment="Top"
                            Style="{ThemeResource BodyStrongTextBlockStyle}"/>
                 <TextBlock Grid.Row="7" Grid.Column="1"
-                           Text="Switch Default / Light / Dark from the theme button in the title bar (top-right), or choose a theme on the 'Theme &amp; settings' page. Changes apply live across every page."
+                           Text="Switch between Use system setting, Light and Dark with the theme button in the title bar (top-right), or choose a theme on the 'Theme &amp; settings' page. Changes apply live across every page."
                            Style="{ThemeResource BodyTextBlockStyle}"
                            TextWrapping="Wrap"/>
             </Grid>
@@ -147,7 +152,7 @@
                 IsClosable="False"
                 Severity="Informational"
                 Title="Gallery coverage"
-                Message="The Home page lists the shipped TableView capabilities that have working samples in this app, including Showcase, Task Manager, grouped rows, sorting, selection, headers, grid lines, density/layout, columns, virtualization, performance, keyboard navigation, RTL, settings, and About."/>
+                Message="Every page is listed on the Home page and in the navigation pane."/>
         </Grid>
     </ScrollViewer>
 </Page>

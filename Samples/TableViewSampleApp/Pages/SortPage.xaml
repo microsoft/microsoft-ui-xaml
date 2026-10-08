@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Sorting: single-column sort state owned by TableView (header clicks, SortByColumn,
+    ToggleSortDirection, ClearSort, the Sorted event) on a standings table whose template
+    columns sort by SortMemberPath: a date picker, a time picker, a CheckBox and two chips.
+    Structure follows the golden page (CellFlyoutsPage): Try it, one stretched table, then the
+    rail in the order Programmatic sort, Shaping, Actions, Status, What to look for.
+-->
 <Page
     x:Class="TableViewSampleApp.Pages.SortPage"
     NavigationCacheMode="Disabled"
@@ -8,23 +15,106 @@
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:models="using:TableViewSampleApp.Models"
     xmlns:local="using:TableViewSampleApp.Pages"
+    xmlns:system="using:System"
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <Page.Resources>
         <local:SortStandingTintConverter x:Key="SortStandingTintConverter"/>
         <local:SortStandingDotConverter x:Key="SortStandingDotConverter"/>
         <local:SortStandingTextConverter x:Key="SortStandingTextConverter"/>
+        <local:SortCountryTintConverter x:Key="SortCountryTintConverter"/>
+        <local:SortCountryDotConverter x:Key="SortCountryDotConverter"/>
 
-        <!-- Template column cell: a chip whose hue is keyed off Points. SortMemberPath on the
-             column keeps it sortable — a custom template does not opt out of sorting. -->
+        <!-- The templates are page-private because they are typed to LeagueTeam. Each editor is
+             two-way bound and carries a per-row accessible name; RowAutomationNameConverter
+             comes from the shared Templates dictionary. -->
+
+        <!-- Crest: initials from the club name, so the cell is never blank. Decorative. -->
+        <DataTemplate x:Key="CrestTemplate" x:DataType="models:LeagueTeam">
+            <PersonPicture
+                Width="28"
+                Height="28"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                IsTabStop="False"
+                DisplayName="{x:Bind Team, Mode=OneWay}"
+                AutomationProperties.AccessibilityView="Raw"/>
+        </DataTemplate>
+
+        <!-- Country chip: read-only, sorts by the Country string like a text column. -->
+        <DataTemplate x:Key="CountryChipTemplate" x:DataType="models:LeagueTeam">
+            <Border
+                CornerRadius="10"
+                Padding="8,2"
+                Margin="6,2"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Background="{x:Bind Country, Mode=OneWay, Converter={StaticResource SortCountryTintConverter}}"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                AutomationProperties.AccessibilityView="Raw">
+                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Ellipse
+                        Width="8"
+                        Height="8"
+                        VerticalAlignment="Center"
+                        Fill="{x:Bind Country, Mode=OneWay, Converter={StaticResource SortCountryDotConverter}}"
+                        AutomationProperties.AccessibilityView="Raw"/>
+                    <TextBlock
+                        Text="{x:Bind Country, Mode=OneWay}"
+                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="{x:Bind Country, Mode=OneWay}"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <!-- Seeded: an editable CheckBox; the column sorts by the bool (unseeded first). -->
+        <DataTemplate x:Key="SeededCheckBoxTemplate" x:DataType="models:LeagueTeam">
+            <CheckBox
+                IsChecked="{x:Bind IsSeeded, Mode=TwoWay}"
+                MinWidth="0"
+                Margin="14,2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Left"
+                AutomationProperties.Name="{x:Bind Team, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Seeded: {0}'}"/>
+        </DataTemplate>
+
+        <!-- Next match: a compact CalendarDatePicker. CalendarDatePicker.Date is nullable, so it
+             binds the NextMatchDateOrNull shim; the column sorts by NextMatchDate. -->
+        <DataTemplate x:Key="NextMatchDateTemplate" x:DataType="models:LeagueTeam">
+            <CalendarDatePicker
+                Date="{x:Bind NextMatchDateOrNull, Mode=TwoWay}"
+                DateFormat="{}{day.integer} {month.abbreviated} {year.full}"
+                Margin="6,2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"
+                AutomationProperties.Name="{x:Bind Team, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Next match for {0}'}"/>
+        </DataTemplate>
+
+        <!-- Kickoff: a compact 24-hour TimePicker; the column sorts by the TimeSpan. -->
+        <DataTemplate x:Key="KickoffTimeTemplate" x:DataType="models:LeagueTeam">
+            <TimePicker
+                Time="{x:Bind Kickoff, Mode=TwoWay}"
+                ClockIdentifier="24HourClock"
+                MinuteIncrement="15"
+                MinWidth="0"
+                Margin="6,2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Stretch"
+                AutomationProperties.Name="{x:Bind Team, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Kickoff for {0}'}"/>
+        </DataTemplate>
+
+        <!-- Standing: a chip whose hue is keyed off Points; the column sorts by Points. -->
         <DataTemplate x:Key="StandingChipTemplate" x:DataType="models:LeagueTeam">
             <Border
                 Background="{x:Bind Points, Mode=OneWay, Converter={StaticResource SortStandingTintConverter}}"
                 CornerRadius="10"
                 Padding="8,2"
-                Margin="8,0"
+                Margin="6,2"
                 HorizontalAlignment="Left"
-                VerticalAlignment="Center">
+                VerticalAlignment="Center"
+                AutomationProperties.AccessibilityView="Raw">
                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <Ellipse
                         Width="8"
@@ -35,15 +125,28 @@
                     <TextBlock
                         Text="{x:Bind Points, Mode=OneWay, Converter={StaticResource SortStandingTextConverter}}"
                         Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                        VerticalAlignment="Center"/>
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="{x:Bind Points, Mode=OneWay, Converter={StaticResource SortStandingTextConverter}}"/>
                 </StackPanel>
             </Border>
+        </DataTemplate>
+
+        <!-- Shown when "Clear all rows" empties the standings, flat or grouped. -->
+        <DataTemplate x:Key="SortEmptyTemplate" x:DataType="system:Object">
+            <StackPanel Spacing="4" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="No teams to show" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>
+                <TextBlock
+                    Text="Every row was removed. Choose Restore rows to bring the standings back; the active sort and grouping apply again."
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="Wrap"
+                    HorizontalAlignment="Center"/>
+            </StackPanel>
         </DataTemplate>
     </Page.Resources>
 
     <controls:SamplePresenter
         Header="Sorting"
-        Description="The aligned TableView owns scalar sort STATE — SortColumn, SortDirection, the header chevron, the SortByColumn / ToggleSortDirection / ClearSort API, and the Sorted event — and it reshapes the bound rows itself, so a plain ObservableCollection sorts without the app re-ordering anything. Click a header to sort the standings, click again to flip the direction, or drive the sort from code with the buttons. The point of this page is sorting COMBINED with grouping: switch the shaping mode to Grouped, then click a header — rows reorder WITHIN each group instead of the grouping collapsing, which is the interaction the dedicated Groups page cannot show. The Standing column is a TableViewTemplateColumn with a custom chip cell, and it still sorts because SortMemberPath names the property behind the template. Sport standings — order by points descending, with goal difference as the tiebreaker — is the textbook single-key sort scenario."
+        Description="TableView owns single-column sort state: click a header to sort and again to reverse, or call SortByColumn, ToggleSortDirection and ClearSort; the Sorted event reports each change. Template columns sort by SortMemberPath, the value behind the control: Seeded by the bool, Next match by the DateTimeOffset and Kickoff by the TimeSpan. As text, 2 Jan sorts before 28 Dec; show the text-date column to compare. Grouped, a sort reorders the rows within each group."
         SourceCaption="SortPage.xaml (excerpt)"
         SourceSnippet="Sort.xaml.txt"
         AdditionalSnippetCaption="SortPage.xaml.cs (excerpt)"
@@ -56,57 +159,47 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+                <!-- scaffold:tryit -->
                 <muxc:InfoBar
                     Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Try it"
-                    Message="Click a column header to sort by it; click again to flip the direction. Switch Shaping mode to Grouped and sort again — rows reorder within each group. Use the buttons to call SortByColumn, ToggleSortDirection, and ClearSort from code."
-                    MinHeight="104"/>
+                    MinHeight="104"
+                    Message="Click the Next match header to sort by date, then open a row's Next match picker, pick a later date and watch the row move. Choose Sort next match as text in Actions and compare the order. Switch Shaping mode to Grouped and click Pts: the rows reorder within each group."/>
+                <!-- /scaffold -->
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
                         x:Name="TeamsTable"
-                        AutomationProperties.AutomationId="SortTeamsTable"
+                        AutomationProperties.AutomationId="SortTable"
                         AutomationProperties.Name="League standings"
+                        ItemsSource="{x:Bind Source}"
                         SelectionMode="Single"
                         IsReadOnly="False"
+                        EmptyTemplate="{StaticResource SortEmptyTemplate}"
                         Sorted="OnTableSorted"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <!-- Widths are explicit pixels / one Star. Auto is avoided deliberately:
-                             it resolves from realized rows only and is shrink-capable, so widths
-                             oscillate while scrolling (TableView_Layout.cpp:25-29, :267-269).
-                             HeaderToolTip spells out the standings abbreviations. -->
-                        <tv:TableViewTextColumn x:Name="GroupColumn"          Header="Group" Width="74"  IsReadOnly="True" HeaderToolTip="Group stage group, A–H"  SortMemberPath="Group"          Binding="{Binding Group}"/>
-                        <!-- Editable free text: the built-in TextBox editor, two-way bound.
-                             LeagueTeam raises PropertyChanged for Team, so the committed value
-                             re-renders instead of leaving a stale cell after row recycling. -->
-                        <tv:TableViewTextColumn x:Name="TeamColumn"           Header="Team"  Width="*" MinWidth="160" HeaderToolTip="Team name — editable: press F2 or double-click a cell" SortMemberPath="Team" Binding="{Binding Team, Mode=TwoWay}"/>
-                        <tv:TableViewTextColumn x:Name="PlayedColumn"         Header="P"     Width="48"  IsReadOnly="True" HeaderToolTip="Played"                  CanSort="False"                 Binding="{Binding Played}"/>
-                        <!-- Editable number: editing Wins changes Points, so the row must re-rank
-                             under a Points sort and can cross a Standing band while grouped. -->
-                        <tv:TableViewTextColumn x:Name="WinsColumn"           Header="W"     Width="48"  HeaderToolTip="Won — editable: press F2 or double-click a cell" SortMemberPath="Wins" Binding="{Binding Wins, Mode=TwoWay}"/>
-                        <tv:TableViewTextColumn x:Name="DrawsColumn"          Header="D"     Width="48"  IsReadOnly="True" HeaderToolTip="Drawn"                   SortMemberPath="Draws"          Binding="{Binding Draws}"/>
-                        <tv:TableViewTextColumn x:Name="LossesColumn"         Header="L"     Width="48"  IsReadOnly="True" HeaderToolTip="Lost"                    SortMemberPath="Losses"         Binding="{Binding Losses}"/>
-                        <tv:TableViewTextColumn x:Name="GoalsForColumn"       Header="GF"    Width="52"  IsReadOnly="True" HeaderToolTip="Goals for"               SortMemberPath="GoalsFor"       Binding="{Binding GoalsFor}"/>
-                        <tv:TableViewTextColumn x:Name="GoalsAgainstColumn"   Header="GA"    Width="52"  IsReadOnly="True" HeaderToolTip="Goals against"           SortMemberPath="GoalsAgainst"   Binding="{Binding GoalsAgainst}"/>
-                        <tv:TableViewTextColumn x:Name="GoalDifferenceColumn" Header="GD"    Width="52"  IsReadOnly="True" HeaderToolTip="Goal difference — goals for minus goals against" SortMemberPath="GoalDifference" Binding="{Binding GoalDifference}"/>
-                        <tv:TableViewTextColumn x:Name="PointsColumn"         Header="Pts"   Width="58"  IsReadOnly="True" HeaderToolTip="Points — 3 per win, 1 per draw. The primary sort key." SortMemberPath="Points" Binding="{Binding Points}"/>
-                        <!-- Templated cell, still sortable: SortMemberPath names the property the
-                             template renders, so the chip column sorts like any text column. The
-                             chip is read-only by design — a decorative dot plus a label, not a
-                             disabled-but-announced input control. -->
-                        <tv:TableViewTemplateColumn
-                            x:Name="StandingColumn"
-                            Header="Standing"
-                            Width="132"
-                            MinWidth="110"
-                            IsReadOnly="True"
-                            HeaderToolTip="Qualification band derived from Points: Qualified (12+), Playoff (7–11), Eliminated."
-                            CanSort="True"
-                            SortMemberPath="Points"
-                            CellTemplate="{StaticResource StandingChipTemplate}"/>
+                        <!-- The template renders a control; SortMemberPath names the value that orders
+                             the rows. A text column without SortMemberPath sorts by its Binding path. -->
+                        <tv:TableViewTemplateColumn x:Name="CrestColumn" Header="Crest" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource CrestTemplate}" SortMemberPath="Team" HeaderToolTip="Club crest, drawn from the team's initials. Sorts by team name."/>
+                        <tv:TableViewTextColumn x:Name="GroupColumn" Header="Group" Width="{StaticResource ColWidthNarrow}" IsReadOnly="True" HeaderToolTip="Group stage group, A–H." Binding="{Binding Group}"/>
+                        <tv:TableViewTextColumn x:Name="TeamColumn" Header="Team" Width="*" MinWidth="{StaticResource ColMinWidthStar}" HeaderToolTip="Team name. Editable: press F2 or double-click a cell." Binding="{Binding Team, Mode=TwoWay}"/>
+                        <tv:TableViewTemplateColumn x:Name="CountryColumn" Header="Country" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource CountryChipTemplate}" SortMemberPath="Country" HeaderToolTip="Read-only chip. Sorts by the Country string, like a text column."/>
+                        <tv:TableViewTemplateColumn x:Name="SeededColumn" Header="Seeded" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource SeededCheckBoxTemplate}" SortMemberPath="IsSeeded" HeaderToolTip="Pot-1 seed in the draw. Editable CheckBox; sorts by the bool, unseeded first."/>
+                        <tv:TableViewTemplateColumn x:Name="NextMatchColumn" Header="Next match" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource NextMatchDateTemplate}" SortMemberPath="NextMatchDate" HeaderToolTip="Date of the next fixture. Editable; sorts by the DateTimeOffset, so 28 Dec comes before 2 Jan."/>
+                        <tv:TableViewTemplateColumn x:Name="KickoffColumn" Header="Kickoff" Width="{StaticResource ColWidthTimeCompact}" CellTemplate="{StaticResource KickoffTimeTemplate}" SortMemberPath="Kickoff" HeaderToolTip="Kickoff time, 24-hour clock. Editable; sorts by the TimeSpan."/>
+                        <tv:TableViewTextColumn x:Name="NextMatchTextColumn" Header="Next match (text)" Width="{StaticResource ColWidthDate}" Visibility="Collapsed" IsReadOnly="True" HeaderToolTip="The same date as plain text. Sorts alphabetically, so 2 Jan comes before 28 Dec." Binding="{Binding NextMatchText}"/>
+                        <tv:TableViewTextColumn x:Name="PlayedColumn" Header="P" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" CanSort="False" HeaderToolTip="Played. Not sortable: every team has played the same number of games." Binding="{Binding Played}"/>
+                        <tv:TableViewTextColumn x:Name="WinsColumn" Header="W" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" HeaderToolTip="Won" Binding="{Binding Wins}"/>
+                        <tv:TableViewTextColumn x:Name="DrawsColumn" Header="D" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" HeaderToolTip="Drawn" Binding="{Binding Draws}"/>
+                        <tv:TableViewTextColumn x:Name="LossesColumn" Header="L" Width="{StaticResource ColWidthStatNarrow}" IsReadOnly="True" HeaderToolTip="Lost" Binding="{Binding Losses}"/>
+                        <tv:TableViewTextColumn x:Name="GoalsForColumn" Header="GF" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Goals for" Binding="{Binding GoalsFor}"/>
+                        <tv:TableViewTextColumn x:Name="GoalsAgainstColumn" Header="GA" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Goals against" Binding="{Binding GoalsAgainst}"/>
+                        <tv:TableViewTextColumn x:Name="GoalDifferenceColumn" Header="GD" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Goal difference: goals for minus goals against. The tiebreaker after points." Binding="{Binding GoalDifference}"/>
+                        <tv:TableViewTextColumn x:Name="PointsColumn" Header="Pts" Width="{StaticResource ColWidthStat}" IsReadOnly="True" HeaderToolTip="Points: 3 per win, 1 per draw. The primary standings key." Binding="{Binding Points}"/>
+                        <tv:TableViewTemplateColumn x:Name="StandingColumn" Header="Standing" Width="{StaticResource ColWidthChip}" IsReadOnly="True" CellTemplate="{StaticResource StandingChipTemplate}" SortMemberPath="Points" HeaderToolTip="Qualification band derived from Points: Qualified (12+), Playoff (7–11), Eliminated. Sorts by Points."/>
                     </tv:TableView>
                 </Border>
             </Grid>
@@ -114,12 +207,12 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Programmatic sort" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock
-                    Text="Drive the sort from code. Each button calls a single-column sort API and the table — with its header chevron — updates to match. A new sort replaces the previous one (single-column)."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <StackPanel Spacing="8">
+                <!-- 1. Primary feature -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Programmatic sort">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Programmatic sort"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Each button calls TableView.SortByColumn, ToggleSortDirection or ClearSort; the header arrow and the Status readouts follow. A new sort replaces the previous one."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
                     <Grid ColumnSpacing="8" RowSpacing="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -128,170 +221,233 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <Button Grid.Row="0" Grid.Column="0" Content="Pts desc" Click="OnSortPointsDescClick" AutomationProperties.AutomationId="SortPointsDescButton" AutomationProperties.Name="Sort by Points descending" ToolTipService.ToolTip="SortByColumn(PointsColumn, Descending)" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                        <Button Grid.Row="0" Grid.Column="1" Content="Group asc" Click="OnSortGroupAscClick" AutomationProperties.AutomationId="SortGroupAscButton" AutomationProperties.Name="Sort by Group ascending" ToolTipService.ToolTip="SortByColumn(GroupColumn, Ascending)" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                        <Button Grid.Row="1" Grid.Column="0" Content="GD desc" Click="OnSortGoalDifferenceDescClick" AutomationProperties.AutomationId="SortGoalDifferenceDescButton" AutomationProperties.Name="Sort by Goal difference descending" ToolTipService.ToolTip="SortByColumn(GoalDifferenceColumn, Descending)" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                        <Button Grid.Row="1" Grid.Column="1" Content="Toggle Pts" Click="OnTogglePointsClick" AutomationProperties.AutomationId="TogglePointsButton" AutomationProperties.Name="Toggle the Points sort direction" ToolTipService.ToolTip="ToggleSortDirection(PointsColumn)" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button Grid.Row="0" Grid.Column="0" x:Name="SortPointsDescButton" AutomationProperties.AutomationId="SortPointsDescButton"
+                                Content="Points ↓" Click="OnSortPointsDescClick"
+                                AutomationProperties.Name="Sort by points, highest first"
+                                ToolTipService.ToolTip="SortByColumn(PointsColumn, Descending): the standings order."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button Grid.Row="0" Grid.Column="1" x:Name="SortGroupAscButton" AutomationProperties.AutomationId="SortGroupAscButton"
+                                Content="Group ↑" Click="OnSortGroupAscClick"
+                                AutomationProperties.Name="Sort by group, A first"
+                                ToolTipService.ToolTip="SortByColumn(GroupColumn, Ascending)."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button Grid.Row="1" Grid.Column="0" x:Name="SortGoalDifferenceDescButton" AutomationProperties.AutomationId="SortGoalDifferenceDescButton"
+                                Content="GD ↓" Click="OnSortGoalDifferenceDescClick"
+                                AutomationProperties.Name="Sort by goal difference, highest first"
+                                ToolTipService.ToolTip="SortByColumn(GoalDifferenceColumn, Descending)."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button Grid.Row="1" Grid.Column="1" x:Name="SortNextMatchButton" AutomationProperties.AutomationId="SortNextMatchButton"
+                                Content="Next match ↑" Click="OnSortNextMatchClick"
+                                AutomationProperties.Name="Sort by next match date, soonest first"
+                                ToolTipService.ToolTip="SortByColumn(NextMatchColumn, Ascending): a template column sorted by the DateTimeOffset."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button Grid.Row="2" Grid.Column="0" x:Name="SortKickoffButton" AutomationProperties.AutomationId="SortKickoffButton"
+                                Content="Kickoff ↑" Click="OnSortKickoffClick"
+                                AutomationProperties.Name="Sort by kickoff time, earliest first"
+                                ToolTipService.ToolTip="SortByColumn(KickoffColumn, Ascending): a template column sorted by the TimeSpan."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button Grid.Row="2" Grid.Column="1" x:Name="SortSeededButton" AutomationProperties.AutomationId="SortSeededFirstButton"
+                                Content="Seeded first" Click="OnSortSeededClick"
+                                AutomationProperties.Name="Sort seeded teams first"
+                                ToolTipService.ToolTip="SortByColumn(SeededColumn, Descending): a CheckBox column sorted by the bool."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button Grid.Row="3" Grid.Column="0" x:Name="TogglePointsButton" AutomationProperties.AutomationId="SortTogglePointsButton"
+                                Content="Toggle Points" Click="OnTogglePointsClick"
+                                AutomationProperties.Name="Toggle the points sort direction"
+                                ToolTipService.ToolTip="ToggleSortDirection(PointsColumn): reverses the Points sort, or starts it."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                        <Button Grid.Row="3" Grid.Column="1" x:Name="ClearSortButton" AutomationProperties.AutomationId="SortClearSortButton"
+                                Content="Clear sort" Click="OnClearSortClick"
+                                ToolTipService.ToolTip="ClearSort(): the rows return to source order and Sorted fires with no column."
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                     </Grid>
-                    <Button Content="Clear sort" Click="OnClearSortClick" AutomationProperties.AutomationId="ClearSortButton" ToolTipService.ToolTip="ClearSort() — Sorted fires with no sorted columns." HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
                 </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Group the standings, then click a column header: the rows reorder WITHIN each group instead of the grouping collapsing. TableViewSource.GroupBy reshapes the same source in place, so the active sort, selection and scroll offset all survive a shaping change."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <ComboBox
-                    x:Name="ShapingModeSelector"
-                    AutomationProperties.AutomationId="ShapingModeSelector"
-                    Header="Shaping mode"
-                    SelectedIndex="0"
-                    SelectionChanged="OnShapingModeChanged"
-                    HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Flat" Tag="flat"/>
-                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                    <!-- Hierarchical rows are not available in this release. The options are shown
-                         disabled so the shape of the feature is visible; re-enable when the control
-                         ships hierarchy support. No hierarchy API exists on TableView or
-                         TableViewSource yet — TableViewRowInfo.h only reserves room for it — so the
-                         code-behind stub in ApplyGrouping is prose, not a call. -->
-                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False" ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                </ComboBox>
-                <ComboBox
-                    x:Name="GroupBySelector"
-                    AutomationProperties.AutomationId="SortGroupBySelector"
-                    Header="Group by"
-                    SelectedIndex="0"
-                    IsEnabled="False"
-                    ToolTipService.ToolTip="Available once the shaping mode is Grouped."
-                    SelectionChanged="OnGroupByChanged"
-                    HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Group" Tag="Group"/>
-                    <ComboBoxItem Content="Standing" Tag="Standing"/>
-                </ComboBox>
-                <Grid ColumnSpacing="8" RowSpacing="8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Group the standings, then sort: the rows reorder within each group, and the groups follow the order of their first row. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="SortShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="SortGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Group" Tag="Group"/>
+                        <ComboBoxItem Content="Standing" Tag="Standing"/>
+                        <ComboBoxItem Content="Country" Tag="Country"/>
+                        <ComboBoxItem Content="Seeded" Tag="IsSeeded"/>
+                    </ComboBox>
                     <Button
-                        Grid.Column="0"
                         x:Name="ExpandAllButton"
                         AutomationProperties.AutomationId="SortExpandAllGroupsButton"
                         Content="Expand all"
-                        Click="OnExpandAllGroupsClick"
+                        Click="OnExpandAllClick"
                         IsEnabled="False"
-                        ToolTipService.ToolTip="Available once a Group by key is selected."
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"/>
                     <Button
-                        Grid.Column="1"
                         x:Name="CollapseAllButton"
                         AutomationProperties.AutomationId="SortCollapseAllGroupsButton"
                         Content="Collapse all"
-                        Click="OnCollapseAllGroupsClick"
+                        Click="OnCollapseAllClick"
                         IsEnabled="False"
-                        ToolTipService.ToolTip="Available once a Group by key is selected."
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"/>
-                </Grid>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Each action probes an interaction between sorting and grouping — a mutation that must re-position a row, an add and a remove inside a live group, and grouping an empty set. Watch the table and the Last action readout."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <StackPanel Spacing="8">
-                    <Button
-                        x:Name="AwardWinButton"
-                        Content="Award a win to the bottom team"
-                        Click="OnAwardWinClick"
-                        AutomationProperties.AutomationId="SortAwardWinButton"
-                        AutomationProperties.Name="Award a win to the bottom team"
-                        ToolTipService.ToolTip="Mutates Wins on the lowest-ranked team, so its Points change and the row must re-position under the active sort — and change Standing band when grouped by Standing."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Each action changes a value the active sort or grouping depends on, then applies the sort again so the row moves. Watch the table and the Last action readout. Actions that change one row need a selected row."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
                         <Button
-                            Grid.Column="0"
+                            x:Name="AwardWinButton"
+                            AutomationProperties.AutomationId="SortAwardWinButton"
+                            Content="Award the bottom team a win"
+                            Click="OnAwardWinClick"
+                            ToolTipService.ToolTip="Overturns one loss of the lowest-ranked team against a group rival. Played, goals and the group totals stay consistent; under a Points sort the row climbs."
+                            AutomationProperties.HelpText="Overturns one loss of the lowest-ranked team against a group rival. Under a Points sort the row climbs."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="PostponeButton"
+                            AutomationProperties.AutomationId="SortPostponeButton"
+                            Content="Postpone selected match by 7 days"
+                            Click="OnPostponeClick"
+                            ToolTipService.ToolTip="Moves the selected team's next match a week later. Under a Next match sort the row moves down."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="ToggleTextDateButton"
+                            AutomationProperties.AutomationId="SortToggleTextDateButton"
+                            Content="Show the text-date column"
+                            Click="OnToggleTextDateClick"
+                            ToolTipService.ToolTip="Shows or hides a text column holding the same date as a string."
+                            AutomationProperties.HelpText="Shows or hides a text column holding the same date as a string."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="SortAsTextButton"
+                            AutomationProperties.AutomationId="SortNextMatchAsTextButton"
+                            Content="Sort next match as text"
+                            Click="OnSortAsTextClick"
+                            ToolTipService.ToolTip="Shows the text-date column and sorts it: the readout names a pair the text order gets wrong."
+                            AutomationProperties.HelpText="Shows the text-date column and sorts it alphabetically."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
                             x:Name="AddTeamButton"
-                            Content="Add to Group A"
-                            Click="OnAddTeamClick"
                             AutomationProperties.AutomationId="SortAddTeamButton"
-                            AutomationProperties.Name="Add a team to Group A"
-                            ToolTipService.ToolTip="Adds a row to the bound collection; it lands inside Group A when grouped and in sorted position when sorted."
+                            Content="Add a late entrant to Group A"
+                            Click="OnAddTeamClick"
+                            ToolTipService.ToolTip="Adds a team with no games played. It lands in sorted position and inside Group A when grouped."
+                            AutomationProperties.HelpText="Adds a team with no games played to Group A."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                         <Button
-                            Grid.Column="1"
                             x:Name="RemoveTeamButton"
-                            Content="Remove from Group A"
-                            Click="OnRemoveTeamClick"
                             AutomationProperties.AutomationId="SortRemoveTeamButton"
-                            AutomationProperties.Name="Remove a team from Group A"
-                            ToolTipService.ToolTip="Removes the last Group A row. Disabled when Group A is empty."
+                            Content="Remove the last Group A team"
+                            Click="OnRemoveTeamClick"
+                            ToolTipService.ToolTip="Removes one row from Group A; when grouped the group count drops."
+                            AutomationProperties.HelpText="Removes one row from Group A."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
-                    </Grid>
-                    <Button
-                        x:Name="ToggleEmptyButton"
-                        Content="Clear all rows"
-                        Click="OnToggleEmptyClick"
-                        AutomationProperties.AutomationId="SortToggleEmptyButton"
-                        AutomationProperties.Name="Clear all rows or restore them"
-                        ToolTipService.ToolTip="Groups an empty set, then refills it — the grouped projection must show no groups and then rebuild them."
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="ToggleEmptyButton"
+                            AutomationProperties.AutomationId="SortToggleEmptyButton"
+                            Content="Clear all rows"
+                            Click="OnToggleEmptyClick"
+                            ToolTipService.ToolTip="Empties the standings so the EmptyTemplate shows, then restores them with the sort and grouping applied."
+                            AutomationProperties.HelpText="Empties the standings, or restores them."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
                 </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <Grid ColumnSpacing="12" RowSpacing="4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Active sort" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ActiveSortText" AutomationProperties.AutomationId="SortActiveSortText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Sorted event" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="SortedFiredText" AutomationProperties.AutomationId="SortSortedFiredText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Top 5 in view" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="TopRowsText" AutomationProperties.AutomationId="SortTopRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="SortRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="SortShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="5" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="SortLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Sorted fires" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="0" Grid.Column="1" x:Name="SortedFiredCountText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SortedFiredCountText"/>
-
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Trigger column" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="1" Grid.Column="1" x:Name="TriggerColumnText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TriggerColumnText" TextWrapping="Wrap"/>
-
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Active sort" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="2" Grid.Column="1" x:Name="ActiveSortText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ActiveSortText" TextWrapping="Wrap"/>
-
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="3" Grid.Column="1" x:Name="VisibleRowsText" Text="0" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="VisibleRowsText"/>
-
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Grouped by" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="4" Grid.Column="1" x:Name="ShapingModeText" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SortShapingModeText" TextWrapping="Wrap"/>
-
-                    <TextBlock Grid.Row="5" Grid.Column="0" Text="Top 5 after sort" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="5" Grid.Column="1" x:Name="TopRowsPreviewText" Text="(load…)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TopRowsPreviewText" TextWrapping="Wrap"/>
-
-                    <TextBlock Grid.Row="6" Grid.Column="0" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}" VerticalAlignment="Top"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" Grid.Row="6" Grid.Column="1" x:Name="LastActionText" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SortLastActionText" TextWrapping="Wrap"/>
-                </Grid>
+                <muxc:InfoBar
+                    Title="What to look for"
+                    Severity="Informational"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Message="Template columns sort by SortMemberPath, the DateTimeOffset, TimeSpan or bool behind the control, not by the text it renders: by date 28 Dec comes before 2 Jan, as text it comes after. An edited value does not re-position its row until the sort is applied again, which is why this page calls SortByColumn after each edit. The standings plus the date and time columns are wider than the window, so the table scrolls horizontally on purpose."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
-
     </controls:SamplePresenter>
 </Page>

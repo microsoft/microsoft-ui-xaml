@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Grouped rows: TableViewSource.GroupBy on one source, a custom GroupHeaderTemplate, and
+    ExpandAllGroups / CollapseAllGroups. Unlike the other pages it starts Grouped, because
+    grouping is its subject (FIX-PLAN Q2). Structure follows the golden page (CellFlyoutsPage).
+-->
 <Page
     x:Class="TableViewSampleApp.Pages.GroupsPage"
     NavigationCacheMode="Disabled"
@@ -6,43 +11,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
-    xmlns:models="using:TableViewSampleApp.Models"
+    xmlns:system="using:System"
     xmlns:controls="using:TableViewSampleApp.Controls"
     xmlns:pages="using:TableViewSampleApp.Pages">
 
     <Page.Resources>
         <pages:GroupExpansionTextConverter x:Key="GroupExpansionTextConverter"/>
         <pages:GroupCountTextConverter x:Key="GroupCountTextConverter"/>
-        <pages:CurrencyTextConverter x:Key="CurrencyTextConverter"/>
-        <pages:RowAutomationNameConverter x:Key="RowAutomationNameConverter"/>
-        <pages:DepartmentChoices x:Key="DepartmentChoices"/>
-
-        <!-- Editable cells. Each one is a REAL control: default IsTabStop, no
-             IsHitTestVisible="False", Mode=TwoWay, and Person raises PropertyChanged for every
-             property bound here (Person.cs:61-115) so the cell re-reads the committed value when
-             the row is recycled. Each carries a per-row accessible name so fifty identical
-             check boxes do not all announce the same thing. -->
-        <DataTemplate x:Key="DepartmentCellTemplate" x:DataType="models:Person">
-            <ComboBox
-                ItemsSource="{StaticResource DepartmentChoices}"
-                SelectedItem="{x:Bind Department, Mode=TwoWay}"
-                HorizontalAlignment="Stretch"
-                Margin="4,2"
-                AutomationProperties.Name="{Binding FullName, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Department for {0}'}"/>
-        </DataTemplate>
-
-        <DataTemplate x:Key="ActiveCellTemplate" x:DataType="models:Person">
-            <CheckBox
-                IsChecked="{x:Bind IsActive, Mode=TwoWay}"
-                MinWidth="0"
-                Margin="12,0,0,0"
-                AutomationProperties.Name="{Binding FullName, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Active for {0}'}"/>
-        </DataTemplate>
 
         <!-- Left-aligned StackPanel, not a stretched Grid: the group-header ContentPresenter sizes
              the header content to its desired width, so a Grid with a `*` first column collapsed
-             the count and the expansion chip to zero width and they never rendered. The count
-             binds ItemCount (Int32) rather than ItemCountText so it is always populated. -->
+             the count and the expansion chip to zero width. The count binds ItemCount (Int32)
+             rather than ItemCountText so it is always populated. -->
         <DataTemplate x:Key="CustomGroupHeaderTemplate" x:DataType="tv:TableViewGroupInfo">
             <StackPanel Orientation="Horizontal" Spacing="10" Padding="0,6" VerticalAlignment="Center">
                 <TextBlock
@@ -67,11 +47,23 @@
                 </Border>
             </StackPanel>
         </DataTemplate>
+
+        <!-- Shown when every row has been removed, grouped or flat. -->
+        <DataTemplate x:Key="GroupsEmptyTemplate" x:DataType="system:Object">
+            <StackPanel Spacing="4" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="No people to group" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>
+                <TextBlock
+                    Text="The source is empty, so the grouped projection has no groups. Choose Restore all rows to bring them back."
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="Wrap"
+                    HorizontalAlignment="Center"/>
+            </StackPanel>
+        </DataTemplate>
     </Page.Resources>
 
     <controls:SamplePresenter
         Header="Grouped rows"
-        Description="Group rows with TableViewSource.GroupBy(keySelector, groupIdentitySelector), render a custom GroupHeaderTemplate, and drive the public ExpandAllGroups / CollapseAllGroups methods."
+        Description="TableViewSource.GroupBy(keySelector, groupIdentitySelector) groups one source in place: the key selector receives each row and the identity selector each group key. GroupHeaderTemplate replaces the header content, and ExpandAllGroups and CollapseAllGroups drive every group at once. The page starts grouped by Department: change a row's Department or Active value and it moves to its new group, because the page applies GroupBy again."
         SourceCaption="GroupsPage.xaml (excerpt)"
         SourceSnippet="Groups.xaml.txt"
         AdditionalSnippetCaption="GroupsPage.xaml.cs (excerpt)"
@@ -84,36 +76,33 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+                <!-- scaffold:tryit -->
                 <muxc:InfoBar
                     Grid.Row="0"
+                    Title="Try it"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="Try it"
-                    Message="Toggle grouping, switch the group key, expand or collapse all groups, and swap between the built-in group header and the custom template shown in this sample."
-                    MinHeight="104"/>
+                    MinHeight="104"
+                    Message="The table starts grouped by Department. Pick another department in a row's Department box and watch the row move to that group, then switch Group key to Active and clear a row's checkbox. Choose Collapse all, then expand one group from its header."/>
+                <!-- /scaffold -->
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
-                        x:Name="PeopleTableControl"
-                        AutomationProperties.AutomationId="PeopleTable"
+                        x:Name="PeopleTable"
+                        AutomationProperties.AutomationId="GroupsTable"
                         AutomationProperties.Name="Grouped people"
+                        ItemsSource="{x:Bind Source}"
                         SelectionMode="Single"
-                        SelectionChanged="OnPeopleSelectionChanged"
+                        EmptyTemplate="{StaticResource GroupsEmptyTemplate}"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <tv:TableView.Columns>
-                            <tv:TableViewTextColumn Header="First name" Width="110" MinWidth="90" Binding="{Binding FirstName}" SortMemberPath="FirstName"/>
-                                <tv:TableViewTextColumn Header="Last name" Width="110" MinWidth="90" Binding="{Binding LastName}" SortMemberPath="LastName"/>
-                                <tv:TableViewTemplateColumn Header="Department" HeaderToolTip="The grouped-on value when the group key is Department. Editing it with the in-cell ComboBox moves the row to another group." Width="160" MinWidth="140" CellTemplate="{StaticResource DepartmentCellTemplate}" CanSort="True" SortMemberPath="Department"/>
-                                <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="140" Binding="{Binding Role}" SortMemberPath="Role"/>
-                                <tv:TableViewTemplateColumn Header="Active" HeaderToolTip="The grouped-on value when the group key is Active status. Toggling the in-cell CheckBox moves the row between the Active and Inactive groups." Width="70" MinWidth="60" CellTemplate="{StaticResource ActiveCellTemplate}" CanSort="True" SortMemberPath="IsActive"/>
-                                <tv:TableViewTextColumn Header="Salary" HeaderToolTip="Annual salary, formatted as whole currency units." Width="110" MinWidth="90" Binding="{Binding Salary, Converter={StaticResource CurrencyTextConverter}}" SortMemberPath="Salary"/>
-                                <!-- Read-only date text, not an in-cell DatePicker: a three-field
-                                     DatePicker needs ~300 px and this page's column budget cannot give
-                                     it that without dropping a meaningful column, and a DatePicker that
-                                     permanently clips its year field is worse than a legible label. -->
-                                <tv:TableViewTextColumn Header="Join date" HeaderToolTip="Date the person joined, sorted on the underlying DateTimeOffset." Width="120" MinWidth="100" Binding="{Binding JoinDateText}" SortMemberPath="JoinDate"/>
-                        </tv:TableView.Columns>
+                        <!-- The template renders a control; SortMemberPath names the value that orders the rows. -->
+                        <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
+                        <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+                        <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthCombo}" CellTemplate="{StaticResource DeptComboTemplate}" SortMemberPath="Department" HeaderToolTip="The grouped-on value when the group key is Department. Picking another one moves the row to that group."/>
+                        <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" HeaderToolTip="The grouped-on value when the group key is Active. Toggling it moves the row between the Active and Inactive groups."/>
+                        <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate" HeaderToolTip="Editable date. Sorts by the JoinDate value."/>
+                        <tv:TableViewTextColumn Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}" HeaderToolTip="Annual salary in whole currency units. Sorts by the number, not the text."/>
                     </tv:TableView>
                 </Border>
             </Grid>
@@ -121,154 +110,193 @@
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Group header" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock
-                    Text="TableView.GroupHeaderTemplate replaces the built-in header content with this page's custom template - key, item count, and an expansion chip."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <ToggleSwitch
-                    x:Name="UseCustomHeaderTemplateToggle"
-                    AutomationProperties.AutomationId="GroupsHeaderTemplateToggle"
-                    Header="Group header template"
-                    IsOn="True"
-                    OffContent="Built-in"
-                    OnContent="Custom"
-                    Toggled="OnGroupHeaderTemplateToggled"
-                    HorizontalAlignment="Stretch"/>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Grouped calls TableViewSource.GroupBy(keySelector, groupIdentitySelector) on the SAME source instance; Flat clears grouping on it. Reshaping in place keeps selection, scroll offset and group expansion."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <ComboBox
-                    x:Name="ShapingModeSelector"
-                    AutomationProperties.AutomationId="ShapingModeSelector"
-                    AutomationProperties.Name="Shaping mode"
-                    Header="Shaping mode"
-                    SelectedIndex="1"
-                    HorizontalAlignment="Stretch"
-                    SelectionChanged="OnShapingModeChanged">
-                    <ComboBoxItem Content="Flat" Tag="flat"/>
-                    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-                    <!-- Hierarchical rows are not available in this release. The options stay
-                         VISIBLE and disabled so the full shape of the shaping axis is honest
-                         signposting rather than a silent omission; re-enable them when the
-                         control ships hierarchy support. -->
-                    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedhierarchy" IsEnabled="False"
-                                  ToolTipService.ToolTip="Hierarchical rows are not available in this release."/>
-                </ComboBox>
-                <ComboBox
-                    x:Name="GroupBySelector"
-                    AutomationProperties.AutomationId="GroupBySelector"
-                    AutomationProperties.Name="Group key"
-                    Header="Group by"
-                    SelectedIndex="0"
-                    SelectionChanged="OnGroupByChanged"
-                    HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="Department" Tag="Department"/>
-                    <ComboBoxItem Content="Role" Tag="Role"/>
-                    <ComboBoxItem Content="Active status" Tag="Active"/>
-                </ComboBox>
-
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <TextBlock
-                    Text="Expand / collapse drive the table's ExpandAllGroups() and CollapseAllGroups(). The mutation actions rewrite row keys and re-apply GroupBy, so rows move between groups, groups empty out, and the projection handles an empty set. Individual headers stay interactive - click one to toggle just that group."
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"/>
-                <StackPanel Spacing="8">
-                    <Button x:Name="ExpandAllButton"
-                            AutomationProperties.AutomationId="ExpandAllGroupsButton"
-                            Click="OnExpandAllGroupsClick"
-                            Content="Expand all groups"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Available once Grouped mode is selected."
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="CollapseAllButton"
-                            AutomationProperties.AutomationId="CollapseAllGroupsButton"
-                            Click="OnCollapseAllGroupsClick"
-                            Content="Collapse all groups"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Available once Grouped mode is selected."
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="MoveGroupButton"
-                            AutomationProperties.AutomationId="GroupsMoveSelectedButton"
-                            Click="OnMoveSelectedGroupClick"
-                            Content="Move selected row to next group"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Select a row first."
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="ShuffleButton"
-                            AutomationProperties.AutomationId="ShuffleButton"
-                            Click="OnShuffleClick"
-                            Content="Shuffle ~25% across departments"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="AddPersonButton"
-                            AutomationProperties.AutomationId="GroupsAddPersonButton"
-                            Click="OnAddPersonClick"
-                            Content="Add a row to the first group"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="RemovePersonButton"
-                            AutomationProperties.AutomationId="GroupsRemoveSelectedButton"
-                            Click="OnRemoveSelectedClick"
-                            Content="Remove selected row"
-                            IsEnabled="False"
-                            ToolTipService.ToolTip="Select a row first."
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
-                    <Button x:Name="EmptyToggleButton"
-                            AutomationProperties.AutomationId="GroupsEmptyToggleButton"
-                            Click="OnEmptyToggleClick"
-                            Content="Remove all rows (group an empty set)"
-                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+                <!-- 1. Primary feature -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Group header">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Group header"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="Sets TableView.GroupHeaderTemplate. The custom template shows the key, the item count and an expansion chip bound to TableViewGroupInfo; the built-in header shows the key and count."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="HeaderTemplateSelector"
+                        AutomationProperties.AutomationId="GroupsHeaderTemplateSelector"
+                        Header="Group header template"
+                        SelectedIndex="0"
+                        SelectionChanged="OnHeaderTemplateChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Custom" Tag="custom"/>
+                        <ComboBoxItem Content="Built-in" Tag="builtin"/>
+                    </ComboBox>
                 </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <Grid ColumnSpacing="12" RowSpacing="4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="This page starts Grouped. Each group key buckets the people a different way, and the headers count them. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="GroupsShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="1"
+                        SelectionChanged="OnShapingModeChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped"/>
+                        <!-- Hierarchical rows are not available in this release. These two options stay
+                             visible but disabled so the shape of the feature is discoverable. When the
+                             control ships hierarchy, enable them and uncomment the matching branch in
+                             ApplyShaping. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="GroupsGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        SelectionChanged="OnGroupKeyChanged"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Department" Tag="Department"/>
+                        <ComboBoxItem Content="Office" Tag="Office"/>
+                        <ComboBoxItem Content="Role" Tag="Role"/>
+                        <ComboBoxItem Content="Active" Tag="IsActive"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="GroupsExpandAllGroupsButton"
+                        Content="Expand all"
+                        Click="OnExpandAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.ExpandAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="GroupsCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        Click="OnCollapseAllClick"
+                        IsEnabled="False"
+                        ToolTipService.ToolTip="Calls TableView.CollapseAllGroups()."
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               Text="Group key, Expand all and Collapse all need the Grouped mode. Hierarchy and Grouped hierarchy are not available in this release."/>
+                </StackPanel>
+                <!-- /scaffold -->
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Source" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="SourceModeTextBlock" Grid.Row="0" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SourceModeText"/>
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Expansion" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="ExpansionStateTextBlock" Grid.Row="1" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="ExpansionStateText"/>
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Header template" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="HeaderTemplateTextBlock" Grid.Row="2" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="HeaderTemplateText"/>
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Group count" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="GroupCountTextBlock" Grid.Row="3" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="GroupCountText"/>
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Total people" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="TotalPeopleTextBlock" Grid.Row="4" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="TotalPeopleText"/>
-                    <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Top" Text="Source shape" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="SourceShapeTextBlock" Grid.Row="5" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="SourceShapeText" TextWrapping="Wrap"/>
-                    <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Top" Text="Per-group counts" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="PerGroupCountsTextBlock" Grid.Row="6" Grid.Column="1" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="PerGroupCountsText" TextWrapping="Wrap"/>
-                    <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Top" Text="Last action" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock AutomationProperties.LiveSetting="Polite" x:Name="LastActionTextBlock" Grid.Row="7" Grid.Column="1" Text="(none)" Style="{StaticResource StatusReadoutValueStyle}" AutomationProperties.AutomationId="GroupsLastActionText" TextWrapping="Wrap"/>
-                </Grid>
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Actions">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Actions"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Each action changes group keys or adds and removes rows, then lets the grouping catch up: rows move, groups appear and vanish, and an empty source shows the EmptyTemplate. Watch the table and the Last action readout. Actions that change one row need a selected row."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="8">
+                        <Button
+                            x:Name="MoveSelectedButton"
+                            AutomationProperties.AutomationId="GroupsMoveSelectedButton"
+                            Content="Move selected row to the next group"
+                            Click="OnMoveSelectedClick"
+                            ToolTipService.ToolTip="Changes the selected person's group-key value to the next real one (department, office, role or active state); the row moves to that group."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="MoveEveryFourthButton"
+                            AutomationProperties.AutomationId="GroupsMoveEveryFourthButton"
+                            Content="Move every 4th row to the next department"
+                            Click="OnMoveEveryFourthClick"
+                            ToolTipService.ToolTip="Moves rows 1, 5, 9 and so on to the next department. Deterministic, so the result is the same every time; grouped by Department, the counts change."
+                            AutomationProperties.HelpText="Moves every 4th row to the next department."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="AddPersonButton"
+                            AutomationProperties.AutomationId="GroupsAddPersonButton"
+                            Content="Add a person to the first group"
+                            Click="OnAddPersonClick"
+                            ToolTipService.ToolTip="Adds a new hire with the first group's key; the row joins that live group and its count goes up."
+                            AutomationProperties.HelpText="Adds a new hire to the first group."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RemoveSelectedButton"
+                            AutomationProperties.AutomationId="GroupsRemoveSelectedButton"
+                            Content="Remove selected row"
+                            Click="OnRemoveSelectedClick"
+                            ToolTipService.ToolTip="Removes the selected person; if they were the last in their group, the header disappears."
+                            AutomationProperties.HelpText="Select a row first."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="RemoveSmallestGroupButton"
+                            AutomationProperties.AutomationId="GroupsRemoveSmallestGroupButton"
+                            Content="Remove the smallest group"
+                            Click="OnRemoveSmallestGroupClick"
+                            ToolTipService.ToolTip="Removes every person in the smallest group for the current key, so that group vanishes."
+                            AutomationProperties.HelpText="Removes every person in the smallest group."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                        <Button
+                            x:Name="EmptyToggleButton"
+                            AutomationProperties.AutomationId="GroupsEmptyToggleButton"
+                            Content="Remove all rows"
+                            Click="OnEmptyToggleClick"
+                            ToolTipService.ToolTip="Empties the source so the grouped projection has no groups and the EmptyTemplate shows; choose it again to restore every removed row."
+                            AutomationProperties.HelpText="Empties the source, or restores every removed row."
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="What to look for" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Groups" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="GroupsText" AutomationProperties.AutomationId="GroupsGroupsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(grouping off)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Expansion" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="ExpansionText" AutomationProperties.AutomationId="GroupsExpansionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(grouping off)" TextWrapping="Wrap" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="2" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="GroupsRowsText"
+                                   AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="3" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="GroupsShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="4" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="GroupsLastActionText"
+                                   AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
+
                 <muxc:InfoBar
-                    AutomationProperties.AutomationId="GroupsWhatToLookForInfoBar"
+                    Title="What to look for"
+                    Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Severity="Informational"
-                    Title="What to look for"
-                    Message="Pick a different Department in a row's ComboBox, or clear its Active box while grouped on Active status - the row jumps to another band and both counts update, because committing the edit re-runs GroupBy on the same source. Switch Flat and back and the table is correct each time, with no stale headers."/>
+                    Message="A row moves to its new group only because the page applies GroupBy again after the edit: the key selector is a delegate, so the control cannot watch the property. Group order follows the first row of each group, not the alphabet, so sorting a column reorders the groups; the Groups readout lists them in table order. Removing the last row of a group removes its header, and an empty source shows the EmptyTemplate."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
-
     </controls:SamplePresenter>
 </Page>

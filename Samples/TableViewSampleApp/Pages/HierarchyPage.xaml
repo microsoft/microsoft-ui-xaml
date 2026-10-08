@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Hierarchy: a placeholder. Hierarchical rows are not available in this release, so this page has
+    no table and no behaviour. The rail shows the canonical Shaping section every table page carries,
+    with every option except Flat disabled, so the intended shape of the feature is discoverable.
+-->
 <Page
     x:Class="TableViewSampleApp.Pages.HierarchyPage"
     NavigationCacheMode="Disabled"
@@ -9,7 +14,7 @@
 
     <controls:SamplePresenter
         Header="Hierarchy"
-        Description="Placeholder. Hierarchical rows are not available in this release, so this page demonstrates nothing — it exists to describe the axis the gallery will cover once the feature ships. Hierarchy is a separate shaping axis from grouping: grouping buckets rows under a computed key, while hierarchy renders a parent/child relationship that already exists in the data, with expand and collapse on each parent row rather than on a group header. The two are expected to compose, so a grouped hierarchy — groups at the outer level, parent/child nesting inside each group — is part of the intended design. Nothing on this page calls a hierarchy API, because no such API exists in this release.">
+        Description="Placeholder. Hierarchical rows are not available in this release, so this page has no table and demonstrates nothing yet. Hierarchy is a separate shaping axis from grouping: grouping buckets rows under a computed key, while hierarchy renders a parent/child relationship that already exists in the data, with expand and collapse on each parent row. The two are expected to compose, so a grouped hierarchy (groups at the outer level, parent/child nesting inside each group) is part of the intended design. Nothing on this page calls a hierarchy API, because no such API exists in this release.">
 
         <controls:SamplePresenter.Example>
             <StackPanel Spacing="12">
@@ -18,7 +23,7 @@
                     IsClosable="False"
                     Severity="Informational"
                     Title="Not available in this release"
-                    Message="Hierarchical rows are in development on a separate branch and are not part of this release. This page is a placeholder: there is no working demo here, and the options below are shown disabled so the intended shape of the feature is visible without pretending it works."
+                    Message="Hierarchical rows are not available in this release. This page is a placeholder: there is no working demo here, and the options in the rail are shown disabled so the intended shape of the feature is visible without pretending it works."
                     AutomationProperties.AutomationId="HierarchyUnavailableInfoBar"/>
 
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="What the feature will cover" Style="{StaticResource SectionHeaderTextStyle}"/>
@@ -33,67 +38,106 @@
                 <TextBlock
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"
-                    Text="Grouping combined with hierarchy: groups at the outer level with parent/child nesting inside each group, so the two axes compose rather than exclude each other. Until that lands, the grouping pages in this gallery show the grouping axis on its own."/>
+                    Text="Grouping combined with hierarchy: groups at the outer level with parent/child nesting inside each group, so the two axes compose rather than exclude each other. Until that is available, the table pages in this gallery show the grouping axis on its own."/>
 
                 <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Available today instead" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
                 <TextBlock
                     Style="{StaticResource SectionDescriptionTextStyle}"
                     TextWrapping="Wrap"
-                    Text="The Grouped rows page covers the grouping axis end to end: group headers with counts, a custom group header template, and expand / collapse across all groups. The Density, Cell editing, and Cell templating pages each show grouping applied alongside another feature."/>
+                    Text="The Grouped rows page covers the grouping axis end to end: group headers with counts, a custom group header template, and expand / collapse across all groups. Every other table page (Sorting, Filtering, Selection, Cell templating, Cell editing, Density and more) has the same Shaping section with a working Grouped mode, applied alongside that page's feature."/>
             </StackPanel>
         </controls:SamplePresenter.Example>
 
         <controls:SamplePresenter.Options>
             <StackPanel Spacing="12">
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Intended options" Style="{StaticResource SectionHeaderTextStyle}"/>
-                <TextBlock
-                    Style="{StaticResource SectionDescriptionTextStyle}"
-                    TextWrapping="Wrap"
-                    Text="Shown disabled on purpose. These are not dead controls: they are deliberately unavailable in this release, and each one says so in its tooltip."/>
-                <ToggleSwitch
-                    Header="Hierarchy"
-                    OffContent="Flat"
-                    OnContent="Nested"
-                    IsEnabled="False"
-                    ToolTipService.ToolTip="Hierarchical rows are not available in this release."
-                    AutomationProperties.AutomationId="HierarchyToggle"
-                    AutomationProperties.Name="Hierarchy"
-                    AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                <Button
-                    Content="Expand all rows"
-                    IsEnabled="False"
-                    ToolTipService.ToolTip="Hierarchical rows are not available in this release."
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    AutomationProperties.AutomationId="HierarchyExpandAllButton"
-                    AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
-                <Button
-                    Content="Collapse all rows"
-                    IsEnabled="False"
-                    ToolTipService.ToolTip="Hierarchical rows are not available in this release."
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    AutomationProperties.AutomationId="HierarchyCollapseAllButton"
-                    AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                <!-- scaffold:shaping -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Shaping">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Shaping"
+                               Style="{StaticResource SectionHeaderTextStyle}"/>
+                    <TextBlock Text="The same Shaping section every table page carries. On this page only Flat is available: there is no table to group, and hierarchical rows are not available in this release."
+                               Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
+                    <ComboBox
+                        x:Name="ShapingModeSelector"
+                        AutomationProperties.AutomationId="HierarchyShapingModeSelector"
+                        Header="Shaping mode"
+                        SelectedIndex="0"
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Flat" Tag="flat"/>
+                        <ComboBoxItem Content="Grouped" Tag="grouped" IsEnabled="False"
+                                      AutomationProperties.HelpText="Grouping is shown on every table page; this page has no table."/>
+                        <!-- Hierarchical rows are not available in this release. When the control ships
+                             hierarchy, this page gets a table and these two options are enabled. -->
+                        <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                        <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"
+                                      AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
+                    </ComboBox>
+                    <ComboBox
+                        x:Name="GroupKeySelector"
+                        AutomationProperties.AutomationId="HierarchyGroupKeySelector"
+                        Header="Group key"
+                        SelectedIndex="0"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Available in the Grouped shaping mode."
+                        HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Department" Tag="Department"/>
+                    </ComboBox>
+                    <Button
+                        x:Name="ExpandAllButton"
+                        AutomationProperties.AutomationId="HierarchyExpandAllGroupsButton"
+                        Content="Expand all"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Hierarchical rows are not available in this release."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <Button
+                        x:Name="CollapseAllButton"
+                        AutomationProperties.AutomationId="HierarchyCollapseAllGroupsButton"
+                        Content="Collapse all"
+                        IsEnabled="False"
+                        AutomationProperties.HelpText="Hierarchical rows are not available in this release."
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"/>
+                    <TextBlock Style="{StaticResource RailCaptionTextStyle}"
+                               AutomationProperties.AutomationId="HierarchyShapingCaption"
+                               Text="Grouping is shown on every table page; this page has no table. Hierarchy and Grouped hierarchy are not available in this release, so Group key, Expand all and Collapse all stay disabled."/>
+                </StackPanel>
+                <!-- /scaffold -->
 
-                <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status" Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
-                <Grid ColumnSpacing="12" RowSpacing="4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Availability" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                    <TextBlock
-                        AutomationProperties.LiveSetting="Polite"
-                        Grid.Row="0" Grid.Column="1"
-                        Text="Not available in this release"
-                        Style="{StaticResource StatusReadoutValueStyle}"
-                        TextWrapping="Wrap"
-                        AutomationProperties.AutomationId="HierarchyAvailabilityText"/>
-                </Grid>
+                <!-- scaffold:status -->
+                <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Status">
+                    <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Status"
+                               Style="{StaticResource SectionHeaderTextStyle}" Margin="0,8,0,0"/>
+                    <Grid Style="{StaticResource StatusGridStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Availability" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="AvailabilityText"
+                                   AutomationProperties.AutomationId="HierarchyAvailabilityText"
+                                   AutomationProperties.LiveSetting="Polite"
+                                   Text="Not available in this release" TextWrapping="Wrap"
+                                   Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="1" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="ShapingModeText"
+                                   AutomationProperties.AutomationId="HierarchyShapingModeText"
+                                   AutomationProperties.LiveSetting="Polite"
+                                   Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
+                    </Grid>
+                </StackPanel>
+                <!-- /scaffold -->
+
+                <muxc:InfoBar
+                    Title="What to look for"
+                    Severity="Informational"
+                    IsOpen="True"
+                    IsClosable="False"
+                    Message="Open the Shaping mode list: Hierarchy and Grouped hierarchy are listed but cannot be chosen, exactly as on every table page. This page has no Actions or Last action readout because there is nothing to act on until hierarchical rows ship."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
 
