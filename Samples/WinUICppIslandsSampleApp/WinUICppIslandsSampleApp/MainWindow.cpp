@@ -599,44 +599,6 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
         ::TrackPopupMenu(contextMenu, TPM_TOPALIGN | TPM_LEFTALIGN, rc.left + 5, rc.top + 5, 0, this->m_hMainWnd, nullptr);
         }, 210, 55, 50, 30);
 
-    CreateButton(L"Cycle DispatcherQueue only: 0", 209, [this, clickCount = 0u](HWND hwnd) mutable {
-        if (winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread())
-        {
-            ::MessageBox(
-                GetHandle(),
-                L"Shut down the current DispatcherQueue before running this test.",
-                L"DispatcherQueue already running",
-                MB_OK | MB_ICONWARNING);
-            return;
-        }
-
-        try
-        {
-            auto controller =
-                winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
-            controller.ShutdownQueue();
-            controller = nullptr;
-
-            wchar_t label[100]{};
-            ::StringCchPrintf(
-                label,
-                ARRAYSIZE(label),
-                L"Cycle DispatcherQueue only: %u",
-                ++clickCount);
-            ::SetWindowText(hwnd, label);
-        }
-        catch (const winrt::hresult_error& ex)
-        {
-            wchar_t message[200]{};
-            ::StringCchPrintf(
-                message,
-                ARRAYSIZE(message),
-                L"Unable to cycle the DispatcherQueue: 0x%08X",
-                ex.code().value);
-            ::MessageBox(GetHandle(), message, L"DispatcherQueue test failed", MB_OK | MB_ICONERROR);
-        }
-        }, 260, 55, 235, 30);
-
     return true;
 }
 
