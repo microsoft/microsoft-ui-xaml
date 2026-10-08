@@ -63,10 +63,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 var status = new TextBlock(FindElement.ById("UnprocessedInputStatus")).DocumentText.Split(',');
-                Log.Comment($"UnprocessedInput pressed,moved,errors = {string.Join(",", status)}");
+                Log.Comment($"UnprocessedInput pressed,moved,errors,released = {string.Join(",", status)}");
                 Verify.IsGreaterThan(int.Parse(status[0]), 0, "PointerPressed should have been read.");
                 Verify.IsGreaterThan(int.Parse(status[1]), 0, "PointerMoved should have been read.");
-                Verify.AreEqual(0, int.Parse(status[2]), "Reading CurrentPoint/Properties/GetIntermediatePoints must not throw.");
+                Verify.IsGreaterThan(int.Parse(status[3]), 0, "PointerReleased should have been read.");
+                Verify.AreEqual(0, int.Parse(status[2]), "Reading CurrentPoint/Properties/GetIntermediatePoints/PointerDevice must not throw.");
             }
         }
 

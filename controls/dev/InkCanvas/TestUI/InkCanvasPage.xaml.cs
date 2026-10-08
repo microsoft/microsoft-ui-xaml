@@ -17,6 +17,7 @@ namespace MUXControlsTestApp
         private int _unprocessedPressed;
         private int _unprocessedMoved;
         private int _unprocessedReadErrors;
+        private int _unprocessedReleased;
         private int _strokesCollected;
         private int _underlayPointerPressed;
 
@@ -40,6 +41,7 @@ namespace MUXControlsTestApp
             presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.None;
             presenter.UnprocessedInput.PointerPressed += (s, args) => ReadPointer(args, ref _unprocessedPressed);
             presenter.UnprocessedInput.PointerMoved += (s, args) => ReadPointer(args, ref _unprocessedMoved);
+            presenter.UnprocessedInput.PointerReleased += (s, args) => ReadPointer(args, ref _unprocessedReleased);
         }
 
         private void ReadPointer(PointerEventArgs args, ref int counter)
@@ -50,6 +52,12 @@ namespace MUXControlsTestApp
                 _ = point.Position;
                 _ = point.Properties.IsEraser;
                 _ = args.GetIntermediatePoints().Count;
+
+                // The device is taken with the event, so it is still there after the pointer is released.
+                if (point.PointerDevice?.PointerDeviceType != Windows.Devices.Input.PointerDeviceType.Mouse)
+                {
+                    throw new InvalidOperationException("PointerDevice is missing or wrong.");
+                }
                 counter++;
             }
             catch (Exception)
@@ -57,7 +65,7 @@ namespace MUXControlsTestApp
                 _unprocessedReadErrors++;
             }
 
-            UnprocessedInputStatus.Text = $"{_unprocessedPressed},{_unprocessedMoved},{_unprocessedReadErrors}";
+            UnprocessedInputStatus.Text = $"{_unprocessedPressed},{_unprocessedMoved},{_unprocessedReadErrors},{_unprocessedReleased}";
         }
 
         private void OnCollapseCanvasHostClick(object sender, RoutedEventArgs e)

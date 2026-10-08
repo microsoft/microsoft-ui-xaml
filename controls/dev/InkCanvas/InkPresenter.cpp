@@ -1008,11 +1008,51 @@ namespace
         return result;
     }
 
-    winrt::Windows::UI::Input::PointerPoint SnapshotPointerPoint(winrt::Windows::UI::Input::PointerPoint const& point)
+    winrt::Windows::UI::Input::PointerPoint SnapshotPointerPoint(winrt::Windows::UI::Input::PointerPoint const& point,
+        winrt::Windows::Devices::Input::PointerDevice const& device)
     {
         return AsProjectedRuntimeClass<winrt::Windows::UI::Input::PointerPoint>(
-            winrt::make<InkPointerPointSnapshot>(point));
+            winrt::make<InkPointerPointSnapshot>(point, device));
     }
+
+    // Must run on the ink thread while 'point' is live. Null if the device can't be read; the point then falls back
+    // to a lookup by id.
+    winrt::Windows::Devices::Input::PointerDevice SnapshotPointerDevice(winrt::Windows::UI::Input::PointerPoint const& point)
+    {
+        try
+        {
+            if (auto device = point.PointerDevice())
+            {
+                return AsProjectedRuntimeClass<winrt::Windows::Devices::Input::PointerDevice>(
+                    winrt::make<InkPointerDeviceSnapshot>(device));
+            }
+        }
+        catch (winrt::hresult_error const&)
+        {
+        }
+        return nullptr;
+    }
+}
+
+InkPointerDeviceSnapshot::InkPointerDeviceSnapshot(winrt::Windows::Devices::Input::PointerDevice const& device) :
+    m_pointerDeviceType(device.PointerDeviceType()),
+    m_isIntegrated(device.IsIntegrated()),
+    m_maxContacts(device.MaxContacts()),
+    m_physicalDeviceRect(device.PhysicalDeviceRect()),
+    m_screenRect(device.ScreenRect()),
+    m_maxPointersWithZDistance(device.MaxPointersWithZDistance())
+{
+    if (auto usages = device.SupportedUsages())
+    {
+        m_supportedUsages.resize(usages.Size());
+        usages.GetMany(0, m_supportedUsages);
+    }
+}
+
+winrt::Windows::Foundation::Collections::IVectorView<winrt::Windows::Devices::Input::PointerDeviceUsage> InkPointerDeviceSnapshot::SupportedUsages() const
+{
+    return winrt::single_threaded_vector<winrt::Windows::Devices::Input::PointerDeviceUsage>(
+        std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage>(m_supportedUsages)).GetView();
 }
 
 InkPointerPointPropertiesSnapshot::InkPointerPointPropertiesSnapshot(winrt::Windows::UI::Input::PointerPointProperties const& properties) :
@@ -1046,7 +1086,8 @@ InkPointerPointPropertiesSnapshot::InkPointerPointPropertiesSnapshot(winrt::Wind
     }
 }
 
-InkPointerPointSnapshot::InkPointerPointSnapshot(winrt::Windows::UI::Input::PointerPoint const& point) :
+InkPointerPointSnapshot::InkPointerPointSnapshot(winrt::Windows::UI::Input::PointerPoint const& point,
+    winrt::Windows::Devices::Input::PointerDevice const& device) :
     m_position(point.Position()),
     m_rawPosition(point.RawPosition()),
     m_pointerId(point.PointerId()),
@@ -1054,12 +1095,18 @@ InkPointerPointSnapshot::InkPointerPointSnapshot(winrt::Windows::UI::Input::Poin
     m_timestamp(point.Timestamp()),
     m_isInContact(point.IsInContact()),
     m_properties(AsProjectedRuntimeClass<winrt::Windows::UI::Input::PointerPointProperties>(
-        winrt::make<InkPointerPointPropertiesSnapshot>(point.Properties())))
+        winrt::make<InkPointerPointPropertiesSnapshot>(point.Properties()))),
+    m_device(device)
 {
 }
 
 winrt::Windows::Devices::Input::PointerDevice InkPointerPointSnapshot::PointerDevice() const
 {
+    if (m_device)
+    {
+        return m_device;
+    }
+
     // The lookup fails once the pointer is gone (e.g. a pen lifted before a queued event is handled).
     try
     {
@@ -1072,16 +1119,20 @@ winrt::Windows::Devices::Input::PointerDevice InkPointerPointSnapshot::PointerDe
 }
 
 InkPointerEventArgsSnapshot::InkPointerEventArgsSnapshot(winrt::Windows::UI::Core::PointerEventArgs const& args) :
-    m_currentPoint(SnapshotPointerPoint(args.CurrentPoint())),
     m_keyModifiers(args.KeyModifiers()),
     m_handled(args.Handled())
 {
+    // One pointer per event, so the current and intermediate points share one device snapshot.
+    auto currentPoint = args.CurrentPoint();
+    auto device = SnapshotPointerDevice(currentPoint);
+    m_currentPoint = SnapshotPointerPoint(currentPoint, device);
+
     if (auto intermediatePoints = args.GetIntermediatePoints())
     {
         m_intermediatePoints.reserve(intermediatePoints.Size());
         for (auto const& point : intermediatePoints)
         {
-            m_intermediatePoints.push_back(SnapshotPointerPoint(point));
+            m_intermediatePoints.push_back(SnapshotPointerPoint(point, device));
         }
     }
 }

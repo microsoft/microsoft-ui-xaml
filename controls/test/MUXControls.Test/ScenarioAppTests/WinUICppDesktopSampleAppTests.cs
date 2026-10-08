@@ -317,11 +317,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 () => "InkCanvas.Loaded",
                 () => textBlock.DocumentText);
 
-            Log.Comment("Drawing a stroke; the app reads args.CurrentPoint in StrokeStarted");
+            Log.Comment("Drawing a stroke; the app reads args.CurrentPoint in StrokeStarted and its PointerDevice in StrokeEnded");
             InputHelper.MouseDragDistance(FindElement.ByName("inkCanvas"), 100, Direction.East);
             Wait.ForIdle();
             TestEnvironment.VerifyAreEqualWithRetry(20,
-                () => "StrokeStarted",
+                () => "StrokeStarted.StrokeEnded",
                 () => textBlock.DocumentText);
 
             Log.Comment("The same stroke reaches the app's CoreWetStrokeUpdateSource handler on the ink thread");

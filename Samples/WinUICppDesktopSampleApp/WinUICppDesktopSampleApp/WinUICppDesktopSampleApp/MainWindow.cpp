@@ -365,6 +365,26 @@ namespace winrt::WinUICppDesktopSampleApp::implementation
             }
         });
 
+        // The pointer is gone by the time StrokeEnded reaches the UI thread; PointerDevice must still be readable.
+        presenter.StrokeInput().StrokeEnded([weakThis = get_weak()](auto const&, winrt::Windows::UI::Core::PointerEventArgs const& args)
+        {
+            auto self = weakThis.get();
+            if (!self || self->textBlockInking().Text() != L"StrokeStarted")
+            {
+                return;
+            }
+            try
+            {
+                self->textBlockInking().Text(args.CurrentPoint().PointerDevice() ? L"StrokeStarted.StrokeEnded" : L"StrokeEnded.NoDevice");
+            }
+            catch (winrt::hresult_error const& e)
+            {
+                wchar_t message[64];
+                StringCchPrintfW(message, ARRAYSIZE(message), L"StrokeEnded.Failed 0x%08X", static_cast<uint32_t>(e.code()));
+                self->textBlockInking().Text(message);
+            }
+        });
+
         // UWP apps get draw-and-hold from CoreWetStrokeUpdateSource.Create(InkPresenter); WinUI keeps the same call in
         // its own namespace, and raises the events on the ink thread. The test checks the event arrives off the UI thread.
         try

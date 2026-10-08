@@ -237,12 +237,39 @@ private:
     winrt::Windows::Foundation::IReference<float> m_zDistance{ nullptr };
 };
 
+// Taken on the ink thread, so the device is still known when a queued event is handled after the pointer is gone.
+struct InkPointerDeviceSnapshot :
+    winrt::implements<InkPointerDeviceSnapshot,
+        winrt::Windows::Devices::Input::IPointerDevice,
+        winrt::Windows::Devices::Input::IPointerDevice2>
+{
+    explicit InkPointerDeviceSnapshot(winrt::Windows::Devices::Input::PointerDevice const& device);
+
+    winrt::Windows::Devices::Input::PointerDeviceType PointerDeviceType() const noexcept { return m_pointerDeviceType; }
+    bool IsIntegrated() const noexcept { return m_isIntegrated; }
+    uint32_t MaxContacts() const noexcept { return m_maxContacts; }
+    winrt::Windows::Foundation::Rect PhysicalDeviceRect() const noexcept { return m_physicalDeviceRect; }
+    winrt::Windows::Foundation::Rect ScreenRect() const noexcept { return m_screenRect; }
+    winrt::Windows::Foundation::Collections::IVectorView<winrt::Windows::Devices::Input::PointerDeviceUsage> SupportedUsages() const;
+    uint32_t MaxPointersWithZDistance() const noexcept { return m_maxPointersWithZDistance; }
+
+private:
+    winrt::Windows::Devices::Input::PointerDeviceType m_pointerDeviceType{};
+    bool m_isIntegrated{};
+    uint32_t m_maxContacts{};
+    winrt::Windows::Foundation::Rect m_physicalDeviceRect{};
+    winrt::Windows::Foundation::Rect m_screenRect{};
+    std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> m_supportedUsages;
+    uint32_t m_maxPointersWithZDistance{};
+};
+
 struct InkPointerPointSnapshot :
     winrt::implements<InkPointerPointSnapshot, winrt::Windows::UI::Input::IPointerPoint>
 {
-    explicit InkPointerPointSnapshot(winrt::Windows::UI::Input::PointerPoint const& point);
+    InkPointerPointSnapshot(winrt::Windows::UI::Input::PointerPoint const& point,
+        winrt::Windows::Devices::Input::PointerDevice const& device);
 
-    // PointerDevice can't be copied across threads; it is looked up by id on the calling thread instead.
+    // The device snapshot taken with the event, or (if that failed) a lookup by id on the calling thread.
     winrt::Windows::Devices::Input::PointerDevice PointerDevice() const;
     winrt::Windows::Foundation::Point Position() const noexcept { return m_position; }
     winrt::Windows::Foundation::Point RawPosition() const noexcept { return m_rawPosition; }
@@ -260,6 +287,7 @@ private:
     uint64_t m_timestamp{};
     bool m_isInContact{};
     winrt::Windows::UI::Input::PointerPointProperties m_properties{ nullptr };
+    winrt::Windows::Devices::Input::PointerDevice m_device{ nullptr };
 };
 
 struct InkPointerEventArgsSnapshot :
