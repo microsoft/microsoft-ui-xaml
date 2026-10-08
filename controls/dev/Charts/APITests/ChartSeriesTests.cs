@@ -1067,18 +1067,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void OverridesBeyondCurrentSamplesAreAcceptedAndSurviveGrowth()
         {
             Chart chart = null;
-            ChartsObservableVector<double> values = null;
+            ChartsObservableVector<double> xValues = null;
+            ChartsObservableVector<double> yValues = null;
             LineSeries series = null;
             DataLabelOverride label = null;
             DataMarkerOverride marker = null;
 
             RunOnUIThread.Execute(() =>
             {
-                values = new ChartsObservableVector<double> { 1.0, 2.0 };
+                xValues = new ChartsObservableVector<double> { 0.0, 1.0 };
+                yValues = new ChartsObservableVector<double> { 1.0, 2.0 };
                 series = new LineSeries
                 {
-                    XValues = CreateSamples(0.0, 1.0),
-                    YValues = new Samples { ItemsSource = values },
+                    XValues = new Samples { ItemsSource = xValues },
+                    YValues = new Samples { ItemsSource = yValues },
                     ShowDataLabels = true,
                     ShowDataMarkers = true
                 };
@@ -1097,15 +1099,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreSame(marker, series.DataMarkerOverrides[3], "Out-of-range marker override should be stored.");
                 VerifyChartSurvived(chart);
 
-                values.Add(3.0);
-                values.Add(4.0);
+                // Grow both sources so index 3 becomes a point in X and Y.
+                xValues.Add(2.0);
+                yValues.Add(3.0);
+                xValues.Add(3.0);
+                yValues.Add(4.0);
                 Content.UpdateLayout();
             });
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreSame(label, series.DataLabelOverrides[3], "Label override should survive sample growth.");
-                Verify.AreSame(marker, series.DataMarkerOverrides[3], "Marker override should survive sample growth.");
+                Verify.AreSame(label, series.DataLabelOverrides[3], "Label override should remain once index 3 is a point.");
+                Verify.AreSame(marker, series.DataMarkerOverrides[3], "Marker override should remain once index 3 is a point.");
                 VerifyChartSurvived(chart);
             });
         }
