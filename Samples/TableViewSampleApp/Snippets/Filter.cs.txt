@@ -1,0 +1,83 @@
+// FilterPage.xaml.cs. ONE source for the page's lifetime: Filter / ClearFilter / GroupBy /
+// ClearGroupBy change it in place, so selection, scroll and group state survive each keystroke.
+public ObservableCollection<Person> People { get; } = PersonData.Take(60);
+
+public TableViewSource? Source => _source;
+
+public FilterPage()
+{
+    _source = TableViewSource.From(People);
+    InitializeComponent();
+    BuildColumns();
+    Loaded += OnPageLoaded;
+    Unloaded += OnPageUnloaded;
+    ApplyFilter();
+}
+
+// Columns built in code from the shared templates in Application.Current.Resources.
+private void BuildColumns()
+{
+    var resources = Application.Current.Resources;
+
+    FilterTable.Columns.Add(new TableViewTextColumn
+    {
+        Header = "Name",
+        Binding = new Binding { Path = new PropertyPath(nameof(Person.FullName)) },
+        Width = new GridLength(1, GridUnitType.Star),
+        MinWidth = (double)resources["ColMinWidthStar"],
+    });
+    // A template column sorts by SortMemberPath, the value behind the template.
+    FilterTable.Columns.Add(new TableViewTemplateColumn
+    {
+        Header = "Role",
+        CellTemplate = (DataTemplate)resources["RoleTextBoxTemplate"],
+        SortMemberPath = nameof(Person.Role),
+        Width = Token("ColWidthLongName"),
+    });
+}
+
+// Width tokens live in App.xaml as doubles; a column width is a GridLength in pixels.
+private static GridLength Token(string key) => new((double)Application.Current.Resources[key]);
+
+private void ApplyFilter()
+{
+    var query = Query;
+    var activeOnly = ActiveOnly;
+    if (query.Length > 0 || activeOnly)
+    {
+        _source.Filter(item => Matches((Person)item, query, activeOnly));
+    }
+    else
+    {
+        _source.ClearFilter();
+    }
+}
+
+// An in-cell edit changes the Person but does not re-run the predicate (or the group key
+// selector), so apply both again once the edit has settled.
+private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
+{
+    if (sender is not Person person || _isBulkUpdate || _refreshQueued
+        || e.PropertyName is not (nameof(Person.Role) or nameof(Person.IsActive)))
+    {
+        return;
+    }
+
+    var property = e.PropertyName;
+    _refreshQueued = true;
+    DispatcherQueue.TryEnqueue(() =>
+    {
+        _refreshQueued = false;
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        ReapplyIfGroupedOn(property);
+        ApplyFilter();
+    });
+}
+
+// Grouping applies to the same source, so only matching rows are grouped.
+// The key selector receives the ROW; the identity selector receives the KEY.
+_source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);

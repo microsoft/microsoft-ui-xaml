@@ -1,0 +1,127 @@
+// EmptyTemplate covers every way of being empty: a null ItemsSource, a source emptied in place,
+// and a filter that matches nothing.
+
+private void ApplyDataSource(string tag)
+{
+    switch (tag)
+    {
+        case "Null":
+            // A null ItemsSource resolves to zero rows, so the control shows EmptyTemplate.
+            _sourceAttached = false;
+            PeopleTable.ItemsSource = null;
+            break;
+
+        case "ZeroRows":
+            // The other way of being empty: a live, shaped source that holds no items.
+            AttachSource();
+            ClearPeople();
+            break;
+
+        default:
+            AttachSource();
+            ClearFilter();
+            if (People.Count == 0)
+            {
+                RefillPeople();
+            }
+
+            break;
+    }
+}
+
+private void OnFilterToZeroClick(object sender, RoutedEventArgs e)
+{
+    if (_source is null || !_sourceAttached)
+    {
+        SetLastAction("ItemsSource is null; choose Populated first.");
+        return;
+    }
+
+    // Nobody joins in the future, so the filter matches nothing while the collection keeps
+    // every row. Filter mutates the source in place, like GroupBy.
+    var today = DateTimeOffset.Now;
+    _source.Filter(item => item is Person p && p.JoinDate > today);
+    _filteredToZero = true;
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filtered to people who joined after today: 0 of {0:N0} match", People.Count));
+}
+
+private void OnMoveSelectedRowClick(object sender, RoutedEventArgs e)
+{
+    if (PeopleTable.SelectedItem is not Person person)
+    {
+        SetLastAction("No row selected.");
+        return;
+    }
+
+    var key = _appliedMode == "grouped" ? _appliedKey : nameof(Person.Department);
+    var from = SampleShaping.KeyOf(person, key);
+    _isBulkUpdate = true;
+    try
+    {
+        if (key == nameof(Person.IsActive))
+        {
+            person.IsActive = !person.IsActive;
+        }
+        else
+        {
+            person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
+        }
+    }
+    finally
+    {
+        _isBulkUpdate = false;
+    }
+
+    // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
+    // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+    ReapplyIfGroupedOn(key);
+    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
+}
+
+private void ApplyShaping(bool announce)
+{
+    // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
+    // later-declared elements exist. Guard every element this path touches.
+    if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
+        || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
+    {
+        return;
+    }
+
+    var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+    var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+    var selected = PeopleTable.SelectedItem;
+
+    switch (mode)
+    {
+        case "grouped":
+            // The key selector receives the ROW; the identity selector receives the KEY.
+            // Grouping an empty set is legal: the projection simply yields no groups.
+            _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+            break;
+        // case "hierarchy":
+        // case "groupedHierarchy":
+        //     Hierarchical (tree) rows are not available in this release, so the two matching
+        //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
+        //     member today. When hierarchy ships, apply it to this same source here, composed
+        //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
+        //     after the call returns.
+        default:
+            _source.ClearGroupBy();
+            mode = "flat";
+            break;
+    }
+
+    _appliedMode = mode;
+    _appliedKey = key;
+
+    // Re-applying GroupBy can drop the selection when the selected row changed group.
+    SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Departments.Count + 2, RefreshReadouts);
+    UpdateShapingGating();
+    if (announce)
+    {
+        SetLastAction(mode == "grouped"
+            ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
+            : "Shaping -> Flat");
+    }
+}

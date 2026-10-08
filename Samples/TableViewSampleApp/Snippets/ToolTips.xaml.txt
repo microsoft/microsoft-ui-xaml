@@ -1,0 +1,59 @@
+<!-- A cell whose OWN template sets a tooltip. The control never replaces or clears it. -->
+
+<DataTemplate x:Key="EmailIconCellTemplate" x:DataType="models:Person">
+    <Grid Background="Transparent"
+          ToolTipService.ToolTip="{x:Bind Email, Mode=OneWay}"
+          AutomationProperties.Name="{x:Bind Email, Mode=OneWay}">
+        <FontIcon Glyph="&#xE715;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"
+                  AutomationProperties.AccessibilityView="Raw"/>
+    </Grid>
+</DataTemplate>
+
+<!-- HeaderToolTip is a plain object, set here in XAML. CellToolTipBinding is set in code
+     (AttachCellToolTips) so the page can detach it. -->
+
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.AutomationId="ToolTipsTable"
+    AutomationProperties.Name="People with tooltips"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <!-- CellToolTipBinding is set in code (AttachCellToolTips) so it can be detached. -->
+    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                                 CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="{StaticResource ColWidthShortName}"
+                             Binding="{Binding FullName}"
+                             HeaderToolTip="Full name, as entered"/>
+    <tv:TableViewTextColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
+                             Binding="{Binding Bio}" CanSort="False"/>
+    <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="{StaticResource ColWidthChip}"
+                                 CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"
+                                 HeaderToolTip="Team the person reports into"/>
+    <!-- No CellToolTipBinding at all: nothing appears over these cells. -->
+    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}"
+                             Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"
+                             HeaderToolTip="Salary"/>
+    <tv:TableViewTemplateColumn x:Name="EmailColumn" Header="Email" Width="{StaticResource ColWidthNarrow}"
+                                 CellTemplate="{StaticResource EmailIconCellTemplate}" CanSort="False"/>
+</tv:TableView>
+
+<ToggleSwitch
+    x:Name="CellToolTipsToggle"
+    AutomationProperties.AutomationId="ToolTipsCellToolTipsToggle"
+    Header="Cell tooltips"
+    IsOn="True"
+    Toggled="OnCellToolTipsToggled"/>
+
+<ComboBox
+    x:Name="HeaderToolTipsSelector"
+    AutomationProperties.AutomationId="ToolTipsHeaderToolTipsSelector"
+    Header="Header tooltips"
+    SelectedIndex="0"
+    SelectionChanged="OnHeaderToolTipsChanged"
+    HorizontalAlignment="Stretch">
+    <ComboBoxItem Content="Original" Tag="original"/>
+    <ComboBoxItem Content="Changed in place" Tag="changed"/>
+    <ComboBoxItem Content="None" Tag="none"/>
+</ComboBox>

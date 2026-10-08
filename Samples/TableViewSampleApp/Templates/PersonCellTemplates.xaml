@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Shared Person cell templates (WP0). Merged once in App.xaml, so every page resolves these
+    keys with {StaticResource} (XAML) or Application.Current.Resources["…"] (code). Do not fork
+    them into a page: request a change to this file instead.
+
+    Rules every template follows:
+      * x:DataType="models:Person" and {x:Bind} only (compile-time checked, no reflection).
+      * Mutable values bind Mode=OneWay; editors bind Mode=TwoWay to an INPC property, so the
+        value survives row recycling.
+      * Interactive roots keep IsTabStop and hit testing at their defaults (Tab reaches them)
+        and carry a per-row AutomationProperties.Name ("Active for Ava Chen").
+      * No AutomationIds: the same template is realized on every row of many pages.
+      * Decorative parts (avatar, chip border, dot) use AccessibilityView="Raw".
+-->
+<ResourceDictionary
+    x:Class="TableViewSampleApp.Templates.PersonCellTemplates"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:TableViewSampleApp.Converters"
+    xmlns:data="using:TableViewSampleApp.Data"
+    xmlns:models="using:TableViewSampleApp.Models"
+    xmlns:templates="using:TableViewSampleApp.Templates">
+
+    <converters:DepartmentChipTintConverter x:Key="DepartmentChipTintConverter"/>
+    <converters:DepartmentChipDotConverter x:Key="DepartmentChipDotConverter"/>
+    <converters:ActiveChipTintConverter x:Key="ActiveChipTintConverter"/>
+    <converters:ActiveChipDotConverter x:Key="ActiveChipDotConverter"/>
+    <converters:ActiveChipTextConverter x:Key="ActiveChipTextConverter"/>
+    <converters:RowAutomationNameConverter x:Key="RowAutomationNameConverter"/>
+    <converters:SalaryTextConverter x:Key="SalaryTextConverter"/>
+    <converters:AvatarImageConverter x:Key="AvatarImageConverter"/>
+
+    <!-- Photo (ColWidthAvatar). PersonPicture shows the image when AvatarPath resolves and
+         initials from DisplayName otherwise, so the cell is never blank. The path goes through
+         AvatarImageConverter: never bind a raw string to an ImageSource. Decorative: the Name
+         column carries the row's identity. -->
+    <DataTemplate x:Key="AvatarTemplate" x:DataType="models:Person">
+        <PersonPicture
+            Width="28"
+            Height="28"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsTabStop="False"
+            DisplayName="{x:Bind FullName, Mode=OneWay}"
+            ProfilePicture="{x:Bind AvatarPath, Mode=OneWay, Converter={StaticResource AvatarImageConverter}}"
+            AutomationProperties.AccessibilityView="Raw"/>
+    </DataTemplate>
+
+    <!-- Department chip (ColWidthChip). Read-only. Tint and dot come from the cached
+         ChipBrushes and drop to transparent / theme text under a Contrast theme. The label is
+         the visible and the accessible value, so colour never carries meaning alone. -->
+    <DataTemplate x:Key="DepartmentChipTemplate" x:DataType="models:Person">
+        <Border
+            CornerRadius="10"
+            Padding="8,2"
+            Margin="6,2"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource DepartmentChipTintConverter}}"
+            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            AutomationProperties.AccessibilityView="Raw">
+            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                <Ellipse
+                    Width="8"
+                    Height="8"
+                    VerticalAlignment="Center"
+                    Fill="{x:Bind Department, Mode=OneWay, Converter={StaticResource DepartmentChipDotConverter}}"
+                    AutomationProperties.AccessibilityView="Raw"/>
+                <TextBlock
+                    Text="{x:Bind Department, Mode=OneWay}"
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="{x:Bind Department, Mode=OneWay}"/>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- Active / Inactive status chip (ColWidthStatus). Read-only counterpart of the
+         Active CheckBox, for pages about read-only presentation. -->
+    <DataTemplate x:Key="ActiveStatusChipTemplate" x:DataType="models:Person">
+        <Border
+            CornerRadius="10"
+            Padding="8,2"
+            Margin="6,2"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Background="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ActiveChipTintConverter}}"
+            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            AutomationProperties.AccessibilityView="Raw">
+            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                <Ellipse
+                    Width="8"
+                    Height="8"
+                    VerticalAlignment="Center"
+                    Fill="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ActiveChipDotConverter}}"
+                    AutomationProperties.AccessibilityView="Raw"/>
+                <TextBlock
+                    Text="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ActiveChipTextConverter}}"
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ActiveChipTextConverter}}"/>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- Active CheckBox (ColWidthBoolean). Tab reaches it, Space toggles it. -->
+    <DataTemplate x:Key="ActiveCheckBoxTemplate" x:DataType="models:Person">
+        <CheckBox
+            IsChecked="{x:Bind IsActive, Mode=TwoWay}"
+            MinWidth="0"
+            Margin="14,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Left"
+            AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Active for {0}'}"/>
+    </DataTemplate>
+
+    <!-- Full DatePicker (ColWidthDatePicker, 310). The control's own MinWidth is about 296,
+         so a narrower column clips the year. -->
+    <DataTemplate x:Key="JoinDatePickerTemplate" x:DataType="models:Person">
+        <DatePicker
+            Date="{x:Bind JoinDate, Mode=TwoWay}"
+            MinYear="{x:Bind templates:PersonCellTemplates.MinJoinYear}"
+            MaxYear="{x:Bind templates:PersonCellTemplates.MaxJoinYear}"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Join date for {0}'}"/>
+    </DataTemplate>
+
+    <!-- Compact CalendarDatePicker (ColWidthCalendarDate, 170): the default date editor.
+         Binds JoinDateOrNull because CalendarDatePicker.Date is nullable. -->
+    <DataTemplate x:Key="JoinCalendarDateTemplate" x:DataType="models:Person">
+        <CalendarDatePicker
+            Date="{x:Bind JoinDateOrNull, Mode=TwoWay}"
+            MinDate="{x:Bind templates:PersonCellTemplates.MinJoinYear}"
+            MaxDate="{x:Bind templates:PersonCellTemplates.MaxJoinYear}"
+            DateFormat="{}{day.integer} {month.abbreviated} {year.full}"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Join date for {0}'}"/>
+    </DataTemplate>
+
+    <!-- Full TimePicker (ColWidthTimePicker, 256); its own MinWidth is about 242. -->
+    <DataTemplate x:Key="ShiftTimePickerTemplate" x:DataType="models:Person">
+        <TimePicker
+            Time="{x:Bind ShiftStart, Mode=TwoWay}"
+            ClockIdentifier="24HourClock"
+            MinuteIncrement="15"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Shift start for {0}'}"/>
+    </DataTemplate>
+
+    <!-- Compact 24 h TimePicker (ColWidthTimeCompact). MinWidth="0" lets it shrink to the
+         column; hh:mm stays fully visible at the token width. -->
+    <DataTemplate x:Key="ShiftTimeCompactTemplate" x:DataType="models:Person">
+        <TimePicker
+            Time="{x:Bind ShiftStart, Mode=TwoWay}"
+            ClockIdentifier="24HourClock"
+            MinuteIncrement="15"
+            MinWidth="0"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Shift start for {0}'}"/>
+    </DataTemplate>
+
+    <!-- Department ComboBox (ColWidthCombo). ItemsSource is a static x:Bind, so it is set
+         before SelectedItem on every realization, including recycled containers. -->
+    <DataTemplate x:Key="DeptComboTemplate" x:DataType="models:Person">
+        <ComboBox
+            ItemsSource="{x:Bind data:PersonData.Departments}"
+            SelectedItem="{x:Bind Department, Mode=TwoWay}"
+            MinWidth="0"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Department for {0}'}"/>
+    </DataTemplate>
+
+    <!-- Office ComboBox (ColWidthCombo). -->
+    <DataTemplate x:Key="OfficeComboTemplate" x:DataType="models:Person">
+        <ComboBox
+            ItemsSource="{x:Bind data:PersonData.Offices}"
+            SelectedItem="{x:Bind Office, Mode=TwoWay}"
+            MinWidth="0"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Office for {0}'}"/>
+    </DataTemplate>
+
+    <!-- Role TextBox. Writes on every keystroke so a filter or grouping that depends on Role
+         re-evaluates as the user types. -->
+    <DataTemplate x:Key="RoleTextBoxTemplate" x:DataType="models:Person">
+        <TextBox
+            Text="{x:Bind Role, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            MinWidth="0"
+            Margin="6,2"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Role for {0}'}"/>
+    </DataTemplate>
+
+    <!-- Details Button + Flyout (ColWidthAction). Not sortable: use CanSort="False" and no
+         SortMemberPath. OnDetailsButtonClick opens the flyout and raises DetailsOpened. -->
+    <DataTemplate x:Key="DetailsButtonTemplate" x:DataType="models:Person">
+        <Button
+            Content="Details"
+            Click="OnDetailsButtonClick"
+            Margin="6,2"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Center"
+            AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Details for {0}'}">
+            <FlyoutBase.AttachedFlyout>
+                <Flyout>
+                    <StackPanel Spacing="4" MaxWidth="300">
+                        <TextBlock Text="{x:Bind FullName, Mode=OneWay}" Style="{ThemeResource BodyStrongTextBlockStyle}"/>
+                        <TextBlock Text="{x:Bind Role, Mode=OneWay}" TextWrapping="Wrap"/>
+                        <TextBlock Text="{x:Bind templates:PersonCellTemplates.DepartmentAndOffice(Department, Office), Mode=OneWay}" TextWrapping="Wrap"/>
+                        <TextBlock Text="{x:Bind Email, Mode=OneWay}" TextWrapping="Wrap"/>
+                        <TextBlock Text="{x:Bind templates:PersonCellTemplates.JoinedText(JoinDate), Mode=OneWay}" TextWrapping="Wrap"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                </Flyout>
+            </FlyoutBase.AttachedFlyout>
+        </Button>
+    </DataTemplate>
+</ResourceDictionary>

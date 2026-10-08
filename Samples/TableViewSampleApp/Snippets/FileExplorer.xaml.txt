@@ -1,0 +1,27 @@
+<!-- FileExplorerPage.xaml: the table. Name, Type and Size sort by a folders-first key
+     (FileSystemEntry.NameSortKey and so on); Date modified sorts by the DateModified value, not
+     by its display text. The control sorts by itself and shows the direction on the header.
+     Name is the one star column. -->
+<tv:TableView x:Name="FileTable"
+              AutomationProperties.AutomationId="FileExplorerTable"
+              AutomationProperties.Name="Folder contents"
+              ItemsSource="{x:Bind Source}"
+              SelectionMode="Single"
+              IsReadOnly="True"
+              Sorted="OnTableSorted"
+              SelectionChanged="OnSelectionChanged"
+              DoubleTapped="OnRowDoubleTapped"
+              VerticalAlignment="Stretch" MinHeight="320">
+    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource FileNameTemplate}" SortMemberPath="NameSortKey"/>
+    <tv:TableViewTextColumn Header="Type" Width="{StaticResource ColWidthType}" Binding="{Binding TypeDisplay}" SortMemberPath="TypeSortKey"/>
+    <tv:TableViewTextColumn x:Name="DateModifiedColumn" Header="Date modified" Width="{StaticResource ColWidthDateTime}" Binding="{Binding DateModifiedDisplay}" SortMemberPath="DateModified"/>
+    <tv:TableViewTextColumn Header="Size" Width="{StaticResource ColWidthNumber}" Binding="{Binding SizeDisplay}" SortMemberPath="SizeSortKey"/>
+</tv:TableView>
+
+<!-- Filter is the page's primary option; it runs on the same source that groups. -->
+<ComboBox x:Name="FilterSelector" Header="Show" SelectedIndex="0" SelectionChanged="OnFilterChanged">
+    <ComboBoxItem Content="All items" Tag="all"/>
+    <ComboBoxItem Content="Folders only" Tag="folders"/>
+    <ComboBoxItem Content="Files only" Tag="files"/>
+    <ComboBoxItem Content="Match nothing (empty result)" Tag="none"/>
+</ComboBox>
