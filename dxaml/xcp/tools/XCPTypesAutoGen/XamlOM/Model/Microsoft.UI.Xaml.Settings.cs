@@ -9,6 +9,7 @@ namespace Microsoft.UI.Xaml.Settings
     // through XamlOptionalChanges. Each value corresponds to a specific feature,
     // fix, or behavioral change documented in the WinUI release notes.
     [Contract(typeof(Microsoft.UI.Xaml.WinUIContract), 11)]
+    [Contract(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.WinAppSDK_3_0)]
     [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [DXamlIdlGroup("coretypes2")]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
@@ -23,6 +24,8 @@ namespace Microsoft.UI.Xaml.Settings
         DeferContextFlyoutInit = 61098986,
         [VelocityFeature("Feature_ExperimentalApi")]
         GamepadKeyRouting = 63117108,
+        [Version(2)]
+        CollectionMoveNotifications = 1503,
     }
 
     // Provides static methods to opt in to or out of individual breaking or
