@@ -20,12 +20,31 @@ seed — the control resolves its own default style and theme resources from the
 
 `TabularControlsResources` is Tabular's own theme-resource dictionary, the exact analogue of
 `XamlControlsResources` for MUXC, and merging it is a normal part of consuming the control set
-rather than a workaround. It is required: `TableView`'s column-header style resolves
-`SortIndicatorForeground` from it, and `SortIndicator` ships in the Tabular DLL rather than in MUXC
-(`controls/Tabular.ProjectImports.targets` is the only importer of `SortIndicator.vcxitems`).
-Without the merge the app throws `XamlParseException 0x802B000A` — "Cannot find a Resource with the
-Name/Key SortIndicatorForeground" — during the first layout pass, which surfaces as a
-`0xC000027B` stowed exception a few seconds after launch.
+rather than a workaround. For the standard defaults, merge it in `App.xaml` after
+`XamlControlsResources` and before application overrides:
+
+```xml
+<Application.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            <TabularControlsResources xmlns="using:Microsoft.UI.Xaml.Controls.Tabular" />
+        </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+</Application.Resources>
+```
+
+Applications can instead supply equivalent resources or a complete custom style/template; the
+diagnostic does not require a particular dictionary object. Compilation and construction can
+succeed before a required resource lookup fails during initial layout/style realization. A missing
+key in the Tabular defaults reports the original key and source URI, with conditional setup guidance;
+the wrapped parse error retains `0x802B000A` and its line/position.
+
+If defaults are already configured, check the key, overrides and matching Tabular DLL/PRI. A missing
+required `DefaultStyleResourceUri` reports separate deployment/resource-map guidance: merging a
+dictionary cannot restore an unavailable package resource. These diagnostics do not register
+resources automatically or change the existing unhandled-error/fail-fast policy. Preserve the
+original HRESULT, key, URI and parser location when reporting a failure.
 
 Each app instantiates `TableView` **twice on purpose**:
 
