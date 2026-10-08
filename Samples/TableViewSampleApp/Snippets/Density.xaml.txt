@@ -1,0 +1,24 @@
+<!-- DensityPage.xaml. Density is one table-level property; the template cells take the
+     new row height with no change of their own. -->
+<tv:TableView
+    x:Name="PeopleTable"
+    ItemsSource="{x:Bind Source}"
+    Density="Standard"
+    SelectionMode="Single">
+    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Status" Width="{StaticResource ColWidthStatus}" CellTemplate="{StaticResource ActiveStatusChipTemplate}" SortMemberPath="IsActive"/>
+    <tv:TableViewTextColumn Header="Role" Width="{StaticResource ColWidthLongName}" Binding="{Binding Role}"/>
+</tv:TableView>
+
+<ComboBox
+    x:Name="DensitySelector"
+    Header="Density"
+    SelectedIndex="1"
+    SelectionChanged="OnDensityChanged"
+    HorizontalAlignment="Stretch">
+    <ComboBoxItem Content="Compact" Tag="Compact"/>
+    <ComboBoxItem Content="Standard (default)" Tag="Standard"/>
+    <ComboBoxItem Content="Comfortable" Tag="Comfortable"/>
+</ComboBox>

@@ -163,7 +163,7 @@ public:
     // ----- Begin WUC versions -------------
     BEGIN_TEST_METHOD(DefaultCompositeAndPerspectiveWUC)
         TEST_METHOD_PROPERTY(L"Description", L"CTx3D and PTx3D have default values")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // [DCPP-test] WPF tests are failing with E_INVALIDARG in CDirectManipulationService::ActivateDirectManipulationManager
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 
@@ -193,7 +193,7 @@ public:
     // Test 2D/3D interop
     BEGIN_TEST_METHOD(ScaleAndRenderTransformTranslateSameElementWUC)
         TEST_METHOD_PROPERTY(L"Description", L"CTx3D ScaleX/Y = 0.5 & RenderTransform TranslateX/Y = 20")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // [DCPP-test] WPF tests are failing with E_INVALIDARG in CDirectManipulationService::ActivateDirectManipulationManager
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 

@@ -28,43 +28,43 @@ public:
 
     BEGIN_TEST_METHOD(AddRemoveSameNode)
     TEST_METHOD_PROPERTY(L"Description", L"Inserts a node and then remove its with a device lost in between")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(AddNodeRemoveParent)
     TEST_METHOD_PROPERTY(L"Description", L"Inserts a node and the removes its parent with a device lost in between")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(AddNodeRemovePreviousSibling1)
     TEST_METHOD_PROPERTY(L"Description", L"Inserts a node after the first child of the parent and then removes the first child after with a device lost in between")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(AddNodeRemovePreviousSibling2)
     TEST_METHOD_PROPERTY(L"Description", L"Inserts a node after the second child of the parent and then removes the second child after with a device lost in between")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(MoveThenRemoveNode)
     TEST_METHOD_PROPERTY(L"Description", L"Move a node and then removes it with a device lost in between")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(AddTwoNodesThenRemoveFirst)
     TEST_METHOD_PROPERTY(L"Description", L"Adds two consecutive nodes and then removes the first one with a device lost in between")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(RenderingNewCompNodeThatSplitsContainer)
         TEST_METHOD_PROPERTY(L"Description", L"Device lost when rendering a new comp node, which splits a container visual in the previous frame.")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
 
 private:

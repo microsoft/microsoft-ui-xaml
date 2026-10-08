@@ -409,7 +409,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
         /// 
         [TestMethod]
         [Priority(1)]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void TestGroupedDataManipulations()
         {
             ListViewBase list = null; // List control under tests
@@ -689,7 +689,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanKeepLastItemInViewAfterBulkAddDelete()
         {
             ListView list = null;
@@ -905,7 +905,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanStayScrolledToTheBottomAfterResetWithKeepLastItemInView()
         {
             ListView list = null;
@@ -962,7 +962,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]   // DCPP: Tests are failing during shutdown on WPF due to outstanding animations
+        [TestProperty("Hosting:Mode", "WPF")]   // DCPP: Tests are failing during shutdown on WPF due to outstanding animations
         public void CanTrackGroupHeaderInNonContiguousForwardSituation()
         {
             ListView list = null;
@@ -1036,7 +1036,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanTrackGroupHeaderInNonContiguousBackwardSituation()
         {
             ListView list = null;

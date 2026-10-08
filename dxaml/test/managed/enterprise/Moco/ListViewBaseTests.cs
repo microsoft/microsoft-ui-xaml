@@ -68,7 +68,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanChangeSelectionWithTap()
         {
             ListView list = null;
@@ -107,6 +107,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void RaiseVectorChangedEvent()
         {
             var vectorChanged = new AutoResetEvent(false);
@@ -138,6 +139,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "OneCore")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanUpdateVisualStateForPinnedContainersOnSelectionModeChange()
         {
             ListView list = null;
@@ -179,6 +181,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanScrollAndChangeSelectionDuringTheSameTick()
         {
             ListView list = null;
@@ -223,6 +226,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyListDoesntScrollDueToSelectionChangeOnCollectionChange()
         {
             ListView list = null;
@@ -276,6 +280,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFocusedContainerIndexIsUpdatedAfterCollectionChange()
         {
             ListView list = null;
@@ -357,6 +362,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyReorderOfInlineItems()
         {
             ListView lv = null;
@@ -403,7 +409,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyDragItemsEventsFiredUsingMouse()
         {
             ListView list = null;
@@ -546,7 +552,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyDragItemsEventsFiredUsingTouch()
         {
             ListView list = null;
@@ -690,6 +696,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanCancelDrag()
         {
             ListView list = null;
@@ -763,7 +770,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanReorderUsingMouse()
         {
             ListView list = null;
@@ -817,7 +824,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanReorderUsingTouch()
         {
             ListView list = null;
@@ -870,7 +877,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateListViewVisualStateOnCaptureLostTouch()
         {
             ValidateListViewItemPointerOverVisualStateOnCaptureLost(false /* isPenInsteadOfTouch */);
@@ -878,6 +885,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateListViewVisualStateOnCaptureLostPen()
         {
             ValidateListViewItemPointerOverVisualStateOnCaptureLost(true /* isPenInsteadOfTouch */);
@@ -948,6 +956,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [Description("Validates that we can drag an item over a ListView that hasn't run layout yet. We should not crash in those circumstances.")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanDragItemOverListViewWithPendingLayoutPass()
         {
             ListView list = null;
@@ -999,6 +1008,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void EstimationCorrectionAfterScrollIntoViewUngrouped()
         {
             ListView lv = null;
@@ -1081,14 +1091,14 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void EstimationCorrectionAfterScrollIntoViewGroupedItem(bool scrollToHeader)
         {
             EstimationCorrectionAfterScrollIntoViewGrouped(false);
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void EstimationCorrectionAfterScrollIntoViewGroupedHeader(bool scrollToHeader)
         {
             EstimationCorrectionAfterScrollIntoViewGrouped(true);
@@ -1209,7 +1219,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         // group notifications and item notifications are expected to happen in the
         // same tick and a layout in the middle of that is not expected.
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void SelectionChangeDuringGroupInsert()
         {
             ListView lv = null;
@@ -1285,7 +1295,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void InsertGroupInMiddleOfVisibleWindow()
         {
             ListView lv = null;
@@ -1349,7 +1359,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         // this test makes sure that we account for that.
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void MouseLargeClickWithStickyHeaders()
         {
             ListView lv = null;
@@ -1463,6 +1473,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void PhasingContinuesAfterRenteringLiveTree()
         {
             Grid rootPanel = null;
@@ -1544,6 +1555,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         // Regression test
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void SetItemWidthToNanAfterFirstItemIsMeasured()
         {
             Grid rootPanel = null;
@@ -1691,6 +1703,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ZoomTest()
         {
             ListView listView = null;
@@ -1770,6 +1783,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ItemGenerationAndRecycleTest()
         {
             ListView listView = null;
@@ -1923,6 +1937,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ScrollItemIntoViewOnLoaded()
         {
             ListView list = null;
@@ -1957,7 +1972,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ScrollGroupIntoViewOnLoaded()
         {
             ListView list = null;
@@ -2063,6 +2078,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void PageDownWithNoCache()
         {
             ListView list = null;
@@ -2105,7 +2121,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void FocusResetAfterSwitchingItemsSource()
         {
             ListView list = null;
@@ -2153,7 +2169,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GroupPaddingShouldReduceMeasureSizeForHeadersAndItems_ItemsStackPanel()
         {
             GroupPaddingShouldReduceMeasureSizeForHeadersAndItems(
@@ -2163,7 +2179,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void GroupPaddingShouldReduceMeasureSizeForHeadersAndItems_ItemsWrapGrid()
         {
             GroupPaddingShouldReduceMeasureSizeForHeadersAndItems(
@@ -2174,14 +2190,14 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateListViewHeaderArrangBounds()
         {
             ValidateHeaderArrangBounds(true /*useListView*/);
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateGridViewHeaderArrangeBounds()
         {
             ValidateHeaderArrangBounds(false /*useListView*/);
@@ -2338,6 +2354,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void SettingProgrammaticFocusDoesNotGetRedirectedToSelectedItem()
         {
             ListView listView = null;
@@ -2388,6 +2405,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateNonGroupingFocusOrderWithTabNavigationLocal()
         {
             ListView listView = null;
@@ -2455,6 +2473,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void DoesTabNavigationLocalSkipOverDisabledItems()
         {
             ListView listView = null;
@@ -2511,6 +2530,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void DoesBottomsUpListTabNavigationInitiallyFocusLastItem()
         {
             ListView listView = null;
@@ -2556,6 +2576,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void DoesRestoreFocusToPreviouslyFocusedItemWhenTabbingBackIn()
         {
             ListView listView = null;
@@ -2606,6 +2627,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void DoesNotHandleKeyboardArrowKeysWithFocusOnHeaderOrFooter()
         {
             ListView listView = null;
@@ -2670,6 +2692,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void HeaderOrFooterDoesNotTrap2DNavigation()
         {
             ListView listView = null;
@@ -2724,6 +2747,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Description", "If focus is set to a ListViewItem programmatically (or via 2D navigation) and the item is then selected, it should not require 2 tabs to move focus out of the ListView.")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void DoesNotRequireTwoTabsToMoveFocusWhenItemIsFocusedProgrammaticallyAndThenSelected()
         {
             ListView listView = null;
@@ -2765,6 +2789,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateKeyNavWithVariableSizedItems()
         {
             GridView gridView = null;
@@ -2825,6 +2850,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateHomeEndKeyNavWithDisabledItems()
         {
             GridView gridView = null;
@@ -2889,7 +2915,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [Description("Home/End key press when focus is on a group header caused us to mess up key navigation")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateListViewHomeEndAndArrowKeyNav()
         {
             ListView listView = null;
@@ -2951,7 +2977,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Description", "When a ListView is the root focusable control in the tree, validate that focus does not get trapped within the header sub-tree with multiple focusable controls.")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanTabOutOfHeaderWithMultipleFocusableChildren()
         {
             ListView listView = null;
@@ -3007,6 +3033,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("Description", "When a ListView is the root focusable control in the tree, validate that focus does not get trapped within the footer sub-tree with multiple focusable controls.")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanShiftTabOutOfFooterWithMultipleFocusableChildren()
         {
             ListView listView = null;
@@ -3152,7 +3179,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanRemoveGroupFromListViewWithEmptyGroupAfter()
         {
             ListView listView = null;
@@ -3206,7 +3233,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanRemoveFromGroupInListViewWithEmptyGroupBefore()
         {
             ListView listView = null;
@@ -3265,6 +3292,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CanSetSelectedItemBeforeItemsSource()
         {
             var data = Enumerable.Range(0, 10).Select(i => $"Item #{i}").ToList();
@@ -3367,6 +3395,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateDoNotRestorePendingSelectionIfNotFound()
         {
             ListView list = null;
@@ -3415,6 +3444,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyPhasingUsesIDataTemplateComponent()
         {
             ListView lv = null;
@@ -3479,6 +3509,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyVisibleIndicesAtDifferentZoomFactors()
         {
             ListView listView = null;
@@ -3546,7 +3577,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         // Regression Test: ListView crash on RS3
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateCollectionChangeAndResetBeforeLayout()
         {
             ListView lv = null;
@@ -3681,6 +3712,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateFocusAfterItemDeletion()
         {
             ListView list = null;
@@ -3742,12 +3774,14 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyContainerAtRootOfItemTemplate()
         {
             VerifyContainerAtRootOfItemTemplate(hookToContainerContentChangingEvent: false);
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyContainerAtRootOfItemTemplateWithCCC()
         {
             VerifyContainerAtRootOfItemTemplate(hookToContainerContentChangingEvent: true);
@@ -3808,6 +3842,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         // Verify that if the ItemTemplateSelector has a valid container at the root of the template it returns,
         // we do not create an implicit container on top of that.
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyContainerAtRootWithTemplateSelector()
         {
             ListView lv = null;
@@ -3876,6 +3911,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifySettingSelectedIndexBeforeItemsInMarkup()
         {
             ListView list = null;
@@ -3912,6 +3948,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifySettingSelectedIndexBeforeItemsInCode()
         {
             ListView list = null;
@@ -3942,6 +3979,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifySettingSelectedIndexBeforeItemsSource()
         {
             ListView list = null;
@@ -3971,6 +4009,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
         // Regression test: [CRASH] Crash on updating list view with empty headers
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateAddingGroupWithItemInMiddle()
         {
             ListView lv = null;
@@ -4031,6 +4070,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateTabNavAfterDeletingFocusedElement()
         {
             GridView gridView = null;

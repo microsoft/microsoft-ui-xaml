@@ -46,13 +46,14 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateGetAutomationControlType()
         {
             ValidateGetAutomationControlTypeImpl(AutomationControlType.Separator);
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateSelectionPatternOnListView()
         {
             ListView list = null;

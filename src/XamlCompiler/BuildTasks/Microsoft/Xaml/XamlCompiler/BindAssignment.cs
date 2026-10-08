@@ -4,7 +4,9 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Xaml;
+using System.Xaml.Schema;
 using System.Collections.Generic;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler
@@ -361,6 +363,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 !ValidateMode(issues) ||
                 !ValidateTypeCasting(issues) ||
                 !ValidateBindBackAssignment(issues) ||
+                !ValidateTwoWaySource(issues) ||
                 !ValidateConverter(issues) ||
                 !ValidateApiInformation(issues) ||
                 !ValidateUpdateSourceTrigger(issues) ||
@@ -512,6 +515,60 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 }
             }
             return true;
+        }
+
+        private bool ValidateTwoWaySource(IList<XamlCompileErrorBase> issues)
+        {
+            if (!this.IsTrackingTarget || this.PathStep is FunctionStep)
+            {
+                return true;
+            }
+
+            string readOnlyMemberName = null;
+            if (this.PathStep is AttachedPropertyStep attachedPropertyStep)
+            {
+                if (attachedPropertyStep.IsReadOnly)
+                {
+                    readOnlyMemberName = attachedPropertyStep.PropertyName;
+                }
+            }
+            else if (this.PathStep is FieldStep fieldStep)
+            {
+                FieldInfo fieldInfo = fieldStep.FieldInfo;
+                if (fieldInfo != null && (fieldInfo.IsInitOnly || fieldInfo.IsLiteral))
+                {
+                    readOnlyMemberName = fieldStep.FieldName;
+                }
+            }
+            else if (this.PathStep is PropertyStep propertyStep)
+            {
+                PropertyInfo propertyInfo = propertyStep.PropertyInfo;
+                if (propertyInfo != null)
+                {
+                    // Generated C# bindings are nested in the XAML root type and can legally access
+                    // that type's private setters. Other language-specific accessibility rules, such
+                    // as a private setter on a separate model type, remain enforced by the generated
+                    // code's compiler.
+                    MethodInfo setter = propertyInfo.GetSetMethod(true);
+                    if (setter == null || MemberReflector.IsInitOnly(setter))
+                    {
+                        readOnlyMemberName = propertyStep.PropertyName;
+                    }
+                }
+            }
+
+            if (readOnlyMemberName == null)
+            {
+                return true;
+            }
+
+            issues.Add(new BindAssignmentValidationError(
+                this.bindItem,
+                ResourceUtilities.FormatString(
+                    XamlCompilerResources.BindAssignment_TwoWaySourceNotWritable,
+                    GetBindingPath(this.bindItem),
+                    readOnlyMemberName)));
+            return false;
         }
 
         // This method looks like a hack, but we did it, so we can't take it out now.

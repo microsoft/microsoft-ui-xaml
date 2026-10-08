@@ -114,7 +114,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Validate gettting attributes form empty text range.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Null UIA element
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(FindAttributeInTextRange)
@@ -177,7 +177,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(DisableTextSelection)
                 TEST_METHOD_PROPERTY(L"Description", L"Disable IsTextSelectionEnabled property when current selection is active")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DCPP: RichTextBlockTests::SelectionChangedEvent isn't loading content on WPF
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(TextUpdatesWithFocus)

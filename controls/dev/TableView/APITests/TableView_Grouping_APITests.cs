@@ -562,7 +562,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // gesture handlers - OnKeyDown (Enter/Space) and OnPointerReleased - while the automation
         // peer's Expand/Collapse takes the separate RequestExpansion route by design. There is no
         // input-free way to reach the event, so "ToggleRequested carries the activated group's key"
-        // moves to the interaction plan rather than being weakened into a no-op here.
+        // moves to the interaction tests rather than being weakened into a no-op here.
 
         [TestMethod]
         [TestProperty("Description", "Verifies a collapsed group stays collapsed across an unrelated source update.")]

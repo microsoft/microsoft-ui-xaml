@@ -25,7 +25,7 @@ public:
 
     BEGIN_TEST_METHOD(NoTx3D)
         TEST_METHOD_PROPERTY(L"Description", L"Test StickyHeaders with no transform3D applied")
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Crash in WUX.dll
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_22H2) // This test is currently failing on 23h2.
     END_TEST_METHOD()
 

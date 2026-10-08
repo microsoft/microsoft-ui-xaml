@@ -55,7 +55,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateDefaultChildrenCollectionDuringTabNavigation()
         {
             Grid root = null;
@@ -98,7 +98,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]   // Focus engagement bugs in lifted islands
+        [TestProperty("Hosting:Mode", "WPF")]
         public void ValidateCustomChildrenCollectionDuringTabNavigation()
         {
             StackPanel root = null;

@@ -23,7 +23,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(AppBarEvents)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that AppBar opens/closes in response to calls to AppBar.IsOpen.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
 

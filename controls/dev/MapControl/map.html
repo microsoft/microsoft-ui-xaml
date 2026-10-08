@@ -636,7 +636,28 @@
                             position: position,
                             id: id
                         });
-                        pin.getElement().setAttribute('tabindex', 0);
+                        const pinElement = pin.getElement();
+                        pinElement.setAttribute('tabindex', 0);
+                        // Expose each pin as a named button so screen readers announce
+                        // "<name>, button" instead of the raw "graphic, group" that the
+                        // underlying SVG marker element reports by default.
+                        pinElement.setAttribute('role', 'button');
+                        // The native control supplies a per-pin name via addPoint() — the
+                        // MapIcon's AutomationProperties.Name, or a localized default when the
+                        // app set none — so no accessible name is hard-coded here.
+                        if (properties && typeof properties.name === 'string' && properties.name.length > 0) {
+                            pinElement.setAttribute('aria-label', properties.name);
+                        }
+                        // role="button" promises keyboard operability, but the Azure Maps
+                        // 'click' event only fires for pointer input. Raise the same
+                        // pushpin-click path on Enter/Space so keyboard and screen-reader
+                        // users can activate a pin and MapElementClick is raised for them too.
+                        pinElement.addEventListener('keydown', (keyEvent) => {
+                            if (keyEvent.key === 'Enter' || keyEvent.key === ' ' || keyEvent.key === 'Spacebar') {
+                                keyEvent.preventDefault();
+                                sendPushpinClickInfo({ target: pin });
+                            }
+                        });
                         return pin;
                     }
                 });
@@ -658,8 +679,8 @@
             return newLayer.getId();
         }
 
-        function addPoint(longitude, latitude, layerId) {
-            var point = new atlas.data.Feature(new atlas.data.Point([longitude, latitude]), {name: 'MapElement'}, id);
+        function addPoint(longitude, latitude, layerId, name) {
+            var point = new atlas.data.Feature(new atlas.data.Point([longitude, latitude]), {name: name}, id);
             id++;
             try {
                 map.events.add('ready', function () {

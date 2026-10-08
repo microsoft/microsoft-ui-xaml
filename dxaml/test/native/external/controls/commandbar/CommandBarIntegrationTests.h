@@ -361,7 +361,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyCanMakeSubMenuBySettingFlyoutProperty)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that setting the Flyout property on an AppBarButton in the overflow functions normally as a sub-menu.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // TODO: 31563479 - Mouse input helper doesn't work on phone/onecore
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Not working in WPF-hosting, this validation fails intermitently: 
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP") // Not working in WPF-hosting, this validation fails intermitently:
                                                           //    "Moving mouse over MenuFlyoutAppBarButton2, which should close the first menu flyout and open the second."
         END_TEST_METHOD()
 

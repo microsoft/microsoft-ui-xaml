@@ -132,7 +132,7 @@ Interactive column resize is a **policy split** between a framework-internal pri
 
 **Axis and RTL.** `DragOrientation` is the axis the drag is **measured along**, which for a divider is perpendicular to how it looks: `Horizontal` drags left/right. It is named `DragOrientation` rather than `Orientation` precisely because the primitive owns no shape — the host sizes it — so the control's own layout axis is not something it can describe. This is also the opposite of the Windows Community Toolkit's `SizerBase.Orientation`, which describes the bar; the distinct name prevents a silent mix-up. The primitive normalizes to a **logical** delta, so positive always grows in reading order and both input paths agree; only the horizontal axis mirrors under RTL.
 
-**Keyboard.** The header cell, not the gripper, is the keyboard target — column commands belong there, and one tab stop per column would sit between the user and the data. The table therefore sets `IsTabStop(false)` on the gripper and routes Left/Right into `TryKeyboardStep(VirtualKey)`, which owns direction, the RTL mirror, `KeyboardIncrement` and the Shift multiplier so both keyboard paths cannot drift apart.
+**Keyboard.** The header cell, not the gripper, is the keyboard target. Column commands belong there, and one tab stop per column would sit between the user and the data. The table therefore sets `IsTabStop(false)` on the gripper and routes **`Alt+Left`/`Alt+Right`** on a focused header into `TryKeyboardStep(VirtualKey)`. That function owns direction, the RTL mirror, `KeyboardIncrement` and the Shift multiplier (`Alt+Shift+Arrow` is the large step), so the pointer and keyboard paths cannot drift apart. `Alt` is the **only** resize modifier: `Ctrl+Arrow` on a header does nothing, and bare `Left`/`Right` move focus between headers (see *Keyboard* below). The binding matches WPF `DataGrid`.
 
 ### Resize policy — what each column configuration does
 
@@ -198,7 +198,28 @@ Cell generation is column-specific:
 
 `RowBackground` and `AlternatingRowBackground` provide opt-in row banding; when both are null, rows stay unbanded. `GridLinesVisibility` controls row/cell gridline borders. `Density` selects row minimum height and built-in cell/header padding for `Compact`, `Standard`, or `Comfortable`.
 
-Keyboard handling is cell-aware. `TableView` listens to bubbling `KeyDown` so template-column descendants handle input first; unhandled `Up`, `Down`, `PageUp`, and `PageDown` move to the same visible column in another row, while `Left`/`Right` move the cell cursor within the focused row. `Home`/`End` move to the first/last cell of the current row once a cell has focus; `Ctrl+Home`/`Ctrl+End` move to the first/last cell of the table. `Enter` and `Space` on the focused column header sort that column. The internal `GridCoordinateHelper` performs the row/column ↔ flat-index math, wrap behavior, and overflow guards.
+Keyboard handling is cell-aware and follows the WAI-ARIA treegrid model. `TableView` listens to bubbling `KeyDown` so template-column descendants handle input first. The table itself is not a tab stop (`IsTabStop=False`). It has **two tab stops**: the header band, then the body. The two share one column cursor, so Tab and Shift+Tab between them keep the current column.
+
+- **Header band.**
+  - The band is entered at the remembered column, or at the first header when no column has been chosen.
+  - `Left`/`Right` move between visible headers and do not wrap (mirrored under RTL).
+  - `Down` moves to the first row; `Up` stays in the band.
+  - `Enter` and `Space` sort a sortable header (`Space` fires on key-up, so auto-repeat cannot re-sort). `Alt+Left`/`Alt+Right` resize it.
+  - Every visible header is reachable, including one with `CanSort=False`.
+- **Rows.**
+  - Unhandled `Up`, `Down`, `PageUp` and `PageDown` keep the starting level: row to row, or cell to cell in the same visible column. `Up` from the first row moves to the header band.
+  - From a focused row, `Right` drills into the first cell. `Left` on the first cell returns to the row. `Left` on a row does nothing.
+  - At cell level, `Left`/`Right` move the cell cursor within the focused row without wrapping. `Home`/`End` move to the first/last cell of the current row, and `Ctrl+Home`/`Ctrl+End` move to the first/last cell of the table. All horizontal keys mirror under RTL.
+- **Selection.**
+  - Selection follows keyboard focus.
+  - `Ctrl` plus a navigation key moves focus without selecting.
+  - `Space` (without `Alt` or `Ctrl`) selects the focused row from row or cell level.
+- **Cell content.** `Enter` on a cell that hosts a focusable control moves focus into that control, and arrow keys then stay inside it. `Escape` returns to the cell. `F2` remains the begin-edit key.
+- **Re-entry.** Tabbing back into the body returns to the same **record** that last had focus, even after a sort or filter has moved it. A record that is no longer realized falls back to the row the framework targets.
+- **Re-shape while focused.** When a sort or filter re-shapes the rows while focus is **inside** the body, focus stays at the same **position**, the same projected row index, and so lands on whichever row now occupies it. This also applies when the focused record was filtered out.
+- **Gamepad.** Gamepad, D-pad and XY-focus navigation are not supported. Only the keyboard routing above is specified.
+
+The internal `GridCoordinateHelper` performs the row/column ↔ flat-index math, wrap behavior, and overflow guards.
 
 Accessibility exposes a UIA grid/table model:
 
@@ -206,7 +227,7 @@ Accessibility exposes a UIA grid/table model:
 - `TableViewRowAutomationPeer`: `DataItem` control type, `ISelectionItemProvider`, composed name and group-relative `PositionInSet`/`SizeOfSet`; no grid/table provider (exposes its cell peers as children)
 - `TableViewCellAutomationPeer`: `IGridItemProvider`, `ITableItemProvider`, `IValueProvider`, `Custom` control type with localized `cell`
 - `TableViewColumnHeaderAutomationPeer`: column-header name/bounds, `IInvokeProvider` (sort), `PositionInSet`/`SizeOfSet`
-- `TableViewGroupHeaderAutomationPeer`: `IExpandCollapseProvider`, `IGridItemProvider`, `Level`
+- `TableViewGroupHeaderAutomationPeer`: `IExpandCollapseProvider`, `IGridItemProvider`. It computes **no** `Level`: grouping is single-level, so the band reports `0` ("not specified") unless the app sets `AutomationProperties.Level`.
 
 `ScrollItem` is not implemented explicitly on any of these — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer.
 
@@ -424,9 +445,11 @@ The split is what lets a future keyboard or selection layer change gesture routi
 
 Begin-edit is driven from **`PointerPressed` with click-count tracking**, not a `DoubleTapped` handler. Marking `PointerPressed` handled suppresses XAML's gesture recognizer, so it never produces `Tapped`/`DoubleTapped` for that element — and a row that participates in selection has to mark the press handled. A `DoubleTapped` handler would therefore work today and silently stop working the moment a selection layer lands. The handler is registered with `handledEventsToo` so it survives that.
 
-The same handler is the only place a pointer establishes the **current cell**, which is also what makes keyboard editing reachable: pointer focus lands on the row, not on a tagged cell, so without it the current column stays null and the no-argument `BeginEdit()` silently fails.
+The same handler is the only place a pointer establishes the **current cell**, which is also what makes keyboard editing reachable. A primary-button press on a cell drills its row to cell level and focuses **that cell**, so keyboard focus, the UIA focused element, and the current cell all name the cell under the pointer. A press on the row's empty strip, past the last column, focuses the row itself.
 
-Cell resolution walks up from `OriginalSource` to the cell wrapper `Border` (whose `Tag` carries the column) and on to the `TableViewRow`. When the walk cannot reach a wrapper — which happens once the row has focus and the press arrives with the row itself as source — it falls back to hit-testing at the pointer position.
+Selection is applied on **release**, and only when the release lands on the row that was pressed. A press that is dragged off and released elsewhere selects nothing. A secondary-button (right) press never selects, because it is the context-menu gesture.
+
+Cell resolution walks up from `OriginalSource` to the cell wrapper (`TableViewCell`, a `Grid` whose `Tag` carries the column) and on to the `TableViewRow`. When the walk cannot reach a wrapper — which happens once the row has focus and the press arrives with the row itself as source — it falls back to hit-testing at the pointer position.
 
 ## Value transfer and rollback
 

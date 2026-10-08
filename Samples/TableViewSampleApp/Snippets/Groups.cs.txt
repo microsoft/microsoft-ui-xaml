@@ -1,0 +1,84 @@
+// GroupsPage.xaml.cs. The source is created once and reshaped in place; the page starts Grouped.
+public GroupsPage()
+{
+    var pool = PersonData.Take(80);
+    People = new ObservableCollection<Person>(pool.Take(60));
+    _newHires = new Queue<Person>(pool.Skip(60));
+    _source = TableViewSource.From(People);
+
+    InitializeComponent();
+    Loaded += OnPageLoaded;
+    Unloaded += OnPageUnloaded;
+
+    ApplyGroupHeaderTemplate();
+    ApplyShaping(announce: false);
+}
+
+private void ApplyGroupHeaderTemplate()
+{
+    PeopleTable.GroupHeaderTemplate = SampleShaping.SelectedTag(HeaderTemplateSelector, "custom") == "custom"
+        ? (DataTemplate)Resources["CustomGroupHeaderTemplate"]
+        : null;
+}
+
+private void ApplyShaping(bool announce)
+{
+    var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
+    var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+    var selected = PeopleTable.SelectedItem;
+
+    switch (mode)
+    {
+        case "grouped":
+            // The key selector receives the ROW; the identity selector receives the KEY.
+            _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+            break;
+        default:
+            _source.ClearGroupBy();
+            mode = "flat";
+            break;
+    }
+
+    _appliedMode = mode;
+    _appliedKey = key;
+
+    // Re-applying GroupBy can drop the selection when the selected row changed group.
+    SampleShaping.Reselect(PeopleTable, selected, People.Count + 64, RefreshReadouts);
+}
+
+// GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row on
+// PropertyChanged; re-apply the grouping when the grouped-on value changed.
+private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
+{
+    switch (e.PropertyName)
+    {
+        case nameof(Person.Department):
+        case nameof(Person.IsActive):
+            ReapplyIfGroupedOn(e.PropertyName);
+            break;
+    }
+}
+
+private void ReapplyIfGroupedOn(string? propertyName)
+{
+    if (_appliedMode == "grouped" && propertyName == _appliedKey)
+    {
+        ApplyShaping(announce: false);
+    }
+}
+
+// Adding and removing rows needs no GroupBy call: the projection follows collection changes.
+private void OnAddPersonClick(object sender, RoutedEventArgs e)
+{
+    if (!_newHires.TryDequeue(out var person))
+    {
+        SetLastAction("No more new hires to add.");
+        return;
+    }
+
+    People.Add(person);
+}
+
+private void OnExpandAllClick(object sender, RoutedEventArgs e) => PeopleTable.ExpandAllGroups();
+
+private void OnCollapseAllClick(object sender, RoutedEventArgs e) => PeopleTable.CollapseAllGroups();

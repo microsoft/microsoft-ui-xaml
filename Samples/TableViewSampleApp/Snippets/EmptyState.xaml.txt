@@ -1,0 +1,67 @@
+<!-- TableView.EmptyTemplate is shown, centred over the row area, whenever there are no rows to
+     show. Keep its content to text and shapes: a FontIcon inside EmptyTemplate crashes at startup. -->
+
+<DataTemplate x:Key="EmptyStateTemplate" x:DataType="system:Object">
+    <StackPanel
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        MaxWidth="320"
+        Spacing="12">
+        <Grid Width="64" Height="64" HorizontalAlignment="Center" AutomationProperties.AccessibilityView="Raw">
+            <Ellipse
+                Fill="{ThemeResource SubtleFillColorSecondaryBrush}"
+                Stroke="{ThemeResource CardStrokeColorDefaultBrush}"
+                StrokeThickness="1"/>
+            <Rectangle
+                Width="26" Height="20"
+                RadiusX="3" RadiusY="3"
+                Fill="Transparent"
+                Stroke="{ThemeResource TextFillColorTertiaryBrush}"
+                StrokeThickness="2"/>
+            <Rectangle
+                Width="26" Height="1.5"
+                Fill="{ThemeResource TextFillColorTertiaryBrush}"/>
+        </Grid>
+        <TextBlock
+            Text="No rows to display"
+            HorizontalAlignment="Center"
+            Style="{ThemeResource SubtitleTextBlockStyle}"/>
+        <TextBlock
+            Text="There are no people to show. Choose Populated as the data source, or press Restore the rows."
+            TextAlignment="Center"
+            TextWrapping="Wrap"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+    </StackPanel>
+</DataTemplate>
+
+<!-- The template columns come from Templates\PersonCellTemplates.xaml. -->
+
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.AutomationId="EmptyStateTable"
+    AutomationProperties.Name="People, with an empty state"
+    ItemsSource="{x:Bind Source}"
+    SelectionMode="Single"
+    EmptyTemplate="{StaticResource EmptyStateTemplate}"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+    <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+    <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+</tv:TableView>
+
+<!-- Two different ways of being empty: a null ItemsSource, and a live source that holds no rows. -->
+
+<ComboBox
+    x:Name="DataSourceSelector"
+    AutomationProperties.AutomationId="EmptyStateDataSourceSelector"
+    Header="Data source"
+    SelectedIndex="0"
+    SelectionChanged="OnDataSourceChanged"
+    HorizontalAlignment="Stretch">
+    <ComboBoxItem Content="Populated" Tag="Populated"/>
+    <ComboBoxItem Content="Null ItemsSource" Tag="Null"/>
+    <ComboBoxItem Content="Zero rows" Tag="ZeroRows"/>
+</ComboBox>
