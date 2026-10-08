@@ -15,7 +15,7 @@
           <wucSpriteVisual SizeX="57.58" SizeY="1.453" BorderMode="Soft" OffsetX="0" OffsetY="25" OffsetZ="0">
             <ColorBrush Color="#ff000000" />
           </wucSpriteVisual>
-          <wucSpriteVisual SizeX="234" SizeY="229" BorderMode="Hard" OffsetX="0" OffsetY="4" OffsetZ="0">
+          <wucSpriteVisual SizeX="236" SizeY="231" BorderMode="Hard" OffsetX="-1" OffsetY="3" OffsetZ="0">
             <MaskBrush>
               <Source>
                 <ColorBrush Color="#ff000000" />
@@ -25,8 +25,8 @@
               </Mask>
             </MaskBrush>
           </wucSpriteVisual>
-          <wucSpriteVisual SizeX="173" SizeY="25" BorderMode="Hard" OffsetX="1" OffsetY="374" OffsetZ="0">
-            <Clip ClipLeft="-1" ClipTop="-4" ClipRight="-66" ClipBottom="19" TransformMatrix="Identity" />
+          <wucSpriteVisual SizeX="175" SizeY="27" BorderMode="Hard" OffsetX="0" OffsetY="373" OffsetZ="0">
+            <Clip ClipLeft="0" ClipTop="-3" ClipRight="-65" ClipBottom="20" TransformMatrix="Identity" />
             <MaskBrush>
               <Source>
                 <ColorBrush Color="#ff000000" />
@@ -36,7 +36,7 @@
               </Mask>
             </MaskBrush>
           </wucSpriteVisual>
-          <wucSpriteVisual SizeX="233" SizeY="219" BorderMode="Hard" OffsetX="240" OffsetY="4" OffsetZ="0">
+          <wucSpriteVisual SizeX="235" SizeY="221" BorderMode="Hard" OffsetX="239" OffsetY="3" OffsetZ="0">
             <MaskBrush>
               <Source>
                 <ColorBrush Color="#ff000000" />
@@ -68,8 +68,8 @@
                       </Mask>
                     </MaskBrush>
                   </wucSpriteVisual>
-                  <wucSpriteVisual SizeX="91" SizeY="10" BorderMode="Hard" OffsetX="13" OffsetY="13" OffsetZ="0">
-                    <Clip ClipLeft="-1" ClipTop="-5" ClipRight="6" ClipBottom="-4" TransformMatrix="Identity" />
+                  <wucSpriteVisual SizeX="93" SizeY="12" BorderMode="Hard" OffsetX="12" OffsetY="12" OffsetZ="0">
+                    <Clip ClipLeft="0" ClipTop="-4" ClipRight="7" ClipBottom="-3" TransformMatrix="Identity" />
                     <MaskBrush>
                       <Source>
                         <ColorBrush Color="#ffffffff" />

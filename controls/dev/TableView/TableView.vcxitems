@@ -33,6 +33,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewColumnHeaderAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewHeaderCell.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCell.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewCellAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowTemplateSelector.h" />

@@ -9,6 +9,8 @@
 #include "TableViewColumn.g.h"
 #include "TableViewColumn.properties.h"
 
+#include <cstdint>
+
 // Default pixel width and fallback for unresolved Auto values (and Star before the owning
 // TableView has a viewport to resolve against); keep in sync with ActualWidth's
 // MUX_DEFAULT_VALUE("120.0") in TableView.idl.
@@ -30,6 +32,9 @@ public:
 
     // Typed accessor for the owning TableView.
     winrt::TableView GetOwningTableView();
+
+    // Internal — stable, non-address token used by column-header automation peers.
+    uint32_t AutomationIdentity();
 
     // Overridable
     virtual winrt::hstring GetSortMemberPathCore();
@@ -103,4 +108,5 @@ private:
 
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
     winrt::ITableViewSortComparer m_customSortComparer{ nullptr };
+    uint32_t m_automationIdentity{ 0 };
 };

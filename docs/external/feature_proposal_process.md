@@ -40,7 +40,7 @@ Note that if an issue isn't a high priority or has many open questions then it m
 The WinUI team will review the proposal and either approve or close the issue based on whether it broadly aligns with the [WinUI roadmap](https://github.com/microsoft/WindowsAppSDK/blob/main/docs/roadmap.md) and [contribution guidelines](../../CONTRIBUTING.md).
 
 5. **API Review**  
-If the feature adds new APIs then we'll start an API review in the [WinUI API review repo](https://github.com/microsoft/microsoft-ui-xaml-specs). All new public APIs must be reviewed before merging.  
+If the feature adds new APIs then we'll start the [WinUI API review process](../api-specs/api-review-process.md). All new public APIs must be reviewed before merging.
 
 6. **Implementation**  
 A feature can be implemented by you, the WinUI team, or other community members.  

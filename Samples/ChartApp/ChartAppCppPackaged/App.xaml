@@ -1,13 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Application
-    x:Class="ChartAppCppPackaged.App"
+    x:Class="ChartsSample.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:ChartAppCppPackaged">
+    xmlns:local="using:ChartsSample">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <XamlChartsResources xmlns="using:Microsoft.UI.Xaml.Controls.Charts" />
+                <ResourceDictionary>
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Light">
+                            <SolidColorBrush x:Key="ChartsControlForegroundBrush" Color="#FF1B1B1B" />
+                        </ResourceDictionary>
+                        <ResourceDictionary x:Key="Dark">
+                            <SolidColorBrush x:Key="ChartsControlBackgroundBrush" Color="#FF0B1A2A" />
+                            <SolidColorBrush x:Key="ChartsControlForegroundBrush" Color="#FFE8F1FF" />
+                        </ResourceDictionary>
+                    </ResourceDictionary.ThemeDictionaries>
+                </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

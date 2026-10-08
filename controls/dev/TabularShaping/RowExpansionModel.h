@@ -54,15 +54,8 @@ namespace ShapingHelpers
         // Raised after intent changes, never during. A handler may re-enter and read state.
         void SetChangedHandler(ChangedHandler handler) { m_changed = std::move(handler); }
 
-        // What a key with no explicit intent resolves to. Setting it CLEARS every explicit
-        // intent: a caller changing the default is declaring a new baseline, and keeping the
-        // old exceptions would resolve keys against a baseline nobody asked for.
-        bool DefaultExpanded() const noexcept { return m_defaultExpanded; }
-        void SetDefaultExpanded(bool expanded);
-
         bool IsExpanded(winrt::hstring const& key) const;
         void SetExpanded(winrt::hstring const& key, bool isExpanded);
-        void Toggle(winrt::hstring const& key) { SetExpanded(key, !IsExpanded(key)); }
 
         // Moves the baseline and drops every exception, so keys that do not exist yet also
         // resolve to `isExpanded`. This is "expand all" as an intent, not as a loop over the
@@ -75,9 +68,9 @@ namespace ShapingHelpers
         // no live key's resolved state.
         void RetainOnly(std::unordered_set<winrt::hstring> const& liveKeys);
 
-        void Clear();
-
     private:
+        void SetDefaultExpanded(bool expanded);
+
         void RaiseChanged(Change change) const;
 
         bool m_defaultExpanded{ true };

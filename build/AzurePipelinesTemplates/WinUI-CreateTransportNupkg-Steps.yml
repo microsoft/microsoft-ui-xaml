@@ -1,151 +1,387 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+#
+# WinUI-CreateTransportNupkg-Steps.yml
+#
+# Packs WinUI's two shipping nupkgs (Microsoft.WindowsAppSDK.WinUI and
+# Microsoft.ProjectReunion.WinUI.TransportPackage). Shared by the standalone WinUI Pack stage
+# and the WindowsAppSDK monobuild's WinUI Pack job, switched via IsMonobuild (default false).
+# Key deltas:
+#   * Version: standalone computes $(componentPackageVersion) below; the monobuild caller passes
+#     the coherent $(WindowsAppSDKFormattedVersion) via nupkgVersionOverride/monobuildPinnedVersion.
+#   * Artifacts: standalone pulls from a previous build; monobuild downloads the current build's
+#     per-platform Build-WinUI-{x86,x64,arm64,arm64ec}-Release artifacts.
+#   * Output: standalone packs to $(ob_outputDirectory) and also packs/signs/pushes test-infra
+#     nupkgs; monobuild packs to a staging dir, restages into Component-WinUI-Final, and does NO
+#     test-infra/ESRP/push (the monorepo stage signs the produced nupkgs).
+
 parameters:
-  winUIVersion: $(versionFinal)
+  # NOTE: Parameters declared in untyped form to preserve string-coercion semantics for
+  # `eq(parameters.signOutput, true)` and similar comparisons inherited from the standalone
+  # template's caller contract. See WinUI-BuildMUXProject-Steps.yml for full rationale.
+  winUIVersion: '$(versionFinal)'
   buildConfiguration: 'Release'
-  signOutput: false # this is true for Release builds
+  signOutput: false
+  IsMonobuild: false
+  IsOfficial: false
+  PushPackageToInternalFeed: false
+  BuildType: 'experimental'
+  # Output directory for build-nupkg.ps1. Standalone writes directly to
+  # $(ob_outputDirectory) (the OneBranch per-job staging dir published as the artifact).
+  # Monobuild writes to a staging subdir and a final restage step copies into
+  # Component-WinUI-Final layout. Pass as a string so AzPipes resolves the macro at runtime.
+  nupkgOutputDir: '$(ob_outputDirectory)'
+  # Version string passed to build-nupkg.ps1's -VersionOverride. Standalone uses
+  # $(componentPackageVersion) computed by DetermineComponentNugetPackageVersion. Monobuild
+  # caller passes $(WindowsAppSDKFormattedVersion).
+  nupkgVersionOverride: '$(componentPackageVersion)'
+  # When non-empty, passed as build-nupkg.ps1's -MonobuildPinnedVersion which pins ALL
+  # upstream Foundation/IXP/Base inter-component dependency versions baked into the
+  # produced nupkg to this single coherent value. The monobuild Pack caller sets this
+  # to '$(WindowsAppSDKFormattedVersion)'. Empty default (standalone) keeps
+  # build-nupkg.ps1 resolving them from eng\Versions.props.
+  # Mirrors Foundation's BuildAll.ps1 -PackageVersion / -ComponentPackageVersion pattern.
+  monobuildPinnedVersion: ''
 
 steps:
-- script: |
-    echo parameters.nupkgdir '$(ob_outputDirectory)'
-    echo parameters.buildConfiguration '${{ parameters.buildConfiguration }}'
-  displayName: 'CreateNugetPackage: Display parameters'
+  - ${{ if eq(parameters.IsMonobuild, 'true') }}:
+    - task: NuGetAuthenticate@1
 
-- task: PowerShell@2
-  name: DetermineComponentNugetPackageVersion
-  displayName: 'Determine Component Nuget Package Version'
-  inputs:
-    targetType: 'inline'
-    script: |
-      $paddedRevision = '$(versionPrerelease)'
-      if([int]$(versionPrerelease) -lt 10)
-      {
-        $paddedRevision = '00' + '$(versionPrerelease)'
-      }
-      elseif ([int]$(versionPrerelease) -lt 100)
-      {
-        $paddedRevision = '0' + '$(versionPrerelease)'
-      }
-      Write-Host "paddedRevision " $paddedRevision
+  - script: |
+      echo nupkgOutputDir '${{ parameters.nupkgOutputDir }}'
+      echo buildConfiguration '${{ parameters.buildConfiguration }}'
+      echo nupkgVersionOverride '${{ parameters.nupkgVersionOverride }}'
+    displayName: 'CreateNugetPackage: Display parameters'
 
-      if ([int]$(versionPrerelease) -gt 999)
-      {
-        Write-Host "Revision Number limit reach. Please try again the next day"
-        Write-Host "##vso[task.complete result=Failed;]DONE"
-      }
+  # Standalone only: compute $(componentPackageVersion) from $(versionPrerelease) +
+  # $(versionDate). Monobuild caller passes nupkgVersionOverride='$(WindowsAppSDKFormattedVersion)'
+  # explicitly so this step isn't needed.
+  - ${{ if ne(parameters.IsMonobuild, 'true') }}:
+    - task: PowerShell@2
+      name: DetermineComponentNugetPackageVersion
+      displayName: 'Determine Component Nuget Package Version'
+      inputs:
+        targetType: 'inline'
+        script: |
+          $paddedRevision = '$(versionPrerelease)'
+          if([int]$(versionPrerelease) -lt 10)
+          {
+            $paddedRevision = '00' + '$(versionPrerelease)'
+          }
+          elseif ([int]$(versionPrerelease) -lt 100)
+          {
+            $paddedRevision = '0' + '$(versionPrerelease)'
+          }
+          Write-Host "paddedRevision " $paddedRevision
 
-      $buildType = '$(VersionTag)'
-      $majorMinorPatchRev = '$(MajorVersion).$(MinorVersion).$(versionDate)'
-      $majorMinorPatchRev = $majorMinorPatchRev + $paddedRevision
-      $version = $majorMinorPatchRev + '-' + $buildType
+          if ([int]$(versionPrerelease) -gt 999)
+          {
+            Write-Host "Revision Number limit reach. Please try again the next day"
+            Write-Host "##vso[task.complete result=Failed;]DONE"
+          }
 
-      # If using release versioning, drop the version suffix, which includes a tag & build stamp.
-      # This should only be done when prepping final release packages.
-      if ($buildType -eq "stable")
-      {
-        Write-Host "Using Release Versioning"
-        $version = $majorMinorPatchRev
-      }
+          $buildType = '$(VersionTag)'
+          $majorMinorPatchRev = '$(MajorVersion).$(MinorVersion).$(versionDate)'
+          $majorMinorPatchRev = $majorMinorPatchRev + $paddedRevision
+          $version = $majorMinorPatchRev + '-' + $buildType
 
-      Write-Host 'Component Package Version: ' $version
-      Write-Host "##vso[task.setvariable variable=componentPackageVersion;isOutput=true]$version"
-      Write-Host "##vso[task.setvariable variable=componentPackageVersion;]$version"
+          # If using release versioning, drop the version suffix, which includes a tag & build stamp.
+          # This should only be done when prepping final release packages.
+          if ($buildType -eq "stable")
+          {
+            Write-Host "Using Release Versioning"
+            $version = $majorMinorPatchRev
+          }
 
-- template: WinUI-DownloadPipelineArtifacts-Steps.yml
-  parameters:
-    enableUseOutputFromPreviousBuild: true
-    itemPattern: '**/@(packaging|MUXTestInfra)/**'
-    targetPath:  '$(Build.ArtifactStagingDirectory)'
+          Write-Host 'Component Package Version: ' $version
+          Write-Host "##vso[task.setvariable variable=componentPackageVersion;isOutput=true]$version"
+          Write-Host "##vso[task.setvariable variable=componentPackageVersion;]$version"
 
-- script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
-  displayName: Dump ArtifactStagingDirectory directory
+  # ── Artifact acquisition ──
+  # Standalone: cross-build download via WinUI-DownloadPipelineArtifacts-Steps.yml (pulls from
+  # previous build per enableUseOutputFromPreviousBuild=true), then a single Copy-Item flattens
+  # drop_* subdirs into the staging root.
+  # Monobuild: four explicit DownloadPipelineArtifact@2 calls against the CURRENT build (the
+  # per-platform Build-WinUI-{x86,x64,arm64,arm64ec}-Release artifacts produced by the BuildWinUI_<plat>
+  # jobs in the same stage), then a Copy-Item merge.
+  - ${{ if eq(parameters.IsMonobuild, 'true') }}:
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Build-WinUI-x86-Release'
+      inputs:
+        buildType: current
+        artifactName: Build-WinUI-x86-Release
+        targetPath: '$(Build.ArtifactStagingDirectory)\Build-WinUI-x86-Release'
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Build-WinUI-x64-Release'
+      inputs:
+        buildType: current
+        artifactName: Build-WinUI-x64-Release
+        targetPath: '$(Build.ArtifactStagingDirectory)\Build-WinUI-x64-Release'
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Build-WinUI-arm64-Release'
+      inputs:
+        buildType: current
+        artifactName: Build-WinUI-arm64-Release
+        targetPath: '$(Build.ArtifactStagingDirectory)\Build-WinUI-arm64-Release'
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Build-WinUI-arm64ec-Release'
+      inputs:
+        buildType: current
+        artifactName: Build-WinUI-arm64ec-Release
+        targetPath: '$(Build.ArtifactStagingDirectory)\Build-WinUI-arm64ec-Release'
+  - ${{ else }}:
+    - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+      parameters:
+        enableUseOutputFromPreviousBuild: true
+        itemPattern: '**/@(packaging|MUXTestInfra)/**'
+        targetPath:  '$(Build.ArtifactStagingDirectory)'
 
-- task: PowerShell@2
-  displayName: Copy Files
-  inputs:
-    targetType: 'inline'
-    script: |
-      Copy-Item -Path "$(Build.ArtifactStagingDirectory)\drop_*\*" -Destination "$(Build.ArtifactStagingDirectory)" -Recurse -Force
+  - script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
+    displayName: 'DIAG: Dump ArtifactStagingDirectory before flatten'
+    continueOnError: true
 
-- script: cmd /c dir /s /b $(Build.SourcesDirectory)
-  displayName: Dump sources directory
+  # ── Flatten per-platform artifact dirs into the staging root ──
+  # Standalone has drop_*\* subdirs; monobuild has Build-WinUI-*-Release\* subdirs. Both
+  # yield $(Build.ArtifactStagingDirectory)\packaging\Release\ at the end.
+  - ${{ if eq(parameters.IsMonobuild, 'true') }}:
+    - task: PowerShell@2
+      displayName: 'Merge per-platform artifacts'
+      inputs:
+        targetType: 'inline'
+        script: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference = 'Stop'
 
-- script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
-  displayName: Dump ArtifactStagingDirectory directory
+          Get-ChildItem -Path '$(Build.ArtifactStagingDirectory)\Build-WinUI-*-Release' -Directory |
+              ForEach-Object {
+                  Write-Host "Merging from $($_.FullName)"
+                  Copy-Item -Path (Join-Path $_.FullName '*') -Destination '$(Build.ArtifactStagingDirectory)' -Recurse -Force
+              }
+  - ${{ else }}:
+    - task: PowerShell@2
+      displayName: Copy Files
+      inputs:
+        targetType: 'inline'
+        script: |
+          Copy-Item -Path "$(Build.ArtifactStagingDirectory)\drop_*\*" -Destination "$(Build.ArtifactStagingDirectory)" -Recurse -Force
 
+  - ${{ if ne(parameters.IsMonobuild, 'true') }}:
+    - script: cmd /c dir /s /b $(Build.SourcesDirectory)
+      displayName: Dump sources directory
 
-- task: CmdLine@2
-  displayName: Set NuGet environment variables
-  inputs:
-    script: |
-      $(Build.SourcesDirectory)\scripts\setnugetenvvars.cmd
+  - script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
+    displayName: 'DIAG: Dump ArtifactStagingDirectory after flatten'
+    continueOnError: true
 
-- task: NuGetCommand@2
-  displayName: 'NuGet locals -clear http-cache'
-  inputs:
-    command: 'custom'
-    arguments: 'locals -clear http-cache'
+  - task: CmdLine@2
+    displayName: Set NuGet environment variables
+    inputs:
+      script: |
+        $(Build.SourcesDirectory)\scripts\setnugetenvvars.cmd
 
-- powershell: |
-    & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
-      -Nuspec 'Microsoft.WindowsAppSDK.WinUI.nuspec' `
-      -VersionOverride '$(componentPackageVersion)' `
-      -PackageRoot '$(Build.ArtifactStagingDirectory)\packaging\${{ parameters.buildConfiguration }}' `
-      -OutputDir '$(ob_outputDirectory)'
-  displayName: 'build-nupkg.ps1'
+  - task: NuGetCommand@2
+    displayName: 'NuGet locals -clear http-cache'
+    inputs:
+      command: 'custom'
+      arguments: 'locals -clear http-cache'
 
-- powershell: |
-    & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
-      -PackageRoot '$(Build.ArtifactStagingDirectory)\packaging\${{ parameters.buildConfiguration }}' `
-      -OutputDir '$(ob_outputDirectory)'
-  displayName: 'build-nupkg.ps1'
+  # ── Pack Microsoft.WindowsAppSDK.WinUI ──
+  # -MonobuildPinnedVersion carries an empty string in standalone (build-nupkg.ps1's
+  # `if ($Var)` check treats '' as falsy → the eng\Versions.props pins apply).
+  # In monobuild, the caller passes $(WindowsAppSDKFormattedVersion) so all 4 upstream
+  # component dependency versions baked into the produced nupkg become monobuild-coherent
+  # (vs. the static fallbacks in eng\Versions.props).
+  - powershell: |
+      & "$(Build.SourcesDirectory)\build\NuSpecs\build-nupkg.ps1" `
+        -Nuspec 'Microsoft.WindowsAppSDK.WinUI.nuspec' `
+        -VersionOverride '${{ parameters.nupkgVersionOverride }}' `
+        -MonobuildPinnedVersion '${{ parameters.monobuildPinnedVersion }}' `
+        -PackageRoot '$(Build.ArtifactStagingDirectory)\packaging\${{ parameters.buildConfiguration }}' `
+        -OutputDir '${{ parameters.nupkgOutputDir }}'
+    displayName: 'build-nupkg.ps1: Microsoft.WindowsAppSDK.WinUI'
 
-- template: WinUI-DownloadPipelineArtifacts-Steps.yml
-  parameters:
-    enableUseOutputFromPreviousBuild: true
-    itemPattern: '**/Test/MUXTestInfra/**'
-    targetPath:  '$(Build.ArtifactStagingDirectory)'
+  # ── Pack Microsoft.ProjectReunion.WinUI.TransportPackage (default nuspec) ──
+  # A set monobuildPinnedVersion (monobuild) drives BOTH the package version and the pinned
+  # inter-component dependency versions inside build-nupkg.ps1. Empty (standalone) → versionFinal.
+  - powershell: |
+      & "$(Build.SourcesDirectory)\build\NuSpecs\build-nupkg.ps1" `
+        -MonobuildPinnedVersion '${{ parameters.monobuildPinnedVersion }}' `
+        -PackageRoot '$(Build.ArtifactStagingDirectory)\packaging\${{ parameters.buildConfiguration }}' `
+        -OutputDir '${{ parameters.nupkgOutputDir }}'
+    displayName: 'build-nupkg.ps1: Microsoft.ProjectReunion.WinUI.TransportPackage'
 
-- powershell: |
-    & "$env:Build_SourcesDirectory\Samples\AppTestAutomationHelpers\build-nupkg.ps1" `
-      -BuildBinDir '$(Build.ArtifactStagingDirectory)\drop' `
-      -OutputDir '$(ob_outputDirectory)'
-  displayName: 'Build AppTestAutomationHelpers nupkg'
+  # ── Standalone-only: test infra nupkgs + ESRP + NuGet push ──
+  # Monobuild signs its nupkgs in the monobuild-only section below (via the wrapper @self) and never
+  # pushes to WinUI.Dependencies or $(NuGetFeed) — the monobuild output is consumed only by the
+  # Aggregate stage downstream within the same build.
+  - ${{ if ne(parameters.IsMonobuild, 'true') }}:
+    - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+      parameters:
+        enableUseOutputFromPreviousBuild: true
+        itemPattern: '**/Test/MUXTestInfra/**'
+        targetPath:  '$(Build.ArtifactStagingDirectory)'
 
-- powershell: |
-    & "$env:Build_SourcesDirectory\controls\test\testinfra\MUXTestInfra\build-nupkg.ps1" `
-      -BuildBinDir '$(Build.ArtifactStagingDirectory)\drop' `
-      -OutputDir '$(ob_outputDirectory)'
-  displayName: 'Build MUXTestInfra nupkg'
+    - powershell: |
+        & "$env:Build_SourcesDirectory\Samples\AppTestAutomationHelpers\build-nupkg.ps1" `
+          -BuildBinDir '$(Build.ArtifactStagingDirectory)\drop' `
+          -OutputDir '${{ parameters.nupkgOutputDir }}'
+      displayName: 'Build AppTestAutomationHelpers nupkg'
 
-- ${{ if eq(parameters.signOutput, true) }}:
-  - template: AzurePipelinesTemplates/WindowsAppSDK-EsrpCodeSigning-Steps.yml@WindowsAppSDKConfig
-    parameters:
-      FolderPath: '$(ob_outputDirectory)'
-      Pattern: |
-        **/*.nupkg
-      KeyCode: 'CP-401405'
-      UseMinimatch: true
-      DisplayName: 'CodeSign'
+    - powershell: |
+        & "$env:Build_SourcesDirectory\controls\test\testinfra\MUXTestInfra\build-nupkg.ps1" `
+          -BuildBinDir '$(Build.ArtifactStagingDirectory)\drop' `
+          -OutputDir '${{ parameters.nupkgOutputDir }}'
+      displayName: 'Build MUXTestInfra nupkg'
 
-# Push to the WinUI.Dependencies feed, since this is where we consume our dependencies
-# In this pipeline configuration, 'NuGetCommand' is ambiguous so the specific task guid must be used instead
-# See known NuGet task issue notes.
-- task: NuGetCommand@2
-  displayName: 'NuGet push to WinUI.Dependencies feed'
-  inputs:
-    command: push
-    publishVstsFeed: 1103ce32-f206-4cab-b967-dcc556dacd13
-    packagesToPush: $(ob_outputDirectory)/*.nupkg
-    # ignore conflicts which come from rerunning with the same input packages
-    allowPackageConflicts: true
+    - ${{ if eq(parameters.signOutput, true) }}:
+      # Standalone nupkg signing via the shared wrapper (resolves to @WinAppSDK here, since this
+      # section is standalone-only). Monobuild nupkg signing is done centrally in the Pack stage.
+      - template: WinUI-EsrpCodeSigning-Wrapper.yml
+        parameters:
+          IsMonobuild: ${{ parameters.IsMonobuild }}
+          InnerParams:
+            FolderPath: '${{ parameters.nupkgOutputDir }}'
+            Pattern: |
+              **/*.nupkg
+            KeyCode: 'CP-401405'
+            UseMinimatch: true
+            DisplayName: 'CodeSign'
 
-# To publish the package to vsts feed, set queue time variable NuGetFeed = 95b74d6d-5ea9-4630-9a07-16616924c91e
-# This is the feed GUID from the pipeline visual designer for this target feed.
-- task: NuGetCommand@2
-  condition: and(ne(variables['NuGetFeed'], ''), eq(variables['privateCsWinRTNupkgVersion'],''))
-  displayName: 'NuGet push to $(NuGetFeed)'
-  inputs:
-    command: push
-    publishVstsFeed: $(NuGetFeed)
-    packagesToPush: $(ob_outputDirectory)/*.nupkg
+    # Push to the WinUI.Dependencies feed, since this is where we consume our dependencies
+    # In this pipeline configuration, 'NuGetCommand' is ambiguous so the specific task guid must be used instead
+    # See known NuGet task issue notes.
+    - task: NuGetCommand@2
+      displayName: 'NuGet push to WinUI.Dependencies feed'
+      inputs:
+        command: push
+        publishVstsFeed: 1103ce32-f206-4cab-b967-dcc556dacd13
+        packagesToPush: ${{ parameters.nupkgOutputDir }}/*.nupkg
+        # ignore conflicts which come from rerunning with the same input packages
+        allowPackageConflicts: true
+
+    # To publish the package to vsts feed, set queue time variable NuGetFeed = 95b74d6d-5ea9-4630-9a07-16616924c91e
+    # This is the feed GUID from the pipeline visual designer for this target feed.
+    - task: NuGetCommand@2
+      condition: and(ne(variables['NuGetFeed'], ''), eq(variables['privateCsWinRTNupkgVersion'],''))
+      displayName: 'NuGet push to $(NuGetFeed)'
+      inputs:
+        command: push
+        publishVstsFeed: $(NuGetFeed)
+        packagesToPush: ${{ parameters.nupkgOutputDir }}/*.nupkg
+
+  # ── Monobuild only: list produced nupkgs and stage into Component-WinUI-Final layout ──
+  - ${{ if eq(parameters.IsMonobuild, 'true') }}:
+    # Pack the two WinUI test-helper packages from the test-infra binaries the per-platform build
+    # jobs staged (built when IsMonobuild=true in WinUI-BuildMUXProject-Steps.yml). The per-platform
+    # drops were merged above into $(Build.ArtifactStagingDirectory)\drop_<arch>fre\<arch>fre\...;
+    # reconstruct a single BuildBinDir with x86fre/amd64fre/arm64fre subdirs (the layout the
+    # test-helper nuspecs expect) and run each project's build-nupkg.ps1 (the same scripts the
+    # standalone Packaging stage uses). Runs BEFORE the nupkg signing below so the produced
+    # test-helper nupkgs are signed and staged into Component-WinUI-Final alongside the others.
+    - task: PowerShell@2
+      displayName: 'Pack WinUI test-helper packages'
+      inputs:
+        targetType: 'inline'
+        script: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference = 'Stop'
+
+          $staging = '$(Build.ArtifactStagingDirectory)'
+          $binDir = Join-Path $staging 'TestInfraBin'
+          New-Item -ItemType Directory -Force -Path $binDir | Out-Null
+
+          # Gather each per-platform drop's single <arch>fre subdir into one BuildBinDir.
+          Get-ChildItem -Path $staging -Directory -Filter 'drop_*fre' | ForEach-Object {
+              Get-ChildItem -Path $_.FullName -Directory | ForEach-Object {
+                  Write-Host "Gathering $($_.Name) -> TestInfraBin"
+                  Copy-Item -Path $_.FullName -Destination $binDir -Recurse -Force
+              }
+          }
+
+          $archDirs = @(Get-ChildItem -Path $binDir -Directory | ForEach-Object { $_.Name })
+          Write-Host "TestInfraBin arch subdirs: $($archDirs -join ', ')"
+          if ($archDirs.Count -eq 0) {
+              throw "No <arch>fre subdirs found under $binDir — the per-platform builds did not stage test-infra binaries."
+          }
+
+          $version = '${{ parameters.nupkgVersionOverride }}'
+          Write-Host "Packing test-helper packages at version $version"
+
+          & "$(Build.SourcesDirectory)\Samples\AppTestAutomationHelpers\build-nupkg.ps1" `
+              -BuildBinDir $binDir `
+              -VersionOverride $version `
+              -OutputDir '${{ parameters.nupkgOutputDir }}'
+          if ($LASTEXITCODE -ne 0) { throw "AppTestAutomationHelpers build-nupkg.ps1 failed ($LASTEXITCODE)" }
+
+          & "$(Build.SourcesDirectory)\controls\test\testinfra\MUXTestInfra\build-nupkg.ps1" `
+              -BuildBinDir $binDir `
+              -VersionOverride $version `
+              -OutputDir '${{ parameters.nupkgOutputDir }}'
+          if ($LASTEXITCODE -ne 0) { throw "MUXTestInfra build-nupkg.ps1 failed ($LASTEXITCODE)" }
+
+    - script: cmd /c dir /b "${{ parameters.nupkgOutputDir }}"
+      displayName: 'DIAG: List produced nupkgs'
+      continueOnError: true
+
+    - ${{ if eq(parameters.signOutput, true) }}:
+      # Monobuild nupkg signing via the shared wrapper (resolves to @self — the monorepo). Signs the
+      # produced nupkgs BEFORE the restage below so Component-WinUI-Final ships signed nupkgs. This
+      # replaces the former nupkg ESRP in the monorepo WinUI-Build-Stage.yml Pack job.
+      - template: WinUI-EsrpCodeSigning-Wrapper.yml
+        parameters:
+          IsMonobuild: ${{ parameters.IsMonobuild }}
+          InnerParams:
+            FolderPath: '${{ parameters.nupkgOutputDir }}'
+            Pattern: |
+              **/*.nupkg
+            KeyCode: 'CP-401405'
+            UseMinimatch: true
+            DisplayName: 'CodeSign nupkgs'
+
+    # Per CopilotBrain/Docs/Mono-Build-Pipeline-Migration.md §6.4, Component-*-Final artifacts
+    # contain BOTH the nupkgs (under NugetPackages\) AND per-package extracts (under
+    # BuildOutput\<pkgId>\) so downstream stages can introspect contents without unzipping.
+    - task: PowerShell@2
+      displayName: 'Stage nupkgs into Component-WinUI-Final layout'
+      inputs:
+        targetType: 'inline'
+        script: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference = 'Stop'
+
+          $sourceDir = '${{ parameters.nupkgOutputDir }}'
+          $outNugetDir = Join-Path $env:OB_OUTPUTDIRECTORY 'NugetPackages'
+          $outBuildOutputDir = Join-Path $env:OB_OUTPUTDIRECTORY 'BuildOutput'
+
+          New-Item -ItemType Directory -Force -Path $outNugetDir | Out-Null
+          New-Item -ItemType Directory -Force -Path $outBuildOutputDir | Out-Null
+
+          $nupkgs = Get-ChildItem -Path $sourceDir -Filter '*.nupkg'
+          if ($nupkgs.Count -eq 0) {
+              throw "No .nupkg files found under $sourceDir."
+          }
+
+          foreach ($pkg in $nupkgs) {
+              Write-Host "Staging $($pkg.Name)"
+              Copy-Item -Path $pkg.FullName -Destination $outNugetDir -Force
+
+              # Extract by stripping trailing version. Example:
+              #   Microsoft.WindowsAppSDK.WinUI.3.0.260602001-experimental.nupkg
+              #   → pkgId 'Microsoft.WindowsAppSDK.WinUI'
+              # Regex anchors on the first segment that looks like a version.
+              $pkgId = $pkg.BaseName -replace '\.\d+\.\d+.*$', ''
+              if ([string]::IsNullOrWhiteSpace($pkgId) -or $pkgId -eq $pkg.BaseName) {
+                  throw "Could not infer package id from filename '$($pkg.Name)'."
+              }
+
+              $extractDir = Join-Path $outBuildOutputDir $pkgId
+              New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
+              Write-Host "  Extracting to $extractDir"
+              # Use Expand-Archive after renaming to .zip — nupkgs are zip files.
+              $tempZip = Join-Path $env:TEMP "$($pkg.BaseName).zip"
+              Copy-Item -Path $pkg.FullName -Destination $tempZip -Force
+              Expand-Archive -Path $tempZip -DestinationPath $extractDir -Force
+              Remove-Item -Path $tempZip -Force
+          }
+
+          Write-Host 'Done staging produced nupkgs.'
