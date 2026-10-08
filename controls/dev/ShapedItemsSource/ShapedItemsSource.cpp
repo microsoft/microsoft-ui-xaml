@@ -396,6 +396,7 @@ void ShapedItemsSource::OnSourceCollectionChanged()
     // collection to raise change notifications on the UI thread -- m_rows is an observable the
     // control binds to, and the identity index must stay in lockstep with it. A background-thread
     // notification is app misuse and is not supported.
+    ++m_sourceChangeStamp;
     Refresh();
 }
 
@@ -403,6 +404,7 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
 {
     // See the UI-thread contract on OnSourceCollectionChanged(): incremental InsertAt/RemoveAt/
     // SetAt below mutate the UI-affine projection directly, so they must run on the owning thread.
+    ++m_sourceChangeStamp;
 
     // Re-entrant during a full rebuild: the in-flight Refresh() re-materializes the live source
     // when it completes, but changes after its initial materialization still need one coalesced
@@ -452,6 +454,7 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
 void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
 {
     // See the UI-thread contract on OnSourceCollectionChanged().
+    ++m_sourceChangeStamp;
 
     if (m_isRefreshing)
     {
@@ -1129,6 +1132,7 @@ void ShapedItemsSource::Refresh()
         });
 
         auto const authoritativeSource = m_source;
+        m_refreshSourceStamp = m_sourceChangeStamp;
         auto rows = Materialize(authoritativeSource);
 
         if (!HasAnyShapingVerb())
@@ -1150,8 +1154,14 @@ void ShapedItemsSource::Refresh()
 
             // A shaping verb is in force here (the branch above took the no-verb case), and a verb
             // always requires identity, so there is nothing to gate on.
+            //
+            // A reshape over an unchanged source reuses the tree the last pass validated instead:
+            // the same objects in the same order already passed this check.
+            auto structure = m_parentKeySelector
+                ? TryReuseHierarchyStructure(rows, m_parentDeclarationGeneration, m_refreshSourceStamp)
+                : nullptr;
             wchar_t const* reason = nullptr;
-            if (!ValidateRowIdentities(rows, reason))
+            if (!structure && !ValidateRowIdentities(rows, reason))
             {
                 LogIdentityProjectionDisabled(reason);
 
@@ -1180,11 +1190,11 @@ void ShapedItemsSource::Refresh()
 
             if (m_parentKeySelector && m_groupSelector)
             {
-                RebuildGroupedHierarchical(rows);
+                RebuildGroupedHierarchical(rows, std::move(structure));
             }
             else if (m_parentKeySelector)
             {
-                RebuildHierarchical(rows);
+                RebuildHierarchical(rows, std::move(structure));
             }
             else if (m_groupSelector)
             {
@@ -1508,20 +1518,19 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     PublishProjection();
 }
 
-void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& rows)
+void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure)
 {
-    // `rows` arrives UNFILTERED: the filter runs inside the index build, which needs the whole
-    // parent chain to keep a match's ancestors. Sorting the whole list once, then bucketing it by
-    // parent stably, sorts every sibling set among its own peers.
+    // `rows` arrives UNFILTERED and in source order: the filter runs inside the index build, which
+    // needs the whole parent chain to keep a match's ancestors, and so does the sort, which orders
+    // each sibling set among its own peers only.
     //
-    // The declaration generation is captured BEFORE sorting: sort key selectors are app code too,
-    // and a ParentBy/ClearParentBy issued from one must make this pass obsolete.
+    // The declaration generation is captured before any selector runs: sort key selectors are app
+    // code too, and a ParentBy/ClearParentBy issued from one must make this pass obsolete.
     const uint64_t declarationGeneration = m_parentDeclarationGeneration;
-    ApplySort(rows);
 
     // May throw on invalid data. Nothing has been mutated yet, so the previous projection stays
     // intact.
-    auto index = BuildHierarchyIndex(rows, declarationGeneration);
+    auto index = BuildHierarchyIndex(rows, std::move(structure), true /* sortRoots */, declarationGeneration);
     if (!index)
     {
         // The relation was re-declared or retracted mid-build; the queued Refresh projects that.
@@ -1580,16 +1589,13 @@ void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& ro
 // makes it a descendant, and a row cannot simultaneously be at depth 3 under its parent and at
 // depth 0 under a header. So headers exist at the top level and nowhere else, which is also what a
 // user means by "group the tree". Under a filter, a context root is bucketed like any other root.
-void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows)
+void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure)
 {
-    // Kept in source order: the roots are bucketed from here, not from the sorted list below.
-    const std::vector<winrt::IInspectable> sourceOrder = rows;
-
-    // Every sibling set below the roots is sorted by the full sort, exactly as when ungrouped.
-    // Generation captured before sorting, as in RebuildHierarchical.
+    // Every sibling set below the roots is sorted by the full sort, exactly as when ungrouped. The
+    // roots are left in source order: they are bucketed from there below.
+    // Generation captured before any selector runs, as in RebuildHierarchical.
     const uint64_t declarationGeneration = m_parentDeclarationGeneration;
-    ApplySort(rows);
-    auto index = BuildHierarchyIndex(rows, declarationGeneration);
+    auto index = BuildHierarchyIndex(rows, std::move(structure), false /* sortRoots */, declarationGeneration);
     if (!index)
     {
         // Obsolete relation, as in RebuildHierarchical.
@@ -1598,26 +1604,8 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
 
     // The roots are bucketed exactly as RebuildGrouped buckets rows: in SOURCE order with only the
     // sorts declared BEFORE GroupBy applied, so those alone establish the group (header) order.
-    // Sorts declared after GroupBy are applied within each bucket below. Deriving the roots from
-    // the fully sorted list instead would let a post-GroupBy sort decide which bucket is seen first.
-    std::vector<winrt::IInspectable> roots;
-    {
-        std::unordered_set<void*> rootSet;
-        rootSet.reserve(index->Roots.size());
-        for (auto const& root : index->Roots)
-        {
-            rootSet.insert(winrt::get_abi(root));
-        }
-
-        roots.reserve(index->Roots.size());
-        for (auto const& item : sourceOrder)
-        {
-            if (rootSet.contains(winrt::get_abi(item)))
-            {
-                roots.push_back(item);
-            }
-        }
-    }
+    // Sorts declared after GroupBy are applied within each bucket below.
+    std::vector<winrt::IInspectable> roots = index->Roots;
     ApplySort(roots, -1, m_pipeline.GroupOrder());
 
     std::vector<ShapingHelpers::KeyedBucket> keyedBuckets;
@@ -1766,18 +1754,51 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
 }
 
 std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarchyIndex(
-    std::vector<winrt::IInspectable> const& sortedRows,
+    std::vector<winrt::IInspectable> const& rows,
+    std::shared_ptr<const ShapingHelpers::ParentStructure> structure,
+    bool sortRoots,
     uint64_t declarationGeneration)
 {
-    // The relation changed while the caller was still preparing rows (e.g. from a sort key
-    // selector). The selectors below may already be cleared, so do not run them at all.
+    // The relation changed while the caller was still preparing rows. The selectors below may
+    // already be cleared, so do not run them at all.
     if (declarationGeneration != m_parentDeclarationGeneration)
     {
         m_pendingRefresh = true;
         return nullptr;
     }
 
-    auto index = std::make_shared<ShapingHelpers::ParentKeyIndex>();
+    if (!structure)
+    {
+        // The selectors run app code, which may re-declare or retract the relation mid-build.
+        // Copies keep the ones this pass started with alive, and the generation says whether they
+        // are still the declared ones afterwards.
+        auto const keySelector = m_keySelector;
+        auto const parentKeySelector = m_parentKeySelector;
+
+        auto built = std::make_shared<ShapingHelpers::ParentStructure>();
+        winrt::hstring error;
+        const bool valid = ShapingHelpers::BuildParentStructure(rows, keySelector, parentKeySelector, *built, error);
+
+        if (declarationGeneration != m_parentDeclarationGeneration)
+        {
+            // Obsolete: whatever this pass built or rejected describes a relation that is no longer
+            // declared, so neither the structure nor its validation error may surface. The verb
+            // that replaced it requested a Refresh, which the one on the stack replays; making sure
+            // of that here keeps the latest declaration from being dropped.
+            m_pendingRefresh = true;
+            return nullptr;
+        }
+
+        if (!valid)
+        {
+            throw winrt::hresult_invalid_argument(Diagnostic(error));
+        }
+
+        structure = std::move(built);
+        m_hierarchyStructure = structure;
+        m_hierarchyStructureGeneration = declarationGeneration;
+        m_hierarchyStructureSourceStamp = m_refreshSourceStamp;
+    }
 
     ShapingHelpers::ParentKeyFilter filter;
     if (m_pipeline.HasFilter())
@@ -1785,31 +1806,49 @@ std::shared_ptr<ShapingHelpers::ParentKeyIndex> ShapedItemsSource::BuildHierarch
         filter = [this](winrt::IInspectable const& item) { return m_pipeline.PassesFilter(item); };
     }
 
-    // The selectors run app code, which may re-declare or retract the relation mid-build. Copies
-    // keep the ones this pass started with alive, and the generation says whether they are still
-    // the declared ones afterwards.
-    auto const keySelector = m_keySelector;
-    auto const parentKeySelector = m_parentKeySelector;
+    ShapingHelpers::SiblingSorter sort;
+    if (HasActiveSort())
+    {
+        sort = [this](std::vector<winrt::IInspectable>& siblings) { ApplySort(siblings); };
+    }
 
-    winrt::hstring error;
-    const bool built = ShapingHelpers::BuildParentKeyIndex(sortedRows, keySelector, parentKeySelector, filter, *index, error);
+    auto index = std::make_shared<ShapingHelpers::ParentKeyIndex>();
+    ShapingHelpers::BuildParentKeyIndex(structure, filter, sort, sortRoots, *index);
 
     if (declarationGeneration != m_parentDeclarationGeneration)
     {
-        // Obsolete: whatever this pass built or rejected describes a relation that is no longer
-        // declared, so neither the index nor its validation error may surface. The verb that
-        // replaced it requested a Refresh, which the one on the stack replays; making sure of
-        // that here keeps the latest declaration from being dropped.
+        // A filter or sort key selector re-declared the relation; as above.
         m_pendingRefresh = true;
         return nullptr;
     }
 
-    if (!built)
+    return index;
+}
+
+std::shared_ptr<const ShapingHelpers::ParentStructure> ShapedItemsSource::TryReuseHierarchyStructure(
+    std::vector<winrt::IInspectable> const& rows,
+    uint64_t declarationGeneration,
+    uint64_t sourceChangeStamp) const
+{
+    auto const& structure = m_hierarchyStructure;
+    if (!structure ||
+        m_hierarchyStructureGeneration != declarationGeneration ||
+        m_hierarchyStructureSourceStamp != sourceChangeStamp ||
+        structure->Rows.size() != rows.size())
     {
-        throw winrt::hresult_invalid_argument(Diagnostic(error));
+        return nullptr;
     }
 
-    return index;
+    // A source that raises no notifications (or one raised off the contract) can still change
+    // between passes. Comparing objects is O(n) pointer reads against the selector calls it saves.
+    for (size_t i = 0; i < rows.size(); ++i)
+    {
+        if (winrt::get_abi(structure->Rows[i]) != winrt::get_abi(rows[i]))
+        {
+            return nullptr;
+        }
+    }
+    return structure;
 }
 
 void ShapedItemsSource::PublishHierarchyIndex(std::shared_ptr<ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments)
@@ -1894,6 +1933,8 @@ void ShapedItemsSource::ReleaseHierarchyProjection()
     m_hierarchyGroups.clear();
     ++m_hierarchyGeneration;
     m_rootBucketIndex.clear();
+    // Holds every source row alive; a later relation rebuilds it anyway.
+    m_hierarchyStructure.reset();
 }
 
 std::vector<winrt::IInspectable> ShapedItemsSource::VisibleHierarchicalRows() const

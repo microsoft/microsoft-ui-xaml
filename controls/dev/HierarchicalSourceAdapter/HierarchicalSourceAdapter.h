@@ -211,6 +211,8 @@ private:
 
     // The validated index being projected, and how its roots are partitioned into group buckets.
     std::shared_ptr<const ShapingHelpers::ParentKeyIndex> m_index;
+    // The structure expansion intent was last pruned against (see SetIndex).
+    std::weak_ptr<const ShapingHelpers::ParentStructure> m_prunedForStructure;
     std::vector<size_t> m_rootSegments;
 
     // Context rows the user collapsed while the current filter is active. Cleared when the filter
