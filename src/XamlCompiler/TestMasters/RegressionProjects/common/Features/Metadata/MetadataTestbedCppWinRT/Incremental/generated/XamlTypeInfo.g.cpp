@@ -27,13 +27,12 @@
 #include <winrt/Windows.Foundation.Collections.h>
 #endif
 
+#ifdef XAML_TYPE_INFO_INC
+#include XAML_TYPE_INFO_INC
+#endif
 #include "XamlTypeInfo.xaml.g.h"
 
-#include "App.h"
-#include "MainPage.h"
 #include "XamlBindingInfo.xaml.g.hpp"
-#include "App.xaml.g.hpp"
-#include "MainPage.xaml.g.hpp"
 
 namespace winrt::MetadataTestbedCppWinRT::implementation
 {
@@ -56,289 +55,179 @@ using TypeKind = ::winrt::Windows::UI::Xaml::Interop::TypeKind;
 
     }
 
-template <typename T>
-::winrt::Windows::Foundation::IInspectable ActivateType()
+::winrt::Windows::Foundation::IInspectable ActivateType_MetadataTestbedCppWinRT_ArrayProperties()
 {
-    return T();
+    return ::winrt::make<::winrt::MetadataTestbedCppWinRT::implementation::ArrayProperties>();
 }
 
-template <typename T>
-::winrt::Windows::Foundation::IInspectable ActivateLocalType()
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_UInt16Values_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::make<T>();
+    return ::winrt::box_value(instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().UInt16Values());
+}
+void SetReferenceTypeMember_UInt16Values_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().UInt16Values(::winrt::unbox_value<::winrt::com_array<uint16_t>>(value));
 }
 
-template<typename TInstance, typename TItem>
-void CollectionAdd(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& item)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_StringValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    instance.as<TInstance>().Append(::winrt::unbox_value<TItem>(item));
+    return ::winrt::box_value(instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().StringValues());
+}
+void SetReferenceTypeMember_StringValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().StringValues(::winrt::unbox_value<::winrt::com_array<::winrt::hstring>>(value));
 }
 
-template<typename TInstance, typename TKey, typename TItem>
-void DictionaryAdd(
-    ::winrt::Windows::Foundation::IInspectable const& instance,
-    ::winrt::Windows::Foundation::IInspectable const& key,
-    ::winrt::Windows::Foundation::IInspectable const& item)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_PointValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    instance.as<TInstance>().Insert(::winrt::unbox_value<TKey>(key), ::winrt::unbox_value<TItem>(item));
+    return ::winrt::box_value(instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().PointValues());
+}
+void SetReferenceTypeMember_PointValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().PointValues(::winrt::unbox_value<::winrt::com_array<::winrt::Windows::Foundation::Point>>(value));
 }
 
-template<typename T>
-::winrt::Windows::Foundation::IInspectable FromStringConverter(
-    XamlUserType const& userType, 
-    ::winrt::hstring const& input)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_ObjectValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value(static_cast<T>(userType.CreateEnumUIntFromString(input)));
+    return ::winrt::box_value(instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().ObjectValues());
+}
+void SetReferenceTypeMember_ObjectValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().ObjectValues(::winrt::unbox_value<::winrt::com_array<::winrt::Windows::Foundation::IInspectable>>(value));
 }
 
-template<typename TDeclaringType, typename TargetType>
-::winrt::Windows::Foundation::IInspectable GetAttachableMember_AttachedValues(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Int32Values_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value(TDeclaringType::GetAttachedValues(instance.as<TargetType>()));
+    return ::winrt::box_value(instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().Int32Values());
+}
+void SetReferenceTypeMember_Int32Values_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().Int32Values(::winrt::unbox_value<::winrt::com_array<int32_t>>(value));
 }
 
-template<typename TDeclaringType, typename TargetType>
-::winrt::Windows::Foundation::IInspectable GetAttachableMember_AttachedCharValue(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_GuidValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value(TDeclaringType::GetAttachedCharValue(instance.as<TargetType>()));
+    return ::winrt::box_value(instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().GuidValues());
+}
+void SetReferenceTypeMember_GuidValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().GuidValues(::winrt::unbox_value<::winrt::com_array<::winrt::guid>>(value));
 }
 
-template<typename TDeclaringType, typename TValue>
-::winrt::Windows::Foundation::IInspectable GetValueTypeMember_GuidValue(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_GuidValue_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().GuidValue());
+    return ::winrt::box_value<::winrt::guid>(instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().GuidValue());
+}
+void SetValueTypeMember_GuidValue_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().GuidValue(::winrt::unbox_value<::winrt::guid>(value));
 }
 
-template<typename TDeclaringType, typename TValue>
-::winrt::Windows::Foundation::IInspectable GetValueTypeMember_CharValue(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_CharValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().CharValue());
+    return ::winrt::box_value(instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().CharValues());
+}
+void SetReferenceTypeMember_CharValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().CharValues(::winrt::unbox_value<::winrt::com_array<char16_t>>(value));
 }
 
-template<typename TDeclaringType, typename TValue>
-::winrt::Windows::Foundation::IInspectable GetValueTypeMember_ReadOnlyCharValue(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_CharValue_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().ReadOnlyCharValue());
+    return ::winrt::box_value<char16_t>(instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().CharValue());
+}
+void SetValueTypeMember_CharValue_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().CharValue(::winrt::unbox_value<char16_t>(value));
 }
 
-template<typename TDeclaringType, typename TValue>
-::winrt::Windows::Foundation::IInspectable GetValueTypeMember_IsExpanded(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_ReadOnlyCharValue_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().IsExpanded());
+    return ::winrt::box_value<char16_t>(instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().ReadOnlyCharValue());
 }
 
-template<typename TDeclaringType, typename TValue>
-::winrt::Windows::Foundation::IInspectable GetValueTypeMember_HasUnrealizedChildren(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_ReadOnlyValues_MetadataTestbedCppWinRT_ArrayProperties(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().HasUnrealizedChildren());
+    return ::winrt::box_value(instance.as<::winrt::MetadataTestbedCppWinRT::ArrayProperties>().ReadOnlyValues());
 }
 
-template<typename TDeclaringType, typename TValue>
-::winrt::Windows::Foundation::IInspectable GetValueTypeMember_Depth(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetAttachableMember_AttachedValues_MetadataTestbedCppWinRT_ArrayProperties_Object(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().Depth());
+    return ::winrt::box_value(::winrt::MetadataTestbedCppWinRT::ArrayProperties::GetAttachedValues(instance.as<::winrt::Windows::Foundation::IInspectable>()));
+}
+void SetAttachableMember_AttachedValues_MetadataTestbedCppWinRT_ArrayProperties_Object_Int32__(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    ::winrt::MetadataTestbedCppWinRT::ArrayProperties::SetAttachedValues(instance.as<::winrt::Windows::Foundation::IInspectable>(), ::winrt::unbox_value<::winrt::com_array<int32_t>>(value));
 }
 
-template<typename TDeclaringType, typename TValue>
-::winrt::Windows::Foundation::IInspectable GetValueTypeMember_HasChildren(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetAttachableMember_AttachedCharValue_MetadataTestbedCppWinRT_ArrayProperties_Object(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value<TValue>(instance.as<TDeclaringType>().HasChildren());
+    return ::winrt::box_value(::winrt::MetadataTestbedCppWinRT::ArrayProperties::GetAttachedCharValue(instance.as<::winrt::Windows::Foundation::IInspectable>()));
+}
+void SetAttachableMember_AttachedCharValue_MetadataTestbedCppWinRT_ArrayProperties_Object_Char(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    ::winrt::MetadataTestbedCppWinRT::ArrayProperties::SetAttachedCharValue(instance.as<::winrt::Windows::Foundation::IInspectable>(), ::winrt::unbox_value<char16_t>(value));
+}
+::winrt::Windows::Foundation::IInspectable ActivateType_MetadataTestbedCppWinRT_MainPage();
+
+extern ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_MyProperty_MetadataTestbedCppWinRT_MainPage(::winrt::Windows::Foundation::IInspectable const& instance);
+extern void SetReferenceTypeMember_MyProperty_MetadataTestbedCppWinRT_MainPage(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value);
+
+extern ::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_TestProperty_MetadataTestbedCppWinRT_MainPage(::winrt::Windows::Foundation::IInspectable const& instance);
+::winrt::Windows::Foundation::IInspectable ActivateType_Microsoft_UI_Xaml_Controls_TreeViewNode()
+{
+    return ::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode();
 }
 
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_MyProperty(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_IsExpanded_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value(instance.as<T>().MyProperty());
+    return ::winrt::box_value<bool>(instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().IsExpanded());
+}
+void SetValueTypeMember_IsExpanded_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().IsExpanded(::winrt::unbox_value<bool>(value));
 }
 
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_TestProperty(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_HasUnrealizedChildren_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value(instance.as<T>().TestProperty());
+    return ::winrt::box_value<bool>(instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().HasUnrealizedChildren());
+}
+void SetValueTypeMember_HasUnrealizedChildren_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().HasUnrealizedChildren(::winrt::unbox_value<bool>(value));
 }
 
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_UInt16Values(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Content_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value(instance.as<T>().UInt16Values());
+    return ::winrt::box_value(instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().Content());
+}
+void SetReferenceTypeMember_Content_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().Content(::winrt::unbox_value<::winrt::Windows::Foundation::IInspectable>(value));
 }
 
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_StringValues(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Children_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value(instance.as<T>().StringValues());
+    return ::winrt::box_value(instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().Children());
 }
 
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_PointValues(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_Depth_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value(instance.as<T>().PointValues());
+    return ::winrt::box_value<int32_t>(instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().Depth());
 }
 
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_ObjectValues(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetValueTypeMember_HasChildren_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value(instance.as<T>().ObjectValues());
+    return ::winrt::box_value<bool>(instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().HasChildren());
 }
 
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Int32Values(::winrt::Windows::Foundation::IInspectable const& instance)
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Parent_Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance)
 {
-    return ::winrt::box_value(instance.as<T>().Int32Values());
+    return ::winrt::box_value(instance.as<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>().Parent());
 }
-
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_GuidValues(::winrt::Windows::Foundation::IInspectable const& instance)
+void CollectionAdd_Windows_Foundation_Collections_IVector_1_Microsoft_UI_Xaml_Controls_TreeViewNode__Microsoft_UI_Xaml_Controls_TreeViewNode(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& item)
 {
-    return ::winrt::box_value(instance.as<T>().GuidValues());
-}
-
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_CharValues(::winrt::Windows::Foundation::IInspectable const& instance)
-{
-    return ::winrt::box_value(instance.as<T>().CharValues());
-}
-
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_ReadOnlyValues(::winrt::Windows::Foundation::IInspectable const& instance)
-{
-    return ::winrt::box_value(instance.as<T>().ReadOnlyValues());
-}
-
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Content(::winrt::Windows::Foundation::IInspectable const& instance)
-{
-    return ::winrt::box_value(instance.as<T>().Content());
-}
-
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Children(::winrt::Windows::Foundation::IInspectable const& instance)
-{
-    return ::winrt::box_value(instance.as<T>().Children());
-}
-
-template <typename T>
-::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_Parent(::winrt::Windows::Foundation::IInspectable const& instance)
-{
-    return ::winrt::box_value(instance.as<T>().Parent());
-}
-
-template<typename TDeclaringType, typename TTargetType, typename TValue>
-void SetAttachableMember_AttachedValues(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    TDeclaringType::SetAttachedValues(instance.as<TTargetType>(), ::winrt::unbox_value<TValue>(value));
-}
-
-template<typename TDeclaringType, typename TTargetType, typename TValue>
-void SetAttachableMember_AttachedCharValue(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    TDeclaringType::SetAttachedCharValue(instance.as<TTargetType>(), ::winrt::unbox_value<TValue>(value));
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetValueTypeMember_GuidValue(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().GuidValue(::winrt::unbox_value<TValue>(value));
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetValueTypeMember_CharValue(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().CharValue(::winrt::unbox_value<TValue>(value));
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetValueTypeMember_IsExpanded(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().IsExpanded(::winrt::unbox_value<TValue>(value));
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetValueTypeMember_HasUnrealizedChildren(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().HasUnrealizedChildren(::winrt::unbox_value<TValue>(value));
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_MyProperty(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().MyProperty(value.as<TValue>());
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_UInt16Values(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().UInt16Values(value.as<TValue>());
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_StringValues(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().StringValues(value.as<TValue>());
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_PointValues(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().PointValues(value.as<TValue>());
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_ObjectValues(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().ObjectValues(value.as<TValue>());
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_Int32Values(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().Int32Values(value.as<TValue>());
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_GuidValues(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().GuidValues(value.as<TValue>());
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_CharValues(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().CharValues(value.as<TValue>());
-}
-
-template<typename TDeclaringType, typename TValue>
-void SetReferenceTypeMember_Content(
-    ::winrt::Windows::Foundation::IInspectable const& instance, 
-    ::winrt::Windows::Foundation::IInspectable const& value)
-{
-    instance.as<TDeclaringType>().Content(value.as<TValue>());
+    instance.as<::winrt::Windows::Foundation::Collections::IVector<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>>().Append(::winrt::unbox_value<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>(item));
 }
 
 enum TypeInfo_Flags
@@ -499,7 +388,7 @@ const TypeInfo TypeInfos[] =
     -1,
     //  18
     L"MetadataTestbedCppWinRT.MainPage", L"",
-    &ActivateLocalType<::winrt::MetadataTestbedCppWinRT::implementation::MainPage>, nullptr, nullptr, nullptr,
+    &ActivateType_MetadataTestbedCppWinRT_MainPage, nullptr, nullptr, nullptr,
     17, // Microsoft.UI.Xaml.Controls.Page
     0, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_None,
@@ -520,21 +409,21 @@ const TypeInfo TypeInfos[] =
     -1,
     //  21
     L"MetadataTestbedCppWinRT.ArrayProperties", L"",
-    &ActivateLocalType<::winrt::MetadataTestbedCppWinRT::implementation::ArrayProperties>, nullptr, nullptr, nullptr,
+    &ActivateType_MetadataTestbedCppWinRT_ArrayProperties, nullptr, nullptr, nullptr,
     3, // Object
     2, 0, -1, TypeKind::Custom,
     TypeInfo_Flags_IsLocalType | TypeInfo_Flags_IsBindable | TypeInfo_Flags_None,
     -1,
     //  22
     L"Microsoft.UI.Xaml.Controls.TreeViewNode", L"",
-    &ActivateType<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, nullptr, nullptr, nullptr,
+    &ActivateType_Microsoft_UI_Xaml_Controls_TreeViewNode, nullptr, nullptr, nullptr,
     19, // Microsoft.UI.Xaml.DependencyObject
     15, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsBindable | TypeInfo_Flags_None,
     -1,
     //  23
     L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.TreeViewNode>", L"",
-    nullptr, &CollectionAdd<::winrt::Windows::Foundation::Collections::IVector<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, ::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>, nullptr, nullptr,
+    nullptr, &CollectionAdd_Windows_Foundation_Collections_IVector_1_Microsoft_UI_Xaml_Controls_TreeViewNode__Microsoft_UI_Xaml_Controls_TreeViewNode, nullptr, nullptr,
     -1,
     22, 0, -1, TypeKind::Metadata,
     TypeInfo_Flags_IsReturnTypeStub | TypeInfo_Flags_None,
@@ -649,154 +538,154 @@ const MemberInfo MemberInfos[] =
 {
     //   0 - MetadataTestbedCppWinRT.MainPage.MyProperty
     L"MyProperty",
-    &GetReferenceTypeMember_MyProperty<::winrt::MetadataTestbedCppWinRT::MainPage>,
-    &SetReferenceTypeMember_MyProperty<::winrt::MetadataTestbedCppWinRT::MainPage, ::winrt::com_array<int32_t>>,
+    &GetReferenceTypeMember_MyProperty_MetadataTestbedCppWinRT_MainPage,
+    &SetReferenceTypeMember_MyProperty_MetadataTestbedCppWinRT_MainPage,
     8, // Int32[]
     -1,
     false, false, false,
     //   1 - MetadataTestbedCppWinRT.MainPage.TestProperty
     L"TestProperty",
-    &GetReferenceTypeMember_TestProperty<::winrt::MetadataTestbedCppWinRT::MainPage>,
+    &GetReferenceTypeMember_TestProperty_MetadataTestbedCppWinRT_MainPage,
     nullptr,
     3, // Object
     -1,
     true,  false, false,
     //   2 - MetadataTestbedCppWinRT.ArrayProperties.UInt16Values
     L"UInt16Values",
-    &GetReferenceTypeMember_UInt16Values<::winrt::MetadataTestbedCppWinRT::ArrayProperties>,
-    &SetReferenceTypeMember_UInt16Values<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::com_array<uint16_t>>,
+    &GetReferenceTypeMember_UInt16Values_MetadataTestbedCppWinRT_ArrayProperties,
+    &SetReferenceTypeMember_UInt16Values_MetadataTestbedCppWinRT_ArrayProperties,
     10, // UInt16[]
     -1,
     false, false, false,
     //   3 - MetadataTestbedCppWinRT.ArrayProperties.StringValues
     L"StringValues",
-    &GetReferenceTypeMember_StringValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties>,
-    &SetReferenceTypeMember_StringValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::com_array<::winrt::hstring>>,
+    &GetReferenceTypeMember_StringValues_MetadataTestbedCppWinRT_ArrayProperties,
+    &SetReferenceTypeMember_StringValues_MetadataTestbedCppWinRT_ArrayProperties,
     11, // String[]
     -1,
     false, false, false,
     //   4 - MetadataTestbedCppWinRT.ArrayProperties.PointValues
     L"PointValues",
-    &GetReferenceTypeMember_PointValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties>,
-    &SetReferenceTypeMember_PointValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::com_array<::winrt::Windows::Foundation::Point>>,
+    &GetReferenceTypeMember_PointValues_MetadataTestbedCppWinRT_ArrayProperties,
+    &SetReferenceTypeMember_PointValues_MetadataTestbedCppWinRT_ArrayProperties,
     16, // Windows.Foundation.Point[]
     -1,
     false, false, false,
     //   5 - MetadataTestbedCppWinRT.ArrayProperties.ObjectValues
     L"ObjectValues",
-    &GetReferenceTypeMember_ObjectValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties>,
-    &SetReferenceTypeMember_ObjectValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::com_array<::winrt::Windows::Foundation::IInspectable>>,
+    &GetReferenceTypeMember_ObjectValues_MetadataTestbedCppWinRT_ArrayProperties,
+    &SetReferenceTypeMember_ObjectValues_MetadataTestbedCppWinRT_ArrayProperties,
     12, // Object[]
     -1,
     false, false, false,
     //   6 - MetadataTestbedCppWinRT.ArrayProperties.Int32Values
     L"Int32Values",
-    &GetReferenceTypeMember_Int32Values<::winrt::MetadataTestbedCppWinRT::ArrayProperties>,
-    &SetReferenceTypeMember_Int32Values<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::com_array<int32_t>>,
+    &GetReferenceTypeMember_Int32Values_MetadataTestbedCppWinRT_ArrayProperties,
+    &SetReferenceTypeMember_Int32Values_MetadataTestbedCppWinRT_ArrayProperties,
     8, // Int32[]
     -1,
     false, false, false,
     //   7 - MetadataTestbedCppWinRT.ArrayProperties.GuidValues
     L"GuidValues",
-    &GetReferenceTypeMember_GuidValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties>,
-    &SetReferenceTypeMember_GuidValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::com_array<::winrt::guid>>,
+    &GetReferenceTypeMember_GuidValues_MetadataTestbedCppWinRT_ArrayProperties,
+    &SetReferenceTypeMember_GuidValues_MetadataTestbedCppWinRT_ArrayProperties,
     6, // Guid[]
     -1,
     false, false, false,
     //   8 - MetadataTestbedCppWinRT.ArrayProperties.GuidValue
     L"GuidValue",
-    &GetValueTypeMember_GuidValue<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::guid>,
-    &SetValueTypeMember_GuidValue<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::guid>,
+    &GetValueTypeMember_GuidValue_MetadataTestbedCppWinRT_ArrayProperties,
+    &SetValueTypeMember_GuidValue_MetadataTestbedCppWinRT_ArrayProperties,
     0, // Guid
     -1,
     false, false, false,
     //   9 - MetadataTestbedCppWinRT.ArrayProperties.CharValues
     L"CharValues",
-    &GetReferenceTypeMember_CharValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties>,
-    &SetReferenceTypeMember_CharValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::com_array<char16_t>>,
+    &GetReferenceTypeMember_CharValues_MetadataTestbedCppWinRT_ArrayProperties,
+    &SetReferenceTypeMember_CharValues_MetadataTestbedCppWinRT_ArrayProperties,
     7, // Char[]
     -1,
     false, false, false,
     //  10 - MetadataTestbedCppWinRT.ArrayProperties.CharValue
     L"CharValue",
-    &GetValueTypeMember_CharValue<::winrt::MetadataTestbedCppWinRT::ArrayProperties, char16_t>,
-    &SetValueTypeMember_CharValue<::winrt::MetadataTestbedCppWinRT::ArrayProperties, char16_t>,
+    &GetValueTypeMember_CharValue_MetadataTestbedCppWinRT_ArrayProperties,
+    &SetValueTypeMember_CharValue_MetadataTestbedCppWinRT_ArrayProperties,
     1, // Char
     -1,
     false, false, false,
     //  11 - MetadataTestbedCppWinRT.ArrayProperties.ReadOnlyCharValue
     L"ReadOnlyCharValue",
-    &GetValueTypeMember_ReadOnlyCharValue<::winrt::MetadataTestbedCppWinRT::ArrayProperties, char16_t>,
+    &GetValueTypeMember_ReadOnlyCharValue_MetadataTestbedCppWinRT_ArrayProperties,
     nullptr,
     1, // Char
     -1,
     true,  false, false,
     //  12 - MetadataTestbedCppWinRT.ArrayProperties.ReadOnlyValues
     L"ReadOnlyValues",
-    &GetReferenceTypeMember_ReadOnlyValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties>,
+    &GetReferenceTypeMember_ReadOnlyValues_MetadataTestbedCppWinRT_ArrayProperties,
     nullptr,
     8, // Int32[]
     -1,
     true,  false, false,
     //  13 - MetadataTestbedCppWinRT.ArrayProperties.AttachedValues
     L"AttachedValues",
-    &GetAttachableMember_AttachedValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::Windows::Foundation::IInspectable>,
-    &SetAttachableMember_AttachedValues<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::Windows::Foundation::IInspectable, ::winrt::com_array<int32_t>>,
+    &GetAttachableMember_AttachedValues_MetadataTestbedCppWinRT_ArrayProperties_Object,
+    &SetAttachableMember_AttachedValues_MetadataTestbedCppWinRT_ArrayProperties_Object_Int32__,
     8, // Int32[]
     3, // Object
     false, false, true, 
     //  14 - MetadataTestbedCppWinRT.ArrayProperties.AttachedCharValue
     L"AttachedCharValue",
-    &GetAttachableMember_AttachedCharValue<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::Windows::Foundation::IInspectable>,
-    &SetAttachableMember_AttachedCharValue<::winrt::MetadataTestbedCppWinRT::ArrayProperties, ::winrt::Windows::Foundation::IInspectable, char16_t>,
+    &GetAttachableMember_AttachedCharValue_MetadataTestbedCppWinRT_ArrayProperties_Object,
+    &SetAttachableMember_AttachedCharValue_MetadataTestbedCppWinRT_ArrayProperties_Object_Char,
     1, // Char
     3, // Object
     false, false, true, 
     //  15 - Microsoft.UI.Xaml.Controls.TreeViewNode.IsExpanded
     L"IsExpanded",
-    &GetValueTypeMember_IsExpanded<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
-    &SetValueTypeMember_IsExpanded<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    &GetValueTypeMember_IsExpanded_Microsoft_UI_Xaml_Controls_TreeViewNode,
+    &SetValueTypeMember_IsExpanded_Microsoft_UI_Xaml_Controls_TreeViewNode,
     9, // Boolean
     -1,
     false, true,  false,
     //  16 - Microsoft.UI.Xaml.Controls.TreeViewNode.HasUnrealizedChildren
     L"HasUnrealizedChildren",
-    &GetValueTypeMember_HasUnrealizedChildren<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
-    &SetValueTypeMember_HasUnrealizedChildren<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    &GetValueTypeMember_HasUnrealizedChildren_Microsoft_UI_Xaml_Controls_TreeViewNode,
+    &SetValueTypeMember_HasUnrealizedChildren_Microsoft_UI_Xaml_Controls_TreeViewNode,
     9, // Boolean
     -1,
     false, false, false,
     //  17 - Microsoft.UI.Xaml.Controls.TreeViewNode.Content
     L"Content",
-    &GetReferenceTypeMember_Content<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>,
-    &SetReferenceTypeMember_Content<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, ::winrt::Windows::Foundation::IInspectable>,
+    &GetReferenceTypeMember_Content_Microsoft_UI_Xaml_Controls_TreeViewNode,
+    &SetReferenceTypeMember_Content_Microsoft_UI_Xaml_Controls_TreeViewNode,
     3, // Object
     -1,
     false, true,  false,
     //  18 - Microsoft.UI.Xaml.Controls.TreeViewNode.Children
     L"Children",
-    &GetReferenceTypeMember_Children<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>,
+    &GetReferenceTypeMember_Children_Microsoft_UI_Xaml_Controls_TreeViewNode,
     nullptr,
     23, // Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.TreeViewNode>
     -1,
     true,  false, false,
     //  19 - Microsoft.UI.Xaml.Controls.TreeViewNode.Depth
     L"Depth",
-    &GetValueTypeMember_Depth<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, int32_t>,
+    &GetValueTypeMember_Depth_Microsoft_UI_Xaml_Controls_TreeViewNode,
     nullptr,
     2, // Int32
     -1,
     true,  true,  false,
     //  20 - Microsoft.UI.Xaml.Controls.TreeViewNode.HasChildren
     L"HasChildren",
-    &GetValueTypeMember_HasChildren<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode, bool>,
+    &GetValueTypeMember_HasChildren_Microsoft_UI_Xaml_Controls_TreeViewNode,
     nullptr,
     9, // Boolean
     -1,
     true,  true,  false,
     //  21 - Microsoft.UI.Xaml.Controls.TreeViewNode.Parent
     L"Parent",
-    &GetReferenceTypeMember_Parent<::winrt::Microsoft::UI::Xaml::Controls::TreeViewNode>,
+    &GetReferenceTypeMember_Parent_Microsoft_UI_Xaml_Controls_TreeViewNode,
     nullptr,
     22, // Microsoft.UI.Xaml.Controls.TreeViewNode
     -1,

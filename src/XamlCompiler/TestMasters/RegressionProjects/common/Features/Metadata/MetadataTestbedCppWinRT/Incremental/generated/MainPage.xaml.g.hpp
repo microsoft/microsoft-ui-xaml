@@ -7,12 +7,11 @@
 //------------------------------------------------------------------------------
 #include "pch.h"
 #include "MainPage.h"
-#include "MyUserControl.h"
 
 #pragma warning(push)
 #pragma warning(disable: 4100) // unreferenced formal parameter
 
-namespace winrt::EventHandling_968976::implementation
+namespace winrt::MetadataTestbedCppWinRT::implementation
 {
 
 
@@ -43,48 +42,13 @@ namespace winrt::EventHandling_968976::implementation
         {
         case 2:
             {
-                auto targetElement = target.as<::winrt::EventHandling_968976::MyUserControl>();
+                auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
+                this->GetTypeMemberButton(targetElement);
                 auto weakThis = ::winrt::make_weak<class_type>(*this);
-                targetElement.TheFirstEvent([weakThis](::winrt::array_view<uint32_t const> p0){
+                targetElement.Click([weakThis](::winrt::Windows::Foundation::IInspectable const& p0, ::winrt::Microsoft::UI::Xaml::RoutedEventArgs const& p1){
                     if (auto t = weakThis.get())
                     {
-                        ::winrt::get_self<D>(t)->FirstHandler(p0);
-                    }
-                });
-                targetElement.TheSecondEvent([weakThis](::winrt::array_view<uint32_t> p0){
-                    if (auto t = weakThis.get())
-                    {
-                        ::winrt::get_self<D>(t)->SecondHandler(p0);
-                    }
-                });
-                targetElement.TheThirdEvent([weakThis](::winrt::com_array<uint32_t>& p0){
-                    if (auto t = weakThis.get())
-                    {
-                        ::winrt::get_self<D>(t)->ThirdHandler(p0);
-                    }
-                });
-                targetElement.TheFourthEvent([weakThis](::winrt::hstring& p0){
-                    if (auto t = weakThis.get())
-                    {
-                        ::winrt::get_self<D>(t)->FourthHandler(p0);
-                    }
-                });
-                targetElement.GuidCharPass([weakThis](::winrt::array_view<::winrt::guid const> p0, ::winrt::array_view<char16_t const> p1){
-                    if (auto t = weakThis.get())
-                    {
-                        ::winrt::get_self<D>(t)->GuidCharPassHandler(p0, p1);
-                    }
-                });
-                targetElement.GuidCharFill([weakThis](::winrt::array_view<::winrt::guid> p0, ::winrt::array_view<char16_t> p1){
-                    if (auto t = weakThis.get())
-                    {
-                        ::winrt::get_self<D>(t)->GuidCharFillHandler(p0, p1);
-                    }
-                });
-                targetElement.GuidCharReceive([weakThis](::winrt::com_array<::winrt::guid>& p0, ::winrt::com_array<char16_t>& p1){
-                    if (auto t = weakThis.get())
-                    {
-                        ::winrt::get_self<D>(t)->GuidCharReceiveHandler(p0, p1);
+                        ::winrt::get_self<D>(t)->GetTypeMemberManyTimesClicked(p0, p1);
                     }
                 });
             }
@@ -115,6 +79,28 @@ namespace winrt::EventHandling_968976::implementation
     template struct MainPageT<struct MainPage>;
 }
 
+
+namespace winrt::MetadataTestbedCppWinRT::implementation
+{
+::winrt::Windows::Foundation::IInspectable ActivateType_MetadataTestbedCppWinRT_MainPage()
+{
+    return ::winrt::make<::winrt::MetadataTestbedCppWinRT::implementation::MainPage>();
+}
+
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_MyProperty_MetadataTestbedCppWinRT_MainPage(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<::winrt::MetadataTestbedCppWinRT::MainPage>().MyProperty());
+}
+void SetReferenceTypeMember_MyProperty_MetadataTestbedCppWinRT_MainPage(::winrt::Windows::Foundation::IInspectable const& instance, ::winrt::Windows::Foundation::IInspectable const& value)
+{
+    instance.as<::winrt::MetadataTestbedCppWinRT::MainPage>().MyProperty(::winrt::unbox_value<::winrt::com_array<int32_t>>(value));
+}
+
+::winrt::Windows::Foundation::IInspectable GetReferenceTypeMember_TestProperty_MetadataTestbedCppWinRT_MainPage(::winrt::Windows::Foundation::IInspectable const& instance)
+{
+    return ::winrt::box_value(instance.as<::winrt::MetadataTestbedCppWinRT::MainPage>().TestProperty());
+}
+}
 
 #pragma warning(pop)
 

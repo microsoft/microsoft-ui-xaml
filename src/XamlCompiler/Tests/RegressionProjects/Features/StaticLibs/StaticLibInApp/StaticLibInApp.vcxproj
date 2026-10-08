@@ -80,5 +80,5 @@
     </ProjectReference>
   </ItemGroup>
 
-  <Import Project="$(CommonFilesPath)RuntimeComponentPostamble.cpp.props" />
+  <Import Project="$(CommonFilesPath)AppPostamble.cpp.props" />
 </Project>
