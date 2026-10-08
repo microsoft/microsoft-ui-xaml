@@ -18,6 +18,23 @@ var ms = Timed(() =>
     }
 });
 
+// Under an active GroupBy every Add regroups every row added so far, so the grouped run times
+// per-row Adds only up to a 2 s cap, then DOES this instead: detach, add, group once.
+var totalMs = Timed(() =>
+{
+    var stopwatch = Stopwatch.StartNew();
+    source.ClearGroupBy();
+    people.Clear();
+    foreach (var person in rows)
+    {
+        people.Add(person);
+    }
+
+    addMs = stopwatch.ElapsedMilliseconds;
+    source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+    regroupMs = stopwatch.ElapsedMilliseconds - addMs;
+});
+
 // Settles the heap, then times the mutation plus one synchronous measure and arrange, so the
 // window ends when the new rows are laid out rather than when the C# call returns.
 private long Timed(Action mutation)

@@ -8,6 +8,8 @@ using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -155,11 +157,67 @@ public sealed partial class CellEditingPage : Page
         {
             if (IsLoaded)
             {
+                var hadFocus = IsFocusWithinTable();
+                var regrouped = _appliedMode == "grouped" && property == _appliedKey;
                 ReapplyIfGroupedOn(property);
+                if (regrouped && hadFocus)
+                {
+                    RestoreRowFocusAfterLayout(person);
+                }
+
                 RefreshReadouts();
             }
         });
         RefreshReadouts();
+    }
+
+    private bool IsFocusWithinTable()
+    {
+        for (var node = XamlRoot is null ? null : FocusManager.GetFocusedElement(XamlRoot) as DependencyObject;
+             node is not null;
+             node = VisualTreeHelper.GetParent(node))
+        {
+            if (node == PeopleTable)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Re-applying GroupBy recycles the row containers, so keyboard focus would land on whatever
+    // container now sits where the edited row was, often a group header. After the next layout
+    // pass, put it back on the edited row in its new group.
+    private void RestoreRowFocusAfterLayout(Person person)
+    {
+        void OnLayoutUpdated(object? sender, object e)
+        {
+            PeopleTable.LayoutUpdated -= OnLayoutUpdated;
+            FindRealizedRow(PeopleTable, person)?.Focus(FocusState.Keyboard);
+        }
+
+        PeopleTable.LayoutUpdated += OnLayoutUpdated;
+    }
+
+    private static TableViewRow? FindRealizedRow(DependencyObject parent, object item)
+    {
+        var count = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is TableViewRow row && ReferenceEquals(row.DataContext, item))
+            {
+                return row;
+            }
+
+            if (child is not TableViewRow && FindRealizedRow(child, item) is { } nested)
+            {
+                return nested;
+            }
+        }
+
+        return null;
     }
 
     // ---- Actions ------------------------------------------------------------------------

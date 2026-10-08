@@ -111,11 +111,11 @@
                         <!-- IsReadOnly gates the built-in text editors only; the Due and Resolved
                              template editors stay editable. -->
                         <tv:TableViewTextColumn Header="Ticket" Width="{StaticResource ColWidthId}" Binding="{Binding TicketId}" HeaderToolTip="Incident number, unique per ticket."/>
-                        <tv:TableViewTemplateColumn Header="Assignee" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AssigneeTemplate}" SortMemberPath="Assignee" CellToolTipBinding="{Binding Assignee}" HeaderToolTip="Initials of the person who owns the ticket. Hover for the full name."/>
+                        <tv:TableViewTemplateColumn Header="Assignee" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource AssigneeTemplate}" SortMemberPath="Assignee" CellToolTipBinding="{Binding Assignee}" HeaderToolTip="Initials of the person who owns the ticket. Hover for the full name."/>
                         <tv:TableViewTextColumn Header="Summary" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Summary}" CellToolTipBinding="{Binding Summary}"/>
-                        <tv:TableViewTemplateColumn Header="Priority" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource PriorityChipTemplate}" SortMemberPath="Priority" HeaderToolTip="Urgency: Sev 1 is the most urgent."/>
+                        <tv:TableViewTemplateColumn Header="Priority" Width="{StaticResource ColWidthNumber}" CellTemplate="{StaticResource PriorityChipTemplate}" SortMemberPath="Priority" HeaderToolTip="Urgency: Sev 1 is the most urgent."/>
                         <tv:TableViewTemplateColumn x:Name="DueColumn" Header="Due" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource DueDateTemplate}" SortMemberPath="Due" HeaderToolTip="Date the ticket breaches its service-level agreement. Editable."/>
-                        <tv:TableViewTemplateColumn Header="Resolved" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ResolvedTemplate}" SortMemberPath="IsResolved" HeaderToolTip="Checked once the ticket is closed. Editable."/>
+                        <tv:TableViewTemplateColumn Header="Resolved" Width="{StaticResource ColWidthBooleanWide}" CellTemplate="{StaticResource ResolvedTemplate}" SortMemberPath="IsResolved" HeaderToolTip="Checked once the ticket is closed. Editable."/>
                     </tv:TableView>
                 </Border>
             </Grid>

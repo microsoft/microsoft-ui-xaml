@@ -367,6 +367,11 @@ public sealed partial class TaskManagerPage : Page
             ? SampleShaping.RowCountText(visible)
             : string.Format(CultureInfo.CurrentCulture, "{0:N0} of {1:N0} (search)", visible, Processes.Count);
         SelectedProcessText.Text = ProcessTable.SelectedItem is ProcessItem process ? process.Name : "(none)";
+        if (EndTaskButton is not null)
+        {
+            EndTaskButton.IsEnabled = ProcessTable.SelectedItem is ProcessItem;
+        }
+
         LiveText.Text = LiveUpdatesToggle?.IsOn == false
             ? "Paused"
             : string.Format(CultureInfo.CurrentCulture, "Every {0}", SampleShaping.Label(UpdateIntervalSelector).ToLower(CultureInfo.CurrentCulture));

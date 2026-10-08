@@ -28,6 +28,7 @@ public sealed partial class PerformancePage : Page
 {
     private const int InitialRows = 1_000;
     private const int PerItemCap = 10_000;
+    private const int GroupedAddBudgetMs = 2_000;   // per-row Adds under GroupBy stop here (see RunPerItemAddGroupedAsync)
     private const string FilterDepartment = "Engineering";
 
     private ObservableCollection<Person> _people;
@@ -258,6 +259,12 @@ public sealed partial class PerformancePage : Page
         try
         {
             var rows = await Task.Run(() => PersonData.Many(PerItemCap));
+            if (_appliedMode == "grouped")
+            {
+                await RunPerItemAddGroupedAsync(rows);
+                return;
+            }
+
             var people = _people;
             // DON'T: one CollectionChanged notification, and one projection update, per row.
             var ms = Timed(() =>
@@ -276,6 +283,91 @@ public sealed partial class PerformancePage : Page
         finally
         {
             _isRunning = false;
+        }
+    }
+
+    // Under an active GroupBy every Add regroups every row added so far, synchronously, so 10,000
+    // Adds cost O(n^2) and would freeze the window for minutes. The grouped run therefore does
+    // two things: (1) it times per-row Adds under the live grouping only until a time cap, and
+    // (2) it does the real 10,000 Adds with the grouping detached, then groups once.
+    private async Task RunPerItemAddGroupedAsync(IReadOnlyList<Person> rows)
+    {
+        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
+        var keyLabel = SampleShaping.Label(GroupKeySelector);
+        var source = _source!;
+        var people = _people;
+        ShapingModeSelector.IsEnabled = false;
+        GroupKeySelector.IsEnabled = false;
+        try
+        {
+            // (1) DON'T: per-row Add while grouped, stopped at GroupedAddBudgetMs.
+            PerItemAddText.Text = "Adding under GroupBy (capped)…";
+            await Task.Delay(50);
+            int added = 0;
+            int tailStartIndex = 0;
+            long tailStartMs = 0;
+            long tailMs = 0;
+            var probeMs = Timed(() =>
+            {
+                people.Clear();
+                var stopwatch = Stopwatch.StartNew();
+                foreach (var person in rows)
+                {
+                    if (stopwatch.ElapsedMilliseconds >= GroupedAddBudgetMs)
+                    {
+                        break;
+                    }
+
+                    if (added % 100 == 0)
+                    {
+                        tailStartIndex = added;
+                        tailStartMs = stopwatch.ElapsedMilliseconds;
+                    }
+
+                    people.Add(person);
+                    added++;
+                }
+
+                tailMs = stopwatch.ElapsedMilliseconds - tailStartMs;
+            });
+            var perAddMs = (double)tailMs / Math.Max(1, added - tailStartIndex);
+
+            // Let the window repaint between the two blocking steps.
+            PerItemAddText.Text = "Adding with the grouping detached…";
+            await Task.Delay(50);
+
+            // (2) DO: detach the grouping, add per row against the flat source, group once.
+            long addMs = 0;
+            var regroupMs = 0L;
+            var totalMs = Timed(() =>
+            {
+                var stopwatch = Stopwatch.StartNew();
+                source.ClearGroupBy();
+                people.Clear();
+                foreach (var person in rows)
+                {
+                    people.Add(person);
+                }
+
+                addMs = stopwatch.ElapsedMilliseconds;
+                source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+                regroupMs = stopwatch.ElapsedMilliseconds - addMs;
+            });
+
+            _sortDescending = true;
+            PerItemAddText.Text = string.Format(
+                CultureInfo.CurrentCulture,
+                "Grouped by {0}: {1:N0} of {2:N0} Adds before the {3:N0} ms cap ({4:N0} ms, last Adds {5:N1} ms each). Grouping detached: {2:N0} Adds plus one GroupBy in {6:N0} ms ({7:N0} ms Adds, {8:N0} ms GroupBy), {9}",
+                keyLabel, added, PerItemCap, GroupedAddBudgetMs, probeMs, perAddMs, totalMs, addMs, regroupMs, ColumnSetLabel);
+            SetLastAction(string.Format(
+                CultureInfo.CurrentCulture,
+                "Under GroupBy only {0:N0} of {1:N0} one-at-a-time Adds fit in {2:N0} ms. With the grouping detached and applied once, all {1:N0} took {3:N0} ms.",
+                added, PerItemCap, GroupedAddBudgetMs, totalMs));
+        }
+        finally
+        {
+            UpdateShapingGating();
+            ShapingModeSelector.IsEnabled = true;
         }
     }
 

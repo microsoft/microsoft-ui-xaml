@@ -11,7 +11,7 @@
         Sample page scaffold. 6-row, 2-col grid:
             Row 0: Header text  (left col, spans both cols when no Options)
             Row 1: Description  (left col, spans both cols)
-            Row 2: (spacer)
+            Row 2: (spacer, 0 px: the two row gaps already separate the description from the Example)
             Row 3: Example      (left col)        |  Options rail card   (right col, only if Options set)
             Row 4: Source expander (spans both, wide mode) OR Options rail (narrow mode)
             Row 5: Source expander (spans both, narrow mode only — keeps it below the reparented Options rail)
@@ -43,7 +43,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="8"/>
+            <RowDefinition x:Name="SpacerRow" Height="0"/>
             <RowDefinition x:Name="ExampleRow" Height="Auto" MinHeight="320"/>
             <RowDefinition x:Name="SourceRow" Height="Auto"/>
             <RowDefinition x:Name="NarrowSourceRow" Height="Auto"/>
@@ -124,7 +124,9 @@
         <Expander
             x:Name="SourceExpander"
             Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
-            Margin="0,12,0,0"
+            Margin="0,4,0,0"
+            MinHeight="40"
+            Padding="12"
             HorizontalAlignment="Stretch"
             HorizontalContentAlignment="Stretch"
             AutomationProperties.AutomationId="SampleSourceExpander"
@@ -139,11 +141,11 @@
                 </StackPanel>
             </Expander.Header>
             <!--
-                The source content is bounded and scrolls internally. The grid is pinned to
-                the viewport when StretchExample is on, so an unbounded Auto row here just
-                overflows the pin and gets clipped with no way to reach the rest. Capping it
-                (MaxHeight set from ApplyStretchSizing) keeps the page itself non-scrolling
-                and lets the Example row shrink to its MinHeight as designed.
+                The source content is bounded and scrolls internally (MaxHeight set from
+                ApplyStretchSizing). On a pinned page the Example row shrinks towards its minimum
+                to make room; on a scrolling page the Example drops to its minimum, the code is
+                capped to the rest of the viewport, and expanding scrolls the block into view
+                (RevealSourceIfPending), so the code is never left below the window.
             -->
             <ScrollViewer
                 x:Name="SourceContentScroller"

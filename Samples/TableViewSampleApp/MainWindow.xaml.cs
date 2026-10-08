@@ -116,7 +116,9 @@ public sealed partial class MainWindow : Window
             App.AppendVerificationLog($"DispatcherNavigate InitialTag={initialTag}");
             App.AppendSelectionVerificationLog($"DispatcherNavigate InitialTag={initialTag}");
             SelectNavItem(initialTag);
-            Navigate(initialTag, new EntranceNavigationTransitionInfo(), false);
+            // Focus the page's first control, not the title bar's Theme button, which is the
+            // first tab stop in the window and would otherwise take initial focus.
+            Navigate(initialTag, new EntranceNavigationTransitionInfo(), true);
         });
     }
 
@@ -549,7 +551,10 @@ public sealed partial class MainWindow : Window
 
     private FocusState GetNavigationFocusState()
     {
-        if (FocusManager.GetFocusedElement(ContentFrame.XamlRoot) is Control { FocusState: FocusState.Keyboard })
+        // XamlRoot is still null when the first navigation runs at startup, and
+        // GetFocusedElement(null) throws E_INVALIDARG.
+        if (ContentFrame.XamlRoot is { } root &&
+            FocusManager.GetFocusedElement(root) is Control { FocusState: FocusState.Keyboard })
         {
             return FocusState.Keyboard;
         }

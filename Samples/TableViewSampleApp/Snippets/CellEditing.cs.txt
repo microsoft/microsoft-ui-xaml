@@ -57,7 +57,15 @@ private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (IsLoaded)
         {
+            var hadFocus = IsFocusWithinTable();
+            var regrouped = _appliedMode == "grouped" && property == _appliedKey;
             ReapplyIfGroupedOn(property);
+            if (regrouped && hadFocus)
+            {
+                // The reshape recycles the containers; put focus back on the edited row.
+                RestoreRowFocusAfterLayout(person);
+            }
+
             RefreshReadouts();
         }
     });

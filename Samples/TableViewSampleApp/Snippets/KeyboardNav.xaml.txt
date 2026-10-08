@@ -17,7 +17,8 @@
         <!-- Sortable template column: Enter or Space on its focused header sorts by Department. -->
         <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}"
                                     CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-        <!-- Editors: Tab moves into them inside the focused row. -->
+        <!-- Controls in cells: arrow to the cell, Enter moves into the control, Esc returns to the cell.
+     The table body is one tab stop, so Tab leaves the table. -->
         <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}"
                                     CellTemplate="{StaticResource ActiveCheckBoxTemplate}" CanSort="False"/>
         <tv:TableViewTemplateColumn Header="Office" Width="{StaticResource ColWidthCombo}"

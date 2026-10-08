@@ -36,7 +36,14 @@ public sealed partial class SamplePresenter : UserControl
     private const double MinSourceHeight = 160;
 
     // Height of a collapsed Source expander plus its top margin, used before it is measured.
-    private const double CollapsedSourceEstimate = 60;
+    private const double CollapsedSourceEstimate = 44;
+
+    // An expanded Expander adds its content border and padding around the Source scroller.
+    // Used until the expanded chrome has been measured once.
+    private const double ExpandedSourceChromeEstimate = 26;
+
+    // How long after an expand the Source block is kept in view while the layout settles.
+    private const long RevealSourceWindowMs = 1500;
 
     // The smallest height the Example content has been seen to need (its Auto rows plus the
     // table's MinHeight). Learned when a child of the Example turns out taller than its slot;
@@ -50,6 +57,16 @@ public sealed partial class SamplePresenter : UserControl
     private bool _isNarrow;
     private double _measuredWidth = double.NaN;
     private bool _overflowCheckPending;
+
+    // Everything an expanded Source expander adds above and around SourceContentScroller (top
+    // margin, header, content border and padding). Measured once expanded; it does not depend on
+    // the scroller's own height, so using it cannot feed back into the cap.
+    private double _expandedSourceChrome = CollapsedSourceEstimate + ExpandedSourceChromeEstimate;
+
+    // After Source is expanded, RevealSourceIfPending keeps the block in view until this
+    // Environment.TickCount64 deadline (see RevealSourceWindowMs).
+    private long _revealSourceUntil;
+    private bool _revealSourceQueued;
 
     public SamplePresenter()
     {
@@ -260,12 +277,20 @@ public sealed partial class SamplePresenter : UserControl
     }
 
     // Expanding/collapsing the source expander changes how much vertical space the
-    // Example row can claim, so re-run the stretch sizing against the current height.
+    // Example row can claim, so re-run the stretch sizing against the current height. On
+    // expand, the code is also scrolled into view once laid out (see RevealSourceIfPending):
+    // when the page scrolls, the expanded block would otherwise open below the window.
     private void OnSourceExpanderExpanding(Expander sender, ExpanderExpandingEventArgs args)
-        => InvalidateMeasure();
+    {
+        _revealSourceUntil = Environment.TickCount64 + RevealSourceWindowMs;
+        InvalidateMeasure();
+    }
 
     private void OnSourceExpanderCollapsed(Expander sender, ExpanderCollapsedEventArgs args)
-        => InvalidateMeasure();
+    {
+        _revealSourceUntil = 0;
+        InvalidateMeasure();
+    }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
     {
@@ -285,6 +310,15 @@ public sealed partial class SamplePresenter : UserControl
             }
 
             ApplyResponsiveLayout(availableSize.Width);
+
+            // Give the page grid the full content width (up to PageMaxContentWidth) instead of
+            // its content's desired width: a Left-aligned grid otherwise sizes to whatever the
+            // table and rail ask for, so the rail's right edge moved from page to page.
+            var width = Math.Max(0, availableSize.Width - OuterGrid.Margin.Left - OuterGrid.Margin.Right);
+            if (!OuterGrid.Width.Equals(width))
+            {
+                OuterGrid.Width = width;
+            }
         }
 
         _availableHeight = double.IsInfinity(availableSize.Height) ? double.NaN : availableSize.Height;
@@ -313,6 +347,8 @@ public sealed partial class SamplePresenter : UserControl
     // turn a fitting page into an overflowing one without the Example's own size changing.
     private void OnLayoutUpdated(object? sender, object e)
     {
+        RevealSourceIfPending();
+
         if (!StretchExample || ExampleRow.Height.GridUnitType == GridUnitType.Auto || ExampleRow.ActualHeight <= 0)
         {
             return;
@@ -407,9 +443,18 @@ public sealed partial class SamplePresenter : UserControl
     //
     // The page does NOT fit, and is left to scroll, when:
     //  * the layout is narrow (< 900 px): the rail sits under the Example (D:S2);
-    //  * title + description + the Example's minimum + the Source header exceed the height (D:S1).
-    // Then the grid is unpinned, the Example row gets a fixed height (at least the Example's
-    // minimum, otherwise what the viewport leaves under the title), and OuterScroller scrolls.
+    //  * title + description + the Example's minimum + the Source block exceed the height (D:S1).
+    //    An expanded Source block counts its chrome plus MinSourceHeight of code.
+    // Then the grid is unpinned and the Example row gets a fixed height, so the table stays
+    // bounded and virtualizes; it never sits in an unbounded scroller.
+    //
+    // Source rule (P1-1). Expanding Source never balloons the table and never leaves the code
+    // below the window:
+    //  * pinned page: the Example row shrinks towards its minimum and the code gets the rest,
+    //    at least MinSourceHeight (the fit check reserves it);
+    //  * scrolling page: the Example row drops to its minimum, the code is capped to what is
+    //    left of the viewport under it (at least MinSourceHeight), and RevealSourceIfPending
+    //    scrolls the page so the whole expanded block, and the table above it, are on screen.
     private void ApplyStretchSizing(double availableHeight)
     {
         if (OuterGrid is null)
@@ -417,26 +462,40 @@ public sealed partial class SamplePresenter : UserControl
             return;
         }
 
-        if (!StretchExample || double.IsNaN(availableHeight) || availableHeight <= 0)
+        var hasHeight = !double.IsNaN(availableHeight) && availableHeight > 0;
+        var target = hasHeight ? Math.Max(0, availableHeight - OuterGrid.Margin.Top - OuterGrid.Margin.Bottom) : 0;
+        var sourceVisible = SourceExpander.Visibility == Visibility.Visible;
+        var sourceExpanded = sourceVisible && SourceExpander.IsExpanded;
+        // Right after a collapse ActualHeight is still the expanded height; fall back to the
+        // estimate rather than treat the old code block as chrome.
+        var collapsedMeasured = SourceExpander.ActualHeight > 0 && SourceExpander.ActualHeight < CollapsedSourceEstimate * 2;
+        var sourceChrome = !sourceVisible ? 0
+            : sourceExpanded ? _expandedSourceChrome
+            : (collapsedMeasured ? SourceExpander.ActualHeight + SourceExpander.Margin.Top : CollapsedSourceEstimate);
+
+        if (!StretchExample || !hasHeight)
         {
-            SetExampleRowHeight(StretchExample && !double.IsNaN(availableHeight)
+            SetExampleRowHeight(StretchExample && hasHeight
                 ? new GridLength(1, GridUnitType.Star)
                 : GridLength.Auto);
             ClearIfSet(OuterGrid, HeightProperty);
-            ClearIfSet(SourceContentScroller, MaxHeightProperty);
+            if (hasHeight)
+            {
+                // The page scrolls; keep the code bounded to one viewport so its own scrollbar
+                // stays reachable once the block is revealed.
+                SetMaxHeight(SourceContentScroller, Math.Max(MinSourceHeight, target - sourceChrome));
+            }
+            else
+            {
+                ClearIfSet(SourceContentScroller, MaxHeightProperty);
+            }
+
             return;
         }
 
-        var verticalMargin = OuterGrid.Margin.Top + OuterGrid.Margin.Bottom;
-        var target = Math.Max(0, availableHeight - verticalMargin);
         var headerBlock = HeaderBlockHeight();
-        var sourceBlock = SourceExpander.Visibility == Visibility.Visible
-            ? (SourceExpander.IsExpanded || SourceExpander.ActualHeight <= 0
-                ? CollapsedSourceEstimate
-                : SourceExpander.ActualHeight + SourceExpander.Margin.Top)
-            : 0;
-
-        var fits = !_isNarrow && headerBlock + _exampleMinHeight + sourceBlock <= target;
+        var reservedCode = sourceExpanded ? MinSourceHeight : 0;
+        var fits = !_isNarrow && headerBlock + _exampleMinHeight + sourceChrome + reservedCode <= target;
         if (fits)
         {
             SetExampleRowHeight(new GridLength(1, GridUnitType.Star));
@@ -448,19 +507,84 @@ public sealed partial class SamplePresenter : UserControl
             // Cap the source content to what the pinned grid can spare once the Example row has
             // its minimum and the title block is accounted for. Without the cap the expander's
             // Auto row asks for the full height of both code blocks, overflows the pin, and is
-            // clipped with no way to scroll to it.
-            var spare = target - headerBlock - _exampleMinHeight - CollapsedSourceEstimate;
-            SetMaxHeight(SourceContentScroller, spare > MinSourceHeight ? spare : MinSourceHeight);
+            // clipped with no way to scroll to it. The fit check guarantees MinSourceHeight.
+            var spare = target - headerBlock - _exampleMinHeight - sourceChrome;
+            SetMaxHeight(SourceContentScroller, Math.Max(MinSourceHeight, Math.Floor(spare)));
         }
         else
         {
             ClearIfSet(OuterGrid, HeightProperty);
-            var exampleHeight = Math.Max(_exampleMinHeight, target - headerBlock - CollapsedSourceEstimate);
+            double exampleHeight;
+            double codeCap;
+            if (sourceExpanded)
+            {
+                exampleHeight = _exampleMinHeight;
+                // Wide: the Example (at its minimum) and the whole Source block share one
+                // viewport. Narrow: the rail sits between them, so the block gets the viewport.
+                codeCap = _isNarrow
+                    ? target - sourceChrome
+                    : target - _exampleMinHeight - sourceChrome - OuterGrid.RowSpacing;
+            }
+            else
+            {
+                exampleHeight = Math.Max(_exampleMinHeight, target - headerBlock - sourceChrome);
+                codeCap = target - sourceChrome;
+            }
+
             SetExampleRowHeight(new GridLength(Math.Floor(exampleHeight), GridUnitType.Pixel));
-            // The page scrolls now, but keep the code scroller bounded to the viewport so its
-            // own scrollbar stays reachable.
-            SetMaxHeight(SourceContentScroller, Math.Max(MinSourceHeight, target - CollapsedSourceEstimate));
+            SetMaxHeight(SourceContentScroller, Math.Max(MinSourceHeight, Math.Floor(codeCap)));
         }
+    }
+
+    // After Source expands: once the expanded block is laid out, scroll the page (if it scrolls)
+    // so the bottom of the block meets the bottom of the viewport, without scrolling its header
+    // off the top. With the cap from ApplyStretchSizing that leaves the table, at its minimum,
+    // in view above the code. A pinned page cannot scroll, so this is a no-op there.
+    //
+    // The layout can still settle for a moment after the first pass (the measured chrome
+    // replaces its estimate, or the overflow guard learns a larger Example minimum and the code
+    // moves down), so the reveal re-runs on every layout pass for a short window after the
+    // expand. It only ever scrolls forward, so it cannot fight a user who scrolls back up later.
+    private void RevealSourceIfPending()
+    {
+        if (_revealSourceQueued || Environment.TickCount64 > _revealSourceUntil)
+        {
+            return;
+        }
+
+        if (!SourceExpander.IsExpanded || SourceContentScroller.ActualHeight <= 0)
+        {
+            return;
+        }
+
+        var chrome = SourceExpander.ActualHeight + SourceExpander.Margin.Top - SourceContentScroller.ActualHeight;
+        if (chrome > 0 && Math.Abs(chrome - _expandedSourceChrome) > 1)
+        {
+            // First expand: replace the estimate with the measured chrome and size again.
+            _expandedSourceChrome = chrome;
+            InvalidateMeasure();
+            return;
+        }
+
+        // Scroll after the pass settles, when the scroller's extent includes the expanded block.
+        _revealSourceQueued = true;
+        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+        {
+            _revealSourceQueued = false;
+            if (Environment.TickCount64 > _revealSourceUntil || !IsLoaded || !SourceExpander.IsExpanded)
+            {
+                return;
+            }
+
+            var top = SourceExpander.TransformToVisual(OuterGrid).TransformPoint(new Windows.Foundation.Point(0, 0)).Y
+                      + OuterGrid.Margin.Top;
+            var bottom = top + SourceExpander.ActualHeight + OuterGrid.Margin.Bottom;
+            var desired = Math.Min(bottom - OuterScroller.ViewportHeight, top - SourceExpander.Margin.Top);
+            if (desired > OuterScroller.VerticalOffset + 1)
+            {
+                OuterScroller.ChangeView(null, desired, null, disableAnimation: true);
+            }
+        });
     }
 
     // Title + description + the spacer row + the Grid's row spacing (5 gaps between 6 rows).
@@ -468,7 +592,7 @@ public sealed partial class SamplePresenter : UserControl
     {
         var header = HeaderText.ActualHeight > 0 ? HeaderText.ActualHeight : 36;
         var description = DescriptionText.ActualHeight > 0 ? DescriptionText.ActualHeight : 40;
-        return header + description + 8 + (OuterGrid.RowSpacing * 5);
+        return header + description + SpacerRow.Height.Value + (OuterGrid.RowSpacing * 5);
     }
 
     private void SetExampleRowHeight(GridLength height)

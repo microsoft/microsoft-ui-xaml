@@ -39,7 +39,10 @@ public sealed partial class GroupsPage : Page
     private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
     private string _appliedKey = "Department";
     private bool _isBulkUpdate;
-    private string _expansion = AllExpanded;
+
+    // Group identities (SampleShaping.GroupIdentity) the page has collapsed. The control has no
+    // public per-group state query, so the page records every expansion change it makes or sees.
+    private readonly HashSet<string> _collapsedGroups = new();
 
     // New hires for "Add a person": realistic PersonData rows that are not in the table yet.
     private readonly Queue<Person> _newHires;
@@ -48,7 +51,8 @@ public sealed partial class GroupsPage : Page
     private readonly List<Person> _removed = new();
 
     private readonly TappedEventHandler _tappedHandler;
-    private readonly KeyEventHandler _keyUpHandler;
+    private readonly DoubleTappedEventHandler _doubleTappedHandler;
+    private readonly KeyEventHandler _keyDownHandler;
 
     public GroupsPage()
     {
@@ -57,7 +61,8 @@ public sealed partial class GroupsPage : Page
         _newHires = new Queue<Person>(pool.Skip(60));
         _source = TableViewSource.From(People);
         _tappedHandler = OnTableTapped;
-        _keyUpHandler = OnTableKeyUp;
+        _doubleTappedHandler = OnTableDoubleTapped;
+        _keyDownHandler = OnTableKeyDown;
 
         InitializeComponent();
         Loaded += OnPageLoaded;
@@ -85,7 +90,8 @@ public sealed partial class GroupsPage : Page
         // There is no table-level event for one group being toggled from its header, so listen
         // for the input that toggles it (handledEventsToo: the header marks the input handled).
         PeopleTable.AddHandler(UIElement.TappedEvent, _tappedHandler, true);
-        PeopleTable.AddHandler(UIElement.KeyUpEvent, _keyUpHandler, true);
+        PeopleTable.AddHandler(UIElement.DoubleTappedEvent, _doubleTappedHandler, true);
+        PeopleTable.AddHandler(UIElement.KeyDownEvent, _keyDownHandler, true);
         RefreshReadouts();
     }
 
@@ -98,7 +104,8 @@ public sealed partial class GroupsPage : Page
         }
 
         PeopleTable.RemoveHandler(UIElement.TappedEvent, _tappedHandler);
-        PeopleTable.RemoveHandler(UIElement.KeyUpEvent, _keyUpHandler);
+        PeopleTable.RemoveHandler(UIElement.DoubleTappedEvent, _doubleTappedHandler);
+        PeopleTable.RemoveHandler(UIElement.KeyDownEvent, _keyDownHandler);
     }
 
     private void OnPeopleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -139,44 +146,81 @@ public sealed partial class GroupsPage : Page
 
     // ---- One group toggled from its header ----------------------------------------------
 
-    private void OnTableTapped(object sender, TappedRoutedEventArgs e) => NoteHeaderToggle(e.OriginalSource as DependencyObject);
+    // A header click or Enter/Space toggles its group; Right and Left expand and collapse it (the
+    // reverse in RTL). The control resolves the group at once but applies the change on a later
+    // dispatcher turn, so header.IsExpanded still holds the OLD state here and for a while after.
+    // The page therefore computes the new state itself instead of reading the header back.
+    private void OnTableTapped(object sender, TappedRoutedEventArgs e) => NoteHeaderExpansion(e.OriginalSource as DependencyObject, desired: null);
 
-    private void OnTableKeyUp(object sender, KeyRoutedEventArgs e)
+    // The second click of a double-click toggles the group again but raises DoubleTapped, not Tapped.
+    private void OnTableDoubleTapped(object sender, DoubleTappedRoutedEventArgs e) => NoteHeaderExpansion(e.OriginalSource as DependencyObject, desired: null);
+
+    private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Key is VirtualKey.Enter or VirtualKey.Space)
+        var rtl = PeopleTable.FlowDirection == FlowDirection.RightToLeft;
+        bool? desired = e.Key switch
         {
-            NoteHeaderToggle(e.OriginalSource as DependencyObject);
+            VirtualKey.Right => !rtl,
+            VirtualKey.Left => rtl,
+            _ => null,
+        };
+
+        if (desired is not null || e.Key is VirtualKey.Enter or VirtualKey.Space)
+        {
+            NoteHeaderExpansion(e.OriginalSource as DependencyObject, desired);
         }
     }
 
-    private void NoteHeaderToggle(DependencyObject? source)
+    private void NoteHeaderExpansion(DependencyObject? source, bool? desired)
     {
         while (source is not null && source is not TableViewGroupHeader)
         {
             source = VisualTreeHelper.GetParent(source);
         }
 
-        if (source is not TableViewGroupHeader header)
+        if (_appliedMode != "grouped" || source is not TableViewGroupHeader { IsExpandable: true } header
+            || header.Content is not TableViewGroupInfo group)
         {
             return;
         }
 
-        // Read the state once the header has applied the toggle.
-        DispatcherQueue.TryEnqueue(() =>
+        var identity = SampleShaping.GroupIdentity(group.Key);
+        var expanded = desired ?? _collapsedGroups.Contains(identity);
+        if (expanded)
         {
-            if (!IsLoaded || _appliedMode != "grouped")
-            {
-                return;
-            }
+            _collapsedGroups.Remove(identity);
+        }
+        else
+        {
+            _collapsedGroups.Add(identity);
+        }
 
-            _expansion = "Mixed";
-            var group = header.Content as TableViewGroupInfo;
-            SetLastAction(string.Format(
-                CultureInfo.CurrentCulture,
-                "{0} the {1} group from its header",
-                header.IsExpanded ? "Expanded" : "Collapsed",
-                group?.KeyText ?? SampleShaping.NoneKey));
-        });
+        SetLastAction(string.Format(
+            CultureInfo.CurrentCulture,
+            "{0} the {1} group from its header",
+            expanded ? "Expanded" : "Collapsed",
+            group.KeyText));
+    }
+
+    // Identities of the groups the current rows produce.
+    private HashSet<string> CurrentGroupIdentities()
+    {
+        var key = _appliedKey;
+        return People.Select(p => SampleShaping.GroupIdentity(SampleShaping.KeyOf(p, key))).ToHashSet();
+    }
+
+    private string ExpansionSummary()
+    {
+        var groups = CurrentGroupIdentities();
+        if (groups.Count == 0)
+        {
+            return "(no groups)";
+        }
+
+        var collapsed = groups.Count(_collapsedGroups.Contains);
+        return collapsed == 0 ? AllExpanded
+            : collapsed == groups.Count ? AllCollapsed
+            : string.Format(CultureInfo.CurrentCulture, "Mixed: {0:N0} of {1:N0} collapsed", collapsed, groups.Count);
     }
 
     // ---- In-cell edits --------------------------------------------------------------------
@@ -399,7 +443,7 @@ public sealed partial class GroupsPage : Page
         GroupsText.Text = groups.Count == 0
             ? "0 (empty source)"
             : string.Format(CultureInfo.CurrentCulture, "{0:N0}: {1}", groups.Count, string.Join(", ", groups));
-        ExpansionText.Text = _expansion;
+        ExpansionText.Text = ExpansionSummary();
     }
 
     // The rows in the order the table shows them (shared rules: SampleShaping.InViewOrder).
@@ -418,15 +462,19 @@ public sealed partial class GroupsPage : Page
 
     // Called by ApplyShaping after every reshape. Re-applying GroupBy rebuilds the groups, so
     // restore the bulk expansion state the readout reports; a mixed state resets to expanded.
-    private void OnShapingApplied()
+    private void OnShapingApplied(bool collapse)
     {
         if (_appliedMode != "grouped")
         {
             return;
         }
 
-        var collapse = _expansion == AllCollapsed;
-        _expansion = collapse ? AllCollapsed : AllExpanded;
+        _collapsedGroups.Clear();
+        if (collapse)
+        {
+            _collapsedGroups.UnionWith(CurrentGroupIdentities());
+        }
+
         DispatcherQueue.TryEnqueue(() =>
         {
             if (!IsLoaded || _appliedMode != "grouped")
@@ -485,12 +533,14 @@ public sealed partial class GroupsPage : Page
         }
 
         _appliedMode = mode;
+        // Measured against the key the groups were built on, before _appliedKey moves on.
+        var wasAllCollapsed = ExpansionSummary() == AllCollapsed;
         _appliedKey = key;
 
         // Re-applying GroupBy can drop the selection when the selected row changed group.
         SampleShaping.Reselect(PeopleTable, selected, People.Count + 64, RefreshReadouts);
         UpdateShapingGating();
-        OnShapingApplied();
+        OnShapingApplied(wasAllCollapsed);
         if (announce)
         {
             SetLastAction(mode == "grouped"
@@ -524,14 +574,15 @@ public sealed partial class GroupsPage : Page
     private void OnExpandAllClick(object sender, RoutedEventArgs e)
     {
         PeopleTable.ExpandAllGroups();
-        _expansion = AllExpanded;
+        _collapsedGroups.Clear();
         SetLastAction("Expanded all groups");
     }
 
     private void OnCollapseAllClick(object sender, RoutedEventArgs e)
     {
         PeopleTable.CollapseAllGroups();
-        _expansion = AllCollapsed;
+        _collapsedGroups.Clear();
+        _collapsedGroups.UnionWith(CurrentGroupIdentities());
         SetLastAction("Collapsed all groups");
     }
 

@@ -14,6 +14,7 @@
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular"
     xmlns:models="using:TableViewSampleApp.Models"
+    xmlns:helpers="using:TableViewSampleApp.Helpers"
     xmlns:local="using:TableViewSampleApp.Pages"
     xmlns:system="using:System"
     xmlns:controls="using:TableViewSampleApp.Controls">
@@ -99,6 +100,7 @@
                 ClockIdentifier="24HourClock"
                 MinuteIncrement="15"
                 MinWidth="0"
+                helpers:PickerSizing.FitToWidth="True"
                 Margin="6,2"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Stretch"
@@ -183,7 +185,7 @@
                         MinHeight="320">
                         <!-- The template renders a control; SortMemberPath names the value that orders
                              the rows. A text column without SortMemberPath sorts by its Binding path. -->
-                        <tv:TableViewTemplateColumn x:Name="CrestColumn" Header="Crest" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource CrestTemplate}" SortMemberPath="Team" HeaderToolTip="Club crest, drawn from the team's initials. Sorts by team name."/>
+                        <tv:TableViewTemplateColumn x:Name="CrestColumn" Header="Crest" Width="{StaticResource ColWidthNarrow}" CellTemplate="{StaticResource CrestTemplate}" SortMemberPath="Team" HeaderToolTip="Club crest, drawn from the team's initials. Sorts by team name."/>
                         <tv:TableViewTextColumn x:Name="GroupColumn" Header="Group" Width="{StaticResource ColWidthNarrow}" IsReadOnly="True" HeaderToolTip="Group stage group, A–H." Binding="{Binding Group}"/>
                         <tv:TableViewTextColumn x:Name="TeamColumn" Header="Team" Width="*" MinWidth="{StaticResource ColMinWidthStar}" HeaderToolTip="Team name. Editable: press F2 or double-click a cell." Binding="{Binding Team, Mode=TwoWay}"/>
                         <tv:TableViewTemplateColumn x:Name="CountryColumn" Header="Country" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource CountryChipTemplate}" SortMemberPath="Country" HeaderToolTip="Read-only chip. Sorts by the Country string, like a text column."/>

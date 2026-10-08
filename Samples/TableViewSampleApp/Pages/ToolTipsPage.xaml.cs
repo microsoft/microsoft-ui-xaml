@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
@@ -37,6 +38,9 @@ public sealed partial class RowCardConverter : IValueConverter
         panel.Children.Add(new TextBlock { Text = person.FullName, FontWeight = FontWeights.SemiBold });
         panel.Children.Add(new TextBlock { Text = string.Format(CultureInfo.CurrentCulture, "{0}, {1}", person.Role, person.Department), Opacity = 0.75 });
         panel.Children.Add(new TextBlock { Text = person.Email, Opacity = 0.6, FontSize = 12 });
+
+        // Rich content has no text of its own for UI Automation, so name the card explicitly.
+        AutomationProperties.SetName(panel, string.Format(CultureInfo.CurrentCulture, "{0}, {1}, {2}, {3}", person.FullName, person.Role, person.Department, person.Email));
 
         return panel;
     }

@@ -32,6 +32,7 @@
 <DataTemplate x:Key="KickoffTimeTemplate" x:DataType="models:LeagueTeam">
     <TimePicker Time="{x:Bind Kickoff, Mode=TwoWay}" ClockIdentifier="24HourClock"
                 MinuteIncrement="15" MinWidth="0" Margin="6,2" HorizontalAlignment="Stretch"
+                helpers:PickerSizing.FitToWidth="True"
                 AutomationProperties.Name="{x:Bind Team, Mode=OneWay,
                     Converter={StaticResource RowAutomationNameConverter},
                     ConverterParameter='Kickoff for {0}'}"/>

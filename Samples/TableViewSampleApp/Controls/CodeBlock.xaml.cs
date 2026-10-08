@@ -8,7 +8,10 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 
 namespace TableViewSampleApp.Controls;
 
@@ -34,6 +37,41 @@ public sealed partial class CodeBlock : UserControl
         _copyFeedbackTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _copyFeedbackTimer.Tick += OnCopyFeedbackTimerTick;
         Unloaded += OnUnloaded;
+        CodeText.PointerWheelChanged += OnCodeWheelChanged;
+    }
+
+    // A vertical mouse wheel over the code must scroll vertically. When the block does not
+    // scroll vertically itself (CodeMaxHeight is infinite inside the Source scroller, or the code
+    // is short), the ScrollViewer would otherwise turn the wheel into horizontal scrolling,
+    // because horizontal is the only axis it can move. Handling the wheel here, on the content,
+    // runs before the ScrollViewer sees it; the nearest vertically scrollable ancestor scrolls
+    // instead. Shift, Ctrl and a horizontal (tilt) wheel keep their default behaviour.
+    private void OnCodeWheelChanged(object sender, PointerRoutedEventArgs e)
+    {
+        if (e.Handled || CodeScroller.ScrollableHeight > 0.5
+            || (e.KeyModifiers & (VirtualKeyModifiers.Shift | VirtualKeyModifiers.Control)) != 0)
+        {
+            return;
+        }
+
+        var properties = e.GetCurrentPoint(CodeScroller).Properties;
+        if (properties.IsHorizontalMouseWheel || properties.MouseWheelDelta == 0)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        for (var parent = VisualTreeHelper.GetParent(CodeScroller); parent is not null; parent = VisualTreeHelper.GetParent(parent))
+        {
+            if (parent is ScrollViewer outer
+                && outer.VerticalScrollMode != ScrollMode.Disabled
+                && outer.ScrollableHeight > 0.5)
+            {
+                var offset = Math.Clamp(outer.VerticalOffset - properties.MouseWheelDelta, 0, outer.ScrollableHeight);
+                outer.ChangeView(null, offset, null, disableAnimation: true);
+                return;
+            }
+        }
     }
 
     public string Caption

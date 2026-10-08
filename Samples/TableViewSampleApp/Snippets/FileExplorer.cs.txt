@@ -41,10 +41,17 @@ private async Task NavigateAsync(string path, bool addToHistory, string verb)
 
     // ...push history, then refill the one collection.
     _currentDir = listing.FullPath;
+    var focusState = TableFocusState();
     Entries.Clear();
     foreach (var entry in listing.Entries)
     {
         Entries.Add(entry);
+    }
+
+    // Refilling recycles every row; move focus and selection to the new folder's first row.
+    if (focusState != FocusState.Unfocused)
+    {
+        FocusFirstRowAfterLayout(focusState);
     }
 }
 
