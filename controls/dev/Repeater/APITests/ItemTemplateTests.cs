@@ -456,7 +456,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Verify.IsLessThan(codeAuthoredRepeater.RenderSize.Width, 0.0001);
                 Verify.IsLessThan(codeAuthoredRepeater.RenderSize.Height, 0.0001);
+
+                // An empty markup DataTemplate set directly as ItemTemplate on a repeater hosted in the live tree
+                // must request no space, while the same items with a non-empty template do get laid out.
+                var emptyTemplateRepeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
+                    ItemTemplate = (DataTemplate)XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' />"),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                var nonEmptyTemplateRepeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
+                    ItemTemplate = (DataTemplate)XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Border Height='20' Width='20'/></DataTemplate>"),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                var panel = new StackPanel();
+                panel.Children.Add(emptyTemplateRepeater);
+                panel.Children.Add(nonEmptyTemplateRepeater);
+                Content = panel;
+                Content.UpdateLayout();
+
+                Verify.AreEqual(0.0, emptyTemplateRepeater.DesiredSize.Height, "Empty DataTemplate: no height requested.");
+                Verify.AreEqual(0.0, emptyTemplateRepeater.ActualHeight, "Empty DataTemplate: no height rendered.");
+                // 20px items are whole physical pixels at 100/125/150/175/200% scale; the tolerance only absorbs
+                // layout rounding and is far below one item height, so the item count is still asserted.
+                VerifyHeight(200.0, nonEmptyTemplateRepeater.ActualHeight, "Non-empty template control: 10 items x 20px.");
+
+                // Switching to a non-empty template clears the empty-template state.
+                emptyTemplateRepeater.ItemTemplate = (DataTemplate)XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Border Height='20' Width='20'/></DataTemplate>");
+                Content.UpdateLayout();
+                VerifyHeight(200.0, emptyTemplateRepeater.ActualHeight, "After switching to a non-empty template, items are laid out.");
             });
+        }
+
+        private static void VerifyHeight(double expected, double actual, string message)
+        {
+            Verify.IsLessThan(Math.Abs(expected - actual), 1.0, string.Format("{0} Expected {1}, actual {2}.", message, expected, actual));
         }
 
         [TestMethod]
@@ -765,6 +799,111 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Content = repeater
                 }
             };
+        }
+
+        private const int E_FAIL = unchecked((int)0x80004005);
+        private const int E_INVALIDARG = unchecked((int)0x80070057);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies RecyclingElementFactory template key resolution: RecyclePool getter, SelectTemplateKey arguments, and E_FAIL for missing handler, unknown key and empty key.")]
+        public void VerifyRecyclingElementFactoryTemplateKeyValidation()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var pool = new RecyclePool();
+                var factory = new RecyclingElementFactory() { RecyclePool = pool };
+                Verify.AreSame(pool, factory.RecyclePool);
+
+                factory.Templates["Text"] = (DataTemplate)XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding}'/></DataTemplate>");
+                factory.Templates["Button"] = (DataTemplate)XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button Content='{Binding}'/></DataTemplate>");
+                var owner = new StackPanel();
+
+                Log.Comment("Multiple templates and no SelectTemplateKey handler.");
+                Verify.AreEqual(E_FAIL, CaptureHResult(() => factory.GetElement(new ElementFactoryGetArgs() { Data = 1, Parent = owner })));
+
+                string keyToReturn = "Missing";
+                object observedData = null;
+                UIElement observedOwner = null;
+                factory.SelectTemplateKey += (sender, args) =>
+                {
+                    Verify.AreSame(factory, sender);
+                    observedData = args.DataContext;
+                    observedOwner = args.Owner;
+                    args.TemplateKey = keyToReturn;
+                };
+
+                Log.Comment("SelectTemplateKey returns a key that is not in Templates.");
+                Verify.AreEqual(E_FAIL, CaptureHResult(() => factory.GetElement(new ElementFactoryGetArgs() { Data = 2, Parent = owner })));
+                Verify.AreEqual(2, observedData);
+                Verify.AreSame(owner, observedOwner);
+
+                Log.Comment("SelectTemplateKey returns an empty key.");
+                keyToReturn = string.Empty;
+                Verify.AreEqual(E_FAIL, CaptureHResult(() => factory.GetElement(new ElementFactoryGetArgs() { Data = 3, Parent = owner })));
+
+                Log.Comment("SelectTemplateKey returns a valid key.");
+                keyToReturn = "Button";
+                var element = factory.GetElement(new ElementFactoryGetArgs() { Data = 4, Parent = owner });
+                Verify.IsTrue(element is Button, "The template selected by key is used.");
+                keyToReturn = "Text";
+                element = factory.GetElement(new ElementFactoryGetArgs() { Data = 5, Parent = owner });
+                Verify.IsTrue(element is TextBlock, "The template selected by key is used.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a Templates map assigned to RecyclingElementFactory is used, and that a single template registered under an empty key is rejected.")]
+        public void VerifyRecyclingElementFactoryTemplatesSetter()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var template = (DataTemplate)XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button Content='{Binding}'/></DataTemplate>");
+                var owner = new StackPanel();
+
+                var factory = new RecyclingElementFactory() { RecyclePool = new RecyclePool() };
+                factory.Templates = new Dictionary<string, DataTemplate>() { { "Only", template } };
+                Verify.AreEqual(1, factory.Templates.Count);
+                Verify.IsTrue(factory.Templates.ContainsKey("Only"));
+                var element = factory.GetElement(new ElementFactoryGetArgs() { Data = 1, Parent = owner });
+                Verify.IsTrue(element is Button, "The single template is used without a SelectTemplateKey handler.");
+
+                var emptyKeyFactory = new RecyclingElementFactory() { RecyclePool = new RecyclePool() };
+                emptyKeyFactory.Templates = new Dictionary<string, DataTemplate>() { { string.Empty, template } };
+                Verify.AreEqual(E_FAIL, CaptureHResult(() => emptyKeyFactory.GetElement(new ElementFactoryGetArgs() { Data = 1, Parent = owner })));
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a DataTemplateSelector returning null for an item makes layout fail with E_INVALIDARG (message intentionally not asserted, see VerifyNullTemplateGivesMeaningfullError).")]
+        public void VerifyNullTemplateFromSelectorFailsWithInvalidArgument()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 3),
+                    ItemTemplate = new DataTemplateSelector()
+                };
+                Content = repeater;
+
+                int hresult = CaptureHResult(() => Content.UpdateLayout());
+                // Set content to null so the test app does not try to run layout again.
+                Content = null;
+                Verify.AreEqual(E_INVALIDARG, hresult);
+            });
+        }
+
+        private static int CaptureHResult(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                Log.Comment($"Caught {e.GetType().Name}: HResult=0x{e.HResult:X8} '{e.Message}'");
+                return e.HResult;
+            }
+            return 0;
         }
 
         private List<UIElement> GetAllElementsFromPool(RecyclePool pool, string key="")

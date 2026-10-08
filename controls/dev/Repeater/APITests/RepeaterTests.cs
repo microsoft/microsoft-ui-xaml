@@ -21,11 +21,12 @@ using System.Collections.Generic;
 using Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Windows.Foundation;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class RepeaterTests : ApiTestBase
+    public partial class RepeaterTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateElementToIndexMapping()
@@ -110,16 +111,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 {
                     var repeater = new ItemsRepeater();
                     repeater.ItemsSource = null;
+                    Verify.IsNull(repeater.ItemsSourceView);
                     repeater.ItemsSource = Enumerable.Range(0, 5).Select(i => string.Format("Item #{0}", i));
+                    Verify.IsNotNull(repeater.ItemsSourceView);
+                    Verify.AreEqual(5, repeater.ItemsSourceView.Count);
+                    Verify.AreEqual("Item #0", repeater.ItemsSourceView.GetAt(0));
                 }
 
                 {
                     var repeater = new ItemsRepeater();
                     repeater.ItemsSource = Enumerable.Range(0, 5).Select(i => string.Format("Item #{0}", i));
+                    Verify.AreEqual("Item #4", repeater.ItemsSourceView.GetAt(4));
                     repeater.ItemsSource = Enumerable.Range(5, 5).Select(i => string.Format("Item #{0}", i));
+                    Verify.AreEqual(5, repeater.ItemsSourceView.Count);
+                    Verify.AreEqual("Item #5", repeater.ItemsSourceView.GetAt(0));
                     repeater.ItemsSource = null;
+                    Verify.IsNull(repeater.ItemsSourceView);
                     repeater.ItemsSource = Enumerable.Range(10, 5).Select(i => string.Format("Item #{0}", i));
+                    Verify.AreEqual("Item #10", repeater.ItemsSourceView.GetAt(0));
                     repeater.ItemsSource = null;
+                    Verify.IsNull(repeater.ItemsSourceView);
                 }
             });
         }
@@ -984,5 +995,359 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             Verify.AreEqual(items.Count, realized.Distinct().Count());
         }
 
+        private const int E_FAIL = unchecked((int)0x80004005);
+        private const int E_INVALIDARG = unchecked((int)0x80070057);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies GetOrCreateElement fails with E_FAIL without an ItemsSource and with E_INVALIDARG for out-of-range indexes.")]
+        public void VerifyGetOrCreateElementRejectsInvalidRequests()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater();
+                Verify.IsNull(repeater.ItemsSourceView);
+                VerifyThrowsWithHResult(E_FAIL, () => repeater.GetOrCreateElement(0), "GetOrCreateElement without ItemsSource");
+
+                repeater.ItemsSource = Enumerable.Range(0, 3).Select(i => "Item #" + i).ToList();
+                Content = repeater;
+                Content.UpdateLayout();
+
+                VerifyThrowsWithHResult(E_INVALIDARG, () => repeater.GetOrCreateElement(-1), "GetOrCreateElement(-1)");
+                VerifyThrowsWithHResult(E_INVALIDARG, () => repeater.GetOrCreateElement(3), "GetOrCreateElement(Count)");
+
+                var element = repeater.GetOrCreateElement(2);
+                Verify.IsNotNull(element, "GetOrCreateElement(Count - 1) is valid.");
+                Verify.AreEqual(2, repeater.GetElementIndex(element));
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that GetOrCreateElement and changes to ItemsSource, ItemTemplate and Layout are rejected with E_FAIL while the ItemsRepeater runs layout, leaving the processed repeater state unchanged.")]
+        public void VerifyRepeaterApisThrowWhenCalledDuringLayout()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var originalSource = Enumerable.Range(0, 5).Select(i => "Item #" + i).ToList();
+                var originalTemplate = CreateDataTemplate("<TextBlock Text='{Binding}' Height='20'/>");
+                var layout = new UninitializeCountingLayout();
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = originalSource,
+                    ItemTemplate = originalTemplate,
+                    Layout = layout
+                };
+
+                var failures = new Dictionary<string, int>();
+                bool attempted = false;
+                bool layoutChangeAttempted = false;
+                int layoutRestoreHResult = 0;
+                layout.MeasureLayoutFunc = (availableSize, context) =>
+                {
+                    if (!attempted)
+                    {
+                        attempted = true;
+                        failures["GetOrCreateElement"] = CaptureHResult(() => repeater.GetOrCreateElement(0));
+                        failures["ItemsSource"] = CaptureHResult(() => repeater.ItemsSource = new List<string>() { "Other" });
+                        failures["ItemTemplate"] = CaptureHResult(() => repeater.ItemTemplate = CreateDataTemplate("<Button Content='{Binding}'/>"));
+                        // A Layout change is attempted from the arrange pass below instead: attempted here, the arrange
+                        // that follows in the same pass would run the rejected, never-initialized layout instance.
+                    }
+
+                    for (int i = 0; i < context.ItemCount; i++)
+                    {
+                        var element = context.GetOrCreateElementAt(i);
+                        element.Measure(availableSize);
+                    }
+
+                    return new Size(100, 20 * context.ItemCount);
+                };
+                layout.ArrangeLayoutFunc = (finalSize, context) =>
+                {
+                    for (int i = 0; i < context.ItemCount; i++)
+                    {
+                        context.GetOrCreateElementAt(i).Arrange(new Rect(0, 20 * i, 100, 20));
+                    }
+
+                    if (!layoutChangeAttempted)
+                    {
+                        // Attempted after this pass arranged its elements, so nothing else in the pass uses the new value.
+                        layoutChangeAttempted = true;
+                        failures["Layout"] = CaptureHResult(() => repeater.Layout = new StackLayout());
+
+                        // The rejected value is still stored in the Layout property, and a later layout pass would run
+                        // that never-initialized layout. Put the original layout back (also rejected during layout, but it
+                        // restores the property value) so the repeater stays consistent for the checks below.
+                        layoutRestoreHResult = CaptureHResult(() => repeater.Layout = layout);
+                    }
+                    return finalSize;
+                };
+
+                Content = repeater;
+                Content.UpdateLayout();
+
+                Verify.IsTrue(attempted);
+                Verify.IsTrue(layoutChangeAttempted);
+                Verify.AreEqual(4, failures.Count);
+                foreach (var failure in failures)
+                {
+                    Log.Comment($"{failure.Key} during layout: HResult=0x{failure.Value:X8}");
+                    Verify.AreEqual(E_FAIL, failure.Value, failure.Key + " change during layout must fail with E_FAIL.");
+                }
+
+                // The rejected changes were not applied to the processed repeater state.
+                Verify.AreEqual(5, repeater.ItemsSourceView.Count);
+                Verify.AreEqual("Item #0", repeater.ItemsSourceView.GetAt(0));
+                for (int i = 0; i < 5; i++)
+                {
+                    var element = repeater.TryGetElement(i) as TextBlock;
+                    Verify.IsNotNull(element, $"Element {i} is still produced by the original template.");
+                    Verify.AreEqual("Item #" + i, element.Text);
+                }
+
+                // The rejected Layout change never reached the layout: the original layout was not uninitialized
+                // (its realized elements, verified above, were not cleared).
+                Verify.AreEqual(E_FAIL, layoutRestoreHResult, "Restoring Layout during layout is rejected as well.");
+                Verify.AreSame(layout, repeater.Layout);
+                Verify.AreEqual(0, layout.UninitializeForContextCallCount, "The original layout must not be uninitialized by a rejected Layout change.");
+
+                Content = null;
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a data source change raised while the ItemsRepeater runs layout is rejected with E_FAIL.")]
+        public void VerifyCollectionChangeDuringLayoutThrows()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataSource = new Common.CustomItemsSource(Enumerable.Range(0, 5).ToList());
+                var layout = new MockVirtualizingLayout();
+                var repeater = new ItemsRepeater() { ItemsSource = dataSource, Layout = layout };
+                int hresult = 0;
+                int measureCount = 0;
+
+                layout.MeasureLayoutFunc = (availableSize, context) =>
+                {
+                    if (measureCount++ == 0)
+                    {
+                        Verify.AreEqual(5, context.ItemCount);
+                        hresult = CaptureHResult(() => dataSource.Insert(index: 0, count: 1, reset: false));
+                    }
+                    return new Size(100, 100);
+                };
+                layout.ArrangeLayoutFunc = (finalSize, context) => finalSize;
+
+                Content = repeater;
+                Content.UpdateLayout();
+
+                Log.Comment($"Collection change during layout: HResult=0x{hresult:X8}");
+                Verify.AreEqual(E_FAIL, hresult);
+                Content = null;
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a data source change raised while the ItemsRepeater processes another data source change is rejected with E_FAIL.")]
+        public void VerifyCollectionChangeDuringCollectionChangeThrows()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataSource = new Common.CustomItemsSource(Enumerable.Range(0, 5).ToList());
+                var layout = new ItemsChangedCallbackStackLayout();
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = dataSource,
+                    Layout = layout,
+                    ItemTemplate = CreateDataTemplate("<TextBlock Text='{Binding}' Height='20'/>")
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                int nestedHResult = 0;
+                int itemsChangedCount = 0;
+                layout.ItemsChangedFunc = (args) =>
+                {
+                    if (itemsChangedCount++ == 0)
+                    {
+                        Verify.AreEqual(global::System.Collections.Specialized.NotifyCollectionChangedAction.Remove, args.Action);
+                        nestedHResult = CaptureHResult(() => dataSource.Insert(index: 0, count: 1, reset: false));
+                    }
+                };
+
+                dataSource.Remove(index: 4, count: 1, reset: false);
+
+                Log.Comment($"Nested collection change: HResult=0x{nestedHResult:X8}");
+                Verify.AreEqual(1, itemsChangedCount, "Only the outer change reaches the layout.");
+                Verify.AreEqual(E_FAIL, nestedHResult);
+                Content = null;
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that setting ItemTemplate to an object that is not an element factory is rejected and the previous template keeps producing elements.")]
+        public void VerifyInvalidItemTemplateTypeIsRejected()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 3).Select(i => "Item #" + i).ToList(),
+                    ItemTemplate = CreateDataTemplate("<TextBlock Text='{Binding}' Height='20'/>")
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                int hresult = CaptureHResult(() => repeater.ItemTemplate = "not an element factory");
+                Log.Comment($"ItemTemplate=string: HResult=0x{hresult:X8}");
+                Verify.AreNotEqual(0, hresult, "A non-IElementFactory ItemTemplate must be rejected.");
+
+                Content.UpdateLayout();
+                for (int i = 0; i < 3; i++)
+                {
+                    var element = repeater.TryGetElement(i) as TextBlock;
+                    Verify.IsNotNull(element, $"Element {i} is still produced by the original template.");
+                    Verify.AreEqual("Item #" + i, element.Text);
+                }
+            });
+        }
+
+        [TestMethod]
+
+        [TestProperty("Ignore", "True")] // Product concern PC-ITEMTEMPLATE-NULL (bug pending): setting ItemTemplate to null throws E_INVALIDARG (ItemsRepeater.cpp OnItemTemplateChanged) and leaves the old template active.
+        [TestProperty("Description", "Verifies that clearing ItemTemplate back to null is accepted and items fall back to the default TextBlock template.")]
+        public void VerifyClearingItemTemplateFallsBackToDefaultTemplate()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 3).Select(i => "Item #" + i).ToList(),
+                    ItemTemplate = CreateDataTemplate("<Button Content='{Binding}' Height='20'/>")
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+                Verify.IsTrue(repeater.TryGetElement(0) is Button);
+
+                int hresult = CaptureHResult(() => repeater.ItemTemplate = null);
+                Log.Comment($"ItemTemplate=null: HResult=0x{hresult:X8}");
+                Verify.AreEqual(0, hresult, "Clearing ItemTemplate is expected to be accepted.");
+
+                Content.UpdateLayout();
+                for (int i = 0; i < 3; i++)
+                {
+                    var element = repeater.TryGetElement(i) as TextBlock;
+                    Verify.IsNotNull(element, $"Element {i} uses the default TextBlock template.");
+                    Verify.AreEqual("Item #" + i, element.Text);
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing the Layout synchronously clears every realized element and that the new layout realizes them again.")]
+        public void VerifyChangingLayoutClearsRealizedElements()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 5).Select(i => "Item #" + i).ToList(),
+                    ItemTemplate = CreateDataTemplate("<TextBlock Text='{Binding}' Height='20' Width='50'/>"),
+                    Layout = new StackLayout()
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                var realized = Enumerable.Range(0, 5).Select(i => repeater.TryGetElement(i)).ToList();
+                Verify.IsTrue(realized.All(e => e != null));
+
+                var cleared = new List<UIElement>();
+                var prepared = new List<int>();
+                repeater.ElementClearing += (sender, args) => cleared.Add(args.Element);
+                repeater.ElementPrepared += (sender, args) => prepared.Add(args.Index);
+
+                var newLayout = new UniformGridLayout() { MinItemWidth = 50, MinItemHeight = 20 };
+                repeater.Layout = newLayout;
+
+                Verify.AreEqual(5, cleared.Count, "All realized elements are cleared synchronously when the Layout changes.");
+                Verify.IsTrue(realized.All(e => cleared.Contains(e)));
+                Verify.AreEqual(0, prepared.Count);
+                for (int i = 0; i < 5; i++)
+                {
+                    Verify.IsNull(repeater.TryGetElement(i), $"Element {i} is no longer realized.");
+                }
+
+                Content.UpdateLayout();
+                Verify.AreEqual(5, prepared.Distinct().Count(), "The new layout realizes every item.");
+                for (int i = 0; i < 5; i++)
+                {
+                    var element = repeater.TryGetElement(i) as TextBlock;
+                    Verify.IsNotNull(element);
+                    Verify.AreEqual("Item #" + i, element.Text);
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies HorizontalCacheLength and VerticalCacheLength reject negative, infinite and NaN values with E_INVALIDARG and accept zero.")]
+        public void VerifyInvalidCacheLengthsAreRejected()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater();
+                foreach (var invalid in new double[] { -1.0, double.PositiveInfinity, double.NaN })
+                {
+                    Verify.AreEqual(E_INVALIDARG, CaptureHResult(() => repeater.HorizontalCacheLength = invalid), $"HorizontalCacheLength={invalid}");
+                    Verify.AreEqual(E_INVALIDARG, CaptureHResult(() => repeater.VerticalCacheLength = invalid), $"VerticalCacheLength={invalid}");
+                }
+
+                Verify.AreEqual(0, CaptureHResult(() => repeater.HorizontalCacheLength = 0.0));
+                Verify.AreEqual(0, CaptureHResult(() => repeater.VerticalCacheLength = 0.0));
+                Verify.AreEqual(0.0, repeater.HorizontalCacheLength);
+                Verify.AreEqual(0.0, repeater.VerticalCacheLength);
+            });
+        }
+
+        private static DataTemplate CreateDataTemplate(string content)
+        {
+            return (DataTemplate)XamlReader.Load(
+                @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" + content + "</DataTemplate>");
+        }
+
+        private static int CaptureHResult(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                Log.Comment($"Caught {e.GetType().Name}: HResult=0x{e.HResult:X8} '{e.Message}'");
+                return e.HResult;
+            }
+            return 0;
+        }
+
+        private static void VerifyThrowsWithHResult(int expectedHResult, Action action, string context)
+        {
+            int hresult = CaptureHResult(action);
+            Verify.AreEqual(expectedHResult, hresult, context);
+        }
+
+        private partial class ItemsChangedCallbackStackLayout : StackLayout
+        {
+            public Action<global::System.Collections.Specialized.NotifyCollectionChangedEventArgs> ItemsChangedFunc { get; set; }
+
+            protected override void OnItemsChangedCore(VirtualizingLayoutContext context, object source, global::System.Collections.Specialized.NotifyCollectionChangedEventArgs args)
+            {
+                ItemsChangedFunc?.Invoke(args);
+                base.OnItemsChangedCore(context, source, args);
+            }
+        }
+
+        private partial class UninitializeCountingLayout : MockVirtualizingLayout
+        {
+            public int UninitializeForContextCallCount { get; private set; }
+
+            protected override void UninitializeForContextCore(VirtualizingLayoutContext context)
+            {
+                UninitializeForContextCallCount++;
+                base.UninitializeForContextCore(context);
+            }
+        }
     }
 }

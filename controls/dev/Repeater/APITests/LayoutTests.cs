@@ -24,7 +24,7 @@ using WEX.Logging.Interop;
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class LayoutTests : ApiTestBase
+    public partial class LayoutTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateMappingAndAutoRecycling()
@@ -289,8 +289,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that ItemsRepeater short-circuits an unsettled StackLayout measure loop after 60 consecutive measures, returning the last layout extent instead of re-measuring the layout.")]
         public void VerifyStackLayoutCycleShortcut()
         {
+            // Must match ItemsRepeater::s_maxStackLayoutIterations.
+            const int maxStackLayoutIterations = 60;
+            const int arrangeInvalidationLimit = maxStackLayoutIterations + 10;
+
             RunOnUIThread.Execute(() =>
             {
                 int measureCount = 0;
@@ -311,16 +316,468 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 mockStackLayout.ArrangeLayoutFunc = (size, context) =>
                 {
                     arrangeCount++;
+                    // Keep the layout unsettled for a bounded number of passes so that the
+                    // ItemsRepeater shortcut engages without hitting the framework's layout cycle limit.
+                    if (arrangeCount < arrangeInvalidationLimit)
+                    {
+                        mockStackLayout.InvalidateMeasure();
+                    }
                     return new Size(100, 200 + arrangeCount);
                 };
                 
                 repeater.Layout = mockStackLayout;
                 repeater.ItemsSource = Enumerable.Range(0, 10);
                 repeater.ItemTemplate = GetDataTemplate("<Button Content='{Binding}' Height='200'/>");
+                repeater.VerticalAlignment = VerticalAlignment.Top;
+                repeater.HorizontalAlignment = HorizontalAlignment.Left;
 
                 Content = repeater;
                 Content.UpdateLayout();
+
+                Log.Comment($"measureCount={measureCount}, arrangeCount={arrangeCount}, DesiredSize={repeater.DesiredSize}");
+                Verify.IsGreaterThanOrEqual(arrangeCount, arrangeInvalidationLimit, "The layout was kept unsettled for the expected number of passes.");
+                Verify.AreEqual(maxStackLayoutIterations - 1, measureCount, "Layout measures stop once the shortcut engages.");
+                // Layout rounding at the display scale (e.g. 150%) can snap the desired size to the nearest physical pixel.
+                Verify.IsLessThan(Math.Abs(repeater.DesiredSize.Width - 100.0), 1.0);
+                Verify.IsLessThan(Math.Abs(repeater.DesiredSize.Height - (200.0 + maxStackLayoutIterations - 1)), 1.0, "The shortcut returns the last measured extent.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Layout.InvalidateArrange raises ArrangeInvalidated and makes the ItemsRepeater re-arrange its layout without re-measuring it.")]
+        public void VerifyLayoutInvalidateArrangeRearrangesRepeater()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var layout = new CountingStackingLayout();
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 3).Select(i => "Item #" + i).ToList(),
+                    ItemTemplate = GetDataTemplate("<TextBlock Text='{Binding}' Height='20'/>"),
+                    Layout = layout,
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                int measureCount = layout.MeasureCount;
+                int arrangeCount = layout.ArrangeCount;
+                Verify.IsGreaterThan(arrangeCount, 0);
+
+                int arrangeInvalidatedCount = 0;
+                int measureInvalidatedCount = 0;
+                layout.ArrangeInvalidated += (sender, args) => { Verify.AreSame(layout, sender); arrangeInvalidatedCount++; };
+                layout.MeasureInvalidated += (sender, args) => measureInvalidatedCount++;
+
+                layout.CallInvalidateArrange();
+                Verify.AreEqual(1, arrangeInvalidatedCount);
+                Verify.AreEqual(0, measureInvalidatedCount);
+
+                Content.UpdateLayout();
+                Verify.AreEqual(arrangeCount + 1, layout.ArrangeCount, "The repeater re-arranged its layout.");
+                Verify.AreEqual(measureCount, layout.MeasureCount, "InvalidateArrange does not trigger a measure pass.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a NonVirtualizingLayout ItemsRepeater re-measures and realizes elements when items are added to or removed from its source.")]
+        public void VerifyNonVirtualLayoutRemeasuresOnCollectionChange()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new ObservableCollection<string>(Enumerable.Range(0, 3).Select(i => "Item #" + i));
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = data,
+                    ItemTemplate = GetDataTemplate("<TextBlock Text='{Binding}' Height='20'/>"),
+                    Layout = new NonVirtualStackLayout(),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+                Verify.AreEqual(60.0, repeater.ActualHeight);
+
+                data.Add("Item #3");
+                Content.UpdateLayout();
+                Verify.AreEqual(80.0, repeater.ActualHeight);
+                var added = repeater.TryGetElement(3) as TextBlock;
+                Verify.IsNotNull(added);
+                Verify.AreEqual("Item #3", added.Text);
+
+                data.RemoveAt(0);
+                Content.UpdateLayout();
+                Verify.AreEqual(60.0, repeater.ActualHeight);
+                for (int i = 0; i < 3; i++)
+                {
+                    Verify.AreEqual("Item #" + (i + 1), ((TextBlock)repeater.TryGetElement(i)).Text);
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the context a VirtualizingLayout receives when hosted by a NonVirtualizingLayout: items are the children, the realization window is infinite, there is no anchor, recycling is a no-op and LayoutOrigin must stay at (0,0).")]
+        public void VerifyVirtualizingLayoutHostedByNonVirtualizingLayoutContext()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var probe = new ProbeVirtualizingLayout();
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 4).Select(i => "Item #" + i).ToList(),
+                    ItemTemplate = GetDataTemplate("<TextBlock Text='{Binding}' Height='20'/>"),
+                    Layout = new WrappingNonVirtualizingLayout(probe),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+
+                bool probed = false;
+                probe.MeasureProbe = (context) =>
+                {
+                    if (probed)
+                    {
+                        return;
+                    }
+                    probed = true;
+
+                    Verify.AreEqual(4, context.ItemCount);
+                    var infinite = new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity);
+                    Verify.AreEqual(infinite, context.RealizationRect);
+                    Verify.AreEqual(infinite, context.VisibleRect);
+                    Verify.AreEqual(-1, context.RecommendedAnchorIndex);
+                    Verify.AreEqual(new Point(0, 0), context.LayoutOrigin);
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        var element = context.GetOrCreateElementAt(i);
+                        Verify.IsNotNull(element);
+                        Verify.AreSame(element, context.GetItemAt(i), "Items of a non-virtualizing context are its child elements.");
+                        Verify.AreSame(element, context.GetOrCreateElementAt(i, ElementRealizationOptions.None));
+                        Verify.AreEqual("Item #" + i, ((TextBlock)element).Text);
+                    }
+
+                    var first = context.GetOrCreateElementAt(0);
+                    context.RecycleElement(first);
+                    Verify.AreSame(first, context.GetOrCreateElementAt(0), "RecycleElement is a no-op for non-virtualizing contexts.");
+
+                    context.LayoutOrigin = new Point(0, 0);
+                    probe.LayoutOriginHResult = CaptureHResult(() => context.LayoutOrigin = new Point(5, 0));
+                    Verify.AreEqual(new Point(0, 0), context.LayoutOrigin);
+                };
+
+                Content = repeater;
+                Content.UpdateLayout();
+
+                Verify.IsTrue(probed, "The hosted VirtualizingLayout was measured.");
+                Verify.AreEqual(E_INVALIDARG, probe.LayoutOriginHResult, "A non-zero LayoutOrigin is rejected.");
+                Verify.AreEqual(80.0, repeater.ActualHeight, "The hosted layout stacked the four 20px children.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a NonVirtualizingLayout hosted by ItemsRepeater can store state in its context's LayoutState and read it back in later passes and on uninitialization.")]
+        public void VerifyNonVirtualizingLayoutStateRoundTrip()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var layout = new StatefulNonVirtualizingLayout();
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 2).Select(i => "Item #" + i).ToList(),
+                    ItemTemplate = GetDataTemplate("<TextBlock Text='{Binding}' Height='20'/>"),
+                    Layout = layout
+                };
+
+                Verify.IsNotNull(layout.InitialState, "InitializeForContextCore ran.");
+                Content = repeater;
+                Content.UpdateLayout();
+                repeater.InvalidateMeasure();
+                Content.UpdateLayout();
+
+                Verify.IsGreaterThanOrEqual(layout.MeasuredStates.Count, 2);
+                foreach (var state in layout.MeasuredStates)
+                {
+                    Verify.AreSame(layout.InitialState, state, "LayoutState persists across measure passes.");
+                }
+
+                repeater.Layout = new StackLayout();
+                Verify.AreSame(layout.InitialState, layout.UninitializedState, "LayoutState is still available on uninitialization.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the default implementations of the overridable layout, context, element factory and transition provider members: E_NOTIMPL except VirtualizingLayout.ArrangeOverride which returns the final size.")]
+        public void VerifyDefaultOverridableImplementations()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("VirtualizingLayoutContext default Core members.");
+                var context = new EmptyVirtualizingLayoutContext();
+                VerifyNotImplemented(() => { var x = context.ItemCount; }, "ItemCount");
+                VerifyNotImplemented(() => context.GetItemAt(0), "GetItemAt");
+                VerifyNotImplemented(() => context.GetOrCreateElementAt(0), "GetOrCreateElementAt");
+                VerifyNotImplemented(() => context.GetOrCreateElementAt(0, ElementRealizationOptions.ForceCreate), "GetOrCreateElementAt(options)");
+                VerifyNotImplemented(() => context.RecycleElement(new Border()), "RecycleElement");
+                VerifyNotImplemented(() => { var x = context.RealizationRect; }, "RealizationRect");
+                VerifyNotImplemented(() => { var x = context.VisibleRect; }, "VisibleRect");
+                VerifyNotImplemented(() => { var x = context.RecommendedAnchorIndex; }, "RecommendedAnchorIndex");
+                VerifyNotImplemented(() => { var x = context.LayoutOrigin; }, "LayoutOrigin get");
+                VerifyNotImplemented(() => context.LayoutOrigin = new Point(1, 1), "LayoutOrigin set");
+                VerifyNotImplemented(() => { var x = context.LayoutState; }, "LayoutState get");
+                VerifyNotImplemented(() => context.LayoutState = new object(), "LayoutState set");
+
+                Log.Comment("NonVirtualizingLayoutContext default ChildrenCore.");
+                var nonVirtualizingContext = new EmptyNonVirtualizingLayoutContext();
+                VerifyNotImplemented(() => { var x = nonVirtualizingContext.Children; }, "Children");
+
+                Log.Comment("ElementFactory default Core members.");
+                var factory = new EmptyElementFactory();
+                VerifyNotImplemented(() => factory.GetElement(new ElementFactoryGetArgs() { Data = 1 }), "GetElement");
+                VerifyNotImplemented(() => factory.RecycleElement(new ElementFactoryRecycleArgs() { Element = new Border() }), "RecycleElement");
+
+                Log.Comment("ItemCollectionTransitionProvider default Core members.");
+                var transitionProvider = new EmptyItemCollectionTransitionProvider();
+                VerifyNotImplemented(() => transitionProvider.ShouldAnimate(null), "ShouldAnimate");
+                VerifyNotImplemented(() => transitionProvider.CallBaseStartTransitions(), "StartTransitions");
+
+                Log.Comment("NonVirtualizingLayout default overrides.");
+                var nonVirtualizingLayout = new BaseCallingNonVirtualizingLayout();
+                var nonVirtualizingRepeater = new ItemsRepeater() { ItemsSource = Enumerable.Range(0, 2).ToList(), Layout = nonVirtualizingLayout };
+                Content = nonVirtualizingRepeater;
+                Content.UpdateLayout();
+                Verify.AreEqual(E_NOTIMPL, nonVirtualizingLayout.BaseMeasureHResult, "NonVirtualizingLayout.MeasureOverride");
+                Verify.AreEqual(E_NOTIMPL, nonVirtualizingLayout.BaseArrangeHResult, "NonVirtualizingLayout.ArrangeOverride");
+
+                Log.Comment("VirtualizingLayout default overrides.");
+                var virtualizingLayout = new BaseCallingVirtualizingLayout();
+                var virtualizingRepeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 2).ToList(),
+                    Layout = virtualizingLayout,
+                    Width = 120,
+                    Height = 48
+                };
+                Content = virtualizingRepeater;
+                Content.UpdateLayout();
+                Verify.AreEqual(E_NOTIMPL, virtualizingLayout.BaseMeasureHResult, "VirtualizingLayout.MeasureOverride");
+                Log.Comment($"ArrangeOverride finalSize={virtualizingLayout.ArrangeFinalSize}, base result={virtualizingLayout.BaseArrangeResult}");
+                // The final size can be snapped to physical pixels at non-100% display scales.
+                Verify.IsLessThan(Math.Abs(virtualizingLayout.ArrangeFinalSize.Width - 120), 1.0);
+                Verify.IsLessThan(Math.Abs(virtualizingLayout.ArrangeFinalSize.Height - 48), 1.0);
+                Verify.AreEqual(virtualizingLayout.ArrangeFinalSize, virtualizingLayout.BaseArrangeResult, "VirtualizingLayout.ArrangeOverride returns the final size.");
+            });
+        }
+
+        private const int E_FAIL = unchecked((int)0x80004005);
+        private const int E_NOTIMPL = unchecked((int)0x80004001);
+        private const int E_INVALIDARG = unchecked((int)0x80070057);
+
+        private static int CaptureHResult(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                Log.Comment($"Caught {e.GetType().Name}: HResult=0x{e.HResult:X8} '{e.Message}'");
+                return e.HResult;
+            }
+            return 0;
+        }
+
+        private static void VerifyNotImplemented(Action action, string context)
+        {
+            Verify.AreEqual(E_NOTIMPL, CaptureHResult(action), context);
+        }
+
+        private partial class CountingStackingLayout : VirtualizingLayout
+        {
+            public int MeasureCount { get; private set; }
+            public int ArrangeCount { get; private set; }
+
+            public void CallInvalidateArrange()
+            {
+                InvalidateArrange();
+            }
+
+            protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
+            {
+                MeasureCount++;
+                double height = 0;
+                for (int i = 0; i < context.ItemCount; i++)
+                {
+                    var element = context.GetOrCreateElementAt(i);
+                    element.Measure(availableSize);
+                    height += element.DesiredSize.Height;
+                }
+                return new Size(100, height);
+            }
+
+            protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
+            {
+                ArrangeCount++;
+                double offset = 0;
+                for (int i = 0; i < context.ItemCount; i++)
+                {
+                    var element = context.GetOrCreateElementAt(i);
+                    element.Arrange(new Rect(0, offset, finalSize.Width, element.DesiredSize.Height));
+                    offset += element.DesiredSize.Height;
+                }
+                return finalSize;
+            }
+        }
+
+        private partial class ProbeVirtualizingLayout : VirtualizingLayout
+        {
+            public Action<VirtualizingLayoutContext> MeasureProbe { get; set; }
+            public int LayoutOriginHResult { get; set; }
+
+            protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
+            {
+                MeasureProbe?.Invoke(context);
+                double height = 0;
+                for (int i = 0; i < context.ItemCount; i++)
+                {
+                    var element = context.GetOrCreateElementAt(i);
+                    element.Measure(availableSize);
+                    height += element.DesiredSize.Height;
+                }
+                return new Size(100, height);
+            }
+
+            protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
+            {
+                double offset = 0;
+                for (int i = 0; i < context.ItemCount; i++)
+                {
+                    var element = context.GetOrCreateElementAt(i);
+                    element.Arrange(new Rect(0, offset, finalSize.Width, element.DesiredSize.Height));
+                    offset += element.DesiredSize.Height;
+                }
+                return finalSize;
+            }
+        }
+
+        private partial class WrappingNonVirtualizingLayout : NonVirtualizingLayout
+        {
+            private readonly Layout _inner;
+
+            public WrappingNonVirtualizingLayout(Layout inner)
+            {
+                _inner = inner;
+            }
+
+            protected override void InitializeForContextCore(NonVirtualizingLayoutContext context)
+            {
+                _inner.InitializeForContext(context);
+            }
+
+            protected override void UninitializeForContextCore(NonVirtualizingLayoutContext context)
+            {
+                _inner.UninitializeForContext(context);
+            }
+
+            protected override Size MeasureOverride(NonVirtualizingLayoutContext context, Size availableSize)
+            {
+                return _inner.Measure(context, availableSize);
+            }
+
+            protected override Size ArrangeOverride(NonVirtualizingLayoutContext context, Size finalSize)
+            {
+                return _inner.Arrange(context, finalSize);
+            }
+        }
+
+        private partial class StatefulNonVirtualizingLayout : NonVirtualizingLayout
+        {
+            public object InitialState { get; private set; }
+            public object UninitializedState { get; private set; }
+            public List<object> MeasuredStates { get; } = new List<object>();
+
+            protected override void InitializeForContextCore(NonVirtualizingLayoutContext context)
+            {
+                InitialState = new object();
+                context.LayoutState = InitialState;
+            }
+
+            protected override void UninitializeForContextCore(NonVirtualizingLayoutContext context)
+            {
+                UninitializedState = context.LayoutState;
+                context.LayoutState = null;
+            }
+
+            protected override Size MeasureOverride(NonVirtualizingLayoutContext context, Size availableSize)
+            {
+                MeasuredStates.Add(context.LayoutState);
+                foreach (var child in context.Children)
+                {
+                    child.Measure(availableSize);
+                }
+                return new Size(100, 20 * context.Children.Count);
+            }
+
+            protected override Size ArrangeOverride(NonVirtualizingLayoutContext context, Size finalSize)
+            {
+                double offset = 0;
+                foreach (var child in context.Children)
+                {
+                    child.Arrange(new Rect(0, offset, finalSize.Width, 20));
+                    offset += 20;
+                }
+                return finalSize;
+            }
+        }
+
+        private partial class EmptyVirtualizingLayoutContext : VirtualizingLayoutContext
+        {
+        }
+
+        private partial class EmptyNonVirtualizingLayoutContext : NonVirtualizingLayoutContext
+        {
+        }
+
+        private partial class EmptyElementFactory : ElementFactory
+        {
+        }
+
+        private partial class EmptyItemCollectionTransitionProvider : ItemCollectionTransitionProvider
+        {
+            public void CallBaseStartTransitions()
+            {
+                base.StartTransitions(new List<ItemCollectionTransition>());
+            }
+        }
+
+        private partial class BaseCallingNonVirtualizingLayout : NonVirtualizingLayout
+        {
+            public int BaseMeasureHResult { get; private set; } = -1;
+            public int BaseArrangeHResult { get; private set; } = -1;
+
+            protected override Size MeasureOverride(NonVirtualizingLayoutContext context, Size availableSize)
+            {
+                BaseMeasureHResult = CaptureHResult(() => base.MeasureOverride(context, availableSize));
+                return new Size(10, 10);
+            }
+
+            protected override Size ArrangeOverride(NonVirtualizingLayoutContext context, Size finalSize)
+            {
+                BaseArrangeHResult = CaptureHResult(() => base.ArrangeOverride(context, finalSize));
+                return finalSize;
+            }
+        }
+
+        private partial class BaseCallingVirtualizingLayout : VirtualizingLayout
+        {
+            public int BaseMeasureHResult { get; private set; } = -1;
+            public Size ArrangeFinalSize { get; private set; }
+            public Size BaseArrangeResult { get; private set; }
+
+            protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
+            {
+                BaseMeasureHResult = CaptureHResult(() => base.MeasureOverride(context, availableSize));
+                return new Size(10, 10);
+            }
+
+            protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
+            {
+                ArrangeFinalSize = finalSize;
+                BaseArrangeResult = base.ArrangeOverride(context, finalSize);
+                return BaseArrangeResult;
+            }
         }
 
         [TestMethod]

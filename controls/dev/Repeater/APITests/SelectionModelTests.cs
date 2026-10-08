@@ -1199,6 +1199,272 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        private const int E_FAIL = unchecked((int)0x80004005);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies SelectAll and SelectAllFlat select every item of a flat source and raise SelectionChanged once each.")]
+        public void VerifySelectAllOnFlatSource()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = Enumerable.Range(0, 10).ToList();
+                var selectionModel = new SelectionModel() { Source = source };
+                int selectionChangedCount = 0;
+                selectionModel.SelectionChanged += delegate { selectionChangedCount++; };
+
+                selectionModel.SelectAll();
+                Verify.AreEqual(1, selectionChangedCount);
+                VerifyAllFlatItemsSelected(selectionModel, source);
+
+                selectionModel.ClearSelection();
+                Verify.AreEqual(0, selectionModel.SelectedIndices.Count);
+                selectionChangedCount = 0;
+
+                selectionModel.SelectAllFlat();
+                Verify.AreEqual(1, selectionChangedCount);
+                VerifyAllFlatItemsSelected(selectionModel, source);
+
+                Log.Comment("SelectAll on an empty source selects nothing.");
+                selectionModel.Source = new List<int>();
+                selectionModel.SelectAll();
+                Verify.AreEqual(0, selectionModel.SelectedIndices.Count);
+                Verify.IsNull(selectionModel.SelectedIndex);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies SelectAll realizes and selects every leaf and group of a nested source.")]
+        public void VerifySelectAllOnNestedSource()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = CreateNestedData(levels: 1, groupsAtLevel: 3, countAtLeaf: 4);
+                var selectionModel = new SelectionModel() { Source = source };
+
+                selectionModel.SelectAll();
+
+                for (int group = 0; group < 3; group++)
+                {
+                    Verify.IsTrue(selectionModel.IsSelectedAt(Path(group)).Value, $"Group {group} is selected.");
+                    for (int item = 0; item < 4; item++)
+                    {
+                        Verify.IsTrue(selectionModel.IsSelected(group, item).Value, $"Item {group}.{item} is selected.");
+                        Verify.IsTrue(selectionModel.IsSelectedAt(Path(group, item)).Value);
+                    }
+                }
+
+                var selectedLeaves = selectionModel.SelectedIndices.Where(p => p.GetSize() == 2).ToList();
+                Verify.AreEqual(12, selectedLeaves.Count, "All 12 leaves are reported as selected.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies IsSelected(groupIndex, itemIndex) for selected, unselected and never-realized groups.")]
+        public void VerifyIsSelectedWithGroupIndex()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = CreateNestedData(levels: 1, groupsAtLevel: 3, countAtLeaf: 4);
+                var selectionModel = new SelectionModel() { Source = source };
+
+                selectionModel.Select(1, 2);
+
+                Verify.IsTrue(selectionModel.IsSelected(1, 2).Value);
+                Verify.IsFalse(selectionModel.IsSelected(1, 1).Value);
+                Verify.IsFalse(selectionModel.IsSelected(1, 3).Value);
+                Verify.IsFalse(selectionModel.IsSelected(0, 0).Value);
+                Verify.IsFalse(selectionModel.IsSelected(2, 0).Value, "Items of a group that was never realized are not selected.");
+                Verify.AreEqual(selectionModel.IsSelectedAt(Path(1, 2)).Value, selectionModel.IsSelected(1, 2).Value);
+
+                selectionModel.Deselect(1, 2);
+                Verify.IsFalse(selectionModel.IsSelected(1, 2).Value);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies SingleSelect reports its value and that selecting by group and item index in single selection mode replaces the previous selection.")]
+        public void VerifySingleSelectWithGroupIndexReplacesSelection()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = CreateNestedData(levels: 1, groupsAtLevel: 3, countAtLeaf: 4);
+                var selectionModel = new SelectionModel() { Source = source };
+                Verify.IsFalse(selectionModel.SingleSelect);
+
+                selectionModel.SingleSelect = true;
+                Verify.IsTrue(selectionModel.SingleSelect);
+
+                selectionModel.Select(0, 1);
+                Verify.IsTrue(selectionModel.IsSelected(0, 1).Value);
+
+                selectionModel.Select(2, 3);
+                Verify.IsFalse(selectionModel.IsSelected(0, 1).Value, "The previous selection is cleared.");
+                Verify.IsTrue(selectionModel.IsSelected(2, 3).Value);
+                Verify.AreEqual(1, selectionModel.SelectedIndices.Count);
+                Verify.AreEqual(0, selectionModel.SelectedIndex.CompareTo(Path(2, 3)));
+
+                selectionModel.SingleSelect = false;
+                Verify.IsFalse(selectionModel.SingleSelect);
+                selectionModel.Select(0, 0);
+                Verify.IsTrue(selectionModel.IsSelected(0, 0).Value);
+                Verify.IsTrue(selectionModel.IsSelected(2, 3).Value, "Multiple selection keeps the previous selection.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies DeselectRange removes a sub-range from a selected range, accepts a reversed range, and handles a single-item range.")]
+        public void VerifyDeselectRange()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionModel = new SelectionModel() { Source = Enumerable.Range(0, 10).ToList() };
+                selectionModel.SelectRange(Path(0), Path(9));
+                Verify.AreEqual(10, selectionModel.SelectedIndices.Count);
+
+                int selectionChangedCount = 0;
+                selectionModel.SelectionChanged += delegate { selectionChangedCount++; };
+
+                Log.Comment("Deselect the middle of the selected range.");
+                selectionModel.DeselectRange(Path(3), Path(5));
+                VerifyFlatSelection(selectionModel, 10, new int[] { 0, 1, 2, 6, 7, 8, 9 });
+                Verify.AreEqual(1, selectionChangedCount);
+
+                Log.Comment("Deselect with start after end.");
+                selectionModel.DeselectRange(Path(8), Path(7));
+                VerifyFlatSelection(selectionModel, 10, new int[] { 0, 1, 2, 6, 9 });
+                Verify.AreEqual(2, selectionChangedCount);
+
+                Log.Comment("Deselect a single-item range.");
+                selectionModel.DeselectRange(Path(0), Path(0));
+                VerifyFlatSelection(selectionModel, 10, new int[] { 1, 2, 6, 9 });
+                Verify.IsGreaterThan(selectionChangedCount, 2, "SelectionChanged is raised (event count for single-item ranges is covered by VerifySingleItemRangeRaisesSelectionChangedOnce).");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Product concern PC-SELECTION-DOUBLE-EVENT (bug pending): SelectionModel.SelectRangeImpl raises SelectionChanged twice when start equals end (SelectAt/DeselectAt plus the unconditional OnSelectionChanged).
+        [TestProperty("Description", "Verifies SelectRange and DeselectRange with identical start and end raise SelectionChanged exactly once, like a multi-item range.")]
+        public void VerifySingleItemRangeRaisesSelectionChangedOnce()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionModel = new SelectionModel() { Source = Enumerable.Range(0, 10).ToList() };
+                int selectionChangedCount = 0;
+                selectionModel.SelectionChanged += delegate { selectionChangedCount++; };
+
+                selectionModel.SelectRange(Path(4), Path(4));
+                Verify.IsTrue(selectionModel.IsSelected(4).Value);
+                Verify.AreEqual(1, selectionChangedCount, "SelectRange(4, 4) raises SelectionChanged once.");
+
+                selectionChangedCount = 0;
+                selectionModel.DeselectRange(Path(4), Path(4));
+                Verify.IsFalse(selectionModel.IsSelected(4).Value);
+                Verify.AreEqual(1, selectionChangedCount, "DeselectRange(4, 4) raises SelectionChanged once.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the ICustomPropertyProvider members of SelectionModel other than the SelectedItem property (see CanReadSelectedItemViaICustomPropertyProvider).")]
+        public void VerifyCustomPropertyProviderMembers()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionModel = new SelectionModel() { Source = Enumerable.Range(0, 3).ToList() };
+                var provider = (ICustomPropertyProvider)selectionModel;
+
+                Verify.AreEqual("SelectionModel", provider.GetStringRepresentation());
+                Log.Comment($"Type: {provider.Type?.FullName}");
+                Verify.IsNotNull(provider.Type);
+                Verify.AreEqual(typeof(SelectionModel).FullName, provider.Type.FullName);
+                Verify.IsNull(provider.GetCustomProperty("NotAProperty"));
+                Verify.IsNull(provider.GetIndexedProperty("SelectedItem", typeof(int)));
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies PropertyChanged handlers stop receiving notifications once removed.")]
+        public void VerifyPropertyChangedHandlerRemoval()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionModel = new SelectionModel() { Source = Enumerable.Range(0, 5).ToList() };
+                var changedProperties = new List<string>();
+                global::System.ComponentModel.PropertyChangedEventHandler handler = (sender, args) => changedProperties.Add(args.PropertyName);
+
+                selectionModel.PropertyChanged += handler;
+                selectionModel.Select(1);
+                Log.Comment("Properties changed: " + string.Join(",", changedProperties));
+                Verify.IsTrue(changedProperties.Contains("SelectedIndex"));
+
+                changedProperties.Clear();
+                selectionModel.PropertyChanged -= handler;
+                selectionModel.Select(2);
+                Verify.AreEqual(0, changedProperties.Count, "No notification after the handler is removed.");
+                Verify.IsTrue(selectionModel.IsSelected(2).Value);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies SelectionModelChildrenRequestedEventArgs Source and SourceIndex are only accessible during the ChildrenRequested handler.")]
+        public void VerifyChildrenRequestedArgsOnlyValidDuringHandler()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = CreateNestedData(levels: 1, groupsAtLevel: 2, countAtLeaf: 3);
+                var selectionModel = new SelectionModel() { Source = source };
+                SelectionModelChildrenRequestedEventArgs captured = null;
+                var requestedIndexes = new List<string>();
+
+                selectionModel.ChildrenRequested += (sender, args) =>
+                {
+                    captured = args;
+                    requestedIndexes.Add(args.SourceIndex.ToString());
+                    args.Children = args.Source is IList ? args.Source : null;
+                };
+
+                selectionModel.Select(1, 2);
+                Verify.IsTrue(selectionModel.IsSelected(1, 2).Value);
+                Verify.IsNotNull(captured, "ChildrenRequested was raised.");
+                Log.Comment("ChildrenRequested for: " + string.Join(",", requestedIndexes));
+
+                Verify.AreEqual(E_FAIL, CaptureHResult(() => { var x = captured.Source; }), "Source outside the handler");
+                Verify.AreEqual(E_FAIL, CaptureHResult(() => { var x = captured.SourceIndex; }), "SourceIndex outside the handler");
+            });
+        }
+
+        private void VerifyAllFlatItemsSelected(SelectionModel selectionModel, List<int> source)
+        {
+            Verify.AreEqual(source.Count, selectionModel.SelectedIndices.Count);
+            Verify.AreEqual(source.Count, selectionModel.SelectedItems.Count);
+            for (int i = 0; i < source.Count; i++)
+            {
+                Verify.IsTrue(selectionModel.IsSelected(i).Value, $"Item {i} is selected.");
+                Verify.AreEqual(source[i], selectionModel.SelectedItems[i]);
+            }
+        }
+
+        private void VerifyFlatSelection(SelectionModel selectionModel, int count, int[] expectedSelected)
+        {
+            var actual = Enumerable.Range(0, count).Where(i => selectionModel.IsSelected(i).Value).ToArray();
+            Log.Comment("Selected: " + string.Join(",", actual));
+            Verify.AreEqual(string.Join(",", expectedSelected), string.Join(",", actual));
+            Verify.AreEqual(expectedSelected.Length, selectionModel.SelectedIndices.Count);
+        }
+
+        private static int CaptureHResult(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                Log.Comment($"Caught {e.GetType().Name}: HResult=0x{e.HResult:X8} '{e.Message}'");
+                return e.HResult;
+            }
+            return 0;
+        }
+
         private void Select(SelectionModel manager, int index, bool select)
         {
             Log.Comment((select ? "Selecting " : "DeSelecting ") + index);

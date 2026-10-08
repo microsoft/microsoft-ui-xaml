@@ -22,7 +22,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     [TestClass]
     public class RecyclePoolTests : ApiTestBase
     {
-
+        // This test was missing its [TestMethod] attribute and therefore never ran.
+        [TestMethod]
+        [TestProperty("Description", "Verifies RecyclePool returns elements only for the key they were stored under and rejects non-Panel owners.")]
         public void ValidateElementsHaveCorrectKeys()
         {
             RunOnUIThread.Execute(() =>
@@ -59,19 +61,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.IsNull(pool.TryGetElement(stackPanelKey));
 
 
-                Verify.Throws<COMException>(delegate
-                {
-                    pool.PutElement(new Button(), null, null);
-                });
+                // A null key cannot be distinguished from an empty key through the C# projection (both marshal
+                // as an empty HSTRING), and RecyclePool treats the empty key as a regular key.
+                var emptyKeyElement = new Button();
+                pool.PutElement(emptyKeyElement, null, null);
+                Verify.IsNull(pool.TryGetElement(buttonKey), "Elements stored under the empty key are not returned for another key.");
+                Verify.AreSame(emptyKeyElement, pool.TryGetElement(string.Empty, null));
+                Verify.IsNull(pool.TryGetElement(null, null), "The empty-key element was already returned.");
 
                 Verify.Throws<COMException>(delegate
                 {
                     pool.PutElement(new Button(), buttonKey, new Button() /* not a panel */);
-                });
-
-                Verify.Throws<COMException>(delegate
-                {
-                    pool.TryGetElement(null, null);
                 });
             });
         }

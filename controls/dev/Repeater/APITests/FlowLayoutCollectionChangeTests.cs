@@ -427,11 +427,156 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Disabled as per tracking issue #3125
+        [TestProperty("Description", "Verifies Replace notifications whose old and new item counts differ shift the indexes of the following realized elements and keep the element-to-data mapping correct.")]
         public void ReplaceMultipleItems()
         {
-            // TODO: Lower prioirty scenario. Tracked by work item: 9738020
-            throw new NotImplementedException();
+            RunOnUIThread.Execute(() =>
+            {
+                var dataSource = new CustomItemsSource(Enumerable.Range(0, 10).ToList());
+                var repeater = SetupRepeater(dataSource);
+                var indexChanges = new List<Tuple<int, int>>();
+                repeater.ElementIndexChanged += (sender, args) => indexChanges.Add(Tuple.Create(args.OldIndex, args.NewIndex));
+
+                var realized = VerifyRealizedRange(repeater, dataSource);
+                Verify.AreEqual(3, realized);
+
+                Log.Comment("Replace 1 item with 3 items at index 0, in the realized range: realized items 1 and 2 move to 3 and 4.");
+                dataSource.Replace(index: 0, oldCount: 1, newCount: 3, reset: false);
+                LogIndexChanges(indexChanges);
+                Verify.IsTrue(indexChanges.Contains(Tuple.Create(1, 3)));
+                Verify.IsTrue(indexChanges.Contains(Tuple.Create(2, 4)));
+                Verify.AreEqual(2, indexChanges.Count);
+                repeater.UpdateLayout();
+                Verify.AreEqual(12, dataSource.Inner.Count);
+                realized = VerifyRealizedRange(repeater, dataSource);
+                Verify.AreEqual(3, realized);
+
+                Log.Comment("Replace 2 items with 1 item at index 0, in the realized range: realized item 2 moves to 1.");
+                indexChanges.Clear();
+                dataSource.Replace(index: 0, oldCount: 2, newCount: 1, reset: false);
+                LogIndexChanges(indexChanges);
+                Verify.AreEqual(1, indexChanges.Count);
+                Verify.AreEqual(Tuple.Create(2, 1), indexChanges[0]);
+                repeater.UpdateLayout();
+                Verify.AreEqual(11, dataSource.Inner.Count);
+                realized = VerifyRealizedRange(repeater, dataSource);
+                Verify.AreEqual(3, realized);
+
+                Log.Comment("Replace 1 item with 4 items after the realized range: realized elements keep their indexes.");
+                indexChanges.Clear();
+                var before = Enumerable.Range(0, 3).Select(i => repeater.TryGetElement(i)).ToList();
+                dataSource.Replace(index: 8, oldCount: 1, newCount: 4, reset: false);
+                Verify.AreEqual(0, indexChanges.Count);
+                repeater.UpdateLayout();
+                Verify.AreEqual(14, dataSource.Inner.Count);
+                for (int i = 0; i < 3; i++)
+                {
+                    Verify.AreSame(before[i], repeater.TryGetElement(i));
+                }
+                realized = VerifyRealizedRange(repeater, dataSource);
+                Verify.AreEqual(3, realized);
+            });
+        }
+
+        private static void LogIndexChanges(List<Tuple<int, int>> indexChanges)
+        {
+            Log.Comment("ElementIndexChanged: " + string.Join(",", indexChanges.Select(c => $"{c.Item1}->{c.Item2}")));
+        }
+
+        [TestMethod]
+
+        [TestProperty("Ignore", "True")] // Product concern PC-GRID-ANCHOR-INSERT (bug pending): after an insert before a scrolled anchor, UniformGridLayout places items outside their grid cells.
+        [TestProperty("Description", "Verifies a scrolled UniformGridLayout keeps every realized item in its grid cell after an insert at index 0 shifts the scroll anchor away from the start of its row.")]
+        public void ValidateGridPlacementAfterInsertBeforeScrolledAnchor()
+        {
+            const int columns = 3;
+            const double cellSize = 100.0;
+            var dataSource = (CustomItemsSource)null;
+            RunOnUIThread.Execute(() => dataSource = new CustomItemsSource(Enumerable.Range(0, 60).ToList()));
+            ScrollViewer scrollViewer = null;
+            ItemsRepeater repeater = null;
+            var viewChangedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var elementFactory = new RecyclingElementFactory() { RecyclePool = new RecyclePool() };
+                elementFactory.Templates["Item"] = SharedHelpers.GetDataTemplate(@"<TextBlock Text='{Binding}' Width='100' Height='100' />");
+                repeater = new ItemsRepeater() {
+                    ItemsSource = dataSource,
+                    ItemTemplate = elementFactory,
+                    Layout = new UniformGridLayout() { MinItemWidth = cellSize, MinItemHeight = cellSize, MaximumRowsOrColumns = columns },
+                    VerticalCacheLength = 0,
+                    HorizontalCacheLength = 0
+                };
+                scrollViewer = new ScrollViewer() {
+                    Content = repeater,
+                    Width = columns * cellSize,
+                    Height = 300,
+                    VerticalAnchorRatio = 0.0
+                };
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        viewChangedEvent.Set();
+                    }
+                };
+                Content = scrollViewer;
+                Content.UpdateLayout();
+                scrollViewer.ChangeView(null, 1050, null, disableAnimation: true);
+            });
+
+            Verify.IsTrue(viewChangedEvent.WaitOne(DefaultWaitTime), "Waiting for ViewChanged.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(repeater.TryGetElement(0), "Item 0 is scrolled out of the realized range.");
+                VerifyGridPlacement(repeater, dataSource, columns, cellSize);
+
+                Log.Comment("Insert one item at index 0.");
+                dataSource.Insert(index: 0, count: 1, reset: false);
+                repeater.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => repeater.UpdateLayout());
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"VerticalOffset after insert: {scrollViewer.VerticalOffset}");
+                int realized = VerifyGridPlacement(repeater, dataSource, columns, cellSize);
+                Verify.IsGreaterThanOrEqual(realized, columns * 3, "At least the visible rows are realized.");
+            });
+        }
+
+        private int VerifyGridPlacement(ItemsRepeater repeater, CustomItemsSource dataSource, int columns, double cellSize)
+        {
+            int realized = 0;
+            int first = -1;
+            int last = -1;
+            for (int i = 0; i < dataSource.Inner.Count; i++)
+            {
+                var element = repeater.TryGetElement(i) as TextBlock;
+                if (element == null)
+                {
+                    continue;
+                }
+
+                realized++;
+                first = first == -1 ? i : first;
+                last = i;
+                Verify.AreEqual(dataSource.GetAt(i).ToString(), element.Text, $"Item {i} data");
+                var offset = element.TransformToVisual(repeater).TransformPoint(new global::Windows.Foundation.Point(0, 0));
+                Log.Comment($"Item {i} '{element.Text}' at ({offset.X}, {offset.Y})");
+                Verify.AreEqual((i % columns) * cellSize, offset.X, $"Item {i} X");
+                Verify.AreEqual((i / columns) * cellSize, offset.Y, $"Item {i} Y");
+            }
+
+            Log.Comment($"Realized range: [{first}, {last}], count {realized}");
+            Verify.AreEqual(last - first + 1, realized, "The realized range is contiguous.");
+            return realized;
         }
 
         [TestMethod]

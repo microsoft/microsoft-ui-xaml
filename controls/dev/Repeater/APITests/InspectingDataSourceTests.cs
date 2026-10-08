@@ -24,6 +24,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     [TestClass]
     public partial class InspectingDataSourceTests : ApiTestBase
     {
+        private const int E_INVALIDARG = unchecked((int)0x80070057);
+        private const int E_NOTIMPL = unchecked((int)0x80004001);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ItemsSourceView rejects a null source and a source that is not a supported collection with E_INVALIDARG.")]
+        public void VerifyItemsSourceViewRejectsInvalidSources()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(E_INVALIDARG, CaptureHResult(() => new ItemsSourceView(null)), "null source");
+                Verify.AreEqual(E_INVALIDARG, CaptureHResult(() => new ItemsSourceView(42)), "int source");
+                Verify.AreEqual(E_INVALIDARG, CaptureHResult(() => new ItemsSourceView(new object())), "object source");
+
+                Log.Comment("Positive control: a list is a supported source.");
+                var view = new ItemsSourceView(new List<int>() { 7, 8 });
+                Verify.AreEqual(2, view.Count);
+                Verify.AreEqual(8, view.GetAt(1));
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies KeyFromIndex and IndexFromKey fail with E_NOTIMPL when the source does not implement IKeyIndexMapping.")]
+        public void VerifyKeyIndexMappingNotImplementedWithoutMappingSource()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var view = new ItemsSourceView(new ObservableCollection<int>(Enumerable.Range(0, 5)));
+                Verify.IsFalse(view.HasKeyIndexMapping);
+                Verify.AreEqual(E_NOTIMPL, CaptureHResult(() => view.KeyFromIndex(0)), "KeyFromIndex");
+                Verify.AreEqual(E_NOTIMPL, CaptureHResult(() => view.IndexFromKey("0")), "IndexFromKey");
+            });
+        }
+
+        private static int CaptureHResult(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                Log.Comment($"Caught {e.GetType().Name}: HResult=0x{e.HResult:X8} '{e.Message}'");
+                return e.HResult;
+            }
+            return 0;
+        }
+
         [TestMethod]
         public void CanCreateFromIBindableIterable()
         {
