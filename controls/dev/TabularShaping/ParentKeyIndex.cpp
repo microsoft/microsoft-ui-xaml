@@ -180,13 +180,12 @@ bool BuildParentStructure(
     ParentStructure result;
     result.Rows = rows;
     result.KeyByItem.reserve(n);
+    result.IndexByKey.reserve(n);
     result.NodeKeys.resize(n, nullptr);
     result.ParentIndex.assign(n, c_root);
     result.ChildIndices.resize(n);
 
-    // Views into KeyByItem's values, which stay put for the structure's lifetime (node-based map).
-    std::unordered_map<std::wstring_view, size_t> indexByKey;
-    indexByKey.reserve(n);
+    auto& indexByKey = result.IndexByKey;
 
     // An object key's lookup form is its address, so every key and parent key is held for the
     // whole build: a released temporary's address could be reused by the next one and alias it.
@@ -284,6 +283,49 @@ bool BuildParentStructure(
     }
 
     out = std::move(result);
+    return true;
+}
+
+bool ParentStructureStillMatches(
+    ParentStructure const& structure,
+    KeySelector const& keySelector,
+    KeySelector const& parentKeySelector)
+{
+    constexpr size_t c_root = ParentStructure::Root;
+    constexpr std::wstring_view c_objectNodeKeyPrefix{ L"node:object:" };
+    auto const& s = structure;
+
+    for (size_t i = 0; i < s.Rows.size(); ++i)
+    {
+        auto const nodeKey = MakeNodeKey(SafeSelect(keySelector, s.Rows[i]));
+        if (nodeKey.empty() || nodeKey.starts_with(c_objectNodeKeyPrefix) || nodeKey != *s.NodeKeys[i])
+        {
+            return false;
+        }
+
+        // Every key checked so far matches, and any later mismatch fails the whole check, so
+        // resolving against the retained key table answers exactly as a rebuild would: a known key
+        // is that row, an unknown one is an orphan root, and a self-parent resolves to `i`, which
+        // no valid structure stores.
+        auto const parentKey = MakeNodeKey(SafeSelect(parentKeySelector, s.Rows[i]));
+        size_t parent = c_root;
+        if (!parentKey.empty())
+        {
+            if (parentKey.starts_with(c_objectNodeKeyPrefix))
+            {
+                return false;
+            }
+            if (auto const it = s.IndexByKey.find(parentKey); it != s.IndexByKey.end())
+            {
+                parent = it->second;
+            }
+        }
+
+        if (parent != s.ParentIndex[i])
+        {
+            return false;
+        }
+    }
     return true;
 }
 

@@ -14,8 +14,8 @@ namespace ShapingHelpers
 {
 // The validated tree over the UNFILTERED source, in source order: every row's key and the
 // position of its parent. It depends only on the source and the key/parent selectors, never on
-// filter or sort, so a reshape reuses it instead of re-running the app's selectors over every row.
-// Immutable once built.
+// filter or sort, so a reshape can reuse it once the caller has established that no key or parent
+// key moved (ParentStructureStillMatches, or live-shaping snapshots). Immutable once built.
 struct ParentStructure
 {
     static constexpr size_t Root = SIZE_MAX;
@@ -25,6 +25,8 @@ struct ParentStructure
     std::vector<winrt::IInspectable> Rows;
     // ABI pointer -> nodeKey, for every row.
     std::unordered_map<void*, std::wstring> KeyByItem;
+    // nodeKey -> position in Rows. Keys view KeyByItem's values (node-based, so they stay put).
+    std::unordered_map<std::wstring_view, size_t> IndexByKey;
     // Per row (by position in Rows): its key (points into KeyByItem), parent position or Root, and
     // child positions in source order.
     std::vector<std::wstring const*> NodeKeys;
@@ -63,6 +65,17 @@ bool BuildParentStructure(
     KeySelector const& parentKeySelector,
     ParentStructure& out,
     winrt::hstring& error);
+
+// Re-runs the key and parent selectors over `structure.Rows` and reports whether every row still
+// has the same key and resolves to the same parent, i.e. whether a rebuild would produce this
+// structure again. Builds no maps and allocates nothing beyond each row's key strings. Returns
+// false at the first difference, on any selector failure, and on any object (reference-identity)
+// key: those are compared by address, and a released key object's address can be reused by a new
+// one, so they cannot be proven unchanged.
+bool ParentStructureStillMatches(
+    ParentStructure const& structure,
+    KeySelector const& keySelector,
+    KeySelector const& parentKeySelector);
 
 // Runs no key or parent selector. `filter` may be empty (no filter); when set, only matches and
 // their ancestors are indexed. `sort` may be empty (source order); otherwise each sibling list is

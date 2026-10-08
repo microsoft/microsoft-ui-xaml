@@ -214,9 +214,11 @@ private:
         uint64_t declarationGeneration);
 
     // The retained structure, when it still describes `rows`: same relation declaration, no source
-    // notification since it was built, and the same row objects in the same order. A reshape
-    // (filter, sort, group) then skips identity validation and the key and parent selectors
-    // entirely. Null otherwise.
+    // notification since it was built, the same row objects in the same order, and every row's key
+    // and parent key unchanged. Live shaping establishes the last from its snapshots during the
+    // same Refresh; otherwise it re-runs the key and parent selectors (ParentStructureStillMatches).
+    // A reshape (filter, sort, group) then skips identity validation and the structure build.
+    // Null otherwise.
     std::shared_ptr<const ShapingHelpers::ParentStructure> TryReuseHierarchyStructure(
         std::vector<winrt::IInspectable> const& rows,
         uint64_t declarationGeneration,
@@ -225,10 +227,7 @@ private:
     std::shared_ptr<const ShapingHelpers::ParentStructure> m_hierarchyStructure;
     uint64_t m_hierarchyStructureGeneration{ 0 };
     uint64_t m_hierarchyStructureSourceStamp{ 0 };
-    // Bumped by every source change notification, including ones deferred behind a rebuild. Key
-    // and parent values are read again only after one: an app that changes them in place must
-    // raise a collection change (a Replace or a Reset), as for any other row data a projection
-    // derives from.
+    // Bumped by every source change notification, including ones deferred behind a rebuild.
     uint64_t m_sourceChangeStamp{ 0 };
     // Stamp captured when the current Refresh materialized the source.
     uint64_t m_refreshSourceStamp{ 0 };
@@ -313,13 +312,16 @@ private:
         std::vector<winrt::hstring> SortKeys;
         winrt::hstring GroupKey;
         // Hierarchy edge (node key + parent key). Captured whenever live shaping is on and a
-        // ParentBy relation is declared: a refresh re-reads the whole relation anyway, so leaving
-        // these out would make a reparent show up only when some OTHER tracked key happened to move.
+        // ParentBy relation is declared. Each Refresh compares the fresh pair with the previous
+        // one to decide whether the retained tree structure still holds, and a change here is what
+        // posts a live reparent.
         winrt::hstring NodeKey;
         winrt::hstring ParentKey;
         bool PassesFilter{ true };
     };
     LiveShapeSnapshot CaptureLiveShapeSnapshot(winrt::IInspectable const& item) const;
+    // Drops the retained tree structure so the next Refresh re-reads every key and parent key.
+    void InvalidateRetainedHierarchyStructure() noexcept;
     static bool LiveShapeSnapshotsDiffer(
         LiveShapeSnapshot const& left,
         LiveShapeSnapshot const& right);

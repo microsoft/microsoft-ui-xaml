@@ -140,10 +140,10 @@ existing diagnostic. Every hierarchical row is a source row, so that one check c
 
 ### 4.1 Sort: within each sibling set
 
-Sort the **whole flat list once** (before filtering; see §6.2), then bucket it by parent **stably**. Each sibling bucket
-comes out in sorted order, so every level is sorted among its peers and no depth is ever compared
-with another. This is one O(n log n) sort instead of one sort per sibling set, and it reuses
-`ApplySort` unchanged.
+Bucket the flat list by parent in source order, then sort **each sibling list among its own peers**
+with `ApplySort`. No depth is ever compared with another. The sort is stable and each list goes in
+in source order, so ties break exactly as one sort over the whole source would. Sorting k siblings
+costs O(k log k), never more in total than one O(n log n) sort over the source.
 
 ### 4.2 Filter: keep matches and their ancestors
 
@@ -311,10 +311,23 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
   (`ApplyIncrementalChange`, `ApplyIncrementalVectorChange`) bail out when a parent relation is
   declared**, including the unsorted, unfiltered case: a single-row delta cannot re-derive
   parentage. Incremental leaf add/remove is a later optimization (§11).
-- **Property changes are not observed**, the same contract as sort keys. Reparenting through
-  `INotifyPropertyChanged` on `ManagerId` takes effect at the next collection change or reshape.
-  To reparent immediately, an app replaces the item or removes and re-inserts it. Documented on
-  `ParentBy`.
+- **Retained tree structure.** The resolved parent structure (keys, parents, child lists) is kept
+  across reshapes. It is dropped by any source collection change and by re-declaring the relation.
+  A sort, filter or group change over an unchanged source reuses it once every row's key and parent
+  key is shown unchanged; the key table, duplicate/cycle validation and identity validation are not
+  redone. How "unchanged" is shown depends on live shaping:
+  - **Live shaping on**: every `Refresh` recaptures each row's snapshot, node and parent key
+    included, and compares them with the previous pass. Any difference drops the structure. No
+    selector runs beyond the snapshot capture that live shaping performs anyway. Turning live
+    shaping on also drops it, because edits made while it was off were never tracked.
+  - **Live shaping off**: the reshape re-runs the key and parent selectors once per row
+    (`ParentStructureStillMatches`) and rebuilds on the first difference. Object (reference-identity)
+    keys cannot be proven unchanged by address, so they always rebuild.
+- **Property changes.** With `IsLiveSorting`, `IsLiveFiltering` or `IsLiveGrouping` on, an item's
+  key and parent key are observed and a change reparents the row on the next dispatcher turn.
+  Otherwise reparenting through `INotifyPropertyChanged` on `ManagerId` takes effect at the next
+  collection change or reshape, the same contract as sort keys. To reparent immediately, an app
+  replaces the item or removes and re-inserts it. Documented on `ParentBy`.
 - `Rows()` is the snapshot of the visible rows.
 
 ### 6.3 Layer 3 — `HierarchicalSourceAdapter`
@@ -420,7 +433,8 @@ A key the row does not act on is **not** marked handled.
 
 | Operation | Cost |
 | --- | --- |
-| Rebuild (any reshape or source change) | O(n log n) sort + O(n) index + O(visible) walk. n = source size. |
+| Rebuild (source change, re-declared relation, edge change) | O(n) key/parent selectors + O(n log n) per-sibling sorts + O(n) index + O(visible) walk. n = source size. |
+| Reshape (sort/filter/group over an unchanged source) | Structure reused. Live shaping off: O(n) key/parent selectors to confirm it, no key table or validation. Live shaping on: no extra selectors. Then per-sibling sorts + O(n) index + O(visible) walk. |
 | Single toggle (ungrouped) | O(run) emit + O(visible) index-shift sweep |
 | Single toggle (grouped) | Every group is re-sliced and the grouped axis rebuilds (§11) |
 | `ExpandAllRows` | O(n) visible rows, no app calls |
@@ -492,7 +506,9 @@ department, and expand or collapse all. The **100k perf** button times the 100k-
 - **Load on demand** (Kendo/DevExtreme remote "has children"): needs a way to show a chevron with no
   children present yet; depends on the child-provider seam above.
 - **Filter modes** other than with-ancestors.
-- **Observing key property changes** (live reparenting through `INotifyPropertyChanged`).
+- **Observing key property changes without live shaping** (without `IsLiveSorting`,
+  `IsLiveFiltering` or `IsLiveGrouping`, an in-place reparent waits for the next reshape or
+  collection change; §6).
 - Also not covered: declarative aggregation, nested grouping, cascading selection, drag-reparent,
   and a keyed data source for container preservation.
 

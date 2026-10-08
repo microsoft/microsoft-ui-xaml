@@ -76,12 +76,21 @@ void ShapedItemsSource::SetLiveShaping(bool liveSorting, bool liveGrouping, bool
         return;
     }
 
+    bool const wasLiveShapingEnabled = IsLiveShapingEnabled();
     m_liveSorting = liveSorting;
     m_liveGrouping = liveGrouping;
     m_liveFiltering = liveFiltering;
 
     if (IsLiveShapingEnabled())
     {
+        if (!wasLiveShapingEnabled)
+        {
+            // With the flags down, edges edited in place were never tracked, and the snapshots
+            // about to be captured would already hold the new values -- nothing could tell the
+            // retained structure is stale. Live shaping trusts its snapshots from here on, so
+            // start it from a structure the next Refresh rebuilds.
+            InvalidateRetainedHierarchyStructure();
+        }
         ResubscribeLiveShapingFromSource();
     }
     else
@@ -1890,7 +1899,9 @@ std::shared_ptr<const ShapingHelpers::ParentStructure> ShapedItemsSource::TryReu
     uint64_t declarationGeneration,
     uint64_t sourceChangeStamp) const
 {
-    auto const& structure = m_hierarchyStructure;
+    // A strong reference: the check below runs app selectors, which may re-declare or clear the
+    // relation and drop the member.
+    auto const structure = m_hierarchyStructure;
     if (!structure ||
         m_hierarchyStructureGeneration != declarationGeneration ||
         m_hierarchyStructureSourceStamp != sourceChangeStamp ||
@@ -1907,6 +1918,24 @@ std::shared_ptr<const ShapingHelpers::ParentStructure> ShapedItemsSource::TryReu
         {
             return nullptr;
         }
+    }
+
+    // Same rows; are they still related the same way? Under live shaping, this Refresh compared
+    // every row's fresh node and parent key with the last pass and dropped the structure if any
+    // moved, so reaching here already answers it. Without live shaping nothing has looked, so
+    // re-read the keys: a reshape picks up an edge edited in place exactly as it picks up a sort or
+    // filter key, while skipping the key table, validation and cycle check a rebuild would redo.
+    if (!IsLiveShapingEnabled() &&
+        !ShapingHelpers::ParentStructureStillMatches(*structure, m_keySelector, m_parentKeySelector))
+    {
+        return nullptr;
+    }
+
+    // A selector may have re-declared the relation while running. Rebuilding sees that and queues
+    // the replay, so leave it to the rebuild.
+    if (declarationGeneration != m_parentDeclarationGeneration)
+    {
+        return nullptr;
     }
     return structure;
 }
@@ -2333,6 +2362,13 @@ ShapedItemsSource::LiveShapeSnapshot ShapedItemsSource::CaptureLiveShapeSnapshot
     return snapshot;
 }
 
+void ShapedItemsSource::InvalidateRetainedHierarchyStructure() noexcept
+{
+    // Only the cache is dropped; a Refresh already on the stack holds its own reference. The next
+    // Refresh re-runs the key and parent selectors and retains the structure they produce.
+    m_hierarchyStructure.reset();
+}
+
 bool ShapedItemsSource::LiveShapeSnapshotsDiffer(
     LiveShapeSnapshot const& left,
     LiveShapeSnapshot const& right)
@@ -2366,6 +2402,13 @@ void ShapedItemsSource::RefreshLiveShapingSubscriptions(
     std::unordered_map<void const*, LiveShapeSnapshot> snapshots;
     snapshots.reserve(items.size());
 
+    // The fresh snapshots already hold every row's node and parent key, so comparing them with the
+    // previous ones tells whether the retained tree structure is still true at no selector cost.
+    // This catches an edge edited without a PropertyChanged too. Rows with no previous snapshot
+    // are arrivals, which the source change stamp already accounts for.
+    bool edgeMoved = false;
+    bool const checkEdges = m_parentKeySelector && m_hierarchyStructure;
+
     for (auto const& item : items)
     {
         if (!item)
@@ -2376,7 +2419,20 @@ void ShapedItemsSource::RefreshLiveShapingSubscriptions(
         auto const key = LiveShapingKeyFor(item);
         live.insert(key);
         m_liveShaping->Subscribe(item);
-        snapshots[key] = CaptureLiveShapeSnapshot(item);
+        auto const& snapshot = snapshots[key] = CaptureLiveShapeSnapshot(item);
+
+        if (checkEdges && !edgeMoved)
+        {
+            if (auto const previous = m_liveShapeSnapshots.find(key); previous != m_liveShapeSnapshots.end())
+            {
+                edgeMoved = previous->second.NodeKey != snapshot.NodeKey || previous->second.ParentKey != snapshot.ParentKey;
+            }
+        }
+    }
+
+    if (edgeMoved)
+    {
+        InvalidateRetainedHierarchyStructure();
     }
 
     m_liveShaping->RetainOnly(live);
