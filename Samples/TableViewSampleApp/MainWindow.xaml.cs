@@ -17,6 +17,7 @@ public sealed partial class MainWindow : Window
         // Select the first item, which navigates the frame to the playground via SelectionChanged.
         Nav.SelectedItem = Nav.MenuItems[0];
 
+#if HIERARCHY_API_KEYBY
         // Unattended perf run: an autorun-perf file in the app's data directory opens the hierarchy
         // page and runs the 100k probe.
         var perfTrigger = System.IO.Path.Combine(HierarchyPage.DataDirectory, HierarchyPage.PerfTriggerFileName);
@@ -25,6 +26,21 @@ public sealed partial class MainWindow : Window
             System.IO.File.Delete(perfTrigger);
             HierarchyPage.AutoPerf = true;
             Nav.SelectedItem = Nav.MenuItems.OfType<NavigationViewItem>().First(i => (i.Tag as string) == "hierarchy");
+        }
+#else
+        // The hierarchy demo page targets the KeyBy API and is not built for other hierarchy APIs.
+        Nav.MenuItems.Remove(Nav.MenuItems.OfType<NavigationViewItem>().First(i => (i.Tag as string) == "hierarchy"));
+#endif
+
+        // Unattended hierarchy perf run: the trigger file's content carries the options
+        // (e.g. "n=50000 shape=all key=int runs=3 variant=foo out=C:\perf compare=1"); empty runs
+        // the full matrix. See HierarchyPerfPage for the outputs.
+        var hierarchyPerfTrigger = System.IO.Path.Combine(HierarchyPerfPage.DataDirectory, HierarchyPerfPage.TriggerFileName);
+        if (System.IO.File.Exists(hierarchyPerfTrigger))
+        {
+            HierarchyPerfPage.AutoRunArgs = System.IO.File.ReadAllText(hierarchyPerfTrigger);
+            System.IO.File.Delete(hierarchyPerfTrigger);
+            Nav.SelectedItem = Nav.MenuItems.OfType<NavigationViewItem>().First(i => (i.Tag as string) == "hierarchyperf");
         }
     }
 
@@ -45,7 +61,10 @@ public sealed partial class MainWindow : Window
             "selection" => typeof(SelectionPage),
             "tooltips" => typeof(ToolTipsPage),
             "shaping" => typeof(ShapingPage),
+#if HIERARCHY_API_KEYBY
             "hierarchy" => typeof(HierarchyPage),
+#endif
+            "hierarchyperf" => typeof(HierarchyPerfPage),
             _ => typeof(PlaygroundPage),
         };
 

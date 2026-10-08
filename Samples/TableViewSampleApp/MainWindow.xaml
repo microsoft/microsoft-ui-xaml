@@ -21,6 +21,7 @@
             <controls:NavigationViewItem Content="Cell tooltips" Tag="tooltips"/>
             <controls:NavigationViewItem Content="Filter / sort / group" Tag="shaping"/>
             <controls:NavigationViewItem Content="Hierarchical rows" Tag="hierarchy"/>
+            <controls:NavigationViewItem Content="Hierarchy performance" Tag="hierarchyperf"/>
         </controls:NavigationView.MenuItems>
 
         <Frame x:Name="ContentFrame"/>

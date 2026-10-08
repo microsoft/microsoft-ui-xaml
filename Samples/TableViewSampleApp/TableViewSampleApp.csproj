@@ -22,7 +22,19 @@
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <!-- TableView is [MUX_PREVIEW] and surfaces as CS8305 ("for evaluation purposes only"). -->
     <NoWarn>$(NoWarn);CS8305</NoWarn>
+    <!-- Which hierarchy API the package exposes, for comparing hierarchy variants with the same
+         sample source (see HierarchyPerfPage): KeyBy (KeyBy + ParentBy(parent)), ParentKey2
+         (ParentBy(key, parent)) or Children (WithChildren). Only KeyBy builds the hierarchy demo page. -->
+    <HierarchyApi Condition="'$(HierarchyApi)' == ''">KeyBy</HierarchyApi>
+    <DefineConstants Condition="'$(HierarchyApi)' == 'KeyBy'">$(DefineConstants);HIERARCHY_API_KEYBY</DefineConstants>
+    <DefineConstants Condition="'$(HierarchyApi)' == 'ParentKey2'">$(DefineConstants);HIERARCHY_API_PARENTKEY2</DefineConstants>
+    <DefineConstants Condition="'$(HierarchyApi)' == 'Children'">$(DefineConstants);HIERARCHY_API_CHILDREN</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(HierarchyApi)' != 'KeyBy'">
+    <Page Remove="HierarchyPage.xaml" />
+    <Compile Remove="HierarchyPage.xaml.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />

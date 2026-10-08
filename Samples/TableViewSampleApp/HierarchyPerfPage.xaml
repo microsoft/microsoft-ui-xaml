@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="TableViewSampleApp.HierarchyPerfPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+
+    <Grid Padding="12" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="360"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="2">
+            <TextBlock Text="Hierarchical rows: performance" FontSize="18" FontWeight="SemiBold"/>
+            <TextBlock Opacity="0.7" FontSize="12" TextWrapping="Wrap"
+                       Text="Times each hierarchy operation on a fresh source: build (flat, KeyBy, ParentBy), shaping on a collapsed tree, expand/collapse, single-item source changes and reshaping on an expanded tree. Call = the API call only; Layout = call + synchronous layout; Frame = until the next frame tick (single-row expand/collapse is applied after the call returns, so only Frame captures it). Key/Parent/Other count selector invocations during the step (Key ~ N means a full revalidation). Memory deltas are measured after a forced GC. The first run is a discarded warm-up; values are medians over the remaining runs. Each run writes results.json/.csv/.txt, run.log and report.html into a folder under the output folder; 'Compare runs' builds compare.html over every run there, and report.html accepts more results.json files by drag-drop."/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+            <ComboBox x:Name="CountCombo" Header="Rows" Width="110" SelectedIndex="2">
+                <ComboBoxItem Content="all"/>
+                <ComboBoxItem Content="1000"/>
+                <ComboBoxItem Content="10000"/>
+                <ComboBoxItem Content="50000"/>
+            </ComboBox>
+            <ComboBox x:Name="ShapeCombo" Header="Tree shape" Width="150" SelectedIndex="0">
+                <ComboBoxItem Content="all"/>
+                <ComboBoxItem Content="wide"/>
+                <ComboBoxItem Content="deep"/>
+                <ComboBoxItem Content="balanced"/>
+                <ComboBoxItem Content="shallow"/>
+            </ComboBox>
+            <ComboBox x:Name="KeyCombo" Header="Key type" Width="120" SelectedIndex="1">
+                <ComboBoxItem Content="all"/>
+                <ComboBoxItem Content="int"/>
+                <ComboBoxItem Content="string"/>
+                <ComboBoxItem Content="object"/>
+            </ComboBox>
+            <ComboBox x:Name="RunsCombo" Header="Runs" Width="90" SelectedIndex="1">
+                <ComboBoxItem Content="1"/>
+                <ComboBoxItem Content="3"/>
+                <ComboBoxItem Content="5"/>
+            </ComboBox>
+            <Button x:Name="RunButton" Content="Run" VerticalAlignment="Bottom" Click="Run_Click"/>
+            <Button x:Name="CancelButton" Content="Cancel" VerticalAlignment="Bottom" IsEnabled="False" Click="Cancel_Click"/>
+            <Button Content="Copy CSV" VerticalAlignment="Bottom" Click="CopyCsv_Click"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
+            <TextBox x:Name="VariantBox" Header="Variant label" Width="220" IsSpellCheckEnabled="False"
+                     PlaceholderText="defaults to the Tabular build hash"/>
+            <TextBox x:Name="OutputBox" Header="Output folder (runs are compared across this folder)" Width="460" IsSpellCheckEnabled="False"/>
+            <Button x:Name="AutoRunButton" Content="Auto run (full matrix)" VerticalAlignment="Bottom" Click="AutoRun_Click"/>
+            <Button x:Name="OpenReportButton" Content="Open report" VerticalAlignment="Bottom" IsEnabled="False" Click="OpenReport_Click"/>
+            <Button x:Name="CompareButton" Content="Compare runs" VerticalAlignment="Bottom" Click="Compare_Click"/>
+        </StackPanel>
+
+        <TextBlock x:Name="StatusText" Grid.Row="3" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" Text="idle"/>
+
+        <!-- Fixed height so every run realizes the same number of rows. -->
+        <Border Grid.Row="4" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
+            <tv:TableView x:Name="Table" SelectionMode="Single" GridLinesVisibility="Horizontal"/>
+        </Border>
+
+        <TextBox x:Name="ResultsBox" Grid.Row="5" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap"
+                 IsSpellCheckEnabled="False"
+                 FontFamily="Consolas" FontSize="12"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+    </Grid>
+</Page>
