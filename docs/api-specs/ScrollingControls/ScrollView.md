@@ -2319,8 +2319,8 @@ These features have valid scenarios and should be considered for future releases
 
 ### Clipping suppression (preview)
 
-`ScrollView` and `ScrollPresenter` expose the preview `CanContentRenderOutsideBounds` property for parity with the old
-[ScrollViewer property](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.scrollviewer.cancontentrenderoutsidebounds).
+`ScrollView` and `ScrollPresenter` expose the preview `CanContentRenderOutsideBounds` property for parity with the existing
+[ScrollViewer property](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.scrollviewer.cancontentrenderoutsidebounds?view=windows-app-sdk-2.0).
 The default value is `False`, which applies a viewport-sized rectangular clip during arrange. Setting the property to
 `True` removes that clip so translated, scaled, shadowed, or otherwise overflowing content can render outside the
 viewport. The property changes rendering only; it does not change extent, viewport, scrolling boundaries, realization,
