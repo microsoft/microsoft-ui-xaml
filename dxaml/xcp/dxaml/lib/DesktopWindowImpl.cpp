@@ -17,6 +17,7 @@
 #include "ColorUtil.h"
 #include "FrameworkTheming.h"
 #include "WindowHelpers.h"
+#include "DesktopUtility.h"
 #include "XamlIslandRoot_Partial.h"
 #include "XamlTelemetry.h"
 #include <Theme.h>
@@ -161,9 +162,9 @@ void DesktopWindowImpl::OnCreate() noexcept
 
     // Watch for presenter changes so a Width/Height or Min/Max constraint set while a non-sizing presenter
     // (FullScreen/CompactOverlay) was active gets applied when we return to one that sizes. See
-    // OnAppWindowChanged. One eager subscription shared by both features; skipped when the new windowing
-    // APIs are off so we don't add a subscription that never fires.
-    if (AreNewWindowingApisEnabled())
+    // OnAppWindowChanged. The Windows 10 top-border workaround also needs the settled presenter state,
+    // since style/size messages can arrive before AppWindow finishes changing its presenter.
+    if (AreNewWindowingApisEnabled() || DesktopUtility::IsOnWindows10())
     {
         IFCFAILFAST(appWindow->add_Changed(
             wrl::Callback<AppWindowChangedHandler>(this, &DesktopWindowImpl::OnAppWindowChanged).Get(),
@@ -1143,10 +1144,7 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplyPendingClientSizeIfNeeded()
 
 _Check_return_ HRESULT DesktopWindowImpl::OnAppWindowChanged(_In_ ixp::IAppWindow* /*sender*/, _In_ ixp::IAppWindowChangedEventArgs* args)
 {
-    // We only subscribe when the new windowing APIs are enabled, so the flag is always true here.
-    ASSERT(AreNewWindowingApisEnabled());
-
-    // Internal callback shared by the Width/Height and Min/Max size features. Once the window is closed
+    // Internal callback shared by window sizing and the Windows 10 top-border workaround. Once the window is closed
     // there's nothing to update, so quietly do nothing (unlike the public getters/setters, which error).
     if (m_bIsClosed)
     {
@@ -1156,6 +1154,18 @@ _Check_return_ HRESULT DesktopWindowImpl::OnAppWindowChanged(_In_ ixp::IAppWindo
     boolean didPresenterChange = false;
     IFC_RETURN(args->get_DidPresenterChange(&didPresenterChange));
     if (!didPresenterChange)
+    {
+        return S_OK;
+    }
+
+    if (DesktopUtility::IsOnWindows10() && m_windowChrome)
+    {
+        // Style/size messages can arrive while AppWindow still reports the old presenter.
+        // Now that the window should be settled, we need to poke WindowChrome so it has a chance
+        // to apply (or remove) the Windows 10 top-border workaround if needed.
+        m_windowChrome->RefreshContainerSizeAndPosition();
+    }
+    if (!AreNewWindowingApisEnabled())
     {
         return S_OK;
     }
@@ -1296,6 +1306,75 @@ LRESULT LResultFromHResult(HRESULT hr)
     return 0;
 }
 
+// Handle the complete background erase, including the reserved top strip.
+// Return false if this path does not apply or painting fails, so the caller
+// can fall back to the existing background erase.
+bool DesktopWindowImpl::TryEraseBackgroundForWindowTopBorder(HDC hdc, COLORREF backgroundColor)
+{
+    ASSERT(DesktopUtility::IsOnWindows10());
+
+    // The one-pixel XAML offset can remain in fullscreen/borderless windows.
+    // Only treat it as a border when the HWND still has a native frame.
+    const bool shouldPaintTopRow = m_windowChrome && m_windowChrome->ShouldPaintTopRowOfClientArea();
+    const RECT rc = WindowHelpers::GetClientWindowCoordinates(m_hwnd.get());
+
+    const LONG topRowHeight = 1;
+    if (!shouldPaintTopRow || (rc.top + topRowHeight) > rc.bottom)
+    {
+        return false;
+    }
+
+    // If there's no GDI redirection bitmap, there's no reason to draw with GDI.
+    if ((::GetWindowLongPtrW(m_hwnd.get(), GWL_EXSTYLE) & WS_EX_NOREDIRECTIONBITMAP) != 0)
+    {
+        return false;
+    }
+
+    // We're going to draw two rectangles: one for the gap between the top of the client area and the WinUI
+    // content, and one behind the WinUI content itself (to match behavior of WM_ERASEBKGND).
+    // In practice, the topRowRect is 1px high because we leave a 1px gap between the top of the client area and the island.
+    const RECT topRowRect = { rc.left, rc.top, rc.right, rc.top + topRowHeight };
+    const RECT backgroundRect = { rc.left, topRowRect.bottom, rc.right, rc.bottom };
+
+    if (backgroundRect.top < backgroundRect.bottom)
+    {
+        const auto oldColor = ::SetBkColor(hdc, backgroundColor);
+
+        // ETO_OPAQUE with no text fills the rectangle using the DC's background
+        // color. Preserve the existing erase below the strip, then restore the DC.
+        ::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &backgroundRect, NULL, 0, NULL);
+        if (oldColor != CLR_INVALID)
+        {
+            ::SetBkColor(hdc, oldColor);
+        }
+    }
+
+    HIGHCONTRASTW highContrast = { sizeof(HIGHCONTRASTW) };
+    const bool isHighContrast =
+        ::SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRASTW), &highContrast, 0) &&
+        (highContrast.dwFlags & HCF_HIGHCONTRASTON) != 0;
+
+    // In standard themes, we want transparent black (RGB = 0, alpha = 0). DWM draws the window border behind the top of
+    // the client area (y=0) when ExtendsContentIntoTitleBar is true (as it is now). Making our strip transparent lets
+    // DWM's border pixels remain visible instead of covering them with our background. The visible border color
+    // therefore comes from DWM, not from this brush. Filling with GDI black produces these all-zero pixels; BLACK_BRUSH
+    // itself is not alpha-aware. This follows the documented DWM black-background technique:
+    // https://learn.microsoft.com/windows/win32/dwm/customframe#extending-the-client-frame
+    //
+    // On Windows 10, High Contrast leaves this row visibly black if we paint with BLACK_BRUSH. Paint the COLOR_WINDOWFRAME
+    // color directly instead.
+    const HBRUSH borderBrush = isHighContrast
+        ? ::GetSysColorBrush(COLOR_WINDOWFRAME)
+        : static_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH));
+    if (!::FillRect(hdc, &topRowRect, borderBrush))
+    {
+        TRACE_HR_NORETURN(E_FAIL);
+        return false;
+    }
+
+    return true;
+}
+
 LRESULT DesktopWindowImpl::OnMessage(
     UINT uMsg,
     WPARAM wParam,
@@ -1367,6 +1446,14 @@ LRESULT DesktopWindowImpl::OnMessage(
 
             auto hdc = (HDC)wParam;
             auto color = ColorUtils::GetWUColor(dxamlCore->GetHandle()->GetFrameworkTheming()->GetHwndBackground(appTheme));
+            if (DesktopUtility::IsOnWindows10())
+            {
+                if (TryEraseBackgroundForWindowTopBorder(hdc, RGB(color.R, color.G, color.B)))
+                {
+                    return 1;
+                }
+            }
+
             RECT rc = WindowHelpers::GetClientWindowCoordinates(m_hwnd.get());
             auto oldColor  = ::SetBkColor(hdc, RGB(color.R, color.G, color.B));
             ASSERT(oldColor != CLR_INVALID);
@@ -1845,7 +1932,7 @@ void DesktopWindowImpl::RepositionWindowToDesktopWindowXamlSourceWindowDimension
 
     if (m_windowChrome)
     {
-        m_windowChrome->MoveContainer(wParam, lParam);
+        m_windowChrome->RefreshContainerSizeAndPosition();
     }
 }
 

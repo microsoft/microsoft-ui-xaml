@@ -25,10 +25,25 @@ bool IsOnDesktop()
     return isOnDesktopResult;
 }
 
+bool IsOnWindows10() noexcept
+{
+    static const bool isOnWindows10Result = []()
+    {
+        ULONGLONG version = 0;
+        RtlGetDeviceFamilyInfoEnum(&version, nullptr, nullptr);
+
+        // The version packs major.minor.build.revision into four 16-bit fields.
+        // Windows 10 and 11 both use major version 10; Windows 11 starts at build 22000.
+        constexpr ULONGLONG windows10Version = 10ULL << 48;
+        constexpr ULONGLONG windows11Version = windows10Version | (22000ULL << 16);
+        return version >= windows10Version && version < windows11Version;
+    }();
+    return isOnWindows10Result;
+}
+
 void DeleteIsOnDesktopCache()
 {
     shouldReturnCachedIsOnDesktopValue = false;
 }
 
 } // namespace
-

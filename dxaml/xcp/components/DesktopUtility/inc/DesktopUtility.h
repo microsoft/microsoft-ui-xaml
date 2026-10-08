@@ -6,5 +6,6 @@
 namespace DesktopUtility {
 
 bool IsOnDesktop();
+bool IsOnWindows10() noexcept;
 void DeleteIsOnDesktopCache();
 } // namespace

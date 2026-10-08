@@ -18,6 +18,7 @@
 #include <VisualStateManager.h>
 #include "VisualTreeHelper.h"
 #include "WindowHelpers.h"
+#include "DesktopUtility.h"
 #include "DiagnosticsInterop.h"
 #include <FrameworkUdk/Theming.h>
 #include "microsoft.ui.input.h"
@@ -66,6 +67,7 @@ _Check_return_ HRESULT CWindowChrome::ConfigureWindowChrome()
 {
     const auto& windowChrome = GetPeer();
     auto appWindow = windowChrome->GetAppWindow();
+    IFCPTR_RETURN(appWindow);
     ctl::ComPtr<ixp::IAppWindowTitleBar> appWindowTitlebar;
     IFC_RETURN(appWindow->get_TitleBar(&appWindowTitlebar));
     IFC_RETURN(appWindowTitlebar->put_ExtendsContentIntoTitleBar(m_bIsActive)); // this will trigger a WM_MOVE and call OnTitleBarSizeChanged() immediately
@@ -145,6 +147,14 @@ bool CWindowChrome::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, _Out_
     {
         case WM_CREATE:
             return !!OnCreate();
+
+        case WM_STYLECHANGED:
+            if (wParam == static_cast<WPARAM>(GWL_STYLE)
+                && DesktopUtility::IsOnWindows10())
+            {
+                TRACE_HR_NORETURN(UpdateDwmFrameMargins());
+            }
+            break;
     }
 
     return false;
@@ -164,14 +174,15 @@ LRESULT CWindowChrome::OnCreate()
 }
 
 // Method Description:
-// - This method computes the height of the little border above the title bar
-//   and returns it. If the border is disabled, then this method will return 0.
+// - Computes the existing spacing above XAML within the client area.
+//   This is not a measurement of the native border or current XAML position.
+// - Uses only cached Window.ExtendsContentIntoTitleBar and maximization state;
+//   fullscreen and borderless presenters are not checked.
 // Return Value:
-// - the height of the border above the title bar or 0 if it's disabled
+// - 1 physical pixel when Window.ExtendsContentIntoTitleBar is enabled and the
+//   window is not maximized; 0 otherwise.
 int CWindowChrome::GetTopBorderHeight() const noexcept
 {
-    // No border when maximized, or when the titlebar is invisible (by being in
-    // fullscreen or focus mode).
     if (!IsTitlebarVisible() || IsMaximized(m_topLevelWindow))
     {
         return 0;
@@ -180,16 +191,148 @@ int CWindowChrome::GetTopBorderHeight() const noexcept
     return topBorderVisibleHeight;
 }
 
+// True when the client area's top row needs special painting.  This can happen when ExtendsContentIntoTitleBar
+// is enabled, in this case the WinUI content starts at y=1 because the DWM border is at y=0.
+// False means the normal background erase handles that row.
+// Query failures are logged and also return false.
+bool CWindowChrome::ShouldPaintTopRowOfClientArea()
+{
+    ASSERT(DesktopUtility::IsOnWindows10());
+
+    const int topBorderHeight = GetTopBorderHeight();
+    const auto style = ::GetWindowLongPtrW(m_topLevelWindow, GWL_STYLE);
+
+    // Fullscreen and borderless windows can still leave a one-pixel gap above XAML.
+    // That gap alone does not mean Windows has a native border to show through it.
+    // WS_BORDER requests a simple border; WS_THICKFRAME requests a resizable frame.
+    // If neither bit is set, use normal background painting and clear any WinUI-owned DWM margins.
+    // HWND styles can change before AppWindow reports the new presenter, so check them now.
+    // We also check OverlappedPresenter.HasBorder below: a resize style alone is not enough.
+    if (topBorderHeight == 0 || (style & (WS_BORDER | WS_THICKFRAME)) == 0)
+    {
+        return false;
+    }
+
+    const auto windowChrome = GetPeer();
+
+    // Close detaches the DesktopWindow before VisibilityChanged(false). Reentrant
+    // HWND messages must not query AppWindow through the detached chrome.
+    if (!windowChrome->GetDesktopWindowNoRef())
+    {
+        return false;
+    }
+
+    ctl::ComPtr<ixp::IAppWindow> appWindow = windowChrome->GetAppWindow();
+    if (!appWindow)
+    {
+        return false;
+    }
+
+    ctl::ComPtr<ixp::IAppWindowPresenter> presenter;
+    if (FAILED(appWindow->get_Presenter(&presenter)) || !presenter)
+    {
+        return false;
+    }
+
+    ixp::AppWindowPresenterKind kind {};
+    if (FAILED(presenter->get_Kind(&kind)))
+    {
+        return false;
+    }
+
+    if (kind == ixp::AppWindowPresenterKind_FullScreen)
+    {
+        return false;
+    }
+    if (kind == ixp::AppWindowPresenterKind_Overlapped)
+    {
+        ctl::ComPtr<ixp::IOverlappedPresenter> overlappedPresenter;
+        if (FAILED(presenter.As(&overlappedPresenter)))
+        {
+            return false;
+        }
+        boolean hasBorder = false;
+        if (FAILED(overlappedPresenter->get_HasBorder(&hasBorder)))
+        {
+            return false;
+        }
+        if (!hasBorder)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // Method Description:
-// - Returns true if the titlebar is visible. For things like fullscreen mode,
-//   borderless mode (aka "focus mode"), this will return false.
+// - Returns whether custom-title-bar mode is enabled by the cached
+//   Window.ExtendsContentIntoTitleBar state (chrome active).
+// - Does not check whether an app-supplied title-bar element is set or visible,
+//   or whether the current presenter displays a title bar.
+// - Setting only AppWindow.TitleBar.ExtendsContentIntoTitleBar does not enable it.
 // Arguments:
 // - <none>
 // Return Value:
-// - true iff the titlebar is visible
+// - true when Window.ExtendsContentIntoTitleBar is enabled; false otherwise.
 bool CWindowChrome::IsTitlebarVisible() const
 {
     return IsChromeActive();
+}
+
+// Work around the missing Windows 10 top border by calling DwmExtendFrameIntoClientArea.
+// Clear WinUI-owned margins when the native frame or reserved top row is removed.
+_Check_return_ HRESULT CWindowChrome::UpdateDwmFrameMargins()
+{
+    ASSERT(DesktopUtility::IsOnWindows10());
+
+    int topFrameMargin = 0;
+    if (ShouldPaintTopRowOfClientArea())
+    {
+        RECT frame = {};
+        const UINT dpi = ::GetDpiForWindow(m_topLevelWindow);
+        const DWORD style = static_cast<DWORD>(::GetWindowLongPtrW(m_topLevelWindow, GWL_STYLE));
+        const DWORD exStyle = static_cast<DWORD>(::GetWindowLongPtrW(m_topLevelWindow, GWL_EXSTYLE));
+
+        IFCW32_RETURN(::AdjustWindowRectExForDpi(
+            &frame,
+            style,
+            ::GetMenu(m_topLevelWindow) != nullptr,
+            exStyle,
+            dpi));
+
+        // Follow Terminal's _UpdateFrameMargins workaround: extend the standard
+        // caption/resize-frame height, not just the visible row. On Windows 10
+        // 1809, a one-pixel extension leaves the inactive row untinted. XAML
+        // still starts at y=1 and covers the rest of this extended frame.
+        topFrameMargin = static_cast<int>(std::max<LONG>(-frame.top, topBorderVisibleHeight));
+    }
+
+    if ((!m_appliedDwmTopFrameMargin && topFrameMargin == 0) ||
+        (m_appliedDwmTopFrameMargin && *m_appliedDwmTopFrameMargin == topFrameMargin))
+    {
+        // WinUI has not changed the margins for this window, or the WinUI-owned
+        // value is already current. Do not issue an unnecessary all-margin write.
+        return S_OK;
+    }
+
+    // DwmExtendFrameIntoClientArea writes all four margins and has no getter.
+    // Once WinUI reserves this row, it owns the complete margin set for the
+    // window. A zero value clears that WinUI-owned set when the row is removed.
+    MARGINS margins = {};
+    margins.cyTopHeight = topFrameMargin;
+    IFC_RETURN(::DwmExtendFrameIntoClientArea(m_topLevelWindow, &margins));
+
+    if (topFrameMargin > 0)
+    {
+        m_appliedDwmTopFrameMargin = topFrameMargin;
+    }
+    else
+    {
+        m_appliedDwmTopFrameMargin.reset();
+    }
+
+    return S_OK;
 }
 
 void CWindowChrome::UpdateContainerSize(WPARAM wParam, LPARAM lParam)
@@ -223,6 +366,12 @@ void CWindowChrome::UpdateBridgeWindowSizePosition()
     const auto windowWidth = RectHelpers::rectWidth(clientRect);
     const auto windowHeight = RectHelpers::rectHeight(clientRect);
     const auto topBorderHeight = WindowHelpers::ClampToShortMax(GetTopBorderHeight(), 0);
+
+    if (DesktopUtility::IsOnWindows10())
+    {
+        TRACE_HR_NORETURN(UpdateDwmFrameMargins());
+    }
+
     const COORD newIslandPos = { 0, topBorderHeight };
     
 
