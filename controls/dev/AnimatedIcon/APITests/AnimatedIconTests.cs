@@ -19,6 +19,7 @@ using Microsoft.UI.Private.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using System.Threading;
 using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
+using Microsoft.UI.Xaml.XamlTypeInfo;
 using Windows.UI.ViewManagement;
 using Color = Windows.UI.Color;
 using Point = Windows.Foundation.Point;
@@ -934,6 +935,185 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void DependencyPropertyIdentifiersAreRegisteredDistinctAndStable()
+        {
+            var identifiers = ReadIconPropertyIds().ToArray();
+
+            // Constructing instances runs EnsureProperties again; it must keep the registered identifiers.
+            CreateAnimatedIconAndIconSource();
+            var identifiersReadAgain = ReadIconPropertyIds().ToArray();
+            var iconSourceIdentifiers = ReadIconSourcePropertyIds();
+
+            Verify.AreEqual(4, CountDistinctNonNull(identifiers, new DependencyProperty[0]));
+            Verify.AreEqual(identifiers[0], identifiersReadAgain[0]);
+            Verify.AreEqual(identifiers[1], identifiersReadAgain[1]);
+            Verify.AreEqual(identifiers[2], identifiersReadAgain[2]);
+            Verify.AreEqual(identifiers[3], identifiersReadAgain[3]);
+
+            // AnimatedIconSource registers its own Source, FallbackIconSource and MirroredWhenRightToLeft properties.
+            Verify.AreEqual(7, CountDistinctNonNull(identifiers, iconSourceIdentifiers));
+        }
+
+        [TestMethod]
+        public void DependencyPropertyDefaultsMatchRegisteredMetadata()
+        {
+            var ids = ReadIconPropertyIds();
+            var defaults = GetMetadataDefaultValues(ids.ToArray(), typeof(AnimatedIcon));
+
+            // State defaults to an empty string rather than null; OnLoaded unboxes ancestor values as strings.
+            Verify.AreEqual("", defaults[0]);
+            Verify.IsNull(defaults[1]);
+            Verify.IsNull(defaults[2]);
+            Verify.AreEqual(false, defaults[3]);
+
+            var icon = CreateBareIcon();
+            Verify.AreEqual(4, CountUnsetLocalValues(icon, ids.ToArray()));
+            Verify.AreEqual("", GetValueOf(icon, ids.State));
+            Verify.IsNull(GetValueOf(icon, ids.Source));
+            Verify.IsNull(GetValueOf(icon, ids.FallbackIconSource));
+            Verify.AreEqual(false, GetValueOf(icon, ids.MirroredWhenRightToLeft));
+        }
+
+        [TestMethod]
+        public void ClrPropertiesAndDependencyPropertiesShareStorage()
+        {
+            var ids = ReadIconPropertyIds();
+            var icon = CreateDetachedIcon(null);
+            var source = new AnimatedBackVisualSource();
+            var fallback = CreateSymbolIconSource(Symbol.Accept);
+
+            // Values set through the identifiers are what the CLR properties return.
+            SetValueOf(icon, ids.Source, source);
+            SetValueOf(icon, ids.FallbackIconSource, fallback);
+            SetValueOf(icon, ids.MirroredWhenRightToLeft, true);
+            SetValueOf(icon, ids.State, "Pressed");
+            Verify.AreEqual(source, GetSourceOf(icon));
+            Verify.AreEqual(fallback, GetFallbackIconSourceOf(icon));
+            Verify.AreEqual(true, GetMirroredWhenRightToLeftOf(icon));
+            Verify.AreEqual("Pressed", GetStateOf(icon));
+
+            // Values set through the CLR properties are stored under the identifiers.
+            var otherSource = new AnimatedSettingsVisualSource();
+            var otherFallback = CreateSymbolIconSource(Symbol.Back);
+            SetClrProperties(icon, otherSource, otherFallback, false, "Normal");
+            Verify.AreEqual(otherSource, GetValueOf(icon, ids.Source));
+            Verify.AreEqual(otherFallback, GetValueOf(icon, ids.FallbackIconSource));
+            Verify.AreEqual(false, GetValueOf(icon, ids.MirroredWhenRightToLeft));
+            Verify.AreEqual("Normal", GetValueOf(icon, ids.State));
+
+            // Clearing the local values restores the registered defaults.
+            SetMirroredWhenRightToLeft(icon, true);
+            ClearValuesOf(icon, ids.ToArray());
+            Verify.AreEqual(4, CountUnsetLocalValues(icon, ids.ToArray()));
+            Verify.IsNull(GetSourceOf(icon));
+            Verify.IsNull(GetFallbackIconSourceOf(icon));
+            Verify.AreEqual(false, GetMirroredWhenRightToLeftOf(icon));
+            Verify.AreEqual("", GetStateOf(icon));
+
+            // ClearValue raises the change callback like a set: the right-to-left counter-mirroring comes back.
+            var loadedIcon = CreateLoadedIcon(new AnimatedBackVisualSource());
+            SetFlowDirection(loadedIcon, FlowDirection.RightToLeft);
+            SetValueOf(loadedIcon, ids.MirroredWhenRightToLeft, true);
+            Verify.AreEqual(1.0, GetMirrorScaleX(loadedIcon));
+            ClearValuesOf(loadedIcon, ids.MirroredWhenRightToLeft);
+            Verify.AreEqual(-1.0, GetMirrorScaleX(loadedIcon));
+        }
+
+        [TestMethod]
+        public void StateAttachedPropertyIsStoredOnAnyDependencyObject()
+        {
+            var ids = ReadIconPropertyIds();
+            var brush = CreateSolidColorBrush();
+            var border = CreateBorder();
+            var untouchedBorder = CreateBorder();
+
+            // A brush is a DependencyObject but not a UIElement; the State change callback ignores non-icons.
+            SetStateOf(brush, "Pressed");
+            SetValueOf(border, ids.State, "PointerOver");
+            Verify.AreEqual("Pressed", GetStateOf(brush));
+            Verify.AreEqual("Pressed", GetValueOf(brush, ids.State));
+            Verify.AreEqual("PointerOver", GetStateOf(border));
+
+            Verify.AreEqual("", GetStateOf(untouchedBorder));
+            Verify.AreEqual("", GetValueOf(untouchedBorder, ids.State));
+
+            // A null string is marshaled as an empty HSTRING.
+            SetStateOf(border, null);
+            Verify.AreEqual("", GetStateOf(border));
+        }
+
+        [TestMethod]
+        public void XamlMarkupSetsAnimatedIconPropertiesAndAttachedState()
+        {
+            var grid = (Grid)LoadMarkupAsContent(c_iconUnderGridWithAttachedStateMarkup);
+            var icon = GetFirstChildIcon(grid);
+
+            Verify.AreEqual("Pressed", GetStateOf(grid));
+            // The icon has no State of its own, so it copies the ancestor's State when it is loaded.
+            Verify.AreEqual("Pressed", GetStateOf(icon));
+            // The animated visual source is the content property value.
+            Verify.AreEqual(typeof(AnimatedBackVisualSource).FullName, GetSourceTypeName(icon));
+            Verify.AreEqual(true, GetMirroredWhenRightToLeftOf(icon));
+            Verify.AreEqual(Symbol.Accept, GetFallbackIconSourceSymbol(icon));
+            Verify.IsNotNull(GetAnimatedVisualRoot(icon));
+            Verify.AreEqual(1, GetRootPanelChildCount(icon));
+        }
+
+        [TestMethod]
+        public void StyleAndVisualStateSettersResolveAnimatedIconProperties()
+        {
+            var ids = ReadIconPropertyIds();
+            var control = (Control)LoadMarkupAsContent(c_templatedControlWithIconStateSetterMarkup);
+            var icon = FindTemplateIcon(control);
+
+            // The style setter's "True" is converted to the Boolean property type and is not a local value.
+            Verify.AreEqual(true, GetMirroredWhenRightToLeftOf(icon));
+            Verify.AreEqual(false, HasLocalValue(icon, ids.MirroredWhenRightToLeft));
+            Verify.AreEqual("", GetStateOf(icon));
+
+            // The same Target="Name.(AnimatedIcon.State)" setter pattern is used by Button, CheckBox and ComboBox templates.
+            Verify.AreEqual(true, GoToStateAndWaitForSetters(control, "Pressed"));
+            Verify.AreEqual("Pressed", GetStateOf(icon));
+            Verify.AreEqual(true, GoToStateAndWaitForSetters(control, "Normal"));
+            Verify.AreEqual("", GetStateOf(icon));
+        }
+
+        [TestMethod]
+        public void XamlMetadataProviderDescribesAnimatedIconMembers()
+        {
+            var type = GetControlsXamlType(c_animatedIconTypeName);
+
+            Verify.AreEqual(c_animatedIconTypeName, GetFullNameOf(type));
+            Verify.AreEqual("Source", GetContentPropertyName(type));
+            Verify.AreEqual(
+                "Source=DP,RW; FallbackIconSource=DP,RW; MirroredWhenRightToLeft=DP,RW; State=DP,RW",
+                DescribeMembers(type, new[] { "Source", "FallbackIconSource", "MirroredWhenRightToLeft", "State" }));
+            Verify.AreEqual(false, HasMember(type, "NotAMember"));
+
+            var instance = ActivateXamlType(type);
+            Verify.AreEqual(typeof(AnimatedIcon), instance.GetType());
+            var icon = (AnimatedIcon)instance;
+
+            // Member values go through the registered dependency properties.
+            SetMemberValue(type, "MirroredWhenRightToLeft", icon, true);
+            SetMemberValue(type, "State", icon, "Pressed");
+            Verify.AreEqual(true, GetMirroredWhenRightToLeftOf(icon));
+            Verify.AreEqual("Pressed", GetStateOf(icon));
+
+            var source = new AnimatedFindVisualSource();
+            SetSource(icon, source);
+            Verify.AreEqual(source, GetMemberValue(type, "Source", icon));
+        }
+
+        [TestMethod]
+        public void ActivationFactoriesReportRuntimeClassNames()
+        {
+            Verify.AreEqual(c_animatedIconTypeName, GetActivationFactoryRuntimeClassName(c_animatedIconTypeName));
+            Verify.AreEqual(c_animatedIconSourceTypeName, GetActivationFactoryRuntimeClassName(c_animatedIconSourceTypeName));
+            Verify.AreEqual(c_animatedIconTestHooksTypeName, GetActivationFactoryRuntimeClassName(c_animatedIconTestHooksTypeName));
+        }
+
         private const int c_transitionTimeoutMs = 10000;
         private const int c_longTransitionTimeoutMs = 30000;
         private const int c_speedUpTimeoutMs = 8000;
@@ -945,6 +1125,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private const float c_progressTolerance = 0.0001f;
         // Stretches the 0.11-progress NormalToPointerOver segment of AnimatedBackVisualSource (1.33s) to about 12s.
         private const float c_slowDurationMultiplier = 80f;
+
+        private const string c_animatedIconTypeName = "Microsoft.UI.Xaml.Controls.AnimatedIcon";
+        private const string c_animatedIconSourceTypeName = "Microsoft.UI.Xaml.Controls.AnimatedIconSource";
+        private const string c_animatedIconTestHooksTypeName = "Microsoft.UI.Private.Controls.AnimatedIconTestHooks";
+
+        // The attached State is set on the Grid the way control templates set it on a ContentPresenter.
+        private const string c_iconUnderGridWithAttachedStateMarkup =
+            @"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                    xmlns:controls='using:Microsoft.UI.Xaml.Controls'
+                    xmlns:visuals='using:Microsoft.UI.Xaml.Controls.AnimatedVisuals'
+                    controls:AnimatedIcon.State='Pressed'>
+                <controls:AnimatedIcon MirroredWhenRightToLeft='True'>
+                    <controls:AnimatedIcon.FallbackIconSource>
+                        <controls:SymbolIconSource Symbol='Accept'/>
+                    </controls:AnimatedIcon.FallbackIconSource>
+                    <visuals:AnimatedBackVisualSource/>
+                </controls:AnimatedIcon>
+            </Grid>";
+
+        private const string c_templatedControlWithIconStateSetterMarkup =
+            @"<ContentControl xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                              xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                <ContentControl.Template>
+                    <ControlTemplate TargetType='ContentControl'>
+                        <Grid>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name='CommonStates'>
+                                    <VisualState x:Name='Normal'/>
+                                    <VisualState x:Name='Pressed'>
+                                        <VisualState.Setters>
+                                            <Setter Target='Icon.(controls:AnimatedIcon.State)' Value='Pressed'/>
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <controls:AnimatedIcon x:Name='Icon'>
+                                <controls:AnimatedIcon.Style>
+                                    <Style TargetType='controls:AnimatedIcon'>
+                                        <Setter Property='MirroredWhenRightToLeft' Value='True'/>
+                                    </Style>
+                                </controls:AnimatedIcon.Style>
+                            </controls:AnimatedIcon>
+                        </Grid>
+                    </ControlTemplate>
+                </ContentControl.Template>
+            </ContentControl>";
 
         // Records the LastAnimationSegmentChanged notifications of one icon, which TransitionStates raises synchronously.
         private sealed class TransitionRecorder : IDisposable
@@ -1611,6 +1838,304 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             });
             return colors.ToArray();
+        }
+
+        // The AnimatedIcon dependency property identifiers, read from the public statics on the UI thread.
+        private sealed class IconPropertyIds
+        {
+            public DependencyProperty State;
+            public DependencyProperty Source;
+            public DependencyProperty FallbackIconSource;
+            public DependencyProperty MirroredWhenRightToLeft;
+
+            public DependencyProperty[] ToArray()
+            {
+                return new[] { State, Source, FallbackIconSource, MirroredWhenRightToLeft };
+            }
+        }
+
+        private static IconPropertyIds ReadIconPropertyIds()
+        {
+            var ids = new IconPropertyIds();
+            RunOnUIThread.Execute(() =>
+            {
+                ids.State = AnimatedIcon.StateProperty;
+                ids.Source = AnimatedIcon.SourceProperty;
+                ids.FallbackIconSource = AnimatedIcon.FallbackIconSourceProperty;
+                ids.MirroredWhenRightToLeft = AnimatedIcon.MirroredWhenRightToLeftProperty;
+            });
+            return ids;
+        }
+
+        // Source, FallbackIconSource, MirroredWhenRightToLeft.
+        private static DependencyProperty[] ReadIconSourcePropertyIds()
+        {
+            DependencyProperty[] ids = null;
+            RunOnUIThread.Execute(() =>
+            {
+                ids = new[] { AnimatedIconSource.SourceProperty, AnimatedIconSource.FallbackIconSourceProperty, AnimatedIconSource.MirroredWhenRightToLeftProperty };
+            });
+            return ids;
+        }
+
+        // No property is set, so every AnimatedIcon property is at its registered default.
+        private static AnimatedIcon CreateBareIcon()
+        {
+            AnimatedIcon icon = null;
+            RunOnUIThread.Execute(() => icon = new AnimatedIcon());
+            return icon;
+        }
+
+        private static void CreateAnimatedIconAndIconSource()
+        {
+            object icon = null;
+            object iconSource = null;
+            RunOnUIThread.Execute(() =>
+            {
+                icon = new AnimatedIcon();
+                iconSource = new AnimatedIconSource();
+            });
+            Verify.IsNotNull(icon);
+            Verify.IsNotNull(iconSource);
+        }
+
+        private static int CountDistinctNonNull(DependencyProperty[] first, DependencyProperty[] second)
+        {
+            var distinct = new List<DependencyProperty>();
+            foreach (var property in first.Concat(second))
+            {
+                if (property != null && !distinct.Any(known => ReferenceEquals(known, property)))
+                {
+                    distinct.Add(property);
+                }
+            }
+            return distinct.Count;
+        }
+
+        private static object[] GetMetadataDefaultValues(DependencyProperty[] properties, Type ownerType)
+        {
+            object[] defaults = null;
+            RunOnUIThread.Execute(() =>
+            {
+                defaults = properties.Select(property => property.GetMetadata(ownerType).DefaultValue).ToArray();
+            });
+            return defaults;
+        }
+
+        private static int CountUnsetLocalValues(DependencyObject element, DependencyProperty[] properties)
+        {
+            int count = -1;
+            RunOnUIThread.Execute(() =>
+            {
+                count = properties.Count(property => element.ReadLocalValue(property) == DependencyProperty.UnsetValue);
+            });
+            return count;
+        }
+
+        private static bool HasLocalValue(DependencyObject element, DependencyProperty property)
+        {
+            return CountUnsetLocalValues(element, new[] { property }) == 0;
+        }
+
+        private static object GetValueOf(DependencyObject element, DependencyProperty property)
+        {
+            object value = null;
+            RunOnUIThread.Execute(() => value = element.GetValue(property));
+            return value;
+        }
+
+        private static void SetValueOf(DependencyObject element, DependencyProperty property, object value)
+        {
+            RunOnUIThread.Execute(() => element.SetValue(property, value));
+        }
+
+        private static void ClearValuesOf(DependencyObject element, params DependencyProperty[] properties)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var property in properties)
+                {
+                    element.ClearValue(property);
+                }
+            });
+        }
+
+        private static IAnimatedVisualSource2 GetSourceOf(AnimatedIcon icon)
+        {
+            IAnimatedVisualSource2 source = null;
+            RunOnUIThread.Execute(() => source = icon.Source);
+            return source;
+        }
+
+        private static IconSource GetFallbackIconSourceOf(AnimatedIcon icon)
+        {
+            IconSource fallback = null;
+            RunOnUIThread.Execute(() => fallback = icon.FallbackIconSource);
+            return fallback;
+        }
+
+        private static bool GetMirroredWhenRightToLeftOf(AnimatedIcon icon)
+        {
+            bool mirrored = false;
+            RunOnUIThread.Execute(() => mirrored = icon.MirroredWhenRightToLeft);
+            return mirrored;
+        }
+
+        private static void SetClrProperties(AnimatedIcon icon, IAnimatedVisualSource2 source, IconSource fallback, bool mirrored, string state)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                icon.Source = source;
+                icon.FallbackIconSource = fallback;
+                icon.MirroredWhenRightToLeft = mirrored;
+                AnimatedIcon.SetState(icon, state);
+            });
+        }
+
+        private static SymbolIconSource CreateSymbolIconSource(Symbol symbol)
+        {
+            SymbolIconSource iconSource = null;
+            RunOnUIThread.Execute(() => iconSource = new SymbolIconSource { Symbol = symbol });
+            return iconSource;
+        }
+
+        private static SolidColorBrush CreateSolidColorBrush()
+        {
+            SolidColorBrush brush = null;
+            RunOnUIThread.Execute(() => brush = new SolidColorBrush(Colors.Red));
+            return brush;
+        }
+
+        private static Border CreateBorder()
+        {
+            Border border = null;
+            RunOnUIThread.Execute(() => border = new Border());
+            return border;
+        }
+
+        private FrameworkElement LoadMarkupAsContent(string markup)
+        {
+            FrameworkElement root = null;
+            RunOnUIThread.Execute(() =>
+            {
+                root = (FrameworkElement)XamlReader.Load(markup);
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+            return root;
+        }
+
+        private static AnimatedIcon GetFirstChildIcon(Panel panel)
+        {
+            AnimatedIcon icon = null;
+            RunOnUIThread.Execute(() => icon = (AnimatedIcon)panel.Children[0]);
+            return icon;
+        }
+
+        // The template root is a Grid whose first child is the named AnimatedIcon.
+        private static AnimatedIcon FindTemplateIcon(Control control)
+        {
+            AnimatedIcon icon = null;
+            RunOnUIThread.Execute(() => icon = (AnimatedIcon)((Panel)VisualTreeHelper.GetChild(control, 0)).Children[0]);
+            return icon;
+        }
+
+        private static string GetSourceTypeName(AnimatedIcon icon)
+        {
+            string name = null;
+            RunOnUIThread.Execute(() => name = icon.Source?.GetType().FullName);
+            return name;
+        }
+
+        private static Symbol? GetFallbackIconSourceSymbol(AnimatedIcon icon)
+        {
+            Symbol? symbol = null;
+            RunOnUIThread.Execute(() => symbol = (icon.FallbackIconSource as SymbolIconSource)?.Symbol);
+            return symbol;
+        }
+
+        // VisualStateManager applies the setters of the new state after GoToState returns,
+        // so the setter values are read once the UI thread is idle.
+        private static bool GoToStateAndWaitForSetters(Control control, string stateName)
+        {
+            bool changed = false;
+            RunOnUIThread.Execute(() => changed = VisualStateManager.GoToState(control, stateName, false));
+            IdleSynchronizer.Wait();
+            return changed;
+        }
+
+        private static IXamlType GetControlsXamlType(string typeName)
+        {
+            IXamlType type = null;
+            RunOnUIThread.Execute(() => type = new XamlControlsXamlMetaDataProvider().GetXamlType(typeName));
+            Verify.IsNotNull(type, "XAML type " + typeName);
+            return type;
+        }
+
+        private static string GetFullNameOf(IXamlType type)
+        {
+            string name = null;
+            RunOnUIThread.Execute(() => name = type.FullName);
+            return name;
+        }
+
+        private static string GetContentPropertyName(IXamlType type)
+        {
+            string name = null;
+            RunOnUIThread.Execute(() => name = type.ContentProperty?.Name);
+            return name;
+        }
+
+        // "Name=DP,RW" for a writable dependency-property member, "Name=missing" when the type has no such member.
+        private static string DescribeMembers(IXamlType type, string[] memberNames)
+        {
+            string description = null;
+            RunOnUIThread.Execute(() =>
+            {
+                description = string.Join("; ", memberNames.Select(name =>
+                {
+                    var member = type.GetMember(name);
+                    return member == null ? name + "=missing" :
+                        member.Name + "=" + (member.IsDependencyProperty ? "DP" : "CLR") + "," + (member.IsReadOnly ? "RO" : "RW");
+                }));
+            });
+            return description;
+        }
+
+        private static bool HasMember(IXamlType type, string memberName)
+        {
+            bool hasMember = true;
+            RunOnUIThread.Execute(() => hasMember = type.GetMember(memberName) != null);
+            return hasMember;
+        }
+
+        private static object ActivateXamlType(IXamlType type)
+        {
+            object instance = null;
+            RunOnUIThread.Execute(() => instance = type.ActivateInstance());
+            Verify.IsNotNull(instance, "Activated " + type.FullName);
+            return instance;
+        }
+
+        private static void SetMemberValue(IXamlType type, string memberName, object instance, object value)
+        {
+            RunOnUIThread.Execute(() => type.GetMember(memberName).SetValue(instance, value));
+        }
+
+        private static object GetMemberValue(IXamlType type, string memberName, object instance)
+        {
+            object value = null;
+            RunOnUIThread.Execute(() => value = type.GetMember(memberName).GetValue(instance));
+            return value;
+        }
+
+        // Asks the activation factory object itself (IInspectable::GetRuntimeClassName), not an instance.
+        private static string GetActivationFactoryRuntimeClassName(string typeName)
+        {
+            string name = null;
+            RunOnUIThread.Execute(() => name = new global::WinRT.IInspectable(global::WinRT.ActivationFactory.Get(typeName)).GetRuntimeClassName(false));
+            return name;
         }
 
         private static bool IsClosed(Visual visual)

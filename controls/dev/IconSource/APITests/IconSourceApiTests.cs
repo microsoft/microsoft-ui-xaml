@@ -2,11 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
+using System.Linq;
 
 using MUXControlsTestApp.Utilities;
 
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
+using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.XamlTypeInfo;
@@ -140,6 +142,418 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             Verify.AreEqual("SymbolIconSource:" + Symbol.Accept, DescribeFallbackIconSource(animatedIcon));
             Verify.IsTrue(HasSameSourceAndFallback(iconSource, animatedIcon));
+        }
+
+        [TestMethod]
+        public void AnimatedIconSourceDependencyPropertyIdentifiersAreRegisteredDistinctAndStable()
+        {
+            var identifiers = ReadAnimatedIconSourcePropertyIds();
+
+            // Constructing an AnimatedIconSource runs EnsureProperties again; it must keep the registered identifiers.
+            var iconSource = CreateEmptyAnimatedIconSource();
+            Verify.IsNotNull(iconSource);
+            var identifiersReadAgain = ReadAnimatedIconSourcePropertyIds();
+            var animatedIconIdentifiers = ReadAnimatedIconPropertyIds();
+
+            Verify.AreEqual(3, CountDistinctNonNull(identifiers, new DependencyProperty[0]));
+            Verify.AreEqual(identifiers[0], identifiersReadAgain[0]);
+            Verify.AreEqual(identifiers[1], identifiersReadAgain[1]);
+            Verify.AreEqual(identifiers[2], identifiersReadAgain[2]);
+
+            // The same-named AnimatedIcon properties are separate registrations owned by AnimatedIcon.
+            Verify.AreEqual(6, CountDistinctNonNull(identifiers, animatedIconIdentifiers));
+        }
+
+        [TestMethod]
+        public void AnimatedIconSourceClrPropertiesAndDependencyPropertiesShareStorage()
+        {
+            // Source, FallbackIconSource, MirroredWhenRightToLeft.
+            var ids = ReadAnimatedIconSourcePropertyIds();
+            var defaults = GetMetadataDefaultValues(ids, typeof(AnimatedIconSource));
+            Verify.IsNull(defaults[0]);
+            Verify.IsNull(defaults[1]);
+            Verify.AreEqual(false, defaults[2]);
+
+            var iconSource = CreateEmptyAnimatedIconSource();
+            Verify.AreEqual(3, CountUnsetLocalValues(iconSource, ids));
+
+            // Values set through the identifiers are what the CLR properties return.
+            var source = new AnimatedBackVisualSource();
+            var fallback = CreateSymbolIconSource(Symbol.Accept);
+            SetValueOf(iconSource, ids[0], source);
+            SetValueOf(iconSource, ids[1], fallback);
+            SetValueOf(iconSource, ids[2], true);
+            Verify.AreEqual(source, GetIconSourceSource(iconSource));
+            Verify.AreEqual(fallback, GetIconSourceFallback(iconSource));
+            Verify.AreEqual(true, GetIconSourceMirrored(iconSource));
+
+            // Values set through the CLR properties are stored under the identifiers.
+            var otherSource = new AnimatedSettingsVisualSource();
+            var otherFallback = CreateSymbolIconSource(Symbol.Back);
+            SetIconSourceClrProperties(iconSource, otherSource, otherFallback, false);
+            Verify.AreEqual(otherSource, GetValueOf(iconSource, ids[0]));
+            Verify.AreEqual(otherFallback, GetValueOf(iconSource, ids[1]));
+            Verify.AreEqual(false, GetValueOf(iconSource, ids[2]));
+
+            // Clearing the local values restores the registered defaults.
+            SetIconSourceClrProperties(iconSource, otherSource, otherFallback, true);
+            ClearValuesOf(iconSource, ids);
+            Verify.AreEqual(3, CountUnsetLocalValues(iconSource, ids));
+            Verify.IsNull(GetIconSourceSource(iconSource));
+            Verify.IsNull(GetIconSourceFallback(iconSource));
+            Verify.AreEqual(false, GetIconSourceMirrored(iconSource));
+        }
+
+        [TestMethod]
+        public void AnimatedIconSourceDependencyPropertyChangesPropagateToCreatedIcon()
+        {
+            var ids = ReadAnimatedIconSourcePropertyIds();
+            var iconSource = CreateEmptyAnimatedIconSource();
+            var animatedIcon = CreateIconElement(iconSource) as AnimatedIcon;
+            Verify.IsNotNull(animatedIcon);
+
+            // IconSource pushes each changed value into the icons it created, synchronously.
+            var source = new AnimatedBackVisualSource();
+            var fallback = CreateSymbolIconSource(Symbol.Accept);
+            SetValueOf(iconSource, ids[0], source);
+            SetValueOf(iconSource, ids[1], fallback);
+            SetValueOf(iconSource, ids[2], true);
+            Verify.AreEqual(source, GetAnimatedIconSourceValue(animatedIcon));
+            Verify.AreEqual(fallback, GetAnimatedIconFallback(animatedIcon));
+            Verify.AreEqual(true, GetMirroredWhenRightToLeft(animatedIcon));
+
+            SetValueOf(iconSource, ids[2], false);
+            Verify.AreEqual(false, GetMirroredWhenRightToLeft(animatedIcon));
+
+            // Clearing a reference-typed value pushes its null default; the other values are untouched.
+            ClearValuesOf(iconSource, ids[0]);
+            Verify.IsNull(GetAnimatedIconSourceValue(animatedIcon));
+            Verify.AreEqual(fallback, GetAnimatedIconFallback(animatedIcon));
+        }
+
+        // Product bug: after AnimatedIconSource.ClearValue(MirroredWhenRightToLeftProperty), an AnimatedIcon already created
+        // from that source throws InvalidCastException (E_NOINTERFACE unboxing the pushed Boolean) from its
+        // MirroredWhenRightToLeft getter. The expectation is the registered default, exactly as for a value cleared on the
+        // icon itself. The getter is read without letting an exception escape the UI-thread callback, so the bug fails this
+        // test with the observed exception instead of ending the process.
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Repro for the AnimatedIconSource ClearValue(MirroredWhenRightToLeftProperty) product bug. Re-enable when fixed.
+        public void AnimatedIconSourceClearedMirroredWhenRightToLeftPropagatesDefaultToCreatedIcon()
+        {
+            var ids = ReadAnimatedIconSourcePropertyIds();
+            var iconSource = CreateEmptyAnimatedIconSource();
+            var animatedIcon = CreateIconElement(iconSource) as AnimatedIcon;
+            Verify.IsNotNull(animatedIcon);
+
+            SetValueOf(iconSource, ids[2], true);
+            Verify.AreEqual("True", DescribeMirroredWhenRightToLeft(animatedIcon));
+
+            ClearValuesOf(iconSource, ids[2]);
+            Verify.AreEqual("False", DescribeMirroredWhenRightToLeft(animatedIcon));
+        }
+
+        [TestMethod]
+        public void AnimatedIconSourceXamlMarkupCreatesConfiguredIcon()
+        {
+            var iconSource = LoadAnimatedIconSourceMarkup(c_animatedIconSourceMarkup);
+
+            Verify.AreEqual(true, GetIconSourceMirrored(iconSource));
+            Verify.AreEqual(typeof(AnimatedBackVisualSource).FullName, GetIconSourceSourceTypeName(iconSource));
+            Verify.AreEqual("SymbolIconSource:" + Symbol.Back, DescribeIconSourceFallback(iconSource));
+
+            var animatedIcon = CreateIconElement(iconSource) as AnimatedIcon;
+            Verify.IsNotNull(animatedIcon);
+            Verify.AreEqual(typeof(AnimatedBackVisualSource).FullName, GetAnimatedIconSourceTypeName(animatedIcon));
+            Verify.AreEqual("SymbolIconSource:" + Symbol.Back, DescribeFallbackIconSource(animatedIcon));
+            Verify.IsTrue(HasSameSourceAndFallback(iconSource, animatedIcon));
+            Verify.AreEqual(true, GetMirroredWhenRightToLeft(animatedIcon));
+        }
+
+        [TestMethod]
+        public void AnimatedIconSourceXamlMetadataDescribesMembers()
+        {
+            var type = GetControlsXamlType(c_animatedIconSourceTypeName);
+
+            Verify.AreEqual(c_animatedIconSourceTypeName, GetFullNameOf(type));
+            // Unlike AnimatedIcon, AnimatedIconSource declares no content property.
+            Verify.IsNull(GetContentPropertyName(type));
+            Verify.AreEqual(
+                "Source=DP,RW; FallbackIconSource=DP,RW; MirroredWhenRightToLeft=DP,RW; State=missing",
+                DescribeMembers(type, new[] { "Source", "FallbackIconSource", "MirroredWhenRightToLeft", "State" }));
+
+            var instance = ActivateXamlType(type);
+            Verify.AreEqual(typeof(AnimatedIconSource), instance.GetType());
+            var iconSource = (AnimatedIconSource)instance;
+
+            // Member values go through the registered dependency properties.
+            var source = new AnimatedBackVisualSource();
+            SetMemberValue(type, "Source", iconSource, source);
+            SetMemberValue(type, "MirroredWhenRightToLeft", iconSource, true);
+            Verify.AreEqual(source, GetIconSourceSource(iconSource));
+            Verify.AreEqual(true, GetIconSourceMirrored(iconSource));
+
+            var fallback = CreateSymbolIconSource(Symbol.Find);
+            SetFallbackIconSource(iconSource, fallback);
+            Verify.AreEqual(fallback, GetMemberValue(type, "FallbackIconSource", iconSource));
+        }
+
+        private const string c_animatedIconSourceTypeName = "Microsoft.UI.Xaml.Controls.AnimatedIconSource";
+
+        private const string c_animatedIconSourceMarkup =
+            @"<controls:AnimatedIconSource xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                                           xmlns:controls='using:Microsoft.UI.Xaml.Controls'
+                                           xmlns:visuals='using:Microsoft.UI.Xaml.Controls.AnimatedVisuals'
+                                           MirroredWhenRightToLeft='True'>
+                <controls:AnimatedIconSource.Source>
+                    <visuals:AnimatedBackVisualSource/>
+                </controls:AnimatedIconSource.Source>
+                <controls:AnimatedIconSource.FallbackIconSource>
+                    <controls:SymbolIconSource Symbol='Back'/>
+                </controls:AnimatedIconSource.FallbackIconSource>
+            </controls:AnimatedIconSource>";
+
+        // Source, FallbackIconSource, MirroredWhenRightToLeft.
+        private static DependencyProperty[] ReadAnimatedIconSourcePropertyIds()
+        {
+            DependencyProperty[] ids = null;
+            RunOnUIThread.Execute(() =>
+            {
+                ids = new[] { AnimatedIconSource.SourceProperty, AnimatedIconSource.FallbackIconSourceProperty, AnimatedIconSource.MirroredWhenRightToLeftProperty };
+            });
+            return ids;
+        }
+
+        // Source, FallbackIconSource, MirroredWhenRightToLeft.
+        private static DependencyProperty[] ReadAnimatedIconPropertyIds()
+        {
+            DependencyProperty[] ids = null;
+            RunOnUIThread.Execute(() =>
+            {
+                ids = new[] { AnimatedIcon.SourceProperty, AnimatedIcon.FallbackIconSourceProperty, AnimatedIcon.MirroredWhenRightToLeftProperty };
+            });
+            return ids;
+        }
+
+        private static int CountDistinctNonNull(DependencyProperty[] first, DependencyProperty[] second)
+        {
+            var all = first.Concat(second).Where(property => property != null).ToArray();
+            return all.Where((property, index) => Array.FindIndex(all, other => ReferenceEquals(other, property)) == index).Count();
+        }
+
+        // "True"/"False", or "threw <exception type> 0x<HRESULT>" when the getter throws.
+        private static string DescribeMirroredWhenRightToLeft(AnimatedIcon animatedIcon)
+        {
+            string description = null;
+            RunOnUIThread.Execute(() =>
+            {
+                try
+                {
+                    description = animatedIcon.MirroredWhenRightToLeft.ToString();
+                }
+                catch (Exception e)
+                {
+                    description = "threw " + e.GetType().Name + " 0x" + e.HResult.ToString("X8");
+                }
+            });
+            return description;
+        }
+
+        private static AnimatedIconSource CreateEmptyAnimatedIconSource()
+        {
+            AnimatedIconSource iconSource = null;
+            RunOnUIThread.Execute(() => iconSource = new AnimatedIconSource());
+            return iconSource;
+        }
+
+        private static object[] GetMetadataDefaultValues(DependencyProperty[] properties, Type ownerType)
+        {
+            object[] defaults = null;
+            RunOnUIThread.Execute(() =>
+            {
+                defaults = properties.Select(property => property.GetMetadata(ownerType).DefaultValue).ToArray();
+            });
+            return defaults;
+        }
+
+        private static int CountUnsetLocalValues(DependencyObject element, DependencyProperty[] properties)
+        {
+            int count = -1;
+            RunOnUIThread.Execute(() =>
+            {
+                count = properties.Count(property => element.ReadLocalValue(property) == DependencyProperty.UnsetValue);
+            });
+            return count;
+        }
+
+        private static object GetValueOf(DependencyObject element, DependencyProperty property)
+        {
+            object value = null;
+            RunOnUIThread.Execute(() => value = element.GetValue(property));
+            return value;
+        }
+
+        private static void SetValueOf(DependencyObject element, DependencyProperty property, object value)
+        {
+            RunOnUIThread.Execute(() => element.SetValue(property, value));
+        }
+
+        private static void ClearValuesOf(DependencyObject element, params DependencyProperty[] properties)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var property in properties)
+                {
+                    element.ClearValue(property);
+                }
+            });
+        }
+
+        private static SymbolIconSource CreateSymbolIconSource(Symbol symbol)
+        {
+            SymbolIconSource iconSource = null;
+            RunOnUIThread.Execute(() => iconSource = new SymbolIconSource { Symbol = symbol });
+            return iconSource;
+        }
+
+        private static IAnimatedVisualSource2 GetIconSourceSource(AnimatedIconSource iconSource)
+        {
+            IAnimatedVisualSource2 source = null;
+            RunOnUIThread.Execute(() => source = iconSource.Source);
+            return source;
+        }
+
+        private static IconSource GetIconSourceFallback(AnimatedIconSource iconSource)
+        {
+            IconSource fallback = null;
+            RunOnUIThread.Execute(() => fallback = iconSource.FallbackIconSource);
+            return fallback;
+        }
+
+        private static bool GetIconSourceMirrored(AnimatedIconSource iconSource)
+        {
+            bool mirrored = false;
+            RunOnUIThread.Execute(() => mirrored = iconSource.MirroredWhenRightToLeft);
+            return mirrored;
+        }
+
+        private static string GetIconSourceSourceTypeName(AnimatedIconSource iconSource)
+        {
+            string name = null;
+            RunOnUIThread.Execute(() => name = iconSource.Source?.GetType().FullName);
+            return name;
+        }
+
+        private static string DescribeIconSourceFallback(AnimatedIconSource iconSource)
+        {
+            string description = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var fallback = iconSource.FallbackIconSource as SymbolIconSource;
+                description = iconSource.FallbackIconSource == null ? "null" : "SymbolIconSource:" + fallback?.Symbol;
+            });
+            return description;
+        }
+
+        private static void SetIconSourceClrProperties(AnimatedIconSource iconSource, IAnimatedVisualSource2 source, IconSource fallback, bool mirrored)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                iconSource.Source = source;
+                iconSource.FallbackIconSource = fallback;
+                iconSource.MirroredWhenRightToLeft = mirrored;
+            });
+        }
+
+        private static void SetFallbackIconSource(AnimatedIconSource iconSource, IconSource fallback)
+        {
+            RunOnUIThread.Execute(() => iconSource.FallbackIconSource = fallback);
+        }
+
+        private static IAnimatedVisualSource2 GetAnimatedIconSourceValue(AnimatedIcon animatedIcon)
+        {
+            IAnimatedVisualSource2 source = null;
+            RunOnUIThread.Execute(() => source = animatedIcon.Source);
+            return source;
+        }
+
+        private static string GetAnimatedIconSourceTypeName(AnimatedIcon animatedIcon)
+        {
+            string name = null;
+            RunOnUIThread.Execute(() => name = animatedIcon.Source?.GetType().FullName);
+            return name;
+        }
+
+        private static IconSource GetAnimatedIconFallback(AnimatedIcon animatedIcon)
+        {
+            IconSource fallback = null;
+            RunOnUIThread.Execute(() => fallback = animatedIcon.FallbackIconSource);
+            return fallback;
+        }
+
+        private static AnimatedIconSource LoadAnimatedIconSourceMarkup(string markup)
+        {
+            AnimatedIconSource iconSource = null;
+            RunOnUIThread.Execute(() => iconSource = (AnimatedIconSource)XamlReader.Load(markup));
+            Verify.IsNotNull(iconSource);
+            return iconSource;
+        }
+
+        private static IXamlType GetControlsXamlType(string typeName)
+        {
+            IXamlType type = null;
+            RunOnUIThread.Execute(() => type = new XamlControlsXamlMetaDataProvider().GetXamlType(typeName));
+            Verify.IsNotNull(type, "XAML type " + typeName);
+            return type;
+        }
+
+        private static string GetFullNameOf(IXamlType type)
+        {
+            string name = null;
+            RunOnUIThread.Execute(() => name = type.FullName);
+            return name;
+        }
+
+        private static string GetContentPropertyName(IXamlType type)
+        {
+            string name = "not read";
+            RunOnUIThread.Execute(() => name = type.ContentProperty?.Name);
+            return name;
+        }
+
+        // "Name=DP,RW" for a writable dependency-property member, "Name=missing" when the type has no such member.
+        private static string DescribeMembers(IXamlType type, string[] memberNames)
+        {
+            string description = null;
+            RunOnUIThread.Execute(() =>
+            {
+                description = string.Join("; ", memberNames.Select(name =>
+                {
+                    var member = type.GetMember(name);
+                    return member == null ? name + "=missing" :
+                        member.Name + "=" + (member.IsDependencyProperty ? "DP" : "CLR") + "," + (member.IsReadOnly ? "RO" : "RW");
+                }));
+            });
+            return description;
+        }
+
+        private static object ActivateXamlType(IXamlType type)
+        {
+            object instance = null;
+            RunOnUIThread.Execute(() => instance = type.ActivateInstance());
+            Verify.IsNotNull(instance, "Activated " + type.FullName);
+            return instance;
+        }
+
+        private static void SetMemberValue(IXamlType type, string memberName, object instance, object value)
+        {
+            RunOnUIThread.Execute(() => type.GetMember(memberName).SetValue(instance, value));
+        }
+
+        private static object GetMemberValue(IXamlType type, string memberName, object instance)
+        {
+            object value = null;
+            RunOnUIThread.Execute(() => value = type.GetMember(memberName).GetValue(instance));
+            return value;
         }
 
         private static AnimatedIconSource CreateAnimatedIconSource(IAnimatedVisualSource2 source, Symbol? fallbackSymbol, Color? foreground, bool mirroredWhenRightToLeft)
