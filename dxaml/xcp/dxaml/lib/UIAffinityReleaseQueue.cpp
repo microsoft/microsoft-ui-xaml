@@ -8,9 +8,96 @@
 #include "MUX-ETWEvents.h"
 #include "BuildTreeService.g.h"
 #include "BudgetManager.g.h"
+#include "Callback.h"
+#include "Dispatcher.h"
+#include <WRLHelper.h>
 
 using namespace DirectUI;
 using namespace Instrumentation;
+
+_Check_return_ HRESULT UIAffinityReleaseQueue::Initialize()
+{
+    IFC_RETURN(ctl::WeakReferenceSourceNoThreadId::Initialize());
+
+    if (auto core = DXamlCore::GetCurrentNoCreate())
+    {
+        // Capture the agile platform queue while on the owning thread. XBF-only cores have no queue.
+        if (auto dispatcher = core->GetDispatcherQueueNoRef())
+        {
+            auto state = std::make_shared<CleanupWakeState>();
+            IFC_RETURN(ctl::AsWeak(ctl::as_iinspectable(this), &state->target));
+            m_wakeDispatcher = dispatcher;
+            m_wakeState = std::move(state);
+        }
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT UIAffinityReleaseQueue::RequestCleanupWake(
+    _In_opt_ msy::IDispatcherQueue* dispatcher,
+    const std::shared_ptr<CleanupWakeState>& state)
+{
+    if (!state)
+    {
+        return S_OK;
+    }
+    IFCPTR_RETURN(dispatcher);
+
+    if (state->pending.exchange(true, std::memory_order_acq_rel))
+    {
+        return S_OK;
+    }
+
+    // Do not take the release-queue lock here: the unreachable producer already holds the GC/core lock.
+    auto callback = WRLHelper::MakeAgileCallback<msy::IDispatcherQueueHandler>(
+        [state]() -> HRESULT
+        {
+            return OnPlatformCleanupWake(state);
+        });
+    boolean enqueued = false;
+    const HRESULT hr = dispatcher->TryEnqueue(callback.Get(), &enqueued);
+    if (FAILED(hr) || !enqueued)
+    {
+        state->pending.store(false, std::memory_order_release);
+        IFC_RETURN(hr);
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT UIAffinityReleaseQueue::OnPlatformCleanupWake(const std::shared_ptr<CleanupWakeState>& state)
+{
+    auto core = DXamlCore::GetCurrentNoCreate();
+    if (!core || !core->IsInitialized())
+    {
+        state->pending.store(false, std::memory_order_release);
+        return S_OK;
+    }
+
+    // Enter XAML's dispatcher so its pause/reentrancy protections still govern cleanup.
+    const HRESULT hr = core->GetXamlDispatcherNoRef()->RunAsync(
+        MakeCallback(&UIAffinityReleaseQueue::OnCleanupWake, state), false);
+    if (FAILED(hr))
+    {
+        state->pending.store(false, std::memory_order_release);
+        IFC_RETURN(hr);
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT UIAffinityReleaseQueue::OnCleanupWake(std::shared_ptr<CleanupWakeState> state)
+{
+    // A producer arriving while cleanup is serviced must be able to request another wake.
+    state->pending.store(false, std::memory_order_release);
+    auto core = DXamlCore::GetCurrentNoCreate();
+    if (!core || !core->IsInitialized())
+    {
+        return S_OK;
+    }
+    auto weakTarget = state->target;
+    ctl::ComPtr<ITreeBuilder> target;
+    IFC_RETURN(weakTarget.As(&target));
+    return target ? static_cast<UIAffinityReleaseQueue*>(target.Get())->Cleanup(FALSE) : S_OK;
+}
 
 UIAffinityReleaseQueue::~UIAffinityReleaseQueue()
 {
