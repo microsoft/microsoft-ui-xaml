@@ -3,6 +3,9 @@
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Charts;
+// Inside namespace MUXControlsTestApp, "Samples" binds to the MUXControlsTestApp.Samples namespace of the
+// Repeater test pages, so the Charts class needs a different name here.
+using ChartSamples = Microsoft.UI.Xaml.Controls.Charts.Samples;
 
 namespace MUXControlsTestApp
 {
@@ -26,10 +29,10 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
             this.Unloaded += ChartsPage_Unloaded;
 
-            var months = new Samples { ItemsSource = _months };
-            TestChart.Series.Add(new LineSeries { Title = "Sales", XValues = months, YValues = new Samples { ItemsSource = _sales }, ShowDataMarkers = true });
-            TestChart.Series.Add(new AreaSeries { Title = "Costs", XValues = months, YValues = new Samples { ItemsSource = _costs } });
-            TestChart.Series.Add(new BarSeries { Title = "Units", Orientation = BarOrientation.Vertical, XValues = months, YValues = new Samples { ItemsSource = _units } });
+            var months = new ChartSamples { ItemsSource = _months };
+            TestChart.Series.Add(new LineSeries { Title = "Sales", XValues = months, YValues = new ChartSamples { ItemsSource = _sales }, ShowDataMarkers = true });
+            TestChart.Series.Add(new AreaSeries { Title = "Costs", XValues = months, YValues = new ChartSamples { ItemsSource = _costs } });
+            TestChart.Series.Add(new BarSeries { Title = "Units", Orientation = BarOrientation.Vertical, XValues = months, YValues = new ChartSamples { ItemsSource = _units } });
 
             UpdateStatus();
         }
