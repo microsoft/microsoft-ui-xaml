@@ -6,6 +6,7 @@
 #include "App.h"
 #include "MainWindow.h"
 #include <winrt/Microsoft.Windows.ApplicationModel.Resources.h>
+#include <winrt/Microsoft.UI.Xaml.Hosting.h>
 #include "ShutdownOrderValidation.h"
 
 using namespace winrt;
@@ -73,13 +74,14 @@ App::~App()
 void App::OnLaunched(LaunchActivatedEventArgs const&)
 {
     window = make<MainWindow>();
-    window.Closed([this](IInspectable const&, WindowEventArgs const& args)
-    {
-        if (!args.Handled())
+    auto windowsXamlManager = Microsoft::UI::Xaml::Hosting::WindowsXamlManager::GetForCurrentThread();
+    windowsXamlManager.XamlShutdownCompletedOnThread(
+        [this](
+            const Microsoft::UI::Xaml::Hosting::WindowsXamlManager&,
+            const Microsoft::UI::Xaml::Hosting::XamlShutdownCompletedOnThreadEventArgs&)
         {
             window = nullptr;
-        }
-    });
+        });
     window.Activate();
     window.Title(L"WinUICppDesktopSampleApp");
     window.as<MainWindow>()->RootFrame().Navigate(xaml_typename<Page1>());

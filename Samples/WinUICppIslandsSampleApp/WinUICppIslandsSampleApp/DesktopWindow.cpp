@@ -19,6 +19,10 @@ std::atomic_uint32_t g_xamlSourceCount{ 0 };
 
 DesktopWindow::~DesktopWindow()
 {
+    // The user can close a window without clearing out the DWXSs first, which can cause the DWXS count to be wrong.
+    // In that case we don't get anything that calls RemoveDesktopWindowXamlSource to update the count, and the DWXS
+    // itself is deleted when the window is deleted. Accounting for the deleted DWXSs here to keep the top status bar
+    // message accurate.
     g_xamlSourceCount.fetch_sub(static_cast<uint32_t>(m_xamlSources.size()));
 }
 
@@ -135,9 +139,9 @@ bool DesktopWindow::NavigateFocus(MSG* msg)
 int DesktopWindow::MessageLoop(HACCEL hAccelTable)
 {
     MSG msg = {};
-    
+
     while (GetMessage(&msg, nullptr, 0, 0))
-    {        
+    {
         if (!ContentPreTranslateMessage(&msg) && !TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {
             if (!NavigateFocus(&msg))
@@ -226,7 +230,7 @@ DesktopWindowXamlSource DesktopWindow::CreateDesktopWindowsXamlSource(DWORD dwSt
     WindowId mainWndId = GetWindowIdFromWindow(m_hMainWnd);
     desktopSource.Initialize(mainWndId);
 
-    // Get the new child window's hwnd 
+    // Get the new child window's hwnd
     WindowId childWndId = desktopSource.SiteBridge().WindowId();
     HWND hWndXamlIsland = GetWindowFromWindowId(childWndId);
     DWORD dwNewStyle = GetWindowLong(hWndXamlIsland, GWL_STYLE);
@@ -245,14 +249,14 @@ void DesktopWindow::RemoveDesktopWindowXamlSource(winrt::Microsoft::UI::Xaml::Ho
 {
     for (int i = 0; i < static_cast<int>(m_xamlSources.size()); ++i)
     {
-        
+
         if (m_xamlSources[i].as<IInspectable>() == dwxs.as<IInspectable>())
         {
             m_xamlSources[i].Close();
             m_xamlSources.erase(m_xamlSources.begin() + i);
             m_takeFocusEventRevokers.erase(m_takeFocusEventRevokers.begin() + i);
             --g_xamlSourceCount;
-            
+
             return;
         }
     }

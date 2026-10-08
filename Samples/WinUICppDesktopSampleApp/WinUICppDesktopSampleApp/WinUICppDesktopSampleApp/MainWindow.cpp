@@ -90,20 +90,23 @@ namespace winrt::WinUICppDesktopSampleApp::implementation
     {
         ShutdownOrderValidation::ValidateStateOnProcessExit(true);
 
-        auto strong_this = get_strong();
+        auto weak_this = make_weak<class_type>(*this);
         m_dispatcherQueueShutdownStartingToken = DispatcherQueue().ShutdownStarting(
-            [strong_this](
+            [weak_this](
                 const winrt::MUD::DispatcherQueue& sender,
                 const winrt::MUD::DispatcherQueueShutdownStartingEventArgs&)
             {
                 ShutdownOrderValidation::Log(L"ShutdownStarting raised.");
 
                 // Interacting with MainWindow (this) and a live Xaml object should be safe at this point.
+                // We call get() without checking for null here because we want to crash if it's null.
+                auto strong_this = weak_this.get().as<MainWindow>();
                 sender.ShutdownStarting(strong_this->m_dispatcherQueueShutdownStartingToken);
                 strong_this->m_dispatcherQueueShutdownStartingToken = {};
 
-                sender.TryEnqueue(winrt::MUD::DispatcherQueueHandler([strong_this]() {
+                sender.TryEnqueue(winrt::MUD::DispatcherQueueHandler([weak_this]() {
                     // It should *still* be safe at this point.
+                    auto strong_this = weak_this.get().as<MainWindow>();
                     strong_this->titleBarText().Text(L"Work queued from ShutdownStarting running... ");
                     ShutdownOrderValidation::Log(L"DispatcherQueue work is running.");
                     }));

@@ -804,15 +804,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             Log.Comment($"Validate that shutdown log $logFilePath contains expected order of events.");
             
-            // MainWindow is retained through the work queued from ShutdownStarting, then its destruction releases
-            // the XAML tree and destroys Page1. Retained dynamic metadata keeps App alive.
+            // XAML shutdown releases Page1. App then releases MainWindow from the first
+            // XamlShutdownCompletedOnThread handler. Retained dynamic metadata keeps App alive.
             string expectedShutdownLog =             
             @"  Window.Closed raised.
                 ShutdownStarting raised.
                 DispatcherQueue work is running.
-                MainWindow::~MainWindow called.
                 Page1 Unloaded event raised.
                 Page1::~Page1 called.
+                MainWindow::~MainWindow called.
                 XamlShutdownCompletedOnThread raised.
                 ShutdownCompleted raised.";
 

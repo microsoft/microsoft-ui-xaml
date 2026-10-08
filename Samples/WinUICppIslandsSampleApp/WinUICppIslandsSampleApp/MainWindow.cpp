@@ -323,20 +323,24 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
 
             auto createModalWindowButton = Button();
             createModalWindowButton.Content(winrt::box_value(L"Create Modal Window"));
-            createModalWindowButton.Click([this,dwxs](auto, auto) {
+            createModalWindowButton.Click([this](auto, auto) {
                 ::OutputDebugStringW(L">>> createModalWindowButton clicked.\n");
                 ::DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), m_hMainWnd, &MainWindow::DialogBoxProc, 0);
                 });
 
             auto closeDwxsButton = Button();
             closeDwxsButton.Content(winrt::box_value(L"Close this DesktopWindowXamlSource"));
-            closeDwxsButton.Click([this, dwxs](auto, auto) {
-                this->RemoveDesktopWindowXamlSource(dwxs);
+            closeDwxsButton.Click([this, weakDwxs = winrt::make_weak(dwxs)](auto, auto) {
+                if (auto dwxs = weakDwxs.get())
+                {
+                    this->RemoveDesktopWindowXamlSource(dwxs);
+                }
                 });
 
             auto nestedPumpButton = Button();
             nestedPumpButton.Content(winrt::box_value(L"Nested pump"));
-            nestedPumpButton.Click([nestedPumpButton](auto, auto) {
+            nestedPumpButton.Click([](const IInspectable& sender, auto) {
+                auto nestedPumpButton = sender.as<Button>();
                 nestedPumpButton.Content(winrt::box_value(L"Running..."));
 
                 const auto startTick = ::GetTickCount();
@@ -371,10 +375,10 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
 
             auto timerButton = Button();
             timerButton.Content(winrt::box_value(L"500ms timer"));
-            timerButton.Click([this, dwxs](auto, auto) {
+            timerButton.Click([](auto, auto) {
                 auto timer = DispatcherTimer();
                 timer.Interval(TimeSpan(5000000L));
-                timer.Tick([this](auto, auto) {
+                timer.Tick([](auto, auto) {
                     // do nothing
                     });
                 timer.Start();
@@ -383,10 +387,10 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
 
             auto timer2Button = Button();
             timer2Button.Content(winrt::box_value(L"0s timer"));
-            timer2Button.Click([this, dwxs](auto, auto) {
+            timer2Button.Click([](auto, auto) {
                 auto timer = DispatcherTimer();
                 timer.Interval(TimeSpan(0));
-                timer.Tick([this](auto, auto) {
+                timer.Tick([](auto, auto) {
                     // do nothing
                     });
                 timer.Start();
@@ -395,7 +399,7 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
 
             auto timer3Button = Button();
             timer3Button.Content(winrt::box_value(L"500ms timer, no Tick handler"));
-            timer3Button.Click([this, dwxs](auto, auto) {
+            timer3Button.Click([](auto, auto) {
                 auto timer = DispatcherTimer();
                 timer.Interval(TimeSpan(5000000L));
                 timer.Start();
@@ -449,11 +453,11 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
 
             auto commandBarFlyoutButton1 = winrt::Microsoft::UI::Xaml::Markup::XamlReader::Load(L" \
                 <Button xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Content='Inline CommandBarFlyout' />").as<Button>();
-            commandBarFlyoutButton1.Click([this, commandBarFlyout1, commandBarFlyoutButton1](auto, auto)
+            commandBarFlyoutButton1.Click([commandBarFlyout1](const IInspectable& sender, auto)
             {
                 auto myOption = winrt::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowOptions();
                 myOption.ShowMode(winrt::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowMode::Transient);
-                commandBarFlyout1.ShowAt(commandBarFlyoutButton1, myOption);
+                commandBarFlyout1.ShowAt(sender.as<FrameworkElement>(), myOption);
             });
 
             auto commandBarFlyout2 = winrt::Microsoft::UI::Xaml::Markup::XamlReader::Load(L" \
@@ -501,11 +505,11 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
 
             auto commandBarFlyoutButton2 = winrt::Microsoft::UI::Xaml::Markup::XamlReader::Load(L" \
                 <Button xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Content='Windowed CommandBarFlyout' />").as<Button>();
-            commandBarFlyoutButton2.Click([this, commandBarFlyout2, commandBarFlyoutButton2](auto, auto)
+            commandBarFlyoutButton2.Click([commandBarFlyout2](const IInspectable& sender, auto)
             {
                 auto myOption = winrt::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowOptions();
                 myOption.ShowMode(winrt::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowMode::Transient);
-                commandBarFlyout2.ShowAt(commandBarFlyoutButton2, myOption);
+                commandBarFlyout2.ShowAt(sender.as<FrameworkElement>(), myOption);
             });
 
             auto horizStackPanel = StackPanel();
@@ -595,6 +599,44 @@ bool MainWindow::OnCreate(HWND, LPCREATESTRUCT)
         ::TrackPopupMenu(contextMenu, TPM_TOPALIGN | TPM_LEFTALIGN, rc.left + 5, rc.top + 5, 0, this->m_hMainWnd, nullptr);
         }, 210, 55, 50, 30);
 
+    CreateButton(L"Cycle DispatcherQueue only: 0", 209, [this, clickCount = 0u](HWND hwnd) mutable {
+        if (winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread())
+        {
+            ::MessageBox(
+                GetHandle(),
+                L"Shut down the current DispatcherQueue before running this test.",
+                L"DispatcherQueue already running",
+                MB_OK | MB_ICONWARNING);
+            return;
+        }
+
+        try
+        {
+            auto controller =
+                winrt::Microsoft::UI::Dispatching::DispatcherQueueController::CreateOnCurrentThread();
+            controller.ShutdownQueue();
+            controller = nullptr;
+
+            wchar_t label[100]{};
+            ::StringCchPrintf(
+                label,
+                ARRAYSIZE(label),
+                L"Cycle DispatcherQueue only: %u",
+                ++clickCount);
+            ::SetWindowText(hwnd, label);
+        }
+        catch (const winrt::hresult_error& ex)
+        {
+            wchar_t message[200]{};
+            ::StringCchPrintf(
+                message,
+                ARRAYSIZE(message),
+                L"Unable to cycle the DispatcherQueue: 0x%08X",
+                ex.code().value);
+            ::MessageBox(GetHandle(), message, L"DispatcherQueue test failed", MB_OK | MB_ICONERROR);
+        }
+        }, 260, 55, 235, 30);
+
     return true;
 }
 
@@ -636,7 +678,7 @@ void MainWindow::OnCommand(HWND, int id, HWND hwndCtl, UINT )
         break;
     }
 
-    for (auto b : m_buttons)
+    for (auto& b : m_buttons)
     {
         if (b.id == id)
         {

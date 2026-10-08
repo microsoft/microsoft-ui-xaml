@@ -3830,6 +3830,19 @@ void VerifyApplicationBehaviorAtCoreShutdown(const ApplicationBehaviorState& sta
     // Calling Exit when WinUI is already shut down is a no-op
     state.application->Exit();
 
+    //
+    // WinUI's Application object is a combination of things that are process-wide, independent of any UI
+    // thread (like Xaml metadata, HighContrastAdjustment getter, FocusVisualKind, DebugSettings object,
+    // and FailFastOnErrors), and things that are tied to a UI thread (everything else). Confirm that the
+    // parts independent of the UI thread still work after shutdown, and the UI-thread-dependent stuff
+    // returns RPC_E_WRONG_THREAD.
+    //
+
+    VERIFY_ARE_EQUAL(state.highContrastAdjustment, state.application->HighContrastAdjustment);
+    VERIFY_ARE_EQUAL(state.focusVisualKind, state.application->FocusVisualKind);
+    VERIFY_IS_TRUE(state.debugSettings == state.application->DebugSettings);
+    VERIFY_ARE_EQUAL(state.failFastOnErrors, state.debugSettings->FailFastOnErrors);
+
     auto appXamlUri = ref new Uri(L"ms-appx:///App.xaml");
     VERIFY_THROWS_SPECIFIC_WINRT(
         Application::LoadComponent(state.application, appXamlUri),
@@ -3853,8 +3866,6 @@ void VerifyApplicationBehaviorAtCoreShutdown(const ApplicationBehaviorState& sta
         Platform::Exception^,
         [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
 
-    VERIFY_ARE_EQUAL(state.highContrastAdjustment, state.application->HighContrastAdjustment);
-
     const auto newHighContrastAdjustment =
         state.highContrastAdjustment == ApplicationHighContrastAdjustment::Auto
         ? ApplicationHighContrastAdjustment::None
@@ -3864,14 +3875,10 @@ void VerifyApplicationBehaviorAtCoreShutdown(const ApplicationBehaviorState& sta
         Platform::Exception^,
         [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
 
-    VERIFY_ARE_EQUAL(state.focusVisualKind, state.application->FocusVisualKind);
-    VERIFY_IS_TRUE(state.debugSettings == state.application->DebugSettings);
-
     VERIFY_THROWS_SPECIFIC_WINRT(
         static_cast<void>(state.debugSettings->EnableFrameRateCounter),
         Platform::Exception^,
         [](Platform::Exception^ exception) { return exception->HResult == RPC_E_WRONG_THREAD; });
-    VERIFY_ARE_EQUAL(state.failFastOnErrors, state.debugSettings->FailFastOnErrors);
 }
 
 void VerifyApplicationBehaviorAfterStartup(ApplicationBehaviorState& state)
