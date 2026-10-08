@@ -169,9 +169,16 @@ HRESULT UIAffinityReleaseQueue::Cleanup( _In_ BOOLEAN bSync )
         // Synchronize the UI Thread and the Finalizer thread while we check the queue
         auto lock = m_CriticalSection.lock();
 
+        bool hasUnreachableObjects;
+        {
+            // GC appends under the core reference lock, not the finalizer-queue lock.
+            AutoReentrantReferenceLock coreLock(DXamlCore::GetCurrent());
+            hasUnreachableObjects = !m_queuedObjectsForUnreachableCleanup.empty();
+        }
+
         // If we haven't already registered for cleanup time, and we have something to clean up, register.
         if( !m_bIsRegisteredForCallbacks
-            && ( !m_queuedObjectsForUnreachableCleanup.empty()
+            && ( hasUnreachableObjects
                  || !m_queuedObjectsForFinalRelease.empty() ))
         {
             IFC(DXamlCore::GetCurrent()->GetBuildTreeService(spBuildTree));
@@ -220,9 +227,7 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
     // UI+Finalizer Lock inplace.
     //
 
-    // Only take a core-lock if there are objects to cleanup. This way we can block a GC from queueing
-    // more objects.
-    if (!m_queuedObjectsForUnreachableCleanup.empty())
+    // Take the core lock before reading the vector, including its empty check.
     {
         //
         // UI+GC+Finalizer Lock inplace.
@@ -399,7 +404,10 @@ _Check_return_ HRESULT DirectUI::UIAffinityReleaseQueue::put_IsRegisteredForCall
     return S_OK;
 }
 
-BOOLEAN DirectUI::UIAffinityReleaseQueue::IsEmpty(){
+BOOLEAN DirectUI::UIAffinityReleaseQueue::IsEmpty()
+{
+    auto lock = m_CriticalSection.lock();
+    AutoReentrantReferenceLock coreLock(DXamlCore::GetCurrent());
     return m_queuedObjectsForFinalRelease.empty() && m_queuedObjectsForUnreachableCleanup.empty();
 }
 
@@ -413,6 +421,7 @@ HRESULT DirectUI::UIAffinityReleaseQueue::GetQueueObjects(wfc::IVector<IInspecta
         obj.m_ptr->QueryInterface(__uuidof(IInspectable), &inspectable);
         IFC_RETURN(queue->InsertAt(0, inspectable.Get()));
     }
+    AutoReentrantReferenceLock coreLock(DXamlCore::GetCurrent());
     for(auto& obj : m_queuedObjectsForUnreachableCleanup)
     {
         wrl::ComPtr<IInspectable> inspectable;
