@@ -30,7 +30,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // SUBJECT. Bad input and reentrant calls that arrive through public API only - a null entry in
     // Columns, non-finite width constraints, a degenerate host size, a source mutated from inside
     // an event handler, and an app handler that throws. Gesture-driven teardown (a pending resize
-    // drag) lives in the interaction plan.
+    // drag) lives in the interaction tests.
     //
     // SCOPE. Plan section 16.0 records why eleven backlog items are not here. The short version:
     // an item whose expected result reads "leaves coherent state" or "per contract" has no

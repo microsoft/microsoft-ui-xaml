@@ -1544,6 +1544,236 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // ---------- 12.6 Set metadata, names and re-exposure (#11820) ----------
+        //
+        // Moved here from the interaction tier: each asserts a peer VALUE an in-proc test reads just as
+        // well as a client. Authority: TableView-spec.md (api-spec) :884-886 and TableView-dev-spec.md:205-213.
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies row peers report 1-based PositionInSet and SizeOfSet over the rows of an ungrouped table.")]
+        public void VerifyRowPeerPositionInSetAndSizeOfSetAreOneBasedOverRows()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // api-spec:884 - "Rows report PositionInSet / SizeOfSet". UIA set metadata is 1-based and
+                // dev-spec:213 reserves 0 for "cannot be resolved", which a realized flat row never is.
+                for (int i = 0; i < 3; i++)
+                {
+                    var peer = GetRowPeer(GetProjectedRow(tableView, i));
+                    Verify.AreEqual(i + 1, peer.GetPositionInSet(), $"Row {i} must report PositionInSet {i + 1}.");
+                    Verify.AreEqual(3, peer.GetSizeOfSet(), $"Row {i} must report SizeOfSet 3.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Product: grouped row PositionInSet/SizeOfSet are flat, not relative to the containing group (api-spec:884).
+        [TestProperty("Description", "Verifies grouped row peers report PositionInSet and SizeOfSet relative to their own group, excluding header bands.")]
+        public void VerifyGroupedRowPeerPositionInSetIsRelativeToItsGroup()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTwoGroupAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // api-spec:884 - "When the source is grouped, both values are relative to the containing group and
+                // exclude the group-header bands, matching ItemsControlAutomationPeer". Owner confirmed within-group
+                // announcement; the #11820 PR's "flat" wording is superseded.
+                var groups = new List<List<TableViewRow>>();
+                foreach (var element in GetProjectedElements(tableView))
+                {
+                    if (element is TableViewGroupHeader)
+                    {
+                        groups.Add(new List<TableViewRow>());
+                    }
+                    else if (element is TableViewRow row)
+                    {
+                        if (groups.Count == 0)
+                        {
+                            Verify.Fail("A data row was projected before any group header.");
+                            return;
+                        }
+                        groups[groups.Count - 1].Add(row);
+                    }
+                }
+
+                var sizes = groups.Select(g => g.Count).OrderBy(c => c).ToList();
+                Verify.AreEqual("2,3", string.Join(",", sizes), "Precondition: the fixture groups five rows as 2 Designers and 3 Engineers.");
+
+                foreach (var group in groups)
+                {
+                    for (int i = 0; i < group.Count; i++)
+                    {
+                        var peer = GetRowPeer(group[i]);
+                        Verify.AreEqual(i + 1, peer.GetPositionInSet(),
+                            $"Row {i} of a {group.Count}-row group must report PositionInSet {i + 1}, relative to its group.");
+                        Verify.AreEqual(group.Count, peer.GetSizeOfSet(),
+                            $"A row in a {group.Count}-row group must report SizeOfSet {group.Count}, excluding header bands.");
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies app-set AutomationProperties.PositionInSet and SizeOfSet on a row win over the computed values.")]
+        public void VerifyAppSetPositionInSetAndSizeOfSetWinOnRowPeer()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // api-spec:884 / dev-spec:213 - "an app-set AutomationProperties value always wins".
+                var row = GetProjectedRow(tableView, 0);
+                AutomationProperties.SetPositionInSet(row, 7);
+                AutomationProperties.SetSizeOfSet(row, 42);
+
+                var peer = GetRowPeer(row);
+                Verify.AreEqual(7, peer.GetPositionInSet(), "An app-set PositionInSet must win over the computed one.");
+                Verify.AreEqual(42, peer.GetSizeOfSet(), "An app-set SizeOfSet must win over the computed one.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row peer's name is composed from its visible cells only, and an explicit AutomationProperties.Name wins.")]
+        public void VerifyRowPeerNameComposesVisibleCellTextAndExplicitNameWins()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // api-spec:884 - rows "compose their name from their visible cells"; api-spec:886 - explicit Name wins.
+                // Containment, not equality: the separator is a localized resource.
+                var composed = GetRowPeer(GetProjectedRow(tableView, 0)).GetName();
+                Log.Comment($"Composed row name: '{composed}'.");
+                Verify.IsTrue(composed.Contains("Asha"), "The row name must include the Name cell's text.");
+                Verify.IsTrue(composed.Contains("Designer"), "The row name must include the Role cell's text.");
+
+                tableView.Columns[1].Visibility = Visibility.Collapsed;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var narrowed = GetRowPeer(GetProjectedRow(tableView, 0)).GetName();
+                Log.Comment($"Row name with Role collapsed: '{narrowed}'.");
+                Verify.IsTrue(narrowed.Contains("Asha"), "The row name must still include visible cells.");
+                Verify.IsFalse(narrowed.Contains("Designer"), "The row name must not include a collapsed column's text.");
+
+                var row = GetProjectedRow(tableView, 0);
+                AutomationProperties.SetName(row, "Authored row name");
+                Verify.AreEqual("Authored row name", GetRowPeer(row).GetName(), "An explicit AutomationProperties.Name must win outright.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Product: the group header peer computes Level 1; the dev spec says it reports no Level (0).
+        [TestProperty("Description", "Verifies a single-level group header peer computes no Level (reports 0) and an app-set AutomationProperties.Level wins.")]
+        public void VerifyGroupHeaderPeerReportsNoLevelAndAppSetLevelWins()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateGroupedAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Owner decision, recorded in the dev-spec accessibility list: the group header peer computes NO Level
+                // for single-level grouping, so it reports 0 ("not specified"). dev-spec:213 - an app-set value wins.
+                var computed = GetGroupHeaderPeer(tableView, 0).GetLevel();
+                Verify.AreEqual(0, computed, "A single-level group header must not announce a Level; it must report 0 ('not specified').");
+
+                AutomationProperties.SetLevel(GetGroupHeader(tableView, 0), 3);
+                Verify.AreEqual(3, GetGroupHeaderPeer(tableView, 0).GetLevel(), "An app-set Level must win over the computed one.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies every data row (with its cell children) is reachable from the TableView peer again after a group is collapsed and expanded.")]
+        public void VerifyGroupRowsAreReexposedAfterCollapseAndExpand()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTwoGroupAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var before = CollectRowPeers(RequireTablePeer(tableView));
+                Verify.AreEqual(5, before.Count, "Precondition: all five data rows are reachable from the table peer before the collapse.");
+                GetExpandCollapseProvider(tableView, 0).Collapse();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(ExpandCollapseState.Collapsed, GetExpandCollapseProvider(tableView, 0).ExpandCollapseState,
+                    "Precondition: the first group must report Collapsed.");
+                GetExpandCollapseProvider(tableView, 0).Expand();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // dev-spec:205 - a row peer exposes its cell peers as children; api-spec:894 - tree enumeration connects
+                // each cell to its row. The #11820 defect: cached peers outlived their containers, so the re-expanded
+                // group's rows were absent from the tree.
+                var after = CollectRowPeers(RequireTablePeer(tableView));
+                Verify.AreEqual(5, after.Count, "After collapse and expand, every data row must be reachable from the table peer again.");
+
+                foreach (var rowPeer in after)
+                {
+                    var children = rowPeer.GetChildren();
+                    Verify.AreEqual(3, children?.Count ?? 0, $"Re-exposed row '{rowPeer.GetName()}' must expose one cell per visible column.");
+                }
+            });
+        }
+
         // ---------- 12.5 Primitive peers ----------
         //
         // Both primitives are MUX_INTERNAL but are projected into the test app -
@@ -1758,6 +1988,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             tableView.Columns.Add(MakeTextColumn("Alias", "Name"));
 
             return tableView;
+        }
+
+        // Five rows grouped by Role into a 2-row and a 3-row group, so group-relative set metadata is distinguishable
+        // from flat metadata.
+        internal static TableView CreateTwoGroupAutomationTable()
+        {
+            var source = TableViewSource.From(new List<Person>
+            {
+                new Person { Name = "Asha", Role = "Designer" },
+                new Person { Name = "Bo", Role = "Designer" },
+                new Person { Name = "Diego", Role = "Engineer" },
+                new Person { Name = "Eli", Role = "Engineer" },
+                new Person { Name = "Fay", Role = "Engineer" },
+            });
+            source.GroupBy(item => (object)((Person)item).Role);
+
+            return AddAutomationColumns(CreateTableViewShell(source, 600, 500));
+        }
+
+        // Every row peer reachable from root, without descending into a row (its children are cells).
+        internal static List<TableViewRowAutomationPeer> CollectRowPeers(AutomationPeer root)
+        {
+            var found = new List<TableViewRowAutomationPeer>();
+            var children = root.GetChildren();
+            if (children == null)
+            {
+                return found;
+            }
+
+            foreach (var child in children)
+            {
+                if (child is TableViewRowAutomationPeer rowPeer)
+                {
+                    found.Add(rowPeer);
+                }
+                else
+                {
+                    found.AddRange(CollectRowPeers(child));
+                }
+            }
+
+            return found;
         }
 
         internal static TableViewAutomationPeer RequireTablePeer(TableView tableView)
