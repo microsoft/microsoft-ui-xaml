@@ -716,8 +716,13 @@ _Check_return_ HRESULT DefaultStyles::GetDefaultStyleByTypeName(
         const bool isTabularDefaultStyle =
             strTypeName.Equals(L"Microsoft.UI.Xaml.Controls.Tabular.TableView") &&
             strUri.StartsWith(XSTRING_PTR_EPHEMERAL(L"ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/"), xstrCompareCaseInsensitive);
-        const XUINT32 errorId = isTabularDefaultStyle ?
-            AG_E_RUNTIME_TABULAR_DEFAULTSTYLE_NOT_FOUND : AG_E_RUNTIME_STYLE_DEFAULTSTYLERESOURCEURI_NOT_FOUND;
+        const bool isChartsDefaultStyle =
+            strTypeName.Equals(L"Microsoft.UI.Xaml.Controls.Charts.Chart") &&
+            strUri.StartsWith(XSTRING_PTR_EPHEMERAL(L"ms-appx:///Microsoft.UI.Xaml.Controls.Charts/"), xstrCompareCaseInsensitive);
+        const XUINT32 errorId =
+            isTabularDefaultStyle ? AG_E_RUNTIME_TABULAR_DEFAULTSTYLE_NOT_FOUND :
+            isChartsDefaultStyle ? AG_E_RUNTIME_CHARTS_DEFAULTSTYLE_NOT_FOUND :
+            AG_E_RUNTIME_STYLE_DEFAULTSTYLERESOURCEURI_NOT_FOUND;
         IFC(pErrorService->ReportGenericError(E_NER_INVALID_OPERATION, RuntimeError, errorId, 1, 0, 0, parameters, 3));
 
         // Trace error

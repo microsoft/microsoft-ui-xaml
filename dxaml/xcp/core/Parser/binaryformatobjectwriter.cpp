@@ -52,6 +52,13 @@ namespace
                 core, AG_E_PARSER_TABULAR_RESOURCE_NOT_FOUND, sourceUri, resourceKey);
         }
 
+        if (!resourceKey.IsNullOrEmpty() &&
+            sourceUri.Equals(L"ms-appx:///Microsoft.UI.Xaml.Controls.Charts/Themes/Generic.xaml", xstrCompareCaseInsensitive))
+        {
+            return CErrorService::OriginateInvalidOperationError(
+                core, AG_E_PARSER_CHARTS_RESOURCE_NOT_FOUND, sourceUri, resourceKey);
+        }
+
         return CErrorService::OriginateInvalidOperationError(core, AG_E_PARSER_FAILED_RESOURCE_FIND, resourceKey);
     }
 }
