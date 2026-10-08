@@ -584,9 +584,9 @@ void InkCanvas::AttachToSystemCompositor()
 // Splices through the OS shared-visual API: one shared-visual handle is opened in the visual role by the
 // system Windows.UI.Composition compositor, which hosts it under the system ContainerVisual behind
 // mucRootVisual, and in the composition-target role by our DComp device, whose root becomes the ink.
-// Returns false with nothing attached when the OS does not provide the API - including while the
-// PublishSharedVisualAPI velocity feature is off, where the interfaces exist but the opens return
-// E_NOTIMPL - so the caller can fall back.
+// Returns false with nothing attached when the OS does not provide the API, so the caller can fall back:
+// before 10D there is no by-name export; from 10D with the PublishSharedVisualAPI velocity feature off,
+// the DComp device does not expose its interop (and the compositor's opens return E_NOTIMPL).
 bool InkCanvas::TrySpliceWithSharedVisual(
     winrt::Microsoft::UI::Composition::Compositor const& compositor,
     winrt::Microsoft::UI::Composition::ContainerVisual const& mucRootVisual)
