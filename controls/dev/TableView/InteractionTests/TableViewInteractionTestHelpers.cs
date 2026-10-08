@@ -154,6 +154,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // ---------- Focus ----------
 
+        // The focused element's UIA PositionInSet (1-based), or -1 when it is not advertised.
+        //
+        // Row peers advertise PositionInSet/SizeOfSet (counted within the group when grouped), which
+        // gives an exact, identity-free measure of how far a navigation key travelled. That is what
+        // makes a paging assertion possible: a scroll percentage moves for both a page and a dragged-
+        // along step, so it cannot separate the two, whereas the destination row's index can.
+        internal static int FocusedPositionInSet()
+        {
+            AutomationElement focused = AutomationElement.FocusedElement;
+            if (focused == null) { return -1; }
+
+            object value = focused.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
+            return value is int position ? position : -1;
+        }
+
         internal static UIObject FindFocusedRow(UIObject rowsHost)
         {
             if (rowsHost == null) { return null; }
@@ -542,12 +557,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         internal static string ReadFirstItemName() => ReadPageReadout(FirstItemName);
 
-        // Reads the page's PART_BodyScroller offset readout, formatted "H=<h>;V=<v>;HeaderH=<h>". Used only as a
-        // precondition that the body moved, never as the subject of an assertion.
+        // Reads the page's PART_BodyScroller offset readout, formatted "H=<h>;V=<v>;HeaderH=<h>". Used as a
+        // precondition that the body moved, and - via ReadScrollOffsetComponent - as the subject of the
+        // header-sync assertion, because the header band's travel is NOT observable through UIA
+        // BoundingRectangle (the control drives PART_HeaderScroller's offset rather than moving the peers).
         internal static string ReadScrollOffsets()
         {
             var readout = FindElement.ById<TextBlock>(ScrollOffsets);
             return readout == null ? "<no readout>" : readout.DocumentText;
+        }
+
+        // Pulls one named component out of the "H=<h>;V=<v>;HeaderH=<h>" readout, or double.NaN when the
+        // readout is missing or malformed.
+        internal static double ReadScrollOffsetComponent(string offsets, string name)
+        {
+            if (string.IsNullOrEmpty(offsets)) { return double.NaN; }
+
+            foreach (string part in offsets.Split(';'))
+            {
+                int split = part.IndexOf('=');
+                if (split <= 0) { continue; }
+
+                if (string.Equals(part.Substring(0, split).Trim(), name, StringComparison.Ordinal))
+                {
+                    return double.TryParse(
+                        part.Substring(split + 1).Trim(),
+                        System.Globalization.NumberStyles.Float,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out double value) ? value : double.NaN;
+                }
+            }
+            return double.NaN;
         }
     }
 }

@@ -569,7 +569,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product finding #16: CollapseAllGroups() does not collapse in the live control.
         [TestProperty("Description", "Verifies clicking CollapseAllGroupsButton re-collapses a group that was expanded by gesture: the header peer reports Collapsed and the realized row count returns to the all-collapsed baseline.")]
         public void CollapseAllGroupsReconcilesGestureExpandedGroup()
         {

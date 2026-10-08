@@ -60,9 +60,17 @@ private:
     double EffectiveKeyboardIncrement();
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
     void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    // Escape must cancel a drag the pointer started, which takes no focus - so the hook is on the
+    // XamlRoot content and lives only as long as the drag.
+    void AttachCancelKeyHandler();
+    void DetachCancelKeyHandler();
+    void OnCancelKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
 
     double m_lastRaisedDelta{ 0.0 };
     bool m_isPointerOver{ false };
     bool m_templateApplied{ false };
-    bool m_containerIsRightToLeft{ false };
+    // The boxed KeyEventHandler handed to AddHandler, and the element it was added to. Both null
+    // when no drag is in flight.
+    winrt::IInspectable m_cancelKeyHandler{ nullptr };
+    winrt::weak_ref<winrt::UIElement> m_cancelKeyRoot{ nullptr };
 };

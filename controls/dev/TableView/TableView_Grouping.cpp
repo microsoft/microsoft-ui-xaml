@@ -324,6 +324,11 @@ void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, st
     // makes the deferred half an idempotent set.
     const auto generation = m_rowMetadataGeneration;
 
+    // A bulk expand/collapse supersedes every per-group request that was captured before it: the
+    // bulk state resets per-group exceptions, and a queued toggle that outlived it would write one
+    // straight back.
+    const auto bulkGeneration = m_groupExpansionBulkGeneration;
+
     // Defer the structural mutation off the current callout. Running it inline re-projects rows
     // while the caller's frame is still on the stack, which faults on the pointer path and
     // surfaces to a UIA client as an exception escaping the COM boundary. Both callers are safe
@@ -332,11 +337,11 @@ void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, st
     if (auto const queue = DispatcherQueue())
     {
         // A refused enqueue means the thread is shutting down and the UI is going away regardless.
-        queue.TryEnqueue([weakThis, identity, desired, generation]()
+        queue.TryEnqueue([weakThis, identity, desired, generation, bulkGeneration]()
             {
                 if (auto strongThis = weakThis.get())
                 {
-                    strongThis->ApplyGroupExpansionByIdentity(identity, desired, generation);
+                    strongThis->ApplyGroupExpansionByIdentity(identity, desired, generation, bulkGeneration);
                 }
             });
         return;
@@ -344,15 +349,28 @@ void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, st
 
     // No dispatcher means this is not a UI thread (test host), so there is no in-flight callout to
     // unwind and the hazard above cannot apply.
-    ApplyGroupExpansionByIdentity(identity, desired, generation);
+    ApplyGroupExpansionByIdentity(identity, desired, generation, bulkGeneration);
 }
 
-void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation)
+void TableView::ApplyGroupExpansionByIdentity(
+    winrt::hstring const& identity,
+    std::optional<bool> desired,
+    uint64_t generation,
+    uint64_t bulkGeneration)
 {
     // Identities are value-based strings, not tied to a provider instance. If ItemsSource was
     // replaced while this request sat on the queue, the same string could name an unrelated group
     // in the new source -- exactly the wrong-group mutation this path exists to prevent.
     if (generation != m_rowMetadataGeneration)
+    {
+        return;
+    }
+
+    // ExpandAllGroups/CollapseAllGroups ran while this request sat on the queue. The bulk state is
+    // the later intent AND it clears per-group exceptions, so applying this now would resurrect
+    // the exception the bulk call just erased. Dropped rather than reordered: the user's last
+    // expressed intent wins.
+    if (bulkGeneration != m_groupExpansionBulkGeneration)
     {
         return;
     }
@@ -368,9 +386,9 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     {
         if (m_editState == EditState::Ending)
         {
-            QueueCoalescedEditReshape([this, identity, desired, generation]()
+            QueueCoalescedEditReshape([this, identity, desired, generation, bulkGeneration]()
             {
-                ApplyGroupExpansionByIdentity(identity, desired, generation);
+                ApplyGroupExpansionByIdentity(identity, desired, generation, bulkGeneration);
             });
         }
         return;
@@ -554,6 +572,11 @@ void TableView::SetAllGroupsExpansion(bool expand)
         }
         return;
     }
+
+    // From here the bulk state is being applied, so every per-group request captured before this
+    // point is stale: the spec's "setting the bulk state also resets per-group exceptions" has to
+    // hold for the exceptions that are still in flight as well as the ones already recorded.
+    ++m_groupExpansionBulkGeneration;
 
     auto const focusedGroupIdentity = CaptureFocusedGroupHeaderForRestore();
 
@@ -745,7 +768,30 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     bool isExpanded{ false };
     bool isExpandable{ false };
 
-    if (auto const entry = TryGetGroupedEntry(header.DataContext()))
+    // Resolve the group from the PROJECTION at `index`, not from the container's DataContext. A
+    // reshape can rebind a pooled header in place -- no fresh ElementPrepared, no
+    // ElementIndexChanged -- so the DataContext can still describe the previous projection's
+    // entry, whose IsExpanded is whatever it was before the reshape. Reading it is how a bulk
+    // collapse used to leave a gesture-expanded header reporting Expanded. The DataContext stays
+    // as the fallback for the window where the index does not describe a header.
+    winrt::IInspectable groupRow{ nullptr };
+    if (hasRowInfo && m_rowsItemsSourceView && index >= 0 && index < m_rowsItemsSourceView.Count())
+    {
+        try
+        {
+            groupRow = m_rowsItemsSourceView.GetAt(index);
+        }
+        catch (...)
+        {
+            // Best-effort: the projection can change underneath a deferred reshape.
+        }
+    }
+    if (!groupRow)
+    {
+        groupRow = header.DataContext();
+    }
+
+    if (auto const entry = TryGetGroupedEntry(groupRow))
     {
         // TableViewGroupInfo.Key is contracted (TableView.idl) as the GroupBy key, not the
         // internal group object. entry->Group() is the ShapedGroup (an ICollectionViewGroup);
@@ -763,7 +809,7 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         // today, since GetRowKindForItem derives the kind from exactly this probe). Guard on
         // hasRowInfo so this cannot silently render a default-initialized TableViewRowInfo --
         // IsExpandable=false would give a dead chevron.
-        groupKey = header.DataContext();
+        groupKey = groupRow;
         if (hasRowInfo)
         {
             itemCount = rowInfo.ChildCount;
@@ -834,6 +880,43 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     UpdateGroupHeaderWidth(header);
 }
 
+void TableView::ForEachRealizedGroupHeader(std::function<void(winrt::TableViewGroupHeader const&, int32_t)> const& fn)
+{
+    auto repeater = m_rowsRepeater.get();
+    if (!repeater || !fn)
+    {
+        return;
+    }
+
+    const auto childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
+    for (int32_t i = 0; i < childCount; ++i)
+    {
+        if (auto header = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::TableViewGroupHeader>())
+        {
+            const auto index = repeater.GetElementIndex(header);
+            if (index < 0)
+            {
+                continue;
+            }
+
+            fn(header, index);
+        }
+    }
+}
+
+void TableView::RefreshRealizedGroupHeadersAfterExpansion()
+{
+    if (!IsTableViewSourceGrouped())
+    {
+        return;
+    }
+
+    ForEachRealizedGroupHeader([this](winrt::TableViewGroupHeader const& header, int32_t index)
+    {
+        PrepareGroupHeaderElement(header, index);
+    });
+}
+
 void TableView::OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (args.OldValue() == args.NewValue())
@@ -841,23 +924,10 @@ void TableView::OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyProp
         return;
     }
 
-    if (auto repeater = m_rowsRepeater.get())
+    ForEachRealizedGroupHeader([this](winrt::TableViewGroupHeader const& header, int32_t index)
     {
-        const auto childCount = winrt::VisualTreeHelper::GetChildrenCount(repeater);
-        for (int32_t i = 0; i < childCount; ++i)
-        {
-            if (auto header = winrt::VisualTreeHelper::GetChild(repeater, i).try_as<winrt::TableViewGroupHeader>())
-            {
-                const auto index = repeater.GetElementIndex(header);
-                if (index < 0)
-                {
-                    continue;
-                }
-
-                PrepareGroupHeaderElement(header, index);
-            }
-        }
-    }
+        PrepareGroupHeaderElement(header, index);
+    });
 }
 
 void TableView::ClearGroupHeaderElement(winrt::TableViewGroupHeader const& header)

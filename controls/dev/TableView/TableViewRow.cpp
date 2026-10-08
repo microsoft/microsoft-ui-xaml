@@ -15,6 +15,9 @@
 #include "SharedHelpers.h"
 #include "TVDiag.h"
 
+#include <algorithm>
+#include <vector>
+
 static constexpr std::wstring_view s_CellsHostPartName{ L"PART_CellsHost"sv };
 static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
 
@@ -84,6 +87,36 @@ namespace
     uint64_t GetDoubleClickIntervalMicroseconds()
     {
         return static_cast<uint64_t>(::GetDoubleClickTime()) * 1000ull;
+    }
+
+    bool IsKeyDown(winrt::VirtualKey key)
+    {
+        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
+            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    }
+
+    // Collects every tab stop BELOW a cell wrapper. The wrapper itself is row policy and is owned
+    // by SetCellsTabStopInternal; everything under it is authored template content, so the walk has
+    // to keep descending past a tab stop it already found - a focusable container can hold more.
+    void AppendContentTabStops(
+        winrt::DependencyObject const& parent, std::vector<winrt::UIElement>& tabStops)
+    {
+        const int32_t count = winrt::VisualTreeHelper::GetChildrenCount(parent);
+        for (int32_t i = 0; i < count; ++i)
+        {
+            auto const child = winrt::VisualTreeHelper::GetChild(parent, i);
+            if (!child)
+            {
+                continue;
+            }
+
+            if (auto const element = child.try_as<winrt::UIElement>(); element && element.IsTabStop())
+            {
+                tabStops.push_back(element);
+            }
+
+            AppendContentTabStops(child, tabStops);
+        }
     }
 }
 
@@ -429,6 +462,115 @@ void TableViewRow::SetCellsTabStopInternal(bool isTabStop)
     }
 }
 
+// True while the keyboard cursor is at grid level on this row - the row itself, or exactly one of
+// its cells. Focus INSIDE a cell's content (Enter drilled into a Button or an open editor) is not
+// grid level: that content owns its own keys, including Tab.
+bool TableViewRow::IsGridLevelFocusInternal()
+{
+    auto const root = XamlRoot();
+    if (!root)
+    {
+        return false;
+    }
+
+    auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+    if (!focused)
+    {
+        return false;
+    }
+
+    winrt::DependencyObject const selfObject = *this;
+    if (focused == selfObject)
+    {
+        return true;
+    }
+
+    return FindOwnCellInternal(focused, true /* requireExact */) != nullptr;
+}
+
+// Runs the Tab move the framework would have run, with the cell content's tab stops suppressed for
+// exactly the length of that synchronous walk.
+//
+// The suppression cannot be made permanent: CUIElement::IsFocusable requires IsTabStop, so an
+// authored Button/ComboBox left with IsTabStop(false) would also stop taking POINTER focus, and
+// Enter-into-content would have nothing to focus. Restoring it on the way out keeps authored
+// content exactly as the app declared it the rest of the time.
+bool TableViewRow::MoveFocusOutOfRowInternal(winrt::FocusNavigationDirection direction)
+{
+    std::vector<winrt::UIElement> suppressed;
+    if (auto const host = m_cellsHost.get())
+    {
+        auto const children = host.Children();
+        const uint32_t size = children.Size();
+        for (uint32_t i = 0; i < size; ++i)
+        {
+            if (auto const cell = children.GetAt(i))
+            {
+                AppendContentTabStops(cell, suppressed);
+            }
+        }
+    }
+
+    for (auto const& element : suppressed)
+    {
+        element.IsTabStop(false);
+    }
+
+    bool moved = false;
+    try
+    {
+        moved = winrt::FocusManager::TryMoveFocus(direction);
+    }
+    catch (...)
+    {
+        // A refused focus move must still restore the authored tab stops below.
+    }
+
+    for (auto const& element : suppressed)
+    {
+        element.IsTabStop(true);
+    }
+
+    return moved;
+}
+
+// Tab is a BAND gesture, not a per-cell one: the body is one tab stop (dev-spec:201) and the route
+// into a cell's focusable content is Enter (dev-spec:217).
+//
+// The row's two-level IsTabStop gating cannot deliver that on its own. XAML's tab walk searches the
+// focused element's CHILDREN before it consults any TabFocusNavigation scope
+// (CFocusManager::GetNextTabStop, step #1), and SetCellsTabStopInternal only reaches the cell
+// wrappers, so a Button inside a template column's CellTemplate stays a tab stop below them. Tab
+// from the row - or from a cell - then descends into that content instead of leaving the table,
+// which is a keyboard trap for anyone walking the page.
+//
+// PART_CellsHost's KeyboardNavigationMode::Once does not cover this either: it governs movement
+// once focus is already inside the host, while the row that Tab starts from sits outside it.
+void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
+{
+    if (!args.Handled() &&
+        args.Key() == winrt::VirtualKey::Tab &&
+        // Ctrl+Tab is app-level navigation and Alt is the resize chord; neither is a band move.
+        !IsKeyDown(winrt::VirtualKey::Control) &&
+        !IsKeyDown(winrt::VirtualKey::Menu) &&
+        IsGridLevelFocusInternal())
+    {
+        const auto direction = IsKeyDown(winrt::VirtualKey::Shift)
+            ? winrt::FocusNavigationDirection::Previous
+            : winrt::FocusNavigationDirection::Next;
+
+        if (MoveFocusOutOfRowInternal(direction))
+        {
+            args.Handled(true);
+            return;
+        }
+
+        // Nothing to move to. Leave the key unhandled rather than swallowing it.
+    }
+
+    __super::OnKeyDown(args);
+}
+
 // Pop-out must make the row focusable before clearing the focused cell from tab order.
 void TableViewRow::EnableRowFocusInternal()
 {
@@ -484,12 +626,49 @@ void TableViewRow::OnRowGettingFocus(
     // When returning from another band inside the table, stale cell-level state can make XAML aim
     // the body's single tab stop at a cell. Body band entry is still row-level; outside re-entry is
     // left alone so it can resume the previously focused cell.
+    winrt::DependencyObject const ownerObject = owner;
+    const bool focusCameFromWithinTable =
+        oldFocus == ownerObject ||
+        SharedHelpers::IsAncestor(oldFocus, ownerObject, false /* checkVisibility */);
+
+    // The two bands share ONE column cursor (dev-spec:201), so Tab and Shift+Tab between them keep
+    // the current column. A cursor that is at cell level therefore re-enters the body on the cell
+    // in that column, not on the row: resetting to row level here would silently drop the column
+    // the user was working in. A cursor that never drilled in is still row-level, below.
+    if (focusCameFromWithinTable && ownerImpl->IsCellCursorActiveInternal())
+    {
+        auto targetRow = ownerImpl->ResolveFocusEntryRow(*this, oldFocus);
+        if (!targetRow)
+        {
+            targetRow = *this;
+        }
+        auto const targetImpl = winrt::get_self<TableViewRow>(targetRow);
+
+        if (const int32_t cellCount = targetImpl->GetVisibleCellCountInternal(); cellCount > 0)
+        {
+            const int32_t column =
+                std::clamp(ownerImpl->CurrentColumnCursorInternal(), 0, cellCount - 1);
+
+            // Arm the target row's cells before aiming at one: row-level cells are not focusable.
+            targetImpl->SetCellLevelInternal(true);
+
+            if (auto const cell = targetImpl->GetVisibleCellInternal(column))
+            {
+                if (cell.try_as<winrt::DependencyObject>() != newFocus)
+                {
+                    // Refusal is survivable: focus stays on the cell XAML aimed at, which is still
+                    // a cell-level landing in the body.
+                    args.TrySetNewFocusedElement(cell);
+                }
+                return;
+            }
+
+            targetImpl->SetCellLevelInternal(false);
+        }
+    }
+
     if (newFocus != selfObject)
     {
-        winrt::DependencyObject const ownerObject = owner;
-        const bool focusCameFromWithinTable =
-            oldFocus == ownerObject ||
-            SharedHelpers::IsAncestor(oldFocus, ownerObject, false /* checkVisibility */);
         if (!focusCameFromWithinTable || !FindOwnCellInternal(newFocus, false /* requireExact */))
         {
             return;

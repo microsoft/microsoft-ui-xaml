@@ -1459,6 +1459,14 @@ void TableView::QueueGroupExpansionRowRefresh()
 
 void TableView::RefreshRealizedRowsAfterGroupExpansion()
 {
+    // Headers first: their expansion is what the rows below them were (de)realized for, and a
+    // reshape can rebind a pooled header in place without an ElementPrepared/ElementIndexChanged
+    // callback. Without this the container's IsExpanded DP -- the value the ExpandCollapse peer
+    // and the chevron VisualStates read -- can outlive the projection that produced it, which is
+    // what let a bulk collapse leave a gesture-expanded group reporting Expanded. Re-preparing is
+    // idempotent and announces to UIA only when THIS group's reported state actually moved.
+    RefreshRealizedGroupHeadersAfterExpansion();
+
     ForEachRealizedRow([this](winrt::TableViewRow const& row)
     {
         auto* const rowImpl = winrt::get_self<TableViewRow>(row);
@@ -1568,6 +1576,11 @@ void TableView::RefreshRowsPipeline()
 
     if (auto repeater = m_rowsRepeater.get())
     {
+        // Subscribe the re-shape focus detector BEFORE the repeater adopts the view: handlers run in
+        // subscription order, so this is the only way to observe an in-place Reset while the focused
+        // row is still realized and still reports its projected index.
+        UpdateReshapeFocusDetectorSubscription(m_rowsItemsSourceView);
+
         // ItemsRepeater has no identity short-circuit: re-assigning the same source tears down
         // every container and resets scroll. Guard so a theme-change or Loaded repump does not
         // blow away realized rows.
@@ -1588,6 +1601,12 @@ void TableView::RefreshRowsPipeline()
 
 void TableView::OnTableViewSourceProjectionChanged()
 {
+    // Capture first: RefreshRowsPipeline below re-sources the repeater, which tears down every
+    // realized row synchronously, and TerminateEditWithoutVisualRestore can move focus before that.
+    // This is the only point in the rebuild path where the body still holds the position the user
+    // was on. See the re-shape focus restore note in TableView.h.
+    CaptureBodyFocusForReshape();
+
     // A shaping verb swapped the projected shape after we bound, so the cached view and row
     // metadata describe the previous projection. Re-read them and re-drive the rows.
     if (IsEditing())
@@ -1607,6 +1626,11 @@ void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
     {
         QueueGroupExpansionRowRefresh();
     }
+
+    // dev-spec Keyboard, "Re-shape while focused": the new shape is in place by the time this is
+    // raised (both the in-place re-order and the rebuild have already run), so this is where the
+    // body cursor is put back at the position it was captured on.
+    RestoreBodyFocusAfterReshape();
 
     // The app may have declared or cleared a sort straight on the source, which the control has no
     // other way to learn about. Reconcile before anything else so the chevrons never outlive the
@@ -1675,6 +1699,41 @@ void TableView::OnItemsSourceCollectionChanged(const winrt::IInspectable& /*send
 {
     UpdateEmptyState();
     QueueTerminalGridLineRefresh();
+}
+
+void TableView::UpdateReshapeFocusDetectorSubscription(const winrt::ItemsSourceView& view)
+{
+    if (m_reshapeFocusDetectorRevoker && SameInspectableIdentity(view, m_reshapeFocusDetectorView))
+    {
+        // Already first in line on this very view; re-subscribing would move us behind the repeater.
+        return;
+    }
+
+    // auto_revoke drops the prior view's subscription.
+    m_reshapeFocusDetectorRevoker = {};
+    m_reshapeFocusDetectorView = nullptr;
+
+    if (view)
+    {
+        m_reshapeFocusDetectorRevoker = view.CollectionChanged(
+            winrt::auto_revoke, { this, &TableView::OnRowsSourceResetForFocus });
+        m_reshapeFocusDetectorView = view;
+    }
+}
+
+void TableView::OnRowsSourceResetForFocus(
+    const winrt::IInspectable& /*sender*/,
+    const winrt::NotifyCollectionChangedEventArgs& args)
+{
+    // Only a Reset recycles every realized row and makes ItemsRepeater rescue focus off the user's
+    // position; an Add/Remove shifts indices with the elements intact and focus rides along, so
+    // capturing there would fight the framework rather than help it.
+    if (args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    {
+        return;
+    }
+
+    CaptureBodyFocusForReshape();
 }
 
 void TableView::UpdateEmptyState()
@@ -2346,7 +2405,7 @@ void TableView::RebuildHeaders()
             // reaching the header's Tapped handler and sorting the column.
             if (headerIsResizable)
             {
-                AppendResizeGripperVisual(headerCell, column, cachedResizeGripperWidth, headerText, logicalEndAlignment);
+                AppendResizeGripperVisual(headerCell, column, cachedResizeGripperWidth, headerText);
             }
 
             host.Children().Append(headerCell);
@@ -2546,6 +2605,67 @@ void TableView::QueueRebuildHeaders()
     }
 }
 
+void TableView::RaiseColumnsStructureChanged()
+{
+    // FromElement only, like the other raise sites: no live peer means no client is connected to
+    // this element, so creating one purely to announce would materialize automation objects
+    // nobody asked for.
+    if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewAutomationPeer>())
+    {
+        winrt::get_self<TableViewAutomationPeer>(peer)->RaiseStructureChangedForColumnsChange();
+    }
+}
+
+void TableView::QueueRaiseColumnsStructureChanged()
+{
+    // Mirrors OnTableViewSourceShapingChanged: a column mutation is not an input event, so this
+    // raise is the only thing that tells a UIA client its cached grid shape is stale. Nothing is
+    // done at all when no client is listening -- the same gate the shaping path uses.
+    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::StructureChanged))
+    {
+        return;
+    }
+
+    if (m_columnsStructureChangedQueued)
+    {
+        return;
+    }
+
+    auto dispatcher = DispatcherQueue();
+    if (!dispatcher)
+    {
+        // No dispatcher (test host / teardown): nothing to coalesce against, so raise inline.
+        RaiseColumnsStructureChanged();
+        return;
+    }
+
+    // Deferred for the same reason the header rebuild is: a Columns edit arrives one
+    // VectorChanged callback at a time, and the shape a client would re-read is only final once
+    // the whole burst has been applied. Announcing mid-burst would send Narrator to re-read a
+    // grid that is still changing.
+    m_columnsStructureChangedQueued = true;
+    auto weakThis = get_weak();
+    if (!dispatcher.TryEnqueue([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->m_columnsStructureChangedQueued = false;
+                try
+                {
+                    strongThis->RaiseColumnsStructureChanged();
+                }
+                catch (...)
+                {
+                    // Best-effort announcement; never fail-fast the dispatcher.
+                }
+            }
+        }))
+    {
+        m_columnsStructureChangedQueued = false;
+        RaiseColumnsStructureChanged();
+    }
+}
+
 void TableView::OnTableViewUnloaded()
 {
     m_headerSortSpaceArmedColumn = nullptr;
@@ -2701,8 +2821,7 @@ void TableView::AppendResizeGripperVisual(
     const winrt::Grid& headerCell,
     const winrt::TableViewColumn& column,
     double gripperWidth,
-    const winrt::hstring& headerText,
-    winrt::HorizontalAlignment logicalEndAlignment)
+    const winrt::hstring& headerText)
 {
     auto weakThis = get_weak();
     winrt::ResizeGripper gripperVisual;
@@ -2711,10 +2830,17 @@ void TableView::AppendResizeGripperVisual(
     // column would sit between the user and the data.
     gripperVisual.IsTabStop(false);
     winrt::AutomationProperties::SetAccessibilityView(gripperVisual, winrt::AccessibilityView::Raw);
-    // Same explicit logical-end alignment the grid line and the sort affordance use: the header
-    // cell's subtree does not observe the ambient FlowDirection auto-flip, so the gripper has to be
-    // told which edge is trailing or it lands opposite the grid line under RTL.
-    gripperVisual.HorizontalAlignment(logicalEndAlignment);
+    // The gripper sits on the column's reading-order TRAILING edge - the boundary it shares with
+    // the next column - in BOTH flow directions, so this alignment is deliberately NOT swapped for
+    // RTL. XAML applies RightToLeft as a single mirror transform at the element where
+    // FlowDirection changes (the TableView), and everything below that boundary - including this
+    // header cell - still arranges in ordinary logical left-to-right coordinates (the same model
+    // TableViewCellsPanel::ApplyFrozenColumnLayout relies on, and the one
+    // VerifyFrozenColumnsMirrorInRightToLeft measures). Logical Right therefore lands on the
+    // visual LEFT under RTL, which is exactly where the RtlName/RtlCity boundary is. Stamping
+    // Left here instead mirrored a frame that was already mirrored and parked the gripper on the
+    // table's outer edge, so an RTL pointer drag on the real boundary hit nothing.
+    gripperVisual.HorizontalAlignment(winrt::HorizontalAlignment::Right);
     gripperVisual.Width(gripperWidth);
     if (!headerText.empty())
     {

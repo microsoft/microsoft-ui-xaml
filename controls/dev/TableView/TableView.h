@@ -179,8 +179,7 @@ public:
         const winrt::Grid& headerCell,
         const winrt::TableViewColumn& column,
         double gripperWidth,
-        const winrt::hstring& headerText,
-        winrt::HorizontalAlignment logicalEndAlignment);
+        const winrt::hstring& headerText);
 
     winrt::ResizeGripper FindResizeGripperInCell(const winrt::FrameworkElement& headerCell) const;
 
@@ -194,6 +193,12 @@ public:
     // applied (OnApplyTemplate performs the initial build). Falls back to a synchronous rebuild when
     // no dispatcher is available or the enqueue fails.
     void QueueRebuildHeaders();
+
+    // Coalesces a burst of column shape changes (a bulk Columns edit, or several Visibility
+    // toggles in one turn) into a single StructureChanged raise on the next dispatcher tick.
+    // Raising per mutation would make Narrator re-read the grid N times for one logical change.
+    void QueueRaiseColumnsStructureChanged();
+    void RaiseColumnsStructureChanged();
 
     // Internal — invoked by TableViewColumn when its Visibility changes so
     // realized header and row cells stay in sync without rebuilding Columns.
@@ -261,6 +266,10 @@ public:
     // row because it has to survive row recycling and follow the cursor from row to row.
     bool IsCellCursorActiveInternal() const noexcept { return m_cellCursorActive; }
     void SetCellCursorActiveInternal(bool active);
+
+    // Shared header/body column cursor, in visible-column coordinates. Read by the row when Tab
+    // crosses bands, so body entry lands in the column the user was working in.
+    int32_t CurrentColumnCursorInternal() const noexcept { return m_currentCellColumn; }
 
     void OnRowCellFocusChanged(winrt::TableViewRow const& row);
 
@@ -753,10 +762,32 @@ private:
     // brand-new source.
     uint64_t m_rowMetadataGeneration{ 0 };
 
-    void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired);    void QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired);
-    void ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation);
+    // Bumped by every bulk expand/collapse. "Setting the bulk state also resets per-group
+    // exceptions" (TableView-spec) has to cover the per-group request that is still ON THE QUEUE
+    // when the bulk call runs: the gesture route resolves inline but mutates on a later turn, so
+    // without this stamp that request lands after the bulk set and re-creates the very exception
+    // the bulk set just erased -- a gesture-expanded group surviving CollapseAllGroups().
+    uint64_t m_groupExpansionBulkGeneration{ 0 };
+
+    void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired);
+    void QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired);
+    void ApplyGroupExpansionByIdentity(
+        winrt::hstring const& identity,
+        std::optional<bool> desired,
+        uint64_t generation,
+        uint64_t bulkGeneration);
     void RaiseGroupStructureChanged();
     void SetAllGroupsExpansion(bool expand);
+
+    // Realized group-header containers, with the index each currently occupies. Headers that the
+    // repeater has not placed (index < 0) are skipped: nothing can be derived for them.
+    void ForEachRealizedGroupHeader(std::function<void(winrt::TableViewGroupHeader const&, int32_t)> const& fn);
+
+    // Re-derives every realized header's expansion from the projection after a reshape. A reshape
+    // can rebind a pooled header without a fresh ElementPrepared/ElementIndexChanged callback, so
+    // the header's DPs -- which the ExpandCollapse peer and the VisualStates read -- can otherwise
+    // keep describing the previous projection.
+    void RefreshRealizedGroupHeadersAfterExpansion();
 
     // Keyboard-driven group toggle loses focus without this: the Enter/Space toggle defers a
     // structural reshape that recycles the focused header container, dropping focus (and its
@@ -869,6 +900,38 @@ private:
     winrt::event_token m_pendingGroupRowRefreshLayoutToken{};
     // Count changes refresh both empty state and the terminal row separator.
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceCollectionChangedRevoker{};
+
+    // --- Re-shape focus restore (dev-spec Keyboard, "Re-shape while focused") ---
+    //
+    // A sort or filter that re-shapes the rows while focus is inside the body must leave focus at
+    // the same PROJECTED POSITION - the same row index, whichever record now occupies it - which is
+    // deliberately NOT the record-identity rule that governs Tab re-entry (ResolveFocusEntryRow).
+    //
+    // Both re-shape paths destroy the realized rows before the control is told about them, so the
+    // position has to be captured BEFORE the rows go away and replayed afterwards:
+    //   - a projection swap (filter, group verb, anything needing a rebuild) is captured at the top
+    //     of OnTableViewSourceProjectionChanged, which runs before RefreshRowsPipeline re-sources
+    //     the repeater;
+    //   - an in-place re-order (the ungrouped sort fast path) raises only a Reset on the existing
+    //     view, which is caught by a detector subscribed AHEAD of ItemsRepeater, so it still sees
+    //     the focused row realized. ItemsRepeater rescues focus to a neighbouring element while it
+    //     recycles (ViewManager::MoveFocusFromClearedIndex), which is exactly what would otherwise
+    //     move the cursor off the user's position.
+    // Both are replayed from OnTableViewSourceShapingChanged, the one notification raised after the
+    // new shape is in place.
+    void CaptureBodyFocusForReshape();
+    void RestoreBodyFocusAfterReshape();
+    void UpdateReshapeFocusDetectorSubscription(const winrt::ItemsSourceView& view);
+    void OnRowsSourceResetForFocus(
+        const winrt::IInspectable& sender,
+        const winrt::NotifyCollectionChangedEventArgs& args);
+    bool m_reshapeFocusValid{ false };
+    int32_t m_reshapeFocusRow{ -1 };
+    int32_t m_reshapeFocusColumn{ 0 };
+    bool m_reshapeFocusCellLevel{ false };
+    // Subscribed before the repeater so a Reset is observed while the rows are still realized.
+    winrt::ItemsSourceView::CollectionChanged_revoker m_reshapeFocusDetectorRevoker{};
+    winrt::ItemsSourceView m_reshapeFocusDetectorView{ nullptr };
     // ActualThemeChanged refreshes imperatively-resolved brushes that ItemsRepeater rows do not re-pump.
     winrt::event_token m_actualThemeChangedToken{};
 
@@ -904,6 +967,8 @@ private:
     bool m_frozenColumnsActive{ false };
 
     bool m_rebuildHeadersQueued{ false };
+
+    bool m_columnsStructureChangedQueued{ false };
 
     // Per-instance resource cache; replaces the former process-global map keyed by `this`.
     TableViewResourceCache m_resourceCache{};
@@ -996,6 +1061,9 @@ private:
     bool FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel);
     int32_t GetFocusedRowContainerIndex() const;
     int32_t GetFocusedGroupHeaderIndex() const;
+    // dev-spec Keyboard: Up from the first row leaves the body for the header band, entering it at
+    // the shared column cursor.
+    bool TryMoveFocusToHeaderBandFromBody(int32_t visibleColumnIndex);
     int32_t m_navAnchorRowContainer{ -1 };
     int32_t m_navAnchorGroupHeader{ -1 };
 

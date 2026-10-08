@@ -34,6 +34,11 @@ public:
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
 
+    // Keeps the body ONE tab stop: Tab from the row or from a cell leaves the table instead of
+    // descending into a template column's focusable content. See the definition for why the
+    // row's IsTabStop gating cannot do this by itself.
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
+
     // Updates the weak owner ref, column subscription, and realized cells.
     void SetOwningTableViewInternal(winrt::TableView const& owner);
     void EnsureOwningTableViewInternal(winrt::TableView const& owner);
@@ -124,7 +129,14 @@ private:
     void ApplyFocusLevelInternal();
     void SetCellsTabStopInternal(bool isTabStop);
 
-    // Redirects body Tab entry from the first row to the remembered row; entry is always row-level.
+    // True when focus is on this row or exactly on one of its cells - never inside cell content.
+    bool IsGridLevelFocusInternal();
+
+    // Performs the Tab move with the cells' content tab stops suppressed for its duration only.
+    bool MoveFocusOutOfRowInternal(winrt::FocusNavigationDirection direction);
+
+    // Resolves body Tab entry: the remembered row, and - when the shared cursor is at cell level -
+    // the remembered column's cell rather than the row.
     void OnRowGettingFocus(
         const winrt::UIElement& sender,
         const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);

@@ -213,6 +213,11 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
             winrt::get_self<TableViewRow>(row)->RefreshColumnsSubscriptionInternal();
         });
     }
+
+    // Replacing the whole vector is the largest shape change of all -- every column a client
+    // cached can be gone -- and it arrives with no VectorChanged to carry it, so it is announced
+    // here for the same reason the incremental path announces.
+    QueueRaiseColumnsStructureChanged();
 }
 
 void TableView::OnColumnsVectorChanged(
@@ -324,6 +329,13 @@ void TableView::OnColumnsVectorChanged(
 
     QueueRebuildHeaders();
 
+    // The grid's shape just changed: the column count a UIA client reads, and the set of cells
+    // every row exposes, are both different now. QueueRebuildHeaders rebuilds the visuals but
+    // tells no client, so without this a cached tree keeps a column that is gone or never learns
+    // about one that appeared. Same obligation OnTableViewSourceShapingChanged accepts for a
+    // projection rewrite.
+    QueueRaiseColumnsStructureChanged();
+
     // Realized rows observe Columns directly; no TableView broadcast is needed.
     if (change == winrt::CollectionChange::Reset)
     {
@@ -373,6 +385,13 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
     // `changed` gate stays false and would never re-pin. Refresh it directly.
     InvalidateMeasure();
     RefreshFrozenColumns();
+
+    // UIA counts and addresses only VISIBLE columns (TableViewAutomationPeer::ColumnCount and
+    // GetItem both filter through IsVisibleColumn), so hiding or showing a column shifts every
+    // column index to its right exactly as an add / remove does. A client that cached the old
+    // geometry would address the wrong cell, which is the same defect as a stale column set --
+    // so this raises for the same reason, through the same coalescing queue.
+    QueueRaiseColumnsStructureChanged();
 }
 
 void TableView::OnColumnWidthChanged(const winrt::TableViewColumn& column)

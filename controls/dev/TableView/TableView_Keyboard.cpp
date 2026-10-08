@@ -511,8 +511,8 @@ bool TableView::TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& ar
     return true;
 }
 
-// Clamp Up/Down inside the header band; otherwise focus navigation can escape the band or row
-// navigation can enter row 0.
+// Up stays in the header band; Down leaves it for the first row (dev-spec Keyboard). Either way the
+// key is consumed, so focus navigation cannot escape the band sideways or land mid-table.
 bool TableView::TryHandleHeaderVerticalKey(const winrt::KeyRoutedEventArgs& args)
 {
     if (args.Handled())
@@ -543,8 +543,51 @@ bool TableView::TryHandleHeaderVerticalKey(const winrt::KeyRoutedEventArgs& args
         return false;
     }
 
+    // dev-spec Keyboard: from the header band "Down moves to the first row; Up stays in the band".
+    // The two bands share one column cursor, so the body is entered in the header's column, and at
+    // whichever level the body cursor was last on - row level, or the same column at cell level.
+    if (key == winrt::Windows::System::VirtualKey::Down)
+    {
+        SetColumnCursorInternal(headerIndex);
+        if (GetItemsSourceCount() > 0)
+        {
+            // FocusRow follows the two-level cursor. Consume either way: an unconsumed Down reaches
+            // XAML directional navigation, which lands on whatever is geometrically nearest.
+            FocusRow(0);
+        }
+    }
+
     args.Handled(true);
     return true;
+}
+
+// dev-spec Keyboard: "Up from the first row moves to the header band". The bands share one column
+// cursor (dev-spec:201), so the band is entered on the column the body was on.
+bool TableView::TryMoveFocusToHeaderBandFromBody(int32_t visibleColumnIndex)
+{
+    auto const host = m_headerHost.get();
+    if (!host)
+    {
+        return false;
+    }
+
+    auto const cells = GetVisibleHeaderCells(host);
+    if (cells.empty())
+    {
+        return false;
+    }
+
+    // Publish the body's column first so ResolveHeaderEntryIndex aims at it. A negative index means
+    // the body was at row level and names no column, so the band keeps the cursor it had.
+    SetColumnCursorInternal(visibleColumnIndex);
+
+    const int32_t target = ResolveHeaderEntryIndex(cells);
+    if (target < 0)
+    {
+        return false;
+    }
+
+    return FocusVisibleHeaderFrom(target, 0) >= 0;
 }
 
 winrt::TableViewColumn TableView::ResolveHeaderSortKeyTarget(const winrt::KeyRoutedEventArgs& args)
@@ -995,6 +1038,17 @@ void TableView::OnKeyDownForNavigation(
         {
             args.Handled(true);
         }
+        else if (key == winrt::Windows::System::VirtualKey::Up &&
+            currentRow == 0 &&
+            // Only a cell anchor names a real column; at row level the band keeps whatever column
+            // cursor it already had, exactly as Tab entry does.
+            TryMoveFocusToHeaderBandFromBody(hasCellAnchor ? anchorColumn : -1))
+        {
+            // dev-spec Keyboard: "Up from the first row moves to the header band". Row 0 has nowhere
+            // above it inside the body, so the key crosses the band boundary instead of being
+            // dropped - which is what left the two bands joined only by Tab.
+            args.Handled(true);
+        }
     }
 }
 
@@ -1004,6 +1058,107 @@ bool TableView::FocusRow(int32_t index)
     return m_cellCursorActive
         ? FocusCell(index, m_currentCellColumn)
         : FocusRowContainer(index);
+}
+
+// ----- Re-shape focus restore -----
+//
+// dev-spec Keyboard, "Re-shape while focused": when a sort or filter re-shapes the rows while focus
+// is inside the body, focus stays at the same POSITION - the same projected row index - and so
+// lands on whichever row now occupies it, including when the focused record was filtered out.
+//
+// That is deliberately the opposite rule from Tab re-entry (ResolveFocusEntryRow), which follows the
+// remembered ITEM. Position here, identity there: a re-shape under a live cursor must not drag the
+// cursor around the table, while coming back from another tab stop must return to the record the
+// user left. Both rules read the same two fields, so this path must never be routed through the
+// identity lookup.
+void TableView::CaptureBodyFocusForReshape()
+{
+    // Always overwrite, so a re-shape taken while focus is outside the body cannot replay a stale
+    // position - which is exactly the BodyTabReentryReturnsToSameRecordAfterSort case, where focus
+    // sits on a column header while the sort runs.
+    m_reshapeFocusValid = false;
+    m_reshapeFocusRow = -1;
+    m_reshapeFocusColumn = m_currentCellColumn;
+    m_reshapeFocusCellLevel = false;
+
+    auto const repeater = m_rowsRepeater.get();
+    auto const root = XamlRoot();
+    if (!repeater || !root)
+    {
+        return;
+    }
+
+    auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::DependencyObject>();
+    if (!focused)
+    {
+        return;
+    }
+
+    auto const repeaterObject = repeater.try_as<winrt::DependencyObject>();
+    if (focused != repeaterObject &&
+        !SharedHelpers::IsAncestor(focused, repeaterObject, false /* checkVisibility */))
+    {
+        // Focus is on the header band, elsewhere in the control, or outside it entirely. The
+        // re-shape rule only governs a cursor that is inside the body.
+        return;
+    }
+
+    int32_t cellRow = -1;
+    int32_t cellColumn = -1;
+    // Non-exact: focus may be on hosted content inside the cell, which is still cell level.
+    const bool onCell = TryGetFocusedCell(cellRow, cellColumn, false /* requireExactCell */);
+
+    // GetFocusedRowIndex also recognizes group headers, which occupy projected positions of their
+    // own in a grouped projection and are valid resting places for the body cursor.
+    const int32_t row = onCell ? cellRow : GetFocusedRowIndex();
+    if (row < 0)
+    {
+        return;
+    }
+
+    m_reshapeFocusRow = row;
+    m_reshapeFocusColumn = (onCell && cellColumn >= 0) ? cellColumn : m_currentCellColumn;
+    m_reshapeFocusCellLevel = onCell;
+    m_reshapeFocusValid = true;
+}
+
+void TableView::RestoreBodyFocusAfterReshape()
+{
+    if (!m_reshapeFocusValid)
+    {
+        return;
+    }
+
+    const int32_t row = m_reshapeFocusRow;
+    const int32_t column = m_reshapeFocusColumn;
+    const bool cellLevel = m_reshapeFocusCellLevel;
+
+    // One-shot: consumed here so a later notification that carries no capture cannot replay it.
+    m_reshapeFocusValid = false;
+    m_reshapeFocusRow = -1;
+
+    const int32_t rowCount = GetItemsSourceCount();
+    if (rowCount <= 0)
+    {
+        // Everything was filtered away; there is no position left to hold.
+        return;
+    }
+
+    // A filter can shorten the projection past the captured position. Clamping keeps focus in the
+    // body - the spec's point - rather than dropping it out of the table.
+    const int32_t target = std::clamp(row, 0, rowCount - 1);
+
+    // FocusRowElementInternal realizes the row and, when layout has not caught up with the new
+    // shape yet, finishes on the next LayoutUpdated at the same level. That is the established
+    // pattern for focusing a row the repeater has not re-realized.
+    if (cellLevel)
+    {
+        FocusCell(target, column);
+    }
+    else
+    {
+        FocusRowContainer(target);
+    }
 }
 
 // ----- Cell-level keyboard focus -----

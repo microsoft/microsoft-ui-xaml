@@ -84,6 +84,33 @@ winrt::hstring TableViewGroupHeaderAutomationPeer::GetNameCore()
     return __super::GetNameCore();
 }
 
+void TableViewGroupHeaderAutomationPeer::SetFocusCore()
+{
+    // The base peer focuses the owner with FocusState::Programmatic
+    // (CFrameworkElementAutomationPeer::SetFocusHelper), and the focus manager COERCES
+    // Programmatic to the last input device type (CFocusManager::CoerceFocusState): after a
+    // pointer gesture it lands as FocusState::Pointer. Two things then go wrong for the one
+    // client that uses this route, a screen reader: the band draws no focus visual, and
+    // TableView's group-expansion focus restore -- which deliberately ignores Pointer focus so a
+    // band click does not yank focus back -- never captures the header, so it loses focus across
+    // its own collapse and the user cannot re-open the group they just closed.
+    //
+    // An AT moving focus here IS a navigation act, so Keyboard is the honest state: it is not
+    // coerced, it draws the focus visual the user needs, and it makes the existing restore path
+    // treat this exactly like the Tab route. Same shape as TableViewCellAutomationPeer::
+    // SetFocusCore -- focus directly, and fall back to the base peer if that cannot land (a
+    // recycled or unparented container).
+    if (auto const header = GetHeader())
+    {
+        if (header.Focus(winrt::FocusState::Keyboard))
+        {
+            return;
+        }
+    }
+
+    __super::SetFocusCore();
+}
+
 int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
 {
     // An app-set AutomationProperties.Level wins, as in the dxaml peers that compute this.

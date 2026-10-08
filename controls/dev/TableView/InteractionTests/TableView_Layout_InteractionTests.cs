@@ -116,7 +116,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product finding #17: Escape during a pointer resize drag does not restore the authored width.
         [TestProperty("Description", "Verifies pressing Escape during a pointer resize drag restores the column's authored width.")]
         public void PointerResizeEscapeCancelsResize()
         {
@@ -262,7 +261,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         #region 7. Scrolling
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Finding #20: header BoundingRectangle does not reflect scroll offset, so this tier cannot observe it.
         [TestProperty("Description", "Verifies a non-frozen header scrolls horizontally when the body is scrolled by pointer.")]
         public void HorizontalScrollKeepsHeaderAligned()
         {
@@ -270,6 +268,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // horizontal offset from PART_BodyScroller.ViewChanged, so the header band tracks horizontal body
             // scrolling. This test proves real pointer scroll moves the non-frozen header; a failure means the
             // header<->body horizontal sync never runs off the input path.
+            //
+            // MEASURED ON THE HEADER SCROLLER'S OFFSET, NOT ON A HEADER PEER'S RECTANGLE. The control scrolls
+            // the header band by driving PART_HeaderScroller, and that travel is not reflected in a header
+            // peer's UIA BoundingRectangle, so a rectangle-based assertion cannot observe it at this tier.
+            // The page publishes the header scroller's own offset as "HeaderH" alongside the body's, which is
+            // exactly the quantity the spec describes the control as driving - so this asserts the real
+            // contract rather than a proxy for it, and it can still tell "the sync never ran" from "the sync
+            // ran but the header did not move".
             //
             // LIMITATION (finding #13): the plan item's full claim is that headers move "in lockstep with
             // cells". Reading an individual cell's x requires descending into a row peer, which crashes the
@@ -290,58 +296,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     return;
                 }
 
-                UIObject scrollHeader = FindColumnHeader(tableView, "ScrollCity");
-                if (scrollHeader == null)
-                {
-                    Verify.Fail("The 'ScrollCity' column header peer was not found on the header host.");
-                    return;
-                }
-
-                double leftBefore = scrollHeader.BoundingRectangle.Left;
                 string offsetsBefore = ReadScrollOffsets();
+                double bodyBefore = ReadScrollOffsetComponent(offsetsBefore, "H");
+                double headerBefore = ReadScrollOffsetComponent(offsetsBefore, "HeaderH");
+                Verify.IsFalse(double.IsNaN(bodyBefore), "The page must publish the body scroller's H offset.");
+                Verify.IsFalse(double.IsNaN(headerBefore), "The page must publish the header scroller's HeaderH offset.");
 
                 // The Scrolling table is 520px wide with ~840px of columns, so it overflows horizontally.
                 // Horizontal scrolling is driven by dragging the body scroller's horizontal ScrollBar thumb:
                 // that is the only real pointer route the mouse has here. Shift+wheel does NOT work - measured,
                 // it scrolls VERTICALLY instead (offsets went H=0;V=39) - and MITA exposes no horizontal wheel.
-                // A small 30px thumb drag keeps ScrollCity inside the viewport; a header scrolled clear out
-                // reports an empty rectangle whose Left reads 0, which would satisfy the assertion falsely.
                 if (!DragHorizontalScrollBar(tableView, 30))
                 {
                     Verify.Fail("The body scroller's horizontal ScrollBar was not found.");
                     return;
                 }
 
-                // The header scroller's own offset (HeaderH) is published alongside the body's, so this test can
-                // tell "the sync never ran" from "the sync ran but the header did not move".
-                //
-                // Do NOT call ElementCache.Clear() here. The next FindElement.ById would miss and run
-                // ElementCache.Refresh(), which walks window.Descendants reading .Name on every node
-                // (FindElement.cs:414); computing a TableViewRow peer's name manufactures cell peers and trips
-                // finding #13 (0xC0000420), taking the app down mid-test. It also buys nothing: FindColumnHeader
-                // walks tableView.Children live on every call, so the header rectangles below are already
-                // re-read from the tree rather than served from that cache.
-                double leftAfter = FindColumnHeader(tableView, "ScrollCity").BoundingRectangle.Left;
                 string offsetsAfter = ReadScrollOffsets();
+                double bodyAfter = ReadScrollOffsetComponent(offsetsAfter, "H");
+                double headerAfter = ReadScrollOffsetComponent(offsetsAfter, "HeaderH");
 
-                Log.Comment("ScrollCity header Left before={0}, after horizontal scroll={1}. Body offsets '{2}' -> '{3}'.",
-                    leftBefore, leftAfter, offsetsBefore, offsetsAfter);
+                Log.Comment("Body H {0}->{1}; header HeaderH {2}->{3}. Raw offsets '{4}' -> '{5}'.",
+                    bodyBefore, bodyAfter, headerBefore, headerAfter, offsetsBefore, offsetsAfter);
 
                 // Precondition: the body must have scrolled horizontally, or the header assertion is vacuous.
-                Verify.AreNotEqual(
-                    offsetsBefore,
-                    offsetsAfter,
-                    "Dragging the horizontal ScrollBar thumb must scroll PART_BodyScroller; identical offsets mean the input never reached the scroller.");
+                Verify.IsGreaterThan(
+                    bodyAfter,
+                    bodyBefore,
+                    "Dragging the horizontal ScrollBar thumb must scroll PART_BodyScroller horizontally; an unchanged H means the input never reached the scroller.");
 
                 Verify.IsGreaterThan(
-                    leftAfter,
-                    0.0,
-                    "The 'ScrollCity' header must still be on screen after the drag, otherwise the movement assertion below would be satisfied by the header vanishing.");
+                    headerAfter,
+                    headerBefore,
+                    "The header band must track the body's horizontal scroll (dev-spec Sticky headers): PART_HeaderScroller's offset must advance with the body's.");
 
+                // The sync is an offset match, not merely movement in the same direction - the spec skips
+                // near-equal offsets (<0.5px) to avoid ViewChanged ping-pong, so allow that tolerance.
                 Verify.IsLessThan(
-                    leftAfter,
-                    leftBefore - 10.0,
-                    "A non-frozen header must move LEFT when the body is scrolled right (dev-spec Sticky headers).");
+                    Math.Abs(headerAfter - bodyAfter),
+                    1.0,
+                    string.Format("The header offset ({0}) must track the body offset ({1}) within the sync tolerance.", headerAfter, bodyAfter));
             }
         }
 
@@ -407,7 +401,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Finding #20: composition translation/clip are invisible to UIA BoundingRectangle at this tier.
+        [TestProperty("Ignore", "True")] // Not observable at this tier: frozen columns are counter-translated in the compositor, and a UIElement.Translation is invisible to UIA BoundingRectangle. Needs an in-process readout of the frozen band's translation (as HeaderH does for the header sync) or an API/render test; re-enable once one exists.
         [TestProperty("Description", "Verifies a FrozenEdge.Leading column stays pinned while unfrozen columns scroll horizontally under pointer input.")]
         public void FrozenColumnStaysPinnedUnderPointerScroll()
         {
@@ -492,7 +486,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         #region 8. Right-to-left
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product finding #19: RTL pointer resize gripper placement and delta are not mirrored.
         [TestProperty("Description", "Verifies a pointer resize drag is direction-mirrored under RTL: a leftward drag widens the leading column.")]
         public void RightToLeftResizeMirrors()
         {
