@@ -19,6 +19,7 @@
 
         <DataTemplate x:Key="ShowcaseDepartmentPillTemplate" x:DataType="models:Person">
             <Border Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource ShowcaseDepartmentTintConverter}}"
+                    AutomationProperties.Name="{x:Bind Department, Mode=OneWay}"
                     CornerRadius="10" Padding="10,3" Margin="6,2" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Spacing="7">
                     <Ellipse Width="8" Height="8" VerticalAlignment="Center"

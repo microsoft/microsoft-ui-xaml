@@ -56,7 +56,7 @@
                     <x:String>Control type — Microsoft.UI.Xaml.Controls.Tabular.TableView</x:String>
                     <x:String>Model-first source — TableViewSource.From(items) with Filter, GroupBy and Sort, reshaped in place</x:String>
                     <x:String>Columns — TableViewTextColumn for bound text and TableViewTemplateColumn for DataTemplate cells</x:String>
-                    <x:String>Template cells with editors — CheckBox, date and time pickers, ComboBox and Button with a Flyout, two-way bound and reachable with Tab</x:String>
+                    <x:String>Template cells with editors — CheckBox, date and time pickers, ComboBox and Button with a Flyout, two-way bound and reachable from the keyboard</x:String>
                     <x:String>Cell editing — double-click or F2 edits a cell in place, CellEditingTemplate supplies a custom editor, and TableView.IsReadOnly locks the whole table</x:String>
                     <x:String>Header-click sort via SortMemberPath, with a direction indicator</x:String>
                     <x:String>Filtering — TableViewSource.Filter(predicate)</x:String>

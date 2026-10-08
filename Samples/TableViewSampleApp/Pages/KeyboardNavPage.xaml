@@ -41,7 +41,7 @@
 
     <controls:SamplePresenter
         Header="Keyboard navigation + accessibility"
-        Description="TableView is fully keyboard operable: arrow keys move between rows and cells, Tab moves into the editors inside a row, and Page Up, Page Down and Ctrl+Home or Ctrl+End jump through the table. It also reports its rows, cells and group headers to UI Automation, so Narrator can announce where you are. Start at the Before table button and use only the keyboard. Below the first table, a fixed 24-record assessment fixture lets you compare what UI Automation reports for text columns, template columns and an unlabeled table."
+        Description="TableView is fully keyboard operable: arrow keys move between rows and cells, Enter moves into the control inside a template cell and Esc comes back out, and Page Up, Page Down and Ctrl+Home jump through the table. The table body is one tab stop, so Tab enters the table and the next Tab leaves it. It also reports its rows, cells and group headers to UI Automation, so Narrator can announce where you are. Below the first table, a fixed 24-record assessment fixture lets you compare what UI Automation reports for text columns, template columns and an unlabeled table."
         SourceCaption="KeyboardNavPage.xaml (excerpt)"
         SourceSnippet="KeyboardNav.xaml.txt"
         AdditionalSnippetCaption="KeyboardNavPage.xaml.cs (excerpt)"
@@ -65,7 +65,7 @@
                     IsOpen="True"
                     IsClosable="False"
                     MinHeight="104"
-                    Message="Tab to Before table, then Tab into the table. Use Up and Down, Page Up and Page Down, and Ctrl+Home or Ctrl+End to move between rows, then Left and Right to move across cells. Press Tab to reach the Active checkbox, the Office list and the Details button in the focused row, then keep pressing Tab to leave the table at After table."/>
+                    Message="Tab to Before table, then Tab into the table. Use Up and Down, Page Up and Page Down, and Ctrl+Home to move between rows, then Right and Left to move across cells. On the Active, Office or Details cell press Enter to reach its control and Esc to come back. Press Tab once more to leave the table at After table."/>
                 <!-- /scaffold -->
                 <Button Grid.Row="1" Content="Before table" HorizontalAlignment="Left"
                         AutomationProperties.AutomationId="KeyboardNavBeforeTable"
@@ -145,7 +145,7 @@
                 <StackPanel Style="{StaticResource RailSectionStyle}" AutomationProperties.Name="Keyboard">
                     <TextBlock AutomationProperties.HeadingLevel="Level2" Text="Keyboard"
                                Style="{StaticResource SectionHeaderTextStyle}"/>
-                    <TextBlock Text="The shortcuts the first table supports. Tab and Shift+Tab move between the Before table button, the editors in the focused row and the After table button."
+                    <TextBlock Text="The shortcuts the first table supports. The table body is a single tab stop: Tab and Shift+Tab move between the Before table button, the table and the After table button, and the arrow keys move inside it."
                                Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
                     <Grid Style="{StaticResource StatusGridStyle}">
                         <Grid.ColumnDefinitions>
@@ -153,6 +153,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -169,15 +170,17 @@
                         <TextBlock Grid.Row="2" Text="Home / End" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
                         <TextBlock Grid.Row="2" Grid.Column="1" Text="first / last cell of the focused row" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
                         <TextBlock Grid.Row="3" Text="Ctrl+Home / Ctrl+End" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="first / last row" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="first / last row. Known issue: Ctrl+End can stop near the bottom of the visible rows instead of on the last row." TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
                         <TextBlock Grid.Row="4" Text="Page Up / Page Down" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
                         <TextBlock Grid.Row="4" Grid.Column="1" Text="one viewport up / down" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
                         <TextBlock Grid.Row="5" Text="Tab / Shift+Tab" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="5" Grid.Column="1" Text="next / previous editor in the focused row" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="5" Grid.Column="1" Text="into the table, then out of it to the next or previous control on the page" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
                         <TextBlock Grid.Row="6" Text="Space" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="6" Grid.Column="1" Text="toggles the focused Active checkbox" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="7" Text="Enter / Space" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
-                        <TextBlock Grid.Row="7" Grid.Column="1" Text="on a focused Name or Department header: sorts by that column" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="6" Grid.Column="1" Text="selects the focused row; toggles the Active checkbox once focus is inside it" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="7" Text="Enter / Esc" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="7" Grid.Column="1" Text="on the Active, Office or Details cell: into its control / back to the cell" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
+                        <TextBlock Grid.Row="8" Text="Enter / Space" FontFamily="Consolas" Style="{StaticResource StatusReadoutValueStyle}"/>
+                        <TextBlock Grid.Row="8" Grid.Column="1" Text="on a focused Name or Department header: sorts by that column" TextWrapping="Wrap" Style="{StaticResource StatusReadoutLabelStyle}"/>
                     </Grid>
                 </StackPanel>
 
@@ -391,7 +394,7 @@
                     Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Message="Arrow keys move between cells; Tab moves into the editors inside the focused row. Check whether Esc or Shift+Tab brings focus back to the cell, and record what you see. The Photo column is decorative and never takes focus. Rows, Columns and Expected RowOrColumnMajor are what a UI Automation inspector should report for the first table; compare them rather than trusting them, because these readouts come from the app, not from UI Automation."/>
+                    Message="Arrow keys move between cells; Enter moves into the control of a template cell and Esc brings focus back to the cell. Tab leaves the table, because its body is one tab stop. The Photo column is decorative and never takes focus. Rows, Columns and Expected RowOrColumnMajor are what a UI Automation inspector should report for the first table; compare them rather than trusting them, because these readouts come from the app, not from UI Automation."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
     </controls:SamplePresenter>

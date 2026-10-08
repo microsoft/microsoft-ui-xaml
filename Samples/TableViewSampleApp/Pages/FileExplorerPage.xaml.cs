@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 using TableViewSampleApp.Services;
@@ -87,6 +88,7 @@ public sealed partial class FileExplorerPage : Page
         }
 
         _currentDir = listing.FullPath;
+        var focusState = TableFocusState();
         Entries.Clear();
         foreach (var entry in listing.Entries)
         {
@@ -96,7 +98,75 @@ public sealed partial class FileExplorerPage : Page
         AddressBar.Text = _currentDir;
         BackButton.IsEnabled = _history.Count > 0;
         UpButton.IsEnabled = Directory.GetParent(_currentDir) is not null;
+        if (focusState != FocusState.Unfocused)
+        {
+            FocusFirstRowAfterLayout(focusState);
+        }
+
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0}: {1} ({2:N0} items)", verb, DisplayName(_currentDir), Entries.Count));
+    }
+
+    // How focus sits in the table, or Unfocused when it is elsewhere on the page.
+    private FocusState TableFocusState()
+    {
+        var focused = XamlRoot is null ? null : FocusManager.GetFocusedElement(XamlRoot) as DependencyObject;
+        for (var node = focused; node is not null; node = VisualTreeHelper.GetParent(node))
+        {
+            if (node == FileTable)
+            {
+                return focused is Control { FocusState: not FocusState.Unfocused } control ? control.FocusState : FocusState.Programmatic;
+            }
+        }
+
+        return FocusState.Unfocused;
+    }
+
+    // Refilling the collection recycles every row, so the focused row container is left showing
+    // nothing. Like File Explorer, move focus and selection to the first row of the new folder.
+    private void FocusFirstRowAfterLayout(FocusState focusState)
+    {
+        void OnLayoutUpdated(object? sender, object e)
+        {
+            FileTable.LayoutUpdated -= OnLayoutUpdated;
+            if (FindFirstRealizedRow(FileTable) is { } row)
+            {
+                SampleShaping.Reselect(FileTable, row.DataContext, Entries.Count + 8);
+                row.Focus(focusState);
+            }
+        }
+
+        FileTable.LayoutUpdated += OnLayoutUpdated;
+    }
+
+    private static TableViewRow? FindFirstRealizedRow(DependencyObject parent)
+    {
+        TableViewRow? first = null;
+        var firstTop = double.MaxValue;
+        Collect(parent);
+        return first;
+
+        // Realized containers are not in visual order, so pick the top-most visible one.
+        void Collect(DependencyObject node)
+        {
+            var count = VisualTreeHelper.GetChildrenCount(node);
+            for (var i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(node, i);
+                if (child is TableViewRow { Visibility: Visibility.Visible, DataContext: FileSystemEntry } row)
+                {
+                    var top = row.TransformToVisual(parent as UIElement).TransformPoint(default).Y;
+                    if (top >= 0 && top < firstTop)
+                    {
+                        firstTop = top;
+                        first = row;
+                    }
+                }
+                else
+                {
+                    Collect(child);
+                }
+            }
+        }
     }
 
     private static string DisplayName(string path) =>

@@ -38,7 +38,9 @@ private void ResortIfMetricSorted()
 var text = _searchText;
 _source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
 
-// End task reports when nothing is selected instead of doing nothing.
+// End task is enabled only while a process is selected (RefreshReadouts runs on SelectionChanged).
+EndTaskButton.IsEnabled = ProcessTable.SelectedItem is ProcessItem;
+
 private void OnEndTaskClick(object sender, RoutedEventArgs e)
 {
     if (ProcessTable.SelectedItem is not ProcessItem process)

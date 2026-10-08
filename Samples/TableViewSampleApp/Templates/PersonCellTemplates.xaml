@@ -19,6 +19,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="using:TableViewSampleApp.Converters"
     xmlns:data="using:TableViewSampleApp.Data"
+    xmlns:helpers="using:TableViewSampleApp.Helpers"
     xmlns:models="using:TableViewSampleApp.Models"
     xmlns:templates="using:TableViewSampleApp.Templates">
 
@@ -32,7 +33,8 @@
     <converters:AvatarImageConverter x:Key="AvatarImageConverter"/>
 
     <!-- Photo (ColWidthAvatar). PersonPicture shows the image when AvatarPath resolves and
-         initials from DisplayName otherwise, so the cell is never blank. The path goes through
+         Person.Initials otherwise, so the cell is never blank. Initials are bound explicitly:
+         PersonPicture derives none from an Arabic or Hebrew DisplayName. The path goes through
          AvatarImageConverter: never bind a raw string to an ImageSource. Decorative: the Name
          column carries the row's identity. -->
     <DataTemplate x:Key="AvatarTemplate" x:DataType="models:Person">
@@ -43,13 +45,15 @@
             VerticalAlignment="Center"
             IsTabStop="False"
             DisplayName="{x:Bind FullName, Mode=OneWay}"
+            Initials="{x:Bind Initials, Mode=OneWay}"
             ProfilePicture="{x:Bind AvatarPath, Mode=OneWay, Converter={StaticResource AvatarImageConverter}}"
             AutomationProperties.AccessibilityView="Raw"/>
     </DataTemplate>
 
     <!-- Department chip (ColWidthChip). Read-only. Tint and dot come from the cached
          ChipBrushes and drop to transparent / theme text under a Contrast theme. The label is
-         the visible and the accessible value, so colour never carries meaning alone. -->
+         the visible and the accessible value, so colour never carries meaning alone. The chip root
+         carries AutomationProperties.Name, which the cell reads first ("Department, Marketing"). -->
     <DataTemplate x:Key="DepartmentChipTemplate" x:DataType="models:Person">
         <Border
             CornerRadius="10"
@@ -60,6 +64,7 @@
             Background="{x:Bind Department, Mode=OneWay, Converter={StaticResource DepartmentChipTintConverter}}"
             BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
             BorderThickness="1"
+            AutomationProperties.Name="{x:Bind Department, Mode=OneWay}"
             AutomationProperties.AccessibilityView="Raw">
             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                 <Ellipse
@@ -89,6 +94,7 @@
             Background="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ActiveChipTintConverter}}"
             BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
             BorderThickness="1"
+            AutomationProperties.Name="{x:Bind IsActive, Mode=OneWay, Converter={StaticResource ActiveChipTextConverter}}"
             AutomationProperties.AccessibilityView="Raw">
             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                 <Ellipse
@@ -156,14 +162,17 @@
             AutomationProperties.Name="{x:Bind FullName, Mode=OneWay, Converter={StaticResource RowAutomationNameConverter}, ConverterParameter='Shift start for {0}'}"/>
     </DataTemplate>
 
-    <!-- Compact 24 h TimePicker (ColWidthTimeCompact). MinWidth="0" lets it shrink to the
-         column; hh:mm stays fully visible at the token width. -->
+    <!-- Compact 24 h TimePicker (ColWidthTimeCompact). MinWidth="0" plus PickerSizing.FitToWidth
+         let it shrink to the column: without FitToWidth the inner FlyoutButton keeps its 242 px
+         MinWidth and the cell clips the minutes ("9" for 09:45). hh:mm is fully visible at the
+         token width. -->
     <DataTemplate x:Key="ShiftTimeCompactTemplate" x:DataType="models:Person">
         <TimePicker
             Time="{x:Bind ShiftStart, Mode=TwoWay}"
             ClockIdentifier="24HourClock"
             MinuteIncrement="15"
             MinWidth="0"
+            helpers:PickerSizing.FitToWidth="True"
             Margin="6,2"
             VerticalAlignment="Center"
             HorizontalAlignment="Stretch"

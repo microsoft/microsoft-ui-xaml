@@ -36,7 +36,7 @@
                     IsOpen="True"
                     IsClosable="False"
                     MinHeight="104"
-                    Message="Click Load 100,000 rows, then Sort by Name, Filter to Engineering and Clear filter, and read each time in Status. Switch Shaping to Grouped to time GroupBy. Then run Add 10,000 rows one at a time and compare it with Load 10,000 rows."/>
+                    Message="Click Load 100,000 rows, then Sort by Name, Filter to Engineering and Clear filter, and read each time in Status. Run Add 10,000 rows one at a time and compare it with Load 10,000 rows. Then switch Shaping to Grouped, which times GroupBy, and run the Add again: it stops after 2 seconds and shows what grouping once afterwards costs instead."/>
                 <!-- /scaffold -->
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
@@ -195,8 +195,8 @@
                             AutomationProperties.AutomationId="PerformancePerItemAddButton"
                             Content="Add 10,000 rows one at a time"
                             Click="OnPerItemAddClick"
-                            ToolTipService.ToolTip="The pattern to avoid: Clear() and then Add() per row into the bound collection, one change notification per row. Capped at 10,000 rows."
-                            AutomationProperties.HelpText="The pattern to avoid: Clear() and then Add() per row into the bound collection, one change notification per row. Capped at 10,000 rows."
+                            ToolTipService.ToolTip="The pattern to avoid: Clear() and then Add() per row into the bound collection, one change notification per row. Capped at 10,000 rows. When grouped, every Add regroups all rows, so the grouped run stops after 2 seconds and then repeats the Adds with the grouping detached and applied once."
+                            AutomationProperties.HelpText="The pattern to avoid: Clear() and then Add() per row into the bound collection, one change notification per row. Capped at 10,000 rows. When grouped, every Add regroups all rows, so the grouped run stops after 2 seconds and then repeats the Adds with the grouping detached and applied once."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                         <Button
@@ -285,7 +285,7 @@
                     Severity="Informational"
                     IsOpen="True"
                     IsClosable="False"
-                    Message="A bulk load of 100,000 rows finishes in well under a second, because only the visible rows are realized. Adding rows one at a time raises one change notification per row, so 10,000 Adds take far longer than the 10,000-row bulk load. Sorting, filtering and grouping all 100,000 rows does real work inside the control and takes longer than loading them. Debug builds are several times slower than Release builds. For per-row costs, record a trace with WPR and open it in WPA."/>
+                    Message="A bulk load of 100,000 rows finishes in well under a second, because only the visible rows are realized. Adding rows one at a time raises one change notification per row, so 10,000 Adds take far longer than the 10,000-row bulk load. Under GroupBy every Add also regroups every row, so the cost grows with each row: detach the grouping (ClearGroupBy), add, and group once. Sorting, filtering and grouping all 100,000 rows does real work inside the control and takes longer than loading them. Debug builds are several times slower than Release builds. For per-row costs, record a trace with WPR and open it in WPA."/>
             </StackPanel>
         </controls:SamplePresenter.Options>
     </controls:SamplePresenter>
