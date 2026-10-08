@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Tooltips: TableViewColumn.HeaderToolTip and TableViewColumn.CellToolTipBinding, both opt-in and
-    per column. Structure follows the golden page (CellFlyoutsPage): Try it, one stretched table,
+    per column. Structure follows the golden page (CellTemplatingPage): Try it, one stretched table,
     then the rail in the order Cell tooltips, Header tooltips, Shaping, Actions, Status,
     What to look for. Generic blocks carry scaffold markers.
 -->

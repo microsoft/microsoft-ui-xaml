@@ -30,9 +30,9 @@ public sealed partial class MainWindow : Window
         ["TaskManager"] = typeof(TaskManagerPage),
         ["FileExplorer"] = typeof(FileExplorerPage),
         ["FileProperties"] = typeof(FilePropertiesPage),
-        ["DynamicColumns"] = typeof(DynamicColumnsPage),
+        ["ColumnLifecycle"] = typeof(ColumnLifecyclePage),
         ["Selection"] = typeof(SelectionPage),
-        ["Layout"] = typeof(LayoutPage),
+        ["ColumnLayout"] = typeof(ColumnLayoutPage),
         ["Sort"] = typeof(SortPage),
         ["Filter"] = typeof(FilterPage),
         ["Groups"] = typeof(GroupsPage),
@@ -44,13 +44,23 @@ public sealed partial class MainWindow : Window
         ["KeyboardNav"] = typeof(KeyboardNavPage),
         ["Hierarchy"] = typeof(HierarchyPage),
         ["TextWrap"] = typeof(TextWrapPage),
-        ["CellFlyouts"] = typeof(CellFlyoutsPage),
+        ["CellTemplating"] = typeof(CellTemplatingPage),
         ["CellEditing"] = typeof(CellEditingPage),
         ["EmptyState"] = typeof(EmptyStatePage),
-        ["DensityReadOnly"] = typeof(DensityReadOnlyPage),
-        ["RTLPlayground"] = typeof(RTLPlaygroundPage),
+        ["Density"] = typeof(DensityPage),
+        ["RightToLeft"] = typeof(RightToLeftPage),
         ["Settings"] = typeof(SettingsPage),
         ["About"] = typeof(AboutPage),
+    };
+
+    // Retired Tags that existing --page= deep links still use, mapped to the current Tag.
+    private static readonly Dictionary<string, string> s_tagAliases = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["CellFlyouts"] = "CellTemplating",
+        ["DynamicColumns"] = "ColumnLifecycle",
+        ["Layout"] = "ColumnLayout",
+        ["DensityReadOnly"] = "Density",
+        ["RTLPlayground"] = "RightToLeft",
     };
 
     private bool _showDevInfo;
@@ -125,10 +135,15 @@ public sealed partial class MainWindow : Window
         Navigate(tag, new DrillInNavigationTransitionInfo(), true);
     }
 
-    /// <summary>Resolves a tag in any casing to the canonical s_pageMap key.</summary>
+    /// <summary>Resolves a tag in any casing, or a retired alias, to the canonical s_pageMap key.</summary>
     private static bool TryGetCanonicalTag(string? tag, out string canonical)
     {
         canonical = string.Empty;
+        if (!string.IsNullOrEmpty(tag) && s_tagAliases.TryGetValue(tag, out var aliasTarget))
+        {
+            tag = aliasTarget;
+        }
+
         if (string.IsNullOrEmpty(tag) || !s_pageMap.ContainsKey(tag))
         {
             return false;

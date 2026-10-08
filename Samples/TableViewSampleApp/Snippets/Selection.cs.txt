@@ -115,4 +115,4 @@ private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs
 
 // From ApplyShaping: re-applying GroupBy can drop the selection when the selected row changed
 // group, so it is restored by identity.
-SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Departments.Count + PersonData.Offices.Count);
+SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Departments.Count + PersonData.Offices.Count, RefreshReadouts);

@@ -36,7 +36,7 @@ public sealed partial class VirtualizationPage : Page
 
     public VirtualizationPage()
     {
-        _people = new ObservableCollection<Person>(BuildPeople(10_000));
+        _people = new ObservableCollection<Person>(PersonData.Many(10_000));
         _source = TableViewSource.From(_people);
         InitializeComponent();
         PeopleTable.ItemsSource = _source;
@@ -76,7 +76,7 @@ public sealed partial class VirtualizationPage : Page
 
         // DO: build the whole list first, then hand it to the table in one assignment. Adding rows
         // one at a time to a bound collection raises one notification per row.
-        _people = new ObservableCollection<Person>(BuildPeople(count));
+        _people = new ObservableCollection<Person>(PersonData.Many(count));
         _source = TableViewSource.From(_people);
         PeopleTable.ItemsSource = _source;
         _peakPool = 0;
@@ -370,34 +370,6 @@ public sealed partial class VirtualizationPage : Page
             : "—";
         RowHeightText.Text = rowHeight > 0 ? string.Format(CultureInfo.CurrentCulture, "{0:F0} px", rowHeight) : "—";
         ColumnsText.Text = PeopleTable.Columns.Count.ToString("N0", CultureInfo.CurrentCulture);
-    }
-
-    // Workaround until PersonData offers a bulk generator (requested from WP0): cycle the 1,000
-    // canonical people; each copy is numbered by its row.
-    private static List<Person> BuildPeople(int count)
-    {
-        var seed = PersonData.All;
-        var list = new List<Person>(count);
-        for (var i = 0; i < count; i++)
-        {
-            var p = seed[i % seed.Count];
-            list.Add(new Person
-            {
-                FirstName = p.FirstName,
-                LastName = p.LastName,
-                Email = p.Email,
-                Department = p.Department,
-                Role = p.Role,
-                Office = p.Office,
-                Salary = p.Salary,
-                IsActive = p.IsActive,
-                JoinDate = p.JoinDate,
-                AvatarPath = p.AvatarPath,
-                EmployeeId = i + 1,   // the # column doubles as the row number
-            });
-        }
-
-        return list;
     }
 
     #region Sample scaffolding (generic; see FIX-PLAN §6)

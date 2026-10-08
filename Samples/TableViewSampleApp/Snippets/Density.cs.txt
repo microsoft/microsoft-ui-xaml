@@ -1,4 +1,4 @@
-// DensityReadOnlyPage.xaml.cs
+// DensityPage.xaml.cs
 private void OnDensityChanged(object sender, SelectionChangedEventArgs e)
 {
     // Fires during InitializeComponent (SelectedIndex="1"), when the table already uses the

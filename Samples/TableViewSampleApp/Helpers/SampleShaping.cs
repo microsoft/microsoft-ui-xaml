@@ -4,10 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using TableViewSampleApp.Models;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
+using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
+using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
+using TableViewTextColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColumn;
 
 namespace TableViewSampleApp.Helpers;
 
@@ -167,4 +171,52 @@ public static class SampleShaping
 
     /// <summary>Status value for the "Rows" readout, e.g. "40" (current culture, N0).</summary>
     public static string RowCountText(int count) => count.ToString("N0", CultureInfo.CurrentCulture);
+
+    /// <summary>The column the table is sorted on, or null.</summary>
+    public static TableViewColumn? ActiveSortColumn(TableView? table) =>
+        table?.Columns.FirstOrDefault(c => c.SortDirection != TableViewSortDirection.None);
+
+    /// <summary>The sort key path of a column: SortMemberPath when set; otherwise a text column's Binding path.</summary>
+    public static string? SortPathOf(TableViewColumn column) =>
+        column.SortMemberPath is { Length: > 0 } path
+            ? path
+            : (column as TableViewTextColumn)?.Binding?.Path?.Path;
+
+    /// <summary>
+    /// <paramref name="rows"/> in the order <paramref name="table"/> shows them. TableViewSource
+    /// does not expose its projection, so this applies the same rules the control does: a stable
+    /// sort on the active column's key (<paramref name="sortKey"/>(row, path); culture-aware for
+    /// text, nulls first), then, when <paramref name="groupKey"/> is given (grouped mode), groups
+    /// in the order their first row appears.
+    /// </summary>
+    public static IEnumerable<T> InViewOrder<T>(
+        TableView? table,
+        IEnumerable<T> rows,
+        Func<T, string, IComparable?> sortKey,
+        Func<T, object>? groupKey)
+    {
+        var column = ActiveSortColumn(table);
+        if (column is not null && SortPathOf(column) is { } path)
+        {
+            rows = column.SortDirection == TableViewSortDirection.Descending
+                ? rows.OrderByDescending(r => sortKey(r, path), SortKeyComparer.Instance)
+                : rows.OrderBy(r => sortKey(r, path), SortKeyComparer.Instance);
+        }
+
+        return groupKey is null ? rows : rows.GroupBy(groupKey).SelectMany(g => g);
+    }
+
+    private sealed class SortKeyComparer : IComparer<IComparable?>
+    {
+        public static readonly SortKeyComparer Instance = new();
+
+        public int Compare(IComparable? x, IComparable? y) => (x, y) switch
+        {
+            (string a, string b) => string.Compare(a, b, StringComparison.CurrentCulture),
+            (null, null) => 0,
+            (null, _) => -1,
+            (_, null) => 1,
+            _ => x!.CompareTo(y),
+        };
+    }
 }

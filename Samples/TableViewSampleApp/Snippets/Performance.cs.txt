@@ -1,6 +1,6 @@
 // DO: build the rows off the UI thread and off the clock, then bind them once:
 // one collection, one TableViewSource, one ItemsSource assignment.
-var rows = await Task.Run(() => BuildPeople(count));
+var rows = await Task.Run(() => PersonData.Many(count));
 var ms = Timed(() =>
 {
     _people = new ObservableCollection<Person>(rows);

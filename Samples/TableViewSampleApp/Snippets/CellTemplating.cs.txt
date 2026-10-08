@@ -1,9 +1,9 @@
-// CellFlyoutsPage.xaml.cs. The source is created once and reshaped in place.
+// CellTemplatingPage.xaml.cs. The source is created once and reshaped in place.
 public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
 public TableViewSource? Source => _source;
 
-public CellFlyoutsPage()
+public CellTemplatingPage()
 {
     _source = TableViewSource.From(People);
     InitializeComponent();
@@ -80,5 +80,5 @@ private void ApplyShaping(bool announce)
     }
 
     // Selection is index-only (TableView.Select); restore it by identity after the reshape.
-    SampleShaping.Reselect(PeopleTable, selected);
+    SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Departments.Count + PersonData.Offices.Count, RefreshReadouts);
 }

@@ -52,6 +52,6 @@ private void ApplyShaping(bool announce)
 
     _appliedMode = mode;
     _appliedKey = key;
-    SampleShaping.Reselect(PropTable, selected, Entries.Count + s_sections.Length + 2);
+    SampleShaping.Reselect(PropTable, selected, Entries.Count + s_sections.Length + 2, RefreshReadouts);
     UpdateShapingGating();
 }

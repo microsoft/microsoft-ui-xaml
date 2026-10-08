@@ -43,7 +43,7 @@ private void ApplyShaping(bool announce)
     _appliedKey = key;
 
     // Re-applying GroupBy can drop the selection when the selected row changed group.
-    SampleShaping.Reselect(PeopleTable, selected, People.Count + 64);
+    SampleShaping.Reselect(PeopleTable, selected, People.Count + 64, RefreshReadouts);
 }
 
 // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row on

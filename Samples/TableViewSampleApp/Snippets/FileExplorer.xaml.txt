@@ -13,7 +13,7 @@
               DoubleTapped="OnRowDoubleTapped"
               VerticalAlignment="Stretch" MinHeight="320">
     <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" CellTemplate="{StaticResource FileNameTemplate}" SortMemberPath="NameSortKey"/>
-    <tv:TableViewTextColumn Header="Type" Width="{StaticResource ColWidthDepartment}" Binding="{Binding TypeDisplay}" SortMemberPath="TypeSortKey"/>
+    <tv:TableViewTextColumn Header="Type" Width="{StaticResource ColWidthType}" Binding="{Binding TypeDisplay}" SortMemberPath="TypeSortKey"/>
     <tv:TableViewTextColumn x:Name="DateModifiedColumn" Header="Date modified" Width="{StaticResource ColWidthDateTime}" Binding="{Binding DateModifiedDisplay}" SortMemberPath="DateModified"/>
     <tv:TableViewTextColumn Header="Size" Width="{StaticResource ColWidthNumber}" Binding="{Binding SizeDisplay}" SortMemberPath="SizeSortKey"/>
 </tv:TableView>

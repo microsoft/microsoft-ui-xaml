@@ -23,7 +23,7 @@ namespace TableViewSampleApp.Pages;
 /// its width, template and sort settings wherever it lands. The rows underneath can be grouped
 /// at the same time, to show that column changes and group headers are independent.
 /// </summary>
-public sealed partial class DynamicColumnsPage : Page
+public sealed partial class ColumnLifecyclePage : Page
 {
     private const int RowCount = 40;
     private const string JoinDateHeader = "Join date";
@@ -36,7 +36,7 @@ public sealed partial class DynamicColumnsPage : Page
     private bool _personHandlersAttached;
     private int _nextPersonIndex = RowCount;   // PersonData row used by the next "Add a person"
 
-    public DynamicColumnsPage()
+    public ColumnLifecyclePage()
     {
         _source = TableViewSource.From(People);
         InitializeComponent();

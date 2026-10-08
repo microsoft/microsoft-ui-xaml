@@ -7,7 +7,7 @@
     The cell templates come from Templates\PersonCellTemplates.xaml; this page declares none.
 -->
 <Page
-    x:Class="TableViewSampleApp.Pages.CellFlyoutsPage"
+    x:Class="TableViewSampleApp.Pages.CellTemplatingPage"
     NavigationCacheMode="Disabled"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -18,10 +18,10 @@
     <controls:SamplePresenter
         Header="Cell templating"
         Description="TableViewTemplateColumn renders each cell from a DataTemplate: a read-only visual such as the Department chip, or an editor such as a CheckBox, a date or time picker, a ComboBox or a Button with a Flyout. Each editor is two-way bound to its Person row and reachable with Tab, so an edit survives scrolling and sorting. Sorting a template column uses its SortMemberPath, the value behind the control. The Join date editor option swaps that column's CellTemplate at run time."
-        SourceCaption="CellFlyoutsPage.xaml (excerpt)"
-        SourceSnippet="CellFlyouts.xaml.txt"
-        AdditionalSnippetCaption="CellFlyoutsPage.xaml.cs (excerpt)"
-        AdditionalSnippet="CellFlyouts.cs.txt"
+        SourceCaption="CellTemplatingPage.xaml (excerpt)"
+        SourceSnippet="CellTemplating.xaml.txt"
+        AdditionalSnippetCaption="CellTemplatingPage.xaml.cs (excerpt)"
+        AdditionalSnippet="CellTemplating.cs.txt"
         StretchExample="True">
 
         <controls:SamplePresenter.Example>
@@ -43,7 +43,7 @@
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
                         x:Name="PeopleTable"
-                        AutomationProperties.AutomationId="CellFlyoutsTable"
+                        AutomationProperties.AutomationId="CellTemplatingTable"
                         AutomationProperties.Name="People with templated cells"
                         ItemsSource="{x:Bind Source}"
                         SelectionMode="Single"
@@ -74,7 +74,7 @@
                                Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
                     <ComboBox
                         x:Name="JoinDateEditorSelector"
-                        AutomationProperties.AutomationId="CellFlyoutsJoinDateEditorSelector"
+                        AutomationProperties.AutomationId="CellTemplatingJoinDateEditorSelector"
                         Header="Join date editor"
                         SelectedIndex="0"
                         SelectionChanged="OnJoinDateEditorChanged"
@@ -92,7 +92,7 @@
                                Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
                     <ComboBox
                         x:Name="ShapingModeSelector"
-                        AutomationProperties.AutomationId="CellFlyoutsShapingModeSelector"
+                        AutomationProperties.AutomationId="CellTemplatingShapingModeSelector"
                         Header="Shaping mode"
                         SelectedIndex="0"
                         SelectionChanged="OnShapingModeChanged"
@@ -110,7 +110,7 @@
                     </ComboBox>
                     <ComboBox
                         x:Name="GroupKeySelector"
-                        AutomationProperties.AutomationId="CellFlyoutsGroupKeySelector"
+                        AutomationProperties.AutomationId="CellTemplatingGroupKeySelector"
                         Header="Group key"
                         SelectedIndex="0"
                         IsEnabled="False"
@@ -123,7 +123,7 @@
                     </ComboBox>
                     <Button
                         x:Name="ExpandAllButton"
-                        AutomationProperties.AutomationId="CellFlyoutsExpandAllGroupsButton"
+                        AutomationProperties.AutomationId="CellTemplatingExpandAllGroupsButton"
                         Content="Expand all"
                         Click="OnExpandAllClick"
                         IsEnabled="False"
@@ -133,7 +133,7 @@
                         HorizontalContentAlignment="Center"/>
                     <Button
                         x:Name="CollapseAllButton"
-                        AutomationProperties.AutomationId="CellFlyoutsCollapseAllGroupsButton"
+                        AutomationProperties.AutomationId="CellTemplatingCollapseAllGroupsButton"
                         Content="Collapse all"
                         Click="OnCollapseAllClick"
                         IsEnabled="False"
@@ -154,7 +154,7 @@
                     <StackPanel Spacing="8">
                         <Button
                             x:Name="CheckAllActiveButton"
-                            AutomationProperties.AutomationId="CellFlyoutsCheckAllActiveButton"
+                            AutomationProperties.AutomationId="CellTemplatingCheckAllActiveButton"
                             Content="Check all Active"
                             Click="OnCheckAllActiveClick"
                             ToolTipService.ToolTip="Sets IsActive on every row; every Active checkbox checks, including recycled rows."
@@ -163,7 +163,7 @@
                             HorizontalContentAlignment="Center"/>
                         <Button
                             x:Name="UncheckAllActiveButton"
-                            AutomationProperties.AutomationId="CellFlyoutsUncheckAllActiveButton"
+                            AutomationProperties.AutomationId="CellTemplatingUncheckAllActiveButton"
                             Content="Uncheck all Active"
                             Click="OnUncheckAllActiveClick"
                             ToolTipService.ToolTip="Clears IsActive on every row; scroll a recycled row back to confirm it re-binds."
@@ -172,7 +172,7 @@
                             HorizontalContentAlignment="Center"/>
                         <Button
                             x:Name="ChangeDepartmentButton"
-                            AutomationProperties.AutomationId="CellFlyoutsChangeDepartmentButton"
+                            AutomationProperties.AutomationId="CellTemplatingChangeDepartmentButton"
                             Content="Change selected row's department"
                             Click="OnChangeDepartmentClick"
                             ToolTipService.ToolTip="Moves the selected person to the next department. The chip re-tints; grouped by Department, the row moves to that group."
@@ -181,7 +181,7 @@
                             HorizontalContentAlignment="Center"/>
                         <Button
                             x:Name="OpenDetailsButton"
-                            AutomationProperties.AutomationId="CellFlyoutsOpenDetailsButton"
+                            AutomationProperties.AutomationId="CellTemplatingOpenDetailsButton"
                             Content="Open selected row's details"
                             Click="OnOpenDetailsClick"
                             ToolTipService.ToolTip="Opens the Details flyout of the selected row, anchored to its cell."
@@ -207,16 +207,16 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Row="0" Text="Active" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ActiveCountText" AutomationProperties.AutomationId="CellFlyoutsActiveCountText"
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="ActiveCountText" AutomationProperties.AutomationId="CellTemplatingActiveCountText"
                                    AutomationProperties.LiveSetting="Polite" Text="0 of 0" Style="{StaticResource StatusReadoutValueStyle}"/>
                         <TextBlock Grid.Row="1" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="CellFlyoutsRowsText"
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="CellTemplatingRowsText"
                                    AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
                         <TextBlock Grid.Row="2" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="CellFlyoutsShapingModeText"
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="CellTemplatingShapingModeText"
                                    AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
                         <TextBlock Grid.Row="3" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="CellFlyoutsLastActionText"
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="CellTemplatingLastActionText"
                                    AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
                                    Style="{StaticResource StatusReadoutValueStyle}"/>
                     </Grid>

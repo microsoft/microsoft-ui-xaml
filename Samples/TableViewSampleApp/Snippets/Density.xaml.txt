@@ -1,4 +1,4 @@
-<!-- DensityReadOnlyPage.xaml. Density is one table-level property; the template cells take the
+<!-- DensityPage.xaml. Density is one table-level property; the template cells take the
      new row height with no change of their own. -->
 <tv:TableView
     x:Name="PeopleTable"

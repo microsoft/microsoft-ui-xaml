@@ -65,7 +65,7 @@ private void ResortIfSortedOn(params string[] propertyNames)
         _isResorting = false;
     }
 
-    SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex);
+    SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex, RefreshReadouts);
 }
 
 private TableViewColumn? ActiveSortColumn() =>

@@ -402,36 +402,9 @@ public sealed partial class GroupsPage : Page
         ExpansionText.Text = _expansion;
     }
 
-    /// <summary>
-    /// The rows in the order the table shows them. TableViewSource does not expose its
-    /// projection, so this applies the same rules the control does: a stable sort on the active
-    /// column's key, then groups in the order their first row appears.
-    /// </summary>
-    private IEnumerable<Person> InViewOrder()
-    {
-        IEnumerable<Person> rows = People;
-        var column = PeopleTable?.Columns.FirstOrDefault(c => c.SortDirection != TableViewSortDirection.None);
-        if (column is not null && SortPathOf(column) is { } path)
-        {
-            rows = column.SortDirection == TableViewSortDirection.Descending
-                ? rows.OrderByDescending(p => SortKey(p, path), SortKeyComparer.Instance)
-                : rows.OrderBy(p => SortKey(p, path), SortKeyComparer.Instance);
-        }
-
-        if (_appliedMode == "grouped")
-        {
-            var key = _appliedKey;
-            rows = rows.GroupBy(p => SampleShaping.KeyOf(p, key)).SelectMany(g => g);
-        }
-
-        return rows;
-    }
-
-    // SortMemberPath when set; otherwise a text column sorts by its Binding path.
-    private static string? SortPathOf(TableViewColumn column) =>
-        column.SortMemberPath is { Length: > 0 } path
-            ? path
-            : (column as TableViewTextColumn)?.Binding?.Path?.Path;
+    // The rows in the order the table shows them (shared rules: SampleShaping.InViewOrder).
+    private IEnumerable<Person> InViewOrder() =>
+        SampleShaping.InViewOrder(PeopleTable, People, SortKey, _appliedMode == "grouped" ? p => SampleShaping.KeyOf(p, _appliedKey) : null);
 
     private static IComparable? SortKey(Person person, string path) => path switch
     {
@@ -442,20 +415,6 @@ public sealed partial class GroupsPage : Page
         nameof(Person.Salary) => person.Salary,
         _ => null,
     };
-
-    private sealed class SortKeyComparer : IComparer<IComparable?>
-    {
-        public static readonly SortKeyComparer Instance = new();
-
-        public int Compare(IComparable? x, IComparable? y) => (x, y) switch
-        {
-            (string a, string b) => string.Compare(a, b, StringComparison.CurrentCulture),
-            (null, null) => 0,
-            (null, _) => -1,
-            (_, null) => 1,
-            _ => x!.CompareTo(y),
-        };
-    }
 
     // Called by ApplyShaping after every reshape. Re-applying GroupBy rebuilds the groups, so
     // restore the bulk expansion state the readout reports; a mixed state resets to expanded.

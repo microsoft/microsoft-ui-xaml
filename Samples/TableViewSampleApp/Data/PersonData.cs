@@ -139,6 +139,41 @@ public static class PersonData
         return list;
     }
 
+    /// <summary>
+    /// Bulk generator for the volume pages (Virtualization, Performance): <paramref name="count"/>
+    /// new people that cycle the 1,000 canonical entries, with every field filled. EmployeeId is
+    /// <paramref name="firstId"/> + index (so with the default it reads as the 1-based row number);
+    /// AvatarPath is index-derived like <see cref="All"/>, and emails stay unique past 1,000.
+    /// Deterministic, and safe to call from a background thread (Person is plain INPC).
+    /// </summary>
+    public static List<Person> Many(int count, int firstId = 1)
+    {
+        var seed = All;
+        var list = new List<Person>(Math.Max(count, 0));
+        for (var i = 0; i < count; i++)
+        {
+            var p = seed[i % seed.Count];
+            list.Add(new Person
+            {
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                Email = i < seed.Count ? p.Email : $"{p.FirstName}.{p.LastName}.{i + 1:000000}@contoso.com".ToLowerInvariant(),
+                Department = p.Department,
+                Role = p.Role,
+                Bio = p.Bio,
+                JoinDate = p.JoinDate,
+                ShiftStart = p.ShiftStart,
+                Salary = p.Salary,
+                IsActive = p.IsActive,
+                AvatarPath = (i % 4 == 0) ? $"ms-appx:///Assets/avatar{(i / 4) % 3 + 1}.png" : null,
+                EmployeeId = firstId + i,
+                Office = p.Office,
+            });
+        }
+
+        return list;
+    }
+
     private static List<Person> Generate(int count)
     {
         var random = new Random(Seed);

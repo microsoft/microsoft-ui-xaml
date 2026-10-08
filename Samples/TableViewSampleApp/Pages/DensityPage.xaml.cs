@@ -21,7 +21,7 @@ namespace TableViewSampleApp.Pages;
 /// Density: TableView.Density (Compact / Standard / Comfortable) switched live over text and
 /// read-only template cells, alongside grouping, whose headers keep a fixed height.
 /// </summary>
-public sealed partial class DensityReadOnlyPage : Page
+public sealed partial class DensityPage : Page
 {
     private readonly Queue<Person> _spares = new(PersonData.Take(60).Skip(40));
     private readonly List<Person> _stash = new();
@@ -29,7 +29,7 @@ public sealed partial class DensityReadOnlyPage : Page
     private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
     private string _appliedKey = "Department";
 
-    public DensityReadOnlyPage()
+    public DensityPage()
     {
         _source = TableViewSource.From(People);
         InitializeComponent();

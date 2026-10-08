@@ -6,7 +6,7 @@
 //     foreach (var person in rows) { _people.Add(person); }
 
 // DO: build the whole list first, then hand it to the table in one assignment.
-_people = new ObservableCollection<Person>(BuildPeople(count));
+_people = new ObservableCollection<Person>(PersonData.Many(count));
 _source = TableViewSource.From(_people);
 PeopleTable.ItemsSource = _source;
 

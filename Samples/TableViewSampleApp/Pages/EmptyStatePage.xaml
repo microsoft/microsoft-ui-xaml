@@ -2,7 +2,7 @@
 <!--
     Empty state: TableView.EmptyTemplate, reached three ways (a null ItemsSource, a source emptied
     in place, and a filter that matches nothing), flat or grouped. Structure follows the golden
-    page (CellFlyoutsPage): Try it, one stretched table, then the rail in the order Data source,
+    page (CellTemplatingPage): Try it, one stretched table, then the rail in the order Data source,
     Shaping, Actions, Status, What to look for. Generic blocks carry scaffold markers.
 -->
 <Page

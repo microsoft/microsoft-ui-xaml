@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="TableViewSampleApp.Pages.DensityReadOnlyPage"
+    x:Class="TableViewSampleApp.Pages.DensityPage"
     NavigationCacheMode="Disabled"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -11,10 +11,10 @@
     <controls:SamplePresenter
         Header="Density"
         Description="TableView.Density sets the row height and the built-in cell padding to Compact, Standard or Comfortable. Pick a preset and every row resizes at once, including the template cells: the 28 px avatar and the Department and Status chips. Group headers keep the same height in every preset, so with grouping on, the rows change and the headers do not. The cells here are read-only visuals, so nothing but the density changes their size."
-        SourceCaption="DensityReadOnlyPage.xaml (excerpt)"
-        SourceSnippet="DensityReadOnly.xaml.txt"
-        AdditionalSnippetCaption="DensityReadOnlyPage.xaml.cs (excerpt)"
-        AdditionalSnippet="DensityReadOnly.cs.txt"
+        SourceCaption="DensityPage.xaml (excerpt)"
+        SourceSnippet="Density.xaml.txt"
+        AdditionalSnippetCaption="DensityPage.xaml.cs (excerpt)"
+        AdditionalSnippet="Density.cs.txt"
         StretchExample="True">
 
         <controls:SamplePresenter.Example>
@@ -36,7 +36,7 @@
                 <Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                     <tv:TableView
                         x:Name="PeopleTable"
-                        AutomationProperties.AutomationId="DensityReadOnlyTable"
+                        AutomationProperties.AutomationId="DensityTable"
                         AutomationProperties.Name="People density"
                         ItemsSource="{x:Bind Source}"
                         Density="Standard"
@@ -64,7 +64,7 @@
                                Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
                     <ComboBox
                         x:Name="DensitySelector"
-                        AutomationProperties.AutomationId="DensityReadOnlyDensitySelector"
+                        AutomationProperties.AutomationId="DensitySelector"
                         Header="Density"
                         SelectedIndex="1"
                         SelectionChanged="OnDensityChanged"
@@ -83,7 +83,7 @@
                                Style="{StaticResource SectionDescriptionTextStyle}" TextWrapping="Wrap"/>
                     <ComboBox
                         x:Name="ShapingModeSelector"
-                        AutomationProperties.AutomationId="DensityReadOnlyShapingModeSelector"
+                        AutomationProperties.AutomationId="DensityShapingModeSelector"
                         Header="Shaping mode"
                         SelectedIndex="0"
                         SelectionChanged="OnShapingModeChanged"
@@ -101,7 +101,7 @@
                     </ComboBox>
                     <ComboBox
                         x:Name="GroupKeySelector"
-                        AutomationProperties.AutomationId="DensityReadOnlyGroupKeySelector"
+                        AutomationProperties.AutomationId="DensityGroupKeySelector"
                         Header="Group key"
                         SelectedIndex="0"
                         IsEnabled="False"
@@ -114,7 +114,7 @@
                     </ComboBox>
                     <Button
                         x:Name="ExpandAllButton"
-                        AutomationProperties.AutomationId="DensityReadOnlyExpandAllGroupsButton"
+                        AutomationProperties.AutomationId="DensityExpandAllGroupsButton"
                         Content="Expand all"
                         Click="OnExpandAllClick"
                         IsEnabled="False"
@@ -124,7 +124,7 @@
                         HorizontalContentAlignment="Center"/>
                     <Button
                         x:Name="CollapseAllButton"
-                        AutomationProperties.AutomationId="DensityReadOnlyCollapseAllGroupsButton"
+                        AutomationProperties.AutomationId="DensityCollapseAllGroupsButton"
                         Content="Collapse all"
                         Click="OnCollapseAllClick"
                         IsEnabled="False"
@@ -145,7 +145,7 @@
                     <StackPanel Spacing="8">
                         <Button
                             x:Name="MoveGroupButton"
-                            AutomationProperties.AutomationId="DensityReadOnlyMoveGroupButton"
+                            AutomationProperties.AutomationId="DensityMoveGroupButton"
                             Content="Move selected row to the next group"
                             Click="OnMoveGroupClick"
                             ToolTipService.ToolTip="Changes the grouped-on value (Department when flat) to the next real value, then re-applies GroupBy so the row moves to its new group."
@@ -154,7 +154,7 @@
                             HorizontalContentAlignment="Center"/>
                         <Button
                             x:Name="AddPersonButton"
-                            AutomationProperties.AutomationId="DensityReadOnlyAddPersonButton"
+                            AutomationProperties.AutomationId="DensityAddPersonButton"
                             Content="Add a person to the selected row's group"
                             Click="OnAddPersonClick"
                             ToolTipService.ToolTip="Inserts a new person with the same grouped-on value below the selected row, so that group gains a member."
@@ -163,7 +163,7 @@
                             HorizontalContentAlignment="Center"/>
                         <Button
                             x:Name="RemoveRowButton"
-                            AutomationProperties.AutomationId="DensityReadOnlyRemoveRowButton"
+                            AutomationProperties.AutomationId="DensityRemoveRowButton"
                             Content="Remove selected row"
                             Click="OnRemoveRowClick"
                             ToolTipService.ToolTip="Removes the selected row; a group disappears when it loses its last row."
@@ -172,7 +172,7 @@
                             HorizontalContentAlignment="Center"/>
                         <Button
                             x:Name="EmptyToggleButton"
-                            AutomationProperties.AutomationId="DensityReadOnlyEmptyToggleButton"
+                            AutomationProperties.AutomationId="DensityEmptyToggleButton"
                             Content="Clear all rows"
                             Click="OnToggleEmptyClick"
                             ToolTipService.ToolTip="Empties the collection, then restores it on the next click."
@@ -198,16 +198,16 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Row="0" Text="Density" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="DensityText" AutomationProperties.AutomationId="DensityReadOnlyDensityText"
+                        <TextBlock Grid.Row="0" Grid.Column="1" x:Name="DensityText" AutomationProperties.AutomationId="DensityText"
                                    AutomationProperties.LiveSetting="Polite" Text="Standard" Style="{StaticResource StatusReadoutValueStyle}"/>
                         <TextBlock Grid.Row="1" Text="Rows" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="DensityReadOnlyRowsText"
+                        <TextBlock Grid.Row="1" Grid.Column="1" x:Name="RowsText" AutomationProperties.AutomationId="DensityRowsText"
                                    AutomationProperties.LiveSetting="Polite" Text="0" Style="{StaticResource StatusReadoutValueStyle}"/>
                         <TextBlock Grid.Row="2" Text="Shaping" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="DensityReadOnlyShapingModeText"
+                        <TextBlock Grid.Row="2" Grid.Column="1" x:Name="ShapingModeText" AutomationProperties.AutomationId="DensityShapingModeText"
                                    AutomationProperties.LiveSetting="Polite" Text="Flat" Style="{StaticResource StatusReadoutValueStyle}"/>
                         <TextBlock Grid.Row="3" Text="Last action" VerticalAlignment="Top" Style="{StaticResource StatusReadoutLabelStyle}"/>
-                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="DensityReadOnlyLastActionText"
+                        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="LastActionText" AutomationProperties.AutomationId="DensityLastActionText"
                                    AutomationProperties.LiveSetting="Polite" Text="(none)" TextWrapping="Wrap"
                                    Style="{StaticResource StatusReadoutValueStyle}"/>
                     </Grid>

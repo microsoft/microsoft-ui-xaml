@@ -28,7 +28,7 @@ namespace TableViewSampleApp.Pages;
 /// Dragging a header edge and moving the sliders both change ActualWidth; the readout follows
 /// TableViewColumn.ActualWidthProperty, so both paths show up in it after layout.
 /// </summary>
-public sealed partial class LayoutPage : Page
+public sealed partial class ColumnLayoutPage : Page
 {
     private const string PlaygroundMode = "Playground";
     private const string LockedRoleHeader = "Role (locked)";
@@ -37,7 +37,7 @@ public sealed partial class LayoutPage : Page
     private TableViewColumn? _activeColumn;
     private long _actualWidthToken = -1;
 
-    public LayoutPage()
+    public ColumnLayoutPage()
     {
         InitializeComponent();
         Loaded += OnPageLoaded;

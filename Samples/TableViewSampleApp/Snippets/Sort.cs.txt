@@ -42,7 +42,7 @@ private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
 private bool ResortIfSortedOn(params string[] propertyNames)
 {
     var column = ActiveSortColumn();
-    if (column is null || !propertyNames.Contains(SortPathOf(column)))
+    if (column is null || !propertyNames.Contains(SampleShaping.SortPathOf(column)))
     {
         return false;
     }
@@ -57,12 +57,6 @@ private bool ResortIfSortedOn(params string[] propertyNames)
 
 private TableViewColumn? ActiveSortColumn() =>
     TeamsTable?.Columns.FirstOrDefault(c => c.SortDirection != TableViewSortDirection.None);
-
-// SortMemberPath when set; otherwise a text column sorts by its Binding path.
-private static string? SortPathOf(TableViewColumn column) =>
-    column.SortMemberPath is { Length: > 0 } path
-        ? path
-        : (column as TableViewTextColumn)?.Binding?.Path?.Path;
 
 private void OnPostponeClick(object sender, RoutedEventArgs e)
 {

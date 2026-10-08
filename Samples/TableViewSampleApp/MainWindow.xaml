@@ -91,8 +91,8 @@
                 <muxc:NavigationViewItem Tag="KeyboardNav" Content="Keyboard navigation + accessibility"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE765;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItemSeparator/>
                 <muxc:NavigationViewItemHeader Content="Columns"/>
-                <muxc:NavigationViewItem Tag="Layout" Content="Column layout &amp; sizing"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE799;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
-                <muxc:NavigationViewItem Tag="DynamicColumns" Content="Column lifecycle"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8B7;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="ColumnLayout" Content="Column layout &amp; sizing"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE799;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="ColumnLifecycle" Content="Column lifecycle"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8B7;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="HeadersVisibility" Content="Headers visibility"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8A7;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItemSeparator/>
                 <muxc:NavigationViewItemHeader Content="Rows &amp; cells"/>
@@ -101,13 +101,13 @@
                 <muxc:NavigationViewItem Tag="Hierarchy" Content="Hierarchy"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8A9;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="GridLinesVisibility" Content="Grid lines visibility"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xF0E2;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="TextWrap" Content="Text wrap + row height"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8C1;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
-                <muxc:NavigationViewItem Tag="CellFlyouts" Content="Cell templating"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE950;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="CellTemplating" Content="Cell templating"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE950;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="CellEditing" Content="Cell editing"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE70F;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="EmptyState" Content="Empty state"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE7C3;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
-                <muxc:NavigationViewItem Tag="DensityReadOnly" Content="Density"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8C4;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="Density" Content="Density"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8C4;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItemSeparator/>
                 <muxc:NavigationViewItemHeader Content="Power user"/>
-                <muxc:NavigationViewItem Tag="RTLPlayground" Content="Right-to-left layout"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE7AF;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="RightToLeft" Content="Right-to-left layout"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE7AF;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="Virtualization" Content="Virtualization"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8C6;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="Performance" Content="Performance"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE916;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
             </muxc:NavigationView.MenuItems>

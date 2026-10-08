@@ -2,7 +2,7 @@
 <!--
     Grouped rows: TableViewSource.GroupBy on one source, a custom GroupHeaderTemplate, and
     ExpandAllGroups / CollapseAllGroups. Unlike the other pages it starts Grouped, because
-    grouping is its subject (FIX-PLAN Q2). Structure follows the golden page (CellFlyoutsPage).
+    grouping is its subject (FIX-PLAN Q2). Structure follows the golden page (CellTemplatingPage).
 -->
 <Page
     x:Class="TableViewSampleApp.Pages.GroupsPage"

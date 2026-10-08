@@ -116,7 +116,7 @@ private void ApplyShaping(bool announce)
     _appliedKey = key;
 
     // Re-applying GroupBy can drop the selection when the selected row changed group.
-    SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Departments.Count + 2);
+    SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Departments.Count + 2, RefreshReadouts);
     UpdateShapingGating();
     if (announce)
     {

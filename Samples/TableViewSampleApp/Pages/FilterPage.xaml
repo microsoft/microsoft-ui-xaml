@@ -3,7 +3,7 @@
     Filtering: TableViewSource.Filter / ClearFilter on the same source that grouping uses. The
     columns are built in code (BuildColumns) from the shared Person cell templates, which shows
     how to resolve them from Application.Current.Resources. Structure follows the golden page
-    (CellFlyoutsPage).
+    (CellTemplatingPage).
 -->
 <Page
     x:Class="TableViewSampleApp.Pages.FilterPage"

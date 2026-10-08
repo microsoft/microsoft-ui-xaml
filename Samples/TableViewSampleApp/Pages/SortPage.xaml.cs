@@ -152,16 +152,10 @@ public sealed partial class SortPage : Page
     private TableViewColumn? ActiveSortColumn() =>
         TeamsTable?.Columns.FirstOrDefault(c => c.SortDirection != TableViewSortDirection.None);
 
-    // SortMemberPath when set; otherwise a text column sorts by its Binding path.
-    private static string? SortPathOf(TableViewColumn column) =>
-        column.SortMemberPath is { Length: > 0 } path
-            ? path
-            : (column as TableViewTextColumn)?.Binding?.Path?.Path;
-
     private bool ResortIfSortedOn(params string[] propertyNames)
     {
         var column = ActiveSortColumn();
-        if (column is null || !propertyNames.Contains(SortPathOf(column)))
+        if (column is null || !propertyNames.Contains(SampleShaping.SortPathOf(column)))
         {
             return false;
         }
@@ -412,30 +406,9 @@ public sealed partial class SortPage : Page
         TopRowsText.Text = top.Count > 0 ? string.Join(Environment.NewLine, top) : "(no rows)";
     }
 
-    /// <summary>
-    /// The rows in the order the table shows them. TableViewSource does not expose its
-    /// projection, so this applies the same rules the control does: a stable sort on the active
-    /// column's key (culture-aware for text), then groups in the order their first row appears.
-    /// </summary>
-    private IEnumerable<LeagueTeam> InViewOrder()
-    {
-        IEnumerable<LeagueTeam> rows = Teams;
-        var column = ActiveSortColumn();
-        if (column is not null && SortPathOf(column) is { } path)
-        {
-            rows = column.SortDirection == TableViewSortDirection.Descending
-                ? rows.OrderByDescending(t => SortKey(t, path), SortKeyComparer.Instance)
-                : rows.OrderBy(t => SortKey(t, path), SortKeyComparer.Instance);
-        }
-
-        if (_appliedMode == "grouped")
-        {
-            var key = _appliedKey;
-            rows = rows.GroupBy(t => KeyOf(t, key)).SelectMany(g => g);
-        }
-
-        return rows;
-    }
+    // The rows in the order the table shows them (shared rules: SampleShaping.InViewOrder).
+    private IEnumerable<LeagueTeam> InViewOrder() =>
+        SampleShaping.InViewOrder(TeamsTable, Teams, SortKey, _appliedMode == "grouped" ? t => KeyOf(t, _appliedKey) : null);
 
     private static IComparable? SortKey(LeagueTeam team, string path) => path switch
     {
@@ -455,20 +428,6 @@ public sealed partial class SortPage : Page
         nameof(LeagueTeam.Points) => team.Points,
         _ => null,
     };
-
-    private sealed class SortKeyComparer : IComparer<IComparable?>
-    {
-        public static readonly SortKeyComparer Instance = new();
-
-        public int Compare(IComparable? x, IComparable? y) => (x, y) switch
-        {
-            (string a, string b) => string.Compare(a, b, StringComparison.CurrentCulture),
-            (null, null) => 0,
-            (null, _) => -1,
-            (_, null) => 1,
-            _ => x!.CompareTo(y),
-        };
-    }
 
     // GroupBy key for a standings row. Never blank: an empty group identity fails fast.
     private static object KeyOf(LeagueTeam? team, string key)

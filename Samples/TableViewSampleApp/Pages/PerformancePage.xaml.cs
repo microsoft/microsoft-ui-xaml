@@ -43,7 +43,7 @@ public sealed partial class PerformancePage : Page
 
     public PerformancePage()
     {
-        _people = new ObservableCollection<Person>(BuildPeople(InitialRows));
+        _people = new ObservableCollection<Person>(PersonData.Many(InitialRows));
         _source = TableViewSource.From(_people);
         InitializeComponent();
         PerfTable.ItemsSource = _source;
@@ -160,7 +160,7 @@ public sealed partial class PerformancePage : Page
         try
         {
             // DO: build the rows off the UI thread and off the clock, then bind them once.
-            var rows = await Task.Run(() => BuildPeople(count));
+            var rows = await Task.Run(() => PersonData.Many(count));
             var ms = Timed(() =>
             {
                 _people = new ObservableCollection<Person>(rows);
@@ -257,7 +257,7 @@ public sealed partial class PerformancePage : Page
 
         try
         {
-            var rows = await Task.Run(() => BuildPeople(PerItemCap));
+            var rows = await Task.Run(() => PersonData.Many(PerItemCap));
             var people = _people;
             // DON'T: one CollectionChanged notification, and one projection update, per row.
             var ms = Timed(() =>
@@ -315,36 +315,6 @@ public sealed partial class PerformancePage : Page
         CaptureBaseline();
         MemoryText.Text = "Baseline reset; take a snapshot to see growth from here.";
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Reset the memory baseline at {0:T}", DateTime.Now));
-    }
-
-    // ---- Data -----------------------------------------------------------------------------
-
-    // Workaround until PersonData offers a bulk generator (requested from WP0): cycle the 1,000
-    // canonical people; each copy is numbered by its row. Safe on a background thread.
-    private static List<Person> BuildPeople(int count)
-    {
-        var seed = PersonData.All;
-        var list = new List<Person>(count);
-        for (var i = 0; i < count; i++)
-        {
-            var p = seed[i % seed.Count];
-            list.Add(new Person
-            {
-                FirstName = p.FirstName,
-                LastName = p.LastName,
-                Email = p.Email,
-                Department = p.Department,
-                Role = p.Role,
-                Office = p.Office,
-                Salary = p.Salary,
-                IsActive = p.IsActive,
-                JoinDate = p.JoinDate,
-                AvatarPath = p.AvatarPath,
-                EmployeeId = i + 1,   // the # column doubles as the row number
-            });
-        }
-
-        return list;
     }
 
     private void RefreshReadouts()

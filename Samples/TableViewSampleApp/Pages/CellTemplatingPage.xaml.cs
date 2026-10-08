@@ -22,14 +22,14 @@ namespace TableViewSampleApp.Pages;
 /// templates shared from Templates\PersonCellTemplates.xaml, and a run-time CellTemplate swap.
 /// This is the reference page the other feature pages copy.
 /// </summary>
-public sealed partial class CellFlyoutsPage : Page
+public sealed partial class CellTemplatingPage : Page
 {
     private TableViewSource? _source;          // created ONCE; reshaped in place, never rebuilt
     private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
     private string _appliedKey = "Department";
     private bool _isBulkUpdate;
 
-    public CellFlyoutsPage()
+    public CellTemplatingPage()
     {
         _source = TableViewSource.From(People);
         InitializeComponent();

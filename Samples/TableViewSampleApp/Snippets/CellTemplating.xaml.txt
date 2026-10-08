@@ -1,8 +1,8 @@
-<!-- CellFlyoutsPage.xaml: the table. Every CellTemplate is a shared key from
+<!-- CellTemplatingPage.xaml: the table. Every CellTemplate is a shared key from
      Templates\PersonCellTemplates.xaml, merged once in App.xaml, so the page declares none.
      The template renders a control; SortMemberPath names the value that orders the rows. -->
 <tv:TableView x:Name="PeopleTable"
-              AutomationProperties.AutomationId="CellFlyoutsTable"
+              AutomationProperties.AutomationId="CellTemplatingTable"
               AutomationProperties.Name="People with templated cells"
               ItemsSource="{x:Bind Source}"
               SelectionMode="Single" IsReadOnly="False"

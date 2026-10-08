@@ -3,7 +3,7 @@
     Sorting: single-column sort state owned by TableView (header clicks, SortByColumn,
     ToggleSortDirection, ClearSort, the Sorted event) on a standings table whose template
     columns sort by SortMemberPath: a date picker, a time picker, a CheckBox and two chips.
-    Structure follows the golden page (CellFlyoutsPage): Try it, one stretched table, then the
+    Structure follows the golden page (CellTemplatingPage): Try it, one stretched table, then the
     rail in the order Programmatic sort, Shaping, Actions, Status, What to look for.
 -->
 <Page

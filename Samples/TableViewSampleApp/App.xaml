@@ -45,17 +45,18 @@
             <x:Double x:Key="SectionSpacing">22</x:Double>
             <x:Double x:Key="SectionInnerSpacing">6</x:Double>
             <!--
-                Column width tokens. Columns use these, never literals and never Auto (Layout is the
+                Column width tokens. Columns use these, never literals and never Auto (ColumnLayout is the
                 one exception, because Auto is its lesson). Each table has exactly one Width="*"
                 column with MinWidth="{StaticResource ColMinWidthStar}". Budget: the fixed widths
                 plus the star MinWidth fit 690 px, the usable table width at 1440x753 with the
-                nav pane expanded (exempt: CellFlyouts, Sort, Layout, DynamicColumns after "Add").
+                nav pane expanded (exempt: CellTemplating, Sort, ColumnLayout, ColumnLifecycle after "Add").
             -->
             <x:Double x:Key="ColMinWidthStar">140</x:Double>
             <x:Double x:Key="ColWidthShortName">160</x:Double>
             <x:Double x:Key="ColWidthLongName">200</x:Double>
             <x:Double x:Key="ColWidthEmail">220</x:Double>
             <x:Double x:Key="ColWidthDepartment">140</x:Double>
+            <x:Double x:Key="ColWidthType">140</x:Double>
             <x:Double x:Key="ColWidthDate">110</x:Double>
             <!-- Full DatePicker: its own MinWidth is ~296 plus a 6 px margin each side. -->
             <x:Double x:Key="ColWidthDatePicker">310</x:Double>

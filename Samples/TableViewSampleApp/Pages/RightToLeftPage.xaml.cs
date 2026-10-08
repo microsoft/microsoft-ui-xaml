@@ -21,7 +21,7 @@ namespace TableViewSampleApp.Pages;
 /// cells, with Arabic and Hebrew rows, editing, sorting, filtering, grouping and column moves, so
 /// every right-to-left-sensitive adornment can be checked.
 /// </summary>
-public sealed partial class RTLPlaygroundPage : Page
+public sealed partial class RightToLeftPage : Page
 {
     // Page-local seed (FIX-PLAN R6 exception): people with Arabic and Hebrew names and notes. The
     // first five are mixed into the table; "Add a person" adds the rest in turn.
@@ -47,7 +47,7 @@ public sealed partial class RTLPlaygroundPage : Page
     private int _nextRtlPerson;
     private int _nextRename;
 
-    public RTLPlaygroundPage()
+    public RightToLeftPage()
     {
         People = SeedPeople();
         _source = TableViewSource.From(People);
