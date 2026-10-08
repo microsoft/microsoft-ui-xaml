@@ -117,15 +117,18 @@ void HierarchicalSourceAdapter::SetIndex(std::shared_ptr<const ShapingHelpers::P
     // the filter-visible keys would delete intent for hidden rows, so clearing the filter would not
     // restore the tree the user left. The set is complete (every key in the source), so RetainOnly's
     // whole-set rule is exact here.
-    if (m_index)
+    if (m_index && m_index->Structure && m_prunedForStructure.lock() != m_index->Structure)
     {
+        // A reshape over the same source reuses the same structure, whose key set was already
+        // pruned against, so only a new structure pays for this.
         std::unordered_set<winrt::hstring> liveKeys;
-        liveKeys.reserve(m_index->UnfilteredKeys.size());
-        for (auto const& key : m_index->UnfilteredKeys)
+        liveKeys.reserve(m_index->Structure->KeyByItem.size());
+        for (auto const& [item, key] : m_index->Structure->KeyByItem)
         {
             liveKeys.emplace(winrt::hstring{ key });
         }
         m_expansion.RetainOnly(liveKeys);
+        m_prunedForStructure = m_index->Structure;
     }
 }
 

@@ -199,25 +199,58 @@ private:
     void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1) const { m_pipeline.ApplySort(rows, afterOrder, beforeOrder); }
     void RebuildFlat(std::vector<winrt::IInspectable>& rows);
     void RebuildGrouped(std::vector<winrt::IInspectable>& rows);
-    // `keys` is every row's validated node key (see ValidateRowIdentities); `declarationGeneration`
-    // the relation generation captured before it was built, so a re-declaration from any app code
-    // since -- the key selector included -- makes the pass obsolete.
-    void RebuildHierarchical(std::vector<winrt::IInspectable>& rows, ShapingHelpers::RowKeyTable keys, uint64_t declarationGeneration);
+    // `keys` is every row's validated node key (see ValidateRowIdentities) -- empty when `structure`
+    // is a reused one (see TryReuseHierarchyStructure); `declarationGeneration` the relation
+    // generation captured before it was built, so a re-declaration from any app code since -- the
+    // key selector included -- makes the pass obsolete.
+    void RebuildHierarchical(
+        std::vector<winrt::IInspectable>& rows,
+        ShapingHelpers::RowKeyTable keys,
+        std::shared_ptr<const ShapingHelpers::ParentStructure> structure,
+        uint64_t declarationGeneration);
     // Both axes. Buckets the index's roots, hands the adapter the bucket-ordered roots as one
     // segment per bucket, then hands the grouped adapter one group per bucket whose Items are that
     // bucket's visible rows.
-    void RebuildGroupedHierarchical(std::vector<winrt::IInspectable>& rows, ShapingHelpers::RowKeyTable keys, uint64_t declarationGeneration);
-
-    // Builds and validates the parent-key index over the already-sorted, UNFILTERED rows; the
-    // active filter is applied inside (matches plus ancestors). Only the parent selector runs: the
-    // row keys arrive validated in `keys`. Throws E_INVALIDARG on invalid data (self-parent, cycle)
-    // before anything is mutated, so the previous projection stays intact. Returns null -- and
-    // queues a Refresh -- when a selector re-declared or retracted the relation mid-build; the
-    // caller then publishes nothing.
-    std::shared_ptr<ShapingHelpers::ParentKeyIndex> BuildHierarchyIndex(
-        std::vector<winrt::IInspectable> const& sortedRows,
+    void RebuildGroupedHierarchical(
+        std::vector<winrt::IInspectable>& rows,
         ShapingHelpers::RowKeyTable keys,
+        std::shared_ptr<const ShapingHelpers::ParentStructure> structure,
         uint64_t declarationGeneration);
+
+    // Builds the parent-key index over the UNFILTERED rows in source order; the active filter is
+    // applied inside (matches plus ancestors) and each sibling list is sorted among its own peers
+    // (the roots only when `sortRoots`). When `structure` is null the tree structure is built first
+    // from `keys` -- only the parent selector runs, the row keys arrive validated -- and retained
+    // for later reshapes. Throws E_INVALIDARG on invalid data (self-parent, cycle) before anything
+    // is mutated, so the previous projection stays intact. Returns null -- and queues a Refresh --
+    // when a selector re-declared or retracted the relation mid-build; the caller then publishes
+    // nothing.
+    std::shared_ptr<ShapingHelpers::ParentKeyIndex> BuildHierarchyIndex(
+        std::vector<winrt::IInspectable> const& rows,
+        ShapingHelpers::RowKeyTable keys,
+        std::shared_ptr<const ShapingHelpers::ParentStructure> structure,
+        bool sortRoots,
+        uint64_t declarationGeneration);
+
+    // The retained structure, when it still describes `rows`: same relation declaration, no source
+    // notification since it was built, and the same row objects in the same order. A reshape
+    // (filter, sort, group) then skips identity validation and the key and parent selectors
+    // entirely. Null otherwise.
+    std::shared_ptr<const ShapingHelpers::ParentStructure> TryReuseHierarchyStructure(
+        std::vector<winrt::IInspectable> const& rows,
+        uint64_t declarationGeneration,
+        uint64_t sourceChangeStamp) const;
+    // The tree structure last built, and what it was built from.
+    std::shared_ptr<const ShapingHelpers::ParentStructure> m_hierarchyStructure;
+    uint64_t m_hierarchyStructureGeneration{ 0 };
+    uint64_t m_hierarchyStructureSourceStamp{ 0 };
+    // Bumped by every source change notification, including ones deferred behind a rebuild. Key
+    // and parent values are read again only after one: an app that changes them in place must
+    // raise a collection change (a Replace or a Reset), as for any other row data a projection
+    // derives from.
+    uint64_t m_sourceChangeStamp{ 0 };
+    // Stamp captured when the current Refresh materialized the source.
+    uint64_t m_refreshSourceStamp{ 0 };
 
     // Creates the adapter on first use, applies a pending intent reset (relation re-declared) and
     // hands it the index. `rootSegments` as for HierarchicalSourceAdapter::SetIndex.

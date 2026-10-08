@@ -149,7 +149,7 @@ std::wstring MakeNodeKey(winrt::IInspectable const& key)
     return std::wstring{ c_nodePrefix } + std::wstring{ ValueKey::ToObjectLookupKey(key, false) };
 }
 
-const std::vector<winrt::IInspectable>* ParentKeyIndex::TryGetChildren(std::wstring const& nodeKey) const
+const std::vector<winrt::IInspectable>* ParentKeyIndex::TryGetChildren(std::wstring_view nodeKey) const
 {
     auto it = Children.find(nodeKey);
     return it == Children.end() ? nullptr : &it->second;
@@ -157,85 +157,94 @@ const std::vector<winrt::IInspectable>* ParentKeyIndex::TryGetChildren(std::wstr
 
 std::wstring const* ParentKeyIndex::TryGetKey(winrt::IInspectable const& item) const
 {
-    auto it = KeyByItem.find(winrt::get_abi(item));
-    return it == KeyByItem.end() ? nullptr : &it->second;
+    if (!Structure)
+    {
+        return nullptr;
+    }
+    auto it = Structure->KeyByItem.find(winrt::get_abi(item));
+    return it == Structure->KeyByItem.end() ? nullptr : &it->second;
 }
 
-bool BuildParentKeyIndex(
+bool BuildParentStructure(
     std::vector<winrt::IInspectable> const& rows,
     RowKeyTable keys,
     KeySelector const& parentKeySelector,
-    ParentKeyFilter const& filter,
-    ParentKeyIndex& out,
+    ParentStructure& out,
     winrt::hstring& error)
 {
-    constexpr size_t c_root = SIZE_MAX;
+    constexpr size_t c_root = ParentStructure::Root;
     const size_t n = rows.size();
-    std::vector<std::wstring> nodeKeys(n);
-    std::vector<size_t> parentIndex(n, c_root);
-    std::unordered_map<std::wstring, size_t> indexByKey;
-    indexByKey.reserve(n);
 
-    // An object key's lookup form is its address, so every parent key is held for the whole build:
-    // a released temporary's address could be reused by the next one and alias it.
-    std::vector<winrt::IInspectable> keepAlive;
-    keepAlive.reserve(n);
+    ParentStructure result;
+    result.Rows = rows;
+    result.KeyByItem = std::move(keys);
+    result.NodeKeys.resize(n, nullptr);
+    result.ParentIndex.assign(n, c_root);
+    result.ChildIndices.resize(n);
+
+    // Views into KeyByItem's values, which stay put for the structure's lifetime (node-based map).
+    std::unordered_map<std::wstring_view, size_t> indexByKey;
+    indexByKey.reserve(n);
 
     // Pass 1: each row's key, from the table the caller already validated (unique, non-empty).
     // The checks below are defensive only: they fire if the table does not describe `rows`.
     for (size_t i = 0; i < n; ++i)
     {
-        auto const found = keys.find(winrt::get_abi(rows[i]));
-        if (found == keys.end() || found->second.empty() || !indexByKey.emplace(found->second, i).second)
+        auto const found = result.KeyByItem.find(winrt::get_abi(rows[i]));
+        if (found == result.KeyByItem.end() || found->second.empty() || !indexByKey.emplace(found->second, i).second)
         {
             error = L"KeyBy: an item has no unique key.";
             return false;
         }
-        nodeKeys[i] = found->second;
+        result.NodeKeys[i] = &found->second;
     }
 
     // Pass 2: resolve parents; self-parent is an error, unknown parent = orphan root.
-    for (size_t i = 0; i < n; ++i)
     {
-        auto parentKeyValue = SafeSelect(parentKeySelector, rows[i]);
-        auto parentKey = MakeNodeKey(parentKeyValue);
-        keepAlive.push_back(std::move(parentKeyValue));
-        if (parentKey.empty()) continue;
-        if (parentKey == nodeKeys[i])
+        // An object key's lookup form is its address, so every parent key is held for the whole
+        // pass: a released temporary's address could be reused by the next one and alias it.
+        std::vector<winrt::IInspectable> keepAlive;
+        keepAlive.reserve(n);
+        for (size_t i = 0; i < n; ++i)
         {
-            error = L"ParentBy: item with key '" + DescribeNodeKey(nodeKeys[i]) + L"' is its own parent.";
-            return false;
-        }
-        if (auto it = indexByKey.find(parentKey); it != indexByKey.end())
-        {
-            parentIndex[i] = it->second;
+            auto parentKeyValue = SafeSelect(parentKeySelector, rows[i]);
+            auto parentKey = MakeNodeKey(parentKeyValue);
+            keepAlive.push_back(std::move(parentKeyValue));
+            if (parentKey.empty()) continue;
+            if (parentKey == *result.NodeKeys[i])
+            {
+                error = L"ParentBy: item with key '" + DescribeNodeKey(*result.NodeKeys[i]) + L"' is its own parent.";
+                return false;
+            }
+            if (auto it = indexByKey.find(parentKey); it != indexByKey.end())
+            {
+                result.ParentIndex[i] = it->second;
+            }
         }
     }
 
-    // Child lists in sorted order.
-    std::vector<std::vector<size_t>> childIdx(n);
-    std::vector<size_t> rootIdx;
+    // Child lists in source order.
     for (size_t i = 0; i < n; ++i)
     {
-        (parentIndex[i] == c_root ? rootIdx : childIdx[parentIndex[i]]).push_back(i);
+        (result.ParentIndex[i] == c_root ? result.RootIndices : result.ChildIndices[result.ParentIndex[i]]).push_back(i);
     }
 
     // Cycle check: everything must be reachable from a root.
     size_t reached = 0;
     {
-        std::vector<size_t> stack(rootIdx.rbegin(), rootIdx.rend());
+        std::vector<size_t> stack(result.RootIndices.rbegin(), result.RootIndices.rend());
         while (!stack.empty())
         {
             const size_t i = stack.back(); stack.pop_back();
             ++reached;
-            stack.insert(stack.end(), childIdx[i].rbegin(), childIdx[i].rend());
+            stack.insert(stack.end(), result.ChildIndices[i].rbegin(), result.ChildIndices[i].rend());
         }
     }
     if (reached != n)
     {
         std::vector<bool> seen(n, false);
-        std::vector<size_t> stack(rootIdx.begin(), rootIdx.end());
-        while (!stack.empty()) { const size_t i = stack.back(); stack.pop_back(); seen[i] = true; stack.insert(stack.end(), childIdx[i].begin(), childIdx[i].end()); }
+        std::vector<size_t> stack(result.RootIndices.begin(), result.RootIndices.end());
+        while (!stack.empty()) { const size_t i = stack.back(); stack.pop_back(); seen[i] = true; stack.insert(stack.end(), result.ChildIndices[i].begin(), result.ChildIndices[i].end()); }
         for (size_t i = 0; i < n; ++i)
         {
             if (!seen[i])
@@ -248,44 +257,58 @@ bool BuildParentKeyIndex(
                 while (!onPath[p])
                 {
                     onPath[p] = true;
-                    p = parentIndex[p];
+                    p = result.ParentIndex[p];
                 }
-                error = L"ParentBy: cycle detected involving key '" + DescribeNodeKey(nodeKeys[p]) + L"'.";
+                error = L"ParentBy: cycle detected involving key '" + DescribeNodeKey(*result.NodeKeys[p]) + L"'.";
                 return false;
             }
         }
     }
 
+    out = std::move(result);
+    return true;
+}
+
+void BuildParentKeyIndex(
+    std::shared_ptr<const ParentStructure> const& structure,
+    ParentKeyFilter const& filter,
+    SiblingSorter const& sort,
+    bool sortRoots,
+    ParentKeyIndex& out)
+{
+    constexpr size_t c_root = ParentStructure::Root;
+    auto const& s = *structure;
+    const size_t n = s.Rows.size();
+
     // Filter: 0 = out, 1 = match, 2 = context (ancestor of a match).
     std::vector<uint8_t> state(n, 1);
     if (filter)
     {
-        for (size_t i = 0; i < n; ++i) state[i] = SafeFilter(filter, rows[i]) ? 1 : 0;
+        for (size_t i = 0; i < n; ++i) state[i] = SafeFilter(filter, s.Rows[i]) ? 1 : 0;
         for (size_t i = 0; i < n; ++i)
         {
             if (state[i] != 1) continue;
-            for (size_t p = parentIndex[i]; p != c_root && state[p] == 0; p = parentIndex[p]) state[p] = 2;
+            for (size_t p = s.ParentIndex[i]; p != c_root && state[p] == 0; p = s.ParentIndex[p]) state[p] = 2;
         }
     }
 
+    // Each sibling list is sorted among its own peers only, in source order going in, so a stable
+    // sort breaks ties exactly as one sort over the whole source would.
     ParentKeyIndex result;
-    for (size_t i : rootIdx) if (state[i]) result.Roots.push_back(rows[i]);
+    for (size_t i : s.RootIndices) if (state[i]) result.Roots.push_back(s.Rows[i]);
+    if (sort && sortRoots && result.Roots.size() > 1) sort(result.Roots);
+
     for (size_t i = 0; i < n; ++i)
     {
-        result.UnfilteredKeys.insert(nodeKeys[i]);
-        if (!state[i])
-        {
-            // Filtered out: the index does not hold the row, so its pointer must not stay a key.
-            keys.erase(winrt::get_abi(rows[i]));
-            continue;
-        }
-        if (state[i] == 2) result.ContextKeys.insert(nodeKeys[i]);
+        if (!state[i]) continue;
+        if (state[i] == 2) result.ContextKeys.insert(*s.NodeKeys[i]);
         std::vector<winrt::IInspectable> kids;
-        for (size_t c : childIdx[i]) if (state[c]) kids.push_back(rows[c]);
-        if (!kids.empty()) result.Children.emplace(nodeKeys[i], std::move(kids));
+        for (size_t c : s.ChildIndices[i]) if (state[c]) kids.push_back(s.Rows[c]);
+        if (kids.empty()) continue;
+        if (sort && kids.size() > 1) sort(kids);
+        result.Children.emplace(std::wstring_view{ *s.NodeKeys[i] }, std::move(kids));
     }
-    result.KeyByItem = std::move(keys);
+    result.Structure = structure;
     out = std::move(result);
-    return true;
 }
 }
