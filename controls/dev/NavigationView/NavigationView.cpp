@@ -2070,8 +2070,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
                 areElementsAtSameDepth = prevPosPoint.X == nextPosPoint.X;
             }
 
-            winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
-            winrt::CompositionScopedBatch scopedBatch = visual.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+            // Creating the batch must not request the NavigationView's non-strict handoff visual.
+            winrt::CompositionScopedBatch scopedBatch = winrt::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
 
             if (!areElementsAtSameDepth)
             {
