@@ -147,16 +147,23 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
         var query = sender.Text?.Trim();
         _searchText = string.IsNullOrEmpty(query) ? null : query;
-        if (_searchText is null)
+        ApplySearch();
+        SetLastAction(_searchText is { } text
+            ? string.Format(CultureInfo.CurrentCulture, "Search \"{0}\" -> {1:N0} of {2:N0} processes", text, VisibleCount(), Processes.Count)
+            : "Search cleared");
+    }
+
+    // Filter evaluates the predicate when it reshapes, not when a row's value changes, so call this
+    // again after a write to a searched property.
+    private void ApplySearch()
+    {
+        if (_searchText is not { } text)
         {
             Source.ClearFilter();
-            SetLastAction("Search cleared");
             return;
         }
 
-        var text = _searchText;
         Source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Search \"{0}\" -> {1:N0} of {2:N0} processes", text, VisibleCount(), Processes.Count));
     }
 
     private static bool MatchesSearch(ProcessItem process, string query) =>
@@ -211,8 +218,14 @@ public sealed partial class TaskManagerPage : SamplePageBase
         var from = process.Category;
         process.Category = SampleShaping.Next(ProcessData.Categories, from);
 
-        // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row.
+        // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row. The
+        // search matches on Category too, so re-apply it as well (it would keep showing the row).
         ReapplyIfGroupedOn(nameof(ProcessItem.Category));
+        if (_searchText is not null)
+        {
+            ApplySearch();
+        }
+
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", process.Name, from, process.Category));
     }
 

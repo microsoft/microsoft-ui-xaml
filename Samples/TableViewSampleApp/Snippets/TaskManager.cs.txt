@@ -49,13 +49,19 @@ private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextCha
 
     var query = sender.Text?.Trim();
     _searchText = string.IsNullOrEmpty(query) ? null : query;
-    if (_searchText is null)
+    ApplySearch();
+}
+
+// Filter evaluates the predicate when it reshapes, not when a row's value changes, so call this
+// again after a write to a searched property.
+private void ApplySearch()
+{
+    if (_searchText is not { } text)
     {
         Source.ClearFilter();
         return;
     }
 
-    var text = _searchText;
     Source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
 }
 

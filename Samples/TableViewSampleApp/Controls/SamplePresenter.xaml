@@ -8,13 +8,12 @@
     VerticalAlignment="Stretch">
 
     <!--
-        Sample page scaffold. 6-row, 2-col grid:
-            Row 0: Header text  (left col, spans both cols when no Options)
-            Row 1: Description  (left col, spans both cols)
-            Row 2: (spacer, 0 px: the two row gaps already separate the description from the Example)
-            Row 3: Example      (left col)        |  Options rail card   (right col, only if Options set)
-            Row 4: Source expander (spans both, wide mode) OR Options rail (narrow mode)
-            Row 5: Source expander (spans both, narrow mode only — keeps it below the reparented Options rail)
+        Sample page scaffold. The title and description sit in HeaderPanel, ABOVE the page
+        ScrollViewer, so they stay on screen however far the page scrolls (expanding Source
+        scrolls it to reveal the code). Below them, OuterGrid is a 3-row, 2-col grid:
+            Row 0: Example      (left col)        |  Options rail card   (right col, only if Options set)
+            Row 1: Source expander (spans both, wide mode) OR Options rail (narrow mode)
+            Row 2: Source expander (spans both, narrow mode only — keeps it below the reparented Options rail)
 
         The OptionsColumn is FIXED at 320 px when Options is set in wide layouts,
         0 px otherwise. Auto-sizing here caused the right pane (and consequently
@@ -33,17 +32,50 @@
         Inspired by w-ahmad/WinUI.TableView SamplePresenter — adapted to
         our existing CodeBlock + SamplePageHeader style + theme tokens.
     -->
+    <Grid>
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+
+    <!-- Sticky page header. Margins and Width are set in code from PageContentMargin so the text
+         lines up with OuterGrid and the gap to the Example matches the two old 8 px row gaps. -->
+    <Grid x:Name="HeaderPanel" Grid.Row="0" RowSpacing="8" MaxWidth="{StaticResource PageMaxContentWidth}" HorizontalAlignment="Left">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title; per-page Theme button removed (see file comment). -->
+        <TextBlock
+            x:Name="HeaderText"
+            Grid.Row="0"
+            Style="{ThemeResource TitleTextBlockStyle}"
+            Text="{x:Bind Header, Mode=OneWay}"
+            AutomationProperties.HeadingLevel="Level1"
+            VerticalAlignment="Center"/>
+
+        <!-- Description -->
+        <TextBlock
+            x:Name="DescriptionText"
+            Grid.Row="1"
+            Style="{ThemeResource BodyTextBlockStyle}"
+            Text="{x:Bind Description, Mode=OneWay}"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            TextWrapping="Wrap"
+            MaxWidth="1000"
+            HorizontalAlignment="Left"/>
+    </Grid>
+
     <ScrollViewer
         x:Name="OuterScroller"
+        Grid.Row="1"
         VerticalScrollMode="Auto"
         VerticalScrollBarVisibility="Auto"
         HorizontalScrollMode="Disabled"
         HorizontalScrollBarVisibility="Disabled">
     <Grid x:Name="OuterGrid" Margin="{StaticResource PageContentMargin}" RowSpacing="8" MaxWidth="{StaticResource PageMaxContentWidth}" HorizontalAlignment="Left">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition x:Name="SpacerRow" Height="0"/>
             <RowDefinition x:Name="ExampleRow" Height="Auto" MinHeight="320"/>
             <RowDefinition x:Name="SourceRow" Height="Auto"/>
             <RowDefinition x:Name="NarrowSourceRow" Height="Auto"/>
@@ -54,30 +86,10 @@
             <ColumnDefinition x:Name="OptionsColumn" Width="0"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Title — spans both columns; per-page Theme button removed (see file comment). -->
-        <TextBlock
-            x:Name="HeaderText"
-            Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
-            Style="{ThemeResource TitleTextBlockStyle}"
-            Text="{x:Bind Header, Mode=OneWay}"
-            AutomationProperties.HeadingLevel="Level1"
-            VerticalAlignment="Center"/>
-
-        <!-- Description -->
-        <TextBlock
-            x:Name="DescriptionText"
-            Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-            Style="{ThemeResource BodyTextBlockStyle}"
-            Text="{x:Bind Description, Mode=OneWay}"
-            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-            TextWrapping="Wrap"
-            MaxWidth="1000"
-            HorizontalAlignment="Left"/>
-
         <!-- Example container (live demo) -->
         <Border
             x:Name="ExampleContainer"
-            Grid.Row="3" Grid.Column="0"
+            Grid.Row="0" Grid.Column="0"
             CornerRadius="6"
             BorderThickness="1"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -117,7 +129,7 @@
              shakes. -->
         <Border
             x:Name="OptionsBorder"
-            Grid.Row="3" Grid.Column="1"
+            Grid.Row="0" Grid.Column="1"
             Margin="12,0,0,0"
             Padding="16"
             CornerRadius="6"
@@ -149,7 +161,7 @@
         <!-- Source expander spans both columns -->
         <Expander
             x:Name="SourceExpander"
-            Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+            Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
             Margin="0,4,0,0"
             MinHeight="40"
             Padding="12"
@@ -171,7 +183,8 @@
                 ApplyStretchSizing). On a pinned page the Example row shrinks towards its minimum
                 to make room; on a scrolling page the Example drops to its minimum, the code is
                 capped to the rest of the viewport, and expanding scrolls the block into view
-                (RevealSourceIfPending), so the code is never left below the window.
+                (RevealSourceIfPending), so the code is never left below the window. The title
+                and description are outside OuterScroller, so that scroll never hides them.
             -->
             <ScrollViewer
                 x:Name="SourceContentScroller"
@@ -194,4 +207,5 @@
         </Expander>
     </Grid>
     </ScrollViewer>
+    </Grid>
 </UserControl>

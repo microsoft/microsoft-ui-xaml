@@ -66,18 +66,27 @@ public sealed partial class RightToLeftPage : SamplePageBase
             return;
         }
 
+        var term = ApplyFilter();
+        SetLastAction(term.Length == 0
+            ? "ClearFilter()"
+            : string.Format(CultureInfo.CurrentCulture, "Filter -> \"{0}\"", term));
+    }
+
+    private string ApplyFilter()
+    {
         var term = FilterBox.Text.Trim();
         if (term.Length == 0)
         {
             Source.ClearFilter();
-            SetLastAction("ClearFilter()");
         }
         else
         {
-            // Filter reshapes the same source in place and composes with GroupBy and the sort.
+            // Filter reshapes the same source in place and composes with GroupBy and the sort. It
+            // evaluates the predicate on a reshape only, so an edit to a matched value re-applies it.
             Source.Filter(item => item is Person person && Matches(person, term));
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> \"{0}\"", term));
         }
+
+        return term;
     }
 
     private static bool Matches(Person person, string term) =>
@@ -96,6 +105,12 @@ public sealed partial class RightToLeftPage : SamplePageBase
             return;
         }
 
+        if (e.PropertyName is nameof(Person.FirstName) or nameof(Person.LastName)
+            or nameof(Person.Department) or nameof(Person.Office) or nameof(Person.Bio))
+        {
+            ReapplyFilterAfterEdit();
+        }
+
         switch (e.PropertyName)
         {
             case nameof(Person.FirstName):
@@ -109,6 +124,16 @@ public sealed partial class RightToLeftPage : SamplePageBase
             case nameof(Person.JoinDate):
                 SetLastAction(string.Format(CultureInfo.CurrentCulture, "Join date -> {0:d} for {1}", person.JoinDate, person.FullName));
                 break;
+        }
+    }
+
+    // An edited row may no longer match (or now match) the filter. Queued, so an in-cell edit
+    // commits before the row can leave the view.
+    private void ReapplyFilterAfterEdit()
+    {
+        if (FilterBox.Text.Trim().Length > 0)
+        {
+            EnqueueIfLoaded(() => ApplyFilter());
         }
     }
 

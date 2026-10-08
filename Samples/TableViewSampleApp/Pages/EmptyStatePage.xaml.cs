@@ -217,16 +217,7 @@ public sealed partial class EmptyStatePage : SamplePageBase
         }
     }
 
-    // Clear() raises Reset, which carries no removed items, so detach the edit handler first.
-    private void ClearPeople()
-    {
-        foreach (var person in People)
-        {
-            person.PropertyChanged -= OnPersonChanged;
-        }
-
-        People.Clear();
-    }
+    private void ClearPeople() => People.Clear();
 
     private void RefillPeople()
     {

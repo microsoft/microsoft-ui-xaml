@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -226,6 +227,14 @@ public sealed partial class MainWindow : Window
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
 
+            // SetTitleBar makes the whole AppTitleBar rect a caption (drag) region, which also
+            // swallows pointer input on the theme button inside it; carve the button out as a
+            // passthrough region and keep it in step with layout (the button moves when the
+            // caption-button inset changes) and DPI changes.
+            ThemeToggleButton.LayoutUpdated += (_, _) => UpdateTitleBarPassthrough();
+            ThemeToggleButton.Loaded += (_, _) =>
+                ThemeToggleButton.XamlRoot.Changed += (_, _) => UpdateTitleBarPassthrough();
+
             // Unpackaged WinUI 3 apps do NOT pick up <ApplicationIcon> or the
             // Square*Logo manifest entries on the AppWindow surface (those drive
             // packaged-MSIX Start menu / tiles only). Without an explicit
@@ -280,6 +289,42 @@ public sealed partial class MainWindow : Window
         catch (Exception ex)
         {
             App.AppendVerificationLog($"ConfigureTitleBar failed: {ex.Message}");
+        }
+    }
+
+    private Windows.Graphics.RectInt32 m_themeButtonPassthrough;
+
+    private void UpdateTitleBarPassthrough()
+    {
+        try
+        {
+            if (ThemeToggleButton.XamlRoot is not { } xamlRoot || ThemeToggleButton.ActualWidth <= 0)
+            {
+                return;
+            }
+
+            // XAML works in DIPs relative to the window content; the non-client API takes
+            // physical client pixels.
+            var scale = xamlRoot.RasterizationScale;
+            var bounds = ThemeToggleButton.TransformToVisual(null).TransformBounds(
+                new Windows.Foundation.Rect(0, 0, ThemeToggleButton.ActualWidth, ThemeToggleButton.ActualHeight));
+            var rect = new Windows.Graphics.RectInt32(
+                (int)Math.Round(bounds.X * scale),
+                (int)Math.Round(bounds.Y * scale),
+                (int)Math.Round(bounds.Width * scale),
+                (int)Math.Round(bounds.Height * scale));
+            if (rect.Equals(m_themeButtonPassthrough))
+            {
+                return;
+            }
+
+            m_themeButtonPassthrough = rect;
+            InputNonClientPointerSource.GetForWindowId(AppWindow.Id)
+                .SetRegionRects(NonClientRegionKind.Passthrough, new[] { rect });
+        }
+        catch (Exception ex)
+        {
+            App.AppendVerificationLog($"Title bar passthrough update failed: {ex.Message}");
         }
     }
 

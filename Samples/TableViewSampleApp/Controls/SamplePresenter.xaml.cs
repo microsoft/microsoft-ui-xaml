@@ -14,7 +14,8 @@ namespace TableViewSampleApp.Controls;
 /// <summary>
 /// Page-scaffold control inspired by w-ahmad/WinUI.TableView's SamplePresenter.
 ///
-/// Layout: Header + Description at top, an Example slot for the live demo on the left,
+/// Layout: Header + Description at top (sticky: outside the page ScrollViewer), an Example slot
+/// for the live demo on the left,
 /// an optional Options rail (fixed 320 px) on the right, and a collapsible Source
 /// expander at the bottom. Pages should set Header, Description, Example, and
 /// (optionally) Options + SourceSnippet or SourceXaml.
@@ -44,6 +45,14 @@ public sealed partial class SamplePresenter : UserControl
 
     // How long after an expand the Source block is kept in view while the layout settles.
     private const long RevealSourceWindowMs = 1500;
+
+    // Gap between the sticky header and the scrolling page (see the constructor).
+    private const double HeaderGap = 12;
+    private const double OuterGridTopMargin = 4;
+
+    // Height of the sticky header (title + description + margins) at the current width, measured
+    // in MeasureOverride; what is left of the presenter's height is the OuterScroller viewport.
+    private double _headerHeight;
 
     // The smallest height the Example content has been seen to need (its Auto rows plus the
     // table's MinHeight). Learned when a child of the Example turns out taller than its slot;
@@ -79,6 +88,14 @@ public sealed partial class SamplePresenter : UserControl
         // vertically themselves: one vertical scroller, no trapped mouse wheel (D:S9).
         SourceCodeBlock.CodeMaxHeight = double.PositiveInfinity;
         AdditionalSourceCodeBlock.CodeMaxHeight = double.PositiveInfinity;
+
+        // The sticky header takes the page margin's top and sides; OuterGrid keeps the sides and
+        // bottom. HeaderGap + OuterGridTopMargin is the gap the title block used to have to the
+        // Example inside one grid (two 8 px row gaps); the 4 px inside the scroller keeps the
+        // Example's focus visual from being clipped by it.
+        var margin = OuterGrid.Margin;
+        HeaderPanel.Margin = new Thickness(margin.Left, margin.Top, margin.Right, HeaderGap);
+        OuterGrid.Margin = new Thickness(margin.Left, OuterGridTopMargin, margin.Right, margin.Bottom);
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -319,7 +336,15 @@ public sealed partial class SamplePresenter : UserControl
             {
                 OuterGrid.Width = width;
             }
+
+            if (!HeaderPanel.Width.Equals(width))
+            {
+                HeaderPanel.Width = width;
+            }
         }
+
+        HeaderPanel.Measure(new Windows.Foundation.Size(availableSize.Width, double.PositiveInfinity));
+        _headerHeight = HeaderPanel.DesiredSize.Height;
 
         _availableHeight = double.IsInfinity(availableSize.Height) ? double.NaN : availableSize.Height;
         ApplyStretchSizing(_availableHeight);
@@ -412,7 +437,7 @@ public sealed partial class SamplePresenter : UserControl
     }
 
     /// <summary>
-    /// When true, the Example row consumes all remaining vertical space (Row 3 = `*`)
+    /// When true, the Example row consumes all remaining vertical space (Row 0 = `*`)
     /// instead of sizing to its content's natural height. Useful for showcase pages
     /// where the demo IS the page — the table fills the viewport responsively on
     /// any resolution / DPI / window size, without per-page pixel heights.
@@ -531,11 +556,11 @@ public sealed partial class SamplePresenter : UserControl
 
     // Star sizing inside an infinite-height ScrollViewer collapses to 0, so when StretchExample
     // is on and the page fits, the inner Grid's Height is pinned to the height the parent
-    // offered (minus the Grid's own margin), which gives `*` a finite range to divide.
+    // offered minus the sticky header and the Grid's own margin, which gives `*` a finite range.
     //
     // The page does NOT fit, and is left to scroll, when:
     //  * the layout is narrow (< 900 px): the rail sits under the Example (D:S2);
-    //  * title + description + the Example's minimum + the Source block exceed the height (D:S1).
+    //  * the Example's minimum + the Source block exceed the height under the header (D:S1).
     //    An expanded Source block counts its chrome plus MinSourceHeight of code.
     // Then the grid is unpinned and the Example row gets a fixed height, so the table stays
     // bounded and virtualizes; it never sits in an unbounded scroller.
@@ -547,6 +572,7 @@ public sealed partial class SamplePresenter : UserControl
     //  * scrolling page: the Example row drops to its minimum, the code is capped to what is
     //    left of the viewport under it (at least MinSourceHeight), and RevealSourceIfPending
     //    scrolls the page so the whole expanded block, and the table above it, are on screen.
+    //    Only OuterScroller scrolls, so the title and description stay in view (P2).
     private void ApplyStretchSizing(double availableHeight)
     {
         if (OuterGrid is null)
@@ -555,7 +581,8 @@ public sealed partial class SamplePresenter : UserControl
         }
 
         var hasHeight = !double.IsNaN(availableHeight) && availableHeight > 0;
-        var target = hasHeight ? Math.Max(0, availableHeight - OuterGrid.Margin.Top - OuterGrid.Margin.Bottom) : 0;
+        // OuterGrid lives in the OuterScroller, under the sticky header.
+        var target = hasHeight ? Math.Max(0, availableHeight - _headerHeight - OuterGrid.Margin.Top - OuterGrid.Margin.Bottom) : 0;
         var sourceVisible = SourceExpander.Visibility == Visibility.Visible;
         var sourceExpanded = sourceVisible && SourceExpander.IsExpanded;
         // Right after a collapse ActualHeight is still the expanded height; fall back to the
@@ -585,9 +612,9 @@ public sealed partial class SamplePresenter : UserControl
             return;
         }
 
-        var headerBlock = HeaderBlockHeight();
+        var gaps = RowGapsHeight();
         var reservedCode = sourceExpanded ? MinSourceHeight : 0;
-        var fits = !_isNarrow && headerBlock + _exampleMinHeight + sourceChrome + reservedCode <= target;
+        var fits = !_isNarrow && gaps + _exampleMinHeight + sourceChrome + reservedCode <= target;
         if (fits)
         {
             SetExampleRowHeight(new GridLength(1, GridUnitType.Star));
@@ -597,10 +624,10 @@ public sealed partial class SamplePresenter : UserControl
             }
 
             // Cap the source content to what the pinned grid can spare once the Example row has
-            // its minimum and the title block is accounted for. Without the cap the expander's
+            // its minimum and the row gaps are accounted for. Without the cap the expander's
             // Auto row asks for the full height of both code blocks, overflows the pin, and is
             // clipped with no way to scroll to it. The fit check guarantees MinSourceHeight.
-            var spare = target - headerBlock - _exampleMinHeight - sourceChrome;
+            var spare = target - gaps - _exampleMinHeight - sourceChrome;
             SetMaxHeight(SourceContentScroller, Math.Max(MinSourceHeight, Math.Floor(spare)));
         }
         else
@@ -619,7 +646,7 @@ public sealed partial class SamplePresenter : UserControl
             }
             else
             {
-                exampleHeight = Math.Max(_exampleMinHeight, target - headerBlock - sourceChrome);
+                exampleHeight = Math.Max(_exampleMinHeight, target - gaps - sourceChrome);
                 codeCap = target - sourceChrome;
             }
 
@@ -679,13 +706,9 @@ public sealed partial class SamplePresenter : UserControl
         });
     }
 
-    // Title + description + the spacer row + the Grid's row spacing (5 gaps between 6 rows).
-    private double HeaderBlockHeight()
-    {
-        var header = HeaderText.ActualHeight > 0 ? HeaderText.ActualHeight : 36;
-        var description = DescriptionText.ActualHeight > 0 ? DescriptionText.ActualHeight : 40;
-        return header + description + SpacerRow.Height.Value + (OuterGrid.RowSpacing * 5);
-    }
+    // OuterGrid's row spacing: 2 gaps between its 3 rows. The title block is not in OuterGrid; it
+    // is the sticky HeaderPanel, already taken off the height in ApplyStretchSizing.
+    private double RowGapsHeight() => OuterGrid.RowSpacing * 2;
 
     private void SetExampleRowHeight(GridLength height)
     {
@@ -722,31 +745,31 @@ public sealed partial class SamplePresenter : UserControl
         }
 
         // Below 900 px, drop the Options rail under the Example so the demo isn't squeezed.
-        // The Options rail then takes Row 4 (which was the source-expander row in wide
-        // mode), so we also have to move SourceExpander down to Row 5 to avoid both
+        // The Options rail then takes Row 1 (which was the source-expander row in wide
+        // mode), so we also have to move SourceExpander down to Row 2 to avoid both
         // landing in the same cell. Without Options, keep the default wide placement
         // with a collapsed Options column.
         if (isNarrow)
         {
-            Grid.SetRow(OptionsBorder, 4);
+            Grid.SetRow(OptionsBorder, 1);
             Grid.SetColumn(OptionsBorder, 0);
             Grid.SetColumnSpan(OptionsBorder, 2);
             OptionsBorder.Margin = new Thickness(0, 12, 0, 0);
             // Collapse the right column to 0 so it doesn't reserve 320 px of dead space.
             OptionsColumn.Width = new GridLength(0);
-            // Push the source expander to Row 5 so it sits BELOW the reparented Options
+            // Push the source expander to Row 2 so it sits BELOW the reparented Options
             // rail. Restore in wide mode.
-            Grid.SetRow(SourceExpander, 5);
+            Grid.SetRow(SourceExpander, 2);
         }
         else
         {
-            Grid.SetRow(OptionsBorder, 3);
+            Grid.SetRow(OptionsBorder, 0);
             Grid.SetColumn(OptionsBorder, 1);
             Grid.SetColumnSpan(OptionsBorder, 1);
             OptionsBorder.Margin = new Thickness(12, 0, 0, 0);
             // Restore the fixed-width column for the wide layout.
             OptionsColumn.Width = hasOptions ? new GridLength(OptionsColumnWidth) : new GridLength(0);
-            Grid.SetRow(SourceExpander, 4);
+            Grid.SetRow(SourceExpander, 1);
         }
     }
 

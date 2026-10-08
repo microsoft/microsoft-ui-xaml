@@ -49,14 +49,17 @@
         </DataTemplate>
         <!-- /snippet -->
 
-        <!-- Shown when every row has been removed, grouped or flat. -->
+        <!-- Shown when every row has been removed, grouped or flat.
+             MaxWidth: the row area scrolls sideways, so it measures its content at infinite width;
+             without a cap the wrapping text lays out as one line wider than the table. -->
         <DataTemplate x:Key="GroupsEmptyTemplate" x:DataType="system:Object">
-            <StackPanel Spacing="4" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Spacing="4" Padding="24" MaxWidth="400" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="No people to group" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>
                 <TextBlock
                     Text="The source is empty, so the grouped projection has no groups. Choose Restore all rows to bring them back."
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     TextWrapping="Wrap"
+                    TextAlignment="Center"
                     HorizontalAlignment="Center"/>
             </StackPanel>
         </DataTemplate>
