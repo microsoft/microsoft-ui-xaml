@@ -932,63 +932,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // Scenario: a fully populated TitleBar; activate another window, reactivate the TitleBar window, then disable
-        //           the back button and deactivate again.
-        // Expected: all parts switch to their *Deactivated visual states when the window loses activation and back to
-        //           *Visible when it is reactivated; a disabled back button keeps its regular state while the rest
-        //           deactivates.
-        // A failure means: the TitleBar does not show the standard inactive-window look, or gets stuck in it.
-        [TestMethod]
-        public void VerifyDeactivatedVisualStates()
-        {
-            TitleBar titleBar = null;
-            Func<TitleBar> createTitleBar = () => titleBar = new TitleBar()
-            {
-                Title = "Activation title",
-                Subtitle = "Activation subtitle",
-                IsBackButtonVisible = true,
-                IsPaneToggleButtonVisible = true,
-                IconSource = new SymbolIconSource() { Symbol = Symbol.Home },
-                LeftHeader = new Button() { Content = "Left" },
-                RightHeader = new Button() { Content = "Right" },
-            };
-
-            using (var host = new TitleBarWindowHost(createTitleBar, () => new Button() { Content = "Center" }))
-            {
-                var activatedStates = new (string Group, string State)[]
-                {
-                    ("BackButtonGroup", "BackButtonVisible"),
-                    ("PaneToggleButtonGroup", "PaneToggleButtonVisible"),
-                    ("IconGroup", "IconVisible"),
-                    ("TitleTextGroup", "TitleTextVisible"),
-                    ("SubtitleTextGroup", "SubtitleTextVisible"),
-                    ("LeftHeaderGroup", "LeftHeaderVisible"),
-                    ("ContentGroup", "ContentVisible"),
-                    ("RightHeaderGroup", "RightHeaderVisible"),
-                };
-                var deactivatedStates = activatedStates.Select(s => (s.Group, s.State.Replace("Visible", "Deactivated"))).ToArray();
-
-                WaitForVisualStates(titleBar, activatedStates);
-
-                Log.Comment("Activating the main test window to deactivate the TitleBar window.");
-                host.ActivateOtherWindowAndWaitForDeactivation();
-                WaitForVisualStates(titleBar, deactivatedStates);
-
-                Log.Comment("Reactivating the TitleBar window.");
-                host.ActivateAndWait();
-                WaitForVisualStates(titleBar, activatedStates);
-
-                // A disabled back button keeps its regular look while the rest of the TitleBar deactivates.
-                RunOnUIThread.Execute(() => titleBar.IsBackButtonEnabled = false);
-                host.ActivateOtherWindowAndWaitForDeactivation();
-                WaitForVisualStates(titleBar, new (string Group, string State)[]
-                {
-                    ("TitleTextGroup", "TitleTextDeactivated"),
-                    ("BackButtonGroup", "BackButtonVisible"),
-                });
-            }
-        }
-
         // Scenario: read every public static DependencyProperty identifier on TitleBar and TitleBarTemplateSettings.
         // Expected: all identifiers are non-null and distinct, and repeated calls return the same identifier.
         // A failure means: an identifier is missing or points at the wrong property, so GetValue/SetValue, bindings,
@@ -1291,34 +1234,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(defaultValue, getClrValue(), "ClearValue should restore the default");
         }
 
-        private static void WaitForVisualStates(TitleBar titleBar, (string Group, string State)[] expectedStates)
-        {
-            // InputActivationListener notifications arrive asynchronously and are not exposed to the app, so poll the
-            // observable visual states. The timeout is only an outer safety bound.
-            string mismatch = null;
-            var deadline = DateTime.Now.AddMilliseconds(DefaultWaitTimeInMS);
-            do
-            {
-                IdleSynchronizer.Wait();
-                RunOnUIThread.Execute(() =>
-                {
-                    mismatch = null;
-                    foreach (var (group, state) in expectedStates)
-                    {
-                        string actual = GetCurrentState(titleBar, group);
-                        if (actual != state)
-                        {
-                            mismatch = $"{group}: expected '{state}' but was '{actual}'";
-                            break;
-                        }
-                    }
-                });
-            }
-            while (mismatch != null && DateTime.Now < deadline);
-
-            Verify.IsNull(mismatch, mismatch ?? "All expected visual states reached");
-        }
-
         private static void Invoke(Button button)
         {
             var peer = (ButtonAutomationPeer)FrameworkElementAutomationPeer.CreatePeerForElement(button);
@@ -1473,11 +1388,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             public void ActivateAndWait()
             {
                 WaitForActivationChange(() => Window.Activate(), expectActive: true);
-            }
-
-            public void ActivateOtherWindowAndWaitForDeactivation()
-            {
-                WaitForActivationChange(() => MUXControlsTestApp.App.CurrentWindow.Activate(), expectActive: false);
             }
 
             private void WaitForActivationChange(Action action, bool expectActive)

@@ -157,6 +157,11 @@
                         Text="0" />
             </StackPanel>
 
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Visual states:" />
+                <TextBlock x:Name="VisualStatesTextBlock" Margin="8,0,0,0" />
+            </StackPanel>
+
         </StackPanel>
     </Grid>
 </Window>

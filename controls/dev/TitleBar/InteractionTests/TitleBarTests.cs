@@ -203,6 +203,127 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return region;
         }
 
+        // Scenario: a fully populated TitleBar in its own window; real-mouse click the main test window, click the
+        //           TitleBar window again, then disable the back button and click the main test window once more.
+        // Expected: all parts switch to their *Deactivated visual states when the window loses activation and back to
+        //           *Visible when it is reactivated; a disabled back button keeps its regular state while the rest
+        //           deactivates.
+        // A failure means: the TitleBar does not show the standard inactive-window look, or gets stuck in it. If the
+        //                  InputActivation entry is the mismatch, the window never lost or regained the foreground,
+        //                  which points at the test machine rather than TitleBar.
+        // TitleBar follows InputActivationListener, which only changes when the window really gains or loses the
+        // foreground. Window.Activate() from an API test does not guarantee that in the lab (the test app may not own
+        // the foreground), so activation is driven here with real mouse clicks.
+        [TestMethod]
+        [TestProperty("IsolationLevel", "Method")]
+        public void PartsShowDeactivatedVisualStatesWhileWindowIsInactive()
+        {
+            RunInTitleBarTestWindow(window =>
+            {
+                GetCheckBox(window, "IsBackButtonVisibleCheckBox").Check();
+                GetCheckBox(window, "IsPaneToggleButtonVisibleCheckbox").Check();
+                GetCheckBox(window, "LeftHeaderCheckBox").Check();
+                GetCheckBox(window, "CustomContentCheckBox").Check();
+                GetCheckBox(window, "RightHeaderCheckBox").Check();
+                new Edit(FindIn(window, "SubtitleTextBox")).SetValue("Activation subtitle");
+                Click(FindIn(window, "SetSubtitleButton"));
+
+                var activatedStates = new (string Group, string State)[]
+                {
+                    ("InputActivation", "Activated"),
+                    ("BackButtonGroup", "BackButtonVisible"),
+                    ("PaneToggleButtonGroup", "PaneToggleButtonVisible"),
+                    ("IconGroup", "IconVisible"),
+                    ("TitleTextGroup", "TitleTextVisible"),
+                    ("SubtitleTextGroup", "SubtitleTextVisible"),
+                    ("LeftHeaderGroup", "LeftHeaderVisible"),
+                    ("ContentGroup", "ContentVisible"),
+                    ("RightHeaderGroup", "RightHeaderVisible"),
+                };
+                var deactivatedStates = activatedStates.Select(s => (s.Group, s.State.Replace("Visible", "Deactivated").Replace("Activated", "Deactivated"))).ToArray();
+
+                ActivateTitleBarWindow(window);
+                WaitForVisualStates(window, activatedStates);
+
+                Log.Comment("Clicking the main test window to deactivate the TitleBar window.");
+                ActivateMainTestWindow();
+                WaitForVisualStates(window, deactivatedStates);
+
+                Log.Comment("Clicking the TitleBar window to reactivate it.");
+                ActivateTitleBarWindow(window);
+                WaitForVisualStates(window, activatedStates);
+
+                // A disabled back button keeps its regular look while the rest of the TitleBar deactivates.
+                GetCheckBox(window, "IsBackButtonEnabledCheckBox").Uncheck();
+                Wait.ForIdle();
+                ActivateMainTestWindow();
+                WaitForVisualStates(window, new (string Group, string State)[]
+                {
+                    ("InputActivation", "Deactivated"),
+                    ("TitleTextGroup", "TitleTextDeactivated"),
+                    ("BackButtonGroup", "BackButtonVisible"),
+                });
+            });
+        }
+
+        // RunInTitleBarTestWindow minimizes the main test window; restore it and click an empty spot of its system
+        // caption so it takes the foreground from the TitleBar window.
+        private static void ActivateMainTestWindow()
+        {
+            var mainWindow = new Window(TestEnvironment.Application.CoreWindow);
+            mainWindow.SetWindowVisualState(WindowVisualState.Maximized);
+            Wait.ForIdle();
+            InputHelper.LeftClick(mainWindow, mainWindow.BoundingRectangle.Width / 2, 16);
+        }
+
+        // Minimize the main test window again and click a non-interactive part of the TitleBar window's client area
+        // (the right side of the options panel, where all controls are left-aligned).
+        private static void ActivateTitleBarWindow(Window window)
+        {
+            var mainWindow = new Window(TestEnvironment.Application.CoreWindow);
+            if (mainWindow.WindowVisualState != WindowVisualState.Minimized)
+            {
+                mainWindow.SetWindowVisualState(WindowVisualState.Minimized);
+                Wait.ForIdle();
+            }
+
+            // Skip Wait.ForIdle: it invokes a helper button in the main test window through UI Automation, which
+            // activates the main window again.
+            InputHelper.LeftClick(window, window.BoundingRectangle.Width - 40, window.BoundingRectangle.Height / 2, skipWait: true);
+        }
+
+        private static void WaitForVisualStates(Window window, (string Group, string State)[] expectedStates)
+        {
+            // TitleBarPageWindow keeps VisualStatesTextBlock up to date, so only read it here. Do not use Wait.ForIdle or
+            // invoke anything: UI Automation invokes activate the window that hosts the invoked element. The timeout is
+            // only an outer safety bound.
+            string mismatch = null;
+            var deadline = DateTime.Now.AddSeconds(5);
+            do
+            {
+                Wait.ForMilliseconds(100);
+                string readout = FindIn(window, "VisualStatesTextBlock").Name;
+                var actualStates = readout.Split(';')
+                    .Select(entry => entry.Split('='))
+                    .Where(parts => parts.Length == 2)
+                    .ToDictionary(parts => parts[0], parts => parts[1]);
+
+                mismatch = null;
+                foreach (var (group, state) in expectedStates)
+                {
+                    actualStates.TryGetValue(group, out string actual);
+                    if (actual != state)
+                    {
+                        mismatch = $"{group}: expected '{state}' but was '{actual}' (readout: {readout})";
+                        break;
+                    }
+                }
+            }
+            while (mismatch != null && DateTime.Now < deadline);
+
+            Verify.IsNull(mismatch, mismatch ?? "All expected visual states reached");
+        }
+
         private static void RunInTitleBarTestWindow(Action<Window> test)
         {
             using (var windowOpenedWaiter = new WindowOpenedWaiter(TitleBarWindowCondition))
