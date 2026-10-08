@@ -83,12 +83,6 @@ public sealed partial class ShowcasePage : SamplePageBase
 
     private void FillPeople(int count)
     {
-        // Clear() is a Reset, which does not report the old rows: stop listening to them first.
-        foreach (var person in People)
-        {
-            person.PropertyChanged -= OnPersonChanged;
-        }
-
         People.Clear();
         foreach (var person in PersonData.Take(count))
         {
@@ -323,7 +317,9 @@ public sealed partial class ShowcasePage : SamplePageBase
             return;
         }
 
-        // Select ignores group-header indexes, so walk forward to the first data row.
+        // Select ignores group-header indexes, so walk forward to the first data row. Clear any
+        // current selection first, so the walk starts even when a later row is selected.
+        PeopleTable.DeselectAll();
         for (var i = 0; i <= MaxProbeIndex && PeopleTable.SelectedItem is null; i++)
         {
             PeopleTable.Select(i);

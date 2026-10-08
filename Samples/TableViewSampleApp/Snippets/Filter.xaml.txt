@@ -1,11 +1,14 @@
-<!-- Shown when the filter narrows the projection to zero rows. -->
+<!-- Shown when the filter narrows the projection to zero rows.
+     MaxWidth: the row area scrolls sideways, so it measures its content at infinite width;
+     without a cap the wrapping text lays out as one line wider than the table. -->
 <DataTemplate x:Key="FilterEmptyTemplate" x:DataType="system:Object">
-    <StackPanel Spacing="4" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <StackPanel Spacing="4" Padding="24" MaxWidth="400" HorizontalAlignment="Center" VerticalAlignment="Center">
         <TextBlock Text="No rows match the filter" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>
         <TextBlock
             Text="The underlying collection is untouched. Clear the filter to bring every row back."
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             TextWrapping="Wrap"
+            TextAlignment="Center"
             HorizontalAlignment="Center"/>
     </StackPanel>
 </DataTemplate>

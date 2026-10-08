@@ -36,7 +36,6 @@ public sealed partial class PerformancePage : SamplePageBase
     private TableViewTemplateColumn? _photoColumn;
     private TableViewTemplateColumn? _departmentChipColumn;
     private bool _templateColumns;
-    private bool _sortDescending = true;       // the first Sort click sorts ascending
     private bool _isRunning;
 
     public PerformancePage()
@@ -166,7 +165,6 @@ public sealed partial class PerformancePage : SamplePageBase
                 PerfTable.ItemsSource = _source;
             });
 
-            _sortDescending = true;
             result.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms, {1}", ms, ColumnSetLabel);
 
             // A new dataset gets the current shaping; GroupBy is timed separately (Group row).
@@ -194,9 +192,9 @@ public sealed partial class PerformancePage : SamplePageBase
 
         try
         {
-            var direction = _sortDescending ? SortDirection.Ascending : SortDirection.Descending;
+            // Toggle from the column's own state, which a header click changes too.
+            var direction = NameColumn.SortDirection == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
             var ms = Timed(() => PerfTable.SortByColumn(NameColumn, direction));
-            _sortDescending = direction == SortDirection.Descending;
             var label = direction == SortDirection.Ascending ? "ascending" : "descending";
             SortText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms, {1:N0} rows {2}", ms, _people.Count, label);
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Sorted {0:N0} rows by Name ({1}): {2:N0} ms", _people.Count, label, ms));
@@ -276,7 +274,6 @@ public sealed partial class PerformancePage : SamplePageBase
                 }
             });
 
-            _sortDescending = true;
             PerItemAddText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms for {1:N0} Add calls, {2}", ms, PerItemCap, ColumnSetLabel);
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0:N0} rows one at a time: {1:N0} ms. Compare with Load 10,000.", PerItemCap, ms));
         }
@@ -353,7 +350,6 @@ public sealed partial class PerformancePage : SamplePageBase
                 regroupMs = stopwatch.ElapsedMilliseconds - addMs;
             });
 
-            _sortDescending = true;
             PerItemAddText.Text = string.Format(
                 CultureInfo.CurrentCulture,
                 "Grouped by {0}: {1:N0} of {2:N0} Adds before the {3:N0} ms cap ({4:N0} ms, last Adds {5:N1} ms each). Grouping detached: {2:N0} Adds plus one GroupBy in {6:N0} ms ({7:N0} ms Adds, {8:N0} ms GroupBy), {9}",

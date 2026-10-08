@@ -186,24 +186,36 @@ public static class SampleShaping
     /// <paramref name="rows"/> in the order <paramref name="table"/> shows them. TableViewSource
     /// does not expose its projection, so this applies the same rules the control does: a stable
     /// sort on the active column's key (<paramref name="sortKey"/>(row, path); culture-aware for
-    /// text, nulls first), then, when <paramref name="groupKey"/> is given (grouped mode), groups
-    /// in the order their first row appears.
+    /// text, nulls first) and, when <paramref name="groupKey"/> is given (grouped mode), groups in
+    /// the order their first row appears. The verbs apply in the order they were declared: a sort
+    /// declared before GroupBy (<paramref name="sortOrdersGroups"/>, see
+    /// <see cref="Controls.ShapingOptions.SortOrdersGroups"/>) orders the rows and so the groups;
+    /// one declared after it sorts within each group, and the groups keep source order.
     /// </summary>
     public static IEnumerable<T> InViewOrder<T>(
         TableView? table,
         IEnumerable<T> rows,
         Func<T, string, IComparable?> sortKey,
-        Func<T, object>? groupKey)
+        Func<T, object>? groupKey,
+        bool sortOrdersGroups)
     {
         var column = ActiveSortColumn(table);
+        Func<IEnumerable<T>, IEnumerable<T>> sort = r => r;
         if (column is not null && SortPathOf(column) is { } path)
         {
-            rows = column.SortDirection == TableViewSortDirection.Descending
-                ? rows.OrderByDescending(r => sortKey(r, path), SortKeyComparer.Instance)
-                : rows.OrderBy(r => sortKey(r, path), SortKeyComparer.Instance);
+            sort = column.SortDirection == TableViewSortDirection.Descending
+                ? r => r.OrderByDescending(x => sortKey(x, path), SortKeyComparer.Instance)
+                : r => r.OrderBy(x => sortKey(x, path), SortKeyComparer.Instance);
         }
 
-        return groupKey is null ? rows : rows.GroupBy(groupKey).SelectMany(g => g);
+        if (groupKey is null)
+        {
+            return sort(rows);
+        }
+
+        return sortOrdersGroups
+            ? sort(rows).GroupBy(groupKey).SelectMany(g => g)
+            : rows.GroupBy(groupKey).SelectMany(g => sort(g));
     }
 
     private sealed class SortKeyComparer : IComparer<IComparable?>

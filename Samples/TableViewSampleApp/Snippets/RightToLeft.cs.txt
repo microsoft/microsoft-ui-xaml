@@ -23,6 +23,11 @@ private void OnFilterChanged(object sender, TextChangedEventArgs e)
         return;
     }
 
+    var term = ApplyFilter();
+}
+
+private string ApplyFilter()
+{
     var term = FilterBox.Text.Trim();
     if (term.Length == 0)
     {
@@ -30,9 +35,12 @@ private void OnFilterChanged(object sender, TextChangedEventArgs e)
     }
     else
     {
-        // Filter reshapes the same source in place and composes with GroupBy and the sort.
+        // Filter reshapes the same source in place and composes with GroupBy and the sort. It
+        // evaluates the predicate on a reshape only, so an edit to a matched value re-applies it.
         Source.Filter(item => item is Person person && Matches(person, term));
     }
+
+    return term;
 }
 
 private static bool Matches(Person person, string term) =>

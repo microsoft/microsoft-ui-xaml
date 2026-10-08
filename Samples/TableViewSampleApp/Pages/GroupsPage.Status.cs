@@ -53,7 +53,7 @@ public sealed partial class GroupsPage
 
     // The rows in the order the table shows them (shared rules: SampleShaping.InViewOrder).
     private IEnumerable<Person> InViewOrder() =>
-        SampleShaping.InViewOrder(PeopleTable, People, SortKey, IsGrouped ? p => SampleShaping.KeyOf(p, AppliedGroupKey) : null);
+        SampleShaping.InViewOrder(PeopleTable, People, SortKey, IsGrouped ? p => SampleShaping.KeyOf(p, AppliedGroupKey) : null, SortOrdersGroups);
 
     private static IComparable? SortKey(Person person, string path) => path switch
     {

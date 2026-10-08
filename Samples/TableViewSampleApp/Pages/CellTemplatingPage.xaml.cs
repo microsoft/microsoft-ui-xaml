@@ -78,6 +78,7 @@ public sealed partial class CellTemplatingPage : SamplePageBase
         switch (e.PropertyName)
         {
             case nameof(Person.IsActive):
+                ReapplyIfGroupedOn(e.PropertyName);
                 SetLastAction(string.Format(CultureInfo.CurrentCulture, "Active -> {0} for {1}", person.IsActive ? "checked" : "unchecked", person.FullName));
                 break;
             case nameof(Person.JoinDate):

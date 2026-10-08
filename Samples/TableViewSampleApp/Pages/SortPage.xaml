@@ -130,14 +130,17 @@
             </Border>
         </DataTemplate>
 
-        <!-- Shown when "Clear all rows" empties the standings, flat or grouped. -->
+        <!-- Shown when "Clear all rows" empties the standings, flat or grouped.
+             MaxWidth: the row area scrolls sideways, so it measures its content at infinite width;
+             without a cap the wrapping text lays out as one line wider than the table. -->
         <DataTemplate x:Key="SortEmptyTemplate" x:DataType="system:Object">
-            <StackPanel Spacing="4" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Spacing="4" Padding="24" MaxWidth="400" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="No teams to show" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>
                 <TextBlock
                     Text="Every row was removed. Choose Restore rows to bring the standings back; the active sort and grouping apply again."
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     TextWrapping="Wrap"
+                    TextAlignment="Center"
                     HorizontalAlignment="Center"/>
             </StackPanel>
         </DataTemplate>

@@ -36,7 +36,7 @@ public sealed partial class SortPage
 
     // The rows in the order the table shows them (shared rules: SampleShaping.InViewOrder).
     private IEnumerable<LeagueTeam> InViewOrder() =>
-        SampleShaping.InViewOrder(TeamsTable, Teams, SortKey, IsGrouped ? t => LeagueData.GroupKeyOf(t, AppliedGroupKey) : null);
+        SampleShaping.InViewOrder(TeamsTable, Teams, SortKey, IsGrouped ? t => LeagueData.GroupKeyOf(t, AppliedGroupKey) : null, SortOrdersGroups);
 
     private static IComparable? SortKey(LeagueTeam team, string path) => path switch
     {

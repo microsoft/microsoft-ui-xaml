@@ -41,6 +41,9 @@ public partial class SamplePageBase : Page
     /// <summary>The group key last applied (the group-key ComboBoxItem Tag).</summary>
     protected string AppliedGroupKey => _shaping?.AppliedKey ?? string.Empty;
 
+    /// <summary>True when the active sort was declared before the grouping, so it orders the groups.</summary>
+    protected bool SortOrdersGroups => _shaping?.SortOrdersGroups ?? false;
+
     /// <summary>True inside a <see cref="BeginBulkUpdate"/> scope: per-item change handlers should skip.</summary>
     protected bool IsBulkUpdating => _bulkUpdateDepth > 0;
 
@@ -122,22 +125,58 @@ public partial class SamplePageBase : Page
     protected void ReapplyIfGroupedOn(string? propertyName) => _shaping?.ReapplyIfGroupedOn(propertyName);
 
     /// <summary>
-    /// Listens to PropertyChanged of every item while the page is loaded, following adds and
-    /// removes; detaches on Unloaded.
+    /// Listens to PropertyChanged of every item while the page is loaded, following adds, removes
+    /// and resets (Clear); detaches on Unloaded.
     /// </summary>
     protected void TrackItems<T>(ObservableCollection<T> items, PropertyChangedEventHandler onItemChanged)
-        where T : INotifyPropertyChanged
+        where T : class, INotifyPropertyChanged
     {
-        void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        // Reset (Clear) reports no OldItems, so remember what is attached: otherwise the cleared
+        // rows keep their handler and restoring the same instances attaches it a second time.
+        var attached = new HashSet<T>(ReferenceEqualityComparer.Instance);
+
+        void Attach(T item)
         {
-            foreach (T item in e.OldItems ?? Array.Empty<T>())
+            if (attached.Add(item))
+            {
+                item.PropertyChanged += onItemChanged;
+            }
+        }
+
+        void DetachAll()
+        {
+            foreach (var item in attached)
             {
                 item.PropertyChanged -= onItemChanged;
             }
 
+            attached.Clear();
+        }
+
+        void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                DetachAll();
+                foreach (var item in items)
+                {
+                    Attach(item);
+                }
+
+                return;
+            }
+
+            foreach (T item in e.OldItems ?? Array.Empty<T>())
+            {
+                if (attached.Remove(item))
+                {
+                    item.PropertyChanged -= onItemChanged;
+                }
+            }
+
             foreach (T item in e.NewItems ?? Array.Empty<T>())
             {
-                item.PropertyChanged += onItemChanged;
+                Attach(item);
             }
         }
 
@@ -147,16 +186,13 @@ public partial class SamplePageBase : Page
                 items.CollectionChanged += OnCollectionChanged;
                 foreach (var item in items)
                 {
-                    item.PropertyChanged += onItemChanged;
+                    Attach(item);
                 }
             },
             () =>
             {
                 items.CollectionChanged -= OnCollectionChanged;
-                foreach (var item in items)
-                {
-                    item.PropertyChanged -= onItemChanged;
-                }
+                DetachAll();
             });
     }
 

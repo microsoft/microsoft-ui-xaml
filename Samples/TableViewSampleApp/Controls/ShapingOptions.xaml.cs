@@ -11,7 +11,10 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
+using SortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
+using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
+using TableViewSortedEventArgs = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortedEventArgs;
 using TableViewSource = Microsoft.UI.Xaml.Controls.Tabular.TableViewSource;
 
 namespace TableViewSampleApp.Controls;
@@ -28,6 +31,12 @@ public sealed partial class ShapingOptions : UserControl
 {
     private TableView? _table;
     private TableViewSource? _source;
+
+    // Declaration order of the grouping and the table's sort axis (see SortOrdersGroups).
+    private int _declarations;
+    private int _groupDeclaredAt = -1;
+    private int _sortDeclaredAt = -1;
+    private TableViewColumn? _sortColumn;
     private Func<object?, string, object> _groupKeyOf = (row, key) => SampleShaping.KeyOf(row as Person, key);
 
     public ShapingOptions()
@@ -123,6 +132,15 @@ public sealed partial class ShapingOptions : UserControl
 
     public bool IsGrouped => AppliedMode == "grouped";
 
+    /// <summary>
+    /// True when the table's sort was declared before the current GroupBy: the source applies its
+    /// verbs in declaration order, so that sort orders the rows and therefore the groups. A sort
+    /// declared after GroupBy sorts within each group, and the groups keep source order. Every
+    /// GroupBy (including <see cref="ReapplyIfGroupedOn"/>) is a new declaration; re-sorting the
+    /// same column keeps its place, sorting another column declares a new sort.
+    /// </summary>
+    public bool SortOrdersGroups => _sortDeclaredAt >= 0 && _sortDeclaredAt < _groupDeclaredAt;
+
     /// <summary>"Flat" or "Grouped by Department".</summary>
     public string AppliedText => SampleShaping.ShapingText(IsGrouped, GroupKeySelector);
 
@@ -147,6 +165,23 @@ public sealed partial class ShapingOptions : UserControl
     /// <param name="groupKeyOf">GroupBy key for a row and a key Tag. Default: <see cref="SampleShaping.KeyOf"/> for Person.</param>
     public ShapingOptions Attach(TableView table, TableViewSource source, Func<object?, string, object>? groupKeyOf = null)
     {
+        if (!ReferenceEquals(table, _table))
+        {
+            if (_table is not null)
+            {
+                _table.Sorted -= OnTableSorted;
+            }
+
+            table.Sorted += OnTableSorted;
+        }
+
+        if (!ReferenceEquals(source, _source))
+        {
+            _groupDeclaredAt = -1;
+            _sortDeclaredAt = -1;
+            _sortColumn = null;
+        }
+
         _table = table;
         _source = source;
         if (groupKeyOf is not null)
@@ -212,6 +247,7 @@ public sealed partial class ShapingOptions : UserControl
 
         AppliedMode = mode;
         AppliedKey = key;
+        _groupDeclaredAt = mode == "grouped" ? ++_declarations : -1;
 
         // Re-applying GroupBy can drop the selection when the selected row changed group.
         if (RestoreSelection)
@@ -282,6 +318,21 @@ public sealed partial class ShapingOptions : UserControl
         call();
         stopwatch.Stop();
         return stopwatch.ElapsedMilliseconds;
+    }
+
+    private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
+    {
+        if (args.Column is null || args.Direction == SortDirection.None)
+        {
+            _sortDeclaredAt = -1;
+            _sortColumn = null;
+        }
+        else if (_sortDeclaredAt < 0 || !ReferenceEquals(args.Column, _sortColumn))
+        {
+            // The control replaces the previous column's axis, so this is a new declaration.
+            _sortDeclaredAt = ++_declarations;
+            _sortColumn = args.Column;
+        }
     }
 
     private void UpdateGating()

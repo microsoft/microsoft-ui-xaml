@@ -40,7 +40,6 @@ private async Task LoadAsync(int count, TextBlock result)
             PerfTable.ItemsSource = _source;
         });
 
-        _sortDescending = true;
         result.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms, {1}", ms, ColumnSetLabel);
 
         // A new dataset gets the current shaping; GroupBy is timed separately (Group row).
@@ -85,7 +84,6 @@ private async void OnPerItemAddClick(object sender, RoutedEventArgs e)
             }
         });
 
-        _sortDescending = true;
         PerItemAddText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms for {1:N0} Add calls, {2}", ms, PerItemCap, ColumnSetLabel);
     }
     finally
@@ -161,7 +159,6 @@ private async Task RunPerItemAddGroupedAsync(IReadOnlyList<Person> rows)
             regroupMs = stopwatch.ElapsedMilliseconds - addMs;
         });
 
-        _sortDescending = true;
         PerItemAddText.Text = string.Format(
             CultureInfo.CurrentCulture,
             "Grouped by {0}: {1:N0} of {2:N0} Adds before the {3:N0} ms cap ({4:N0} ms, last Adds {5:N1} ms each). Grouping detached: {2:N0} Adds plus one GroupBy in {6:N0} ms ({7:N0} ms Adds, {8:N0} ms GroupBy), {9}",
