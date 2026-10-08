@@ -20,7 +20,7 @@ using WEX.Logging.Interop;
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class RecyclePoolTests : ApiTestBase
+    public partial class RecyclePoolTests : ApiTestBase
     {
         // This test was missing its [TestMethod] attribute and therefore never ran.
         // Scenario: store Buttons, TextBlocks and StackPanels under different keys (and one under the empty key), then
@@ -203,6 +203,111 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 var recycled2 = (FrameworkElement)pool.TryGetElement(key1, parent2);
                 Verify.IsNull(recycled2.Parent);
             });
+        }
+
+        // Scenario: attach a custom RecyclePool to a DataTemplate with SetPoolInstance, use the template as an
+        //           ItemsRepeater's ItemTemplate, remove an item and then add one.
+        // Expected: GetPoolInstance and GetValue(PoolInstanceProperty) return the pool, the removed item's element is found
+        //           in that pool, and clearing or setting null detaches the pool.
+        // A failure means: apps that share or customize element pools per template would not get their elements recycled.
+        [TestMethod]
+        [TestProperty("Description", "Verifies RecyclePool.SetPoolInstance/GetPoolInstance/PoolInstanceProperty and that ItemsRepeater recycles DataTemplate elements through the attached pool.")]
+        public void VerifyPoolInstanceIsUsedForDataTemplateRecycling()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var template = (DataTemplate)XamlReader.Load(
+                    "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding}' Height='20'/></DataTemplate>");
+                Verify.IsNull(RecyclePool.GetPoolInstance(template), "A template has no pool until one is attached.");
+
+                var pool = new RecyclePool();
+                RecyclePool.SetPoolInstance(template, pool);
+                Verify.AreSame(pool, RecyclePool.GetPoolInstance(template));
+                Verify.AreSame(pool, template.GetValue(RecyclePool.PoolInstanceProperty));
+
+                var data = new ObservableCollection<string>(Enumerable.Range(0, 3).Select(i => "Item #" + i));
+                var repeater = new ItemsRepeater() { ItemsSource = data, ItemTemplate = template };
+                Content = repeater;
+                Content.UpdateLayout();
+                Verify.IsNull(pool.TryGetElement(string.Empty, repeater), "Nothing is recycled while all items are shown.");
+
+                var removedElement = repeater.TryGetElement(2);
+                Verify.IsNotNull(removedElement);
+                data.RemoveAt(2);
+                Content.UpdateLayout();
+                Verify.AreSame(removedElement, pool.TryGetElement(string.Empty, repeater), "The removed item's element was recycled into the attached pool.");
+                Verify.IsNull(pool.TryGetElement(string.Empty, repeater), "Only that element was recycled.");
+
+                data.Add("Item #3");
+                Content.UpdateLayout();
+                var newElement = (TextBlock)repeater.TryGetElement(2);
+                Verify.AreNotSame(removedElement, newElement, "The element taken out of the pool is not reused.");
+                Verify.AreEqual("Item #3", newElement.Text);
+
+                Content = null;
+                template.ClearValue(RecyclePool.PoolInstanceProperty);
+                Verify.IsNull(RecyclePool.GetPoolInstance(template));
+                RecyclePool.SetPoolInstance(template, pool);
+                RecyclePool.SetPoolInstance(template, null);
+                Verify.IsNull(RecyclePool.GetPoolInstance(template), "SetPoolInstance(null) detaches the pool.");
+            });
+        }
+
+        // Scenario: attach a RecyclePool subclass that overrides PutElementCore and TryGetElementCore to a DataTemplate used
+        //           by an ItemsRepeater, remove an item and add one.
+        // Expected: the repeater's put and get calls reach the overrides (the removed element is put with the empty key).
+        // Ignored: reproduces RecyclePool overrides being bypassed (PC-RECYCLEPOOL-OVERRIDES); currently fails because
+        //          RecyclePool.PutElement/TryGetElement call the base implementation directly.
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Product concern PC-RECYCLEPOOL-OVERRIDES: expected PutElementCore/TryGetElementCore overrides to be called; actual: 0 calls, RecyclePool::PutElement/TryGetElement call the base *Core directly (RecyclePool.cpp).
+        [TestProperty("Description", "Verifies RecyclePool PutElementCore/TryGetElementCore overrides are used when ItemsRepeater recycles through the pool.")]
+        public void VerifyRecyclePoolOverridesAreCalled()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var template = (DataTemplate)XamlReader.Load(
+                    "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding}' Height='20'/></DataTemplate>");
+                var pool = new CountingRecyclePool();
+                RecyclePool.SetPoolInstance(template, pool);
+                var data = new ObservableCollection<string>(Enumerable.Range(0, 3).Select(i => "Item #" + i));
+                var repeater = new ItemsRepeater() { ItemsSource = data, ItemTemplate = template };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                var removedElement = repeater.TryGetElement(2);
+                data.RemoveAt(2);
+                Content.UpdateLayout();
+                Verify.AreEqual(1, pool.PutCount, "The removed item's element is put through the override.");
+                Verify.AreSame(removedElement, pool.LastPutElement);
+                Verify.AreEqual(string.Empty, pool.LastPutKey);
+
+                data.Add("Item #3");
+                Content.UpdateLayout();
+                Verify.IsGreaterThanOrEqual(pool.TryGetCount, 1, "The repeater asks the override for an element.");
+                Content = null;
+            });
+        }
+
+        private partial class CountingRecyclePool : RecyclePool
+        {
+            public int PutCount { get; private set; }
+            public int TryGetCount { get; private set; }
+            public UIElement LastPutElement { get; private set; }
+            public string LastPutKey { get; private set; }
+
+            protected override void PutElementCore(UIElement element, string key, UIElement owner)
+            {
+                PutCount++;
+                LastPutElement = element;
+                LastPutKey = key;
+                base.PutElementCore(element, key, owner);
+            }
+
+            protected override UIElement TryGetElementCore(string key, UIElement owner)
+            {
+                TryGetCount++;
+                return base.TryGetElementCore(key, owner);
+            }
         }
     }
 }

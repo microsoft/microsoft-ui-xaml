@@ -48,6 +48,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)SelectionModelTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ItemTemplateTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ItemsRepeaterScrollHostTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RepeaterApiContractTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewManagerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewportTests.cs" />
   </ItemGroup>

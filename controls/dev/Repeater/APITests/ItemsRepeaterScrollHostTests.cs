@@ -285,6 +285,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: subscribe to the ViewportChanged, PostArrange and ConfigurationChanged events of the host's scrolling
+        //           surface, scroll and re-arrange the host, then unsubscribe.
+        // Expected: subscribing and unsubscribing succeed, and none of the three events is raised while subscribed: the host
+        //           accepts ConfigurationChanged as a no-op, never raises PostArrange, and raises ViewportChanged only from
+        //           code paths that nothing calls (see untestable.md).
+        // A failure means: the scroll host started raising these events, so components that track it must be revalidated.
+        [TestMethod]
+        [TestProperty("Description", "Verifies the ItemsRepeaterScrollHost scrolling-surface events accept handler registration and removal and are not raised.")]
+        public void VerifyScrollingSurfaceEventsCanBeSubscribedAndRemoved()
+        {
+            ItemsRepeaterScrollHost scrollHost = null;
+            ScrollViewer scrollViewer = null;
+            var viewChangedEvent = new ManualResetEvent(false);
+            int viewportChangedCount = 0, postArrangeCount = 0, configurationChangedCount = 0;
+            ViewportChangedEventHandler viewportChanged = (sender, isFinal) => viewportChangedCount++;
+            PostArrangeEventHandler postArrange = (sender) => postArrangeCount++;
+            ConfigurationChangedEventHandler configurationChanged = (sender) => configurationChangedCount++;
+
+            RunOnUIThread.Execute(() =>
+            {
+                scrollHost = CreateScrollHost(out scrollViewer, out var items);
+                var surface = AsScrollingSurface(scrollHost);
+                surface.ViewportChanged += viewportChanged;
+                surface.PostArrange += postArrange;
+                surface.ConfigurationChanged += configurationChanged;
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        viewChangedEvent.Set();
+                    }
+                };
+                Verify.IsTrue(scrollViewer.ChangeView(null, 150.0, null, disableAnimation: true));
+            });
+
+            Verify.IsTrue(viewChangedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for ViewChanged.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Re-arrange while still subscribed: an arrange pass is where PostArrange would be raised.
+                scrollHost.InvalidateArrange();
+                scrollHost.UpdateLayout();
+                Log.Comment($"Raised while subscribed: ViewportChanged={viewportChangedCount}, PostArrange={postArrangeCount}, ConfigurationChanged={configurationChangedCount}");
+                Verify.AreEqual(0, viewportChangedCount, "The scroll host does not raise ViewportChanged during a scroll and layout.");
+                Verify.AreEqual(0, postArrangeCount, "The scroll host does not raise PostArrange.");
+                Verify.AreEqual(0, configurationChangedCount, "The scroll host does not report configuration changes.");
+                var surface = AsScrollingSurface(scrollHost);
+                surface.ViewportChanged -= viewportChanged;
+                surface.PostArrange -= postArrange;
+                surface.ConfigurationChanged -= configurationChanged;
+                Verify.AreEqual(150.0, scrollViewer.VerticalOffset);
+            });
+        }
+
         private ItemsRepeaterScrollHost CreateScrollHost(out ScrollViewer scrollViewer, out List<Border> items)
         {
             items = Enumerable.Range(0, c_itemCount).Select(i => new Border() {

@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Text;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
+using Windows.Foundation;
 using Common;
 
 using WEX.TestExecution;
@@ -1460,6 +1461,199 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Verify.AreEqual(E_FAIL, CaptureHResult(() => { var x = captured.Source; }), "Source outside the handler");
                 Verify.AreEqual(E_FAIL, CaptureHResult(() => { var x = captured.SourceIndex; }), "SourceIndex outside the handler");
+            });
+        }
+
+        // Scenario: subscribe a ChildrenRequested handler, select a nested item, unsubscribe it and select in a new source.
+        // Expected: the handler runs while subscribed and is never called again after it is removed.
+        // A failure means: removed ChildrenRequested handlers would keep running and could leak or supply stale children.
+        [TestMethod]
+        [TestProperty("Description", "Verifies ChildrenRequested handlers stop being called once removed.")]
+        public void VerifyChildrenRequestedHandlerRemoval()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionModel = new SelectionModel() { Source = CreateNestedData(levels: 1, groupsAtLevel: 2, countAtLeaf: 3) };
+                int removedHandlerCalls = 0;
+                int remainingHandlerCalls = 0;
+                TypedEventHandler<SelectionModel, SelectionModelChildrenRequestedEventArgs> removedHandler = (sender, args) =>
+                {
+                    removedHandlerCalls++;
+                    args.Children = args.Source is IList ? args.Source : null;
+                };
+                selectionModel.ChildrenRequested += removedHandler;
+                selectionModel.ChildrenRequested += (sender, args) => remainingHandlerCalls++;
+
+                selectionModel.Select(0, 1);
+                Verify.IsGreaterThan(removedHandlerCalls, 0, "The handler runs while it is subscribed.");
+                int callsBeforeRemoval = removedHandlerCalls;
+
+                selectionModel.ChildrenRequested -= removedHandler;
+                selectionModel.Source = CreateNestedData(levels: 1, groupsAtLevel: 2, countAtLeaf: 3);
+                int remainingBefore = remainingHandlerCalls;
+                selectionModel.Select(1, 2);
+                Verify.IsTrue(selectionModel.IsSelected(1, 2).Value);
+                Verify.AreEqual(callsBeforeRemoval, removedHandlerCalls, "The removed handler is not called again.");
+                Verify.IsGreaterThan(remainingHandlerCalls, remainingBefore, "The other handler still runs.");
+            });
+        }
+
+        // Scenario: read SelectedItems and SelectedIndices for a nested selection, then replace the Source so the selection
+        //           tree behind those views is discarded, and read the old views again.
+        // Expected: the views read before the change fail with E_FAIL instead of returning stale items.
+        // A failure means: apps holding on to an old SelectedItems view could silently show items that are no longer selected.
+        [TestMethod]
+        [TestProperty("Description", "Verifies SelectedItems/SelectedIndices views obtained before the selection tree was rebuilt fail with E_FAIL.")]
+        public void VerifySelectedViewsFailAfterSelectionTreeIsDiscarded()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = CreateNestedData(levels: 1, groupsAtLevel: 2, countAtLeaf: 3);
+                var selectionModel = new SelectionModel() { Source = source };
+                selectionModel.Select(1, 2);
+
+                var items = selectionModel.SelectedItems;
+                var indices = selectionModel.SelectedIndices;
+                Verify.AreEqual(1, items.Count);
+                Verify.AreEqual(((IList)source[1])[2], items[0]);
+                Verify.AreEqual("R.1.2", indices[0].ToString());
+
+                selectionModel.Source = CreateNestedData(levels: 1, groupsAtLevel: 2, countAtLeaf: 3);
+                GC.Collect();
+
+                Verify.AreEqual(E_FAIL, CaptureHResult(() => { var x = items[0]; }), "SelectedItems read before the change");
+                Verify.AreEqual(E_FAIL, CaptureHResult(() => { var x = indices[0]; }), "SelectedIndices read before the change");
+                Verify.AreEqual(0, selectionModel.SelectedItems.Count, "A fresh view reflects the cleared selection.");
+            });
+        }
+
+        // Scenario: select items 2 to 5 of a flat list as one range (anchor at 2, SelectRangeFromAnchor(5)), move the
+        //           anchor to item 5 and insert a new item at index 4, inside the range; then do the same with SelectAll on a
+        //           second list.
+        // Expected: the range is split around the new item: exactly items 2, 3, 5 and 6 are selected (and every item but
+        //           the new one after SelectAll), SelectionChanged is raised and the anchor (item 5) moves to index 6.
+        // A failure means: inserting into a list would select the new item or lose part of the user's selection.
+        [TestMethod]
+        [TestProperty("Description", "Verifies an insert inside a selected range splits the range and leaves the new item unselected.")]
+        public void VerifyInsertInsideSelectedRangeSplitsRange()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = new ObservableCollection<int>(Enumerable.Range(0, 10));
+                var selectionModel = new SelectionModel() { Source = source };
+                selectionModel.SetAnchorIndex(2);
+                selectionModel.SelectRangeFromAnchor(5);
+                selectionModel.SetAnchorIndex(5);
+                Verify.AreEqual("R.5", selectionModel.AnchorIndex.ToString());
+                Verify.AreEqual("R.2,R.3,R.4,R.5", SelectedIndicesAsString(selectionModel));
+                int selectionChangedCount = 0;
+                selectionModel.SelectionChanged += (sender, args) => selectionChangedCount++;
+
+                source.Insert(4, 100);
+
+                Verify.AreEqual("R.2,R.3,R.5,R.6", SelectedIndicesAsString(selectionModel), "The range is split around the inserted item.");
+                VerifyFlatSelection(selectionModel, source.Count, new int[] { 2, 3, 5, 6 });
+                Verify.IsGreaterThan(selectionChangedCount, 0, "Splitting the range raises SelectionChanged.");
+                Verify.IsFalse(selectionModel.SelectedItems.Contains(100), "The inserted item is not selected.");
+                Verify.AreEqual("R.6", selectionModel.AnchorIndex.ToString(), "The anchor moves with its item.");
+
+                var allSource = new ObservableCollection<int>(Enumerable.Range(0, 6));
+                var allSelectionModel = new SelectionModel() { Source = allSource };
+                allSelectionModel.SelectAll();
+                allSource.Insert(3, 100);
+                Verify.AreEqual("R.0,R.1,R.2,R.4,R.5,R.6", SelectedIndicesAsString(allSelectionModel), "SelectAll range is split around the inserted item.");
+            });
+        }
+
+        private static string SelectedIndicesAsString(SelectionModel selectionModel)
+        {
+            return string.Join(",", selectionModel.SelectedIndices.Select(i => i.ToString()).OrderBy(s => int.Parse(s.Substring(2))));
+        }
+
+        // Scenario: select everything in a two-level grouped source, then add an item to one inner group.
+        // Expected: the new item is not selected, its group and the outer group become partially selected (null), other
+        //           items stay selected, and SelectionChanged is raised.
+        // A failure means: grouped UIs would keep showing a group as fully selected after a new, unselected item appears.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that adding an item to a fully selected group makes the group and its ancestors partially selected.")]
+        public void VerifyAddingItemToSelectedGroupMakesAncestorsPartial()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = CreateNestedData(levels: 2, groupsAtLevel: 2, countAtLeaf: 3);
+                var selectionModel = new SelectionModel() { Source = source };
+                selectionModel.SelectAll();
+                Verify.IsTrue(selectionModel.IsSelectedAt(Path(0)).Value);
+                Verify.IsTrue(selectionModel.IsSelectedAt(Path(0, 1)).Value);
+                int selectionChangedCount = 0;
+                selectionModel.SelectionChanged += (sender, args) => selectionChangedCount++;
+
+                var innerGroup = (ObservableCollection<object>)((IList)source[0])[1];
+                innerGroup.Add(1000);
+
+                Verify.IsFalse(selectionModel.IsSelectedAt(Path(0, 1, 3)).Value, "The new item is not selected.");
+                Verify.IsTrue(selectionModel.IsSelectedAt(Path(0, 1, 2)).Value, "Existing items stay selected.");
+                Verify.IsNull(selectionModel.IsSelectedAt(Path(0, 1)), "The inner group is partially selected.");
+                Verify.IsNull(selectionModel.IsSelectedAt(Path(0)), "The outer group is partially selected.");
+                Verify.IsTrue(selectionModel.IsSelectedAt(Path(1)).Value, "Other groups stay selected.");
+                Verify.IsGreaterThan(selectionChangedCount, 0, "SelectionChanged is raised.");
+            });
+        }
+
+        // Scenario: select everything in a two-level grouped source, deselect one item, then remove that item from its group.
+        // Expected: once the only unselected item is gone, its group and the outer group are fully selected again, and
+        //           SelectionChanged is raised.
+        // A failure means: grouped UIs would keep showing a group as partially selected after its unselected items are removed.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that removing the only unselected item of a group makes the group and its ancestors selected.")]
+        public void VerifyRemovingUnselectedItemMakesAncestorsSelected()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = CreateNestedData(levels: 2, groupsAtLevel: 2, countAtLeaf: 3);
+                var selectionModel = new SelectionModel() { Source = source };
+                selectionModel.SelectAll();
+                selectionModel.DeselectAt(Path(0, 1, 2));
+                Verify.IsNull(selectionModel.IsSelectedAt(Path(0, 1)));
+                Verify.IsNull(selectionModel.IsSelectedAt(Path(0)));
+                int selectionChangedCount = 0;
+                selectionModel.SelectionChanged += (sender, args) => selectionChangedCount++;
+
+                var innerGroup = (ObservableCollection<object>)((IList)source[0])[1];
+                innerGroup.RemoveAt(2);
+
+                Verify.IsTrue(selectionModel.IsSelectedAt(Path(0, 1)).Value, "The inner group is fully selected again.");
+                Verify.IsTrue(selectionModel.IsSelectedAt(Path(0)).Value, "The outer group is fully selected again.");
+                Verify.IsGreaterThan(selectionChangedCount, 0, "SelectionChanged is raised.");
+            });
+        }
+
+        // Scenario: in a two-level grouped source with nothing selected (an inner group's item was selected and deselected
+        //           again, so the group is tracked), remove an unselected item from that inner group.
+        // Expected: SelectionChanged is not raised, and the inner group, the outer group and the selection stay unselected.
+        // A failure means: removing items from groups would raise spurious SelectionChanged events and redraw selection UI.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that removing an unselected item under unselected ancestors does not raise SelectionChanged.")]
+        public void VerifyRemovingItemUnderUnselectedAncestorsDoesNotRaiseSelectionChanged()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = CreateNestedData(levels: 2, groupsAtLevel: 2, countAtLeaf: 3);
+                var selectionModel = new SelectionModel() { Source = source };
+                selectionModel.SelectAt(Path(0, 1, 0));
+                selectionModel.DeselectAt(Path(0, 1, 0));
+                Verify.IsFalse(selectionModel.IsSelectedAt(Path(0, 1)).Value, "The inner group starts unselected.");
+                Verify.IsFalse(selectionModel.IsSelectedAt(Path(0)).Value, "The outer group starts unselected.");
+                int selectionChangedCount = 0;
+                selectionModel.SelectionChanged += (sender, args) => selectionChangedCount++;
+
+                var innerGroup = (ObservableCollection<object>)((IList)source[0])[1];
+                innerGroup.RemoveAt(2);
+
+                Verify.AreEqual(0, selectionChangedCount, "Removing an unselected item under unselected ancestors does not raise SelectionChanged.");
+                Verify.IsFalse(selectionModel.IsSelectedAt(Path(0, 1)).Value, "The inner group is still unselected.");
+                Verify.IsFalse(selectionModel.IsSelectedAt(Path(0)).Value, "The outer group is still unselected.");
+                Verify.AreEqual(0, selectionModel.SelectedIndices.Count);
             });
         }
 

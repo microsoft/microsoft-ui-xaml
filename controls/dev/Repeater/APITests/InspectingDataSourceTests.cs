@@ -298,6 +298,82 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Scenario: use a read-only list (IReadOnlyList<object> + INotifyCollectionChanged, no IList) as the source of an
+        //           ItemsSourceView and of an ItemsRepeater, then add an item to it.
+        // Expected: Count, GetAt and IndexOf read through the list (IndexOf of a missing item is -1), the view raises
+        //           CollectionChanged for the add, and the repeater shows the new item.
+        // A failure means: apps exposing read-only observable collections would see wrong counts or stale items.
+        [TestMethod]
+        [TestProperty("Description", "Verifies ItemsSourceView and ItemsRepeater over a read-only observable list (vector view) read items and follow changes.")]
+        public void VerifyReadOnlyObservableListSource()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = new ReadOnlyObservableList(new object[] { "A", "B", "C" });
+                var view = new ItemsSourceView(source);
+                Verify.AreEqual(3, view.Count);
+                Verify.AreEqual("B", view.GetAt(1));
+                Verify.AreEqual(2, view.IndexOf("C"));
+                Verify.AreEqual(-1, view.IndexOf("Z"));
+
+                var changes = new List<NotifyCollectionChangedAction>();
+                view.CollectionChanged += (sender, args) => changes.Add(args.Action);
+
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = source,
+                    ItemTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                        "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding}' Height='20'/></DataTemplate>")
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+                Verify.AreEqual(3, repeater.ItemsSourceView.Count);
+
+                source.Add("D");
+                Content.UpdateLayout();
+
+                Verify.AreEqual(4, view.Count);
+                Verify.AreEqual("D", view.GetAt(3));
+                Verify.AreEqual(1, changes.Count, "The view raises one CollectionChanged for the add.");
+                Verify.AreEqual(NotifyCollectionChangedAction.Add, changes[0]);
+                var element = repeater.TryGetElement(3) as TextBlock;
+                Verify.IsNotNull(element, "The repeater realizes the added item.");
+                Verify.AreEqual("D", element.Text);
+                Content = null;
+            });
+        }
+
+        private partial class ReadOnlyObservableList : IReadOnlyList<object>, INotifyCollectionChanged
+        {
+            private readonly List<object> _items;
+
+            public ReadOnlyObservableList(IEnumerable<object> items)
+            {
+                _items = new List<object>(items);
+            }
+
+            public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+            public object this[int index] => _items[index];
+
+            public int Count => _items.Count;
+
+            public void Add(object item)
+            {
+                _items.Add(item);
+                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, _items.Count - 1));
+            }
+
+            public IEnumerator<object> GetEnumerator()
+            {
+                return _items.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _items.GetEnumerator();
+            }
+        }
+
         public void ValidateSwitchingItemsSourceRefreshesElements(bool isVirtualLayout)
         {
             RunOnUIThread.Execute(() =>

@@ -1159,6 +1159,120 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: from inside a custom layout's measure and arrange passes, invalidate the repeater and call its Measure or
+        //           Arrange again.
+        // Expected: the nested measure and the nested arrange are rejected with E_FAIL, and the outer layout pass completes
+        //           with every item realized.
+        // A failure means: re-entrant layout could corrupt the repeater's realized elements or loop endlessly.
+        [TestMethod]
+        [TestProperty("Description", "Verifies a nested ItemsRepeater measure or arrange started from within its own layout pass is rejected with E_FAIL.")]
+        public void VerifyReentrantMeasureAndArrangeAreRejected()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var layout = new MockVirtualizingLayout();
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 3).ToList(),
+                    ItemTemplate = CreateDataTemplate("<TextBlock Text='{Binding}' Height='20'/>"),
+                    Layout = layout
+                };
+                int measureHResult = 0, arrangeHResult = 0;
+                bool measureAttempted = false, arrangeAttempted = false;
+                layout.MeasureLayoutFunc = (availableSize, context) =>
+                {
+                    if (!measureAttempted)
+                    {
+                        measureAttempted = true;
+                        repeater.InvalidateMeasure();
+                        measureHResult = CaptureHResult(() => repeater.Measure(availableSize));
+                    }
+                    for (int i = 0; i < context.ItemCount; i++)
+                    {
+                        context.GetOrCreateElementAt(i).Measure(availableSize);
+                    }
+                    return new Size(100, 20 * context.ItemCount);
+                };
+                layout.ArrangeLayoutFunc = (finalSize, context) =>
+                {
+                    if (!arrangeAttempted)
+                    {
+                        arrangeAttempted = true;
+                        repeater.InvalidateArrange();
+                        arrangeHResult = CaptureHResult(() => repeater.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height)));
+                    }
+                    for (int i = 0; i < context.ItemCount; i++)
+                    {
+                        context.GetOrCreateElementAt(i).Arrange(new Rect(0, 20 * i, 100, 20));
+                    }
+                    return finalSize;
+                };
+
+                Content = repeater;
+                Content.UpdateLayout();
+
+                Verify.IsTrue(measureAttempted && arrangeAttempted);
+                Verify.AreEqual(E_FAIL, measureHResult, "Nested measure");
+                Verify.AreEqual(E_FAIL, arrangeHResult, "Nested arrange");
+                for (int i = 0; i < 3; i++)
+                {
+                    Verify.IsNotNull(repeater.TryGetElement(i), $"Item {i} is realized by the outer pass.");
+                }
+                Content = null;
+            });
+        }
+
+        // Scenario: while the repeater's layout is notified of a data source change, first arrange the repeater again (its
+        //           measure is still valid, so only ArrangeOverride runs), then invalidate it and force a layout pass.
+        // Expected: both the arrange and the forced layout are rejected with E_FAIL; after the change completes, layout
+        //           shows the updated items.
+        // A failure means: layout could run against half-updated data and show wrong or duplicated items.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that running ItemsRepeater arrange or layout while it processes a data source change is rejected with E_FAIL.")]
+        public void VerifyLayoutDuringCollectionChangeIsRejected()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataSource = new Common.CustomItemsSource(Enumerable.Range(0, 5).ToList());
+                var layout = new ItemsChangedCallbackStackLayout();
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = dataSource,
+                    Layout = layout,
+                    ItemTemplate = CreateDataTemplate("<TextBlock Text='{Binding}' Height='20'/>")
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                int measureProbeHResult = -1, measureHResult = 0, arrangeHResult = 0, callCount = 0;
+                layout.ItemsChangedFunc = (args) =>
+                {
+                    if (callCount++ == 0)
+                    {
+                        // Arrange first, while the repeater's measure is still valid. Measuring again with the previous
+                        // constraint is then a no-op (it succeeds), which proves that the following Arrange call reaches
+                        // ItemsRepeater's ArrangeOverride rather than re-running MeasureOverride.
+                        var availableSize = Microsoft.UI.Xaml.Controls.Primitives.LayoutInformation.GetAvailableSize(repeater);
+                        measureProbeHResult = CaptureHResult(() => repeater.Measure(availableSize));
+                        repeater.InvalidateArrange();
+                        arrangeHResult = CaptureHResult(() => repeater.Arrange(Microsoft.UI.Xaml.Controls.Primitives.LayoutInformation.GetLayoutSlot(repeater)));
+
+                        repeater.InvalidateMeasure();
+                        measureHResult = CaptureHResult(() => repeater.UpdateLayout());
+                    }
+                };
+
+                dataSource.Insert(index: 0, count: 1, reset: false);
+                Content.UpdateLayout();
+
+                Log.Comment($"Measure probe: 0x{measureProbeHResult:X8}, arrange during change: 0x{arrangeHResult:X8}, measure during change: 0x{measureHResult:X8}");
+                Verify.AreEqual(0, measureProbeHResult, "The repeater's measure was still valid when the arrange check ran.");
+                Verify.AreEqual(E_FAIL, arrangeHResult, "Arrange during the collection change");
+                Verify.AreEqual(E_FAIL, measureHResult, "Layout (measure) during the collection change");
+                Verify.AreEqual(6, repeater.ItemsSourceView.Count);
+                Verify.IsNotNull(repeater.TryGetElement(5), "After the change, the new item count is laid out.");
+                Content = null;
+            });
+        }
+
         // Scenario: raise a second collection change from inside the handling of a first one.
         // Expected: the nested change is rejected with E_FAIL.
         // A failure means: nested data changes could leave the repeater's element indexes inconsistent.

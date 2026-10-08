@@ -602,6 +602,150 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             return weakLayout;
         }
 
+        // Scenario: in a scrolling, virtualizing LinedFlowLayout of 300 variable-width items whose aspect ratios are supplied
+        //           through ItemsInfoRequested, lock two items to their lines, scroll far down and back to the top, then change
+        //           the aspect ratios (narrower items before item 10, total width unchanged) and call InvalidateItemsInfo.
+        // Expected: no ItemsUnlocked is raised, LockItemToLine keeps returning the same line for both items, and both are
+        //           displayed on that line - including item 10 after the ratio change, although an unlocked layout with the new
+        //           ratios puts item 10 on a different line.
+        // A failure means: locked items (for example an item the user is interacting with) could jump to another line.
+        [TestMethod]
+        [TestProperty("Description", "Verifies items locked with LockItemToLine keep their line across scrolling and aspect ratio changes in a virtualizing LinedFlowLayout fed by ItemsInfoRequested.")]
+        public void VerifyLockedItemsKeepTheirLinesWhileScrolling()
+        {
+            const int itemCount = 300;
+            Func<int, double> widthOf = (i) => 40.0 + (i % 5) * 20.0;
+            // Items 0-9 become narrow and items 290-299 absorb the difference, so the total width (and with it the average
+            // number of items per line, which would unlock items) stays the same while the first lines are re-composed.
+            Func<int, double> perturbedWidthOf = (i) => i < 10 ? 20.0 : (i >= itemCount - 10 ? widthOf(i) + 60.0 : widthOf(i));
+            bool usePerturbedWidths = false;
+            ItemsRepeater repeater = null;
+            LinedFlowLayout linedFlowLayout = null;
+            ScrollViewer scrollViewer = null;
+            int itemsUnlockedCount = 0;
+            int lockedLine3 = -1, lockedLine10 = -1, unlockedPerturbedLine10 = -1;
+            LinedFlowLayout referenceLayout = null;
+            var viewChanged = new global::System.Threading.AutoResetEvent(false);
+
+            try
+            {
+                // Reference: where an unlocked layout places item 10 with the perturbed aspect ratios.
+                RunOnUIThread.Execute(() =>
+                {
+                    referenceLayout = KeepAlive(new LinedFlowLayout() { LineHeight = c_lineHeight });
+                    referenceLayout.ItemsInfoRequested += (sender, args) => SetAspectRatios(args, perturbedWidthOf);
+                    var referenceRepeater = new ItemsRepeater() {
+                        Layout = referenceLayout,
+                        ItemsSource = CreateItems(Enumerable.Range(0, itemCount).Select(perturbedWidthOf)),
+                        Width = 520.0
+                    };
+                    _repeaters.Add(referenceRepeater);
+                    Content = new ScrollViewer() { Content = referenceRepeater, Height = 300, Width = 540 };
+                });
+                SettleLayout();
+                RunOnUIThread.Execute(() =>
+                {
+                    unlockedPerturbedLine10 = referenceLayout.LockItemToLine(10);
+                    Log.Comment($"Unlocked layout with the perturbed ratios: item 10 -> line {unlockedPerturbedLine10}");
+                    // Detach the reference layout (stops its measure timer); the scenario below replaces Content.
+                    DetachLayoutsCore();
+                });
+
+                RunOnUIThread.Execute(() =>
+                {
+                    linedFlowLayout = KeepAlive(new LinedFlowLayout() { LineHeight = c_lineHeight });
+                    linedFlowLayout.ItemsInfoRequested += (sender, args) => SetAspectRatios(args, usePerturbedWidths ? perturbedWidthOf : widthOf);
+                    linedFlowLayout.ItemsUnlocked += (sender, args) => itemsUnlockedCount++;
+                    repeater = new ItemsRepeater() {
+                        Layout = linedFlowLayout,
+                        ItemsSource = CreateItems(Enumerable.Range(0, itemCount).Select(widthOf)),
+                        Width = 520.0
+                    };
+                    _repeaters.Add(repeater);
+                    scrollViewer = new ScrollViewer() { Content = repeater, Height = 300, Width = 540 };
+                    scrollViewer.ViewChanged += (sender, args) =>
+                    {
+                        if (!args.IsIntermediate)
+                        {
+                            viewChanged.Set();
+                        }
+                    };
+                    Content = scrollViewer;
+                });
+
+                SettleLayout();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    lockedLine3 = linedFlowLayout.LockItemToLine(3);
+                    lockedLine10 = linedFlowLayout.LockItemToLine(10);
+                    Log.Comment($"Locked lines: item 3 -> {lockedLine3}, item 10 -> {lockedLine10}");
+                    Verify.IsGreaterThanOrEqual(lockedLine3, 0);
+                    Verify.IsGreaterThanOrEqual(lockedLine10, lockedLine3);
+                    Verify.IsTrue(scrollViewer.ChangeView(null, 3000, null, disableAnimation: true));
+                });
+                Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS), "Waiting for ViewChanged after scrolling down.");
+                SettleLayout();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNull(repeater.TryGetElement(3), "Item 3 is recycled while scrolled away.");
+                    Verify.IsTrue(scrollViewer.ChangeView(null, 0, null, disableAnimation: true));
+                });
+                Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS), "Waiting for ViewChanged after scrolling back.");
+                SettleLayout();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(0, itemsUnlockedCount, "Scrolling does not unlock items.");
+                    Verify.AreEqual(lockedLine3, linedFlowLayout.LockItemToLine(3));
+                    Verify.AreEqual(lockedLine10, linedFlowLayout.LockItemToLine(10));
+                    foreach (var entry in new[] { Tuple.Create(3, lockedLine3), Tuple.Create(10, lockedLine10) })
+                    {
+                        var element = repeater.TryGetElement(entry.Item1);
+                        Verify.IsNotNull(element, $"Item {entry.Item1} is realized again.");
+                        var offset = GetOffset(element, repeater);
+                        Log.Comment($"Item {entry.Item1}: Y={offset.Y}");
+                        Verify.IsLessThan(Math.Abs(offset.Y - entry.Item2 * c_lineHeight), 1.0, $"Item {entry.Item1} is displayed on its locked line.");
+                    }
+
+                    // Re-compose the first lines: without its lock, item 10 would move to unlockedPerturbedLine10.
+                    Verify.AreNotEqual(lockedLine10, unlockedPerturbedLine10, "Precondition: the new aspect ratios move an unlocked item 10 to another line.");
+                    usePerturbedWidths = true;
+                    linedFlowLayout.InvalidateItemsInfo();
+                });
+                SettleLayout();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(0, itemsUnlockedCount, "Changing the aspect ratios without changing the average items per line does not unlock items.");
+                    Verify.AreEqual(lockedLine10, linedFlowLayout.LockItemToLine(10), "Item 10 keeps its locked line after the aspect ratio change.");
+                    var element10 = repeater.TryGetElement(10);
+                    Verify.IsNotNull(element10);
+                    var offset10 = GetOffset(element10, repeater);
+                    Log.Comment($"Item 10 after the aspect ratio change: Y={offset10.Y}");
+                    Verify.IsLessThan(Math.Abs(offset10.Y - lockedLine10 * c_lineHeight), 1.0, "Item 10 is still displayed on its locked line.");
+                });
+            }
+            finally
+            {
+                // Always stop the layouts' measure timers, even when an assertion fails (PC-LFL-TIMER).
+                DetachLayouts();
+            }
+        }
+
+        private static void SetAspectRatios(LinedFlowLayoutItemsInfoRequestedEventArgs args, Func<int, double> widthOf)
+        {
+            int start = args.ItemsRangeStartIndex;
+            int length = args.ItemsRangeRequestedLength;
+            var ratios = new double[length];
+            for (int i = 0; i < length; i++)
+            {
+                ratios[i] = widthOf(start + i) / c_lineHeight;
+            }
+            args.SetDesiredAspectRatios(ratios);
+        }
+
         // Product concern PC-LFL-TIMER: a LinedFlowLayout whose asynchronous measure timer was created crashes the
         // process when it is destroyed off the UI thread (e.g. released by the .NET finalizer): ~LinedFlowLayout calls
         // DispatcherTimer.IsEnabled, which throws and terminates the process. Layouts that run layout passes in these
@@ -670,9 +814,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
+        // Returns the position the layout arranged the item at. The layout slot is used rather than the rendered position
+        // because LinedFlowLayout's default item transitions may still be animating an item into place when system
+        // animations are enabled.
         private static Point GetOffset(UIElement element, UIElement relativeTo)
         {
-            return element.TransformToVisual(relativeTo).TransformPoint(new Point(0, 0));
+            Verify.AreSame(relativeTo, Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(element), "Items are arranged by the repeater.");
+            var slot = Microsoft.UI.Xaml.Controls.Primitives.LayoutInformation.GetLayoutSlot((FrameworkElement)element);
+            return new Point(slot.X, slot.Y);
         }
 
         private static void VerifyThrowsWithHResult(int expectedHResult, Action action, string context)

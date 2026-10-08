@@ -25,7 +25,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 
     [TestClass]
-    public class ItemTemplateTests : ApiTestBase
+    public partial class ItemTemplateTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateRecycling()
@@ -908,6 +908,93 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Content = null;
                 Verify.AreEqual(E_INVALIDARG, hresult);
             });
+        }
+
+        // Scenario: subscribe two SelectTemplateKey handlers on a RecyclingElementFactory, create an element, remove one
+        //           handler and create another element.
+        // Expected: the removed handler is not called for the second element, while the remaining handler still picks the
+        //           template.
+        // A failure means: removed template-selection handlers would keep running and could pick the wrong template.
+        [TestMethod]
+        [TestProperty("Description", "Verifies SelectTemplateKey handlers stop being called once removed.")]
+        public void VerifySelectTemplateKeyHandlerRemoval()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var factory = new RecyclingElementFactory() { RecyclePool = new RecyclePool() };
+                factory.Templates["Text"] = (DataTemplate)XamlReader.Load("<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock/></DataTemplate>");
+                factory.Templates["Button"] = (DataTemplate)XamlReader.Load("<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button/></DataTemplate>");
+                int removedHandlerCalls = 0;
+                int remainingHandlerCalls = 0;
+                var keysSeenByRemainingHandler = new List<string>();
+                global::Windows.Foundation.TypedEventHandler<RecyclingElementFactory, SelectTemplateEventArgs> removedHandler = (sender, args) =>
+                {
+                    removedHandlerCalls++;
+                    args.TemplateKey = "Button";
+                };
+                factory.SelectTemplateKey += (sender, args) =>
+                {
+                    remainingHandlerCalls++;
+                    keysSeenByRemainingHandler.Add(args.TemplateKey ?? "<null>");
+                    args.TemplateKey = "Text";
+                    Verify.AreEqual("Text", args.TemplateKey);
+                };
+                factory.SelectTemplateKey += removedHandler;
+                var owner = new StackPanel();
+
+                var first = factory.GetElement(new ElementFactoryGetArgs() { Data = 1, Parent = owner });
+                Verify.AreEqual(1, removedHandlerCalls);
+                Verify.AreEqual(1, remainingHandlerCalls);
+                Verify.IsTrue(first is Button, "The last handler to set TemplateKey wins while both are subscribed.");
+
+                factory.SelectTemplateKey -= removedHandler;
+                var second = factory.GetElement(new ElementFactoryGetArgs() { Data = 2, Parent = owner });
+                Verify.AreEqual(1, removedHandlerCalls, "The removed handler is not called again.");
+                Verify.AreEqual(2, remainingHandlerCalls);
+                Verify.IsTrue(second is TextBlock, "Only the remaining handler picks the template now.");
+                Log.Comment("TemplateKey seen on entry: " + string.Join(",", keysSeenByRemainingHandler));
+                Verify.AreEqual(2, keysSeenByRemainingHandler.Count);
+                Verify.IsTrue(string.IsNullOrEmpty(keysSeenByRemainingHandler[0]), "TemplateKey starts empty for the first element.");
+                Verify.IsTrue(string.IsNullOrEmpty(keysSeenByRemainingHandler[1]), "TemplateKey starts empty again for the second element (not left over from the first).");
+            });
+        }
+
+        // Scenario: use a DataTemplateSelector that returns null for an item and throws InvalidOperationException from the
+        //           container overload that ItemsRepeater tries next.
+        // Expected: layout fails with that exception's HRESULT (COR_E_INVALIDOPERATION), not a generic invalid-argument error.
+        // A failure means: errors raised by an app's template selector would be swallowed or replaced, hiding the real cause.
+        [TestMethod]
+        [TestProperty("Description", "Verifies an error other than E_INVALIDARG thrown by DataTemplateSelector.SelectTemplate(item, container) is propagated by layout.")]
+        public void VerifySelectorErrorIsPropagated()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 3),
+                    ItemTemplate = new ThrowingContainerSelector()
+                };
+                Content = repeater;
+
+                int hresult = CaptureHResult(() => Content.UpdateLayout());
+                // Set content to null so the test app does not try to run layout again.
+                Content = null;
+                Verify.AreEqual(COR_E_INVALIDOPERATION, hresult);
+            });
+        }
+
+        private const int COR_E_INVALIDOPERATION = unchecked((int)0x80131509);
+
+        private partial class ThrowingContainerSelector : DataTemplateSelector
+        {
+            protected override DataTemplate SelectTemplateCore(object item)
+            {
+                return null;
+            }
+
+            protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
+            {
+                throw new InvalidOperationException("Selector failure");
+            }
         }
 
         private static int CaptureHResult(Action action)
