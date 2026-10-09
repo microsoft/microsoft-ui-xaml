@@ -427,6 +427,12 @@ IFACEMETHODIMP DesktopWindowXamlSource::Close()
         m_xamlIsland = nullptr;
     }
 
+    // The island reports its own removal; match the Add for this source's distinct identity.
+    if (auto interop = Diagnostics::GetDiagnosticsInterop(false))
+    {
+        interop->SignalRootMutation(ctl::iinspectable_cast(this), VisualMutationType::Remove);
+    }
+
     // Dispose of the content bridge
     if (m_contentBridge && !m_bridgeClosed)
     {
