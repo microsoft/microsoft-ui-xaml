@@ -50,17 +50,48 @@ CMRTResource::~CMRTResource()
 // that matches the type, and Load() is delegating to the sub-object.
 _Check_return_ HRESULT CMRTResource::Load(_Outptr_ IPALMemory** ppMemory)
 {
+    IFCPTR_RETURN(ppMemory);
+    *ppMemory = nullptr;
+
     switch (m_kind)
     {
         case mwar::ResourceCandidateKind::ResourceCandidateKind_EmbeddedData:
+        {
             // For embedded data type resources, we must load via a stream.
             IFC_RETURN(EnsureEmbeddedDataResource());
-            IFC_RETURN(GetPALMemoryServices()->CreatePALMemoryFromBuffer(
+
+            // The returned IPALMemory must be self-owning: callers (e.g.
+            // CCoreServices::TryLoadXamlResourceHelper) may release this
+            // IPALResource - which CoTaskMemFree's m_embeddedDataBuffer in
+            // ~CMRTResource - before consuming the returned bytes. Wrapping the
+            // resource-owned buffer in a non-owning CBufferMemory would leave the
+            // returned memory dangling (use-after-free). Hand back an owning copy
+            // instead so the memory can safely outlive this resource.
+            IFCPTR_RETURN(m_embeddedDataBuffer);
+
+            // CBufferMemory frees an owned buffer via delete[], so the copy must
+            // be allocated with new[] to keep the allocator matched.
+            XUINT8* pBufferCopy = new(std::nothrow) XUINT8[m_embeddedDataBufferSize];
+            IFCOOM_RETURN(pBufferCopy);
+            memcpy(pBufferCopy, m_embeddedDataBuffer, m_embeddedDataBufferSize);
+
+            HRESULT hr = GetPALMemoryServices()->CreatePALMemoryFromBuffer(
                 m_embeddedDataBufferSize,
-                m_embeddedDataBuffer,
-                false /* OwnsBuffer */,
-                ppMemory));
+                pBufferCopy,
+                true /* OwnsBuffer */,
+                ppMemory);
+            // Key the cleanup on the out-param rather than hr so a non-null
+            // *ppMemory can never be double-freed regardless of the factory's
+            // contract. On failure (or a non-throwing soft-fail that returns
+            // S_OK with a null out-param) ownership of the copy was not
+            // transferred, so free it here to avoid leaking.
+            if (*ppMemory == nullptr)
+            {
+                delete[] pBufferCopy;
+                IFC_RETURN(FAILED(hr) ? hr : E_OUTOFMEMORY);
+            }
             break;
+        }
         case mwar::ResourceCandidateKind::ResourceCandidateKind_FilePath:
             // For path type resources, map the file into memory.
             IFC_RETURN(EnsureFilePathResource());
@@ -231,4 +262,3 @@ _Check_return_ HRESULT CMRTResource::EnsureEmbeddedDataResource()
 
     return S_OK;
 }
-
