@@ -38,6 +38,10 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Entirely out of bounds frames are expected to be skipped.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(SvgHardwareFailureRouting)
+                TEST_METHOD_PROPERTY(L"Description", L"Device-lost failures must propagate instead of falling back to software.")
+            END_TEST_METHOD()
+
         private:
             static void ValidateImage(
                 const WEX::Common::String& fileName,

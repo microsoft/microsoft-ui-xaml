@@ -14,6 +14,8 @@
 #include "OfferableSoftwareBitmap.h"
 #include "WicService.h"
 #include "WicSingleImageDecoder.h"
+#include "SvgImageDecoder.h"
+#include "d3d11device.h"
 #include "ImageTestHelper.h"
 #include "DecodingUnitTests.h"
 #include "ImagingUtility.h"
@@ -22,6 +24,15 @@
 #define LOG_OUTPUT(fmt, ...) WEX::Logging::Log::Comment(WEX::Common::String().Format(fmt, __VA_ARGS__))
 
 using namespace ImageTestHelper;
+
+bool CD3D11Device::IsWarpDevice() const
+{
+    return false;
+}
+
+void CD3D11Device::RecordDeviceAsLost()
+{
+}
 
 namespace Windows { namespace UI { namespace Xaml { namespace Tests {
     namespace Foundation { namespace Imaging {
@@ -95,6 +106,20 @@ void DecodingUnitTests::GifOutOfRange2()
         GetImageResourcesPath() + L"OutOfRange2.gif",
         L"DecodingUnitTests_GifOutOfRange2",
         0xc71c0011);
+}
+
+void DecodingUnitTests::SvgHardwareFailureRouting()
+{
+    using Disposition = SvgImageDecoderHelpers::HardwareDecodeDisposition;
+
+    VERIFY_IS_TRUE(SvgImageDecoderHelpers::ClassifyHardwareDecodeResult(S_OK) == Disposition::Succeeded);
+    VERIFY_IS_TRUE(SvgImageDecoderHelpers::ClassifyHardwareDecodeResult(E_FAIL) == Disposition::FallbackToSoftware);
+    VERIFY_IS_TRUE(SvgImageDecoderHelpers::ClassifyHardwareDecodeResult(DXGI_ERROR_UNSUPPORTED) == Disposition::FallbackToSoftware);
+    VERIFY_IS_TRUE(SvgImageDecoderHelpers::ClassifyHardwareDecodeResult(DXGI_ERROR_DEVICE_REMOVED) == Disposition::DeviceLost);
+    VERIFY_IS_TRUE(SvgImageDecoderHelpers::ClassifyHardwareDecodeResult(DXGI_ERROR_DEVICE_RESET) == Disposition::DeviceLost);
+    VERIFY_IS_TRUE(SvgImageDecoderHelpers::ClassifyHardwareDecodeResult(D2DERR_RECREATE_TARGET) == Disposition::DeviceLost);
+    VERIFY_IS_TRUE(SvgImageDecoderHelpers::ClassifyHardwareDecodeResult(DXGI_ERROR_DEVICE_HUNG) == Disposition::DeviceLost);
+    VERIFY_IS_TRUE(SvgImageDecoderHelpers::ClassifyHardwareDecodeResult(DXGI_ERROR_DRIVER_INTERNAL_ERROR) == Disposition::DeviceLost);
 }
 
 void DecodingUnitTests::ValidateImage(

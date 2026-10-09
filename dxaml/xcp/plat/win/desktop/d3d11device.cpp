@@ -371,6 +371,11 @@ CD3D11Device::ShouldAttemptToUseA8Textures() const
     return m_deviceInstance->ShouldAttemptToUseA8Textures();
 }
 
+bool CD3D11Device::IsWarpDevice() const
+{
+    return m_deviceInstance->IsWarpDevice();
+}
+
 //------------------------------------------------------------------------------
 //
 //  Synopsis:
