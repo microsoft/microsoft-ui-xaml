@@ -21,7 +21,7 @@ Build the repo as normal. See the [developer guide](./building/developer-guide.m
 In short, run `init.cmd` and then run `build.cmd`. If you want you can skip building the test code by running `build.cmd product`.
 The test code is not necessary for this scenario.
 
-Assuming the build completes sucessfully it will create a local WinUI component package.
+Assuming the build completes successfully it will create a local WinUI component package.
 
 ## Use Visual Studio to create an ad-hoc test app
 Launch Visual Studio.  
