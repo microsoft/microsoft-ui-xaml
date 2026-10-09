@@ -39,8 +39,8 @@ public sealed partial class VirtualizationPage : SamplePageBase
         PeopleTable.ItemsSource = _source;
         UpdateActionLabels();
 
-        // No Reselect: probing tens of thousands of indexes would stall the page. A plain reshape
-        // keeps the selection on its item; Rename re-selects its row by index as it scrolls.
+        // No re-selection fallback: the control keeps the selection on its item across a reshape;
+        // Rename re-selects its row by index as it scrolls.
         Shaping.RestoreSelection = false;
         InitializeSample(Status, Shaping.Attach(PeopleTable, _source));
 
@@ -156,11 +156,15 @@ public sealed partial class VirtualizationPage : SamplePageBase
 
     // <snippet>
     /// <summary>
-    /// Selects row <paramref name="number"/> (1-based, source order) and scrolls to it. This
-    /// release has no TableView.ScrollIntoView, so the sample scrolls the body ScrollViewer to an
-    /// estimated offset, then corrects the estimate from a realized row whose display index it
-    /// knows (unrealized rows only have an estimated height), and finally lets the target row
-    /// bring itself into view once it is realized.
+    /// Selects row <paramref name="number"/> (1-based, source order) and scrolls to it.
+    /// <para>
+    /// Workaround, not a pattern to copy: this release has no TableView.ScrollIntoView, so the
+    /// sample scrolls the template's body ScrollViewer to an estimated offset, then corrects the
+    /// estimate from a realized row whose display index it knows (unrealized rows only have an
+    /// estimated height), and finally lets the target row bring itself into view once it is
+    /// realized. It relies on this page's preconditions: no sort (every column has CanSort=False),
+    /// every group expanded, and a uniform row height.
+    /// </para>
     /// </summary>
     private void ScrollToRow(int number, string message)
     {

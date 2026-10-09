@@ -59,7 +59,6 @@ public sealed partial class TextWrapPage : SamplePageBase
         InitializeComponent();
         // </snippet>
 
-        Shaping.ProbeLimit = () => People.Count * 2;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackLifetime(QueueRowMeasure);
     }

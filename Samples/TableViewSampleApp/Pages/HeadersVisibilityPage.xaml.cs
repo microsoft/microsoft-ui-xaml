@@ -30,7 +30,6 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
         Source = TableViewSource.From(Tickets);    // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
-        Shaping.ProbeLimit = () => Tickets.Count * 2;
         InitializeSample(Status, Shaping.Attach(TicketsTable, Source, (row, key) => TicketData.GroupKeyOf(row as SupportTicket, key)));
         TrackItems(Tickets, OnTicketChanged);
         TrackLifetime(() => TicketsTable.Sorted += OnTableSorted, () => TicketsTable.Sorted -= OnTableSorted);

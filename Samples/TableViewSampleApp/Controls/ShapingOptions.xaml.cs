@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -22,9 +23,9 @@ namespace TableViewSampleApp.Controls;
 /// <summary>
 /// The Shaping section every table page carries: Flat / Grouped (plus the disabled hierarchy
 /// modes), a group-key selector, Expand all and Collapse all. It reshapes the page's ONE
-/// <see cref="TableViewSource"/> in place with GroupBy / ClearGroupBy, restores the selection by
-/// identity, and gates the controls that need the Grouped mode. The page keeps its feature code
-/// and reacts to <see cref="ShapingApplying"/> / <see cref="ShapingApplied"/> through SamplePageBase.
+/// <see cref="TableViewSource"/> in place with GroupBy / ClearGroupBy (the control keeps the
+/// selection across the reshape) and gates the controls that need the Grouped mode. The page
+/// keeps its feature code and reacts to <see cref="ShapingApplying"/> / <see cref="ShapingApplied"/> through SamplePageBase.
 /// </summary>
 [ContentProperty(Name = nameof(GroupKeys))]
 public sealed partial class ShapingOptions : UserControl
@@ -54,8 +55,15 @@ public sealed partial class ShapingOptions : UserControl
     /// <summary>Expand all / Collapse all ran (which one, how long, and the Last action narration).</summary>
     public event EventHandler<ShapingActionEventArgs>? ActionPerformed;
 
-    /// <summary>A deferred re-selection succeeded after the groups were rebuilt.</summary>
+    /// <summary>The fallback re-selected the item after a reshape the control did not re-anchor (see Apply).</summary>
     public event EventHandler? SelectionRestored;
+
+    /// <summary>
+    /// The table's sort changed (header click or API) and <see cref="SortOrdersGroups"/> is up to
+    /// date. Raised after this control has recorded the sort, so a readout that depends on the
+    /// sort-vs-GroupBy order is correct whichever Sorted handler ran first.
+    /// </summary>
+    public event EventHandler? SortStateChanged;
 
     /// <summary>The page's group keys: <c>&lt;ComboBoxItem Content="label" Tag="key"/&gt;</c> items.</summary>
     public IList<object> GroupKeys { get; }
@@ -107,10 +115,7 @@ public sealed partial class ShapingOptions : UserControl
         DependencyProperty.Register(nameof(IsGroupingAvailable), typeof(bool), typeof(ShapingOptions),
             new PropertyMetadata(true, (d, e) => ((ShapingOptions)d).GroupedItem.IsEnabled = (bool)e.NewValue));
 
-    /// <summary>Upper bound of the re-selection probe (rows + group headers). Null: 5000.</summary>
-    public Func<int>? ProbeLimit { get; set; }
-
-    /// <summary>False on the volume pages, which do not restore the selection after a reshape.</summary>
+    /// <summary>False on the volume pages, which skip the re-selection fallback after a reshape.</summary>
     public bool RestoreSelection { get; set; } = true;
 
     /// <summary>
@@ -221,38 +226,33 @@ public sealed partial class ShapingOptions : UserControl
         ShapingApplying?.Invoke(this, new ShapingApplyingEventArgs(mode, key));
 
         var source = _source;
-        var elapsedMilliseconds = Time(() =>
+        var groupKeyOf = _groupKeyOf;
+        if (mode != "grouped")
         {
-            // <snippet Groups Sort CellEditing CellTemplating Density Filter GridLinesVisibility HeadersVisibility TextWrap Virtualization>
-            switch (mode)
-            {
-                case "grouped":
-                    // The key selector receives the ROW; the identity selector receives the KEY.
-                    source.GroupBy(item => _groupKeyOf(item, key), SampleShaping.GroupIdentity);
-                    break;
-                // case "hierarchy":
-                // case "groupedHierarchy":
-                //     Hierarchical (tree) rows are not available in this release, so the two matching
-                //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
-                //     member today. When hierarchy ships, apply it to this same source here, composed
-                //     with the GroupBy stage above rather than replacing it, and set AppliedMode only
-                //     after the call returns.
-                default:
-                    source.ClearGroupBy();
-                    mode = "flat";
-                    break;
-            }
-            // </snippet>
-        });
+            mode = "flat";
+        }
+
+        var elapsedMilliseconds = Time(() => ApplyShaping(source, mode, row => groupKeyOf(row, key)));
 
         AppliedMode = mode;
         AppliedKey = key;
         _groupDeclaredAt = mode == "grouped" ? ++_declarations : -1;
 
-        // Re-applying GroupBy can drop the selection when the selected row changed group.
-        if (RestoreSelection)
+        // The reshape raises a Reset and the control re-anchors the selection by item identity, so
+        // normally there is nothing to do. Workaround: when the selected row's GROUP KEY changed
+        // (an edit, then ReapplyIfGroupedOn) this build of the control drops the selection, so on
+        // the next low-priority turn, once the projection is rebuilt, select the item again with
+        // one index lookup. It never clears a selection the user made meanwhile.
+        if (RestoreSelection && selected is not null && !ReferenceEquals(_table.SelectedItem, selected))
         {
-            SampleShaping.Reselect(_table, selected, ProbeLimit?.Invoke() ?? 5000, () => SelectionRestored?.Invoke(this, EventArgs.Empty));
+            var table = _table;
+            table.DispatcherQueue?.TryEnqueue(DispatcherQueuePriority.Low, () =>
+            {
+                if (table.IsLoaded && table.SelectedItem is null && SampleShaping.SelectItem(table, selected))
+                {
+                    SelectionRestored?.Invoke(this, EventArgs.Empty);
+                }
+            });
         }
 
         UpdateGating();
@@ -263,6 +263,25 @@ public sealed partial class ShapingOptions : UserControl
         ShapingApplied?.Invoke(this, new ShapingAppliedEventArgs(mode, key, SelectedKeyLabel, announce, elapsedMilliseconds, AppliedText, message));
     }
 
+    // <snippet Groups Sort CellEditing CellTemplating Density Filter GridLinesVisibility HeadersVisibility TextWrap Virtualization>
+    // Every page reshapes its ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+    private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
+    {
+        if (mode == "grouped")
+        {
+            // The key selector receives the ROW; the identity selector receives the KEY.
+            source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+        }
+        else
+        {
+            // Hierarchical (tree) rows are not available in this release, so the "Hierarchy" and
+            // "Grouped hierarchy" modes ship disabled. When hierarchy ships, it composes with the
+            // GroupBy stage on this same source rather than replacing it.
+            source.ClearGroupBy();
+        }
+    }
+    // </snippet>
+
     /// <summary>
     /// Call after ANY write to the grouped-on property (an action or an in-cell edit): GroupBy does
     /// not move a row whose key changed, so the grouping is applied again. Returns true if it was.
@@ -270,6 +289,26 @@ public sealed partial class ShapingOptions : UserControl
     public bool ReapplyIfGroupedOn(string? propertyName)
     {
         if (IsGrouped && propertyName == AppliedKey)
+        {
+            Apply(announce: false);
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Call after the page re-declared the active sort on the source (<c>TableViewSource.Sort</c> with
+    /// the column's path, to re-sort after a value change). The source then owns that axis as a NEW
+    /// declaration, after any GroupBy, so a sort that used to order the groups would only sort within
+    /// them. In that case GroupBy is applied again, after the sort, so the groups keep their order.
+    /// Returns true if it was.
+    /// </summary>
+    public bool OnSortRedeclared()
+    {
+        var sortOrderedGroups = SortOrdersGroups;
+        _sortDeclaredAt = ++_declarations;
+        if (sortOrderedGroups && IsGrouped)
         {
             Apply(announce: false);
             return true;
@@ -333,6 +372,8 @@ public sealed partial class ShapingOptions : UserControl
             _sortDeclaredAt = ++_declarations;
             _sortColumn = args.Column;
         }
+
+        SortStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void UpdateGating()

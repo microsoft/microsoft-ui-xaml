@@ -38,7 +38,13 @@ private void OnTableSorted(TableView sender, TableViewSortedEventArgs args)
 {
     _sortedFiredCount++;
     _lastSortedColumn = args.Column is null ? "cleared" : ColumnLabel(args.Column);
-    if (_isResorting)
+
+    // A re-sort (ResortIfSortedOn) raises Sorted again with the same column and direction,
+    // possibly on a later turn: that is not a new sort, so keep the action's own narration.
+    var unchanged = ReferenceEquals(args.Column, _reportedSortColumn) && args.Direction == _reportedSortDirection;
+    _reportedSortColumn = args.Column;
+    _reportedSortDirection = args.Direction;
+    if (_isResorting || unchanged)
     {
         return;
     }
@@ -58,14 +64,16 @@ private bool ResortIfSortedOn(params string[] propertyNames)
         return false;
     }
 
-    // SortByColumn ignores a request for the sort that is already applied, so clear the
-    // column's sort and apply it again: the rows are re-ordered by the new values.
-    var direction = column.SortDirection;
+    // SortByColumn ignores a request for the sort that is already applied. Re-declaring the
+    // same path on the source re-reads every key: one reshape and one Sorted, the column keeps
+    // its sort indicator, and the control keeps the selection on the same item. It is a new
+    // declaration, after any GroupBy, so OnSortRedeclared re-applies GroupBy when the sort
+    // used to order the groups.
     _isResorting = true;
     try
     {
-        TeamsTable.SortByColumn(column, TableViewSortDirection.None);
-        TeamsTable.SortByColumn(column, direction);
+        Source.Sort(SampleShaping.SortPathOf(column)!, column.SortDirection);
+        OnSortRedeclared();
     }
     finally
     {
@@ -96,21 +104,28 @@ private void OnTeamChanged(object? sender, PropertyChangedEventArgs e)
             return;
     }
 
-    // Let the in-cell editor finish its own update first, then re-sort and re-group once.
-    var property = e.PropertyName;
-    if (_resortQueued)
+    // Let the in-cell editor finish its own update first, then re-group and re-sort once for
+    // every property edited in this turn.
+    if (_pendingProperties.Count == 0)
     {
-        return;
+        EnqueueIfLoaded(ApplyPendingEdits);
     }
 
-    _resortQueued = true;
-    EnqueueIfLoaded(() =>
+    _pendingProperties.Add(e.PropertyName);
+}
+
+private void ApplyPendingEdits()
+{
+    var properties = new List<string>(_pendingProperties);
+    _pendingProperties.Clear();
+    foreach (var property in properties)
     {
-        _resortQueued = false;
         ReapplyIfGroupedOn(property);
-        ResortIfSortedOn(property, nameof(LeagueTeam.NextMatchText));
-        SampleShaping.Reselect(TeamsTable, team, Teams.Count + 40);
-    });
+    }
+
+    // The text-date column sorts by NextMatchText, which follows NextMatchDate.
+    properties.Add(nameof(LeagueTeam.NextMatchText));
+    ResortIfSortedOn(properties.ToArray());
 }
 
 // …
@@ -128,27 +143,24 @@ private void OnPostponeClick(object sender, RoutedEventArgs e)
     }
 
     var resorted = ResortIfSortedOn(nameof(LeagueTeam.NextMatchDate), nameof(LeagueTeam.NextMatchText));
-    SampleShaping.Reselect(TeamsTable, team, Teams.Count + 40);
 }
 
 // …
 
 // From Controls\ShapingOptions.xaml.cs
-switch (mode)
+// Every page reshapes its ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
 {
-    case "grouped":
+    if (mode == "grouped")
+    {
         // The key selector receives the ROW; the identity selector receives the KEY.
-        source.GroupBy(item => _groupKeyOf(item, key), SampleShaping.GroupIdentity);
-        break;
-    // case "hierarchy":
-    // case "groupedHierarchy":
-    //     Hierarchical (tree) rows are not available in this release, so the two matching
-    //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
-    //     member today. When hierarchy ships, apply it to this same source here, composed
-    //     with the GroupBy stage above rather than replacing it, and set AppliedMode only
-    //     after the call returns.
-    default:
+        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+    }
+    else
+    {
+        // Hierarchical (tree) rows are not available in this release, so the "Hierarchy" and
+        // "Grouped hierarchy" modes ship disabled. When hierarchy ships, it composes with the
+        // GroupBy stage on this same source rather than replacing it.
         source.ClearGroupBy();
-        mode = "flat";
-        break;
+    }
 }

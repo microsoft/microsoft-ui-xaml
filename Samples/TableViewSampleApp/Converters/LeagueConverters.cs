@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.UI;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 using TableViewSampleApp.Data;
@@ -18,14 +17,12 @@ namespace TableViewSampleApp.Converters;
 /// </summary>
 internal static class LeagueChipPalette
 {
-    private const byte TintAlpha = 0x33;
-
-    private static readonly Dictionary<string, SolidColorBrush> s_standingTints = BuildStanding(TintAlpha);
-    private static readonly Dictionary<string, SolidColorBrush> s_standingDots = BuildStanding(0xFF);
-    private static readonly Dictionary<string, SolidColorBrush> s_countryTints = BuildCountry(TintAlpha);
-    private static readonly Dictionary<string, SolidColorBrush> s_countryDots = BuildCountry(0xFF);
-    private static readonly SolidColorBrush s_fallbackTint = new(ColorHelper.FromArgb(TintAlpha, 0x64, 0x74, 0x8B));
-    private static readonly SolidColorBrush s_fallbackDot = new(ColorHelper.FromArgb(0xFF, 0x64, 0x74, 0x8B));
+    private static readonly Dictionary<string, SolidColorBrush> s_standingTints = BuildStanding(dot: false);
+    private static readonly Dictionary<string, SolidColorBrush> s_standingDots = BuildStanding(dot: true);
+    private static readonly Dictionary<string, SolidColorBrush> s_countryTints = BuildCountry(dot: false);
+    private static readonly Dictionary<string, SolidColorBrush> s_countryDots = BuildCountry(dot: true);
+    private static readonly SolidColorBrush s_fallbackTint = ChipBrushes.CreateTint(0x64, 0x74, 0x8B);
+    private static readonly SolidColorBrush s_fallbackDot = ChipBrushes.CreateDot(0x64, 0x74, 0x8B);
 
     internal static Brush StandingTint(string band) => Tint(s_standingTints, band);
 
@@ -36,30 +33,31 @@ internal static class LeagueChipPalette
     internal static Brush CountryDot(string? country) => Dot(s_countryDots, country);
 
     private static Brush Tint(Dictionary<string, SolidColorBrush> map, string? key) =>
-        ChipBrushes.IsHighContrast ? ChipBrushes.Transparent
-        : key is not null && map.TryGetValue(key, out var brush) ? brush : s_fallbackTint;
+        key is not null && map.TryGetValue(key, out var brush) ? brush : s_fallbackTint;
 
     private static Brush Dot(Dictionary<string, SolidColorBrush> map, string? key) =>
-        ChipBrushes.IsHighContrast ? ChipBrushes.HighContrastForeground
-        : key is not null && map.TryGetValue(key, out var brush) ? brush : s_fallbackDot;
+        key is not null && map.TryGetValue(key, out var brush) ? brush : s_fallbackDot;
 
-    private static Dictionary<string, SolidColorBrush> BuildStanding(byte alpha) => new(StringComparer.Ordinal)
+    private static SolidColorBrush Create(bool dot, byte r, byte g, byte b) =>
+        dot ? ChipBrushes.CreateDot(r, g, b) : ChipBrushes.CreateTint(r, g, b);
+
+    private static Dictionary<string, SolidColorBrush> BuildStanding(bool dot) => new(StringComparer.Ordinal)
     {
-        ["Qualified"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x16, 0xA3, 0x4A)),
-        ["Playoff"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xF5, 0x9E, 0x0B)),
-        ["Eliminated"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x64, 0x74, 0x8B)),
+        ["Qualified"] = Create(dot, 0x16, 0xA3, 0x4A),
+        ["Playoff"] = Create(dot, 0xF5, 0x9E, 0x0B),
+        ["Eliminated"] = Create(dot, 0x64, 0x74, 0x8B),
     };
 
-    private static Dictionary<string, SolidColorBrush> BuildCountry(byte alpha) => new(StringComparer.Ordinal)
+    private static Dictionary<string, SolidColorBrush> BuildCountry(bool dot) => new(StringComparer.Ordinal)
     {
-        ["England"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xEF, 0x44, 0x44)),
-        ["Spain"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xF5, 0x9E, 0x0B)),
-        ["Italy"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x0E, 0xA5, 0xE9)),
-        ["Germany"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x64, 0x74, 0x8B)),
-        ["France"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x63, 0x66, 0xF1)),
-        ["Portugal"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x22, 0xC5, 0x5E)),
-        ["Netherlands"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xF9, 0x73, 0x16)),
-        ["Belgium"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xA8, 0x55, 0xF7)),
+        ["England"] = Create(dot, 0xEF, 0x44, 0x44),
+        ["Spain"] = Create(dot, 0xF5, 0x9E, 0x0B),
+        ["Italy"] = Create(dot, 0x0E, 0xA5, 0xE9),
+        ["Germany"] = Create(dot, 0x64, 0x74, 0x8B),
+        ["France"] = Create(dot, 0x63, 0x66, 0xF1),
+        ["Portugal"] = Create(dot, 0x22, 0xC5, 0x5E),
+        ["Netherlands"] = Create(dot, 0xF9, 0x73, 0x16),
+        ["Belgium"] = Create(dot, 0xA8, 0x55, 0xF7),
     };
 }
 

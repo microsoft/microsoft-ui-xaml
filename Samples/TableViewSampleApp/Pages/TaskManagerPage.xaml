@@ -170,7 +170,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="TaskManager"
-                    Description="Grouping bands the processes by category, as Task Manager does, or by status. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    Description="Grouping bands the processes by category, as Task Manager does, or by status. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Category" Tag="Category"/>
                     <ComboBoxItem Content="Status" Tag="StatusText"/>
                 </controls:ShapingOptions>

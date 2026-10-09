@@ -2,7 +2,7 @@
 <!--
     Grouped rows: TableViewSource.GroupBy on one source, a custom GroupHeaderTemplate, and
     ExpandAllGroups / CollapseAllGroups. Unlike the other pages it starts Grouped, because
-    grouping is its subject (FIX-PLAN Q2): ShapingOptions InitialMode="grouped".
+    grouping is its subject: ShapingOptions InitialMode="grouped".
     The page holds only the grouping behaviour: the table, its templates, the Group header section
     and the Actions. Try it / What to look for are presenter attributes; Shaping and Status are the
     shared ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
@@ -119,7 +119,7 @@
                     x:Name="Shaping"
                     AutomationIdPrefix="Groups"
                     InitialMode="grouped"
-                    Description="This page starts Grouped. Each group key buckets the people a different way, and the headers count them. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    Description="This page starts Grouped. Each group key buckets the people a different way, and the headers count them. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>

@@ -98,7 +98,7 @@
                     x:Name="Shaping"
                     AutomationIdPrefix="FileProperties"
                     InitialMode="grouped"
-                    Description="Grouped by Section is this page's natural shape, so it opens that way; Source splits the version resource from the file system. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    Description="Grouped by Section is this page's natural shape, so it opens that way; Source splits the version resource from the file system. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Section" Tag="Section"/>
                     <ComboBoxItem Content="Source" Tag="Source"/>
                 </controls:ShapingOptions>

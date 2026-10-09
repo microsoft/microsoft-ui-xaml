@@ -47,7 +47,6 @@ public sealed partial class FileExplorerPage : SamplePageBase
         FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
         // </snippet>
 
-        Shaping.ProbeLimit = () => Entries.Count + 64;
         InitializeSample(Status, Shaping.Attach(FileTable, Source, (row, key) => KeyOf(row as FileSystemEntry, key)));
         TrackLifetime(OpenInitialFolder);
     }
@@ -126,8 +125,10 @@ public sealed partial class FileExplorerPage : SamplePageBase
         return FocusState.Unfocused;
     }
 
-    // Refilling the collection recycles every row, so the focused row container is left showing
-    // nothing. Like File Explorer, move focus and selection to the first row of the new folder.
+    // Workaround: TableView v1 has no public focus-by-item API. Refilling the collection recycles
+    // every row, so the focused row container is left showing nothing. Like File Explorer, move
+    // focus and selection to the first row of the new folder. Not a pattern to copy: it walks the
+    // realized containers and focuses the row directly.
     private void FocusFirstRowAfterLayout(FocusState focusState)
     {
         void OnLayoutUpdated(object? sender, object e)
@@ -135,7 +136,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
             FileTable.LayoutUpdated -= OnLayoutUpdated;
             if (FindFirstRealizedRow(FileTable) is { } row)
             {
-                SampleShaping.Reselect(FileTable, row.DataContext, Entries.Count + 8);
+                SampleShaping.SelectRow(FileTable, row);
                 row.Focus(focusState);
             }
         }
@@ -330,11 +331,6 @@ public sealed partial class FileExplorerPage : SamplePageBase
 
     private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        if (SampleShaping.IsReselecting)
-        {
-            return;
-        }
-
         RefreshReadouts();
     }
 
@@ -349,7 +345,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
             FileTable.SortByColumn(DateModifiedColumn, SortDirection.Descending);
         }
     }
-    // Group key resolution for this page's model (FIX-PLAN §1.6 R2). Never returns a blank key.
+    // GroupBy key for this page's model. Never returns a blank key: TableViewSource fails fast on an empty group identity.
     private static object KeyOf(FileSystemEntry? entry, string key)
     {
         if (entry is null)

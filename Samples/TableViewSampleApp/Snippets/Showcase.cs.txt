@@ -101,16 +101,16 @@ private void ResortIfSortedOn(params string[] propertyNames)
         return;
     }
 
-    var selected = PeopleTable.SelectedItem;
     _isResorting = true;
     try
     {
         Source.Sort(column.SortMemberPath, column.SortDirection);
+        OnSortRedeclared();   // keeps a sort that ordered the groups doing so
     }
     finally
     {
         _isResorting = false;
     }
 
-    SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex, RefreshReadouts);
+    // Sort raises a Reset, and the control keeps the selection on the same item.
 }

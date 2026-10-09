@@ -85,7 +85,7 @@ public sealed partial class SamplePresenter : UserControl
         Unloaded += OnUnloaded;
 
         // The Source scroller is already bounded, so the code blocks inside it stop scrolling
-        // vertically themselves: one vertical scroller, no trapped mouse wheel (D:S9).
+        // vertically themselves: one vertical scroller, no trapped mouse wheel.
         SourceCodeBlock.CodeMaxHeight = double.PositiveInfinity;
         AdditionalSourceCodeBlock.CodeMaxHeight = double.PositiveInfinity;
 
@@ -361,7 +361,7 @@ public sealed partial class SamplePresenter : UserControl
 
     private void OnUnloaded(object sender, RoutedEventArgs e) => LayoutUpdated -= OnLayoutUpdated;
 
-    // Defensive guard (FIX-PLAN 0.6b, D:S1): if the Example row is smaller than what the Example
+    // Defensive guard: if the Example row is smaller than what the Example
     // content needs (its Auto rows plus the table's MinHeight), remember the need and re-measure.
     // ApplyStretchSizing then unpins and lets the OuterScroller scroll, instead of a `*` table row
     // collapsing to 0 under tall Auto siblings or overflowing onto the Source expander.
@@ -559,20 +559,20 @@ public sealed partial class SamplePresenter : UserControl
     // offered minus the sticky header and the Grid's own margin, which gives `*` a finite range.
     //
     // The page does NOT fit, and is left to scroll, when:
-    //  * the layout is narrow (< 900 px): the rail sits under the Example (D:S2);
-    //  * the Example's minimum + the Source block exceed the height under the header (D:S1).
+    //  * the layout is narrow (< 900 px): the rail sits under the Example;
+    //  * the Example's minimum + the Source block exceed the height under the header.
     //    An expanded Source block counts its chrome plus MinSourceHeight of code.
     // Then the grid is unpinned and the Example row gets a fixed height, so the table stays
     // bounded and virtualizes; it never sits in an unbounded scroller.
     //
-    // Source rule (P1-1). Expanding Source never balloons the table and never leaves the code
+    // Source rule. Expanding Source never balloons the table and never leaves the code
     // below the window:
     //  * pinned page: the Example row shrinks towards its minimum and the code gets the rest,
     //    at least MinSourceHeight (the fit check reserves it);
     //  * scrolling page: the Example row drops to its minimum, the code is capped to what is
     //    left of the viewport under it (at least MinSourceHeight), and RevealSourceIfPending
     //    scrolls the page so the whole expanded block, and the table above it, are on screen.
-    //    Only OuterScroller scrolls, so the title and description stay in view (P2).
+    //    Only OuterScroller scrolls, so the title and description stay in view.
     private void ApplyStretchSizing(double availableHeight)
     {
         if (OuterGrid is null)

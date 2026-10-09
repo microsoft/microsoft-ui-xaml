@@ -11,11 +11,16 @@ using Microsoft.UI.Xaml.Markup;
 namespace TableViewSampleApp.Controls;
 
 /// <summary>
-/// The rail's Status section (FIX-PLAN §1.2): a "Status" heading over a two-column grid of
+/// The rail's Status section: a "Status" heading over a two-column grid of
 /// label/value rows. The page declares only its own value TextBlocks, in display order, each with
-/// <c>controls:StatusPanel.Label="…"</c>; the panel adds the label, the value style and Polite
-/// live setting (unless the readout sets its own AutomationProperties.LiveSetting), and always
+/// <c>controls:StatusPanel.Label="…"</c>; the panel adds the label and the value style, and always
 /// ends with the fixed Rows → Shaping → Last action rows.
+/// <para>
+/// Only Last action is a live region (Polite): every action rewrites all readouts, so making each
+/// one live would queue several announcements per click. The panel raises LiveRegionChanged on Last
+/// action itself, once per text change. A readout that must be announced on its own sets
+/// AutomationProperties.LiveSetting (and the page raises the event).
+/// </para>
 /// <para>
 /// The readouts stay in the page's namescope (<c>ActiveSortText.Text = …</c> keeps working) and
 /// are placed in the grid synchronously as XAML adds them, so they exist before the page
@@ -50,6 +55,7 @@ public partial class StatusPanel : RailSection
         (_rowsLabel, _rowsValue) = (CreateLabel("Rows", top: false), CreateValue("0"));
         (_shapingLabel, _shapingValue) = (CreateLabel("Shaping", top: false), CreateValue("Flat"));
         (_lastActionLabel, _lastActionValue) = (CreateLabel("Last action", top: true), CreateValue("(none)"));
+        AutomationProperties.SetLiveSetting(_lastActionValue, AutomationLiveSetting.Polite);
 
         Readouts = new CallbackCollection<UIElement>(InsertReadout, RemoveReadout);
         Loading += (_, _) => DeriveAutomationIds();
@@ -101,7 +107,7 @@ public partial class StatusPanel : RailSection
 
     public static readonly DependencyProperty LastActionProperty =
         DependencyProperty.Register(nameof(LastAction), typeof(string), typeof(StatusPanel),
-            new PropertyMetadata("(none)", (d, e) => ((StatusPanel)d)._lastActionValue.Text = (string?)e.NewValue ?? string.Empty));
+            new PropertyMetadata("(none)", (d, e) => ((StatusPanel)d).OnLastActionChanged((string?)e.NewValue ?? string.Empty)));
 
     public bool ShowRows
     {
@@ -169,13 +175,6 @@ public partial class StatusPanel : RailSection
             text.TextWrapping = TextWrapping.Wrap;
         }
 
-        // A readout that sets its own LiveSetting (e.g. Off for a value that changes on every
-        // measurement or tick) keeps it.
-        if (value.ReadLocalValue(AutomationProperties.LiveSettingProperty) == DependencyProperty.UnsetValue)
-        {
-            AutomationProperties.SetLiveSetting(value, AutomationLiveSetting.Polite);
-        }
-
         _rows.Insert(index, (label, value));
         DeriveAutomationId(value);
         Rebuild();
@@ -213,6 +212,21 @@ public partial class StatusPanel : RailSection
             Grid.SetColumn(value, 1);
             _grid.Children.Add(label);
             _grid.Children.Add(value);
+        }
+    }
+
+    private void OnLastActionChanged(string text)
+    {
+        var changed = !string.Equals(_lastActionValue.Text, text, System.StringComparison.Ordinal);
+        _lastActionValue.Text = text;
+
+        // A TextBlock does not raise LiveRegionChanged when its text changes; raise it explicitly,
+        // and only for a new message, so Narrator reads each action once.
+        if (changed && _lastActionValue.IsLoaded)
+        {
+            (FrameworkElementAutomationPeer.FromElement(_lastActionValue)
+                ?? FrameworkElementAutomationPeer.CreatePeerForElement(_lastActionValue))
+                ?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
         }
     }
 
@@ -255,14 +269,9 @@ public partial class StatusPanel : RailSection
         return label;
     }
 
-    private static TextBlock CreateValue(string text)
+    private static TextBlock CreateValue(string text) => new()
     {
-        var value = new TextBlock
-        {
-            Text = text,
-            Style = (Style)Application.Current.Resources["StatusReadoutValueStyle"],
-        };
-        AutomationProperties.SetLiveSetting(value, AutomationLiveSetting.Polite);
-        return value;
-    }
+        Text = text,
+        Style = (Style)Application.Current.Resources["StatusReadoutValueStyle"],
+    };
 }

@@ -42,7 +42,7 @@
         Snippet="Filter"
         StretchExample="True"
         TryIt="Type eng in Query, then switch Shaping mode to Grouped: the filter and the grouping apply together. Select a row and choose Mutate selected row out of the filter. Choose Filter to zero matches to see the EmptyTemplate, then Clear filter."
-        WhatToLookFor="The predicate runs when Filter is called, not on every property change, so the page calls Filter again after an edit: the row then leaves or rejoins the view without the source being rebuilt. Selection survives a query change while the selected row still matches. Grouped, a group with no matching rows is not shown at all, and the header counts are the filtered counts.">
+        WhatToLookFor="The predicate runs when Filter is called, not on every property change, so the page calls Filter again after an edit: the row then leaves or rejoins the view without the source being rebuilt. The control keeps the selection across a query change while the selected row still matches. Grouped, a group with no matching rows is not shown at all, and the header counts are the filtered counts.">
 
         <controls:SamplePresenter.Example>
             <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
@@ -89,7 +89,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Filter"
-                    Description="Grouping applies to the filtered rows, so only groups with a match appear and their counts are the filtered counts. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    Description="Grouping applies to the filtered rows, so only groups with a match appear and their counts are the filtered counts. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

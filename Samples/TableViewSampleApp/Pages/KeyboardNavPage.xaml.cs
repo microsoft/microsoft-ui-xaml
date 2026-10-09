@@ -49,7 +49,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         PeopleTable.ItemsSource = Source;
         ResetFixture(announce: false);
         // </snippet>
-        Shaping.ProbeLimit = () => People.Count + PersonData.Departments.Count + PersonData.Offices.Count;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackLifetime(
             () => PeopleTable.SelectionChanged += OnPeopleSelectionChanged,
@@ -89,10 +88,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
 
     private void OnPeopleSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        if (!SampleShaping.IsReselecting)
-        {
-            RefreshReadouts();
-        }
+        RefreshReadouts();
     }
 
     // <snippet>

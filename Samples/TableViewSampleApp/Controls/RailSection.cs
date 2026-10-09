@@ -11,7 +11,7 @@ namespace TableViewSampleApp.Controls;
 /// <summary>
 /// One section of a sample page's options rail: a Level 2 heading, an optional description, then
 /// the page's own children (buttons, selectors). A plain StackPanel with no template, so the UIA
-/// tree is exactly the inline pattern it replaces (FIX-PLAN §1.2): a named group, the heading,
+/// tree is exactly the inline pattern it replaces: a named group, the heading,
 /// the description, the controls. Children declared in XAML stay in the page's namescope, so
 /// their x:Name fields and Click handlers stay in the page.
 /// </summary>

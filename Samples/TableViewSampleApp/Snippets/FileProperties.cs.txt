@@ -48,6 +48,7 @@ private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
     // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only.
     if (IsLoaded)
     {
+        // …
     }
 }
 
@@ -81,7 +82,7 @@ private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
 
 // …
 
-// Group key resolution for this page's model (FIX-PLAN §1.6 R2). Never returns a blank key.
+// GroupBy key for this page's model. Never returns a blank key: TableViewSource fails fast on an empty group identity.
 private static object KeyOf(FilePropertyEntry? entry, string key)
 {
     var value = key == nameof(FilePropertyEntry.Source) ? entry?.Source : entry?.Section;

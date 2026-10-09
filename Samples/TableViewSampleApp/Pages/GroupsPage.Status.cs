@@ -123,6 +123,8 @@ public sealed partial class GroupsPage
         }
     }
 
+    // <snippet Groups>
+    // Which group a header gesture toggled, and its new state.
     private void NoteHeaderExpansion(DependencyObject? source, bool? desired)
     {
         while (source is not null && source is not TableViewGroupHeader)
@@ -136,12 +138,10 @@ public sealed partial class GroupsPage
             return;
         }
 
-        // <snippet Groups>
         // A header click toggles its group on a LATER dispatcher turn, so header.IsExpanded still holds
         // the old state here. Compute the new state instead of reading it back.
         var identity = SampleShaping.GroupIdentity(group.Key);
         var expanded = desired ?? _collapsedGroups.Contains(identity);
-        // </snippet>
         if (expanded)
         {
             _collapsedGroups.Remove(identity);
@@ -157,4 +157,5 @@ public sealed partial class GroupsPage
             expanded ? "Expanded" : "Collapsed",
             group.KeyText));
     }
+    // </snippet>
 }

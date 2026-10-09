@@ -55,7 +55,6 @@ public sealed partial class GroupsPage : SamplePageBase
 
         // Grouping is this page's subject, so it starts Grouped (ShapingOptions InitialMode="grouped");
         // InitializeSample applies the grouping now that every element exists.
-        Shaping.ProbeLimit = () => People.Count + 64;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackItems(People, OnPersonChanged);
 

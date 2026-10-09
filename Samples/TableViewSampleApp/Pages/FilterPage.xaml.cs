@@ -43,7 +43,6 @@ public sealed partial class FilterPage : SamplePageBase
         BuildColumns();
         ApplyFilter();
         // </snippet>
-        Shaping.ProbeLimit = () => People.Count + 64;
         InitializeSample(Status, Shaping.Attach(FilterTable, Source));
         TrackItems(People, OnPersonChanged);
     }
@@ -211,10 +210,7 @@ public sealed partial class FilterPage : SamplePageBase
 
     private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        if (!SampleShaping.IsReselecting)
-        {
-            RefreshReadouts();
-        }
+        RefreshReadouts();
     }
 
     // ---- Actions ----------------------------------------------------------------------------
@@ -331,10 +327,10 @@ public sealed partial class FilterPage : SamplePageBase
         }
 
         // GroupBy's key selector and the filter predicate are delegates, evaluated when they are
-        // applied, so apply both again; the reshape re-selects the moved row.
+        // applied, so apply both again. Each reshape is a Reset, and the control keeps the moved
+        // row selected (or clears the selection when the row no longer matches the filter).
         ReapplyIfGroupedOn(key);
         ApplyFilter();
-        SampleShaping.Reselect(FilterTable, person, People.Count + 64);
         SetLastAction(string.Format(
             CultureInfo.CurrentCulture,
             Matches(person, Query, ActiveOnly) ? "Moved {0} from {1} to {2}" : "Moved {0} from {1} to {2}; the row no longer matches the filter",

@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
-using Windows.UI;
 
 namespace TableViewSampleApp.Converters;
 
@@ -26,14 +25,10 @@ public sealed partial class ProcessHeatBrushConverter : IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (ChipBrushes.IsHighContrast)
-        {
-            return ChipBrushes.Transparent;
-        }
-
-        // Created on first use, on the UI thread, and shared by every cell.
+        // Created on first use, on the UI thread, and shared by every cell; ChipBrushes recolours
+        // them (transparent) while a Contrast theme is on.
         s_levels ??= new[] { 22, 38, 58, 82, 110 }
-            .Select(alpha => new SolidColorBrush(Color.FromArgb((byte)alpha, 96, 160, 240)))
+            .Select(alpha => ChipBrushes.CreateTint(96, 160, 240, (byte)alpha))
             .ToArray();
 
         var thresholds = (parameter as string) switch

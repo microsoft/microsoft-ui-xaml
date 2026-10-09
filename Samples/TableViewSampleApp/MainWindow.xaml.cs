@@ -102,7 +102,7 @@ public sealed partial class MainWindow : Window
         Closed += (_, _) => Services.AppSettings.ThemeChanged -= OnPersistedThemeChanged;
 
         // The caption buttons are drawn by the system; follow a Contrast theme switched on or off
-        // while the app runs, not only the state at startup (D:S7). AccessibilitySettings.
+        // while the app runs, not only the state at startup. AccessibilitySettings.
         // HighContrastChanged throws ELEMENT_NOT_FOUND in a desktop (non-CoreWindow) app, so listen
         // to UISettings.ColorValuesChanged, which a Contrast switch also raises, and re-read
         // AccessibilitySettings.HighContrast in UpdateCaptionButtonColors.
@@ -164,10 +164,14 @@ public sealed partial class MainWindow : Window
         return false;
     }
 
-    // Raised on a background thread.
+    // Raised on a background thread. A Contrast switch also recolours the shared chip palette in
+    // place, so realized cells follow it without re-conversion.
     private void OnColorValuesChanged(UISettings sender, object args) =>
-        DispatcherQueue.TryEnqueue(UpdateCaptionButtonColors);
-
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            UpdateCaptionButtonColors();
+            Converters.ChipBrushes.Refresh();
+        });
 
     private void ContentFrame_NavigationFailed(object sender, NavigationFailedEventArgs e)
     {
@@ -192,7 +196,7 @@ public sealed partial class MainWindow : Window
                     return canonical;
                 }
 
-                // An unknown tag opens Home, but leaves a trace instead of failing silently (D:S4).
+                // An unknown tag opens Home, but leaves a trace instead of failing silently.
                 App.AppendVerificationLog($"NavigateMissingTag {candidate}");
                 App.AppendSelectionVerificationLog($"NavigateMissingTag {candidate}");
                 return "Home";
@@ -229,11 +233,13 @@ public sealed partial class MainWindow : Window
 
             // SetTitleBar makes the whole AppTitleBar rect a caption (drag) region, which also
             // swallows pointer input on the theme button inside it; carve the button out as a
-            // passthrough region and keep it in step with layout (the button moves when the
-            // caption-button inset changes) and DPI changes.
-            ThemeToggleButton.LayoutUpdated += (_, _) => UpdateTitleBarPassthrough();
-            ThemeToggleButton.Loaded += (_, _) =>
-                ThemeToggleButton.XamlRoot.Changed += (_, _) => UpdateTitleBarPassthrough();
+            // passthrough region. Each event is hooked once: the button moves when the title bar
+            // resizes or the caption-button inset changes (OnAppWindowChanged), and DPI changes
+            // raise XamlRoot.Changed. (LayoutUpdated would run this on every layout pass in the
+            // window, e.g. every frame of TableView scrolling.)
+            ThemeToggleButton.SizeChanged += (_, _) => UpdateTitleBarPassthrough();
+            AppTitleBar.SizeChanged += (_, _) => UpdateTitleBarPassthrough();
+            ThemeToggleButton.Loaded += OnThemeToggleButtonLoaded;
 
             // Unpackaged WinUI 3 apps do NOT pick up <ApplicationIcon> or the
             // Square*Logo manifest entries on the AppWindow surface (those drive
@@ -292,8 +298,22 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private Windows.Graphics.RectInt32 m_themeButtonPassthrough;
+    private Windows.Graphics.RectInt32[] m_titleBarPassthrough = Array.Empty<Windows.Graphics.RectInt32>();
+    private bool m_xamlRootChangedHooked;
 
+    private void OnThemeToggleButtonLoaded(object sender, RoutedEventArgs e)
+    {
+        if (!m_xamlRootChangedHooked && ThemeToggleButton.XamlRoot is { } xamlRoot)
+        {
+            m_xamlRootChangedHooked = true;
+            xamlRoot.Changed += (_, _) => UpdateTitleBarPassthrough();
+        }
+
+        UpdateTitleBarPassthrough();
+    }
+
+    // SetRegionRects REPLACES every passthrough rect of the window, so the complete list of
+    // interactive title-bar elements is built here, in one place.
     private void UpdateTitleBarPassthrough()
     {
         try
@@ -303,24 +323,15 @@ public sealed partial class MainWindow : Window
                 return;
             }
 
-            // XAML works in DIPs relative to the window content; the non-client API takes
-            // physical client pixels.
-            var scale = xamlRoot.RasterizationScale;
-            var bounds = ThemeToggleButton.TransformToVisual(null).TransformBounds(
-                new Windows.Foundation.Rect(0, 0, ThemeToggleButton.ActualWidth, ThemeToggleButton.ActualHeight));
-            var rect = new Windows.Graphics.RectInt32(
-                (int)Math.Round(bounds.X * scale),
-                (int)Math.Round(bounds.Y * scale),
-                (int)Math.Round(bounds.Width * scale),
-                (int)Math.Round(bounds.Height * scale));
-            if (rect.Equals(m_themeButtonPassthrough))
+            var rects = new[] { ClientRectOf(ThemeToggleButton, xamlRoot) };
+            if (System.Linq.Enumerable.SequenceEqual(rects, m_titleBarPassthrough))
             {
                 return;
             }
 
-            m_themeButtonPassthrough = rect;
+            m_titleBarPassthrough = rects;
             InputNonClientPointerSource.GetForWindowId(AppWindow.Id)
-                .SetRegionRects(NonClientRegionKind.Passthrough, new[] { rect });
+                .SetRegionRects(NonClientRegionKind.Passthrough, rects);
         }
         catch (Exception ex)
         {
@@ -328,12 +339,43 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    // XAML works in DIPs relative to the window content; the non-client API takes physical client
+    // pixels. TransformToVisual(null) already includes any FlowDirection=RightToLeft mirroring of
+    // the content, so the rect is in unmirrored client coordinates and needs no RTL flip (the WinUI
+    // TitleBar control computes its passthrough rects the same way). The caption buttons swapping
+    // sides for an RTL system locale is handled by the insets (ApplyTitleBarSystemInsets).
+    private static Windows.Graphics.RectInt32 ClientRectOf(FrameworkElement element, XamlRoot xamlRoot)
+    {
+        var scale = xamlRoot.RasterizationScale;
+        var bounds = element.TransformToVisual(null).TransformBounds(
+            new Windows.Foundation.Rect(0, 0, element.ActualWidth, element.ActualHeight));
+        return new Windows.Graphics.RectInt32(
+            (int)Math.Round(bounds.X * scale),
+            (int)Math.Round(bounds.Y * scale),
+            (int)Math.Round(bounds.Width * scale),
+            (int)Math.Round(bounds.Height * scale));
+    }
+
     private void OnAppWindowChanged(AppWindow sender, AppWindowChangedEventArgs args)
     {
         // TitleBar insets can change on DPI moves and on system theme / RTL
         // toggle. Reapply on any AppWindow change — cheap, and the only event
         // surface 3.0.0-dev exposes for this.
+        var rightInset = RightPaddingColumn.Width;
         ApplyTitleBarSystemInsets();
+
+        // A new caption-button inset moves the theme button without resizing it or the title
+        // bar; recompute its passthrough rect once, after the next layout pass.
+        if (!rightInset.Equals(RightPaddingColumn.Width))
+        {
+            void OnLayoutUpdated(object? s, object e)
+            {
+                ThemeToggleButton.LayoutUpdated -= OnLayoutUpdated;
+                UpdateTitleBarPassthrough();
+            }
+
+            ThemeToggleButton.LayoutUpdated += OnLayoutUpdated;
+        }
     }
 
     private void ApplyTitleBarSystemInsets()

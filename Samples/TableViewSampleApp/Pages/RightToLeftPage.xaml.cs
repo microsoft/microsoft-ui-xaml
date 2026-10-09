@@ -33,7 +33,6 @@ public sealed partial class RightToLeftPage : SamplePageBase
         InitializeComponent();
         // </snippet>
         _originalColumnOrder = PeopleTable.Columns.ToArray();
-        Shaping.ProbeLimit = () => People.Count * 2;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackItems(People, OnPersonChanged);
         TrackLifetime(() => PeopleTable.Sorted += OnTableSorted, () => PeopleTable.Sorted -= OnTableSorted);

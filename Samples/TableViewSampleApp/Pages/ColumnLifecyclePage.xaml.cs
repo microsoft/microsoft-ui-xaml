@@ -41,7 +41,6 @@ public sealed partial class ColumnLifecyclePage : SamplePageBase
         _canonical = new TableViewColumn[] { ColAvatar, ColName, ColDepartment, ColRole, ColSalary, ColActive, ColShift };
         // </snippet>
         PopulateColumnPicker();
-        Shaping.ProbeLimit = () => (People.Count * 2) + 2;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackItems(People, OnPersonChanged);
     }

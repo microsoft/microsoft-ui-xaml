@@ -148,7 +148,7 @@
 
     <controls:SamplePresenter
         Header="Sorting"
-        Description="TableView owns single-column sort state: click a header to sort and again to reverse, or call SortByColumn, ToggleSortDirection and ClearSort; the Sorted event reports each change. Template columns sort by SortMemberPath, the value behind the control: Seeded by the bool, Next match by the DateTimeOffset and Kickoff by the TimeSpan. As text, 2 Jan sorts before 28 Dec; show the text-date column to compare. Grouped, a sort reorders the rows within each group."
+        Description="TableView owns single-column sort state: click a header to sort and again to reverse, or call SortByColumn, ToggleSortDirection and ClearSort; the Sorted event reports each change. Template columns sort by SortMemberPath, the value behind the control: Seeded by the bool, Next match by the DateTimeOffset and Kickoff by the TimeSpan. As text, 2 Jan sorts before 28 Dec; show the text-date column to compare. Grouped, the order of the calls matters: a sort applied after GroupBy reorders the rows within each group, and one applied before it orders the groups too."
         Snippet="Sort"
         StretchExample="True"
         TryIt="Click the Next match header to sort by date, then open a row's Next match picker, pick a later date and watch the row move. Choose Sort next match as text in Actions and compare the order. Switch Shaping mode to Grouped and click Pts: the rows reorder within each group."
@@ -166,6 +166,7 @@
                     IsReadOnly="False"
                     EmptyTemplate="{StaticResource SortEmptyTemplate}"
                     Sorted="OnTableSorted"
+                    SelectionChanged="OnTeamsSelectionChanged"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
                     <!-- The template renders a control; SortMemberPath names the value that orders
@@ -254,7 +255,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Sort"
-                    Description="Group the standings, then sort: the rows reorder within each group, and the groups follow the order of their first row. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    Description="Group the standings, then sort: the rows reorder within each group, and the groups keep the source order of their first rows. Sort first and then group, and the sort orders the groups as well. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Group" Tag="Group"/>
                     <ComboBoxItem Content="Standing" Tag="Standing"/>
                     <ComboBoxItem Content="Country" Tag="Country"/>

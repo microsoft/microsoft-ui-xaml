@@ -42,7 +42,6 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         // </snippet>
 
         // Starts Grouped by section (ShapingOptions InitialMode="grouped"): InitializeSample applies it.
-        Shaping.ProbeLimit = () => Entries.Count + s_sections.Length + 2;
         InitializeSample(Status, Shaping.Attach(PropTable, Source, (row, key) => KeyOf(row as FilePropertyEntry, key)));
         TrackLifetime(ListFilesOnce);
     }
@@ -280,16 +279,11 @@ public sealed partial class FilePropertiesPage : SamplePageBase
 
     private void OnPropSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        if (SampleShaping.IsReselecting)
-        {
-            return;
-        }
-
         RefreshReadouts();
     }
 
     // <snippet>
-    // Group key resolution for this page's model (FIX-PLAN §1.6 R2). Never returns a blank key.
+    // GroupBy key for this page's model. Never returns a blank key: TableViewSource fails fast on an empty group identity.
     private static object KeyOf(FilePropertyEntry? entry, string key)
     {
         var value = key == nameof(FilePropertyEntry.Source) ? entry?.Source : entry?.Section;

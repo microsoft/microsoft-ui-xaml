@@ -14,98 +14,110 @@ using Windows.UI.ViewManagement;
 namespace TableViewSampleApp.Converters;
 
 /// <summary>
-/// Shared brush cache for every chip in the gallery (Department chip, Active status chip).
+/// Shared palette for every chip and tinted cell in the gallery (Department, Active, Standing,
+/// Country, Priority, Salary, Task Manager heat).
 /// <list type="number">
-///   <item><description>Brushes are built once into <c>static readonly</c> dictionaries and
-///     handed back by reference. A converter that returns <c>new SolidColorBrush(...)</c>
+///   <item><description>Each brush is created once (<see cref="CreateTint"/> / <see cref="CreateDot"/>)
+///     and handed back by reference. A converter that returns <c>new SolidColorBrush(...)</c>
 ///     allocates per realized cell per call, which under virtualization is continuous churn.</description></item>
-///   <item><description>Under a Windows Contrast theme the brand tints are dropped: the chip
-///     falls back to transparent plus the theme's own stroke and text brushes, so the user's
-///     guaranteed contrast pair wins. <see cref="IsHighContrast"/> is read live, so a theme
-///     switch mid-session is picked up the next time a cell converts.</description></item>
+///   <item><description>Under a Windows Contrast theme the brand colours are dropped: tints become
+///     transparent and dots take the system window-text colour, so the user's guaranteed contrast
+///     pair wins. The brushes are RECOLOURED IN PLACE by <see cref="Refresh"/> (MainWindow calls it
+///     when the system colours change), so cells that are already realized follow a switch at once;
+///     a converter alone would only re-run when the bound value changes. Light and Dark need no
+///     change: the tints are translucent and the dots are mid-tone.</description></item>
 /// </list>
 /// </summary>
 public static class ChipBrushes
 {
     private const byte TintAlpha = 0x33;
 
-    private static AccessibilitySettings? s_accessibilitySettings;
-    private static Brush? s_highContrastForeground;
+    // Every palette brush with its brand colour; declared first so the initializers below can register.
+    private static readonly List<(SolidColorBrush Brush, Windows.UI.Color Color, bool IsDot)> s_palette = new();
+    private static readonly AccessibilitySettings s_accessibilitySettings = new();
+    private static readonly UISettings s_uiSettings = new();
 
     private static readonly SolidColorBrush s_transparent = new(Colors.Transparent);
 
-    private static readonly Dictionary<string, SolidColorBrush> s_departmentTints = BuildDepartmentBrushes(TintAlpha);
-    private static readonly Dictionary<string, SolidColorBrush> s_departmentDots = BuildDepartmentBrushes(0xFF);
+    private static readonly Dictionary<string, SolidColorBrush> s_departmentTints = BuildDepartmentBrushes(dot: false);
+    private static readonly Dictionary<string, SolidColorBrush> s_departmentDots = BuildDepartmentBrushes(dot: true);
 
-    private static readonly SolidColorBrush s_fallbackTint = new(ColorHelper.FromArgb(TintAlpha, 0x64, 0x74, 0x8B));
-    private static readonly SolidColorBrush s_fallbackDot = new(ColorHelper.FromArgb(0xFF, 0x64, 0x74, 0x8B));
+    private static readonly SolidColorBrush s_fallbackTint = CreateTint(0x64, 0x74, 0x8B);
+    private static readonly SolidColorBrush s_fallbackDot = CreateDot(0x64, 0x74, 0x8B);
 
-    private static readonly SolidColorBrush s_activeTint = new(ColorHelper.FromArgb(TintAlpha, 0x16, 0xA3, 0x4A));
-    private static readonly SolidColorBrush s_activeDot = new(ColorHelper.FromArgb(0xFF, 0x16, 0xA3, 0x4A));
-    private static readonly SolidColorBrush s_inactiveTint = new(ColorHelper.FromArgb(TintAlpha, 0x64, 0x74, 0x8B));
-    private static readonly SolidColorBrush s_inactiveDot = new(ColorHelper.FromArgb(0xFF, 0x64, 0x74, 0x8B));
+    private static readonly SolidColorBrush s_activeTint = CreateTint(0x16, 0xA3, 0x4A);
+    private static readonly SolidColorBrush s_activeDot = CreateDot(0x16, 0xA3, 0x4A);
+    private static readonly SolidColorBrush s_inactiveTint = CreateTint(0x64, 0x74, 0x8B);
+    private static readonly SolidColorBrush s_inactiveDot = CreateDot(0x64, 0x74, 0x8B);
 
     /// <summary>True while Windows runs a Contrast theme. The property is live.</summary>
-    public static bool IsHighContrast
-    {
-        get
-        {
-            s_accessibilitySettings ??= new AccessibilitySettings();
-            return s_accessibilitySettings.HighContrast;
-        }
-    }
+    public static bool IsHighContrast => s_accessibilitySettings.HighContrast;
 
-    /// <summary>Cached transparent brush; the HighContrast tint for every chip.</summary>
+    /// <summary>Shared transparent brush: "no tint" in every theme.</summary>
     public static Brush Transparent => s_transparent;
 
-    /// <summary>Theme-owned foreground used for chip dots under a Contrast theme.</summary>
-    public static Brush HighContrastForeground =>
-        s_highContrastForeground ??=
-            Application.Current.Resources["TextFillColorPrimaryBrush"] as Brush ?? s_transparent;
+    /// <summary>The fallback (slate) dot, for a value with no colour of its own.</summary>
+    public static Brush FallbackDot => s_fallbackDot;
 
-    public static Brush DepartmentTint(string? department)
+    /// <summary>A translucent chip background (alpha <paramref name="alpha"/>); transparent under a Contrast theme.</summary>
+    public static SolidColorBrush CreateTint(byte r, byte g, byte b, byte alpha = TintAlpha) =>
+        Register(ColorHelper.FromArgb(alpha, r, g, b), isDot: false);
+
+    /// <summary>A solid chip dot; the system window-text colour under a Contrast theme.</summary>
+    public static SolidColorBrush CreateDot(byte r, byte g, byte b) =>
+        Register(ColorHelper.FromArgb(0xFF, r, g, b), isDot: true);
+
+    /// <summary>
+    /// Re-reads the Contrast state and recolours every palette brush in place. Call on the UI
+    /// thread when the system colours change (UISettings.ColorValuesChanged).
+    /// </summary>
+    public static void Refresh()
     {
-        if (IsHighContrast)
+        var highContrast = IsHighContrast;
+        var windowText = s_uiSettings.UIElementColor(UIElementType.WindowText);
+        foreach (var (brush, color, isDot) in s_palette)
         {
-            return s_transparent;
+            brush.Color = ColorFor(color, isDot, highContrast, windowText);
         }
-
-        return department is not null && s_departmentTints.TryGetValue(department, out var brush)
-            ? brush
-            : s_fallbackTint;
     }
 
-    public static Brush DepartmentDot(string? department)
-    {
-        if (IsHighContrast)
-        {
-            return HighContrastForeground;
-        }
+    public static Brush DepartmentTint(string? department) =>
+        department is not null && s_departmentTints.TryGetValue(department, out var brush) ? brush : s_fallbackTint;
 
-        return department is not null && s_departmentDots.TryGetValue(department, out var brush)
-            ? brush
-            : s_fallbackDot;
+    public static Brush DepartmentDot(string? department) =>
+        department is not null && s_departmentDots.TryGetValue(department, out var brush) ? brush : s_fallbackDot;
+
+    public static Brush ActiveTint(bool isActive) => isActive ? s_activeTint : s_inactiveTint;
+
+    public static Brush ActiveDot(bool isActive) => isActive ? s_activeDot : s_inactiveDot;
+
+    private static SolidColorBrush Register(Windows.UI.Color color, bool isDot)
+    {
+        var highContrast = IsHighContrast;
+        var brush = new SolidColorBrush(ColorFor(color, isDot, highContrast, highContrast ? s_uiSettings.UIElementColor(UIElementType.WindowText) : default));
+        s_palette.Add((brush, color, isDot));
+        return brush;
     }
 
-    public static Brush ActiveTint(bool isActive) =>
-        IsHighContrast ? s_transparent : (isActive ? s_activeTint : s_inactiveTint);
+    private static Windows.UI.Color ColorFor(Windows.UI.Color color, bool isDot, bool highContrast, Windows.UI.Color windowText) =>
+        !highContrast ? color : isDot ? windowText : Colors.Transparent;
 
-    public static Brush ActiveDot(bool isActive) =>
-        IsHighContrast ? HighContrastForeground : (isActive ? s_activeDot : s_inactiveDot);
-
-    private static Dictionary<string, SolidColorBrush> BuildDepartmentBrushes(byte alpha) => new(StringComparer.Ordinal)
+    private static Dictionary<string, SolidColorBrush> BuildDepartmentBrushes(bool dot)
     {
-        ["Marketing"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xA8, 0x55, 0xF7)),   // purple
-        ["Product"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x0E, 0xA5, 0xE9)),     // blue
-        ["Finance"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x22, 0xC5, 0x5E)),     // green
-        ["Design"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xEC, 0x48, 0x99)),      // pink
-        ["Sales"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x14, 0xB8, 0xA6)),       // teal
-        ["HR"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xF5, 0x9E, 0x0B)),          // amber
-        ["Engineering"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0x63, 0x66, 0xF1)), // indigo
-        ["Operations"] = new SolidColorBrush(ColorHelper.FromArgb(alpha, 0xEF, 0x44, 0x44)),  // red
-    };
+        SolidColorBrush Create(byte r, byte g, byte b) => dot ? CreateDot(r, g, b) : CreateTint(r, g, b);
+        return new(StringComparer.Ordinal)
+        {
+            ["Marketing"] = Create(0xA8, 0x55, 0xF7),   // purple
+            ["Product"] = Create(0x0E, 0xA5, 0xE9),     // blue
+            ["Finance"] = Create(0x22, 0xC5, 0x5E),     // green
+            ["Design"] = Create(0xEC, 0x48, 0x99),      // pink
+            ["Sales"] = Create(0x14, 0xB8, 0xA6),       // teal
+            ["HR"] = Create(0xF5, 0x9E, 0x0B),          // amber
+            ["Engineering"] = Create(0x63, 0x66, 0xF1), // indigo
+            ["Operations"] = Create(0xEF, 0x44, 0x44),  // red
+        };
+    }
 }
-
 /// <summary>Translucent chip background for the Department chip.</summary>
 public sealed partial class DepartmentChipTintConverter : IValueConverter
 {

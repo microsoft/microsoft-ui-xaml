@@ -1,8 +1,13 @@
-# Generate-BuildInfo.ps1 — validate sample metadata and write BuildInfo.g.cs from current git state.
-# Invoked by csproj _GenerateBuildInfo target. Robust against MSBuild's
-# %-escape eating that broke the inline git log --pretty=%s pattern.
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See LICENSE in the project root for license information.
+
+# Generate-BuildInfo.ps1: write BuildInfo.g.cs (shown on the About page) from the current git state.
+# Invoked by the csproj _GenerateBuildInfo target. Robust against MSBuild's
+# %-escape eating that broke the inline git log --pretty=%s pattern. The file is rewritten only
+# when something other than the build time changed, so an unchanged tree stays incremental.
+# The snippet check lives in tools\Update-Snippets.ps1 (csproj _CheckTableViewSnippets).
 #
-# Usage:  pwsh -File Generate-BuildInfo.ps1 -OutFile <path> -ProjectDir <path>
+# Usage:  powershell -File Generate-BuildInfo.ps1 -OutFile <path> -ProjectDir <path>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$OutFile,
@@ -10,38 +15,6 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-
-function Test-SnippetReferences {
-    $snippetDir = Join-Path $ProjectDir 'Snippets'
-    $pagesDir = Join-Path $ProjectDir 'Pages'
-
-    if (-not (Test-Path $snippetDir) -or -not (Test-Path $pagesDir)) {
-        return
-    }
-
-    $snippetNames = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    Get-ChildItem -Path $snippetDir -Filter '*.txt' -File | ForEach-Object {
-        [void]$snippetNames.Add($_.Name)
-    }
-
-    $declared = [System.Collections.Generic.SortedSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-    Get-ChildItem -Path $pagesDir -Filter '*.xaml' -File | ForEach-Object {
-        $text = [System.IO.File]::ReadAllText($_.FullName)
-        [regex]::Matches($text, '(?:SourceSnippet|AdditionalSnippet)="([^"]+)"') | ForEach-Object {
-            [void]$declared.Add($_.Groups[1].Value)
-        }
-        # Snippet="Sort" names both Sort.xaml.txt and Sort.cs.txt (SamplePresenter.Snippet).
-        [regex]::Matches($text, '\bSnippet="([^"]+)"') | ForEach-Object {
-            [void]$declared.Add("$($_.Groups[1].Value).xaml.txt")
-            [void]$declared.Add("$($_.Groups[1].Value).cs.txt")
-        }
-    }
-
-    $missing = @($declared | Where-Object { -not $snippetNames.Contains($_) })
-    if ($missing.Count -gt 0) {
-        throw "Missing embedded TableView sample snippet file(s): $($missing -join ', ')"
-    }
-}
 
 function Run-Git {
     param([Parameter(Mandatory)][string[]]$Args)
@@ -51,11 +24,6 @@ function Run-Git {
         return ($out | Out-String).Trim()
     } catch { return '(unknown)' }
 }
-
-Test-SnippetReferences
-
-# Snippets generated from // <snippet> regions must match their page (tools\Update-Snippets.ps1).
-& (Join-Path $ProjectDir 'tools\Update-Snippets.ps1') -Check -ProjectDir $ProjectDir
 
 $sha       = Run-Git -Args @('rev-parse','HEAD')
 $shaShort  = if ($sha.Length -ge 10) { $sha.Substring(0,10) } else { $sha }
@@ -92,5 +60,13 @@ internal static class BuildInfo
 
 $dir = Split-Path $OutFile -Parent
 if ($dir -and -not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+# BuildTimestamp is the time this file last changed: compare without it, so a rebuild of the same tree
+# does not touch the file and force CoreCompile.
+$stamp = '(?m)^\s*public static string BuildTimestamp .*$'
+$existing = if (Test-Path $OutFile) { [System.IO.File]::ReadAllText($OutFile) } else { $null }
+if ($null -ne $existing -and (($existing -replace $stamp, '') -ceq ($content -replace $stamp, ''))) {
+    Write-Host "BuildInfo: $shaShort on $branch (unchanged)"
+    return
+}
 [System.IO.File]::WriteAllText($OutFile, $content, [System.Text.UTF8Encoding]::new($false))
 Write-Host "BuildInfo: $shaShort on $branch - $subject"

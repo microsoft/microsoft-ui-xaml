@@ -44,7 +44,6 @@ public sealed partial class ToolTipsPage : SamplePageBase
         AttachCellToolTips();
         ApplyHeaderToolTips("original");
         // </snippet>
-        Shaping.ProbeLimit = () => People.Count + PersonData.Roles.Count;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
     }
 
