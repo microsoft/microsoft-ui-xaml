@@ -26,6 +26,38 @@ namespace System.Reflection.Adds
         // Mapping to cache types for GetBuiltInType, GetTypeXFromName
         Dictionary<string, Type> m_hash = new Dictionary<string, Type>();
 
+        // Keyed by module reference identity: Module.Equals() can treat distinct modules with the
+        // same ScopeName as equal, but their AssemblyRef rows may point at different assemblies.
+        private readonly Dictionary<AssemblyReferenceKey, Assembly> m_assemblyReferences =
+            new Dictionary<AssemblyReferenceKey, Assembly>();
+
+        private readonly struct AssemblyReferenceKey : IEquatable<AssemblyReferenceKey>
+        {
+            private readonly Module m_module;
+            private readonly AssemblyReferenceHandle m_handle;
+
+            public AssemblyReferenceKey(Module module, AssemblyReferenceHandle handle)
+            {
+                m_module = module;
+                m_handle = handle;
+            }
+
+            public bool Equals(AssemblyReferenceKey other)
+            {
+                return ReferenceEquals(m_module, other.m_module) && m_handle == other.m_handle;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is AssemblyReferenceKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return (Runtime.CompilerServices.RuntimeHelpers.GetHashCode(m_module) * 397) ^ m_handle.GetHashCode();
+            }
+        }
+
         // List of loaded assemblies. We need this so that we know what to unload.
         // This can also be used to search for resolving assembly refs.
         private List<Assembly> m_loadedAssemblies = new List<Assembly>();
@@ -244,10 +276,21 @@ namespace System.Reflection.Adds
         // so that it knows which context the resolution is occurring in.
         public virtual Assembly ResolveAssembly(Module scope, AssemblyReferenceHandle assemblyRefHandle)
         {
+            var key = new AssemblyReferenceKey(scope, assemblyRefHandle);
+            if (m_assemblyReferences.TryGetValue(key, out var assembly))
+            {
+                return assembly;
+            }
+
             // Provide a default implementation that forwards to the name-based overload.
             IModule2 im2 = (IModule2)scope;
             var name = im2.GetAssemblyNameFromAssemblyRef(assemblyRefHandle);
-            return this.ResolveAssembly(name);
+            assembly = this.ResolveAssembly(name);
+            if (assembly != null)
+            {
+                m_assemblyReferences[key] = assembly;
+            }
+            return assembly;
         }
 
         // Impl ITU        
@@ -373,6 +416,7 @@ namespace System.Reflection.Adds
             if (disposing)
             {
                 // Free managed resources and call Dispose() on children.
+                m_assemblyReferences.Clear();
                 
                 // Walk all assemblies (which will walk modules) disposing to free up native metadata objects.
                 if (m_loadedAssemblies != null)

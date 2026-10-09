@@ -7,12 +7,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XBF
     {
         public XbfFileNameInfo(string sourceXamlFullName, string givenXaml, string inputXaml, string outputXbf, string checksum = null)
         {
+            this.SourceXamlName = sourceXamlFullName;
             this.GivenXamlName = givenXaml;
             this.InputXamlName = inputXaml;
             this.OutputXbfName = outputXbf;
             this.XamlFileChecksum = checksum ?? Utilities.ChecksumHelper.Instance.ComputeCheckSumForXamlFile(sourceXamlFullName);
         }
 
+        public string SourceXamlName { get; set; }
         // the "Given" name is used for error messages.
         public string GivenXamlName { get; set; }
         public string InputXamlName { get; set; }
