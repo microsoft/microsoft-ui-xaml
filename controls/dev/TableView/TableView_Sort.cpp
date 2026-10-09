@@ -53,6 +53,11 @@ bool TableView::RepositionCustomSortItem(const winrt::IInspectable& item, bool r
     {
         return false;
     }
+    if (!item)
+    {
+        state->InvalidateRanks();
+        return false;
+    }
     return state->Reposition(item, reshapePending);
 }
 

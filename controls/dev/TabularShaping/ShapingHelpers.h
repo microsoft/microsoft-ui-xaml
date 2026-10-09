@@ -246,6 +246,10 @@ namespace ShapingHelpers
         // re-ranks everything once that is cheaper).
         bool Reposition(winrt::IInspectable const& item, bool deferPlacement);
 
+        // Every ranked item may have changed untracked (live shaping was off); the next key read
+        // re-ranks everything once.
+        void InvalidateRanks() noexcept;
+
         bool HasComparer() const noexcept { return static_cast<bool>(m_comparer); }
 
     private:

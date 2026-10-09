@@ -108,6 +108,10 @@ void ShapedItemsSource::SetLiveShaping(bool enabled)
         // structure and post one restore to catch up.
         InvalidateRetainedHierarchyStructure();
         ResubscribeLiveShapingFromSource();
+        if (m_liveItemChangedHook)
+        {
+            m_liveItemChangedHook(nullptr, true);
+        }
 
         MarkLiveShapingDirty();
     }
@@ -2265,6 +2269,12 @@ void ShapedItemsSource::AddLiveShapingSubscription(winrt::IInspectable const& it
 
     m_liveShaping->Subscribe(item);
     m_liveShapeSnapshots[LiveShapingKeyFor(item)] = CaptureLiveShapeSnapshot(item);
+
+    // A re-inserted item may still hold a rank from before it was edited while out of the source.
+    if (m_liveItemChangedHook)
+    {
+        m_liveItemChangedHook(item, true);
+    }
 }
 
 void ShapedItemsSource::RemoveLiveShapingSubscription(winrt::IInspectable const& item)

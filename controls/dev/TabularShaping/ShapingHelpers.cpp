@@ -1134,6 +1134,14 @@ namespace ShapingHelpers
         ClearRanks();
     }
 
+    void CustomSortRankAdapter::InvalidateRanks() noexcept
+    {
+        if (m_comparer && !m_ranks.empty())
+        {
+            m_rerankAllPending = true;
+        }
+    }
+
     void CustomSortRankAdapter::Rank(
         PairwiseComparer const& comparer,
         std::vector<winrt::IInspectable> const& rows)
@@ -1210,7 +1218,7 @@ namespace ShapingHelpers
             m_comparerActive = false;
         });
 
-        if (!m_evicted.empty())
+        if (m_rerankAllPending || !m_evicted.empty())
         {
             PlaceEvicted();
         }
@@ -1316,7 +1324,7 @@ namespace ShapingHelpers
 
         // Items left over from a coalesced batch whose reshape never asked for a key; settle them
         // first so the comparison below is against a complete ranking.
-        const bool hadPending = !m_evicted.empty();
+        const bool hadPending = m_rerankAllPending || !m_evicted.empty();
         if (hadPending)
         {
             PlaceEvicted();

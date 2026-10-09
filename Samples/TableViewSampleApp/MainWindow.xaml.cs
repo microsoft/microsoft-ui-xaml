@@ -108,7 +108,7 @@ public sealed partial class MainWindow : Window
         _uiSettings.ColorValuesChanged += OnColorValuesChanged;
         Closed += (_, _) => _uiSettings.ColorValuesChanged -= OnColorValuesChanged;
 
-        var initialTag = ResolveAutoRunTag() ?? ResolveInitialTag(launchArguments);
+        var initialTag = ResolveInitialTag(launchArguments);
         App.AppendVerificationLog($"MainWindowCtor InitialTag={initialTag}");
         App.AppendSelectionVerificationLog($"MainWindowCtor InitialTag={initialTag}");
         DispatcherQueue.TryEnqueue(() =>
@@ -197,21 +197,6 @@ public sealed partial class MainWindow : Window
         }
 
         return "Home";
-    }
-
-    // Unattended perf run: an "autorun-perf" file in the data directory opens the Hierarchy page,
-    // which runs the probe, writes its results file there and exits. The trigger is consumed.
-    private static string? ResolveAutoRunTag()
-    {
-        var path = Path.Combine(HierarchyPage.DataDirectory, HierarchyPage.PerfTriggerFileName);
-        if (!File.Exists(path))
-        {
-            return null;
-        }
-
-        File.Delete(path);
-        HierarchyPage.AutoPerf = true;
-        return "Hierarchy";
     }
 
     private static bool HasLaunchFlag(IReadOnlyList<string>? launchArguments, string flag)

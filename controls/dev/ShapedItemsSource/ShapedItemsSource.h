@@ -172,7 +172,9 @@ public:
     void ResumeHeldLiveShaping();
 
     // Runs per live item change before snapshot comparison, so the owner can refresh state the
-    // selectors read (comparer ranks). Arg: restore already posted. True forces a reshape.
+    // selectors read (comparer ranks). Arg: restore already posted. True forces a reshape. Also
+    // runs for each arriving item, and once with a null item when live shaping turns on (every
+    // item may have changed untracked).
     void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook) { m_liveItemChangedHook = std::move(hook); }
 
 private:

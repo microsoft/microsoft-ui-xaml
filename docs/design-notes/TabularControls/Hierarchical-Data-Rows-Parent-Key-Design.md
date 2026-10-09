@@ -385,7 +385,9 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
   and sorts by those ranks. With `IsLiveShaping` on, each changed item is taken out of the ranking
   and compared back in (O(n) comparer calls), and the reshape runs when any row's rank moved. A
   burst of changes that already has a reshape pending only drops ranks; once more items wait than
-  log2(n), the next key read re-ranks everything in one merge sort.
+  log2(n), the next key read re-ranks everything in one merge sort. Turning `IsLiveShaping` on
+  re-ranks everything once (edits made while it was off were not tracked), and an item that
+  arrives while it is on is compared back in rather than keeping a rank from before it left.
 - `Rows()` is the snapshot of the visible rows.
 
 ### 6.3 Layer 3 — `HierarchicalSourceAdapter`
@@ -595,10 +597,11 @@ department, and expand or collapse all. The **100k perf** button times the 100k-
 
 ## 12. Tests
 
-No new test infrastructure was added. Verification is the product build gates, a scripted
-UI-level check run locally against the sample (driven through the public API, UIA and injected
-input; not part of this change), the perf button (§9) and manual keyboard and
-frozen-gutter checks. The list below is the coverage those map to (layers 1 and 3 are exercised
+TAEF coverage lives in `TableView_Hierarchy_APITests`, `TableView_LiveShaping_APITests`, the
+hierarchy cases in `TableView_AutomationPeer_APITests`, and `TableView_Hierarchy_InteractionTests`
+(the test app's Hierarchy pivot). The per-test intent is in the
+[test plan](Hierarchical-Rows-and-Live-Shaping-Test-Plan.md). Perf is checked with the sample's
+perf button (§9). The list below is the coverage those map to (layers 1 and 3 are exercised
 through the public API rather than headless):
 
 1. **`BuildParentStructure` / `BuildParentKeyIndex`**: roots (null, empty string, orphan, `0` with no key 0); value vs.
