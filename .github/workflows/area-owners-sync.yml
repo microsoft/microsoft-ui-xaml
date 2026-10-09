@@ -1,0 +1,56 @@
+# Weekly sync of .github/area-owners.yml with the repository tree. Proposes path
+# fixes (moved / deleted folders, new folders) as a single PR on the
+# `bot/area-owners-sync` branch for humans to review. Never changes reviewers.
+#
+# Ships in dry-run mode: the proposal is written to the run summary until the
+# AREA_OWNERS_SYNC_DRY_RUN repository variable is set to `false`. Opening the PR also
+# needs "Allow GitHub Actions to create and approve pull requests" in the repository
+# settings. PRs opened with GITHUB_TOKEN do not trigger other workflows; set the
+# optional AREA_OWNERS_SYNC_TOKEN secret (GitHub App or bot token) if the sync PR
+# should run the usual checks. The run validates the proposed map itself either way.
+
+name: Area Owners Sync
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' # Mondays 03:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: area-owners-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Sync area owners
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Upstream only (not forks). Schedules always run on the default branch; manual
+    # runs must also start from it, since the PR is based on the checked-out commit.
+    if: >-
+      github.repository == 'microsoft/microsoft-ui-xaml' &&
+      (github.event_name == 'schedule' || github.ref_name == github.event.repository.default_branch)
+    steps:
+      # History (trees only) is used to suggest owners from files changed together.
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1000
+          filter: blob:none
+          sparse-checkout: .github
+          persist-credentials: false
+          show-progress: false
+
+      - name: Install dependencies
+        working-directory: .github/scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Sync
+        env:
+          GITHUB_TOKEN: ${{ secrets.AREA_OWNERS_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+          AREA_OWNERS_SYNC_DRY_RUN: ${{ vars.AREA_OWNERS_SYNC_DRY_RUN || 'true' }}
+        run: node .github/scripts/sync-area-owners.mjs
