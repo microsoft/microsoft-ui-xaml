@@ -2024,28 +2024,13 @@ void TableView::OnRowElementIndexChanged(
 }
 
 // One header-text extraction per column, shared by the header cell's automation name and the
-// gripper's OwnerName.
-static winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
-{
-    if (auto const header = column.Header())
-    {
-        if (auto const stringable = header.try_as<winrt::IStringable>())
-        {
-            return stringable.ToString();
-        }
-        if (auto const propValue = header.try_as<winrt::IPropertyValue>();
-            propValue && propValue.Type() == winrt::PropertyType::String)
-        {
-            return propValue.GetString();
-        }
-    }
+// gripper's OwnerName. Defined in TableView.h so TableViewTextColumn can name its cell editor
+// from the same source.
+using TableViewDetails::GetColumnHeaderText;
 
-    return {};
-}
-
-// GetColumnHeaderText renders any IStringable for automation purposes, but only a genuine string
-// may be swapped for a TextBlock -- a UIElement or a type with an implicit DataTemplate must keep
-// the ContentPresenter's content model.
+// GetColumnHeaderText (TableView.h) renders any IStringable for automation purposes, but only a
+// genuine string may be swapped for a TextBlock -- a UIElement or a type with an implicit
+// DataTemplate must keep the ContentPresenter's content model.
 static bool IsPlainStringHeader(const winrt::TableViewColumn& column)
 {
     const auto propValue = column.Header().try_as<winrt::IPropertyValue>();
