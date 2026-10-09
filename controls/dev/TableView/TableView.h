@@ -194,9 +194,8 @@ public:
     // no dispatcher is available or the enqueue fails.
     void QueueRebuildHeaders();
 
-    // Coalesces a burst of column shape changes (a bulk Columns edit, or several Visibility
-    // toggles in one turn) into a single StructureChanged raise on the next dispatcher tick.
-    // Raising per mutation would make Narrator re-read the grid N times for one logical change.
+    // Coalesces a burst of column changes into one StructureChanged on the next tick, so Narrator
+    // does not re-read the grid once per mutation.
     void QueueRaiseColumnsStructureChanged();
     void RaiseColumnsStructureChanged();
 
@@ -267,8 +266,7 @@ public:
     bool IsCellCursorActiveInternal() const noexcept { return m_cellCursorActive; }
     void SetCellCursorActiveInternal(bool active);
 
-    // Shared header/body column cursor, in visible-column coordinates. Read by the row when Tab
-    // crosses bands, so body entry lands in the column the user was working in.
+    // Shared header/body column cursor, in visible-column coordinates.
     int32_t CurrentColumnCursorInternal() const noexcept { return m_currentCellColumn; }
 
     void OnRowCellFocusChanged(winrt::TableViewRow const& row);
@@ -765,11 +763,8 @@ private:
     // brand-new source.
     uint64_t m_rowMetadataGeneration{ 0 };
 
-    // Bumped by every bulk expand/collapse. "Setting the bulk state also resets per-group
-    // exceptions" (TableView-spec) has to cover the per-group request that is still ON THE QUEUE
-    // when the bulk call runs: the gesture route resolves inline but mutates on a later turn, so
-    // without this stamp that request lands after the bulk set and re-creates the very exception
-    // the bulk set just erased -- a gesture-expanded group surviving CollapseAllGroups().
+    // Bumped by every bulk expand/collapse so a queued per-group request that predates it is
+    // dropped instead of re-creating the exception the bulk set just erased.
     uint64_t m_groupExpansionBulkGeneration{ 0 };
 
     void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired);
@@ -782,14 +777,10 @@ private:
     void RaiseGroupStructureChanged();
     void SetAllGroupsExpansion(bool expand);
 
-    // Realized group-header containers, with the index each currently occupies. Headers that the
-    // repeater has not placed (index < 0) are skipped: nothing can be derived for them.
     void ForEachRealizedGroupHeader(std::function<void(winrt::TableViewGroupHeader const&, int32_t)> const& fn);
 
-    // Re-derives every realized header's expansion from the projection after a reshape. A reshape
-    // can rebind a pooled header without a fresh ElementPrepared/ElementIndexChanged callback, so
-    // the header's DPs -- which the ExpandCollapse peer and the VisualStates read -- can otherwise
-    // keep describing the previous projection.
+    // A reshape can rebind a pooled header without ElementPrepared/ElementIndexChanged, leaving its
+    // expansion DPs describing the previous projection.
     void RefreshRealizedGroupHeadersAfterExpansion();
 
     // Keyboard-driven group toggle loses focus without this: the Enter/Space toggle defers a
@@ -904,24 +895,7 @@ private:
     // Count changes refresh both empty state and the terminal row separator.
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceCollectionChangedRevoker{};
 
-    // --- Re-shape focus restore (dev-spec Keyboard, "Re-shape while focused") ---
-    //
-    // A sort or filter that re-shapes the rows while focus is inside the body must leave focus at
-    // the same PROJECTED POSITION - the same row index, whichever record now occupies it - which is
-    // deliberately NOT the record-identity rule that governs Tab re-entry (ResolveFocusEntryRow).
-    //
-    // WHERE FOCUS IS when the re-shape starts decides whether anything is replayed: in the body, the
-    // live position is; dropped to null, the remembered position (m_lastBodyFocus*) is; anywhere
-    // else - a header of this table, or outside it - nothing is, and focus stays where it is.
-    //
-    // The position is also TRACKED as focus moves because the focused row can already have been
-    // recycled (focus dropped) by the time a notification reaches the control. The remembered
-    // position survives only transitions to null: the moment focus lands on any non-null element
-    // outside the body it is discarded, whatever the FocusState or direction.
-    //
-    // The replay is a budgeted pump rather than one shot: at the moment the restore is requested
-    // nothing is realized at the captured index, and the deferred work a re-shape queues behind it
-    // can still drop focus after a single attempt has run.
+    // --- Re-shape focus restore (dev-spec Keyboard, "Re-shape while focused"); see TableView_Keyboard.cpp ---
     void CaptureBodyFocusForReshape();
     void RestoreBodyFocusAfterReshape();
     bool TryResolveLiveBodyFocusPosition(int32_t& row, int32_t& column, bool& cellLevel) const;
@@ -950,8 +924,6 @@ private:
     void CancelReshapeFocusRestore();
     bool TryLandReshapeFocus();
     bool IsBodyFocusAtRow(int32_t rowIndex) const;
-    // Drops a capture no shaping notification claimed, so an app-raised Reset cannot leave a stale
-    // body position for an unrelated later re-shape to replay.
     void QueueReshapeFocusCaptureDisarm();
     void UpdateReshapeFocusDetectorSubscription(const winrt::ItemsSourceView& view);
     void OnRowsSourceResetForFocus(
@@ -969,13 +941,12 @@ private:
     bool m_pendingReshapeFocusCellLevel{ false };
     winrt::FocusState m_pendingReshapeFocusState{ winrt::FocusState::Keyboard };
     int32_t m_reshapeFocusAttemptsLeft{ 0 };
-    // The clamped row StartBringIntoView was last raised for, so each target is scrolled to once.
+    // So each target is scrolled into view only once.
     int32_t m_reshapeFocusBroughtIntoViewRow{ -1 };
     bool m_reshapeFocusTurnQueued{ false };
     winrt::event_token m_reshapeFocusLayoutToken{};
-    // Enough attempts to cover realize -> arrange -> the deferred work a re-shape queues behind it,
-    // across both the layout-pass and dispatcher-turn triggers, and small enough that a restore can
-    // never fight the user for focus.
+    // Covers realize -> arrange -> deferred re-shape work, yet bounded so a restore never fights
+    // the user for focus.
     static constexpr int32_t s_reshapeFocusRestoreAttempts{ 24 };
     // Subscribed before the repeater so a Reset is observed while the rows are still realized.
     winrt::ItemsSourceView::CollectionChanged_revoker m_reshapeFocusDetectorRevoker{};
@@ -1111,8 +1082,6 @@ private:
     bool FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel);
     int32_t GetFocusedRowContainerIndex() const;
     int32_t GetFocusedGroupHeaderIndex() const;
-    // dev-spec Keyboard: Up from the first row leaves the body for the header band, entering it at
-    // the shared column cursor.
     bool TryMoveFocusToHeaderBandFromBody(int32_t visibleColumnIndex);
     int32_t m_navAnchorRowContainer{ -1 };
     int32_t m_navAnchorGroupHeader{ -1 };

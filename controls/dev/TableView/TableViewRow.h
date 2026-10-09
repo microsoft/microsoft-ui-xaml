@@ -36,9 +36,7 @@ public:
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
 
-    // Keeps the body ONE tab stop: Tab from the row or from a cell leaves the table instead of
-    // descending into a template column's focusable content. See the definition for why the
-    // row's IsTabStop gating cannot do this by itself.
+    // Keeps the body one tab stop; see the definition.
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
     // Updates the weak owner ref, column subscription, and realized cells.
@@ -131,17 +129,13 @@ private:
     void ApplyFocusLevelInternal();
     void SetCellsTabStopInternal(bool isTabStop);
 
-    // True when focus is on this row or exactly on one of its cells - never inside cell content.
     bool IsGridLevelFocusInternal();
 
-    // Takes the cells' authored content out of the tab order so XAML's own Tab walk cannot descend
-    // into it, and puts it back on the next dispatcher turn (or earlier, on a repeat press,
-    // Unloaded, recycle-out or cell rebuild). Restore never overwrites a value the app changed.
+    // Temporarily removes cell content from the tab order for one Tab walk; see the definition.
     void SuppressCellContentTabStopsForTabWalkInternal();
     void RestoreCellContentTabStopsInternal();
 
-    // Resolves body Tab entry: the remembered row, and - when the shared cursor is at cell level -
-    // the remembered column's cell rather than the row.
+    // Resolves body Tab entry to the remembered row, or its remembered-column cell at cell level.
     void OnRowGettingFocus(
         const winrt::UIElement& sender,
         const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
@@ -213,17 +207,13 @@ private:
     // False = row-level focus; true = cell-level focus. Recycled rows return at row level.
     bool m_isCellLevel{ false };
 
-    // One cell-content element whose IsTabStop was taken away for the length of one Tab walk,
-    // with the raw local value it had before (UnsetValue, a boxed bool, or a BindingExpression)
-    // so restore can put back exactly what the app declared. Weak: the row never extends the
-    // lifetime of authored content.
+    // originalLocalValue: raw local value (UnsetValue, boxed bool, or BindingExpression).
     struct SuppressedContentTabStop
     {
         winrt::weak_ref<winrt::UIElement> element{ nullptr };
         winrt::IInspectable originalLocalValue{ nullptr };
     };
 
-    // Empty whenever no Tab press is in flight.
     std::vector<SuppressedContentTabStop> m_suppressedContentTabStops{};
 
     // Prevent DataContextChanged re-entry while RebuildCells updates child DCs.

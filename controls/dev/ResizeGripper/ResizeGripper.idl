@@ -34,8 +34,7 @@ runtimeclass ResizeGripperDragCompletedEventArgs
 //                        OrientationStates - Horizontal, Vertical; follows DragOrientation.
 //   Styling keys:        ResizeGripperSeparatorBrush, ResizeGripperSeparatorThickness,
 //                        ResizeGripperSeparatorThicknessVertical (ResizeGripper_themeresources.xaml).
-//   RTL:                 no mirrored state - the separator is on the logical trailing edge and the
-//                        framework mirrors the subtree; only the drag delta is mirrored in code.
+//   RTL:                 no mirrored state; only the drag delta is mirrored in code.
 [MUX_INTERNAL]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]

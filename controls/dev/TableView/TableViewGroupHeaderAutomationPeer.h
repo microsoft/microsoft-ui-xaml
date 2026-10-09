@@ -29,9 +29,7 @@ public:
     winrt::hstring GetClassNameCore();
     winrt::hstring GetNameCore();
 
-    // An assistive technology places focus with IUIAutomationElement::SetFocus, not by tabbing.
-    // Overridden so that route lands KEYBOARD focus on the band; see the comment on the
-    // definition for why the base peer's programmatic focus is not enough.
+    // Lands keyboard focus for UIA SetFocus; see the definition.
     void SetFocusCore();
 
     // IExpandCollapseProvider

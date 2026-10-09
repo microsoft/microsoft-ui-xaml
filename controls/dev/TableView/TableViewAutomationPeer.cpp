@@ -127,11 +127,7 @@ void TableViewAutomationPeer::RaiseStructureChangedForGroupExpansion()
 
 void TableViewAutomationPeer::RaiseStructureChangedForColumnsChange()
 {
-    // ChildrenInvalidated rather than ChildAdded / ChildRemoved: a column is not a child of THIS
-    // peer. It adds or removes one cell in every row and one header peer in the header band, and
-    // the ChildAdded / ChildRemoved forms require the runtime id of a single child of the peer the
-    // event is raised on. "Everything below me may have changed" is the honest signal, and it is
-    // the same one a virtualization reset uses.
+    // A column isn't a child of this peer, so ChildAdded/ChildRemoved don't apply.
     RaiseStructureChanged(winrt::AutomationStructureChangeType::ChildrenInvalidated);
 }
 

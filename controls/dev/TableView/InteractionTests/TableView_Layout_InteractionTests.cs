@@ -269,13 +269,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // scrolling. This test proves real pointer scroll moves the non-frozen header; a failure means the
             // header<->body horizontal sync never runs off the input path.
             //
-            // MEASURED ON THE HEADER SCROLLER'S OFFSET, NOT ON A HEADER PEER'S RECTANGLE. The control scrolls
-            // the header band by driving PART_HeaderScroller, and that travel is not reflected in a header
-            // peer's UIA BoundingRectangle, so a rectangle-based assertion cannot observe it at this tier.
-            // The page publishes the header scroller's own offset as "HeaderH" alongside the body's, which is
-            // exactly the quantity the spec describes the control as driving - so this asserts the real
-            // contract rather than a proxy for it, and it can still tell "the sync never ran" from "the sync
-            // ran but the header did not move".
+            // Asserts on the page-published HeaderH offset, not a header peer's rectangle (see ReadScrollOffsets).
             //
             // LIMITATION (finding #13): the plan item's full claim is that headers move "in lockstep with
             // cells". Reading an individual cell's x requires descending into a row peer, which crashes the
@@ -404,30 +398,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a FrozenEdge.Leading column stays pinned while unfrozen columns scroll horizontally under pointer input.")]
         public void FrozenColumnStaysPinnedUnderPointerScroll()
         {
-            // Derives from TableView-dev-spec.md:185 ("Frozen leading columns"): leading-frozen header and
+            // Derives from TableView-dev-spec.md "Frozen leading columns": leading-frozen header and
             // body cells are counter-translated against the horizontal scroll offset, so a FrozenEdge.Leading
             // column keeps its on-screen x while non-frozen columns shift. FrozenName authors
-            // FrozenEdge="Leading" on the Scrolling table (TableViewPage.xaml:188). API 4.x sets the offset
-            // directly via ChangeView; this test drives a real pointer drag so the frozen layout runs off the
-            // input path. A failure means frozen pinning is applied only from the programmatic scroll path.
+            // FrozenEdge="Leading" on the Scrolling table. API 4.x sets the offset directly via ChangeView; this
+            // test drives a real pointer drag so the frozen layout runs off the input path. A failure means frozen
+            // pinning is applied only from the programmatic scroll path.
             //
-            // This test deliberately does NOT read the frozen header peer's BoundingRectangle: the revision of
-            // this test that did was the one marked Ignore, because the peer rectangle slid by the full scroll
-            // amount while the pin was working. The page publishes the rendered geometry in process instead -
-            // see TableViewPage.xaml.cs ReportScrollOffsets.
-            //
-            // Coordinate space (measured on the VM, 2026-10-09 - this is the subtlety that broke the first
-            // attempt at this test): TransformToVisual ALREADY INCLUDES UIElement.Translation. A 51px scroll
-            // moved the unfrozen cell's transform by exactly -51 while the frozen cell's transform stayed put
-            // despite its Translation.X going 0 -> 51; the pin can only cancel the scroller that way if it is
-            // already folded into the transform. So the published *X values are the raw transform - the
-            // rendered position - and the *T values are published separately as a mechanism diagnostic only,
-            // never summed in. Asserting on a sum would double-count the pin.
-            //
-            // The Body* trio samples the first realized row's PART_CellsHost - the band
-            // TableViewCellsPanel.cpp:318-322 pins for the user - and carries the primary assertions. The
-            // header trio is asserted too, because dev-spec:185 pins header AND body cells and
-            // RefreshFrozenColumns (TableView_Columns.cpp:66-95) is supposed to drive both from one offset.
+            // Asserts on page-published geometry, not peer rectangles; see ReadScrollOffsets for *X vs *T.
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem))
@@ -485,8 +463,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     10.0,
                     "Dragging the horizontal ScrollBar thumb must scroll PART_BodyScroller right by a measurable amount; otherwise the pinning assertions below are vacuous.");
 
-                // Precondition: unfrozen BODY content must travel against the scroll by the full offset. This
-                // also validates the measurement formula - an element with no pin must move by exactly -scroll.
+                // Precondition: unfrozen body content moves by exactly -scroll (also validates the measurement).
                 Verify.IsLessThanOrEqual(
                     Math.Abs((bodyScrollXAfter - bodyScrollXBefore) + scrolledBy),
                     2.0,
@@ -495,8 +472,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                         scrolledBy,
                         bodyScrollXAfter - bodyScrollXBefore));
 
-                // The claim under test: the frozen BODY cell's rendered x does not move (dev-spec:185).
-                // Remove the counter-translation and this value tracks bodyScrollX, failing by ~scrolledBy.
+                // Without the counter-translation this value tracks bodyScrollX, failing by ~scrolledBy.
                 Verify.IsLessThanOrEqual(
                     Math.Abs(bodyFrozenXAfter - bodyFrozenXBefore),
                     2.0,
@@ -506,8 +482,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                         bodyFrozenXAfter,
                         scrolledBy));
 
-                // ...and it is pinned by the spec'd mechanism, not by having failed to lay out at all: the
-                // counter-translation must equal the offset it cancels. Diagnostic-grade, never summed above.
+                // The pin must come from the counter-translation, not from a failed layout.
                 Verify.IsLessThanOrEqual(
                     Math.Abs(bodyFrozenTAfter - hAfter),
                     2.0,
@@ -516,8 +491,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                         bodyFrozenTAfter,
                         hAfter));
 
-                // dev-spec:185 pins header cells too, and the header band has its own scroller: assert the
-                // same contract there, with the same unfrozen precondition so neither half can go vacuous.
+                // Header cells are pinned too; same contract and unfrozen precondition on the header band.
                 Verify.IsLessThanOrEqual(
                     Math.Abs((scrollXAfter - scrollXBefore) + scrolledBy),
                     2.0,

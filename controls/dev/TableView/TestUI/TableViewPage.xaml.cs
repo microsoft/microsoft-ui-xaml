@@ -169,11 +169,8 @@ namespace MUXControlsTestApp
 
             scroller.ViewChanged += (s, args) => ReportScrollOffsets(scroller);
 
-            // The frozen-band readout below must be sampled AFTER the header band has re-laid out at its
-            // synced offset, which happens after PART_BodyScroller's ViewChanged returns. LayoutUpdated is
-            // the first point at which both the counter-translation and the header offset are settled, so
-            // the readout is refreshed there too. ReportScrollOffsets writes only on change, so this cannot
-            // feed itself a layout loop.
+            // The header band and counter-translation settle only after ViewChanged returns, so refresh on
+            // LayoutUpdated too.
             ScrollingTableView.LayoutUpdated += (s, args) => ReportScrollOffsets(_scrollingBodyScroller);
 
             ReportScrollOffsets(scroller);
@@ -182,38 +179,11 @@ namespace MUXControlsTestApp
         private ScrollViewer _scrollingHeaderScroller;
         private Panel _scrollingHeaderHost;
 
-        // Publishes PART_BodyScroller's offsets plus the frozen-band geometry an out-of-process test cannot
-        // otherwise see.
-        //
-        // Why the frozen values are needed: leading-frozen cells are pinned by writing UIElement.Translation
-        // (TableViewCellsPanel.cpp:318-322, per TableView-dev-spec.md:185). The previous revision of
-        // FrozenColumnStaysPinnedUnderPointerScroll watched the frozen header *peer's* UIA BoundingRectangle
-        // and saw it slide by the full scroll amount while the pin was in fact working, so the rendered
-        // position has to be sampled in process instead.
-        //
-        // COORDINATE SPACE - measured on the test VM, 2026-10-09, and the reason the first attempt at this
-        // readout was wrong:
-        //
-        //   TransformToVisual ALREADY INCLUDES UIElement.Translation.
-        //
-        // The run that proved it: a 51px horizontal scroll moved the unfrozen cell's transform 181 -> 130
-        // (exactly -51, the scroller offset) while the frozen cell's transform stayed at 1 even though its
-        // Translation.X had gone 0 -> 51. The frozen cell's transform could only hold still if the +51
-        // counter-translation were already folded into it, cancelling the -51 from the scroller. Adding
-        // Translation.X on top therefore DOUBLE-COUNTED the pin and reported 52 for a cell that had not moved.
-        //
-        // So the rendered x in table space is plain TransformToVisual(ScrollingTableView).X - nothing added.
-        // Translation.X is still published, but purely as a mechanism diagnostic, never as a term in the sum.
-        //
-        // Format:
+        // Publishes scroll offsets plus frozen-band geometry that UIA cannot see (the pin is a composition-only
+        // Translation). Format:
         //   "H=<h>;V=<v>;HeaderH=<h>;FrozenX=<x>;FrozenT=<tx>;ScrollX=<x>;BodyFrozenX=<x>;BodyFrozenT=<tx>;BodyScrollX=<x>;VH=<vh>;RowH=<rh>"
-        // VH is PART_BodyScroller's ViewportHeight and RowH the first realized row's ActualHeight, both in DIPs, so
-        // a paging test can derive the rows-per-viewport independent of the VM's DPI.
-        // All x values are table-relative (independent of window placement). The Frozen*/Scroll* trio samples
-        // the HEADER band (PART_HeaderHost); the Body* trio samples the first realized row's cell panel
-        // (PART_CellsHost) - the band TableViewCellsPanel.cpp:318-322 actually pins for the user. Both trios
-        // are read from the same panel-per-band, both transformed against the same visual (the TableView),
-        // so a frozen and an unfrozen reading within a trio are directly comparable.
+        // *X is TransformToVisual(ScrollingTableView).X, which already includes Translation; *T is diagnostic only.
+        // Frozen*/Scroll* sample the header band, Body* the first row's PART_CellsHost. VH and RowH are in DIPs.
         private void ReportScrollOffsets(ScrollViewer scroller)
         {
             if (scroller == null)
@@ -243,16 +213,14 @@ namespace MUXControlsTestApp
                     ? "<none>"
                     : firstRow.ActualHeight.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
 
-            // LayoutUpdated also drives this; writing an unchanged string would re-dirty layout forever.
+            // Write only on change: LayoutUpdated also drives this, so an unconditional write would loop layout.
             if (ScrollOffsetTextBlock.Text != text)
             {
                 ScrollOffsetTextBlock.Text = text;
             }
         }
 
-        // The first cell in a cell panel whose column is (or is not) FrozenEdge.Leading. Cells carry their
-        // TableViewColumn in Tag - the same association TableViewCellsPanel::ApplyFrozenColumnLayout keys off,
-        // so this selects exactly the elements the product decided to pin (or not).
+        // Cells carry their TableViewColumn in Tag, the same key the product's frozen layout uses.
         private static FrameworkElement FindCell(Panel cellsHost, bool frozen)
         {
             if (cellsHost == null)
@@ -273,9 +241,7 @@ namespace MUXControlsTestApp
             return null;
         }
 
-        // Rendered left edge of the cell in TableView space. TransformToVisual already folds in BOTH the
-        // scroller's offset and the cell's Translation (see the measurement note above), so this is the
-        // position the user sees and nothing may be added to it.
+        // Already includes the scroller offset and the cell's Translation; add nothing to it.
         private string FormatCellRenderedLeft(Panel cellsHost, bool frozen)
         {
             var cell = FindCell(cellsHost, frozen);
@@ -650,8 +616,6 @@ namespace MUXControlsTestApp
             _groupedSource.ClearFilter();
         }
 
-        // Sorts BasicTableView by Age, descending, through the public API - the same re-shape the header's own
-        // activation applies, without any header involvement.
         private void OnFocusNeutralSortBasicByAgeClick(object sender, RoutedEventArgs e)
         {
             TableViewColumn age = BasicTableView.Columns.FirstOrDefault(column => (column.Header as string) == "Age");

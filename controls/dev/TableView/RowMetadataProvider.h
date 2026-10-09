@@ -51,7 +51,6 @@ public:
     void ExpandAllGroups() override;
     void CollapseAllGroups() override;
 
-    // O(log G) after a lazy O(rows) band scan per projection change; see m_groupHeaderIndices.
     bool TryGetGroupMembership(
         winrt::IInspectable const& rows,
         int32_t index,
@@ -108,14 +107,8 @@ private:
     std::unordered_map<winrt::hstring, int32_t> m_identityToIndex;
     bool m_identityIndexValid{ false };
 
-    // Lazily built, ascending projected indexes of the group-header bands, so a data row's group
-    // bounds are one binary search instead of a walk to the adjacent bands (which made reading a
-    // group through UIA quadratic). Invalidated by the same CollectionChanged as the identity
-    // index -- a full rebuild (Reset) and a single-group expand/collapse splice both raise it -- and
-    // keyed to the row count it was built for as a second guard. Built by a plain scan rather than
-    // by striding header-to-header with each header's item count: mid-splice a header can already
-    // claim its new size while its rows are not yet inserted, and a stride can then land on a later
-    // header and silently skip groups.
+    // Sorted header-band indexes; invalidated on CollectionChanged and keyed to row count. Built by
+    // a plain scan: mid-expand a header's count can lead its inserted rows, so striding skips groups.
     void InvalidateGroupHeaderIndices();
     void EnsureGroupHeaderIndices(int32_t rowCount);
     std::vector<int32_t> m_groupHeaderIndices;

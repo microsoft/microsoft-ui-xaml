@@ -71,8 +71,8 @@ namespace
         return nullptr;
     }
 
-    // Lookups that miss are the common case on the element walk. HasKey does not originate an error
-    // on a miss the way Lookup (and therefore TryLookup) does.
+    // Misses are the common case here; HasKey does not originate an error on a miss the way
+    // Lookup (and therefore TryLookup) does.
     winrt::IInspectable QuietLookup(winrt::IMap<winrt::IInspectable, winrt::IInspectable> const& map, winrt::IInspectable const& boxedKey)
     {
         if (map && map.HasKey(boxedKey))
@@ -132,8 +132,8 @@ namespace
         return false;
     }
 
-    // Every theme-dictionary key EnsureActiveThemeDictionary can select, used only to recognise a
-    // value ResourceDictionary::Lookup pulled from a theme dictionary chosen by the APP theme.
+    // Every key EnsureActiveThemeDictionary can select; used to recognise a Lookup hit that came
+    // from a theme dictionary chosen by the APP theme.
     constexpr std::wstring_view s_allThemeDictionaryKeys[]{
         L"Light"sv, L"Dark"sv, L"Default"sv,
         L"HighContrast"sv, L"HighContrastBlack"sv, L"HighContrastWhite"sv, L"HighContrastCustom"sv };
@@ -143,9 +143,8 @@ namespace
         winrt::IInspectable boxedKey;
         // Candidate theme-dictionary keys in selection order; the first one present wins.
         std::vector<std::wstring_view> themeKeys;
-        // Framework theme resources / system colours (with their Application.Resources override)
-        // for this key - what ResourceDictionary::Lookup appends to every dictionary's own scope.
-        // Resolved on first use through an empty dictionary, which has no scope of its own.
+        // Global theme resources for this key, which Lookup appends to every dictionary's scope.
+        // Resolved lazily through an empty dictionary, which has no scope of its own.
         winrt::IInspectable globalValue{ nullptr };
         bool globalResolved{ false };
 
@@ -175,12 +174,10 @@ namespace
         return nullptr;
     }
 
-    // ResourceDictionary::Lookup/HasKey are full-scope (own entries, merged, the theme dictionary
-    // chosen by the APP theme, then global theme resources), and enumerating a dictionary to find
-    // its own keys forces CResourceDictionary::EnsureAll, materialising every deferred resource -
-    // through XamlControlsResources, the whole WinUI theme. So "own entry" is established by
-    // elimination instead: the full-scope hit is the dictionary's own entry unless it is the
-    // same resource one of the other scopes returns. A handful of point lookups, no enumeration.
+    // Lookup/HasKey are full-scope (own, merged, APP-theme dictionary, global), and enumerating a
+    // dictionary forces CResourceDictionary::EnsureAll (realizes every deferred resource - the whole
+    // WinUI theme). So "own entry" is decided by elimination: the hit is own unless another scope
+    // returns the same resource.
     bool IsOwnEntry(winrt::ResourceDictionary const& dict, winrt::IInspectable const& found, ElementResourceQuery& query)
     {
         if (IsSameResource(found, query.GlobalValue()))
@@ -213,10 +210,8 @@ namespace
         return true;
     }
 
-    // One dictionary's LocalOnly scope, in CResourceDictionary::GetKeyNoRefImpl's order: own
-    // entries, then MergedDictionaries last-to-first (each recursively in this same order), then
-    // the single active theme dictionary - selected here from the ELEMENT's theme, which a
-    // Lookup issued from code cannot see.
+    // Framework (GetKeyNoRefImpl) order: own entries, MergedDictionaries last-to-first, then the
+    // active theme dictionary - chosen from the ELEMENT's theme, which a code-issued Lookup cannot see.
     winrt::IInspectable LookupInDictionaryScope(winrt::ResourceDictionary const& dict, ElementResourceQuery& query)
     {
         if (!dict)
@@ -251,12 +246,9 @@ namespace
         return nullptr;
     }
 
-    // Resolves a key the way {ThemeResource} would from `start`: each ancestor's Resources nearest
-    // first, then Application.Resources, then the framework theme resources. Within a dictionary the
-    // order is the framework's (own -> merged -> theme; see LookupInDictionaryScope), and the theme
-    // dictionary is chosen as EnsureActiveThemeDictionary does: under High Contrast "HighContrast"
-    // first, then the base theme's own key ("Light" / "Dark"), then "Default" - so a "Dark"-keyed
-    // dictionary is honoured in Dark, and "Default" serves whichever theme has no key of its own.
+    // Resolves a key the way {ThemeResource} would from `start`: ancestors nearest first, then
+    // Application.Resources, then global theme resources. Theme keys are tried as
+    // EnsureActiveThemeDictionary does: "HighContrast" (under HC), "Light"/"Dark", then "Default".
     winrt::IInspectable LookupElementResource(winrt::FrameworkElement const& start, std::wstring_view key, bool highContrast = false)
     {
         ElementResourceQuery query;
@@ -526,8 +518,7 @@ TableView::TableView()
         });
     AddHandler(winrt::UIElement::PreviewKeyDownEvent(), winrt::box_value(m_previewKeyDownHandler), false /* handledEventsToo */);
 
-    // Header cells are auto-mirrored and use logical alignment only (see RebuildHeaders), so they
-    // need no direction stamp; the rebuild just keeps the band in step with the body refresh below.
+    // Headers need no direction stamp (see RebuildHeaders); the rebuild keeps them in step with the body.
     RegisterPropertyChangedCallback(
         winrt::FrameworkElement::FlowDirectionProperty(),
         [weakThis](winrt::DependencyObject const&, winrt::DependencyProperty const&)
@@ -858,10 +849,8 @@ void TableView::OnApplyTemplate()
     // briefly sourced without the selector/ElementPrepared owner hookup TableView rows require.
     RefreshRowsPipeline();
 
-    // Remembers where the body cursor is as focus moves. Both re-shape notifications arrive after
-    // ItemsRepeater has recycled the focused row, so this is the only point at which the position
-    // the "same position across a re-shape" rule refers to is actually observable. Subscribed on
-    // the TableView, where both routed events bubble up from every band.
+    // Track the body cursor as focus moves: re-shape notifications arrive after ItemsRepeater has
+    // recycled the focused row, so the pre-reshape position is only observable here.
     m_bodyFocusTrackerGotFocusRevoker = GotFocus(
         winrt::auto_revoke, { this, &TableView::OnTableViewGotFocusForBodyTracking });
     m_bodyFocusTrackerLosingFocusRevoker = LosingFocus(
@@ -1550,12 +1539,8 @@ void TableView::QueueGroupExpansionRowRefresh()
 
 void TableView::RefreshRealizedRowsAfterGroupExpansion()
 {
-    // Headers first: their expansion is what the rows below them were (de)realized for, and a
-    // reshape can rebind a pooled header in place without an ElementPrepared/ElementIndexChanged
-    // callback. Without this the container's IsExpanded DP -- the value the ExpandCollapse peer
-    // and the chevron VisualStates read -- can outlive the projection that produced it, which is
-    // what let a bulk collapse leave a gesture-expanded group reporting Expanded. Re-preparing is
-    // idempotent and announces to UIA only when THIS group's reported state actually moved.
+    // A reshape can rebind a pooled header in place without ElementPrepared/ElementIndexChanged,
+    // leaving a stale IsExpanded (read by the ExpandCollapse peer and chevron states).
     RefreshRealizedGroupHeadersAfterExpansion();
 
     ForEachRealizedRow([this](winrt::TableViewRow const& row)
@@ -1601,8 +1586,7 @@ void TableView::AdoptItemsSource()
 
     m_activeSource.set(tableViewSource);
 
-    // A different source means a different projection: any remembered body position names a row
-    // that no longer exists, so it must not survive into the new one.
+    // A remembered body position names a row of the old source.
     ForgetBodyFocusPosition();
     m_reshapeFocusValid = false;
     m_reshapeFocusRow = -1;
@@ -1674,9 +1658,8 @@ void TableView::RefreshRowsPipeline()
 
     if (auto repeater = m_rowsRepeater.get())
     {
-        // Subscribe the re-shape focus detector BEFORE the repeater adopts the view: handlers run in
-        // subscription order, so this is the only way to observe an in-place Reset while the focused
-        // row is still realized and still reports its projected index.
+        // Subscribe BEFORE the repeater adopts the view: handlers run in subscription order, so we
+        // see a Reset while the focused row is still realized.
         UpdateReshapeFocusDetectorSubscription(m_rowsItemsSourceView);
 
         // ItemsRepeater has no identity short-circuit: re-assigning the same source tears down
@@ -1699,15 +1682,11 @@ void TableView::RefreshRowsPipeline()
 
 void TableView::OnTableViewSourceProjectionChanged()
 {
-    // The repeater is about to recycle every realized row, and its own focus rescue runs while it
-    // does. Freeze the body-focus tracker for the rest of this turn so the rescue's landing cannot
-    // be mistaken for the user's position.
+    // The repeater's focus rescue during recycling must not be mistaken for the user's position.
     SuppressBodyFocusTrackingForThisTurn();
 
-    // Capture first: RefreshRowsPipeline below re-sources the repeater, which tears down every
-    // realized row synchronously, and TerminateEditWithoutVisualRestore can move focus before that.
-    // This is the only point in the rebuild path where the body still holds the position the user
-    // was on. See the re-shape focus restore note in TableView.h.
+    // Capture first: RefreshRowsPipeline tears down realized rows synchronously, and
+    // TerminateEditWithoutVisualRestore can move focus before that.
     CaptureBodyFocusForReshape();
 
     // A shaping verb swapped the projected shape after we bound, so the cached view and row
@@ -1730,9 +1709,7 @@ void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
         QueueGroupExpansionRowRefresh();
     }
 
-    // dev-spec Keyboard, "Re-shape while focused": the new shape is in place by the time this is
-    // raised (both the in-place re-order and the rebuild have already run), so this is where the
-    // body cursor is put back at the position it was captured on.
+    // The new shape is in place by now (re-order and rebuild have both run).
     RestoreBodyFocusAfterReshape();
 
     // The app may have declared or cleared a sort straight on the source, which the control has no
@@ -1808,11 +1785,10 @@ void TableView::UpdateReshapeFocusDetectorSubscription(const winrt::ItemsSourceV
 {
     if (m_reshapeFocusDetectorRevoker && SameInspectableIdentity(view, m_reshapeFocusDetectorView))
     {
-        // Already first in line on this very view; re-subscribing would move us behind the repeater.
+        // Re-subscribing would move us behind the repeater.
         return;
     }
 
-    // auto_revoke drops the prior view's subscription.
     m_reshapeFocusDetectorRevoker = {};
     m_reshapeFocusDetectorView = nullptr;
 
@@ -1828,23 +1804,17 @@ void TableView::OnRowsSourceResetForFocus(
     const winrt::IInspectable& /*sender*/,
     const winrt::NotifyCollectionChangedEventArgs& args)
 {
-    // Only a Reset recycles every realized row and makes ItemsRepeater rescue focus off the user's
-    // position; an Add/Remove shifts indices with the elements intact and focus rides along, so
-    // capturing there would fight the framework rather than help it.
+    // Only a Reset recycles every realized row; on Add/Remove focus rides along with its element.
     if (args.Action() != winrt::NotifyCollectionChangedAction::Reset)
     {
         return;
     }
 
-    // Same reason as the projection path: the repeater processes this Reset right after us and
-    // rescues focus off the row it recycles. Keep the tracker on the pre-reset position.
     SuppressBodyFocusTrackingForThisTurn();
 
     CaptureBodyFocusForReshape();
 
-    // The repeater recycles every realized row as it handles this Reset, editor included. Close
-    // the edit first, the same way the projection-rebuild path does, so the edited item's value is
-    // written back and no editor is left on a container that now shows another record.
+    // Close the edit before the repeater recycles the editor's container for another record.
     if (IsEditing())
     {
         TerminateEditWithoutVisualRestore();
@@ -2354,11 +2324,9 @@ void TableView::RebuildHeaders()
     }
     const bool canUserSortColumns = CanUserSortColumns();
 
-    // The header cells inherit the TableView's FlowDirection, and XAML mirrors an RTL subtree with
-    // one transform at the element where FlowDirection changes; below it everything arranges in
-    // logical coordinates. So logical Right IS the reading-order trailing edge in both directions
-    // (visual left under RTL), and nothing in a header cell may swap sides by hand: the grid line,
-    // the sort indicator and the resize gripper (AppendResizeGripperVisual) all use logical Right.
+    // XAML mirrors an RTL subtree with one transform where FlowDirection changes, so logical Right
+    // is the trailing edge in both directions. Never swap sides by hand in a header cell (grid
+    // line, sort indicator, resize gripper).
     const auto logicalEndAlignment = winrt::HorizontalAlignment::Right;
 
     if (auto columns = Columns())
@@ -2492,8 +2460,6 @@ void TableView::RebuildHeaders()
                 {
                     if (auto strongThis = weakThis.get())
                     {
-                        // Whether the body cursor is replayed after the sort depends only on where
-                        // focus is when the rows re-shape (CaptureBodyFocusForReshape).
                         if (strongThis->ToggleSortDirection(column))
                         {
                             args.Handled(true);
@@ -2709,9 +2675,7 @@ void TableView::QueueRebuildHeaders()
 
 void TableView::RaiseColumnsStructureChanged()
 {
-    // FromElement only, like the other raise sites: no live peer means no client is connected to
-    // this element, so creating one purely to announce would materialize automation objects
-    // nobody asked for.
+    // FromElement only: don't create a peer just to announce when no client is connected.
     if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewAutomationPeer>())
     {
         winrt::get_self<TableViewAutomationPeer>(peer)->RaiseStructureChangedForColumnsChange();
@@ -2720,9 +2684,6 @@ void TableView::RaiseColumnsStructureChanged()
 
 void TableView::QueueRaiseColumnsStructureChanged()
 {
-    // Mirrors OnTableViewSourceShapingChanged: a column mutation is not an input event, so this
-    // raise is the only thing that tells a UIA client its cached grid shape is stale. Nothing is
-    // done at all when no client is listening -- the same gate the shaping path uses.
     if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::StructureChanged))
     {
         return;
@@ -2741,10 +2702,7 @@ void TableView::QueueRaiseColumnsStructureChanged()
         return;
     }
 
-    // Deferred for the same reason the header rebuild is: a Columns edit arrives one
-    // VectorChanged callback at a time, and the shape a client would re-read is only final once
-    // the whole burst has been applied. Announcing mid-burst would send Narrator to re-read a
-    // grid that is still changing.
+    // Deferred so a burst of Columns VectorChanged callbacks announces once, with the final shape.
     m_columnsStructureChangedQueued = true;
     auto weakThis = get_weak();
     if (!dispatcher.TryEnqueue([weakThis]()
@@ -2771,8 +2729,7 @@ void TableView::QueueRaiseColumnsStructureChanged()
 void TableView::OnTableViewUnloaded()
 {
     m_headerSortSpaceArmedColumn = nullptr;
-    // A re-shape focus restore cannot outlive the tree it was aiming into, and a remembered body
-    // position must not be replayed into whatever tree the control is loaded into next.
+    // Neither a pending restore nor a remembered position may outlive this tree.
     CancelReshapeFocusRestore();
     ForgetBodyFocusPosition();
     m_reshapeFocusValid = false;
@@ -2938,18 +2895,7 @@ void TableView::AppendResizeGripperVisual(
     // column would sit between the user and the data.
     gripperVisual.IsTabStop(false);
     winrt::AutomationProperties::SetAccessibilityView(gripperVisual, winrt::AccessibilityView::Raw);
-    // The gripper sits on the column's reading-order TRAILING edge - the boundary it shares with
-    // the next column - in BOTH flow directions, so this alignment is deliberately NOT swapped for
-    // RTL. XAML applies RightToLeft as a single mirror transform at the element where
-    // FlowDirection changes (the TableView), and everything below that boundary - including this
-    // header cell - still arranges in ordinary logical left-to-right coordinates (the same model
-    // TableViewCellsPanel::ApplyFrozenColumnLayout relies on, and the one
-    // VerifyFrozenColumnsMirrorInRightToLeft measures). Logical Right therefore lands on the
-    // visual LEFT under RTL, which is exactly where the RtlName/RtlCity boundary is. Stamping
-    // Left here instead mirrored a frame that was already mirrored and parked the gripper on the
-    // table's outer edge, so an RTL pointer drag on the real boundary hit nothing. The header grid
-    // line and sort indicator follow the same rule (RebuildHeaders), as does the gripper's own
-    // separator, which stays on its logical right edge under RTL.
+    // Trailing edge in both flow directions; deliberately NOT swapped for RTL (see RebuildHeaders).
     gripperVisual.HorizontalAlignment(winrt::HorizontalAlignment::Right);
     gripperVisual.Width(gripperWidth);
     if (!headerText.empty())

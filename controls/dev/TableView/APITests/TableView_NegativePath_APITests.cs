@@ -182,8 +182,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 if (constraint == "MaxPositiveInfinity" || constraint == "MaxNaN")
                 {
-                    // MaxWidth defaults to an unbounded value in the IDL, so setting it to an
-                    // unbounded malformed value is a no-op.
+                    // MaxWidth defaults to unbounded, so an unbounded malformed value is a no-op.
                     Verify.AreEqual(AuthoredWidth, actual,
                         "An unbounded MaxWidth must leave the authored width alone.");
                 }
@@ -210,11 +209,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Do not add authored Width rows for invalid GridLength values such as NaN, infinity, or a
-        // negative pixel value. TableViewColumn.Width is a GridLength dependency property, so the
-        // malformed struct is handed to the framework's property/layout pipeline before TableView
-        // can normalize it; these inputs assert in CoreMessagingXP.dll instead of producing a
-        // TableView-observable ActualWidth.
+        // Do not add Width cases for NaN, infinite, or negative GridLength values: the framework
+        // asserts on them (CoreMessagingXP.dll) before TableView can normalize them.
 
         [TestMethod]
         [TestProperty("Description", "Verifies a zero-sized host neither crashes star distribution nor permanently poisons resolved widths.")]

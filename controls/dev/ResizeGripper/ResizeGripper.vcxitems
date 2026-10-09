@@ -38,8 +38,7 @@
       <Version>RS1</Version>
       <Type>StylePerf2026</Type>
     </Page>
-    <!-- The template's {ThemeResource} keys. Must be a ThemeResources page so the binary's generated
-         themeresources.xaml carries it; without it every templated gripper fails to apply. -->
+    <!-- Must be a ThemeResources page, or its keys never reach the generated themeresources.xaml. -->
     <Page Include="$(MSBuildThisFileDirectory)ResizeGripper_themeresources.xaml">
       <Type>ThemeResources</Type>
     </Page>

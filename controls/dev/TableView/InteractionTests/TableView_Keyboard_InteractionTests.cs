@@ -166,17 +166,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Page Down moves keyboard focus by roughly a viewport, farther than a single Down (dev-spec Keyboard).")]
         public void PageDownMovesByViewport()
         {
-            // The dev-spec Keyboard section lists PageDown among the keys that move focus between rows.
-            // Uses the 200-item ScrollingTableView (Height 300) so a viewport is meaningfully larger
-            // than one row; the 12-row BasicTableView is too short to distinguish PageDown from End.
+            // Uses the 200-item ScrollingTableView; the 12-row BasicTableView cannot tell PageDown from End.
             //
-            // Travel is measured as the focused row's PositionInSet, NOT as a scroll percentage and not
-            // as a screen position. Paging scrolls the view, so the newly focused row lands at roughly
-            // the SAME screen Y as the old one and a bounding-rectangle delta reads ~0 even when paging
-            // works perfectly. A scroll percentage does move, but it cannot separate "paged" from
-            // "stepped and dragged the view along", which is why the earlier proxy was not a real
-            // discriminator. PositionInSet is the destination row's index in the set, so the number of
-            // rows actually traversed is read directly.
+            // Travel is measured as the focused row's PositionInSet: paging keeps the focused row at about the
+            // same screen Y, and a scroll percentage cannot separate a page from a step that dragged the view.
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
@@ -190,7 +183,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 int atTop = FocusedPositionInSet();
                 Verify.AreEqual(1, atTop, "Precondition: focus should start on the first row of the set.");
 
-                // Baseline: one Down advances exactly one row.
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
                 int afterOneDown = FocusedPositionInSet();
@@ -213,8 +205,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     string.Format("PageDown must travel farther than a single Down: paged to position {0}, one Down reaches {1}.",
                         afterPage, afterOneDown));
 
-                // Roughly a viewport, not merely "more than one": a PageDown that stepped two rows passes the check
-                // above. One row of slack absorbs a partially visible last row; the clamp absorbs reaching the end.
+                // A two-row step would pass the check above, so require about a viewport. One row of slack covers a
+                // partially visible last row; the clamp covers the end of the set.
                 int rowsPerViewport = ReadScrollingRowsPerViewport();
                 if (rowsPerViewport < 0) { return; }
                 int sizeOfSet = FocusedSizeOfSet();
@@ -233,10 +225,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Page Up moves keyboard focus back up by roughly a viewport (dev-spec Keyboard).")]
         public void PageUpMovesByViewport()
         {
-            // The dev-spec Keyboard section lists PageUp among the keys that move focus between rows.
-            // Pages down twice to earn headroom, then asserts PageUp reverses it. Measured as the
-            // focused row's PositionInSet for the same reason as PageDownMovesByViewport: paging
-            // scrolls, so the focused row's screen position barely changes and cannot express travel.
+            // Pages down twice to earn headroom. Measured by PositionInSet, as in PageDownMovesByViewport.
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem)) { Verify.Fail(GoToButton(ScrollingPivotItem) + " was not found."); return; }
@@ -279,9 +268,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // Whole rows that fit PART_BodyScroller's viewport on the Scrolling table, from the page's in-process readout
-        // (both values in DIPs, so the result does not depend on the VM's DPI). Fails the test and returns -1 when the
-        // readout is missing.
+        // Whole rows that fit the Scrolling table's viewport, from the page readout (DIPs, so DPI-independent).
+        // Fails the test and returns -1 when the readout is missing.
         private static int ReadScrollingRowsPerViewport()
         {
             string offsets = ReadScrollOffsets();
@@ -302,7 +290,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return rows;
         }
 
-        // SizeOfSet of the focused element, or -1.
         private static int FocusedSizeOfSet()
         {
             const int UIA_SizeOfSetPropertyId = 30153;
@@ -973,10 +960,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             //   activation keys.
             // FOCUS ROUTE: focus is taken by TABBING in, not by UIA SetFocus. SetFocus is a provider call, not a
             //   keyboard gesture, so it skipped the tab-stop resolution this test exists to prove.
-            //   Product finding #15 is now FIXED (the group-header peer's SetFocusCore focuses with
-            //   FocusState::Keyboard, so the AT route is captured like the Tab route) and is covered by
-            //   GroupHeaderKeepsFocusAcrossCollapseWhenFocusedThroughUia in the accessibility file. This test
-            //   still deliberately uses the Tab route, because that is the tab-stop resolution it exists to prove.
+            //   The SetFocus route is covered by GroupHeaderKeepsFocusAcrossCollapseWhenFocusedThroughUia.
             // Failure means: key routing to the group header is broken, so a keyboard user cannot collapse a group.
             using (var setup = new TestSetupHelper(PageName))
             {
@@ -1164,11 +1148,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "When a sort reorders the rows while a row is focused, focus stays at the same position (now another record).")]
         public void FocusStaysAtSamePositionWhenSortReordersRows()
         {
-            // Owner decision; dev-spec Keyboard "Re-shape while focused". The sort is applied through the public API by
-            // a page button that cannot take focus (IsTabStop=False, AllowFocusOnInteraction=False) and is driven by UIA
-            // Invoke, so focus is genuinely inside the body when the rows re-shape. Driving it through the header peer
-            // would not prove that: focus that reaches the header by any route correctly stays there.
-            // Failure means a sort drags focus with the old record.
+            // dev-spec Keyboard "Re-shape while focused". Sort and filter tests use focus-neutral page buttons: an
+            // ordinary UIA Invoke (e.g. on the header) may move focus first, and a focused header correctly keeps it.
             using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject rowsHost = GetRowsHost(BasicTable);
@@ -1206,9 +1187,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             // Owner decision; dev-spec Keyboard
             // "Re-shape while focused ... also applies when the focused record was filtered out". The page filter acts on
             // the grouped source only. Projection before: H-Redmond, G0, G3, G6, H-Seattle, G1, G4, G7, H-Bellevue, G2, G5,
-            // G8. After removing Seattle, position 5 is G2. The filter is applied by a page button that cannot take focus,
-            // driven by UIA Invoke, so focus is genuinely in the body when the rows re-shape.
-            // Failure means a filter drops focus out of the table.
+            // G8. After removing Seattle, position 5 is G2. Failure means a filter drops focus out of the table.
             using (var setup = new TestSetupHelper(PageName))
             {
                 var filter = FindElement.ById<Button>(FocusNeutralFilterSourceButton);
@@ -1246,9 +1225,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "A header that holds focus (via UIA SetFocus) and is sorted through UIA Invoke keeps focus; the body cursor is not replayed over it.")]
         public void HeaderKeepsFocusWhenSortedThroughUia()
         {
-            // Owner decision; dev-spec Keyboard "Re-shape while focused": however focus reached a column header -
-            // here a screen reader's UIA SetFocus - activating that header leaves focus on it. A body row is focused
-            // first so a remembered body position exists; failure means the re-shape pulled focus back into the body.
+            // A body row is focused first so a remembered body position exists that could wrongly be replayed.
             using (var setup = new TestSetupHelper(PageName))
             {
                 UIObject rowsHost = GetRowsHost(BasicTable);
@@ -1286,10 +1263,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Focus on a control outside the TableView stays there when a filter re-shapes the rows.")]
         public void ExternalControlKeepsFocusAcrossFilter()
         {
-            // Owner decision; dev-spec Keyboard "Re-shape while focused": only a body cursor that is live, or that the
-            // re-shape itself dropped, is replayed. Focus moved programmatically (UIA SetFocus) to a page button after a
-            // body row was focused must stay on that button. Failure means a remembered body position survived a move
-            // to a non-null element outside the body and the restore stole focus back.
+            // Only a live body cursor, or one the re-shape itself dropped, is replayed; a remembered body position
+            // must not steal focus back from an element outside the body.
             using (var setup = new TestSetupHelper(PageName))
             {
                 var filter = FindElement.ById<Button>(FocusNeutralFilterSourceButton);
@@ -1330,8 +1305,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         private const string FocusNeutralSortBasicByAgeButton = "FocusNeutralSortBasicByAgeButton";
         private const string FocusNeutralFilterSourceButton = "FocusNeutralFilterSourceButton";
 
-        // Guards the two position tests against passing for the wrong reason: the trigger must not have taken focus,
-        // and focus must still be inside the named table's body.
+        // Guards the position tests against passing for the wrong reason (focus must still be in the body).
         private static void VerifyTriggerLeftFocusInBody(UIObject trigger, string tableAutomationId)
         {
             UIObject bodyFocus = FindFocusedBodyElement(GetRowsHost(tableAutomationId));
@@ -1888,9 +1862,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // Walks keyboard focus from the page's GoToGroupedButton into the grouped table with Tab, which is the
         // route a real keyboard user takes. UIA SetFocus is deliberately NOT used on the header: it is a provider
-        // call, not a gesture, so it would skip the tab-stop resolution these tests exist to prove. That route is
-        // covered separately by GroupHeaderKeepsFocusAcrossCollapseWhenFocusedThroughUia in the accessibility
-        // file, which pins the former finding #15 now that the peer's SetFocusCore focuses as Keyboard.
+        // call, not a gesture, so it would skip the tab-stop resolution these tests exist to prove.
         // The anchor button is the one SelectGroupedPivotAndGetTable already resolved - it is NOT looked up again
         // here, because any FindElement call once the grouped table is realized forces ElementCache.Refresh() to
         // re-walk the whole tree, which descends into TableViewRow children and asserts the app (finding #13,

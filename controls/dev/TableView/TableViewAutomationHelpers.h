@@ -318,13 +318,7 @@ inline winrt::hstring GetCellContentName(
 
     // A named control describes its own content; do not repeat its inner interactive labels.
     // Only traverse layout wrappers, and bound the work of each cell-name query.
-    //
-    // The per-level child cap is deliberate and is NOT merely a copy of the view-adjustment walks.
-    // Removing it here (leaving only the shared `remaining` budget) was measured to destabilise the
-    // column-header peer tests, which walk realized header content and create peers as they go. The
-    // cap also costs nothing on the cell path, whose budget is 32 to begin with
-    // (TableViewCellAutomationPeer::ReadDisplayName), so only the 64-budget header path could ever
-    // see past it. Raising or removing this bound is a separate, measurable change - not a cleanup.
+    // Per-level cap retained: removing it destabilised the column-header peers.
     if (ShouldWalkCellContentSubtree(content))
     {
         const auto count = winrt::VisualTreeHelper::GetChildrenCount(content);

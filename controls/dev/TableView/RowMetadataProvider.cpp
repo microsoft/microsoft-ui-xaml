@@ -231,8 +231,7 @@ bool RowMetadataProvider::TryGetGroupMembership(
     positionInGroup = 0;
     groupSize = 0;
 
-    // Answer only for the projection the caller actually indexed into, so a row index can never be
-    // resolved against a different (stale or replaced) projection.
+    // Only answer for our own projection, so the index can't resolve against a stale one.
     if (m_sourceKind != SourceKind::Grouped || !m_groupedRows || !rows || !SameObject(rows, m_groupedRows))
     {
         return false;

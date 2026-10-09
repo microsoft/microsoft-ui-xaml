@@ -40,14 +40,9 @@
   <Target Name="CreateManifestResourceNames" />
   <Target Name="GetMrtPackagingOutputs" />
   
-  <!-- $(LiftedExtensions) is computed here and consumed by both outputs, so both must be produced by
-       this one target. Splitting the .appxfragment into a separate incremental target let MSBuild skip
-       this target (AppxManifest.xml up to date) while still running the other, which then wrote an empty
-       fragment from an undefined $(LiftedExtensions) - and because the empty fragment was then newer than
-       AppxManifest.xml, every later build considered it up to date. Consumers of the component package
-       (e.g. MUXControlsTestApp) lost every WinUI activatable class registration as a result.
-       This project file is an input too, so a change to how the outputs are generated re-runs the
-       target - which also repairs an output tree still holding an empty fragment from the old split. -->
+  <!-- Both outputs come from one $(LiftedExtensions) computation, so they must be produced by this one
+       target (a separate incremental target can run with it undefined and write an empty fragment).
+       The project file is an input so stale output trees regenerate. -->
   <Target Name="FillExtensions" BeforeTargets="_CreateWinUIPackageLayout" Inputs="$(MSBuildProjectFullPath);AppxManifest.xml;$(ArtifactsObjDir)MergedWinMD\LiftedWinRTClassRegistrations.xml" Outputs="$(OutDir)AppxManifest.xml;$(OutDir)package.appxfragment">
     <PropertyGroup>
       <Namespaces>
@@ -79,7 +74,6 @@
         Namespaces="$(Namespaces)"
         Value="$(LiftedExtensions)"/>
 
-    <!-- Emit the matching component-package fragment from the same $(LiftedExtensions) value. -->
     <PropertyGroup>
       <AppxFragment>
         %3C?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?%3E

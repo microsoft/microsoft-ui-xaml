@@ -94,9 +94,7 @@ bool ResizeGripper::IsHorizontalDrag()
     return DragOrientation() != winrt::Orientation::Vertical;
 }
 
-// The state carries the axis only. The separator sits on the template's logical right (trailing)
-// edge, and under RTL the gripper's subtree is mirrored by the framework like any other, so that
-// edge is already the visual left: choosing a left-sided thickness here would mirror it twice.
+// Axis only: the separator is on the logical trailing edge and the framework mirrors it under RTL.
 void ResizeGripper::UpdateOrientationVisualState()
 {
     winrt::VisualStateManager::GoToState(*this, IsHorizontalDrag() ? L"Horizontal" : L"Vertical", true /* useTransitions */);
@@ -186,12 +184,7 @@ void ResizeGripper::OnManipulationDelta(winrt::ManipulationDeltaRoutedEventArgs 
     double totalDelta = isHorizontal ? translation.X : translation.Y;
 
     // Report a logical delta, so positive always grows in reading order and both input paths agree.
-    // The container only reframes the manipulation's Position: Cumulative().Translation arrives
-    // straight from the interaction engine in unmirrored input coordinates (dxaml
-    // CInputServices::ProcessManipulationDeltaInput converts the raw translation from pixels to
-    // DIPs and applies no element transform), so an RTL gripper has to mirror the horizontal axis
-    // itself. Keyed off this element's own FlowDirection, which is exactly what TryKeyboardStep
-    // does - that is what makes a leftward RTL drag widen the column the same way Alt+Left does.
+    // Cumulative().Translation is in unmirrored physical space, so mirror it on RTL (matches TryKeyboardStep).
     if (isHorizontal && FlowDirection() == winrt::FlowDirection::RightToLeft)
     {
         totalDelta = -totalDelta;
@@ -244,8 +237,7 @@ void ResizeGripper::BeginDrag()
     }
     m_lastRaisedDelta = 0.0;
     SetValue(s_IsDraggingProperty, box_value(true));
-    // Armed before the event is raised: a handler that ends the drag re-entrantly must find the
-    // hook already in place, or the detach below would leave it registered for good.
+    // Before raising: a handler may end the drag re-entrantly.
     AttachCancelKeyHandler();
     UpdateVisualState();
     m_dragStartedEventSource(*this, nullptr);
@@ -291,11 +283,8 @@ void ResizeGripper::EndDrag(bool canceled)
     m_dragCompletedEventSource(*this, eventArgs);
 }
 
-// Escape ends the gesture as a CANCEL, which is what makes the host restore the authored width.
-// It cannot be handled from OnKeyDown: a pointer drag deliberately takes no focus (hosts set
-// IsTabStop(false) on the gripper), so the key is routed to whatever element is focused instead
-// and would never reach this control. The hook therefore lives on the XamlRoot content, the one
-// element every in-window KeyDown bubbles through, and only for the life of the drag.
+// Escape cancels the drag. A pointer drag takes no focus, so the hook lives on the XamlRoot content,
+// and only for the drag.
 void ResizeGripper::AttachCancelKeyHandler()
 {
     if (m_cancelKeyHandler)
@@ -315,9 +304,7 @@ void ResizeGripper::AttachCancelKeyHandler()
         return;
     }
 
-    // AddHandler takes the handler as IInspectable, so the delegate must be boxed - and the same
-    // boxed instance has to come back to RemoveHandler, which is why it is stored rather than
-    // rebuilt on detach.
+    // RemoveHandler needs the same boxed instance, so it is stored.
     auto const handler = winrt::box_value(winrt::KeyEventHandler(
         [weakThis = get_weak()](winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
         {
@@ -327,8 +314,7 @@ void ResizeGripper::AttachCancelKeyHandler()
             }
         }));
 
-    // handledEventsToo: a host that acts on Escape first - closing an editor or a flyout - must not
-    // strand a resize that is still in flight.
+    // handledEventsToo: a host handling Escape first must not strand the drag.
     root.AddHandler(winrt::UIElement::KeyDownEvent(), handler, true /* handledEventsToo */);
 
     m_cancelKeyHandler = handler;
@@ -363,7 +349,7 @@ void ResizeGripper::OnCancelKeyDown(const winrt::IInspectable&, const winrt::Key
 
     EndDrag(true /* canceled */);
 
-    // Only once a drag was actually torn down: an Escape with nothing in flight belongs to the app.
+    // An Escape with no drag in flight belongs to the app.
     args.Handled(true);
 }
 

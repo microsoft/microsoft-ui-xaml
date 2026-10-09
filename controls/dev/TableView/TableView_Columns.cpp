@@ -214,9 +214,7 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
         });
     }
 
-    // Replacing the whole vector is the largest shape change of all -- every column a client
-    // cached can be gone -- and it arrives with no VectorChanged to carry it, so it is announced
-    // here for the same reason the incremental path announces.
+    // Replacing the whole vector raises no VectorChanged, so announce the shape change here.
     QueueRaiseColumnsStructureChanged();
 }
 
@@ -329,11 +327,7 @@ void TableView::OnColumnsVectorChanged(
 
     QueueRebuildHeaders();
 
-    // The grid's shape just changed: the column count a UIA client reads, and the set of cells
-    // every row exposes, are both different now. QueueRebuildHeaders rebuilds the visuals but
-    // tells no client, so without this a cached tree keeps a column that is gone or never learns
-    // about one that appeared. Same obligation OnTableViewSourceShapingChanged accepts for a
-    // projection rewrite.
+    // QueueRebuildHeaders updates visuals only; UIA clients must be told the grid shape changed.
     QueueRaiseColumnsStructureChanged();
 
     // Realized rows observe Columns directly; no TableView broadcast is needed.
@@ -386,11 +380,8 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
     InvalidateMeasure();
     RefreshFrozenColumns();
 
-    // UIA counts and addresses only VISIBLE columns (TableViewAutomationPeer::ColumnCount and
-    // GetItem both filter through IsVisibleColumn), so hiding or showing a column shifts every
-    // column index to its right exactly as an add / remove does. A client that cached the old
-    // geometry would address the wrong cell, which is the same defect as a stale column set --
-    // so this raises for the same reason, through the same coalescing queue.
+    // UIA addresses only visible columns (IsVisibleColumn), so a visibility flip shifts column
+    // indices just like an add/remove.
     QueueRaiseColumnsStructureChanged();
 }
 

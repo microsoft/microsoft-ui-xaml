@@ -49,10 +49,7 @@ namespace RowIdentity
             return 0;
         }
 
-        // COM identity: the IUnknown obtained by QI is the canonical per-object pointer, so two
-        // references to the same object always yield the same address and two distinct objects
-        // never collide -- including two boxed copies of the same value, which are separate
-        // objects and therefore separate rows.
+        // QI'd IUnknown is the canonical COM identity; boxed copies of one value are distinct rows.
         auto const unknown = item.as<winrt::Windows::Foundation::IUnknown>();
         return reinterpret_cast<uintptr_t>(winrt::get_abi(unknown));
     }

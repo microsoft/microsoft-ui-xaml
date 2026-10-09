@@ -1524,12 +1524,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies the header grid line, sort indicator and resize gripper share the trailing (visual left) edge under RTL.")]
         public void VerifyHeaderTrailingAdornmentsShareEdgeInRightToLeft()
         {
-            // Header cells inherit the table's RightToLeft and are mirrored by the framework, so the
-            // trailing edge of a header is its visual LEFT. The grid line, the sort chevron and the
-            // gripper all sit on that edge; a hand-swapped alignment mirrors an already mirrored frame
-            // and puts the adornment on the visual RIGHT (leading) edge instead. Measured against an
-            // explicitly LeftToRight wrapper so "left" means what it says (see
-            // VerifyFrozenColumnsMirrorInRightToLeft).
+            // Header cells are already mirrored by the framework, so a hand-swapped alignment would
+            // put adornments on the wrong edge. Measure in an explicit LeftToRight wrapper.
             TableView tableView = null;
             FrameworkElement wrapper = null;
 
@@ -1630,7 +1626,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 transform.TransformPoint(new Point(extent, 0.0)).X);
         }
 
-        // The visual left edge counterpart of GetVisualRight.
         internal static double GetVisualLeft(FrameworkElement element, FrameworkElement ancestor)
         {
             var transform = element.TransformToVisual(ancestor);

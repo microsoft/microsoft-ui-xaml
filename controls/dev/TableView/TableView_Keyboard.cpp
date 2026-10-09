@@ -512,8 +512,8 @@ bool TableView::TryHandleHeaderNavigationKey(const winrt::KeyRoutedEventArgs& ar
     return true;
 }
 
-// Up stays in the header band; Down leaves it for the first row (dev-spec Keyboard). Either way the
-// key is consumed, so focus navigation cannot escape the band sideways or land mid-table.
+// Up stays in the header band; Down leaves it for the first row. Either way the key is consumed, so
+// focus navigation cannot escape the band sideways or land mid-table.
 bool TableView::TryHandleHeaderVerticalKey(const winrt::KeyRoutedEventArgs& args)
 {
     if (args.Handled())
@@ -544,16 +544,12 @@ bool TableView::TryHandleHeaderVerticalKey(const winrt::KeyRoutedEventArgs& args
         return false;
     }
 
-    // dev-spec Keyboard: from the header band "Down moves to the first row; Up stays in the band".
-    // The two bands share one column cursor, so the body is entered in the header's column, and at
-    // whichever level the body cursor was last on - row level, or the same column at cell level.
+    // The bands share one column cursor, so the body is entered in the header's column.
     if (key == winrt::Windows::System::VirtualKey::Down)
     {
         SetColumnCursorInternal(headerIndex);
         if (GetItemsSourceCount() > 0)
         {
-            // FocusRow follows the two-level cursor. Consume either way: an unconsumed Down reaches
-            // XAML directional navigation, which lands on whatever is geometrically nearest.
             FocusRow(0);
         }
     }
@@ -562,8 +558,6 @@ bool TableView::TryHandleHeaderVerticalKey(const winrt::KeyRoutedEventArgs& args
     return true;
 }
 
-// dev-spec Keyboard: "Up from the first row moves to the header band". The bands share one column
-// cursor (dev-spec:201), so the band is entered on the column the body was on.
 bool TableView::TryMoveFocusToHeaderBandFromBody(int32_t visibleColumnIndex)
 {
     auto const host = m_headerHost.get();
@@ -578,8 +572,7 @@ bool TableView::TryMoveFocusToHeaderBandFromBody(int32_t visibleColumnIndex)
         return false;
     }
 
-    // Publish the body's column first so ResolveHeaderEntryIndex aims at it. A negative index means
-    // the body was at row level and names no column, so the band keeps the cursor it had.
+    // Publish first so ResolveHeaderEntryIndex aims at it; negative (row level) keeps the old cursor.
     SetColumnCursorInternal(visibleColumnIndex);
 
     const int32_t target = ResolveHeaderEntryIndex(cells);
@@ -662,7 +655,6 @@ bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
         return true;
     }
 
-    // Enter on a focused header. Focus is on the header, so the re-shape leaves it there.
     if (!ToggleSortDirection(column))
     {
         return false;
@@ -697,7 +689,6 @@ bool TableView::TryHandleHeaderSortKeyUp(const winrt::KeyRoutedEventArgs& args)
         return false;
     }
 
-    // Space key-up on the armed header: same as the Enter path above.
     if (!ToggleSortDirection(armed))
     {
         return false;
@@ -1043,13 +1034,8 @@ void TableView::OnKeyDownForNavigation(
         }
         else if (key == winrt::Windows::System::VirtualKey::Up &&
             currentRow == 0 &&
-            // Only a cell anchor names a real column; at row level the band keeps whatever column
-            // cursor it already had, exactly as Tab entry does.
             TryMoveFocusToHeaderBandFromBody(hasCellAnchor ? anchorColumn : -1))
         {
-            // dev-spec Keyboard: "Up from the first row moves to the header band". Row 0 has nowhere
-            // above it inside the body, so the key crosses the band boundary instead of being
-            // dropped - which is what left the two bands joined only by Tab.
             args.Handled(true);
         }
     }
@@ -1063,16 +1049,11 @@ bool TableView::FocusRow(int32_t index)
         : FocusRowContainer(index);
 }
 
-// ----- Re-shape focus restore -----
+// ----- Re-shape focus restore (dev-spec Keyboard, "Re-shape while focused") -----
 //
-// dev-spec Keyboard, "Re-shape while focused": when a sort or filter re-shapes the rows while focus
-// is inside the body, focus stays at the same POSITION - the same projected row index - and so
-// lands on whichever row now occupies it, including when the focused record was filtered out.
-//
-// That is deliberately the opposite rule from Tab re-entry (ResolveFocusEntryRow), which follows the
-// remembered ITEM. Position here, identity there: a re-shape under a live cursor must not drag the
-// cursor around the table, while coming back from another tab stop must return to the record the
-// user left.
+// A sort or filter keeps body focus at the same projected row index, whichever record now occupies
+// it. This deliberately differs from Tab re-entry (ResolveFocusEntryRow), which follows the item.
+// Restore only if focus was in the body or dropped to null; focus elsewhere is never taken back.
 void TableView::CaptureBodyFocusForReshape()
 {
     if (m_reshapeFocusValid)
@@ -1081,11 +1062,6 @@ void TableView::CaptureBodyFocusForReshape()
         return;
     }
 
-    // WHERE FOCUS IS decides, not who started the re-shape (dev-spec Keyboard, "Re-shape while
-    // focused"). Focus on a column header - however it got there: keyboard, pointer, app code, or a
-    // screen reader's UIA SetFocus - stays on the header when the header's own Enter/Space/click or
-    // UIA Invoke sorts; focus anywhere else outside the body stays there too. Only a body cursor
-    // that is live, or that the re-shape itself dropped to null, is replayed.
     m_reshapeFocusRow = -1;
     m_reshapeFocusColumn = m_currentCellColumn;
     m_reshapeFocusCellLevel = false;
@@ -1110,17 +1086,13 @@ void TableView::CaptureBodyFocusForReshape()
     }
     else
     {
-        // Focus is non-null and not inside the body: leave it alone. A focused element that IS in
-        // the body but no longer resolves to a row (a container already recycled under it) counts
-        // as the body, and falls through to the remembered position like a dropped focus does.
+        // Focus orphaned in a recycled body container counts as dropped and uses the remembered
+        // position.
         if (focused && !IsElementInBody(focused))
         {
             return;
         }
 
-        // Dropped (or orphaned in a recycled container). The remembered position is only still
-        // valid if focus has not landed anywhere outside the body since it was recorded - the
-        // focus trackers discard it the moment that happens.
         if (!m_lastBodyFocusValid || m_lastBodyFocusRow < 0)
         {
             return;
@@ -1141,8 +1113,6 @@ void TableView::CaptureBodyFocusForReshape()
     QueueReshapeFocusCaptureDisarm();
 }
 
-// True for the rows repeater and anything inside it - rows, cells, group headers and content hosted
-// in cells. The column header band, the rest of the control and the rest of the app are not.
 bool TableView::IsElementInBody(const winrt::DependencyObject& element) const
 {
         if (!element)
@@ -1161,8 +1131,7 @@ bool TableView::IsElementInBody(const winrt::DependencyObject& element) const
             SharedHelpers::IsAncestor(element, repeaterObject, false /* checkVisibility */);
 }
 
-// True when a non-null element outside the body holds focus in this control's XamlRoot. Null focus
-// is deliberately false: that is what a re-shape leaves behind, not a move the user made.
+// Null focus is deliberately false: that is what a re-shape leaves behind, not a user move.
 bool TableView::IsFocusOnNonBodyElement() const
 {
         auto const root = XamlRoot();
@@ -1182,9 +1151,7 @@ void TableView::ForgetBodyFocusPosition()
         m_lastBodyFocusState = winrt::FocusState::Keyboard;
 }
 
-// The FocusState a replay should use for a position recorded from this element: keyboard focus is
-// put back as keyboard focus (focus visuals included); a pointer- or app-placed cursor comes back
-// programmatically, so a restore never paints a keyboard focus rectangle the user did not ask for.
+// Pointer/app-placed focus is replayed as Programmatic so a restore never paints keyboard visuals.
 winrt::FocusState TableView::GetRestoreFocusStateFor(const winrt::IInspectable& focusedElement)
 {
         if (auto const control = focusedElement.try_as<winrt::Control>())
@@ -1202,8 +1169,6 @@ winrt::FocusState TableView::GetRestoreFocusStateFor(const winrt::IInspectable& 
         return winrt::FocusState::Keyboard;
 }
 
-// Where the body cursor is right now, in projected-row coordinates. False when focus is not inside
-// the body at all - the header band, elsewhere in the control, or outside it.
 bool TableView::TryResolveLiveBodyFocusPosition(int32_t& row, int32_t& column, bool& cellLevel) const
 {
     row = -1;
@@ -1235,8 +1200,7 @@ bool TableView::TryResolveLiveBodyFocusPosition(int32_t& row, int32_t& column, b
     // Non-exact: focus may be on hosted content inside the cell, which is still cell level.
     const bool onCell = TryGetFocusedCell(cellRow, cellColumn, false /* requireExactCell */);
 
-    // GetFocusedRowIndex also recognizes group headers, which occupy projected positions of their
-    // own in a grouped projection and are valid resting places for the body cursor.
+    // GetFocusedRowIndex also recognizes group headers, which occupy projected positions too.
     const int32_t resolvedRow = onCell ? cellRow : GetFocusedRowIndex();
     if (resolvedRow < 0)
     {
@@ -1249,17 +1213,14 @@ bool TableView::TryResolveLiveBodyFocusPosition(int32_t& row, int32_t& column, b
     return true;
 }
 
-// Records the body cursor as focus arrives in the body, and discards it as soon as focus arrives on
-// any other element of this control (the column header band, for instance). Leaving the control is
-// handled by OnTableViewLosingFocusForBodyTracking.
+// Tracked continuously because ItemsRepeater can recycle the focused row before any re-shape
+// notification reaches us.
 void TableView::TrackBodyFocusPosition()
 {
     if (m_suppressBodyFocusTracking)
     {
-        // Inside a re-shape. ItemsRepeater rescues focus to a neighbouring element while it
-        // recycles (ViewManager::MoveFocusFromClearedIndex), and XAML moves focus off a container
-        // that leaves the tree; recording or discarding on either would replace the user's position
-        // with wherever the rescue happened to land.
+        // Inside a re-shape: ItemsRepeater's focus rescue (MoveFocusFromClearedIndex) must not
+        // overwrite the user's position.
         return;
     }
 
@@ -1293,10 +1254,8 @@ void TableView::OnTableViewGotFocusForBodyTracking(
     TrackBodyFocusPosition();
 }
 
-// The remembered body position survives only focus being DROPPED. Focus landing on any non-null
-// element outside the body - a header, another control in the app - discards it, however it got
-// there: Tab, an arrow, a pointer, app code, or an assistive client's UIA SetFocus. Focus that sits
-// somewhere else when a re-shape runs stays there (dev-spec Keyboard, "Re-shape while focused").
+// The remembered body position survives only focus being dropped to null; focus landing on any
+// element outside the body discards it, however it got there.
 void TableView::OnTableViewLosingFocusForBodyTracking(
     const winrt::IInspectable& /*sender*/,
     const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args)
@@ -1309,8 +1268,6 @@ void TableView::OnTableViewLosingFocusForBodyTracking(
 
     auto const newFocus = args.NewFocusedElement();
 
-    // Focus is being DROPPED, not moved. A re-shape that recycles the focused row raises exactly
-    // this, and it is the case the remembered position exists to survive.
     if (!newFocus)
     {
         return;
@@ -1318,15 +1275,13 @@ void TableView::OnTableViewLosingFocusForBodyTracking(
 
     if (IsElementInBody(newFocus))
     {
-        // Still inside the body; GotFocus records the new position.
+        // GotFocus records the new position.
         return;
     }
 
     ForgetBodyFocusPosition();
 }
 
-// Blocks the focus tracker for the rest of the current turn, so the repeater's own focus rescue
-// cannot overwrite the position a re-shape is about to replay.
 void TableView::SuppressBodyFocusTrackingForThisTurn()
 {
     if (m_suppressBodyFocusTracking)
@@ -1356,9 +1311,8 @@ void TableView::SuppressBodyFocusTrackingForThisTurn()
     }
 }
 
-// A Reset is not proof that a shaping verb is running - an app can reset its own collection - and
-// only the restore raised in the same turn is entitled to replay the capture. Anything still armed
-// on the next dispatcher turn is dropped rather than left for an unrelated re-shape to replay.
+// An app can raise Reset on its own collection, so a capture not claimed by a restore in the same
+// turn is dropped rather than left for an unrelated later re-shape to replay.
 void TableView::QueueReshapeFocusCaptureDisarm()
 {
     if (m_reshapeFocusDisarmQueued)
@@ -1395,8 +1349,7 @@ void TableView::RestoreBodyFocusAfterReshape()
         return;
     }
 
-    // Consume the capture synchronously, so the disarm turn queued above cannot cancel a restore
-    // that has already been claimed.
+    // Consume synchronously so the queued disarm cannot cancel a claimed restore.
     const int32_t row = m_reshapeFocusRow;
     m_pendingReshapeFocusColumn = m_reshapeFocusColumn;
     m_pendingReshapeFocusCellLevel = m_reshapeFocusCellLevel;
@@ -1417,19 +1370,15 @@ void TableView::RestoreBodyFocusAfterReshape()
         SetColumnCursorInternal(m_pendingReshapeFocusColumn);
     }
 
-    // Budgeted retry rather than one shot. This is raised from inside the shaping callout, with
-    // ItemsRepeater still unwinding its own Reset: nothing is realized at the captured index yet, a
-    // Focus() there is refused outright, and the deferred work a re-shape queues behind it can
-    // still drop focus after a single attempt has run. Each attempt re-checks whether the body
-    // actually holds the captured position and re-aims if it does not.
+    // Budgeted retry: ItemsRepeater is still unwinding its Reset, so nothing is realized at the
+    // index yet, and deferred re-shape work can drop focus again after a single attempt.
     m_reshapeFocusAttemptsLeft = s_reshapeFocusRestoreAttempts;
     ArmReshapeFocusAttempt();
 }
 
-// One attempt per layout pass AND per dispatcher turn: a layout pass is what changes whether the
-// target is realized and arranged, while only a turn outside layout may force realization -
-// ItemsRepeater refuses GetOrCreateElement while a layout pass is in flight. Both spend the same
-// budget, so arming both reaches further without running longer.
+// Attempts run per layout pass AND per dispatcher turn: layout changes whether the target is
+// arranged, but only a turn outside layout may force realization (ItemsRepeater refuses
+// GetOrCreateElement during layout). Both spend the same budget.
 void TableView::ArmReshapeFocusAttempt()
 {
     if (m_reshapeFocusLayoutToken.value)
@@ -1496,7 +1445,6 @@ void TableView::CancelReshapeFocusRestore()
 
 void TableView::OnReshapeFocusAttempt()
 {
-    // Unregister first: this is a one-shot hook that re-arms itself only while work remains.
     if (m_reshapeFocusLayoutToken.value)
     {
         LayoutUpdated(m_reshapeFocusLayoutToken);
@@ -1510,9 +1458,6 @@ void TableView::OnReshapeFocusAttempt()
 
     if (m_reshapeFocusAttemptsLeft <= 0)
     {
-        // The one breadcrumb worth keeping: without it, a restore that never lands degrades
-        // silently to "focus disappeared after a sort", which is indistinguishable from the bug
-        // this code exists to fix.
         TVDiag::DbgLogF(
             L"TableView: re-shape focus restore gave up at row %d.", m_pendingReshapeFocusRow);
         CancelReshapeFocusRestore();
@@ -1520,10 +1465,7 @@ void TableView::OnReshapeFocusAttempt()
     }
     --m_reshapeFocusAttemptsLeft;
 
-    // Checked before EVERY aim, the first included: focus on any non-null element outside the
-    // body - a header, another control - is where the user or app put it, and a settling re-shape
-    // must not pull it back. Null focus is the opposite: the re-shape dropped it, and putting it
-    // back is the whole point. Focus still inside the body is this restore's own territory.
+    // Checked before every aim: focus the user or app moved outside the body is never pulled back.
     if (IsFocusOnNonBodyElement())
     {
         CancelReshapeFocusRestore();
@@ -1533,12 +1475,12 @@ void TableView::OnReshapeFocusAttempt()
     bool landed = false;
     try
     {
-        // Layout callbacks fail-fast on escaping exceptions, so realization and focus are contained.
+        // Layout callbacks fail-fast on escaping exceptions.
         landed = TryLandReshapeFocus();
     }
     catch (...)
     {
-        // Best-effort: the projection can move again underneath a settling restore.
+        // Best-effort: the projection can move under a settling restore.
     }
 
     if (landed)
@@ -1550,15 +1492,13 @@ void TableView::OnReshapeFocusAttempt()
     ArmReshapeFocusAttempt();
 }
 
-// True once the body demonstrably holds the captured position - checked at the TOP of the next
-// attempt rather than inferred from Focus() returning true, so a landing that something later in
-// the same re-shape wiped is re-aimed instead of being reported as done.
+// Success is confirmed at the top of the next attempt, not inferred from Focus(), so a landing that
+// later re-shape work wipes is re-aimed.
 bool TableView::TryLandReshapeFocus()
 {
     const int32_t rowCount = GetItemsSourceCount();
     if (rowCount <= 0)
     {
-        // Everything was filtered away; there is no position left to hold.
         return true;
     }
 
@@ -1568,8 +1508,7 @@ bool TableView::TryLandReshapeFocus()
         return true;
     }
 
-    // A filter can shorten the projection past the captured position. Clamping keeps focus in the
-    // body - the spec's point - rather than dropping it out of the table.
+    // A filter can shorten the projection past the captured position; clamp to stay in the body.
     const int32_t target = std::clamp(m_pendingReshapeFocusRow, 0, rowCount - 1);
 
     if (IsBodyFocusAtRow(target))
@@ -1577,11 +1516,8 @@ bool TableView::TryLandReshapeFocus()
         return true;
     }
 
-    // TryGetElement first: GetOrCreateElement pulls a container out of the recycle pool, and the
-    // one it takes can be the element the repeater's rescue just put focus on - which drops focus
-    // for nothing when the target was about to be realized by the pass already pending. It is also
-    // the only one of the two that can throw here, because ItemsRepeater refuses it while a layout
-    // pass is in flight and this also runs from a layout callback.
+    // TryGetElement first: GetOrCreateElement can recycle the container the repeater's rescue just
+    // focused, and it throws while a layout pass is in flight.
     auto element = repeater.TryGetElement(target);
     if (!element)
     {
@@ -1591,8 +1527,6 @@ bool TableView::TryLandReshapeFocus()
         }
         catch (...)
         {
-            // "Not allowed during layout", or the index moved underneath us. Either way the next
-            // attempt is the right place to try again.
             return false;
         }
 
@@ -1608,7 +1542,7 @@ bool TableView::TryLandReshapeFocus()
         frameworkElement.ActualHeight() <= 0.0 ||
         !winrt::VisualTreeHelper::GetParent(frameworkElement))
     {
-        // Realized but not arranged yet. Focus() would be refused; wait for the next attempt.
+        // Realized but not arranged yet; Focus() would be refused.
         return false;
     }
 
@@ -1627,7 +1561,6 @@ bool TableView::TryLandReshapeFocus()
         FocusRowContainerInternal(element, m_pendingReshapeFocusState);
     }
 
-    // Deliberately not "true": confirmation happens at the top of the next attempt.
     return false;
 }
 

@@ -55,9 +55,6 @@ namespace MUXTestInfra.Shared.Infra
             Verify.AreEqual(0, result.ErrorCount, "Found " + result.ErrorCount + " Axe errors.");
         }
 
-        // A rule ID alone cannot be acted on: it says what is wrong but never which element is wrong.
-        // Control type, Name, AutomationId and the ancestry chain are what turn a failure log into a
-        // pointer at a specific piece of markup or a specific automation peer.
         private static string DescribeElement(ElementInfo element)
         {
             if (element == null)
@@ -80,8 +77,7 @@ namespace MUXTestInfra.Shared.Infra
         {
             var builder = new StringBuilder();
 
-            // Bounded: a corrupt provider tree could otherwise hand back a cycle, and a diagnostic
-            // must never be the thing that hangs the run it is trying to explain.
+            // Bounded in case a corrupt provider tree reports a cycle.
             var ancestor = element?.Parent;
             for (int depth = 0; ancestor != null && depth < 20; depth++, ancestor = ancestor.Parent)
             {
@@ -129,8 +125,7 @@ namespace MUXTestInfra.Shared.Infra
 
         private static string GetProperty(ElementInfo element, string name)
         {
-            // Axe drops properties whose text value is empty, so a missing key IS the finding for a
-            // rule like NameNotNull. Say so rather than printing an ambiguous blank.
+            // Axe drops empty-valued properties, so a missing key (e.g. Name) IS the NameNotNull finding.
             if (element?.Properties != null && element.Properties.TryGetValue(name, out var value) &&
                 !string.IsNullOrEmpty(value))
             {

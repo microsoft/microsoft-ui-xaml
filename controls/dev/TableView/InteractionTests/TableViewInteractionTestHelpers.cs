@@ -154,12 +154,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // ---------- Focus ----------
 
-        // The focused element's UIA PositionInSet (1-based), or -1 when it is not advertised.
-        //
-        // Row peers advertise PositionInSet/SizeOfSet (counted within the group when grouped), which
-        // gives an exact, identity-free measure of how far a navigation key travelled. That is what
-        // makes a paging assertion possible: a scroll percentage moves for both a page and a dragged-
-        // along step, so it cannot separate the two, whereas the destination row's index can.
+        // The focused element's UIA PositionInSet (1-based, within the group), or -1. Unlike a scroll
+        // percentage, it distinguishes a page from a single step.
         internal static int FocusedPositionInSet()
         {
             AutomationElement focused = AutomationElement.FocusedElement;
@@ -557,25 +553,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         internal static string ReadFirstItemName() => ReadPageReadout(FirstItemName);
 
-        // Reads the page's PART_BodyScroller offset readout, formatted
-        // "H=<h>;V=<v>;HeaderH=<h>;FrozenX=<x>;FrozenT=<tx>;ScrollX=<x>;BodyFrozenX=<x>;BodyFrozenT=<tx>;BodyScrollX=<x>".
-        // Used as a precondition that the body moved, and - via ReadScrollOffsetComponent - as the subject of
-        // the header-sync and frozen-column assertions, because neither the header band's travel nor the frozen
-        // band's pinning is observable through UIA BoundingRectangle (the control drives PART_HeaderScroller's
-        // offset rather than moving the peers, and pins frozen cells with a UIElement.Translation that the peer
-        // rectangles did not reflect when measured).
-        //
-        // The *X components are rendered x in TableView space, taken straight from TransformToVisual - which
-        // already folds in BOTH the scroller offset and Translation. The *T components are the raw
-        // counter-translation, published for diagnosis only: adding one to its *X double-counts the pin.
+        // Reads the page's scroll/frozen-geometry readout (format: TableViewPage.ReportScrollOffsets).
+        // Header-sync and frozen-column tests assert on these page-published values, not UIA
+        // BoundingRectangle: the header scrolls via PART_HeaderScroller's offset and frozen cells are
+        // pinned with a composition-only Translation, neither of which the peer rectangles reflect.
+        // *X is from TransformToVisual, which already includes Translation; *T is diagnostic only
+        // (adding it to *X double-counts the pin).
         internal static string ReadScrollOffsets()
         {
             var readout = FindElement.ById<TextBlock>(ScrollOffsets);
             return readout == null ? "<no readout>" : readout.DocumentText;
         }
 
-        // Pulls one named component out of the scroll readout, or double.NaN when the readout is missing or
-        // malformed.
+        // Returns double.NaN when the readout is missing or malformed.
         internal static double ReadScrollOffsetComponent(string offsets, string name)
         {
             if (string.IsNullOrEmpty(offsets)) { return double.NaN; }

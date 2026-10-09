@@ -91,12 +91,8 @@ namespace
             winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
     }
 
-    // Collects every tab stop BELOW a cell wrapper. The wrapper itself is row policy and is owned
-    // by SetCellsTabStopInternal; everything under it is authored template content, so the walk has
-    // to keep descending past a tab stop it already found - a focusable container can hold more.
-    //
-    // Bounded like the other cell-content walks (TableViewAutomationHelpers.h): this runs on every
-    // grid-level Tab press, and authored content is arbitrary.
+    // Collects tab stops BELOW a cell wrapper (the wrapper is owned by SetCellsTabStopInternal).
+    // Keeps descending past a found tab stop: a focusable container can hold more.
     constexpr int32_t c_maxCellContentTabStopDepth = 16;
 
     void AppendContentTabStops(
@@ -188,8 +184,7 @@ TableViewRow::TableViewRow()
             }
         });
 
-    // A row leaving the tree before its dispatcher turn runs must not strand cell content out of
-    // the tab order.
+    // Don't strand cell content out of the tab order if unloaded before the restore turn runs.
     m_unloadedRevoker = Unloaded(
         winrt::auto_revoke,
         [weakRow](winrt::IInspectable const&, winrt::RoutedEventArgs const&)
@@ -480,9 +475,8 @@ void TableViewRow::SetCellsTabStopInternal(bool isTabStop)
     }
 }
 
-// True while the keyboard cursor is at grid level on this row - the row itself, or exactly one of
-// its cells. Focus INSIDE a cell's content (Enter drilled into a Button or an open editor) is not
-// grid level: that content owns its own keys, including Tab.
+// Focus inside a cell's content (drilled in via Enter, or an editor) is not grid level: that
+// content owns its own keys, including Tab.
 bool TableViewRow::IsGridLevelFocusInternal()
 {
     auto const root = XamlRoot();
@@ -506,25 +500,14 @@ bool TableViewRow::IsGridLevelFocusInternal()
     return FindOwnCellInternal(focused, true /* requireExact */) != nullptr;
 }
 
-// Takes the authored cell content out of the tab order for the duration of ONE Tab walk.
-//
-// The suppression cannot be made permanent: CUIElement::IsFocusable requires IsTabStop, so an
-// authored Button/ComboBox left with IsTabStop(false) would also stop taking POINTER focus, and
-// Enter-into-content would have nothing to focus. Restoring it on the next dispatcher turn keeps
-// authored content exactly as the app declared it the rest of the time, and the turn boundary is
-// after XAML has run the Tab move - XAML performs it as the default action of the unhandled
-// KeyDown, inside the same input message.
-//
-// The write is owned and exactly reversible. Each element's raw local IsTabStop value is recorded
-// first, and restore only touches an element whose local value is still the false written here -
-// anything else means the app (or a binding) wrote it in between, and that write wins. Elements
-// whose local value is some other expression kind are left alone rather than replaced with a value
-// that could not be undone.
+// Takes authored cell content out of the tab order for ONE Tab walk. CFocusManager::GetNextTabStop
+// searches the focused element's children before honouring TabFocusNavigation, so cell content
+// would otherwise become extra tab stops. It can't stay suppressed: IsFocusable requires IsTabStop,
+// so pointer/programmatic focus would break too. Restored on the next dispatcher turn (after XAML's
+// default Tab move), and only if the local value is still the false written here.
 void TableViewRow::SuppressCellContentTabStopsForTabWalkInternal()
 {
-    // A press that never reached a dispatcher turn (two Tabs in one input burst, key repeat) must
-    // not leave the first list behind: restore it first, or the second collection would record the
-    // false written here as the app's original.
+    // Restore a pending suppression first, or our false would be recorded as the original.
     RestoreCellContentTabStopsInternal();
 
     std::vector<winrt::UIElement> candidates;
@@ -565,8 +548,7 @@ void TableViewRow::SuppressCellContentTabStopsForTabWalkInternal()
 
         if (binding)
         {
-            // Detach first: a local SetValue over a TwoWay binding writes THROUGH it to the app's
-            // source instead of replacing it. Restore re-applies the same Binding.
+            // Detach first: SetValue over a TwoWay binding would write through to the app's source.
             element.ClearValue(isTabStopProperty);
         }
 
@@ -596,18 +578,13 @@ void TableViewRow::SuppressCellContentTabStopsForTabWalkInternal()
             }
         }))
     {
-        // No dispatcher (test host / teardown): authored content must never be left out of the
-        // tab order, so undo immediately even though that forfeits this press.
+        // No dispatcher: never leave content out of the tab order, even at the cost of this press.
         RestoreCellContentTabStopsInternal();
     }
 }
 
-// Idempotent and cheap when nothing is pending, so every path that can strand a suppression -
-// the dispatcher turn, a repeat press, Unloaded, recycle-out and cell rebuild - simply calls it.
-//
-// Elements that have since left this row are still restored: the false on them is this row's
-// write, and leaving it would make that content permanently unreachable wherever it lives now. The
-// "still our false" check is what keeps a recycled or re-templated element's newer value intact.
+// Idempotent. Elements that have left this row are still restored (the false is our write); the
+// "still our false" check preserves any newer value.
 void TableViewRow::RestoreCellContentTabStopsInternal()
 {
     if (m_suppressedContentTabStops.empty())
@@ -640,7 +617,6 @@ void TableViewRow::RestoreCellContentTabStopsInternal()
             auto const& original = entry.originalLocalValue;
             if (original == unsetValue)
             {
-                // Hands the value back to the Style / VisualState setter / default it came from.
                 element.ClearValue(isTabStopProperty);
             }
             else if (auto const binding = original.try_as<winrt::Microsoft::UI::Xaml::Data::BindingExpression>())
@@ -660,25 +636,9 @@ void TableViewRow::RestoreCellContentTabStopsInternal()
     }
 }
 
-// Tab is a BAND gesture, not a per-cell one: the body is one tab stop (dev-spec:201) and the route
-// into a cell's focusable content is Enter (dev-spec:217).
-//
-// The row's two-level IsTabStop gating cannot deliver that on its own. XAML's tab walk searches the
-// focused element's CHILDREN before it consults any TabFocusNavigation scope
-// (CFocusManager::GetNextTabStop, step #1), and SetCellsTabStopInternal only reaches the cell
-// wrappers, so a Button inside a template column's CellTemplate stays a tab stop below them. Tab
-// from the row - or from a cell - then descends into that content instead of leaving the table,
-// which is a keyboard trap for anyone walking the page.
-//
-// PART_CellsHost's KeyboardNavigationMode::Once does not cover this either: it governs movement
-// once focus is already inside the host, while the row that Tab starts from sits outside it.
-//
-// The move itself is deliberately left to XAML. Running it here through
-// FocusManager::TryMoveFocus is NOT equivalent: that walk does not honour the
-// KeyboardNavigationMode::Once scope ItemsRepeater puts on itself, so Shift+Tab from any row but
-// the first stepped backwards into the PREVIOUS row's content instead of crossing to the header
-// band. Suppressing the content and leaving the key unhandled keeps the framework walk - which
-// does honour Once between siblings - and removes only the one candidate it gets wrong.
+// The body is one tab stop; Enter is the route into cell content. The move is left to XAML:
+// FocusManager::TryMoveFocus ignores ItemsRepeater's KeyboardNavigationMode::Once, so Shift+Tab
+// would land in the previous row's content.
 void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 {
     if (!args.Handled() &&
@@ -754,10 +714,7 @@ void TableViewRow::OnRowGettingFocus(
         oldFocus == ownerObject ||
         SharedHelpers::IsAncestor(oldFocus, ownerObject, false /* checkVisibility */);
 
-    // The two bands share ONE column cursor (dev-spec:201), so Tab and Shift+Tab between them keep
-    // the current column. A cursor that is at cell level therefore re-enters the body on the cell
-    // in that column, not on the row: resetting to row level here would silently drop the column
-    // the user was working in. A cursor that never drilled in is still row-level, below.
+    // The bands share one column cursor: a cell-level cursor re-enters on the cell in that column.
     if (focusCameFromWithinTable && ownerImpl->IsCellCursorActiveInternal())
     {
         auto targetRow = ownerImpl->ResolveFocusEntryRow(*this, oldFocus);
@@ -772,7 +729,7 @@ void TableViewRow::OnRowGettingFocus(
             const int32_t column =
                 std::clamp(ownerImpl->CurrentColumnCursorInternal(), 0, cellCount - 1);
 
-            // Arm the target row's cells before aiming at one: row-level cells are not focusable.
+            // Row-level cells are not focusable.
             targetImpl->SetCellLevelInternal(true);
 
             if (auto const cell = targetImpl->GetVisibleCellInternal(column))
@@ -780,10 +737,8 @@ void TableViewRow::OnRowGettingFocus(
                 if (cell.try_as<winrt::DependencyObject>() != newFocus &&
                     !args.TrySetNewFocusedElement(cell))
                 {
-                    // Refusal is survivable when XAML was already aiming at a cell of the target
-                    // row: that is still a cell-level landing. Anywhere else, the drill-in above
-                    // would leave the target row with its row-level stop cleared and no focus to
-                    // show for it, so undo it.
+                    // Unless XAML already targets a cell of this row, undo the drill-in so the row
+                    // isn't left with no tab stop.
                     if (!targetImpl->FindOwnCellInternal(newFocus, false /* requireExact */))
                     {
                         targetImpl->SetCellLevelInternal(false);
@@ -920,7 +875,6 @@ void TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner)
         // Recycled rows return at row level; otherwise a drilled row can reappear unreachable by Tab.
         m_isCellLevel = false;
 
-        // A Tab press whose dispatcher turn has not run yet must not travel with the pooled row.
         RestoreCellContentTabStopsInternal();
 
         UpdateVisualState(false);
@@ -1296,7 +1250,6 @@ void TableViewRow::ResetCellAutomationNames()
 
 void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
 {
-    // Content about to be replaced or re-templated must get its IsTabStop back first.
     RestoreCellContentTabStopsInternal();
 
     auto host = m_cellsHost.get();
@@ -1659,9 +1612,7 @@ void TableViewRow::RefreshGridLines()
 
     const bool wantVertical = WantsVerticalLines(visibility);
     winrt::Brush gridLineBrush{ nullptr };
-    // FlowDirection mirrors the whole TableView subtree with one transform, explicit arrange
-    // coordinates included, so the logical right edge is the trailing edge in both directions -
-    // the same edge RebuildHeaders puts the header grid line on.
+    // FlowDirection mirrors the whole subtree, so the logical right edge is trailing in RTL too.
     const auto verticalThickness = s_verticalThickness;
     if (wantVertical)
     {

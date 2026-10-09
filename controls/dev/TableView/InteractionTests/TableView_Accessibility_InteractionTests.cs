@@ -58,18 +58,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Verifies a group header focused through UIA SetFocus - the route a screen reader takes - still holds focus after its own group collapses, so the next key reaches the same header.")]
         public void GroupHeaderKeepsFocusAcrossCollapseWhenFocusedThroughUia()
         {
-            // Covers the ASSISTIVE-TECHNOLOGY focus route, which is a different entry point from Tab.
             // Scenario: a screen reader moves focus with IUIAutomationElement::SetFocus and then sends an
-            //   activation key. The keyboard file's Tab-route tests pass and do NOT cover this - Tab and
-            //   SetFocus place focus by different paths, so one passing says nothing about the other.
-            //
-            // Was disabled as product finding #15 (the header stopped holding focus across its own
-            //   collapse, so the next key landed elsewhere and the user could not re-open the group they
-            //   had just closed). Root cause: CFrameworkElementAutomationPeer::SetFocusHelper focuses with
-            //   FocusState::Programmatic, and CFocusManager::CoerceFocusState downgrades that to Pointer
-            //   unless the last input was keyboard/gamepad - so the control's focus capture, which accepts
-            //   only Keyboard or Programmatic, never ran for the AT route. The group-header peer now
-            //   overrides SetFocusCore to focus with FocusState::Keyboard, matching the Tab route.
+            //   activation key. Tab-route tests do NOT cover this: Tab and SetFocus place focus by different
+            //   paths (the group-header peer's SetFocusCore must focus with FocusState::Keyboard).
             // Failure means: TableView is operable by a sighted keyboard user but not by a screen-reader user,
             //   which is an accessibility bug, not a cosmetic one.
             using (var setup = new TestSetupHelper(PageName))

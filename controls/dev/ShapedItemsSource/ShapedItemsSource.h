@@ -230,17 +230,9 @@ private:
     // locate a removed row without an O(n) WinRT ABI scan.
     std::unordered_set<winrt::hstring> m_flatRowIdentities;
     std::unordered_map<winrt::hstring, uint32_t> m_flatRowIdentityToIndex;
-    // Sorted flat projections must repair sort-key mutations on the next collection change, but
-    // re-checking the whole projection on every change is too expensive. Rows that implement
-    // INotifyPropertyChanged are observed while a sort is active, and a notification for a
-    // property the active sort reads records that row as dirty; the next collection change checks
-    // only the dirty rows' neighbours. Rows that cannot be observed get a local
-    // insertion-neighbourhood check on Add instead.
-    //
-    // Keyed by the row's canonical IUnknown address -- the same value its object identity is
-    // formatted from -- rather than by projected position, so a pure re-order neither invalidates
-    // nor re-subscribes any of them, and a rebuild re-subscribes only rows it has not seen. Each
-    // entry holds the row, so its address cannot be reused by another object while it is tracked.
+    // Sort-key changes raise no collection notification, so while sorted, INPC rows are observed
+    // and a change to a sort-key property marks the row dirty for the next collection change.
+    // Keyed by IUnknown address (stable across re-orders); holding Item keeps the address unique.
     struct FlatItemPropertyChangedSubscription
     {
         winrt::IInspectable Item{ nullptr };
@@ -249,20 +241,14 @@ private:
     std::unordered_map<uintptr_t, FlatItemPropertyChangedSubscription> m_flatItemPropertyChangedRevokers;
     bool m_flatItemPropertyChangedTrackingActive{ false };
     bool m_flatItemsMayChangeSortWithoutNotification{ false };
-    // Everything below is written by the PropertyChanged handler, which an app could raise from a
-    // thread other than the owning one, so it is guarded by m_sortDirtyLock.
+    // Guards the fields below: PropertyChanged may be raised off the owning thread.
     std::mutex m_sortDirtyLock;
-    // Leading property-name segment of every active sort axis' SortMemberPath. A notification for
-    // any other property cannot change a sort key.
+    // First path segment of each active sort axis' SortMemberPath.
     std::unordered_set<winrt::hstring> m_sortKeyPropertyNames;
-    // True when some active axis has no property path (a delegate key or a custom comparer), so
-    // any property change may move a row.
+    // Some axis has no path (delegate key / comparer), so any property may affect the sort.
     bool m_anyPropertyMayAffectSort{ false };
     std::unordered_set<uintptr_t> m_sortDirtyRows;
-    // Set when too many rows went dirty to be worth checking individually.
     bool m_sortDirtyOverflow{ false };
-    // A stale-sort repair re-ordered the projection while applying a collection change; raise
-    // ShapingChanged(reorderOnly) once that change has fully unwound.
     bool m_raiseReorderAfterIncrementalChange{ false };
     // Guards re-entrant Refresh (a source notification arriving while a rebuild's ReplaceAll is
     // already mutating the projection).

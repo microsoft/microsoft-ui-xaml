@@ -399,7 +399,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             finally
             {
-                // Application.Resources is UI-thread affine; a finally block runs on the test thread.
                 RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGridLineBrush"));
             }
         }
@@ -443,15 +442,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             finally
             {
-                // Application.Resources is UI-thread affine; a finally block runs on the test thread.
                 RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGridLineBrush"));
             }
         }
 
-        // The framework selects ThemeDictionaries["Dark"] ahead of ["Default"] under Dark
-        // (CResourceDictionary::EnsureActiveThemeDictionary), and an element-scoped dictionary is
-        // selected per element, not only at app scope. A "Default" entry with a different colour sits
-        // alongside so a lookup that only probes "Default" in Dark cannot pass by accident.
+        // Under Dark the framework picks ThemeDictionaries["Dark"] ahead of ["Default"], per element.
+        // The differing "Default" entry stops a lookup that only probes "Default" from passing.
         [TestMethod]
         public void VerifyElementDarkThemeDictionaryOverrideWins()
         {
@@ -543,7 +539,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             finally
             {
-                // Application.Resources is UI-thread affine; a finally block runs on the test thread.
                 RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGridLineBrush"));
             }
         }
@@ -617,10 +612,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 EnsureTabularControlsResources();
                 var resources = new TabularControlsResources();
 
-                // The defaults follow AccentFillColorDefaultBrush's per-theme tiers through
-                // {ThemeResource}, so the expected colours are read from the live system accent
-                // palette rather than pinned as hex: that keeps the check valid for any user accent
-                // and makes a reintroduced literal fail as soon as the accent differs from it.
+                // Read expected colours from the live accent palette, not hex: valid for any user
+                // accent, and a reintroduced literal fails.
                 var expectedLight = RequireApplicationColor("SystemAccentColorDark1");
                 var expectedDark = RequireApplicationColor("SystemAccentColorLight2");
                 Verify.AreNotEqual(expectedLight, expectedDark,

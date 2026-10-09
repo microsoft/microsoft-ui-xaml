@@ -324,9 +324,7 @@ void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, st
     // makes the deferred half an idempotent set.
     const auto generation = m_rowMetadataGeneration;
 
-    // A bulk expand/collapse supersedes every per-group request that was captured before it: the
-    // bulk state resets per-group exceptions, and a queued toggle that outlived it would write one
-    // straight back.
+    // A later bulk expand/collapse supersedes this request (see ApplyGroupExpansionByIdentity).
     const auto bulkGeneration = m_groupExpansionBulkGeneration;
 
     // Defer the structural mutation off the current callout. Running it inline re-projects rows
@@ -366,10 +364,8 @@ void TableView::ApplyGroupExpansionByIdentity(
         return;
     }
 
-    // ExpandAllGroups/CollapseAllGroups ran while this request sat on the queue. The bulk state is
-    // the later intent AND it clears per-group exceptions, so applying this now would resurrect
-    // the exception the bulk call just erased. Dropped rather than reordered: the user's last
-    // expressed intent wins.
+    // A bulk expand/collapse ran while this was queued. It is the later intent and clears per-group
+    // exceptions, so applying this now would resurrect one; drop it.
     if (bulkGeneration != m_groupExpansionBulkGeneration)
     {
         return;
@@ -573,9 +569,7 @@ void TableView::SetAllGroupsExpansion(bool expand)
         return;
     }
 
-    // From here the bulk state is being applied, so every per-group request captured before this
-    // point is stale: the spec's "setting the bulk state also resets per-group exceptions" has to
-    // hold for the exceptions that are still in flight as well as the ones already recorded.
+    // Invalidates in-flight per-group requests, which the bulk state also resets.
     ++m_groupExpansionBulkGeneration;
 
     auto const focusedGroupIdentity = CaptureFocusedGroupHeaderForRestore();
@@ -768,12 +762,8 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     bool isExpanded{ false };
     bool isExpandable{ false };
 
-    // Resolve the group from the PROJECTION at `index`, not from the container's DataContext. A
-    // reshape can rebind a pooled header in place -- no fresh ElementPrepared, no
-    // ElementIndexChanged -- so the DataContext can still describe the previous projection's
-    // entry, whose IsExpanded is whatever it was before the reshape. Reading it is how a bulk
-    // collapse used to leave a gesture-expanded header reporting Expanded. The DataContext stays
-    // as the fallback for the window where the index does not describe a header.
+    // Resolve from the PROJECTION at `index`: a reshape can rebind a pooled header in place, so its
+    // DataContext may still be the previous projection's entry. DataContext is only the fallback.
     winrt::IInspectable groupRow{ nullptr };
     if (hasRowInfo && m_rowsItemsSourceView && index >= 0 && index < m_rowsItemsSourceView.Count())
     {

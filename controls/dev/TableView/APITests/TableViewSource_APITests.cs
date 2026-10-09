@@ -1574,8 +1574,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(IsFocusWithin(tableView, GetProjectedRow(tableView, focusedIndex)),
                     "Baseline: keyboard focus must be on the row at the focused index.");
 
-                // An INPC-only sort-key change leaves Owen in place; the next collection change
-                // repairs the order (a re-order Reset) before appending Zed.
+                // The INPC-only rename leaves Owen stale; the Add repairs the order before appending Zed.
                 items.First(p => p.Name == "Owen").Name = "Abe";
                 items.Add(new ShapedPerson("Zed", "Engineer", "Platform"));
             });
@@ -1587,10 +1586,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyProjection(tableView, new List<string> { "Abe", "Asha", "Diego", "Ines", "Mei", "Rafa", "Zed" },
                     "the collection change must repair the stale row and then apply the add");
 
-                // dev-spec Keyboard, "Re-shape while focused": focus stays at the same projected
-                // POSITION. The control only restores it when the engine reports the re-order as a
-                // re-shape (ShapingChanged); a bare Reset leaves focus wherever the repeater's own
-                // rescue put it.
+                // Focus is restored to the same projected position only when the repair is reported
+                // as a re-shape (ShapingChanged); a bare Reset would not restore it.
                 var row = GetProjectedRow(tableView, focusedIndex);
                 Verify.IsTrue(IsFocusWithin(tableView, row),
                     $"Focus must stay at projected index {focusedIndex} (now '{Person(row.DataContext).Name}') across a stale-sort repair.");
@@ -1617,9 +1614,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "baseline");
 
-                // Change the sort key WITHOUT notifying, then notify only for Role. Role is not what
-                // the sort reads, so the notification must not schedule a repair: only a Name (or
-                // "all properties") notification does.
+                // Silently change the sort key, then notify only for Role, which the sort does not read.
                 var asha = items.First(p => p.Name == "Asha");
                 asha.SetNameWithoutNotification("Zara");
                 asha.Role = "Engineer";
@@ -1631,9 +1626,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // No repair ran, so the silently renamed row is still first and Bea was placed by the
-                // incremental insert ahead of it. A repair would have produced
-                // Bea, Diego, Ines, Mei, Owen, Rafa, Zara.
+                // No repair ran: Zara is still in Asha's old slot, with Bea inserted ahead of it.
                 VerifyProjection(tableView, new List<string> { "Bea", "Zara", "Diego", "Ines", "Mei", "Owen", "Rafa" },
                     "a non-sort property notification must not re-sort the projection");
             });
@@ -2033,15 +2026,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Nested object, so "Department.Name" exercises the dotted-path evaluator.
         public Department Department { get; private set; }
 
-        // Changes the sort key behind the projection's back, for tests that need a stale row whose
-        // staleness was never announced.
+        // Makes a row stale without announcing it.
         internal void SetNameWithoutNotification(string name) => m_name = name;
 
         private void Raise(string propertyName)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    // A row type with no change notification at all.
     internal sealed class PlainShapedPerson
     {
         public string Name { get; set; }

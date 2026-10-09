@@ -18,25 +18,14 @@
 
 namespace
 {
-    // dev-spec:227 - a row peer's set metadata is "group-relative": when the source is grouped,
-    // PositionInSet and SizeOfSet are relative to the containing group and exclude the
-    // group-header bands, matching ItemsControlAutomationPeer. The table-level helpers count
-    // data rows across the WHOLE projection, which is the right answer only for a flat source.
-    //
-    // Bounding the row by the adjacent bands is what keeps this correct for a collapsed group: its
-    // data rows are not projected at all, so the group ends at the next band.
-    //
-    // Narrator reads both properties for every row, so walking to the bands per query made reading
-    // a group quadratic. The row metadata provider answers from a cached band index instead; the
-    // walk remains only as the fallback when it cannot (no provider, or a projection it does not
-    // own).
+    // Grouped sources report PositionInSet/SizeOfSet relative to the containing group, excluding
+    // header bands. The provider's cached band index avoids a quadratic per-row walk; the walk
+    // below is the fallback.
     bool TryGetGroupedRowSetMetadataFromProvider(TableView* tableImpl, int32_t rowIndex, int32_t& positionInSet, int32_t& sizeOfSet)
     {
         try
         {
-            // Grouping exists only on an app-assigned TableViewSource, which is then the ItemsSource
-            // itself. The provider checks the repeater's view is its own projection, so the index
-            // is never resolved against a different one.
+            // Grouping exists only on an app-assigned TableViewSource (the ItemsSource itself).
             auto const source = tableImpl->ItemsSource().try_as<winrt::TableViewSource>();
             auto const repeater = tableImpl->GetRowsRepeaterInternal();
             if (!source || !repeater)

@@ -47,10 +47,8 @@ struct ITableViewRowMetadataProvider
     virtual void ExpandAllGroups() = 0;
     virtual void CollapseAllGroups() = 0;
 
-    // Group-relative set metadata for the DATA row at `index`: its 1-based position among the data
-    // rows between the adjacent group-header bands, and the number of such rows. `rows` must be the
-    // exact projection the caller indexed into; a provider that does not own it answers false, as
-    // does one that cannot answer cheaply (flat source, header row, out of range).
+    // 1-based position among data rows between adjacent header bands, and that count. Returns false
+    // if `rows` isn't the provider's projection, or for flat sources, headers, or out of range.
     virtual bool TryGetGroupMembership(
         winrt::Windows::Foundation::IInspectable const& /*rows*/,
         int32_t /*index*/,

@@ -86,20 +86,8 @@ winrt::hstring TableViewGroupHeaderAutomationPeer::GetNameCore()
 
 void TableViewGroupHeaderAutomationPeer::SetFocusCore()
 {
-    // The base peer focuses the owner with FocusState::Programmatic
-    // (CFrameworkElementAutomationPeer::SetFocusHelper), and the focus manager COERCES
-    // Programmatic to the last input device type (CFocusManager::CoerceFocusState): after a
-    // pointer gesture it lands as FocusState::Pointer. Two things then go wrong for the one
-    // client that uses this route, a screen reader: the band draws no focus visual, and
-    // TableView's group-expansion focus restore -- which deliberately ignores Pointer focus so a
-    // band click does not yank focus back -- never captures the header, so it loses focus across
-    // its own collapse and the user cannot re-open the group they just closed.
-    //
-    // An AT moving focus here IS a navigation act, so Keyboard is the honest state: it is not
-    // coerced, it draws the focus visual the user needs, and it makes the existing restore path
-    // treat this exactly like the Tab route. Same shape as TableViewCellAutomationPeer::
-    // SetFocusCore -- focus directly, and fall back to the base peer if that cannot land (a
-    // recycled or unparented container).
+    // Base peer focuses as Programmatic, which FocusManager coerces (e.g. to Pointer: no focus
+    // visual, and group-expansion focus restore skips it), hence explicit Keyboard.
     if (auto const header = GetHeader())
     {
         if (header.Focus(winrt::FocusState::Keyboard))
@@ -119,10 +107,7 @@ int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
         return provided;
     }
 
-    // dev-spec:230 - the band computes NO Level. Grouping is single-level, so there is no
-    // hierarchy to announce and synthesizing "level 1" tells a screen reader the user is inside a
-    // nesting that does not exist. 0 is UIA's "not specified"; only an app-set
-    // AutomationProperties.Level, handled above, puts a Level on this band.
+    // Grouping is single-level: no synthesized Level (0 = not specified) unless the app sets one.
     return 0;
 }
 

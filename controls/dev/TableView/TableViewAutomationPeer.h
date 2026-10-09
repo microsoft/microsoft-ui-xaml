@@ -49,8 +49,7 @@ public:
     // Expanding or collapsing a group adds or removes whole runs of rows, so every cached child
     // of the TableView peer may be stale.
     void RaiseStructureChangedForGroupExpansion();
-    // Adding, removing or hiding a column changes the grid's reported column geometry and the set
-    // of cells every row exposes, so a client's cached subtree is stale from the header band down.
+    // Column add/remove/hide changes every row's cells and the header band.
     void RaiseStructureChangedForColumnsChange();
 
     // Internal — the single source of column-header peer identity, shared with
