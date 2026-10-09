@@ -34,6 +34,104 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void NavigationViewItemMouseDragStarting()
+        {
+            foreach (bool topMode in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+                {
+                    if (topMode)
+                    {
+                        new CheckBox(FindElement.ById("TopMode")).Check();
+                        Wait.ForIdle();
+                    }
+
+                    int expectedDragCount = 0;
+                    var sourceIds = topMode ? new[] { "DragItem" } : new[] { "DragItem", "NestedDragItem" };
+                    foreach (var sourceId in sourceIds)
+                    {
+                        for (int attempt = 0; attempt < 2; ++attempt)
+                        {
+                            // Cancel at DragStarting to isolate gesture detection and capture cleanup
+                            // from the system drag/drop service.
+                            InputHelper.MouseDragToTarget(FindElement.ById(sourceId), FindElement.ById("DropTarget"));
+                            Verify.AreEqual((++expectedDragCount).ToString(), new TextBlock(FindElement.ById("DragCount")).GetText());
+                            Verify.AreEqual(sourceId, new TextBlock(FindElement.ById("DragSource")).GetText());
+                            Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                            VerifyNavigationViewDragStateReset();
+                        }
+                    }
+
+                    InputHelper.LeftClick(FindElement.ById("DragItem"));
+                    Wait.ForIdle();
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+
+                    InputHelper.MouseDragToTarget(FindElement.ById("DragItem"), FindElement.ById("DropTarget"));
+                    Verify.AreEqual((++expectedDragCount).ToString(), new TextBlock(FindElement.ById("DragCount")).GetText());
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+
+                    new CheckBox(FindElement.ById("Draggable")).Uncheck();
+                    Wait.ForIdle();
+                    InputHelper.MouseDragToTarget(FindElement.ById("DragItem"), FindElement.ById("DropTarget"));
+                    Verify.AreEqual(expectedDragCount.ToString(), new TextBlock(FindElement.ById("DragCount")).GetText());
+                    Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+
+                    InputHelper.LeftClick(FindElement.ById("DragItem"));
+                    Wait.ForIdle();
+                    Verify.AreEqual("2", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                    VerifyNavigationViewDragStateReset();
+                }
+            }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemRetemplateDuringPointerPress()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+            {
+                new CheckBox(FindElement.ById("RetemplateOnPress")).Check();
+                InputHelper.LeftClick(FindElement.ById("DragItem"));
+                Wait.ForIdle();
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("RetemplateCount")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+
+                new CheckBox(FindElement.ById("RetemplateOnPress")).Uncheck();
+                InputHelper.LeftClick(FindElement.ById("DragItem"));
+                Wait.ForIdle();
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+            }
+        }
+
+        [TestMethod]
+        public void NavigationViewItemMouseDrop()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Drag Test" }))
+            {
+                new CheckBox(FindElement.ById("CancelDrag")).Uncheck();
+                Wait.ForIdle();
+                InputHelper.MouseDragToTarget(FindElement.ById("DragItem"), FindElement.ById("DropTarget"));
+                Verify.AreEqual("1", new TextBlock(FindElement.ById("DragCount")).GetText());
+                Verify.AreEqual("DragItem", new TextBlock(FindElement.ById("DroppedText")).GetText());
+                Verify.AreEqual("Copy", new TextBlock(FindElement.ById("CompletionResult")).GetText());
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("InvocationCount")).GetText());
+                VerifyNavigationViewDragStateReset();
+            }
+        }
+
+        private static void VerifyNavigationViewDragStateReset()
+        {
+            new Button(FindElement.ById("Snapshot")).Invoke();
+            Wait.ForIdle();
+            Verify.AreEqual("0", new TextBlock(FindElement.ById("CaptureCount")).GetText());
+            Verify.AreEqual("None", new TextBlock(FindElement.ById("PressedStates")).GetText());
+        }
+
+        [TestMethod]
         public void VerifyCorrectNumberOfEventsRaised()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))

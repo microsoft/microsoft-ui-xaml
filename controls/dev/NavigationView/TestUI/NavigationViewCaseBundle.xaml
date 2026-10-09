@@ -69,6 +69,7 @@
 
             <StackPanel>
                 <TextBlock Text="Regression tests"/>
+                <Button x:Name="NavigateToDragPage" AutomationProperties.Name="NavigationView Drag Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Drag Test</Button>
                 <Button x:Name="NavigationViewRS4Page" AutomationProperties.Name="NavigationView Regression Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Regression Test</Button>
                 <Button x:Name="NavigateToRS3Page" AutomationProperties.Name="NavigationView PreserveRS3 Test" Margin="2" HorizontalAlignment="Stretch">NavigationView PreserveRS3 Test</Button>
 
