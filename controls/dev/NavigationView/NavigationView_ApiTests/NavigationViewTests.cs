@@ -781,6 +781,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifySelectionWithOpacityTransition()
+        {
+            if (!new UISettings().AnimationsEnabled)
+            {
+                Log.Result(TestResult.Skipped, "Selection indicator animations must be enabled to exercise this regression.");
+                return;
+            }
+
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                var navView = SetupNavigationView(paneDisplayMode);
+                NavigationViewItem first = null;
+                NavigationViewItem second = null;
+                ScalarTransition transition = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    first = (NavigationViewItem)navView.MenuItems[0];
+                    second = (NavigationViewItem)navView.MenuItems[1];
+                    transition = new ScalarTransition();
+                    navView.OpacityTransition = transition;
+                    Verify.Throws<UnauthorizedAccessException>(() =>
+                    {
+                        Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(navView);
+                    });
+                    navView.SelectedItem = first;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(first.IsSelected);
+                    Verify.IsNotNull(VisualTreeUtils.FindVisualChildByName(first, "SelectionIndicator"));
+                    Verify.IsNotNull(VisualTreeUtils.FindVisualChildByName(second, "SelectionIndicator"));
+                    navView.SelectedItem = second;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(second, navView.SelectedItem);
+                    Verify.IsTrue(second.IsSelected);
+                    Verify.IsFalse(first.IsSelected);
+                    Verify.AreEqual(transition, navView.OpacityTransition);
+                    navView.Opacity = 0.5;
+                    navView.SelectedItem = first;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(first, navView.SelectedItem);
+                    Verify.IsTrue(first.IsSelected);
+                    Verify.IsFalse(second.IsSelected);
+                    Verify.AreEqual(0.5, navView.Opacity);
+                    navView.Opacity = 1.0;
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyClosedCompactVisualState()
         {
             NavigationView navView = null;
