@@ -59,6 +59,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ViewHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ThemeResourcesTests.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'" />
     <Compile Include="$(MSBuildThisFileDirectory)\MiscTests\FocusTests.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'" />
+    <Compile Include="$(MSBuildThisFileDirectory)\MiscTests\CustomPropertyBindingTests.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\VisualTreeUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\LeakTests.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'" />
     <Compile Include="$(MSBuildThisFileDirectory)\LocalizationTests.cs" />
