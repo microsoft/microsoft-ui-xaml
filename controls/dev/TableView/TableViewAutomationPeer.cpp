@@ -108,16 +108,9 @@ winrt::AutomationControlType TableViewAutomationPeer::GetAutomationControlTypeCo
     return winrt::AutomationControlType::DataGrid;
 }
 
-// FrameworkElementAutomationPeer reports the owner's GLOBAL bounds, which union every realized
-// descendant. The body ItemsRepeater keeps cache rows realized above and below the viewport, and
-// the scroller clips them visually but not out of those bounds, so the table read up to ~2x taller
-// than it renders. Intersect with the table's own layout box; the base result already accounts for
-// ancestor clips and offscreen state, so an empty base is returned as-is.
-//
-// The clip is best-effort: whenever the two rectangles cannot be reconciled the base result wins,
-// so a visible table never reports empty bounds. The layout box always contains the header strip,
-// so a non-empty base that does not intersect it means the two coordinate spaces disagree
-// (windowed popup, island, projection or Composition transform), not that the table is hidden.
+// The default bounds union every realized descendant, including cache rows the scroller clips, so
+// intersect with the table's layout box. Best-effort: if the two rects can't be reconciled (e.g. the
+// coordinate spaces disagree under a popup, island or transform) the base result wins.
 winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
 {
     auto const bounds = __super::GetBoundingRectangleCore();
@@ -145,7 +138,7 @@ winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
     winrt::Rect layoutBounds{};
     try
     {
-        // Same DIP -> physical mapping InkCanvasAutomationPeer uses to match the framework's space.
+        // Same DIP -> physical mapping as InkCanvasAutomationPeer.
         layoutBounds = SharedHelpers::ConvertDipsToPhysical(
             owner, owner.TransformToVisual(nullptr).TransformBounds(localBounds));
     }
@@ -155,8 +148,7 @@ winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
         return bounds;
     }
 
-    // RectHelper::Intersect reports no overlap as RectHelper::Empty() (infinite extents), so test
-    // the extents rather than IsEmpty and never let that sentinel reach a UIA client.
+    // Intersect reports no overlap as RectHelper::Empty() (infinite extents); never return that.
     auto const clipped = winrt::RectHelper::Intersect(bounds, layoutBounds);
     if (!(clipped.Width > 0.0f) || !(clipped.Height > 0.0f) ||
         !std::isfinite(clipped.X) || !std::isfinite(clipped.Y) ||

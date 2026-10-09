@@ -1043,11 +1043,8 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
 
     if (m_currentCellRow >= 0)
     {
-        // m_currentCellRow is a bare index, and nothing renumbers it when the source reshapes
-        // (sort, filter, group expand/collapse, insert, remove), so index 2 can name a different
-        // record by the time focus comes back. Follow the remembered ITEM instead: m_currentItem is
-        // written by the same OnRowCellFocusChanged funnel that writes m_currentCellRow, and it is
-        // cleared with SetCurrentCell(nullptr, nullptr) when the source is replaced.
+        // m_currentCellRow is a bare index that reshapes don't renumber, so follow the remembered
+        // item instead.
         auto const rememberedItem = m_currentItem.get();
         winrt::IInspectable itemAtRememberedRow{ nullptr };
         auto const stillTheSameRecord =
@@ -1055,8 +1052,7 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
             TryGetItemAtRowIndex(m_currentCellRow, itemAtRememberedRow) &&
             SameInspectableIdentity(itemAtRememberedRow, rememberedItem);
 
-        // A reshape that only moved the item is recoverable: FindRealizedRowForItem searches
-        // realized rows only, so this never forces a realization.
+        // Realized rows only, so this never forces a realization.
         if (auto const remembered = stillTheSameRecord
                 ? GetRealizedRowAt(m_currentCellRow)
                 : FindRealizedRowForItem(rememberedItem))
@@ -1065,10 +1061,8 @@ winrt::TableViewRow TableView::ResolveFocusEntryRow(
         }
     }
 
-    // Nothing remembered, or the record is not realized. XAML aims Next at the first and Previous
-    // at the last realized tab stop, which with a vertical cache is a row outside the viewport, and
-    // focusing it scrolls. Land on the viewport edge row in the direction of travel instead,
-    // matching ItemsView.
+    // XAML aims at the first/last realized row, which with a vertical cache is outside the
+    // viewport and would scroll. Land on the viewport edge row instead, matching ItemsView.
     if (auto const edge = FindViewportEdgeRowInternal(direction == winrt::FocusNavigationDirection::Previous))
     {
         return edge;
@@ -1092,7 +1086,6 @@ winrt::TableViewRow TableView::FindViewportEdgeRowInternal(bool last) const
         return nullptr;
     }
 
-    // Prefer a fully visible row; take a partially visible one only when no row fits entirely.
     winrt::TableViewRow fullyVisible{ nullptr };
     int32_t fullyVisibleIndex = -1;
     winrt::TableViewRow partiallyVisible{ nullptr };
@@ -1183,9 +1176,7 @@ TableView::FocusEntryTarget TableView::ResolveFocusEntryTarget(
         return result;
     }
 
-    // Resume at cell level only on the container that shows the remembered record NOW. Container
-    // identity (m_cellLevelRow) is not enough: it is recycled onto other records on every scroll,
-    // and a record that moved (sort, group, recycle) lives in a different container.
+    // Container identity (m_cellLevelRow) isn't enough: containers recycle onto other records.
     if (m_cellCursorActive && RowShowsCurrentItemInternal(result.Row))
     {
         auto const rowImpl = winrt::get_self<TableViewRow>(result.Row);
@@ -1212,8 +1203,7 @@ void TableView::ArmCellLevelRowInternal(winrt::TableViewRow const& row)
         return;
     }
 
-    // Release any other row that was still drilled in before claiming this one, so only one row
-    // ever has its cells armed.
+    // Only one row may have its cells armed.
     if (auto const previous = m_cellLevelRow.get(); previous && previous != row)
     {
         winrt::get_self<TableViewRow>(previous)->SetCellLevelInternal(false);
@@ -1292,7 +1282,6 @@ void TableView::OnRowCellFocusChanged(winrt::TableViewRow const& row)
         m_currentCellRow = rowIndex;
     }
 
-    // A cell holds focus, so the cursor is at cell level on THIS row.
     ArmCellLevelRowInternal(row);
 
     if (!IsEditing())
@@ -1590,7 +1579,6 @@ bool TableView::TryHandleGroupHeaderExpandCollapseKey(const winrt::KeyRoutedEven
         return true;
     }
 
-    // A key toggled it, so the restore after the reshape comes back with a keyboard focus visual.
     winrt::get_self<TableViewGroupHeader>(header)->SetGestureFocusStateInternal(winrt::FocusState::Keyboard);
     SetGroupExpansion(header, expand);
     return true;

@@ -372,7 +372,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // ---------- Pointer (absolute screen points) ----------
 
-        // "Name [ClassName]" of the element UIA reports as focused, for logging where focus actually went.
         internal static string DescribeFocused()
         {
             try
@@ -386,9 +385,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // Rotates the wheel with the pointer parked over the given point. Vertical only: MITA exposes no
-        // horizontal wheel, and holding Shift does not turn this into one (measured - the body scrolled
-        // VERTICALLY with Shift down).
+        // Vertical only: MITA exposes no horizontal wheel, and Shift does not turn this into one.
         internal static void WheelAtPoint(Point point, int delta)
         {
             Log.Comment("Rotate wheel by {0} at ({1}, {2}).", delta, point.X, point.Y);
@@ -576,7 +573,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             return readout == null ? "<no readout>" : readout.DocumentText;
         }
 
-        // The "V=<v>" field of a ReadScrollOffsets() readout, or the whole readout if it has none.
+        // Returns the whole readout if it has no "V=" field.
         internal static string VerticalOffsetOf(string offsets)
         {
             foreach (string field in offsets.Split(';'))

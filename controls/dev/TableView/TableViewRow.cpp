@@ -27,10 +27,8 @@ namespace
     constexpr winrt::Thickness s_verticalThicknessRtl{ 1, 0, 0, 0 };
     constexpr winrt::Thickness s_zeroThickness{ 0, 0, 0, 0 };
 
-    // The parts of CUIElement::IsFocusable a GettingFocus redirect can observe: live, inside the
-    // owning table with every ancestor visible, enabled, and a tab stop at its current level. A
-    // target that fails is refused or substituted by the focus manager, and a substitute can land
-    // back on a row and re-enter the redirect.
+    // A target the focus manager refuses can be substituted by one that lands back on a row and
+    // re-enters the redirect.
     bool IsEntryRedirectTargetFocusable(winrt::UIElement const& target, winrt::DependencyObject const& owner)
     {
         if (!target || !target.XamlRoot() || target.Visibility() != winrt::Visibility::Visible || !target.IsTabStop())
@@ -518,9 +516,7 @@ void TableViewRow::OnRowGettingFocus(
             return;
         }
 
-        // Make the row focusable before redirecting, and only commit the cursor change once the
-        // focus manager has accepted the redirect; on refusal the cell XAML aimed at keeps focus
-        // and the row keeps the level it had.
+        // Commit the cursor change only once the focus manager accepts the redirect.
         const bool wasCellLevel = IsCellLevelInternal();
         SetCellLevelInternal(false);
         if (args.TrySetNewFocusedElement(selfObject))
@@ -534,14 +530,9 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
-    // Entry from outside the table (Tab or Shift+Tab). XAML aims at the first or last tab stop in
-    // tree order: the first or last REALIZED row (often a cache row outside the viewport), or a
-    // control hosted in one of its template cells. Resume the remembered record instead, at the
-    // level the cursor was left at, or the viewport edge row when nothing usable is remembered.
-    //
-    // At most one redirect per focus operation: the redirect re-raises GettingFocus on the target
-    // with the same CorrelationId, and the guards below must never be the only thing between a
-    // stale state and an unbounded redirect loop in the focus manager.
+    // Entry from outside: XAML aims at the first/last realized tab stop (often a cache row), so
+    // resume the remembered record or the viewport edge row instead. At most one redirect per
+    // CorrelationId, so stale state can never cause a redirect loop in the focus manager.
     const auto correlationId = args.CorrelationId();
     if (ownerImpl->HasRedirectedFocusEntry(correlationId))
     {
@@ -556,10 +547,8 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
-    // Already on the target, or inside the target cell (a control hosted in the remembered cell):
-    // nothing to redirect. Redirecting to an ancestor cell of the proposed element is also what
-    // starts a loop. A ROW target still takes focus from a control hosted inside it: row-level
-    // entry lands on the row, never on its content.
+    // Redirecting to an ancestor cell of the proposed element starts a loop. A row target still
+    // takes focus from content hosted inside it.
     winrt::DependencyObject const targetObject = targetElement;
     if (newFocus == targetObject ||
         (entry.CellLevel && SharedHelpers::IsAncestor(newFocus, targetObject, false /* checkVisibility */)))
@@ -567,8 +556,7 @@ void TableViewRow::OnRowGettingFocus(
         return;
     }
 
-    // Arm the target's level first: at row level the cells are not tab stops, at cell level the
-    // row is not. Undo on any failure so the row never ends up with neither level focusable.
+    // Arm the target's level first (only one level is a tab stop); undo on failure.
     auto const targetRowImpl = winrt::get_self<TableViewRow>(targetRow);
     const bool targetWasCellLevel = targetRowImpl->IsCellLevelInternal();
     targetRowImpl->SetCellLevelInternal(entry.CellLevel);

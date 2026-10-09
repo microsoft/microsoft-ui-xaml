@@ -279,9 +279,7 @@ void TableViewGroupHeader::OnPointerExited(winrt::PointerRoutedEventArgs const& 
 
 void TableViewGroupHeader::ResetPointerStateInternal()
 {
-    // A container prepared for (or cleared from) a group must not carry a press that began on the
-    // group it showed before; the release would otherwise toggle the new group. Hover is left
-    // alone: it describes where the pointer is, not which group it acted on.
+    // Hover is left alone: it describes where the pointer is, not which group it acted on.
     m_pressedGroupIdentity.clear();
     if (m_isPressed)
     {
@@ -314,14 +312,11 @@ void TableViewGroupHeader::OnPointerPressed(winrt::PointerRoutedEventArgs const&
 
     m_isPressed = true;
 
-    // Remember WHICH group was pressed. Anything that reshapes the table between press and
-    // release (a deferred edit commit, a source change, a wheel scroll) can recycle this container
-    // onto another group, and the release must not toggle that one.
+    // A reshape between press and release can recycle this container onto another group.
     m_pressedGroupIdentity = GetGroupIdentity();
 
-    // Focus is taken on release, not here: moving focus off an open editor commits it on a later
-    // turn, and a commit that changes a group or sort key reshapes the table in the middle of the
-    // gesture.
+    // Focus is taken on release: moving focus off an open editor commits it on a later turn,
+    // which can reshape the table mid-gesture.
 
     // The band owns the gesture: mark it handled so a press on a group header never reaches the
     // row's selection handling.
@@ -343,18 +338,13 @@ void TableViewGroupHeader::OnPointerReleased(winrt::PointerRoutedEventArgs const
     m_pressedGroupIdentity.clear();
     UpdateVisualStates(true /* useTransitions */);
 
-    // Click semantic: only a press released inside the band, on the SAME group, activates. A press
-    // that drags off does nothing, and a container recycled onto another group mid-gesture does
-    // nothing rather than acting on the wrong group.
+    // Only a release inside the band, on the same group, activates.
     if (!wasPressed || !m_isPointerOver || pressedIdentity != GetGroupIdentity())
     {
         return;
     }
 
-    // A click on the band makes it the keyboard focus target, as a click on a row or a
-    // ListViewItem does; otherwise the next key acts on whatever had focus before. Same exit as
-    // the keyboard path to a header (FocusRowContainerInternal): the cell cursor pops to row level.
-    // Focus BEFORE the toggle so the toggle captures it for the restore after the reshape.
+    // Focus before the toggle so the toggle captures it for the restore after the reshape.
     if (Focus(winrt::FocusState::Pointer))
     {
         if (auto const owner = GetOwningTableView())

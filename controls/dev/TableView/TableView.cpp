@@ -1912,7 +1912,7 @@ void TableView::OnRowElementPrepared(
     }
     else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
     {
-        // A container from the pool must not carry a press that began on the group it showed before.
+        // A pooled container must not carry a press that began on its previous group.
         winrt::get_self<TableViewGroupHeader>(header)->ResetPointerStateInternal();
         PrepareGroupHeaderElement(header, args.Index());
         InvalidateMeasure();
@@ -1953,9 +1953,8 @@ void TableView::OnRowElementClearing(
         }
 
         auto const rowImpl = winrt::get_self<TableViewRow>(row);
-        // The container resets its own level on recycle and is about to show another record, so it
-        // must stop being "the drilled row". The cursor level and column survive: re-entry re-arms
-        // cell level on whichever container shows the remembered record next.
+        // About to show another record, so it stops being the drilled row; the cursor level and
+        // column survive for re-entry.
         if (auto const drilled = m_cellLevelRow.get(); drilled && IsSameObject(row, drilled))
         {
             m_cellLevelRow = nullptr;
