@@ -1053,9 +1053,10 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
         UpdateSelectionModelSelection(ip);
     }
 
-    // Item was invoked but already selected, so raise event here.
+    // Selection did not change, so consume the pending invocation before raising the event directly.
     if (selectedItem == SelectedItem())
     {
+        m_shouldRaiseItemInvokedAfterSelection = false;
         RaiseItemInvokedForNavigationViewItem(nvi);
     }
 
