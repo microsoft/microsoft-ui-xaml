@@ -14,6 +14,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -24,8 +25,22 @@
         <TextBlock x:Name="StatusText" AutomationProperties.Name="StatusText" Grid.Row="1"
                    Margin="0,0,0,4" Text="Draw with mouse, pen, or touch — the InkCanvas inks by default." />
 
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,0,0,4">
+            <Button x:Name="ListenForUnprocessedInputButton" AutomationProperties.AutomationId="ListenForUnprocessedInputButton"
+                    Content="Read UnprocessedInput args" Click="OnListenForUnprocessedInputClick" />
+            <Button x:Name="CollapseCanvasHostButton" AutomationProperties.AutomationId="CollapseCanvasHostButton"
+                    Content="Collapse canvas host" Click="OnCollapseCanvasHostClick" />
+            <TextBlock x:Name="UnprocessedInputStatus" AutomationProperties.AutomationId="UnprocessedInputStatus" Text="0,0,0" />
+            <TextBlock x:Name="StrokesCollectedCount" AutomationProperties.AutomationId="StrokesCollectedCount" Text="0" />
+            <TextBlock x:Name="UnderlayPointerCount" AutomationProperties.AutomationId="UnderlayPointerCount" Text="0" />
+        </StackPanel>
+
+        <!-- The underlay shares the canvas's cell: once the canvas host is collapsed, input must reach it. -->
+        <Button x:Name="CanvasUnderlay" AutomationProperties.AutomationId="CanvasUnderlay" Grid.Row="3"
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" Click="OnUnderlayClick" />
+
         <!-- InkCanvas self-inks out of the box: no app code needed for wet ink. -->
-        <Border Grid.Row="2" BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1">
+        <Border x:Name="CanvasHost" Grid.Row="3" BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1">
             <controls:InkCanvas x:Name="TestInkCanvas" AutomationProperties.Name="TestInkCanvas" />
         </Border>
     </Grid>

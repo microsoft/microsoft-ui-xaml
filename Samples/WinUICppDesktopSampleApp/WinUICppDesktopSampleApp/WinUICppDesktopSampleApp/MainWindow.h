@@ -44,6 +44,8 @@ namespace winrt::WinUICppDesktopSampleApp::implementation
         void SplitButtonFlyout_Opened(IInspectable const& sender, IInspectable const& args);
         void SplitButtonFlyout_Closed(IInspectable const& sender, IInspectable const& args);
         void DropDownButton_Click(IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void InkCanvas_Loaded(IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
+        void ButtonShowRuler_Click(IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
         void ButtonResetBounds_Click(IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
         void ButtonGetBounds_Click(IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);
         void ButtonResetVisible_Click(IInspectable const& sender, Microsoft::UI::Xaml::RoutedEventArgs const& args);

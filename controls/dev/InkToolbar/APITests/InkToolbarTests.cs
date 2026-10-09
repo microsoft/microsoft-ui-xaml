@@ -659,6 +659,79 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // The pen button's built-in palette becomes the color picker's ItemsSource. A plain IVector<Brush> is
+        // rejected by ItemsSource (E_INVALIDARG fail-fast when the pen flyout opens), so the default palette
+        // must be bindable. A .NET host hides that failure: ItemsControl falls back to a CLR wrapper when the
+        // collection is not bindable, so the flyout alone passes here and the palette's own native interfaces
+        // are checked as well.
+        [TestMethod]
+        public void InkToolbarDefaultPenPaletteBindsToColorPickerTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var pen = new InkToolbarBallpointPenButton();
+                var config = new InkToolbarPenConfigurationControl();
+                config.SetValue(InkToolbarPenConfigurationControl.PenButtonProperty, pen);
+
+                var host = new StackPanel();
+                host.Children.Add(pen);
+                Content = host;
+                Content.UpdateLayout();
+
+                Verify.IsNotNull(pen.Palette, "Applying the pen template should populate the default palette.");
+                Verify.IsGreaterThan(pen.Palette.Count, 0, "The default palette should not be empty.");
+                Verify.IsTrue(IsNativelyBindable(pen.Palette),
+                    "The default palette must expose IIterable<IInspectable> or IBindableIterable, which ItemsSource needs in a native app.");
+
+                host.Children.Add(config);
+                Content.UpdateLayout();
+
+                var colorPicker = config.FindVisualChildByName("PenColorPalette") as ItemsControl;
+                Verify.IsNotNull(colorPicker, "PenColorPalette should be realized after template apply.");
+                Verify.AreEqual(pen.Palette.Count, colorPicker.Items.Count, "The color picker should show every palette entry.");
+            });
+        }
+
+        private static readonly Guid IIterableOfInspectableIid = new Guid("092b849b-60b1-52be-a44a-6fe8e933cbe4");
+        private static readonly Guid IBindableIterableIid = new Guid("036d2c08-df29-41af-8aa2-d774be62ba6f");
+
+        // Whether the collection's native object is something XAML's ItemsSource accepts without a CLR wrapper.
+        private static bool IsNativelyBindable(object collection)
+        {
+            var nativeObject = ((WinRT.IWinRTObject)collection).NativeObject;
+            foreach (var iid in new[] { IIterableOfInspectableIid, IBindableIterableIid })
+            {
+                if (nativeObject.TryAs(iid, out IntPtr ppv) >= 0 && ppv != IntPtr.Zero)
+                {
+                    global::System.Runtime.InteropServices.Marshal.Release(ppv);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // UWP apps restyle InkToolbar buttons with the toolbar's keyed resources from the system generic.xaml;
+        // the same keys must resolve from app markup here.
+        [TestMethod]
+        public void InkToolbarKeyedResourcesAreAppVisibleTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var root = (Grid)XamlReader.Load(
+                    "<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                        "<TextBlock Style='{StaticResource InkToolbarGlyphFontStyle}' />" +
+                        "<ToggleButton Style='{StaticResource InkToolbarCommonButtonStyle}' />" +
+                        "<TextBlock Foreground='{ThemeResource InkToolbarAccentColorForegroundThemeBrush}' Width='{StaticResource InkToolbarButtonWidth}' />" +
+                    "</Grid>");
+                Content = root;
+                Content.UpdateLayout();
+
+                Verify.IsNotNull(((TextBlock)root.Children[0]).Style, "InkToolbarGlyphFontStyle should resolve from app markup.");
+                Verify.IsNotNull(((ToggleButton)root.Children[1]).Style, "InkToolbarCommonButtonStyle should resolve from app markup.");
+                Verify.AreEqual(36.0, ((TextBlock)root.Children[2]).Width, "InkToolbarButtonWidth should resolve from app markup.");
+            });
+        }
+
         // ====================================================================
         // Missing API coverage: EraserButton, CustomPen, CustomPenButton, Events
         // ====================================================================

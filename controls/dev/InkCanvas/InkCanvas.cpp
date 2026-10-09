@@ -119,8 +119,15 @@ InkCanvas::~InkCanvas()
     {
     }
 
-    // Ensure that we have torn down our dcomp stuff
-    DetachFromVisualLink();
+    // Ensure that we have torn down our dcomp stuff. Destruction can run during app shutdown, after XAML has
+    // torn down; a throw here would terminate the process.
+    try
+    {
+        DetachFromVisualLink();
+    }
+    catch (...)
+    {
+    }
 }
 
 void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -152,6 +159,7 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
     // (SetRootVisual below runs against it). Safe here: we are past construction and on the UI thread.
     InkTelemetry::SetCanvasInitializationStage(m_telemetryState, InkTelemetry::InitializationStage::InkPresenter);
     EnsureInkPresenter();
+    RegisterVisibilityCallbacks();
 
     // Hook up this ink canvas with the DComp tree. Attaching can throw on an OS build that lacks the
     // system-composition splice interop, on a null XamlRoot, or on a transient composition/device
@@ -321,6 +329,7 @@ void InkCanvas::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEvent
     m_xamlRootChangedRevoker.revoke();
     m_sizeChangedRevoker.revoke();
     m_layoutUpdatedRevoker.revoke();
+    UnregisterVisibilityCallbacks();
 
     // Flush the roll-up here rather than relying on ~InkCanvas: closing the window tears the process
     // down without destructing the tree, so the destructor is not a reliable emit point. The state's
@@ -371,6 +380,63 @@ void InkCanvas::EnsureInkPresenter()
     // weak-ref, which is only safe post-construction - hence it is not done in the proxy's ctor.
     m_inkPresenterProxy = winrt::make<::InkPresenter>(m_threadData->m_inkHost, DispatcherQueue());
     winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->Start();
+}
+
+void InkCanvas::RegisterVisibilityCallbacks()
+{
+    UnregisterVisibilityCallbacks();
+
+    // InkCanvas is unsealed, so route the weak reference through the outer object (cppwinrt #1431).
+    auto weakThis{ winrt::make_weak(static_cast<winrt::InkCanvas>(*this)) };
+    for (winrt::DependencyObject current = *this; current; current = winrt::VisualTreeHelper::GetParent(current))
+    {
+        if (auto element = current.try_as<winrt::UIElement>())
+        {
+            const auto token = element.RegisterPropertyChangedCallback(winrt::UIElement::VisibilityProperty(),
+                [weakThis](auto const&, auto const&)
+                {
+                    if (auto strongThis = weakThis.get())
+                    {
+                        winrt::get_self<InkCanvas>(strongThis)->UpdateHostVisibility();
+                    }
+                });
+            m_visibilityCallbacks.emplace_back(winrt::make_weak(element), token);
+        }
+    }
+
+    UpdateHostVisibility();
+}
+
+void InkCanvas::UnregisterVisibilityCallbacks()
+{
+    for (auto const& [weakElement, token] : m_visibilityCallbacks)
+    {
+        if (auto element = weakElement.get())
+        {
+            element.UnregisterPropertyChangedCallback(winrt::UIElement::VisibilityProperty(), token);
+        }
+    }
+    m_visibilityCallbacks.clear();
+}
+
+void InkCanvas::UpdateHostVisibility()
+{
+    if (!m_inkPresenterProxy)
+    {
+        return;
+    }
+
+    bool visible = true;
+    for (auto const& [weakElement, token] : m_visibilityCallbacks)
+    {
+        if (auto element = weakElement.get(); element && element.Visibility() != winrt::Visibility::Visible)
+        {
+            visible = false;
+            break;
+        }
+    }
+
+    winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->SetHostVisible(visible);
 }
 
 void InkCanvas::UpdateInkPresenterSize()
@@ -458,7 +524,35 @@ void InkCanvas::AttachToVisualLink()
 
     if (isSystemCompositor)
     {
-        AttachToSystemCompositor();
+        try
+        {
+            AttachToSystemCompositor();
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            // The system splice depends on runtime/OS pieces that may be missing (e.g. an unregistered
+            // proxy class, 0x80040154). The lifted path also works on a system-backed compositor, so fall
+            // back to it instead of rendering no ink.
+            wchar_t message[160];
+            swprintf_s(
+                message,
+                L"InkCanvas: system compositor attach failed (hr=0x%08X); falling back to the lifted path.\n",
+                static_cast<unsigned int>(e.code()));
+            OutputDebugStringW(message);
+
+            InkTelemetry::ReportError(
+                InkTelemetry::ErrorCategory::Initialization,
+                InkTelemetry::Operation::AttachToCompositor,
+                true /* isRecoverable */,
+                e.code(),
+                &m_telemetryState);
+
+            // Drop the partial system attach; DetachFromVisualLink clears m_hostHwnd, so restore it.
+            DetachFromVisualLink();
+            m_hostHwnd = hostHwnd;
+            m_telemetryEngine = InkTelemetry::CompositorEngine::Lifted;
+            AttachToLiftedCompositor();
+        }
     }
     else
     {
@@ -605,7 +699,12 @@ void InkCanvas::DetachFromVisualLink()
     // the OS presenter / system-visual resources mid-teardown. Cheap acquire/release pair.
     m_isDetached.store(true, std::memory_order_release);
 
-    winrt::ElementCompositionPreview::SetElementChildVisual(*this, nullptr);
+    // Only a canvas that attached has a child visual to clear. A canvas that was never loaded (e.g. on an unselected
+    // tab) is destroyed during app shutdown, where SetElementChildVisual can throw.
+    if (m_systemDCompTarget || m_systemVisualLink || m_inkRootVisual)
+    {
+        winrt::ElementCompositionPreview::SetElementChildVisual(*this, nullptr);
+    }
 
     m_systemDCompTarget = nullptr;
     m_systemVisualLink = nullptr;

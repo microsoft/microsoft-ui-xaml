@@ -302,6 +302,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [Description("InkToolbar and InkCanvas in a native app, which has no CLR host to wrap a non-bindable collection: StrokeInput pointer args are readable, CoreWetStrokeUpdateSource events arrive on the ink thread, InkToolbarStencilButton.Ruler is usable, and the pen color flyout shows its palette.")]
+        public void InkingTest()
+        {
+            Log.Comment("Selecting Inking tab");
+            var tviInking = FindElement.ByName("tviInking");
+            Verify.IsNotNull(tviInking);
+            SelectItem(tviInking);
+            Wait.ForIdle();
+
+            var textBlock = new TextBlock(FindElement.ByName("textBlockInking"));
+            Verify.IsNotNull(textBlock);
+            TestEnvironment.VerifyAreEqualWithRetry(20,
+                () => "InkCanvas.Loaded",
+                () => textBlock.DocumentText);
+
+            Log.Comment("Drawing a stroke; the app reads args.CurrentPoint in StrokeStarted and its PointerDevice in StrokeEnded");
+            InputHelper.MouseDragDistance(FindElement.ByName("inkCanvas"), 100, Direction.East);
+            Wait.ForIdle();
+            TestEnvironment.VerifyAreEqualWithRetry(20,
+                () => "StrokeStarted.StrokeEnded",
+                () => textBlock.DocumentText);
+
+            Log.Comment("The same stroke reaches the app's CoreWetStrokeUpdateSource handler on the ink thread");
+            var wetStrokeTextBlock = new TextBlock(FindElement.ByName("textBlockInkingWetStroke"));
+            TestEnvironment.VerifyAreEqualWithRetry(20,
+                () => "WetStrokeStarting",
+                () => wetStrokeTextBlock.DocumentText);
+
+            Log.Comment("Showing the ruler fills InkToolbarStencilButton.Ruler, usable from the UI thread");
+            new Button(FindElement.ByName("buttonShowRuler")).Invoke();
+            Wait.ForIdle();
+            var rulerTextBlock = new TextBlock(FindElement.ByName("textBlockInkingRuler"));
+            TestEnvironment.VerifyAreEqualWithRetry(20,
+                () => "Ruler.Ready",
+                () => rulerTextBlock.DocumentText);
+
+            Log.Comment("Opening the ballpoint pen's color flyout");
+            // The pen's automation name gains ", selected" while it is the active tool, so find it by id.
+            var pen = FindElement.ById("InkToolbarBallpointPenButton");
+            Verify.IsNotNull(pen, "The InkToolbar should show the ballpoint pen.");
+            new ExpandCollapseImplementation(pen).Expand();
+            Wait.ForIdle();
+
+            var palette = FindElement.ById("PenColorPalette");
+            Verify.IsNotNull(palette, "The pen flyout should show the color palette.");
+            Verify.IsGreaterThan(palette.Children.Count, 0, "The color palette should list the pen colors.");
+
+            TestEnvironment.Application.Close(); // Ensure a crash will fail this test.
+        }
+
+        [TestMethod]
         [Description("Basic tests of UserControl defined in a separate runtime component.")]
         public void ExternalControlsTest()
         {

@@ -159,7 +159,8 @@ grid.Children().Append(canvas);
   is the recommended configuration. If an app does not opt in to the system compositor, `InkCanvas`
   renders ink as lifted external content. In that case, rendering is subject to the Visual Layer
   [external content](https://learn.microsoft.com/windows/apps/develop/composition/visual-layer#external-content)
-  limitations.
+  limitations. If the app opts in to the system compositor but `InkCanvas` cannot attach to it,
+  `InkCanvas` falls back to lifted rendering instead of rendering no ink.
 
 ## Custom drying (app-rendered dry ink)
 
@@ -249,6 +250,7 @@ reused, serialization (ISF / GIF) and `InkStrokeBuilder` interop behave identica
 | `Microsoft.UI.Xaml.Controls.InkInputProcessingConfiguration` | `Windows.UI.Input.Inking.InkInputProcessingConfiguration` | Re-declared as a UI-thread mirror |
 | `Microsoft.UI.Xaml.Controls.InkInputConfiguration` | `Windows.UI.Input.Inking.InkInputConfiguration` | Re-declared as a UI-thread mirror; see member gaps below |
 | `InkInputProcessingMode`, `InkInputRightDragAction`, `InkHighContrastAdjustment` | `Windows.UI.Input.Inking.*` | Re-declared enums, identical names and values |
+| `Microsoft.UI.Xaml.Controls.CoreWetStrokeUpdateSource` | `Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateSource` | Re-declared as a mirror; events raised on the ink thread with the OS args, as in UWP |
 
 ### Functionality gaps
 
@@ -326,6 +328,33 @@ Call `ActivateCustomDrying()` once, before the first stroke is collected. It ret
 `InkSynchronizer`; from then on `StrokesCollected` is your cue to run a `BeginDry` / render / `EndDry`
 cycle (see [Custom drying](#custom-drying-app-rendered-dry-ink)).
 
+## CoreWetStrokeUpdateSource class
+
+Lets an app watch or change the wet stroke while it is being drawn (for example, snap it to a shape or
+cancel it). Mirrors `Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateSource`: get it with
+`CoreWetStrokeUpdateSource.Create(inkCanvas.InkPresenter)`, as in UWP; only the namespace differs.
+
+| Member | Kind | Description |
+|---|---|---|
+| `Create(InkPresenter)` | static method | Returns the presenter's wet-stroke update source. Repeated calls return the same instance. Throws `E_ILLEGAL_METHOD_CALL` if the presenter is not ready yet; call it from or after `InkCanvas.Loaded`. |
+| `InkPresenter` | property | The presenter this source belongs to. |
+| `WetStrokeStarting`, `WetStrokeContinuing`, `WetStrokeStopping`, `WetStrokeCompleted`, `WetStrokeCanceled` | events | Raised on the ink thread, as in UWP. Args: `Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs`; handlers change the stroke synchronously through `NewInkPoints` and `Disposition`. |
+
+Why a mirror: the OS source only accepts handlers on the thread that owns the OS presenter, which WinUI 3
+hosts on the ink thread. The mirror subscribes there and re-raises each event synchronously on that
+thread, so handlers can be attached from any thread and still change the live stroke.
+
+```csharp
+CoreWetStrokeUpdateSource wetStrokes = CoreWetStrokeUpdateSource.Create(inkCanvas.InkPresenter);
+wetStrokes.WetStrokeContinuing += (s, e) =>
+{
+    // Runs on the ink thread. Keep it short and marshal any UI work to the UI thread.
+    if (ShouldDiscardStroke(e.NewInkPoints))
+    {
+        e.Disposition = CoreWetStrokeDisposition.Canceled;
+    }
+};
+```
 ## InkSynchronizer class
 
 Returned by `InkPresenter.ActivateCustomDrying()`. Brackets the app's own rendering of dry ink so the
@@ -414,7 +443,9 @@ The toolbar's buttons form a small hierarchy:
 `InkToolbarPenButton` exposes the color `Palette`, `MinStrokeWidth` / `MaxStrokeWidth`,
 `SelectedBrush` / `SelectedBrushIndex`, and `SelectedStrokeWidth`. `InkToolbarEraserButton` exposes
 `IsClearAllVisible` (default `true`). `InkToolbarStencilButton` exposes `Ruler`, `Protractor`,
-`SelectedStencil`, `IsRulerItemVisible` / `IsProtractorItemVisible` (default `true`).
+`SelectedStencil`, `IsRulerItemVisible` / `IsProtractorItemVisible` (default `true`). As in UWP, `Ruler`
+/ `Protractor` are set when the toolbar first shows that stencil; apps use them to position the stencil
+(`Transform`) and to hit-test against it.
 
 ## InkCanvasAutomationPeer / InkToolbarAutomationPeer classes
 
@@ -535,6 +566,19 @@ namespace Microsoft.UI.Xaml.Controls
         InkSynchronizer ActivateCustomDrying();
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesCollectedEventArgs> StrokesCollected;
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesErasedEventArgs> StrokesErased;
+    }
+
+    runtimeclass CoreWetStrokeUpdateSource
+    {
+        // Return the presenter's wet-stroke update source (UWP: Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateSource.Create).
+        static CoreWetStrokeUpdateSource Create(InkPresenter inkPresenter);
+        InkPresenter InkPresenter{ get; };
+        // Raised on the ink thread; handlers change the wet stroke through the OS args, as in UWP.
+        event Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> WetStrokeStarting;
+        event Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> WetStrokeContinuing;
+        event Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> WetStrokeStopping;
+        event Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> WetStrokeCompleted;
+        event Windows.Foundation.TypedEventHandler<CoreWetStrokeUpdateSource, Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs> WetStrokeCanceled;
     }
 
     unsealed runtimeclass InkCanvas : Microsoft.UI.Xaml.FrameworkElement

@@ -567,10 +567,27 @@ void InkPresenter::IsInputEnabled(bool value)
 {
     m_isInputEnabled = value;
 
+    const bool effective = value && m_isHostVisible;
     QueueInkPresenterWorkItem(
-        [value](inking::InkPresenter const& presenter)
+        [effective](inking::InkPresenter const& presenter)
         {
-            presenter.IsInputEnabled(value);
+            presenter.IsInputEnabled(effective);
+        });
+}
+
+void InkPresenter::SetHostVisible(bool visible)
+{
+    if (m_isHostVisible == visible)
+    {
+        return;
+    }
+    m_isHostVisible = visible;
+
+    const bool effective = m_isInputEnabled && visible;
+    QueueInkPresenterWorkItem(
+        [effective](inking::InkPresenter const& presenter)
+        {
+            presenter.IsInputEnabled(effective);
         });
 }
 
@@ -731,22 +748,98 @@ muxc::InkSynchronizer InkPresenter::ActivateCustomDrying()
     return m_customDrySynchronizer;
 }
 
+muxc::CoreWetStrokeUpdateSource InkPresenter::GetWetStrokeUpdateSource()
+{
+    if (m_wetStrokeUpdateSource)
+    {
+        return m_wetStrokeUpdateSource;
+    }
+
+    // Created on the UI (calling) thread like the other mirrors, then attached to the OS source on the ink
+    // thread, the only thread the OS source accepts handlers on.
+    auto source = winrt::make<::CoreWetStrokeUpdateSource>(winrt::weak_ref<muxc::InkPresenter>{ *this });
+    bool attached = false;
+    RunInkPresenterWorkItemSync(
+        [&](inking::InkPresenter const& osPresenter)
+        {
+            winrt::get_self<::CoreWetStrokeUpdateSource>(source)->Attach(inking::Core::CoreWetStrokeUpdateSource::Create(osPresenter));
+            attached = true;
+        },
+        /* pumpMessages */ false);
+
+    if (!attached)
+    {
+        InkTelemetry::ReportError(
+            InkTelemetry::ErrorCategory::ApiMisuse,
+            InkTelemetry::Operation::CreateWetStrokeUpdateSource,
+            true /* isRecoverable */,
+            E_ILLEGAL_METHOD_CALL);
+        throw winrt::hresult_error(E_ILLEGAL_METHOD_CALL, L"InkPresenter is not ready for wet stroke updates.");
+    }
+
+    m_wetStrokeUpdateSource = source;
+    return m_wetStrokeUpdateSource;
+}
+
+// -- CoreWetStrokeUpdateSource mirror --------------------------------------------------------------
+
+muxc::CoreWetStrokeUpdateSource CoreWetStrokeUpdateSource::Create(muxc::InkPresenter const& inkPresenter)
+{
+    if (!inkPresenter)
+    {
+        throw winrt::hresult_invalid_argument(L"inkPresenter");
+    }
+    return winrt::get_self<::InkPresenter>(inkPresenter)->GetWetStrokeUpdateSource();
+}
+
+void CoreWetStrokeUpdateSource::Attach(inking::Core::CoreWetStrokeUpdateSource const& osSource)
+{
+    m_osSource = osSource;
+
+    // Runs on the ink thread inside the OS callback, so handlers see and change the live wet stroke.
+    auto forward = [weakSelf = get_weak()](winrt::event<Handler> CoreWetStrokeUpdateSource::* wetStrokeEvent)
+    {
+        return [weakSelf, wetStrokeEvent](inking::Core::CoreWetStrokeUpdateSource const&, inking::Core::CoreWetStrokeUpdateEventArgs const& args)
+        {
+            if (auto self = weakSelf.get())
+            {
+                (self.get()->*wetStrokeEvent)(*self, args);
+            }
+        };
+    };
+
+    m_osSource.WetStrokeStarting(forward(&CoreWetStrokeUpdateSource::m_wetStrokeStarting));
+    m_osSource.WetStrokeContinuing(forward(&CoreWetStrokeUpdateSource::m_wetStrokeContinuing));
+    m_osSource.WetStrokeStopping(forward(&CoreWetStrokeUpdateSource::m_wetStrokeStopping));
+    m_osSource.WetStrokeCompleted(forward(&CoreWetStrokeUpdateSource::m_wetStrokeCompleted));
+    m_osSource.WetStrokeCanceled(forward(&CoreWetStrokeUpdateSource::m_wetStrokeCanceled));
+}
+
 // -- InkSynchronizer mirror -----------------------------------------------------------------------
 // Owns the OS InkSynchronizer (adopted on the ink thread from the presenter's OS ActivateCustomDrying)
 // and marshals its BeginDry/EndDry onto the ink thread through the owning InkPresenter proxy's work
 // queue. UWP hands the app the OS object directly; this proxy exists only because that object is
-// ink-thread affine, so it forwards both calls and keeps no dry-transaction state of its own.
-// No-ops once the owner has been torn down.
+// ink-thread affine, so it forwards both calls; its only state is EndDry calls deferred to the next
+// committed XAML frame. No-ops once the owner has been torn down.
 
 winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynchronizer::BeginDry()
 {
+    // An EndDry still waiting for its frame must reach the OS before this BeginDry, or the OS sees two
+    // BeginDry calls in a row. Forward it now, in the same ink-thread call, ahead of the BeginDry.
+    CancelEndDryWait();
+    const uint32_t flushCount = m_pendingEndDryCount.exchange(0);
+
     std::vector<inking::InkStroke> strokes;
     RunOnInkHostThreadSync(m_owner,
-        [this, &strokes](inking::InkPresenter const&)
+        [this, &strokes, flushCount](inking::InkPresenter const&)
         {
             if (!m_osSynchronizer)
             {
                 return;
+            }
+            for (uint32_t i = 0; i < flushCount; ++i)
+            {
+                m_osSynchronizer.EndDry();
             }
             auto dry = m_osSynchronizer.BeginDry();
             if (dry && dry.Size())
@@ -756,6 +849,7 @@ winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynch
             }
         },
         /* pumpMessages */ false);
+    m_isInDry = true;
     // Build the returned collection on the calling (UI) thread so the app is never handed an
     // ink-thread-affine object.
     return winrt::single_threaded_vector<inking::InkStroke>(std::move(strokes)).GetView();
@@ -763,15 +857,121 @@ winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynch
 
 void InkSynchronizer::EndDry()
 {
-    RunOnInkHostThreadSync(m_owner,
-        [this](inking::InkPresenter const&)
-        {
-            if (m_osSynchronizer)
+    // The OS EndDry runs later, so its E_ILLEGAL_METHOD_CALL for an EndDry without a BeginDry could not reach
+    // the app; raise it here instead, as UWP's synchronizer does.
+    if (!m_isInDry)
+    {
+        throw winrt::hresult_illegal_method_call();
+    }
+    m_isInDry = false;
+
+    ++m_pendingEndDryCount;
+    if (m_endDryWaitInFlight.exchange(true))
+    {
+        // The wait already in flight forwards every pending EndDry when it completes.
+        return;
+    }
+    const uint32_t generation = m_endDryGeneration.load();
+
+    // The app draws the dried strokes into XAML content, which the lifted compositor shows on XAML's next
+    // frame, but the OS EndDry removes the wet ink on the ink host's own DComp device immediately. Doing
+    // that now leaves a frame with neither (the strokes blink), so wait for XAML to commit the dry content.
+    // UWP did the same wait inside the OS: its InkCanvas gave the presenter a commit provider on XAML's own
+    // DComp device, which the lifted ink host cannot do.
+    try
+    {
+        m_renderingRevoker = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(winrt::auto_revoke,
+            [weakThis = get_weak(), generation](auto const&, auto const&)
             {
-                m_osSynchronizer.EndDry();
+                if (auto self = weakThis.get())
+                {
+                    self->EndDryAfterNextXamlFrame(generation);
+                }
+            });
+    }
+    catch (...)
+    {
+        // Not on a XAML UI thread (or XAML is shutting down): nothing to synchronize with.
+        EndDryNow(generation);
+    }
+}
+
+// Runs from CompositionTarget.Rendering, i.e. inside the XAML frame that includes the app's dry content.
+void InkSynchronizer::EndDryAfterNextXamlFrame(uint32_t generation)
+{
+    m_renderingRevoker.revoke();
+
+    // Any failure here (e.g. the compositor is shutting down with the window) must still release the wet ink
+    // and must not escape into XAML's frame callback.
+    try
+    {
+        m_renderedRevoker = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendered(winrt::auto_revoke,
+            [weakThis = get_weak(), generation](auto const&, auto const&)
+            {
+                auto self = weakThis.get();
+                if (!self)
+                {
+                    return;
+                }
+                self->m_renderedRevoker.revoke();
+
+                try
+                {
+                    // The frame is rendered; wait for the lifted compositor to commit it before removing the wet ink.
+                    winrt::CompositionTarget::GetCompositorForCurrentThread().RequestCommitAsync().Completed(
+                        [weakThis, generation](auto const&, auto const&)
+                        {
+                            if (auto self = weakThis.get())
+                            {
+                                self->EndDryNow(generation);
+                            }
+                        });
+                }
+                catch (...)
+                {
+                    self->EndDryNow(generation);
+                }
+            });
+    }
+    catch (...)
+    {
+        EndDryNow(generation);
+    }
+}
+
+void InkSynchronizer::EndDryNow(uint32_t generation)
+{
+    // A BeginDry since this wait started has already forwarded the pending EndDry calls.
+    if (generation != m_endDryGeneration.load())
+    {
+        return;
+    }
+    CancelEndDryWait();
+
+    const uint32_t count = m_pendingEndDryCount.exchange(0);
+    if (count == 0)
+    {
+        return;
+    }
+    RunOnInkHostThread(m_owner,
+        [weakThis = get_weak(), count](inking::InkPresenter const&)
+        {
+            if (auto self = weakThis.get(); self && self->m_osSynchronizer)
+            {
+                for (uint32_t i = 0; i < count; ++i)
+                {
+                    self->m_osSynchronizer.EndDry();
+                }
             }
-        },
-        /* pumpMessages */ false);
+        });
+}
+
+void InkSynchronizer::CancelEndDryWait()
+{
+    ++m_endDryGeneration;
+    m_endDryWaitInFlight = false;
+    m_renderingRevoker.revoke();
+    m_renderedRevoker.revoke();
 }
 
 winrt::event_token InkPresenter::StrokesCollected(winrt::Windows::Foundation::TypedEventHandler<muxc::InkPresenter, muxc::InkStrokesCollectedEventArgs> const& handler)
@@ -792,6 +992,162 @@ winrt::event_token InkPresenter::StrokesErased(winrt::Windows::Foundation::Typed
 void InkPresenter::StrokesErased(winrt::event_token const& token)
 {
     m_strokesErasedEvent.remove(token);
+}
+
+// -- Pointer input snapshots -----------------------------------------------------------------------
+
+namespace
+{
+    // The snapshot implements the runtime class's default interface, so its ABI pointer is a valid instance
+    // of the projected runtime class.
+    template <typename TRuntimeClass, typename TInterface>
+    TRuntimeClass AsProjectedRuntimeClass(TInterface const& value)
+    {
+        TRuntimeClass result{ nullptr };
+        winrt::copy_from_abi(result, winrt::get_abi(value));
+        return result;
+    }
+
+    winrt::Windows::UI::Input::PointerPoint SnapshotPointerPoint(winrt::Windows::UI::Input::PointerPoint const& point,
+        winrt::Windows::Devices::Input::PointerDevice const& device)
+    {
+        return AsProjectedRuntimeClass<winrt::Windows::UI::Input::PointerPoint>(
+            winrt::make<InkPointerPointSnapshot>(point, device));
+    }
+
+    // Must run on the ink thread while 'point' is live. Null if the device can't be read; the point then falls back
+    // to a lookup by id.
+    winrt::Windows::Devices::Input::PointerDevice SnapshotPointerDevice(winrt::Windows::UI::Input::PointerPoint const& point)
+    {
+        try
+        {
+            if (auto device = point.PointerDevice())
+            {
+                return AsProjectedRuntimeClass<winrt::Windows::Devices::Input::PointerDevice>(
+                    winrt::make<InkPointerDeviceSnapshot>(device));
+            }
+        }
+        catch (winrt::hresult_error const&)
+        {
+        }
+        return nullptr;
+    }
+}
+
+InkPointerDeviceSnapshot::InkPointerDeviceSnapshot(winrt::Windows::Devices::Input::PointerDevice const& device) :
+    m_pointerDeviceType(device.PointerDeviceType()),
+    m_isIntegrated(device.IsIntegrated()),
+    m_maxContacts(device.MaxContacts()),
+    m_physicalDeviceRect(device.PhysicalDeviceRect()),
+    m_screenRect(device.ScreenRect()),
+    m_maxPointersWithZDistance(device.MaxPointersWithZDistance())
+{
+    if (auto usages = device.SupportedUsages())
+    {
+        m_supportedUsages.resize(usages.Size());
+        usages.GetMany(0, m_supportedUsages);
+    }
+}
+
+winrt::Windows::Foundation::Collections::IVectorView<winrt::Windows::Devices::Input::PointerDeviceUsage> InkPointerDeviceSnapshot::SupportedUsages() const
+{
+    return winrt::single_threaded_vector<winrt::Windows::Devices::Input::PointerDeviceUsage>(
+        std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage>(m_supportedUsages)).GetView();
+}
+
+InkPointerPointPropertiesSnapshot::InkPointerPointPropertiesSnapshot(winrt::Windows::UI::Input::PointerPointProperties const& properties) :
+    m_pressure(properties.Pressure()),
+    m_isInverted(properties.IsInverted()),
+    m_isEraser(properties.IsEraser()),
+    m_orientation(properties.Orientation()),
+    m_xTilt(properties.XTilt()),
+    m_yTilt(properties.YTilt()),
+    m_twist(properties.Twist()),
+    m_contactRect(properties.ContactRect()),
+    m_contactRectRaw(properties.ContactRectRaw()),
+    m_touchConfidence(properties.TouchConfidence()),
+    m_isLeftButtonPressed(properties.IsLeftButtonPressed()),
+    m_isRightButtonPressed(properties.IsRightButtonPressed()),
+    m_isMiddleButtonPressed(properties.IsMiddleButtonPressed()),
+    m_mouseWheelDelta(properties.MouseWheelDelta()),
+    m_isHorizontalMouseWheel(properties.IsHorizontalMouseWheel()),
+    m_isPrimary(properties.IsPrimary()),
+    m_isInRange(properties.IsInRange()),
+    m_isCanceled(properties.IsCanceled()),
+    m_isBarrelButtonPressed(properties.IsBarrelButtonPressed()),
+    m_isXButton1Pressed(properties.IsXButton1Pressed()),
+    m_isXButton2Pressed(properties.IsXButton2Pressed()),
+    m_pointerUpdateKind(properties.PointerUpdateKind())
+{
+    // Re-box so the app never receives the OS (non-agile) reference.
+    if (auto zDistance = properties.ZDistance())
+    {
+        m_zDistance = winrt::Windows::Foundation::IReference<float>{ zDistance.Value() };
+    }
+}
+
+InkPointerPointSnapshot::InkPointerPointSnapshot(winrt::Windows::UI::Input::PointerPoint const& point,
+    winrt::Windows::Devices::Input::PointerDevice const& device) :
+    m_position(point.Position()),
+    m_rawPosition(point.RawPosition()),
+    m_pointerId(point.PointerId()),
+    m_frameId(point.FrameId()),
+    m_timestamp(point.Timestamp()),
+    m_isInContact(point.IsInContact()),
+    m_properties(AsProjectedRuntimeClass<winrt::Windows::UI::Input::PointerPointProperties>(
+        winrt::make<InkPointerPointPropertiesSnapshot>(point.Properties()))),
+    m_device(device)
+{
+}
+
+winrt::Windows::Devices::Input::PointerDevice InkPointerPointSnapshot::PointerDevice() const
+{
+    if (m_device)
+    {
+        return m_device;
+    }
+
+    // The lookup fails once the pointer is gone (e.g. a pen lifted before a queued event is handled).
+    try
+    {
+        return winrt::Windows::Devices::Input::PointerDevice::GetPointerDevice(m_pointerId);
+    }
+    catch (winrt::hresult_error const&)
+    {
+        return nullptr;
+    }
+}
+
+InkPointerEventArgsSnapshot::InkPointerEventArgsSnapshot(winrt::Windows::UI::Core::PointerEventArgs const& args) :
+    m_keyModifiers(args.KeyModifiers()),
+    m_handled(args.Handled())
+{
+    // One pointer per event, so the current and intermediate points share one device snapshot.
+    auto currentPoint = args.CurrentPoint();
+    auto device = SnapshotPointerDevice(currentPoint);
+    m_currentPoint = SnapshotPointerPoint(currentPoint, device);
+
+    if (auto intermediatePoints = args.GetIntermediatePoints())
+    {
+        m_intermediatePoints.reserve(intermediatePoints.Size());
+        for (auto const& point : intermediatePoints)
+        {
+            m_intermediatePoints.push_back(SnapshotPointerPoint(point, device));
+        }
+    }
+}
+
+winrt::Windows::Foundation::Collections::IVector<winrt::Windows::UI::Input::PointerPoint> InkPointerEventArgsSnapshot::GetIntermediatePoints() const
+{
+    // A fresh vector per call, as the OS returns.
+    return winrt::single_threaded_vector<winrt::Windows::UI::Input::PointerPoint>(
+        std::vector<winrt::Windows::UI::Input::PointerPoint>(m_intermediatePoints));
+}
+
+winrt::Windows::UI::Core::PointerEventArgs SnapshotPointerEventArgs(winrt::Windows::UI::Core::PointerEventArgs const& args)
+{
+    return AsProjectedRuntimeClass<winrt::Windows::UI::Core::PointerEventArgs>(
+        winrt::make<InkPointerEventArgsSnapshot>(args));
 }
 
 // Runs on the ink thread as soon as an OS presenter is created: once from Start's work item, and again
@@ -864,23 +1220,21 @@ void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter
         });
 
     // Subscribe to the OS presenter's raw pointer-input events (InkStrokeInput / InkUnprocessedInput)
-    // and re-raise them on the UI thread through our mirror proxies. The OS PointerEventArgs is
-    // passed through unchanged. NOTE: because delivery is marshaled to the UI thread, the
-    // args.Handled round-trip back to the OS is best-effort (the OS has already proceeded).
+    // and re-raise them on the UI thread through our mirror proxies. The OS PointerEventArgs can't be
+    // read off the ink thread, so an agile snapshot of it is taken here and raised in its place. NOTE:
+    // because delivery is marshaled to the UI thread, the args.Handled round-trip back to the OS is
+    // best-effort (the OS has already proceeded).
     auto osStrokeInput = osPresenter.StrokeInput();
     auto marshalStroke = [marshalToUi](void (::InkStrokeInput::* raise)(winrt::Windows::UI::Core::PointerEventArgs const&))
     {
         return [marshalToUi, raise](inking::InkStrokeInput const&, winrt::Windows::UI::Core::PointerEventArgs const& args)
         {
-            // PointerEventArgs is not agile; capture an agile reference so the UI-thread read
-            // marshals through a proxy instead of touching the ink-thread object directly (which
-            // would risk RPC_E_WRONG_THREAD or a recycled args).
-            winrt::agile_ref<winrt::Windows::UI::Core::PointerEventArgs> agileArgs{ args };
-            marshalToUi([agileArgs, raise](::InkPresenter* self)
+            auto snapshot = SnapshotPointerEventArgs(args);
+            marshalToUi([snapshot, raise](::InkPresenter* self)
                 {
                     if (self->m_strokeInput)
                     {
-                        (winrt::get_self<::InkStrokeInput>(self->m_strokeInput)->*raise)(agileArgs.get());
+                        (winrt::get_self<::InkStrokeInput>(self->m_strokeInput)->*raise)(snapshot);
                     }
                 });
         };
@@ -895,15 +1249,12 @@ void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter
     {
         return [marshalToUi, raise](inking::InkUnprocessedInput const&, winrt::Windows::UI::Core::PointerEventArgs const& args)
         {
-            // PointerEventArgs is not agile; capture an agile reference so the UI-thread read
-            // marshals through a proxy instead of touching the ink-thread object directly (which
-            // would risk RPC_E_WRONG_THREAD or a recycled args).
-            winrt::agile_ref<winrt::Windows::UI::Core::PointerEventArgs> agileArgs{ args };
-            marshalToUi([agileArgs, raise](::InkPresenter* self)
+            auto snapshot = SnapshotPointerEventArgs(args);
+            marshalToUi([snapshot, raise](::InkPresenter* self)
                 {
                     if (self->m_unprocessedInput)
                     {
-                        (winrt::get_self<::InkUnprocessedInput>(self->m_unprocessedInput)->*raise)(agileArgs.get());
+                        (winrt::get_self<::InkUnprocessedInput>(self->m_unprocessedInput)->*raise)(snapshot);
                     }
                 });
         };
@@ -927,9 +1278,9 @@ void InkPresenter::RaiseStrokesErased(winrt::Windows::Foundation::Collections::I
     m_strokesErasedEvent(*this, *winrt::make_self<InkStrokesErasedEventArgs>(strokes));
 }
 
-// Shows/hides the ruler stencil. The InkPresenterRuler is thread-affine to the OS presenter,
-// so it is created on first enable and toggled entirely on the ink thread. m_inkRuler is only
-// ever touched inside these serialized ink-thread work items.
+// Shows/hides the ruler stencil. The InkPresenterRuler is constructed against the OS presenter, so it is
+// created on first enable on the ink thread; m_inkRuler is only assigned inside these serialized
+// ink-thread work items.
 void InkPresenter::SetRulerEnabled(bool enabled)
 {
     // Capture a strong ref to this proxy (rather than raw 'this') so the m_inkRuler member
@@ -948,10 +1299,7 @@ void InkPresenter::SetRulerEnabled(bool enabled)
         });
 }
 
-// Shows/hides the protractor stencil. Mirrors SetRulerEnabled: the InkPresenterProtractor is
-// thread-affine to the OS presenter, so it is created on first enable and toggled entirely on
-// the ink thread. m_inkProtractor is only ever touched inside these serialized ink-thread work
-// items.
+// Shows/hides the protractor stencil. Mirrors SetRulerEnabled.
 void InkPresenter::SetProtractorEnabled(bool enabled)
 {
     QueueInkPresenterWorkItem(
@@ -967,3 +1315,43 @@ void InkPresenter::SetProtractorEnabled(bool enabled)
             }
         });
 }
+
+inking::InkPresenterRuler InkPresenter::EnsureRuler()
+{
+    inking::InkPresenterRuler ruler{ nullptr };
+    RunInkPresenterWorkItemSync(
+        [&ruler, strongThis = get_strong()](inking::InkPresenter const& presenter)
+        {
+            if (!strongThis->m_inkRuler)
+            {
+                strongThis->m_inkRuler = inking::InkPresenterRuler(presenter);
+            }
+            ruler = strongThis->m_inkRuler;
+        },
+        /* pumpMessages */ false);
+    return ruler;
+}
+
+inking::InkPresenterProtractor InkPresenter::EnsureProtractor()
+{
+    inking::InkPresenterProtractor protractor{ nullptr };
+    RunInkPresenterWorkItemSync(
+        [&protractor, strongThis = get_strong()](inking::InkPresenter const& presenter)
+        {
+            if (!strongThis->m_inkProtractor)
+            {
+                strongThis->m_inkProtractor = inking::InkPresenterProtractor(presenter);
+            }
+            protractor = strongThis->m_inkProtractor;
+        },
+        /* pumpMessages */ false);
+    return protractor;
+}
+
+// CoreWetStrokeUpdateSource has a static (Create), so it needs an activation factory.
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithBasicFactory(CoreWetStrokeUpdateSource)
+}
+
+#include "CoreWetStrokeUpdateSource.g.cpp"
