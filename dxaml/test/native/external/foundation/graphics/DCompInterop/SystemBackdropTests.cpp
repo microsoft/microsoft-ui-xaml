@@ -598,6 +598,10 @@ void SystemBackdropTests::OnTargetConnectedDisconnected()
 
 void SystemBackdropTests::SharedSystemBackdrop()
 {
+    // WPF shutdown reports ExternalObjectReference/tracker storage from flyout
+    // presenter creation and TemplateContent allocations from style realization.
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     const auto& wh = TestServices::WindowHelper;
 
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -1100,6 +1104,10 @@ xaml_controls::MenuFlyoutPresenter^ GetMenuFlyoutPresenter(xaml_controls::MenuFl
 
 void SystemBackdropTests::MenuFlyoutBackdrop()
 {
+    // WPF shutdown intermittently reports TemplateContent and Style peers allocated
+    // during template resource resolution and deferred resource loading.
+    TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
+
     const auto& wh = TestServices::WindowHelper;
 
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);

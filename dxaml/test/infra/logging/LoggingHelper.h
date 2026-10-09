@@ -5,6 +5,7 @@
 
 #include "SmartStackLogger.h"
 #include "IXamlTestHooks-log.h"
+#include <functional>
 
 namespace Private { namespace Infrastructure {
 
@@ -19,6 +20,10 @@ namespace Private { namespace Infrastructure {
         void SetPrintStacksOnJupiterFailure(bool enable);
         bool GetIgnoreLeaksForTest() const;
         void SetIgnoreLeaksForTest(bool ignore);
+
+        static bool IsLeakDetectionForced();
+        static void VerifyExpectedLeaks(const std::function<void()>& checkForLeaks);
+
     private:
         void LogMessage(const wchar_t* pMessage, ErrorHandling::LoggingLevel level);
 

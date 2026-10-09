@@ -21,8 +21,8 @@ namespace Private { namespace Infrastructure {
         IFACEMETHOD(put_PrintStacksOnJupiterFailure)(BOOLEAN enable);
         IFACEMETHOD(IgnoreLeaksForTest)();
 
-        // Starts the leak detection algorithm, Logs an Error to TAEF if a leak is detected.
-        static void PerformLeakDetection();
+        // Logs an error when leak detection does not match the expectation.
+        static void PerformLeakDetection(bool expectLeaks = false);
         static bool ShouldIgnoreLeaks();
         static void TrackLeaksForTest();
 
