@@ -223,7 +223,13 @@ void SplitButton::OpenFlyout()
     if (auto flyout = Flyout())
     {
         winrt::FlyoutShowOptions options{};
-        options.Placement(winrt::FlyoutPlacementMode::BottomEdgeAlignedLeft);
+        // Preserve SplitButton's established default when placement is unset or resolves to Auto.
+        if (flyout.ReadLocalValue(winrt::FlyoutBase::PlacementProperty()) == winrt::DependencyProperty::UnsetValue() ||
+            flyout.Placement() == winrt::FlyoutPlacementMode::Auto)
+        {
+            options.Placement(winrt::FlyoutPlacementMode::BottomEdgeAlignedLeft);
+        }
+
         flyout.ShowAt(*this, options);
     }
 }
