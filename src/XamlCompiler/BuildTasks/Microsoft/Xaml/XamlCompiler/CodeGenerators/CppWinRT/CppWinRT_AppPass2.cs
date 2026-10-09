@@ -36,15 +36,68 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write("\"\r\n");
   }
             this.Write("#include <windows.h>\r\n#include <type_traits>\r\n");
+  if (ProjectInfo.UseCppWinRTNamedModules) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTModuleCompatibilityDefinition()));
+            this.Write("\r\n");
+  } else { 
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.Xaml)));
+            this.Write("\r\n");
+      if (ProjectInfo.EnabledXamlOptionalChanges.Count > 0 || ProjectInfo.DisabledXamlOptionalChanges.Count > 0) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlSettings)));
+            this.Write("\r\n");
+      } 
+  } 
   foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { 
             this.Write("#include \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));
             this.Write("\"\r\n");
   }
-  if (ProjectInfo.EnabledXamlOptionalChanges.Count > 0 || ProjectInfo.DisabledXamlOptionalChanges.Count > 0) { 
-            this.Write("#include \"winrt/");
-            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlSettings));
-            this.Write(".h\"\r\n");
+  if (ProjectInfo.UseCppWinRTNamedModules) { 
+            this.Write("#include \"XamlMetaDataProvider.h\"\r\n");
+  } 
+            this.Write("\r\n");
+  if (ProjectInfo.UseCppWinRTNamedModules) { 
+            this.Write("namespace winrt::");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(Model.CodeInfo.ClassName.Namespace)));
+            this.Write("::implementation\r\n{\r\n    template <typename D, typename ... Interfaces>\r\n    AppT" +
+                    "<D, Interfaces...>::AppT() = default;\r\n\r\n    template <typename D, typename ... " +
+                    "Interfaces>\r\n    AppT<D, Interfaces...>::~AppT() = default;\r\n\r\n");
+      if(!ProjectInfo.GenerateProviderCode) { 
+            this.Write("    template <typename D, typename ... Interfaces>\r\n    void AppT<D, Interfaces.." +
+                    ".>::AddOtherProvider(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlMarkup)));
+            this.Write("::IXamlMetadataProvider const& otherProvider)\r\n    {\r\n        AppProvider()->AddO" +
+                    "therProvider(otherProvider);\r\n    }\r\n");
+      } 
+            this.Write("\r\n    template <typename D, typename ... Interfaces>\r\n    ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlMarkup)));
+            this.Write("::IXamlType AppT<D, Interfaces...>::GetXamlType(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsXamlInterop)));
+            this.Write("::TypeName const& type)\r\n    {\r\n        return AppProvider()->GetXamlType(type);\r" +
+                    "\n    }\r\n\r\n    template <typename D, typename ... Interfaces>\r\n    ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlMarkup)));
+            this.Write("::IXamlType AppT<D, Interfaces...>::GetXamlType(::winrt::hstring const& fullName)" +
+                    "\r\n    {\r\n        return AppProvider()->GetXamlType(fullName);\r\n    }\r\n\r\n    temp" +
+                    "late <typename D, typename ... Interfaces>\r\n    ::winrt::com_array<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlMarkup)));
+            this.Write(@"::XmlnsDefinition> AppT<D, Interfaces...>::GetXmlnsDefinitions()
+    {
+        return AppProvider()->GetXmlnsDefinitions();
+    }
+
+    template <typename D, typename ... Interfaces>
+    winrt::com_ptr<XamlMetaDataProvider> AppT<D, Interfaces...>::AppProvider()
+    {
+        if (!_appProvider)
+        {
+            _appProvider = winrt::make_self<XamlMetaDataProvider>();
+        }
+        return _appProvider;
+    }
+
+    template struct AppT<struct ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
+            this.Write(">;\r\n}\r\n");
   } 
             this.Write("\r\n#if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPT" +
                     "ION\r\nextern \"C\" __declspec(dllimport) int __stdcall IsDebuggerPresent();\r\n#endif" +

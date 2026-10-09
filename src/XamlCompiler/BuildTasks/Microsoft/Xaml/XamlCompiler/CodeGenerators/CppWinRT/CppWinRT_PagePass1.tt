@@ -7,26 +7,80 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 //------------------------------------------------------------------------------
-#pragma once
 
+<#  if (ProjectInfo.UseCppWinRTNamedModules) { #>
+#ifdef WINRT_XAML_MODULE_INTERFACE
+module;
+#include <unknwn.h>
+
+export module <#=CppWinRTProjectionDependency.GetXamlPartitionModuleName(ProjectInfo.RootNamespace, Model.CodeInfo.ClassName.FullName)#>;
+
+#define WINRT_IMPORT_MODULE
+import std;
+<#  foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { #>
+export import <#=CppWinRTProjectionDependency.GetModuleName(projectionNamespace)#>;
+<#  }#>
+#undef WINRT_XAML_MODULE_INTERFACE
+#define WINRT_XAML_EXPORT export extern "C++"
+#else
+#pragma once
+#ifndef WINRT_IMPORT_MODULE
+#define WINRT_IMPORT_MODULE
+#endif
+import <#=CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)#>;
+#define WINRT_XAML_SKIP_BODY
+#endif
+<#  } else { #>
+#pragma once
 #include <unknwn.h>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
-<#  foreach (var includeFile in Model.NeededCppWinRTProjectionHeaderFiles) { #>
-#if __has_include(<<#=includeFile#>>)
-#include <<#=includeFile#>>
-#endif
+#include <cstdint>
+
+<#  foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { #>
+<#=GetCppWinRTProjectionDependencyDirective(projectionNamespace, optionalHeader: true)#>
 <#  }#>
 
 <#  if (Model.CodeInfo.BindStatus != BindStatus.None) { #>
 #include "XamlBindingInfo.xaml.g.h"
 <#  } #>
 
-namespace winrt::<#=Colonize(Model.CodeInfo.ClassName.Namespace)#>::implementation
+#define WINRT_XAML_EXPORT
+<#  } #>
+
+#ifndef WINRT_XAML_SKIP_BODY
+<#  if (Model.CodeInfo.BindStatus != BindStatus.None) { #>
+WINRT_XAML_EXPORT namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 {
+    struct XamlBindings;
+}
+<#  } #>
+
+<#  if (Model.CodeInfo.HasInComponentBase) {
+        var baseTypeName = Model.CodeInfo.BaseTypeName;
+        var baseTypeSeparator = baseTypeName.LastIndexOf('.');
+        var baseTypeNamespace = baseTypeName.Substring(0, baseTypeSeparator);
+        var baseTypeShortName = baseTypeName.Substring(baseTypeSeparator + 1);
+#>
+WINRT_XAML_EXPORT namespace winrt::<#=Colonize(baseTypeNamespace)#>::implementation
+{
+    struct <#=baseTypeShortName#>;
+}
+<#  } #>
+
+WINRT_XAML_EXPORT namespace winrt::<#=Colonize(Model.CodeInfo.ClassName.Namespace)#>::implementation
+{
+<#  if (Model.CodeInfo.HasInComponentBase) { #>
+    template <typename D, typename B, typename... I>
+    struct <#=Model.CodeInfo.ClassName.ShortName#>_base;
+<#  } else { #>
+    template <typename D, typename... I>
+    struct <#=Model.CodeInfo.ClassName.ShortName#>_base;
+<#  } #>
+
     using IInspectable = <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable;
 
     template <typename D, typename ... I>
@@ -46,10 +100,10 @@ namespace winrt::<#=Colonize(Model.CodeInfo.ClassName.Namespace)#>::implementati
 <#  if (Model.CodeInfo.PerXamlFileInfo.Count > 1) { #>
         void InitializeComponent(<#=Projection(KnownNamespaces.WindowsFoundation)#>::Uri const& resourceLocator);
 <#  }#>
-        virtual void Connect(int32_t connectionId, IInspectable const& target);
-        virtual <#=Projection(KnownNamespaces.XamlMarkup)#>::IComponentConnector GetBindingConnector(int32_t connectionId, IInspectable const& target);
+        virtual void Connect(std::int32_t connectionId, IInspectable const& target);
+        virtual <#=Projection(KnownNamespaces.XamlMarkup)#>::IComponentConnector GetBindingConnector(std::int32_t connectionId, IInspectable const& target);
         void UnloadObject(<#=Projection(KnownNamespaces.Xaml)#>::DependencyObject const& dependencyObject);
-        void DisconnectUnloadedObject(int32_t connectionId);
+        void DisconnectUnloadedObject(std::int32_t connectionId);
 <#  foreach (var fieldData in Model.CodeInfo.FieldDeclarations) {
         if (fieldData.IsDeprecated) { #>
 #pragma warning(push)
@@ -93,3 +147,12 @@ namespace winrt::<#=Colonize(Model.CodeInfo.ClassName.Namespace)#>::implementati
 <#  }#>
     };
 }
+#endif // WINRT_XAML_SKIP_BODY
+
+#ifdef WINRT_XAML_EXPORT
+#undef WINRT_XAML_EXPORT
+#endif
+#ifdef WINRT_XAML_SKIP_BODY
+#undef WINRT_XAML_SKIP_BODY
+#endif
+

@@ -3,3 +3,4 @@
 <#  if(!String.IsNullOrEmpty(ProjectInfo.PrecompiledHeaderFile)) { #>
 #include "<#=ProjectInfo.PrecompiledHeaderFile#>"
 <#  }#>
+<#=GetCppWinRTModuleCompatibilityDefinition()#>

@@ -21,7 +21,10 @@ namespace Win8Xaml.CompilerProxies
         static PropertyInfo _genXbf64Path;
         static PropertyInfo _genXbfArm64Path;
         static PropertyInfo _targetPlatformMinVersion;
-        static PropertyInfo _codeGenFlagsProperty;
+        static PropertyInfo _useCppWinRTNamedModules;
+        static PropertyInfo _xamlClassNames;
+        static PropertyInfo _codeGenFlags;
+        static PropertyInfo _shouldGenerateTypeInfoCode;
 
         object _instance;
 
@@ -36,7 +39,10 @@ namespace Win8Xaml.CompilerProxies
             _genXbf64Path = _xamlProjectInfoType.GetProperty("GenXbf64Path");
             _genXbfArm64Path = _xamlProjectInfoType.GetProperty("GenXbfArm64Path");
             _targetPlatformMinVersion = _xamlProjectInfoType.GetProperty("TargetPlatformMinVersion");
-            _codeGenFlagsProperty = _xamlProjectInfoType.GetProperty("CodeGenFlags");
+            _useCppWinRTNamedModules = _xamlProjectInfoType.GetProperty("UseCppWinRTNamedModules");
+            _xamlClassNames = _xamlProjectInfoType.GetProperty("XamlClassNames");
+            _codeGenFlags = _xamlProjectInfoType.GetProperty("CodeGenFlags");
+            _shouldGenerateTypeInfoCode = _xamlProjectInfoType.GetProperty("ShouldGenerateTypeInfoCode");
         }
 
         public XamlProjectInfo()
@@ -96,10 +102,28 @@ namespace Win8Xaml.CompilerProxies
             set { _isLibraryProperty.SetValue(_instance, value); }
         }
 
+        public bool UseCppWinRTNamedModules
+        {
+            get { return (bool)_useCppWinRTNamedModules.GetValue(_instance, null); }
+            set { _useCppWinRTNamedModules.SetValue(_instance, value); }
+        }
+
+        public IReadOnlyList<string> XamlClassNames
+        {
+            get { return (IReadOnlyList<string>)_xamlClassNames.GetValue(_instance, null); }
+            set { _xamlClassNames.SetValue(_instance, value); }
+        }
+
+        public bool ShouldGenerateTypeInfoCode
+        {
+            get { return (bool)_shouldGenerateTypeInfoCode.GetValue(_instance, null); }
+        }
+
         public void SetCodeGenFlags(string flags)
         {
-            object value = Enum.Parse(_codeGenFlagsProperty.PropertyType, flags);
-            _codeGenFlagsProperty.SetValue(_instance, value);
+            string enumValue = (flags ?? String.Empty).Replace(';', ',');
+            object value = Enum.Parse(_codeGenFlags.PropertyType, enumValue.Length == 0 ? "Nothing" : enumValue, true);
+            _codeGenFlags.SetValue(_instance, value, null);
         }
 
         public Dictionary<String, String> ClassToHeaderFileMap

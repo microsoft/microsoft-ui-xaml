@@ -94,3 +94,18 @@ As mentioned above, the default way to build this is to build it against your lo
 
 Like other samples, it also supports using a NuGet instead of a local build.  Just modify the WinUITransportPackageVersion
 property in [Directory.Build.props](../../Samples/Directory.Build.props) under the Samples folder.
+
+
+## XamlCppWinRTModules
+
+[`Samples/XamlCppWinRTModules`](../../Samples/XamlCppWinRTModules/README.md) is a
+repo-local developer sample for XamlC's C++/WinRT 3.x named-module integration.
+
+It is intentionally not part of the regular sample-app matrix yet. The feature is still
+under development and the sample pins the C++/WinRT 3.x package while using the in-repo
+XamlC via `UseXamlCompiler=true`.
+
+Open the `.vcxproj` directly or follow the build commands in the sample README. For the
+compiler architecture, generated module graph, migration from the old forced-include
+workaround, static-library propagation, and incremental behavior, see
+[`xamlc-cppwinrt-named-modules.md`](../design-notes/xamlc-cppwinrt-named-modules.md).
