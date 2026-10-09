@@ -17,6 +17,52 @@
 
 using namespace DirectUI;
 
+namespace
+{
+    _Check_return_ HRESULT OriginateResourceLookupError(
+        _In_ CCoreServices* core,
+        _In_ const xstring_ptr& resourceKey,
+        _In_ ObjectWriterContext* context)
+    {
+        auto resourceUri = context->get_BaseUri();
+        if (!resourceUri)
+        {
+            resourceUri = context->get_XamlResourceUri();
+        }
+
+        xstring_ptr sourceUri;
+        if (resourceUri)
+        {
+            const HRESULT uriResult = resourceUri->GetCanonical(&sourceUri);
+            if (FAILED(uriResult))
+            {
+                TRACE_HR_NORETURN(uriResult);
+                sourceUri.Reset();
+            }
+        }
+
+        if (!resourceKey.IsNullOrEmpty() &&
+            (sourceUri.Equals(L"ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/generic.xaml", xstrCompareCaseInsensitive) ||
+             sourceUri.Equals(L"ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/generic_perf2026.xaml", xstrCompareCaseInsensitive) ||
+             sourceUri.Equals(L"ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/themeresources.xaml", xstrCompareCaseInsensitive) ||
+             sourceUri.Equals(L"ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/themeresources_perf2026.xaml", xstrCompareCaseInsensitive)))
+        {
+            // Insert the key last so its percent sequences are not treated as formatting parameters.
+            return CErrorService::OriginateInvalidOperationError(
+                core, AG_E_PARSER_TABULAR_RESOURCE_NOT_FOUND, sourceUri, resourceKey);
+        }
+
+        if (!resourceKey.IsNullOrEmpty() &&
+            sourceUri.Equals(L"ms-appx:///Microsoft.UI.Xaml.Controls.Charts/Themes/Generic.xaml", xstrCompareCaseInsensitive))
+        {
+            return CErrorService::OriginateInvalidOperationError(
+                core, AG_E_PARSER_CHARTS_RESOURCE_NOT_FOUND, sourceUri, resourceKey);
+        }
+
+        return CErrorService::OriginateInvalidOperationError(core, AG_E_PARSER_FAILED_RESOURCE_FIND, resourceKey);
+    }
+}
+
 _Check_return_ HRESULT BinaryFormatObjectWriter::Create(
     _In_ const std::shared_ptr<XamlSchemaContext>& spSchemaContext,
     _In_ const std::shared_ptr<XamlSavedContext>& spSavedContext,
@@ -1757,10 +1803,10 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideStaticResourceReference(
         std::vector<std::wstring> extraInfo;
         extraInfo.push_back(std::wstring(traceMessage.GetBuffer()));
 
-        HRESULT xr = CErrorService::OriginateInvalidOperationError(
+        HRESULT xr = OriginateResourceLookupError(
             core,
-            AG_E_PARSER_FAILED_RESOURCE_FIND,
-            staticResourceKey);
+            staticResourceKey,
+            m_spContext.get());
         IFC_RETURN_EXTRA_INFO(m_spErrorService->WrapErrorWithParserErrorAndRethrow(xr, node.GetLineInfo()), &extraInfo);
     }
 
@@ -1846,10 +1892,10 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideThemeResourceValue(_In_ 
         std::vector<std::wstring> extraInfo;
         extraInfo.push_back(std::wstring(traceMessage.GetBuffer()));
 
-        HRESULT hr = CErrorService::OriginateInvalidOperationError(
+        HRESULT hr = OriginateResourceLookupError(
             core,
-            AG_E_PARSER_FAILED_RESOURCE_FIND,
-            themeResourceKey);
+            themeResourceKey,
+            m_spContext.get());
         IFC_RETURN_EXTRA_INFO(m_spErrorService->WrapErrorWithParserErrorAndRethrow(hr, node.GetLineInfo()), &extraInfo);
     }
 

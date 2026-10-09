@@ -93,6 +93,8 @@ AG_E_PARSER_UNKNOWN_TYPE              "E_PARSER_UNKNOWN_TYPE"   // {Locked}
 AG_E_PARSER_BAD_TYPE                  "E_PARSER_BAD_TYPE"   // {Locked}
 AG_E_RUNTIME_STYLE_TARGETTYPE         "Cannot apply a Style with TargetType '%1' to an object of type '%0'."   // %0 is the type name of the instance's actual type, %1 is the type name of the instance's expected type {Locked}
 AG_E_RUNTIME_STYLE_DEFAULTSTYLERESOURCEURI_NOT_FOUND "Cannot load DefaultStyleResourceUri '%2' for TargetType '%0' in assembly '%1'."
+AG_E_RUNTIME_TABULAR_DEFAULTSTYLE_NOT_FOUND "Cannot load DefaultStyleResourceUri '%2' for TargetType '%0' in assembly '%1'. Check matching Microsoft.UI.Xaml.Controls.Tabular DLL/PRI deployment and this URI in the app/framework resource map. Adding TabularControlsResources cannot restore an unavailable package resource."
+AG_E_RUNTIME_CHARTS_DEFAULTSTYLE_NOT_FOUND "Cannot load DefaultStyleResourceUri '%2' for TargetType '%0' in assembly '%1'. Check matching Microsoft.UI.Xaml.Controls.Charts DLL/PRI deployment and this URI in the app/framework resource map. Adding XamlChartsResources cannot restore an unavailable package resource."
 AG_E_PARSER_BAD_NATIVE_TYPE           "E_PARSER_BAD_NATIVE_TYPE"    // {Locked}
 AG_E_PARSER_CREATE_OBJECT_FAILED      "E_PARSER_CREATE_OBJECT_FAILED"   // {Locked}
 AG_E_PARSER_PROPERTY_NOT_FOUND        "E_PARSER_PROPERTY_NOT_FOUND" // {Locked}
@@ -146,6 +148,8 @@ AG_E_PARSER_RESOURCE_NAMENOTSET       "Elements in a ResourceDictionary must hav
 AG_E_PARSER_RESOURCE_KEYCONFLICT      "Elements in the same ResourceDictionary cannot have the same x:Key"  // {Locked="ResourceDictionary", "x:Key"}
 AG_E_PARSER_RESOURCE_KEYANDNAMESET    "Elements in a ResourceDictionary must not set both x:Name and x:Key, or x:Key twice" // {Locked="ResourceDictionary", "x:Name", "x:Key"}
 AG_E_PARSER_FAILED_RESOURCE_FIND      "Cannot find a Resource with the Name/Key %0" // %0 is a string key
+AG_E_PARSER_TABULAR_RESOURCE_NOT_FOUND "Cannot find a Resource with the Name/Key %1. Source: '%0'. If defaults are missing, add <TabularControlsResources xmlns=""using:Microsoft.UI.Xaml.Controls.Tabular"" /> to App.xaml > Application.Resources.MergedDictionaries after XamlControlsResources, before overrides; or supply equivalent resources. If configured, check the key, overrides and Tabular DLL/PRI."
+AG_E_PARSER_CHARTS_RESOURCE_NOT_FOUND "Cannot find a Resource with the Name/Key %1. Source: '%0'. If defaults are missing, add <XamlChartsResources xmlns=""using:Microsoft.UI.Xaml.Controls.Charts"" /> to App.xaml > Application.Resources.MergedDictionaries after XamlControlsResources, before overrides; or supply equivalent resources. If configured, check the key, overrides and Charts DLL/PRI."
 AG_E_RESOURCE_CYCLE_DETECTED          "Cycle detected in merged resource dictionaries"
 AG_E_RESOURCE_THEME_NOT_A_DICTIONARY  "ThemeDictionaries must have resources as ResourceDictionaries only"  // {Locked="ThemeDictionaries", "ResourceDictionaries"}
 AG_E_RESOURCE_LOCAL_VALUES_NOT_ALLOWED "Local values are not allowed in resource dictionary with Source set"    // {Locked="Source"}

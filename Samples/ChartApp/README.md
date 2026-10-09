@@ -22,6 +22,23 @@ Maestro no longer updates it, so it is bumped manually. The version pinned for
 public builds does not include Charts yet, and the GitHub pull-request build
 skips this sample.
 
+## Resources
+
+Each host's `App.xaml` merges `XamlChartsResources` after
+`XamlControlsResources`:
+
+```xml
+<ResourceDictionary.MergedDictionaries>
+    <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+    <XamlChartsResources xmlns="using:Microsoft.UI.Xaml.Controls.Charts" />
+</ResourceDictionary.MergedDictionaries>
+```
+
+The default `Chart` style and the series palette read their theme resources
+from this dictionary. Without it, the first `Chart` fails during style
+resolution with `0x802B000A`; the error names the missing key, the Charts
+source URI and this setup step.
+
 ## Building
 
 `buildsamples.cmd` builds all four hosts and publishes the C# hosts. To build
