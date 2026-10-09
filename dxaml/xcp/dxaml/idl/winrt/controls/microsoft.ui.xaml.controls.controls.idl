@@ -1579,10 +1579,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [contentproperty("Blocks")]
-    runtimeclass RichTextBlock
+    unsealed runtimeclass RichTextBlock
         : Microsoft.UI.Xaml.FrameworkElement
     {
-        RichTextBlock();
+        [method_name("CreateInstance")] RichTextBlock();
         Double FontSize;
         Microsoft.UI.Xaml.Media.FontFamily FontFamily;
         Windows.UI.Text.FontWeight FontWeight;
