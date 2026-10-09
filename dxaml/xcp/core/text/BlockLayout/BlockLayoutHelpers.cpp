@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "BlockLayoutHelpers.h"
+#include "TextLineBreak.h"
 #include <MetadataAPI.h>
 
 using namespace DirectUI;
@@ -18,22 +19,34 @@ using namespace RichTextServices;
 //---------------------------------------------------------------------------
 _Check_return_ HRESULT BlockLayoutHelpers::GetTextFormatter(
     _In_ CDependencyObject *pLayoutOwner,
-    _Outptr_ RichTextServices::TextFormatter **ppTextFormatter
+    _Outptr_ RichTextServices::TextFormatter **ppTextFormatter,
+    _In_opt_ RichTextServices::TextLineBreak *pPreviousLineBreak
 )
 {
     TextFormatter *pTextFormatter = NULL;
 
     ASSERT(pLayoutOwner);
 
+    // A LineServices break record is bound to the exact formatter (LS context) that produced it,
+    // so continuation formatting must run on that originating formatter. Rather than letting the
+    // formatter re-route the call, ask for the right formatter up front: the formatter that
+    // produced the previous line break is preferred when one is acquired from the cache.
+    TextFormatter *pPreferredFormatter =
+        (pPreviousLineBreak != nullptr) ? pPreviousLineBreak->GetTextFormatter() : nullptr;
+
     if (pLayoutOwner->OfTypeByIndex<KnownTypeIndex::RichTextBlock>())
     {
+        // RichTextBlock keeps a single formatter for its entire lifetime, so every break record it
+        // produces already originates from that same instance - there is nothing to pick.
         CRichTextBlock *pRichTextBlock = static_cast<CRichTextBlock *>(pLayoutOwner);
         IFC_RETURN(pRichTextBlock->GetTextFormatter(&pTextFormatter));
     }
     else if (pLayoutOwner->OfTypeByIndex<KnownTypeIndex::TextBlock>())
     {
+        // TextBlock draws formatters from a shared cache, so the preferred formatter is threaded
+        // down to TextFormatterCache::AcquireTextFormatter which picks it when still available.
         CTextBlock *pTextBlock = static_cast<CTextBlock *>(pLayoutOwner);
-        IFC_RETURN(pTextBlock->GetTextFormatter(&pTextFormatter));
+        IFC_RETURN(pTextBlock->GetTextFormatter(&pTextFormatter, pPreferredFormatter));
     }
     else
     {
