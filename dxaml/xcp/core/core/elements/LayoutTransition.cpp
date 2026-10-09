@@ -1034,6 +1034,9 @@ CTransition::SetupTransition(
         }
         pStoryboard = ppStoryboardArray[index];
 
+        // Expand dynamic timelines before resolving their duration or rewriting their targets.
+        IFC(Jupiter::Animation::TryGenerateDynamicChildrenStoryboardsForChildren(pStoryboard, nullptr));
+
         // manage LTE instance
         if (!pDestinationElement)
         {
@@ -1094,8 +1097,16 @@ CTransition::SetupTransition(
                 valueTemp.SetFloat(0.0f);
                 IFC(pDestinationElement->SetValueByKnownIndex(KnownPropertyIndex::UIElement_Opacity, valueTemp));
 
-                // set to return to original value as soon as animation starts
                 IFC(CDoubleAnimationUsingKeyFrames::Create((CDependencyObject**)&pVisibilityAnimation, &cp));
+
+                // Match the transition's duration so the reveal runs on the compositor with the motion.
+                // A zero-duration reveal waits for a UI-thread tick and can start out of sync.
+                DirectUI::DurationType durationType;
+                XFLOAT duration;
+                pStoryboard->GetNaturalDuration(&durationType, &duration);
+                pVisibilityAnimation->m_duration = DurationVOHelper::Create(core, durationType, duration);
+
+                // Restore opacity at time zero, after the storyboard's stagger delay.
                 IFC(CDiscreteDoubleKeyFrame::Create((CDependencyObject**)&pVisibilityKeyframe, &cp));
                 valueTemp.SetFloat(transitionParent == DirectUI::TransitionParent::ParentToRoot ? pStorage->m_opacityDestination : 1.0f);
                 IFC(pVisibilityKeyframe->SetValueByKnownIndex(KnownPropertyIndex::DoubleKeyFrame_Value, valueTemp));
@@ -1128,10 +1139,6 @@ CTransition::SetupTransition(
             ReleaseInterface(pBeginTime);
             IFC(recordHr);
         }
-
-        // rewrite storyboard to target LTE instead of live element
-        // only want to retarget timelines that are targetting TransitionTarget, so first need to resolve
-        IFC(Jupiter::Animation::TryGenerateDynamicChildrenStoryboardsForChildren(pStoryboard, nullptr));
 
         // Special case for windowed popups used for MenuFlyout - we need to take the MenuPopupThemeTransition and apply
         // it high enough in the tree to cover the popup contents, shadow, and system backdrop. Detect this case and

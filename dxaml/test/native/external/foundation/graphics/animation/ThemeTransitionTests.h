@@ -28,6 +28,9 @@ public:
     BEGIN_TEST_METHOD(ValidateStaggeringWorks)
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(ValidateStaggeredEntranceVisibilityTiming)
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(ValidateItemsControlTransitionTimingHelper)
     END_TEST_METHOD()
 
