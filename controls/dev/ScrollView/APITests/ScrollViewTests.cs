@@ -507,6 +507,71 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies Auto scrollbars collapse after a non-animated ZoomTo fits the content within the viewport.")]
+        public void VerifyAutoScrollBarsCollapseAfterNonAnimatedZoomToFit()
+        {
+            VerifyAutoScrollBarsCollapseAfterZoomToFit(ScrollingAnimationMode.Disabled);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Auto scrollbars collapse after an animated ZoomTo fits the content within the viewport.")]
+        public void VerifyAutoScrollBarsCollapseAfterAnimatedZoomToFit()
+        {
+            VerifyAutoScrollBarsCollapseAfterZoomToFit(ScrollingAnimationMode.Enabled);
+        }
+
+        private void VerifyAutoScrollBarsCollapseAfterZoomToFit(ScrollingAnimationMode animationMode)
+        {
+            ScrollView scrollView = null;
+            Rectangle rectangleScrollViewContent = null;
+            AutoResetEvent scrollViewLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollViewZoomCompletedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                rectangleScrollViewContent = new Rectangle();
+                scrollView = new ScrollView();
+                scrollView.ZoomMode = ScrollingZoomMode.Enabled;
+                scrollView.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+                scrollView.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+
+                SetupDefaultUI(scrollView, rectangleScrollViewContent, scrollViewLoadedEvent);
+
+                scrollView.ZoomCompleted += (ScrollView sender, ScrollingZoomCompletedEventArgs args) =>
+                {
+                    Log.Comment("ScrollView.ZoomCompleted event handler");
+                    scrollViewZoomCompletedEvent.Set();
+                };
+            });
+
+            WaitForEvent("Waiting for Loaded event", scrollViewLoadedEvent);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Verifying the Auto scrollbars are initially visible since the content is scrollable in both directions.");
+                Verify.AreEqual(Microsoft.UI.Xaml.Visibility.Visible, scrollView.ComputedHorizontalScrollBarVisibility);
+                Verify.AreEqual(Microsoft.UI.Xaml.Visibility.Visible, scrollView.ComputedVerticalScrollBarVisibility);
+
+                // Zoom out enough that the 1200 x 600 content fully fits within the 300 x 200 viewport,
+                // leaving the (0, 0) offsets unchanged. This reproduces the reported scenario where a
+                // ZoomTo-to-fit changes only the zoom factor.
+                Log.Comment($"Zooming to zoomFactor 0.2 with animationMode {animationMode} to fit the content within the viewport.");
+                scrollView.ZoomTo(0.2f, null, new ScrollingZoomOptions(animationMode));
+            });
+
+            WaitForEvent("Waiting for ZoomCompleted event", scrollViewZoomCompletedEvent);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Verifying the Auto scrollbars are collapsed now that the content fully fits the viewport.");
+                Verify.AreEqual(Microsoft.UI.Xaml.Visibility.Collapsed, scrollView.ComputedHorizontalScrollBarVisibility);
+                Verify.AreEqual(Microsoft.UI.Xaml.Visibility.Collapsed, scrollView.ComputedVerticalScrollBarVisibility);
+            });
+        }
+
         private void SetupDefaultUI(
             ScrollView scrollView,
             Rectangle rectangleScrollViewContent = null,
