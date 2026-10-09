@@ -31,6 +31,11 @@ MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 MAX_COMMENTS = 1000
 MAX_AUTHOR_COMMENTS = 10
 MAX_COMMENT_BODY = 2000
+MAX_CONTEXT_BYTES = 1024 * 1024
+MAX_PROMPT_BYTES = 2 * 1024 * 1024
+CONTEXT_MARKER = "[WINUI_TRIAGE_CONTEXT]"
+CONTEXT_START = "<untrusted-issue-evidence>"
+CONTEXT_END = "</untrusted-issue-evidence>"
 CORE_TEAMS = {"team-Markup", "team-Reach", "team-Rendering"}
 
 
@@ -730,31 +735,51 @@ def read_json(path: str, limit: int = MAX_RESPONSE_BYTES):
 
 
 def format_model_context(evidence: dict) -> str:
-    """Keep each area, follow-up, and candidate on one line for bounded native reads."""
-    fields = []
-    for key, value in evidence.items():
-        if key.startswith("_"):
-            continue
-        if isinstance(value, dict):
-            entries = [
-                f"    {json.dumps(name)}: {json.dumps(item, ensure_ascii=True)}"
-                for name, item in value.items()
-            ]
-            formatted = "{\n" + ",\n".join(entries) + "\n  }" if entries else "{}"
-        elif isinstance(value, list):
-            entries = ["    " + json.dumps(item, ensure_ascii=True) for item in value]
-            formatted = "[\n" + ",\n".join(entries) + "\n  ]" if entries else "[]"
-        else:
-            formatted = json.dumps(value, ensure_ascii=True)
-        fields.append(f"  {json.dumps(key)}: {formatted}")
-    return "{\n" + ",\n".join(fields) + "\n}\n"
+    """Serialize bounded public evidence for direct, post-template prompt delivery."""
+    public = {key: value for key, value in evidence.items() if not key.startswith("_")}
+    context = json.dumps(public, ensure_ascii=False, separators=(",", ":"))
+    # Keep issue text from impersonating the surrounding prompt's data boundary.
+    context = context.replace("&", "\\u0026").replace("<", "\\u003c").replace(">", "\\u003e") + "\n"
+    if len(context.encode("utf-8")) > MAX_CONTEXT_BYTES:
+        raise TriageError("Prepared evidence exceeded the model-context byte limit")
+    return context
+
+
+def attach_context(context_path: str, prompt_path: str) -> None:
+    """Fill one trusted prompt slot after gh-aw finishes template processing."""
+    evidence = read_json(context_path, MAX_CONTEXT_BYTES)
+    if not isinstance(evidence, dict) or not isinstance(evidence.get("should_process"), bool):
+        raise TriageError("Prepared evidence must contain a boolean should_process")
+    context = format_model_context(evidence).rstrip("\n")
+    destination = Path(prompt_path)
+    with destination.open("rb") as stream:
+        raw_prompt = stream.read(MAX_PROMPT_BYTES + 1)
+    if len(raw_prompt) > MAX_PROMPT_BYTES:
+        raise TriageError("Prompt exceeded its byte limit")
+    prompt = raw_prompt.decode("utf-8")
+    if CONTEXT_START in prompt or CONTEXT_END in prompt:
+        raise TriageError("Rendered prompt already contains an evidence block")
+    if prompt.count(CONTEXT_MARKER) != 1:
+        raise TriageError("Expected exactly one prepared-evidence slot in the rendered prompt")
+    block = CONTEXT_START + "\n" + context + "\n" + CONTEXT_END
+    rendered = prompt.replace(CONTEXT_MARKER, block, 1)
+    if len(rendered.encode("utf-8")) > MAX_PROMPT_BYTES:
+        raise TriageError("Prompt with prepared evidence exceeded its byte limit")
+    destination.write_text(rendered, encoding="utf-8", newline="")
+    print("Attached bounded issue evidence directly to the rendered agent prompt")
 
 
 def main() -> int:
     try:
-        if len(sys.argv) != 4 or sys.argv[1] not in ("prepare", "publish"):
-            raise TriageError("Usage: triage.py prepare|publish EVENT_PATH CONTEXT_OR_AGENT_OUTPUT")
+        if len(sys.argv) != 4 or sys.argv[1] not in ("prepare", "publish", "attach-context"):
+            raise TriageError(
+                "Usage: triage.py prepare|publish EVENT_PATH CONTEXT_OR_AGENT_OUTPUT; "
+                "triage.py attach-context CONTEXT_PATH PROMPT_PATH"
+            )
         mode, event_path, output_path = sys.argv[1:]
+        if mode == "attach-context":
+            attach_context(event_path, output_path)
+            return 0
         client = GitHub(os.environ.get("GITHUB_REPOSITORY", ""), os.environ.get("GITHUB_TOKEN", ""))
         event = read_json(event_path)
         mapping = read_json(str(MAP_PATH))
@@ -762,7 +787,7 @@ def main() -> int:
         if mode == "prepare":
             destination = Path(output_path)
             destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_text(format_model_context(evidence), encoding="utf-8")
+            destination.write_text(format_model_context(evidence), encoding="utf-8", newline="\n")
             print(f"Prepared bounded evidence (should_process={evidence['should_process']})")
             return 0
         if not evidence["should_process"]:
