@@ -24,6 +24,59 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     [TestClass]
     public partial class InspectingDataSourceTests : ApiTestBase
     {
+        private const int E_INVALIDARG = unchecked((int)0x80070057);
+        private const int E_NOTIMPL = unchecked((int)0x80004001);
+
+        // Scenario: create an ItemsSourceView from null and from an object that is not a supported collection.
+        // Expected: both fail with E_INVALIDARG.
+        // A failure means: unsupported items sources would be accepted and fail later in less obvious ways.
+        [TestMethod]
+        [TestProperty("Description", "Verifies ItemsSourceView rejects a null source and a source that is not a supported collection with E_INVALIDARG.")]
+        public void VerifyItemsSourceViewRejectsInvalidSources()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(E_INVALIDARG, CaptureHResult(() => new ItemsSourceView(null)), "null source");
+                Verify.AreEqual(E_INVALIDARG, CaptureHResult(() => new ItemsSourceView(42)), "int source");
+                Verify.AreEqual(E_INVALIDARG, CaptureHResult(() => new ItemsSourceView(new object())), "object source");
+
+                Log.Comment("Positive control: a list is a supported source.");
+                var view = new ItemsSourceView(new List<int>() { 7, 8 });
+                Verify.AreEqual(2, view.Count);
+                Verify.AreEqual(8, view.GetAt(1));
+            });
+        }
+
+        // Scenario: call KeyFromIndex and IndexFromKey on an ItemsSourceView over a plain list without key mapping.
+        // Expected: both fail with E_NOTIMPL.
+        // A failure means: apps could get made-up keys for sources that do not provide unique ids.
+        [TestMethod]
+        [TestProperty("Description", "Verifies KeyFromIndex and IndexFromKey fail with E_NOTIMPL when the source does not implement IKeyIndexMapping.")]
+        public void VerifyKeyIndexMappingNotImplementedWithoutMappingSource()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var view = new ItemsSourceView(new ObservableCollection<int>(Enumerable.Range(0, 5)));
+                Verify.IsFalse(view.HasKeyIndexMapping);
+                Verify.AreEqual(E_NOTIMPL, CaptureHResult(() => view.KeyFromIndex(0)), "KeyFromIndex");
+                Verify.AreEqual(E_NOTIMPL, CaptureHResult(() => view.IndexFromKey("0")), "IndexFromKey");
+            });
+        }
+
+        private static int CaptureHResult(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                Log.Comment($"Caught {e.GetType().Name}: HResult=0x{e.HResult:X8} '{e.Message}'");
+                return e.HResult;
+            }
+            return 0;
+        }
+
         [TestMethod]
         public void CanCreateFromIBindableIterable()
         {
@@ -242,6 +295,82 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             void ItemsSourceView_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
             {
                 invocationCount++;
+            }
+        }
+
+        // Scenario: use a read-only list (IReadOnlyList<object> + INotifyCollectionChanged, no IList) as the source of an
+        //           ItemsSourceView and of an ItemsRepeater, then add an item to it.
+        // Expected: Count, GetAt and IndexOf read through the list (IndexOf of a missing item is -1), the view raises
+        //           CollectionChanged for the add, and the repeater shows the new item.
+        // A failure means: apps exposing read-only observable collections would see wrong counts or stale items.
+        [TestMethod]
+        [TestProperty("Description", "Verifies ItemsSourceView and ItemsRepeater over a read-only observable list (vector view) read items and follow changes.")]
+        public void VerifyReadOnlyObservableListSource()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var source = new ReadOnlyObservableList(new object[] { "A", "B", "C" });
+                var view = new ItemsSourceView(source);
+                Verify.AreEqual(3, view.Count);
+                Verify.AreEqual("B", view.GetAt(1));
+                Verify.AreEqual(2, view.IndexOf("C"));
+                Verify.AreEqual(-1, view.IndexOf("Z"));
+
+                var changes = new List<NotifyCollectionChangedAction>();
+                view.CollectionChanged += (sender, args) => changes.Add(args.Action);
+
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = source,
+                    ItemTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                        "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding}' Height='20'/></DataTemplate>")
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+                Verify.AreEqual(3, repeater.ItemsSourceView.Count);
+
+                source.Add("D");
+                Content.UpdateLayout();
+
+                Verify.AreEqual(4, view.Count);
+                Verify.AreEqual("D", view.GetAt(3));
+                Verify.AreEqual(1, changes.Count, "The view raises one CollectionChanged for the add.");
+                Verify.AreEqual(NotifyCollectionChangedAction.Add, changes[0]);
+                var element = repeater.TryGetElement(3) as TextBlock;
+                Verify.IsNotNull(element, "The repeater realizes the added item.");
+                Verify.AreEqual("D", element.Text);
+                Content = null;
+            });
+        }
+
+        private partial class ReadOnlyObservableList : IReadOnlyList<object>, INotifyCollectionChanged
+        {
+            private readonly List<object> _items;
+
+            public ReadOnlyObservableList(IEnumerable<object> items)
+            {
+                _items = new List<object>(items);
+            }
+
+            public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+            public object this[int index] => _items[index];
+
+            public int Count => _items.Count;
+
+            public void Add(object item)
+            {
+                _items.Add(item);
+                CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, _items.Count - 1));
+            }
+
+            public IEnumerator<object> GetEnumerator()
+            {
+                return _items.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _items.GetEnumerator();
             }
         }
 

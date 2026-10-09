@@ -1020,6 +1020,344 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             return itemsRepeater;
         }
 
+        private const int E_FAIL = unchecked((int)0x80004005);
+
+        // Scenario: focus the first item, scroll far away so it leaves the realized range, then scroll back.
+        // Expected: the focused element keeps its index and focus while out of view and the same instance is reused
+        //           when it returns.
+        // A failure means: keyboard focus could be lost or the focused item re-created when the user scrolls away and
+        //                  back.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a focused element that scrolls out of the realized range stays pinned (keeps its index and focus) and is reused, not re-prepared, when scrolled back into view.")]
+        public void VerifyFocusedElementIsReusedFromPinnedPool()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => "Item #" + i));
+            ScrollViewer scrollViewer = null;
+            ItemsRepeater repeater = null;
+            Button element0 = null;
+            var preparedIndexes = new List<int>();
+            var gotFocus = new ManualResetEvent(false);
+
+            StackLayout layout = null;
+            RunOnUIThread.Execute(() => layout = new StackLayout());
+            repeater = SetupRepeater(data, layout, out scrollViewer);
+            RunOnUIThread.Execute(() =>
+            {
+                element0 = (Button)repeater.TryGetElement(0);
+                Verify.IsNotNull(element0);
+                element0.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(element0.Focus(FocusState.Programmatic));
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), "Waiting for element 0 to get focus.");
+            IdleSynchronizer.Wait();
+
+            ScrollTo(scrollViewer, 5000);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(repeater.TryGetElement(50), "Item 50 is realized after scrolling.");
+                Verify.AreEqual(0, repeater.GetElementIndex(element0), "The focused element is pinned and keeps its index.");
+                Verify.AreSame(element0, repeater.TryGetElement(0), "The pinned element is still considered realized.");
+                Verify.AreSame(element0, FocusManager.GetFocusedElement(repeater.XamlRoot), "Focus stays on the pinned element.");
+                repeater.ElementPrepared += (sender, args) => preparedIndexes.Add(args.Index);
+            });
+
+            ScrollTo(scrollViewer, 0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Prepared indexes after scrolling back: " + string.Join(",", preparedIndexes));
+                Verify.AreSame(element0, repeater.TryGetElement(0), "The pinned element is reused for index 0.");
+                Verify.AreEqual("Item #0", element0.Content);
+                Verify.IsFalse(preparedIndexes.Contains(0), "Index 0 is served from the pinned pool, not re-prepared by the element factory.");
+                Verify.AreSame(element0, FocusManager.GetFocusedElement(repeater.XamlRoot));
+            });
+        }
+
+        // Scenario: focus item 90, scroll back to the top, then insert an item before 90 but after the realized items.
+        // Expected: only the focused element's index changes (90 to 91, with ElementIndexChanged) and it keeps content
+        //           and focus.
+        // A failure means: a focused item outside the visible range could end up bound to the wrong data after an
+        //                  insert.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that inserting items after the realized range updates the index of a focused element held in the pinned pool and raises ElementIndexChanged for it.")]
+        public void VerifyPinnedElementIndexUpdatesOnInsertOutsideRealizedRange()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => "Item #" + i));
+            ScrollViewer scrollViewer = null;
+            ItemsRepeater repeater = null;
+            Button element90 = null;
+            var indexChanges = new List<Tuple<UIElement, int, int>>();
+            var gotFocus = new ManualResetEvent(false);
+
+            StackLayout layout = null;
+            RunOnUIThread.Execute(() => layout = new StackLayout());
+            repeater = SetupRepeater(data, layout, out scrollViewer);
+            ScrollTo(scrollViewer, 9000);
+
+            RunOnUIThread.Execute(() =>
+            {
+                element90 = (Button)repeater.TryGetElement(90);
+                Verify.IsNotNull(element90);
+                element90.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(element90.Focus(FocusState.Programmatic));
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), "Waiting for element 90 to get focus.");
+            IdleSynchronizer.Wait();
+
+            ScrollTo(scrollViewer, 0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(repeater.TryGetElement(0));
+                Verify.AreEqual(90, repeater.GetElementIndex(element90), "The focused element is pinned outside the realized range.");
+
+                repeater.ElementIndexChanged += (sender, args) => indexChanges.Add(Tuple.Create(args.Element, args.OldIndex, args.NewIndex));
+                data.Insert(50, "Inserted");
+
+                Log.Comment("Index changes: " + string.Join(",", indexChanges.Select(c => $"{c.Item2}->{c.Item3}")));
+                Verify.AreEqual(1, indexChanges.Count, "Only the pinned element is affected by an insert after the realized range.");
+                Verify.AreSame(element90, indexChanges[0].Item1);
+                Verify.AreEqual(90, indexChanges[0].Item2);
+                Verify.AreEqual(91, indexChanges[0].Item3);
+                Verify.AreEqual(91, repeater.GetElementIndex(element90));
+            });
+
+            ScrollTo(scrollViewer, 9100);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(element90, repeater.TryGetElement(91), "The pinned element is reused at its updated index.");
+                Verify.AreEqual("Item #90", element90.Content);
+                Verify.AreSame(element90, FocusManager.GetFocusedElement(repeater.XamlRoot));
+            });
+        }
+
+        // Scenario: focus a Button item and remove it from the source (also for the first and last items).
+        // Expected: focus moves to the next realized item, or to the previous one when the last item was removed.
+        // Ignored: reproduces focus jumping to the first item when the focused item is removed (PC-FOCUS-ON-REMOVE);
+        //          currently fails because focus lands on item 0 instead of the adjacent item.
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Product concern PC-FOCUS-ON-REMOVE, same behavior as Issue 1018: after removing the focused 'Item #2', expected focus on the adjacent 'Item #3' (new index 2); actual focus is on 'Item #0' (index 0).
+        [TestProperty("Description", "Verifies that removing the focused item moves focus to the next realized item, or to the previous one when the last item is removed.")]
+        public void VerifyFocusMovesToAdjacentItemWhenFocusedItemRemoved()
+        {
+            VerifyFocusMoveOnRemoval(itemTemplate: "<Button Content='{Binding}' Height='30'/>");
+        }
+
+        // Scenario: same as the previous test with non-Control item containers whose child Button has focus.
+        // Expected: focus moves to the Button inside the adjacent item.
+        // Ignored: reproduces focus jumping to the first item when the focused item is removed (PC-FOCUS-ON-REMOVE);
+        //          currently fails because focus lands on the first item's Button.
+        [TestMethod]
+        [TestProperty("Ignore", "True")] // Product concern PC-FOCUS-ON-REMOVE, same behavior as Issue 1018: after removing the item whose Button 'Item #2' is focused, expected focus on Button 'Item #3' (new index 2); actual focus is on Button 'Item #0' (index 0).
+        [TestProperty("Description", "Same as VerifyFocusMovesToAdjacentItemWhenFocusedItemRemoved when item containers are not Controls: focus moves to a focusable descendant of the adjacent item.")]
+        public void VerifyFocusMovesToAdjacentItemDescendantWhenFocusedItemRemoved()
+        {
+            VerifyFocusMoveOnRemoval(itemTemplate: "<StackPanel Height='30'><Button Content='{Binding}'/></StackPanel>");
+        }
+
+        private void VerifyFocusMoveOnRemoval(string itemTemplate)
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            ItemsRepeater repeater = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater() {
+                    ItemsSource = data,
+                    ItemTemplate = XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" + itemTemplate + @"</DataTemplate>"),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+            });
+
+            // Remove a middle item: the item that follows it takes its index and receives focus.
+            FocusItem(repeater, 2);
+            RemoveAndLogFocus(repeater, data, 2);
+            IdleSynchronizer.Wait();
+            VerifyFocusedItem(repeater, expectedIndex: 2, expectedContent: "Item #3");
+
+            // Remove the first item: the next item receives focus.
+            FocusItem(repeater, 0);
+            RemoveAndLogFocus(repeater, data, 0);
+            IdleSynchronizer.Wait();
+            VerifyFocusedItem(repeater, expectedIndex: 0, expectedContent: "Item #1");
+
+            // data: 1 3 4. Remove the last item: there is no next item, so the previous item receives focus.
+            FocusItem(repeater, 2);
+            RemoveAndLogFocus(repeater, data, 2);
+            IdleSynchronizer.Wait();
+            VerifyFocusedItem(repeater, expectedIndex: 1, expectedContent: "Item #3");
+        }
+
+        // Removes an item and logs the focused element synchronously after the removal and after the UI thread idles,
+        // to distinguish the ItemsRepeater focus move from later framework focus changes.
+        private void RemoveAndLogFocus(ItemsRepeater repeater, ObservableCollection<string> data, int index)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                data.RemoveAt(index);
+                var focused = FocusManager.GetFocusedElement(repeater.XamlRoot);
+                Log.Comment($"Focused synchronously after RemoveAt({index}): {focused?.GetType().Name} '{(focused as ContentControl)?.Content}' FocusState={(focused as Control)?.FocusState}");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(repeater.XamlRoot);
+                Log.Comment($"Focused after idle: {focused?.GetType().Name} '{(focused as ContentControl)?.Content}' FocusState={(focused as Control)?.FocusState}");
+            });
+        }
+
+        private void FocusItem(ItemsRepeater repeater, int index)
+        {
+            var gotFocus = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                var target = GetFocusableControl(repeater.TryGetElement(index));
+                if (FocusManager.GetFocusedElement(repeater.XamlRoot) == target)
+                {
+                    gotFocus.Set();
+                }
+                else
+                {
+                    target.GotFocus += delegate { gotFocus.Set(); };
+                    Verify.IsTrue(target.Focus(FocusState.Programmatic));
+                }
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), $"Waiting for item {index} to get focus.");
+            IdleSynchronizer.Wait();
+        }
+
+        private void VerifyFocusedItem(ItemsRepeater repeater, int expectedIndex, string expectedContent)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(repeater.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused element: {focused?.GetType().Name} '{(focused as ContentControl)?.Content}'");
+                Verify.IsTrue(focused is Button, "A Button inside the repeater is expected to be focused.");
+
+                // Walk up to the repeater's direct child to find the item index.
+                UIElement container = focused as UIElement;
+                while (container != null && VisualTreeHelper.GetParent(container) != repeater)
+                {
+                    container = VisualTreeHelper.GetParent(container) as UIElement;
+                }
+
+                Verify.IsNotNull(container, "The focused element is inside the repeater.");
+                Verify.AreEqual(expectedIndex, repeater.GetElementIndex(container));
+                Verify.AreEqual(expectedContent, ((Button)focused).Content);
+            });
+        }
+
+        private static Control GetFocusableControl(UIElement element)
+        {
+            if (element is Control control)
+            {
+                return control;
+            }
+            return (Control)FocusManager.FindFirstFocusableElement(element);
+        }
+
+        private void ScrollTo(ScrollViewer scrollViewer, double verticalOffset)
+        {
+            var viewChanged = new ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                if (scrollViewer.VerticalOffset == verticalOffset)
+                {
+                    viewChanged.Set();
+                    return;
+                }
+
+                scrollViewer.ViewChanged += OnViewChanged;
+                Verify.IsTrue(scrollViewer.ChangeView(null, verticalOffset, null, disableAnimation: true));
+
+                void OnViewChanged(object sender, ScrollViewerViewChangedEventArgs args)
+                {
+                    if (!args.IsIntermediate)
+                    {
+                        scrollViewer.ViewChanged -= OnViewChanged;
+                        viewChanged.Set();
+                    }
+                }
+            });
+            Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS), $"Waiting for ViewChanged to offset {verticalOffset}.");
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.AreEqual(verticalOffset, scrollViewer.VerticalOffset));
+        }
+
+        // Scenario: raise Replace notifications with an empty old-items or new-items list from a custom data source.
+        // Expected: each notification is rejected with E_FAIL and the realized elements are left untouched.
+        // A failure means: malformed data source notifications could corrupt the repeater's element bookkeeping.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that Replace notifications with an empty old or new item list are rejected with E_FAIL and leave realized elements untouched.")]
+        public void VerifyInvalidReplaceNotificationsThrow()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataSource = new RawNotificationItemsSource(Enumerable.Range(0, 10).ToList());
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = dataSource,
+                    ItemTemplate = XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding}' Height='20'/></DataTemplate>"),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                var elements = Enumerable.Range(0, 10).Select(i => repeater.TryGetElement(i)).ToList();
+                int notifications = 0;
+                repeater.ElementIndexChanged += delegate { notifications++; };
+                repeater.ElementClearing += delegate { notifications++; };
+
+                Log.Comment("Replace with OldItems.Count == 0.");
+                Verify.AreEqual(E_FAIL, CaptureHResult(() => dataSource.RaiseReplace(index: 2, oldCount: 0, newCount: 1)));
+
+                Log.Comment("Replace with NewItems.Count == 0.");
+                Verify.AreEqual(E_FAIL, CaptureHResult(() => dataSource.RaiseReplace(index: 2, oldCount: 1, newCount: 0)));
+
+                Verify.AreEqual(0, notifications, "Rejected notifications do not touch realized elements.");
+                for (int i = 0; i < 10; i++)
+                {
+                    Verify.AreSame(elements[i], repeater.TryGetElement(i));
+                    Verify.AreEqual(i, repeater.GetElementIndex(elements[i]));
+                }
+
+                Content = null;
+            });
+        }
+
+        private static int CaptureHResult(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                Log.Comment($"Caught {e.GetType().Name}: HResult=0x{e.HResult:X8} '{e.Message}'");
+                return e.HResult;
+            }
+            return 0;
+        }
+
+        // Raises collection change notifications without modifying the underlying data.
+        private class RawNotificationItemsSource : CustomItemsSource
+        {
+            public RawNotificationItemsSource(List<int> source) : base(source) { }
+
+            public void RaiseReplace(int index, int oldCount, int newCount)
+            {
+                OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                    global::System.Collections.Specialized.NotifyCollectionChangedAction.Replace,
+                    oldStartingIndex: index,
+                    oldItemsCount: oldCount,
+                    newStartingIndex: index,
+                    newItemsCount: newCount));
+            }
+        }
+
         private int DefaultWaitTime = 2000;
     }
 }
