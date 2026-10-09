@@ -218,14 +218,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     ScrollBy(10);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should not follow the target by default");
                     ScrollBy(-20);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
                     Wait.ForIdle();
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should not follow the target by default");
                     ScrollBy(10);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should not follow the target by default");
 
                     SetTipFollowsTarget(true);
 
@@ -238,20 +238,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsGreaterThan(GetTipVerticalOffset(), initialTipVerticalOffset);
                     ScrollBy(10);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should return to its original position with the target");
 
                     SetTipFollowsTarget(false);
 
                     ScrollBy(10);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 10);
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should stop following the target");
                     ScrollBy(-20);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset - 10);
                     Wait.ForIdle();
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should stop following the target");
                     ScrollBy(10);
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset);
-                    Equals(GetTipVerticalOffset(), initialTipVerticalOffset);
+                    Verify.AreEqual(initialTipVerticalOffset, GetTipVerticalOffset(), "Tip should stop following the target");
                 }
             }
         }
@@ -774,10 +774,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     SetIcon(IconOptions.NoIcon);
                     OpenTeachingTip();
+                    Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "A tip without an icon should open");
                     CloseTeachingTipProgrammatically();
+                    Verify.AreEqual(ToggleState.Off, elements.GetIsOpenCheckBox().ToggleState);
                     SetIcon(IconOptions.People);
                     OpenTeachingTip();
                     SetIcon(IconOptions.NoIcon);
+                    Wait.ForIdle();
+                    Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "Removing the icon must not close an open tip");
+                    CloseTeachingTipProgrammatically();
                 }
             }
         }
@@ -801,14 +806,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     CloseTeachingTipProgrammatically();
                     SetShouldConstrainToRootBounds(false);
                     OpenTeachingTip();
+                    // Out-of-root tips skip the space checks and use Top for the Auto placement.
+                    Verify.AreEqual("Top", GetEffectivePlacement(), "Unconstrained tip placement");
                     CloseTeachingTipProgrammatically();
                     SetShouldConstrainToRootBounds(true);
                     OpenTeachingTip();
                     CloseTeachingTipProgrammatically();
                     OpenTeachingTip();
                     SetShouldConstrainToRootBounds(false);
+                    Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "Changing ShouldConstrainToRootBounds must not close an open tip");
                     CloseTeachingTipProgrammatically();
                     OpenTeachingTip();
+                    Verify.AreEqual("Top", GetEffectivePlacement(), "The new setting applies when the tip reopens");
                     SetShouldConstrainToRootBounds(true);
                     CloseTeachingTipProgrammatically();
                     OpenTeachingTip();
@@ -1009,6 +1018,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     SetAutomationName(AutomationNameOptions.None);
                     Verify.IsNotNull(FindElement.ByNameAndClassName("We've Added Auto Saving!", "Popup"));
                     SetAutomationName(location == TipLocationOptions.VisualTree ? AutomationNameOptions.VisualTree : AutomationNameOptions.Resources);
+                    Verify.IsNotNull(FindElement.ByNameAndClassName(location == TipLocationOptions.VisualTree ? "TeachingTipInVisualTree" : "TeachingTipInResources", "Popup"),
+                        "Restoring the explicit name should be forwarded to the popup");
                     CloseTeachingTipProgrammatically();
                 }
             }
@@ -1211,6 +1222,52 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 double newYOffset = GetTipVerticalOffset();
 
                 Verify.IsFalse(oldYOffset == newYOffset);
+                Verify.AreEqual(ToggleState.On, elements.GetIsOpenCheckBox().ToggleState, "Changing the target must not close the tip");
+
+                // Switching back to the original target must restore the original position, showing the tip tracks its current target.
+                elements.GetSwitchTargetButton().InvokeAndWait();
+                Verify.AreEqual(oldYOffset, GetTipVerticalOffset(), "Tip position for the original target");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void F6FocusesHeaderCloseButtonWhenThereIsNoCloseButtonContent()
+        {
+            using (var setup = new TestSetupHelper(new[] { "TeachingTip Tests", "TeachingTip Test" }))
+            {
+                elements = new TeachingTipTestPageElements();
+                SetTeachingTipLocation(TipLocationOptions.VisualTree);
+                ScrollTargetIntoView();
+                OpenTeachingTip();
+                ClearTeachingTipDebugMessages();
+
+                var showButton = elements.GetShowButton();
+                FocusHelper.SetFocus(showButton);
+                Wait.ForIdle();
+                Verify.IsTrue(showButton.HasKeyboardFocus, "Focus should start on the page");
+
+                // Without CloseButtonContent the header (X) button is the tip's only close button.
+                KeyboardHelper.PressKey(Key.F6);
+                Wait.ForIdle();
+                Verify.IsTrue(elements.GetTeachingTipAlternateCloseButton().HasKeyboardFocus, "F6 should focus the header close button");
+                // The open tip handles F6, so the page's PreviewKeyDown logger (tunneling after the tip's handler) must not see it.
+                Verify.AreEqual(0, CountTeachingTipDebugMessages("Page KeyDown: F6"), "F6 should be handled by the open tip");
+
+                KeyboardHelper.PressKey(Key.Enter);
+                WaitForTipClosed();
+                Verify.IsTrue(GetTeachingTipDebugMessage(0).ToString().Contains("Close Button Clicked"));
+                Verify.IsTrue(GetTeachingTipDebugMessage(1).ToString().Contains("CloseButton"));
+                Verify.IsTrue(GetTeachingTipDebugMessage(2).ToString().Contains("Closed"));
+                Verify.IsTrue(GetTeachingTipDebugMessage(2).ToString().Contains("CloseButton"));
+
+                Wait.ForIdle();
+                Verify.IsTrue(showButton.HasKeyboardFocus, "Focus should return to the element that had focus before F6");
+
+                // Positive control: with no tip open, F6 is not handled and reaches the page.
+                KeyboardHelper.PressKey(Key.F6);
+                Wait.ForIdle();
+                Verify.AreEqual(1, CountTeachingTipDebugMessages("Page KeyDown: F6"), "An unhandled F6 should reach the page");
             }
         }
 
@@ -1641,6 +1698,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Task.Delay(TimeSpan.FromMilliseconds(250)).Wait();
             }
             return elements.GetLstTeachingTipEvents().Items[index];
+        }
+
+        private int CountTeachingTipDebugMessages(string text)
+        {
+            int count = 0;
+            foreach (var item in elements.GetLstTeachingTipEvents().Items)
+            {
+                if (item.ToString().Contains(text))
+                {
+                    count++;
+                }
+            }
+            return count;
         }
 
         private void ClearTeachingTipDebugMessages()
