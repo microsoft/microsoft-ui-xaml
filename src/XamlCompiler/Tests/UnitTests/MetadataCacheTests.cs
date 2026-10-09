@@ -148,6 +148,53 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void MetadataCache_AssemblyReferencesAreScopedToModulesSharingScopeName()
+        {
+            Type firstBase;
+            Type secondBase;
+            string firstDependencyPath = CreateDependency(new Version(1, 0, 0, 0), out firstBase);
+            string secondDependencyPath = CreateDependency(new Version(2, 0, 0, 0), out secondBase);
+            // Distinct assemblies whose manifest modules share the same ScopeName.
+            string firstConsumerPath = CreateConsumer("FirstConsumer", firstBase, "SharedScope");
+            string secondConsumerPath = CreateConsumer("SecondConsumer", secondBase, "SharedScope");
+
+            foreach (bool firstLookupFirst in new[] { true, false })
+            {
+                var universe = new XamlTypeUniverse(false);
+                using ((IDisposable)universe.Instance)
+                {
+                    universe.LoadAssemblyFromFile(typeof(object).Assembly.Location);
+                    Assembly first = universe.LoadAssemblyFromFile(firstDependencyPath);
+                    Assembly second = universe.LoadAssemblyFromFile(secondDependencyPath);
+                    Module firstModule = universe.LoadAssemblyFromFile(firstConsumerPath).ManifestModule;
+                    Module secondModule = universe.LoadAssemblyFromFile(secondConsumerPath).ManifestModule;
+                    object firstReference = FindAssemblyReference(firstModule, "CacheDependency");
+                    object secondReference = FindAssemblyReference(secondModule, "CacheDependency");
+
+                    Assert.AreNotSame(firstModule, secondModule);
+                    Assert.AreEqual(firstModule.ScopeName, secondModule.ScopeName, "The fixture must share a scope name.");
+                    Assert.AreEqual(firstReference, secondReference, "The fixture must reuse the same metadata row in different modules.");
+                    Assert.AreNotEqual(first.FullName, second.FullName);
+
+                    string order = firstLookupFirst ? "first-then-second" : "second-then-first";
+                    for (int i = 0; i < 2; i++)
+                    {
+                        if (firstLookupFirst)
+                        {
+                            Assert.AreSame(first, ResolveAssembly(universe, firstModule, firstReference), order);
+                            Assert.AreSame(second, ResolveAssembly(universe, secondModule, secondReference), order);
+                        }
+                        else
+                        {
+                            Assert.AreSame(second, ResolveAssembly(universe, secondModule, secondReference), order);
+                            Assert.AreSame(first, ResolveAssembly(universe, firstModule, firstReference), order);
+                        }
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
         public void MetadataCache_MissingAssemblyCanResolveAfterLoading()
         {
             Type baseType;
@@ -222,19 +269,20 @@ namespace UnitTests
             return path;
         }
 
-        string CreateConsumer(string name, Type baseType)
+        string CreateConsumer(string name, Type baseType, string moduleName = null)
         {
             return SaveAssembly(name, new Version(1, 0, 0, 0), module =>
-                module.DefineType("CacheTests.Derived", TypeAttributes.Public, baseType).CreateType());
+                module.DefineType("CacheTests.Derived", TypeAttributes.Public, baseType).CreateType(),
+                moduleName);
         }
 
-        string SaveAssembly(string name, Version version, Action<ModuleBuilder> defineTypes)
+        string SaveAssembly(string name, Version version, Action<ModuleBuilder> defineTypes, string moduleName = null)
         {
             string fileName = name + "." + version + ".dll";
             var assemblyName = new AssemblyName(name) { Version = version };
             AssemblyBuilder assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(
                 assemblyName, AssemblyBuilderAccess.RunAndSave, _directory);
-            ModuleBuilder module = assembly.DefineDynamicModule(name, fileName);
+            ModuleBuilder module = assembly.DefineDynamicModule(moduleName ?? name, fileName);
             defineTypes(module);
             assembly.Save(fileName);
             return Path.Combine(_directory, fileName);

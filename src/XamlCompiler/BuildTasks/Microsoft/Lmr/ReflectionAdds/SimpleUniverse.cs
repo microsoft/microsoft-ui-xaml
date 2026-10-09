@@ -26,8 +26,37 @@ namespace System.Reflection.Adds
         // Mapping to cache types for GetBuiltInType, GetTypeXFromName
         Dictionary<string, Type> m_hash = new Dictionary<string, Type>();
 
-        private readonly Dictionary<Tuple<Module, AssemblyReferenceHandle>, Assembly> m_assemblyReferences =
-            new Dictionary<Tuple<Module, AssemblyReferenceHandle>, Assembly>();
+        // Keyed by module reference identity: Module.Equals() can treat distinct modules with the
+        // same ScopeName as equal, but their AssemblyRef rows may point at different assemblies.
+        private readonly Dictionary<AssemblyReferenceKey, Assembly> m_assemblyReferences =
+            new Dictionary<AssemblyReferenceKey, Assembly>();
+
+        private readonly struct AssemblyReferenceKey : IEquatable<AssemblyReferenceKey>
+        {
+            private readonly Module m_module;
+            private readonly AssemblyReferenceHandle m_handle;
+
+            public AssemblyReferenceKey(Module module, AssemblyReferenceHandle handle)
+            {
+                m_module = module;
+                m_handle = handle;
+            }
+
+            public bool Equals(AssemblyReferenceKey other)
+            {
+                return ReferenceEquals(m_module, other.m_module) && m_handle == other.m_handle;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is AssemblyReferenceKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return (Runtime.CompilerServices.RuntimeHelpers.GetHashCode(m_module) * 397) ^ m_handle.GetHashCode();
+            }
+        }
 
         // List of loaded assemblies. We need this so that we know what to unload.
         // This can also be used to search for resolving assembly refs.
@@ -247,7 +276,7 @@ namespace System.Reflection.Adds
         // so that it knows which context the resolution is occurring in.
         public virtual Assembly ResolveAssembly(Module scope, AssemblyReferenceHandle assemblyRefHandle)
         {
-            var key = Tuple.Create(scope, assemblyRefHandle);
+            var key = new AssemblyReferenceKey(scope, assemblyRefHandle);
             if (m_assemblyReferences.TryGetValue(key, out var assembly))
             {
                 return assembly;
