@@ -239,8 +239,9 @@ void TableViewSource::OnProjectionRebuilt()
         auto const adapter = m_engine->GroupedAdapter();
         if (!adapter)
         {
-            // Defensive: a projection kind without its adapter is never published coherently; keep
-            // the previous projection until the engine publishes again.
+            // A projection kind without its adapter is never published coherently; keep the
+            // previous projection until the engine publishes again.
+            MUX_ASSERT_MSG(false, L"TableViewSource: Grouped projection published without a grouped adapter.");
             return;
         }
         // No wrap: the grouped view IS an ItemsSourceView, so ItemsRepeater consumes it directly.
@@ -253,7 +254,7 @@ void TableViewSource::OnProjectionRebuilt()
         auto const adapter = m_engine->HierarchicalAdapter();
         if (!adapter)
         {
-            // Defensive, as above.
+            MUX_ASSERT_MSG(false, L"TableViewSource: Hierarchical projection published without a hierarchical adapter.");
             return;
         }
         // Same as grouped: the adapter's view IS an ItemsSourceView, consumed directly.
@@ -269,7 +270,7 @@ void TableViewSource::OnProjectionRebuilt()
         auto const hierarchicalAdapter = m_engine->HierarchicalAdapter();
         if (!groupedAdapter || !hierarchicalAdapter)
         {
-            // Defensive, as above.
+            MUX_ASSERT_MSG(false, L"TableViewSource: GroupedHierarchical projection published without both adapters.");
             return;
         }
         m_itemsSourceView.set(groupedAdapter->Entries());

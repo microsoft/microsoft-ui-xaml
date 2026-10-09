@@ -117,7 +117,9 @@ Evaluated over the **whole unfiltered source** on every rebuild.
 | Cycle (`A → B → A`) | Throw `E_INVALIDARG` naming one key on the cycle | Items on a cycle are unreachable from any root and would silently disappear. |
 | Selector throws | Treat the result as null. For the key selector that means the throw above. | Matches how `RebuildGrouped` guards `m_groupSelector`. |
 
-Bad identity fails fast: a throw leaves the previously published projection intact.
+Bad identity fails fast: a throw leaves the previously published projection intact. The relation
+stays declared after a throw, so every later reshape (another verb or a source collection change)
+re-validates and throws again until the data is fixed or `ClearParentBy()` is called.
 
 When invalid data arrives through a source collection change rather than through a verb, the engine
 throws `E_INVALIDARG` from its collection-changed handler. Whether that reaches the app's own
@@ -332,7 +334,7 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
   is open, the reshape waits and runs once the edit closes, so live data never ends a user's edit.
   Otherwise reparenting through `INotifyPropertyChanged` on `ManagerId` takes effect at the next
   collection change or reshape, the same contract as sort keys. To reparent immediately, an app
-  replaces the item or removes and re-inserts it. Documented on `ParentBy`.
+  replaces the item or removes and re-inserts it.
 - **Custom comparer columns.** A header sort on a `CustomSortComparer` column ranks the rows once
   and sorts by those ranks. With `IsLiveShaping` on, each changed item is taken out of the ranking
   and compared back in (O(n) comparer calls), and the reshape runs when any row's rank moved. A

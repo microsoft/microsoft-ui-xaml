@@ -49,14 +49,14 @@ public:
     winrt::TableViewSource Filter(winrt::TableViewPredicate const& predicate);
     winrt::TableViewSource GroupBy(winrt::TableViewKeySelector const& key);
     winrt::TableViewSource GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewIdentitySelector const& groupIdentitySelector);
+    winrt::TableViewSource ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector);
     winrt::TableViewSource Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
     winrt::TableViewSource Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     winrt::TableViewSource SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
     winrt::TableViewSource ClearFilter();
     winrt::TableViewSource ClearGroupBy();
-    winrt::TableViewSource ClearSort();
-    winrt::TableViewSource ParentBy(winrt::TableViewKeySelector const& keySelector, winrt::TableViewKeySelector const& parentKeySelector);
     winrt::TableViewSource ClearParentBy();
+    winrt::TableViewSource ClearSort();
     winrt::TableViewSource ClearSort(winrt::hstring const& sortAxisToken);
     // Internal, for the owning control: make sortAxisToken the ONLY sort axis, dropping any the
     // app declared through the fluent Sort verb (which is untokenized and so unaddressable by
