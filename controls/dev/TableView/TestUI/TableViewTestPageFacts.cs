@@ -47,9 +47,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string CanUserSortColumnsCheckBox = "CanUserSortColumnsCheckBox";
         internal const string HookRowStatesButton = "HookRowStatesButton";
         internal const string HookGroupHeadersButton = "HookGroupHeadersButton";
-        internal const string GroupByDeptButton = "GroupByDept";
-        internal const string FilterDanButton = "FilterDan";
-        internal const string ClearShapingButton = "ClearShaping";
         internal const string ResetHierarchyButton = "ResetHierarchy";
 
         // Pivot navigation buttons are "GoTo<Item>Button".
@@ -78,7 +75,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         //                             nothing for a leaf); group headers as [key]
         //   rtl=<projection label>    the same for HierarchyRtlTable
         //   selected=<name|none>      HierarchyTable.SelectedItem
-        //   focus=<name>:<row|cell>   the HierarchyTable row holding focus, itself or through a cell; or none
         //   beginning=<n>             BeginningEdit count since the last reset
         //   editing=<True|False>      HierarchyTable.IsEditing
         internal const string HierarchyReadout = "HierarchyReadout";
@@ -86,7 +82,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal const string TreeField = "tree";
         internal const string RtlTreeField = "rtl";
         internal const string SelectedField = "selected";
-        internal const string FocusField = "focus";
         internal const string BeginningEditField = "beginning";
         internal const string EditingField = "editing";
         internal const string NoneValue = "none";
@@ -171,8 +166,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         internal static readonly string[] HierarchyNames = { "Ada", "Ben", "Cy", "Dan", "Eve", "Fay", "Gus" };
         internal static readonly string[] HierarchyDepts = { "Eng", "Eng", "Eng", "Eng", "Ops", "Ops", "Ops" };
         internal static readonly int[] HierarchyScores = { 90, 75, 60, 85, 70, 95, 50 };
-
-        internal static readonly string[] HierarchyColumns = { "Name", "Dept", "Score" };
 
         internal const string HierarchyAllCollapsed = "Ada1+ Eve1+ Gus1";
         internal const string HierarchyAdaExpanded = "Ada1- Ben2+ Cy2 Eve1+ Gus1";

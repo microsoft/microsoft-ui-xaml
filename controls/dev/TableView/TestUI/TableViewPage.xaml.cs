@@ -460,9 +460,6 @@ namespace MUXControlsTestApp
             };
             HierarchyTable.CellEditEnding += (s, args) => QueueHierarchyReadoutRefresh();
             HierarchyTable.SelectionChanged += (s, args) => QueueHierarchyReadoutRefresh();
-            HierarchyTable.GotFocus += (s, args) => QueueHierarchyReadoutRefresh();
-            HierarchyTable.LostFocus += (s, args) => QueueHierarchyReadoutRefresh();
-            HierarchyRtlTable.GotFocus += (s, args) => QueueHierarchyReadoutRefresh();
 
             // Expansion changes re-project rows, which always re-lays out the table.
             HierarchyTable.LayoutUpdated += (s, args) => RefreshHierarchyReadout();
@@ -495,24 +492,6 @@ namespace MUXControlsTestApp
 
         private void OnResetHierarchyClick(object sender, RoutedEventArgs e) => ResetHierarchy();
 
-        private void OnGroupByDeptClick(object sender, RoutedEventArgs e)
-        {
-            _hierarchySource.GroupBy(new TableViewKeySelector(item => ((HierarchyTestEmployee)item).Dept));
-            QueueHierarchyReadoutRefresh();
-        }
-
-        private void OnFilterDanClick(object sender, RoutedEventArgs e)
-        {
-            _hierarchySource.Filter(new TableViewPredicate(item => ((HierarchyTestEmployee)item).Name == "Dan"));
-            QueueHierarchyReadoutRefresh();
-        }
-
-        private void OnClearShapingClick(object sender, RoutedEventArgs e)
-        {
-            _hierarchySource.ClearFilter().ClearGroupBy().ClearSort();
-            QueueHierarchyReadoutRefresh();
-        }
-
         // Low priority so the readout describes the settled state, after focus and layout have moved.
         private void QueueHierarchyReadoutRefresh()
         {
@@ -542,7 +521,6 @@ namespace MUXControlsTestApp
                 Facts.TreeField + "=" + ProjectionLabel(HierarchyTable) + ";" +
                 Facts.RtlTreeField + "=" + ProjectionLabel(HierarchyRtlTable) + ";" +
                 Facts.SelectedField + "=" + (selected == null ? Facts.NoneValue : selected.Name) + ";" +
-                Facts.FocusField + "=" + FocusedHierarchyRow() + ";" +
                 Facts.BeginningEditField + "=" + _hierarchyBeginningEditCount + ";" +
                 Facts.EditingField + "=" + HierarchyTable.IsEditing;
 
@@ -596,33 +574,6 @@ namespace MUXControlsTestApp
             var header = element as TableViewGroupHeader ?? FindDescendant<TableViewGroupHeader>(element);
             var info = header == null ? null : header.Content as TableViewGroupInfo;
             return "[" + (info == null || info.Key == null ? "?" : info.Key.ToString()) + "]";
-        }
-
-        private string FocusedHierarchyRow()
-        {
-            if (XamlRoot == null)
-            {
-                return Facts.NoneValue;
-            }
-
-            var focused = FocusManager.GetFocusedElement(XamlRoot) as DependencyObject;
-            bool onRow = focused is TableViewRow;
-            for (var current = focused; current != null; current = VisualTreeHelper.GetParent(current))
-            {
-                var row = current as TableViewRow;
-                if (row != null)
-                {
-                    if (!IsSelfOrDescendant(HierarchyTable, row))
-                    {
-                        return Facts.NoneValue;
-                    }
-
-                    var employee = row.DataContext as HierarchyTestEmployee;
-                    return (employee == null ? "?" : employee.Name) + ":" + (onRow ? "row" : "cell");
-                }
-            }
-
-            return Facts.NoneValue;
         }
 
         // Unloads the Basic table from the tree shortly after the click, then restores it. The delay

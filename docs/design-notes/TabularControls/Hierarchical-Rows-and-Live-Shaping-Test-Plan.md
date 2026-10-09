@@ -27,22 +27,22 @@ projection. These flat or grouped behaviours are already covered, so the plan do
 
 | Behaviour | Existing test | Plan action |
 | --- | --- | --- |
-| Live-off: filter / group key edit stays stale until a collection change | `TableViewSource_APITests.VerifyFilterMembershipPropertyChangeFollowsTheSameInvariant`, `VerifyGroupKeyPropertyChangeFollowsTheSameInvariant` | Old LS40, LS43 dropped. |
-| Live-off: sort key edit stays stale; a later change re-sorts | `VerifySortKeyPropertyChangeDoesNotMoveTheRowUntilACollectionChange` (**Ignored**, product bug) | Old LS10, LS12 dropped. Try re-enabling it on this branch instead. |
-| `IsLiveShaping` defaults to off | `VerifyFreshSourceIsUnshaped` | Add one assert there (old LS01); LS02 round-trip dropped. |
-| Selection follows the item object across sort / filter | `VerifySelectionReanchorsAcrossAReshape` | Old L03 dropped. |
-| Cell drill-out (Left on first cell returns to row) | `TableView_Keyboard_InteractionTests.RightDrillsIntoFirstCellAndLeftReturnsToRow` | Old KB10 folded into KB02. |
+| Live-off: filter / group key edit stays stale until a collection change | `TableViewSource_APITests.VerifyFilterMembershipPropertyChangeFollowsTheSameInvariant`, `VerifyGroupKeyPropertyChangeFollowsTheSameInvariant` | Covered; no new test. |
+| Live-off: sort key edit stays stale; a later change re-sorts | `VerifySortKeyPropertyChangeDoesNotMoveTheRowUntilACollectionChange` (**Ignored**, product bug) | Covered; the test is Ignored for a product bug and should be re-enabled once fixed. |
+| `IsLiveShaping` defaults to off | `VerifyFreshSourceIsUnshaped` | Add a default-off assert there. |
+| Selection follows the item object across sort / filter | `VerifySelectionReanchorsAcrossAReshape` | Covered; no new test. |
+| Cell drill-out (Left on first cell returns to row) | `TableView_Keyboard_InteractionTests.RightDrillsIntoFirstCellAndLeftReturnsToRow` | Covered; no new test. |
 | Group header ExpandCollapse / PositionInSet | `TableView_AutomationPeer_APITests.VerifyGroupHeader*`, `VerifyGroupedRowPeerPositionInSetIsRelativeToItsGroup` | Only tree-row variants added (U02–U05). |
 
-**Contract conflicts to settle before writing the test:**
+**Open contract decisions (tests not written; each is noted at the top of its test file):**
 
 - **Replace and selection.** Flat mode: `VerifySelectionIsNotReanchoredAcrossItemRecreation` says
   a re-created item must not inherit selection (object identity). Hierarchy mode re-anchors by
-  node key (self-check `SelectionSurvivesSameKeyReplace`). The design doc does not state this
-  difference. Document it or align the two before landing L01.
-- **Focus across a reshape.** The dev spec says focus stays at the same *position*
-  (`FocusStaysAtSamePositionWhenSortReordersRows`, Ignored as a product gap). The old I01 asserted
-  that focus follows the item, which contradicts the spec, so it was dropped.
+  node key. The design doc does not state this difference. Document it or align the two before
+  landing L01.
+- **Focus across a reshape.** Focus is position-based by spec
+  (`FocusStaysAtSamePositionWhenSortReordersRows`, Ignored as a product gap), so a test that focus
+  follows the item is not planned.
 
 Register the new files in the matching `.projitems`. API tests follow the existing pattern:
 `RunOnUIThread.Execute`, `TableViewTestHelpers.CreateTableView`, and `IdleSynchronizer.Wait()`
@@ -66,12 +66,12 @@ implement `INotifyPropertyChanged`.
 **Projection label.** Projected rows in order, each written as `Name` + `Level` + state:
 
 - state: `+` collapsed expandable, `-` expanded, nothing for a leaf
-- Level `0` means the row is not in a hierarchy
+- a Level `0` row (not in a hierarchy) is written as the bare name, with no level or state
 - group headers are `[key]`
 
-Example: `Ada1- Ben2+ Cy2 Eve1+ Gus1`. Add a `TreeLabels(TableView)` helper to
-`TableView_APITests_Common.cs`. It builds this string from `GetProjectedItems` plus each realized
-row's `Level` / `IsExpandable` / `IsExpanded`.
+Example: `Ada1- Ben2+ Cy2 Eve1+ Gus1`. The `TreeLabels(TableView)` helper in
+`TableView_Hierarchy_APITests_Common.cs` builds this string from `GetProjectedElements` and each
+realized row's `Level` / `IsExpandable` / `IsExpanded`.
 
 **Priority.** P0 = contract or crash and must land with the feature; P1 = important behaviour; P2 =
 edge case or perf guard.
@@ -88,7 +88,7 @@ edge case or perf guard.
 | H04 P0 | `LevelAndExpandableDPs` | Row DPs reflect node state after expand. | After `ExpandAllRows`: Ada `Level=1, IsExpandable, IsExpanded`; Dan `Level=3, !IsExpandable`. | The template binds to wrong values: wrong indent or chevron. |
 | H05 P0 | `ExpandAllCollapseAll` | Bulk verbs touch every node. | Expand: `Ada1- Ben2- Dan3 Cy2 Eve1- Fay2 Gus1`. Collapse: `Ada1+ Eve1+ Gus1`. | The bulk verbs miss nested nodes or leave stale rows. |
 | H06 P1 | `NestedReexpandKeepsState` | Expansion intent is per node. | Collapse Ben, collapse Ada, expand Ada: Ben is still collapsed. | Collapsing a parent wipes its descendants' intent (regression from the design). |
-| H07 P0 | `ClearParentByReturnsFlat` | `ClearParentBy` restores the flat projection. | `Ada0 Ben0 Cy0 Dan0 Eve0 Fay0 Gus0` (source order, Level 0). | Hierarchy state leaks after clear. |
+| H07 P0 | `ClearParentByReturnsFlat` | `ClearParentBy` restores the flat projection. | `Ada Ben Cy Dan Eve Fay Gus` (source order, Level 0). | Hierarchy state leaks after clear. |
 | H08 P1 | `ClearParentByReleasesRows` | Clear drops every reference the hierarchy held. | After clear plus GC, weak refs to the hierarchy's projected rows are dead (`alive=0`). | A leak through the adapter or the expansion-intent maps. |
 | H09 P1 | `TwoRelationsOneSource` | Two `TableViewSource`s over one collection keep independent trees. | Manager tree and mentor tree each match their own relation; expanding one does not affect the other. | State is shared across sources (static or global caching). |
 | H10 P1 | `RedeclareClearsIntent` | A second `ParentBy` replaces the relation and resets expansion (decision 5). | After expand plus redeclare: all roots collapsed. | Stale intent keyed to the old relation leaks into the new tree. |
@@ -125,7 +125,7 @@ projection unchanged, and recover once the data is fixed.
 | C03 P0 | `FilterKeepsAncestors` | A deep match brings its ancestor chain, auto-expanded (decisions 3–4). | Filter `Dan`: `Ada1- Ben2- Dan3`. | A match is hidden under collapsed or missing parents. |
 | C04 P1 | `FilterParentMatchExcludesUnmatchedChildren` | Matches pull in ancestors, not descendants; an empty result is valid. | Filter `Ada`: `Ada1`. Filter matching nothing: zero rows, no exception. | Filter semantics drifted to "with descendants", or crash on an empty tree. |
 | C06 P0 | `FilterClearRestoresIntent` | The auto-expand overlay is temporary. | Clear filter: the user's prior state is back (`Ada1+ Eve1- Fay2 Gus1`). | The overlay leaked into persistent intent (DevExtreme-style reset). |
-| C07 P1 | `FilteredTogglesAreOverlayOnly` | Collapsing a context row, or `CollapseAllRows`, while filtered does not change saved intent. | Collapse context Ada: `Ada1+`; clear the filter: original intent. Same for `CollapseAllRows`. | Overlay toggles or bulk verbs write through to intent. |
+| C07 P1 | `FilteredTogglesAreOverlayOnly` | Collapsing a context row while filtered does not change saved intent; `CollapseAllRows` does. | Collapse context Ada: `Ada1+`; clear the filter: original intent. `CollapseAllRows` while filtered: all collapsed after the filter clears. | A per-row toggle writes through to intent, or a bulk verb fails to move the baseline. |
 | C08 P1 | `FilterReplaceAfterContextCollapse` | Changing the filter rebuilds the overlay. | `Ada1+`, then new filter gives `Ada1- Cy2`. | The previous overlay state sticks. |
 | C10 P0 | `GroupByBucketsRootsOnly` | Grouping applies to roots; descendants follow their root. | `[Eng] Ada1- Ben2+ Cy2 [Ops] Eve1+ Gus1`. | Children land in other groups, splitting subtrees. |
 | C11 P1 | `GroupedPostSortKeepsHeaderOrder` | A sort under grouping keeps header order. | Header order unchanged; siblings sorted. | Group order is mixed into the row sort. |
@@ -196,6 +196,8 @@ Live-off staleness and the default flag value are covered by existing tests (§1
 | LS31 P0 | `ComparerLiveOffThenOn` | The comparer path (a separate rank adapter) is stale when off and re-places a changed row when on. | Off: `D C B A` unchanged. On: `D C A B`. | Compat break, or comparer sort ignores live changes. |
 | LS32 P1 | `ComparerLeavesTie` | Leaving a tie re-ranks the former partner correctly. | `A B C D`, then `A C B D`. | Dense-rank bookkeeping bug. |
 | LS33 P1 | `ComparerBulkReranks` | A burst over the threshold does one full re-rank (the deferred-skip path). | `D C B A`. | Deferred evictions are lost or double-placed. |
+| LS34 P0 | `ComparerTurnOnPicksUpUntrackedEdit` | Turning live shaping on re-ranks a comparer sort for edits made while it was off. | Off: `D C B A`. On: `D C A B`. | Ranks from the header sort survive the catch-up reshape. |
+| LS35 P1 | `ComparerReinsertedRowIsReplaced` | A row removed, edited and re-inserted is compared back in, not given its old rank. | `D C A B`. | Arrivals reuse a stale rank. |
 
 ### 4.4 Filter and group
 
@@ -260,8 +262,8 @@ Pointer and keyboard tests use the existing `TableViewInteractionTestHelpers`, p
 | ID | Test | Intent | Expected | Failure means |
 | --- | --- | --- | --- | --- |
 | KB01 P0 | `RightExpandsCollapsed` | Treegrid Right. | Ada collapsed, Right: expanded; focus stays on Ada. | Tree navigation broken. |
-| KB02 P0 | `RightOnExpandedDrillsToCell` | Right on an expanded row enters cells; Left from the first cell returns to the row without collapsing it. | Focus is the first cell of Ada; Left: focus on Ada, still expanded. | Regression of the reviewed behaviour (Right must not move to the next row), or Left on a cell collapses. |
-| KB03 P0 | `LeftCollapsesExpanded` | Left on expanded. | Collapsed; focus stays. | Left falls through to the flat drill (the bug fixed earlier). |
+| KB02 P0 | `RightOnExpandedDrillsToCell` | Right on an expanded row enters cells; Left from the first cell returns to the row without collapsing it. | Focus is the first cell of Ada; Left: focus on Ada, still expanded. | Right moves to the next row instead of entering cells, or Left on a cell collapses. |
+| KB03 P0 | `LeftCollapsesExpanded` | Left on expanded. | Collapsed; focus stays. | Left falls through to the flat cell drill. |
 | KB04 P0 | `LeftOnChildFocusesAndSelectsParent` | Left on a child or leaf. | Focus and selection go to the parent (`TreeMovesSelect`). | Cannot climb the tree by keyboard. |
 | KB05 P1 | `LeftOnRootIsConsumed` | Focus does not leave the table. | Focus stays on the root row. | Focus escapes the table. |
 | KB06 P1 | `DownReachesFirstChild` | Linear navigation includes children. | Down from expanded Ada: Ben. | Children are skipped in tab/arrow order. |
@@ -294,8 +296,8 @@ rule (§1.1), not by this feature.
 
 1. Common helpers (`TreeLabels`, fixtures), then H01–H07, E01–E05 and C01, C03, C06, C10 (P0 core).
 2. Live P0s: LS11, LS13, LS17, LS21, LS31, LS41, LS44, LS50, LS51, LT01, LT02, LT08, LT09, plus
-   the `IsLiveShaping` default assert in `VerifyFreshSourceIsUnshaped`. Try re-enabling the Ignored
-   `VerifySortKeyPropertyChangeDoesNotMoveTheRowUntilACollectionChange`.
+   the `IsLiveShaping` default assert in `VerifyFreshSourceIsUnshaped`. Re-enable the Ignored
+      `VerifySortKeyPropertyChangeDoesNotMoveTheRowUntilACollectionChange` when the product bug is fixed.
 3. Robustness P0s: R01, R02, R05; selection L02, then L01 once the §1.1 conflict is settled.
 4. Test UI pivot, then U01–U04, KB01–KB04 and P01–P02.
 5. P1/P2 remainder.

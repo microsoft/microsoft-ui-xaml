@@ -277,6 +277,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies turning IsLiveShaping on re-ranks a comparer sort for edits made while it was off.")]
+        public void VerifyComparerTurnOnPicksUpUntrackedEdit()
+        {
+            var list = MakeLiveFlat();
+            var source = MakeSource(list, s => s, live: false);
+            var tableView = Place(source);
+            SortByComparerColumn(tableView, SortDirection.Descending);
+
+            Verify.AreEqual("D C B A", After(tableView, () => Named(list, "A").Score = 25),
+                "With live shaping off, the comparer sort must stay stale.");
+            Verify.AreEqual("D C A B", After(tableView, () => source.IsLiveShaping = true),
+                "Turning live shaping on must re-rank the untracked edit.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row edited while out of the source is re-placed by the comparer when re-inserted.")]
+        public void VerifyComparerReinsertedRowIsReplaced()
+        {
+            var list = MakeLiveFlat();
+            var tableView = Place(MakeSource(list, s => s, live: true));
+            SortByComparerColumn(tableView, SortDirection.Descending);
+
+            var actual = After(tableView, () =>
+            {
+                var a = Named(list, "A");
+                list.Remove(a);
+                a.Score = 25;
+                list.Add(a);
+            });
+
+            Verify.AreEqual("D C A B", actual, "A re-inserted row must not keep the rank it had before the edit.");
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a row leaving a comparer tie re-ranks the former partner correctly.")]
         public void VerifyComparerLeavesTie()
         {

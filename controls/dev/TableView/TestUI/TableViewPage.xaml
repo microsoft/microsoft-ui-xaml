@@ -222,18 +222,6 @@
                             AutomationProperties.Name="ResetHierarchy"
                             AutomationProperties.AutomationId="ResetHierarchy"
                             Click="OnResetHierarchyClick" />
-                    <Button Content="Group by Dept"
-                            AutomationProperties.Name="GroupByDept"
-                            AutomationProperties.AutomationId="GroupByDept"
-                            Click="OnGroupByDeptClick" />
-                    <Button Content="Filter Dan"
-                            AutomationProperties.Name="FilterDan"
-                            AutomationProperties.AutomationId="FilterDan"
-                            Click="OnFilterDanClick" />
-                    <Button Content="Clear Shaping"
-                            AutomationProperties.Name="ClearShaping"
-                            AutomationProperties.AutomationId="ClearShaping"
-                            Click="OnClearShapingClick" />
                 </StackPanel>
 
                 <!-- Format documented on TableViewTestPageFacts.HierarchyReadout. -->
