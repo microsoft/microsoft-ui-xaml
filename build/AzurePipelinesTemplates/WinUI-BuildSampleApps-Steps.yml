@@ -216,13 +216,14 @@ steps:
       condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
+  # Unlike ChartApp, TableView is built from this repo (not the WinUIDetails package), so GitHub runs build it too.
   - template: WinUI-BuildSampleApp-Steps.yml
     parameters:
       displayName: TableViewApp
       solution: Samples\TableViewApp\TableViewApp.sln
       artifactsRoot: ${{ parameters.artifactsRoot }}
       MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
-      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
   - template: WinUI-BuildSampleApp-Steps.yml
@@ -232,7 +233,7 @@ steps:
       artifactsRoot: ${{ parameters.artifactsRoot }}
       msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
       MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
-      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
   - template: WinUI-BuildSampleApp-Steps.yml
@@ -242,7 +243,7 @@ steps:
       artifactsRoot: ${{ parameters.artifactsRoot }}
       msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
       MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
-      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
   # Standalone .csproj with no publish profiles, so it is built rather than published.
@@ -252,7 +253,7 @@ steps:
       solution: Samples\TableViewSampleApp\TableViewSampleApp.csproj
       artifactsRoot: ${{ parameters.artifactsRoot }}
       MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
-      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
   - ${{ if in(parameters.pipelineKind, 'PR', 'PR-2') }}:
