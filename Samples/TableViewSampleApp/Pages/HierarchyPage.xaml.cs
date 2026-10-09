@@ -9,8 +9,10 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using TableViewSampleApp.Data;
+using TableViewSampleApp.Helpers;
 
-namespace TableViewSampleApp;
+namespace TableViewSampleApp.Pages;
 
 // Flat parent-key hierarchy demo. One ObservableCollection<Employee> feeds two TableViewSources;
 // each declares its own relation with ParentBy, so the same rows form two different trees.

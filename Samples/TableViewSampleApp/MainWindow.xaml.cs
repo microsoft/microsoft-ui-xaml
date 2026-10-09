@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using TableViewSampleApp.Pages;
+using TableViewSampleApp.SelfChecks;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 
@@ -49,6 +50,8 @@ public sealed partial class MainWindow : Window
         ["EmptyState"] = typeof(EmptyStatePage),
         ["Density"] = typeof(DensityPage),
         ["RightToLeft"] = typeof(RightToLeftPage),
+        ["HierarchySelfCheck"] = typeof(HierarchySelfCheckPage),
+        ["LiveShapingSelfCheck"] = typeof(LiveShapingSelfCheckPage),
         ["Settings"] = typeof(SettingsPage),
         ["About"] = typeof(AboutPage),
     };
@@ -108,7 +111,7 @@ public sealed partial class MainWindow : Window
         _uiSettings.ColorValuesChanged += OnColorValuesChanged;
         Closed += (_, _) => _uiSettings.ColorValuesChanged -= OnColorValuesChanged;
 
-        var initialTag = ResolveInitialTag(launchArguments);
+        var initialTag = ResolveAutoRunTag() ?? ResolveInitialTag(launchArguments);
         App.AppendVerificationLog($"MainWindowCtor InitialTag={initialTag}");
         App.AppendSelectionVerificationLog($"MainWindowCtor InitialTag={initialTag}");
         DispatcherQueue.TryEnqueue(() =>
@@ -197,6 +200,45 @@ public sealed partial class MainWindow : Window
         }
 
         return "Home";
+    }
+
+    // Unattended runs: a trigger file in the data directory opens the matching page, which runs,
+    // writes its results file there and exits. The trigger is consumed; when several are present,
+    // the others are left for the next launch.
+    private static string? ResolveAutoRunTag()
+    {
+        var dir = HierarchySelfCheckPage.DataDirectory;
+        if (TryConsumeTrigger(dir, HierarchySelfCheckPage.TriggerFileName))
+        {
+            HierarchySelfCheckPage.AutoRun = true;
+            return "HierarchySelfCheck";
+        }
+
+        if (TryConsumeTrigger(dir, LiveShapingSelfCheckPage.TriggerFileName))
+        {
+            LiveShapingSelfCheckPage.AutoRun = true;
+            return "LiveShapingSelfCheck";
+        }
+
+        if (TryConsumeTrigger(dir, HierarchyPage.PerfTriggerFileName))
+        {
+            HierarchyPage.AutoPerf = true;
+            return "Hierarchy";
+        }
+
+        return null;
+
+        static bool TryConsumeTrigger(string dir, string name)
+        {
+            var path = Path.Combine(dir, name);
+            if (!File.Exists(path))
+            {
+                return false;
+            }
+
+            File.Delete(path);
+            return true;
+        }
     }
 
     private static bool HasLaunchFlag(IReadOnlyList<string>? launchArguments, string flag)

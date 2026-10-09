@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace TableViewSampleApp;
+namespace TableViewSampleApp.Data;
 
 // Flat row model for the hierarchy page. The rows carry no Level, no IsExpanded and no children
 // collection: the tree is described to the TableViewSource by key selectors (Id, and either

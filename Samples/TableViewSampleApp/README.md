@@ -62,6 +62,15 @@ only when `TableViewSampleEnableVerificationLogs=true` is passed to MSBuild, and
 `--verify-groups` or `--verify-selection`. Normal public sample builds do not write log files next
 to the executable.
 
+### Self-checks
+
+The **Self-checks** section of the navigation runs scripted checks against the public API and shows
+PASS/FAIL per case: **Hierarchy self-check** (`ParentBy` / `ClearParentBy`) and **Live shaping
+self-check** (`IsLiveShaping` on flat, grouped and hierarchical sources). To run one unattended,
+create an empty file named `autorun-selfcheck` or `autorun-livecheck` next to the exe; the app opens
+the page, writes `selfcheck-results.txt` or `livecheck-results.txt` there, and exits. Each results
+file ends with `SUMMARY PASS <n> / FAIL <m>`.
+
 ## Using TableView in your own app
 
 Reference `Microsoft.WindowsAppSDK.WinUI` and use the control. In `App.xaml`, merge
@@ -96,7 +105,9 @@ visible on purpose.
 - Column layout &amp; sizing (Pixel / Star widths, Min/Max clamps, drag-to-resize) and column
   lifecycle (add, remove, reorder at runtime), plus header visibility
 - Tooltips, grid lines, cell templating, text wrapping, row height, cell editing,
-  empty state, density, and grouped rows (hierarchical rows are not available in this release)
+  empty state, density, and grouped rows
+- Hierarchical rows (`TableViewSource.ParentBy`): one flat list, two relations, composed with
+  filter, sort and grouping, and `IsLiveShaping` reshaping both trees when a row's property changes
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
 - `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
   sample assembly. Snippet references declared on `SamplePresenter` are validated during compile so
