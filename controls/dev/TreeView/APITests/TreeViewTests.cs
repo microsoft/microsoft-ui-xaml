@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -6,6 +6,9 @@ using System;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using System.Threading;
 using System.Collections.Generic;
 using Windows.Foundation.Collections;
@@ -315,20 +318,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() =>
             {
-                TreeView treeView = new TreeView();
-                treeView.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    var dataTemplate = (DataTemplate)XamlReader.Load(
-                   @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> 
-                          <TextBlock Text='TreeViewItemTemplate'/>
-                      </DataTemplate>");
-                    treeView.ItemTemplate = dataTemplate;
-                    var node = new TreeViewNode();
-                    treeView.RootNodes.Add(node);
-                    var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
-                    var treeViewItem = listControl.ContainerFromItem(node) as TreeViewItem;
-                    Verify.AreEqual(treeViewItem.ContentTemplate, dataTemplate);
-                };
+                // The assertions previously lived in a Loaded handler on a TreeView that was never
+                // added to the tree, so they never ran. Load the control and assert directly.
+                TreeView treeView = new TreeView() { Width = 400, Height = 400 };
+                Content = treeView;
+                Content.UpdateLayout();
+
+                var dataTemplate = (DataTemplate)XamlReader.Load(
+               @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> 
+                      <TextBlock Text='TreeViewItemTemplate'/>
+                  </DataTemplate>");
+                treeView.ItemTemplate = dataTemplate;
+                var node = new TreeViewNode();
+                treeView.RootNodes.Add(node);
+                Content.UpdateLayout();
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                var treeViewItem = listControl.ContainerFromItem(node) as TreeViewItem;
+                Verify.IsNotNull(treeViewItem);
+                Verify.AreEqual(treeViewItem.ContentTemplate, dataTemplate);
             });
         }
 
@@ -356,20 +363,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() =>
             {
-                TreeView treeView = new TreeView();
-                treeView.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    var style = (Style)XamlReader.Load(
-                   @"<Style xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> 
-                          <Setter Property='Background' Value='Green'/>
-                      </Style>");
-                    treeView.ItemContainerStyle = style;
-                    var node = new TreeViewNode();
-                    treeView.RootNodes.Add(node);
-                    var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
-                    var treeViewItem = listControl.ContainerFromItem(node) as TreeViewItem;
-                    Verify.AreEqual(treeViewItem.Style, style);
-                };
+                // Assertions previously lived in a Loaded handler that never fired; assert directly.
+                TreeView treeView = new TreeView() { Width = 400, Height = 400 };
+                Content = treeView;
+                Content.UpdateLayout();
+
+                var style = (Style)XamlReader.Load(
+               @"<Style xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' TargetType='TreeViewItem'> 
+                      <Setter Property='Background' Value='Green'/>
+                  </Style>");
+                treeView.ItemContainerStyle = style;
+                var node = new TreeViewNode();
+                treeView.RootNodes.Add(node);
+                Content.UpdateLayout();
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                var treeViewItem = listControl.ContainerFromItem(node) as TreeViewItem;
+                Verify.IsNotNull(treeViewItem);
+                Verify.AreEqual(treeViewItem.Style, style);
             });
         }
 
@@ -378,20 +388,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() =>
             {
-                TreeView treeView = new TreeView();
-                treeView.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    var transition = (TransitionCollection)XamlReader.Load(
-                   @"<TransitionCollection xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> 
-                            <ContentThemeTransition />
-                      </TransitionCollection>");
-                    treeView.ItemContainerTransitions = transition;
-                    var node = new TreeViewNode();
-                    treeView.RootNodes.Add(node);
-                    var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
-                    var treeViewItem = listControl.ContainerFromItem(node) as TreeViewItem;
-                    Verify.AreEqual(treeViewItem.ContentTransitions, transition);
-                };
+                // Assertions previously lived in a Loaded handler that never fired; assert directly.
+                TreeView treeView = new TreeView() { Width = 400, Height = 400 };
+                Content = treeView;
+                Content.UpdateLayout();
+
+                var transition = (TransitionCollection)XamlReader.Load(
+               @"<TransitionCollection xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> 
+                        <ContentThemeTransition />
+                  </TransitionCollection>");
+                treeView.ItemContainerTransitions = transition;
+                var node = new TreeViewNode();
+                treeView.RootNodes.Add(node);
+                Content.UpdateLayout();
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                var treeViewItem = listControl.ContainerFromItem(node) as TreeViewItem;
+                Verify.IsNotNull(treeViewItem);
+                // ItemContainerTransitions is template-bound onto the list control (it is not copied to
+                // each container's ContentTransitions).
+                Verify.AreEqual(transition, treeView.ItemContainerTransitions);
+                Verify.AreEqual(transition, listControl.ItemContainerTransitions);
+                Verify.AreEqual(1, listControl.ItemContainerTransitions.Count);
+                Verify.IsTrue(listControl.ItemContainerTransitions[0] is ContentThemeTransition);
             });
         }
 
@@ -454,6 +472,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // Test inherited type
                 var node2 = new TreeViewNode2() { Content = "Inherited from TreeViewNode" };
                 Verify.AreEqual(node2.Content, node2.ToString());
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewNodeNativeIStringableReturnsContent()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var node = new TreeViewNode() { Content = "Node" };
+                var stringable = (global::Windows.Foundation.IStringable)node;
+                Verify.AreEqual("Node", stringable.ToString());
+
+                node.Content = 42;
+                Verify.AreEqual("42", ((global::Windows.Foundation.IStringable)node).ToString());
             });
         }
 
@@ -853,6 +885,606 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Remove 1.1 from SelectedNodes");
                 treeview.SelectedNodes.Remove(treeview.RootNodes[1].Children[1]);
                 VerifySelectedNodesAndSelectedItems(treeview, new[] { "1.2.1", "0.2.0", "0.2.2" });
+            });
+        }
+
+        // Builds A(A0, A1), B in a sized, laid out TreeView. Must be called on the UI thread.
+        private TreeView CreateLaidOutTreeView(
+            out TreeViewNode nodeA, out TreeViewNode nodeA0, out TreeViewNode nodeA1, out TreeViewNode nodeB)
+        {
+            var treeView = new TreeView() { Width = 400, Height = 400 };
+            nodeA = new TreeViewNode() { Content = "A" };
+            nodeA0 = new TreeViewNode() { Content = "A0" };
+            nodeA1 = new TreeViewNode() { Content = "A1" };
+            nodeB = new TreeViewNode() { Content = "B" };
+            nodeA.Children.Add(nodeA0);
+            nodeA.Children.Add(nodeA1);
+            treeView.RootNodes.Add(nodeA);
+            treeView.RootNodes.Add(nodeB);
+            Content = treeView;
+            Content.UpdateLayout();
+            return treeView;
+        }
+
+        private TreeViewItemAutomationPeer GetItemPeer(TreeView treeView, TreeViewNode node)
+        {
+            var container = treeView.ContainerFromNode(node) as TreeViewItem;
+            Verify.IsNotNull(container, "Container should be realized");
+            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(container) as TreeViewItemAutomationPeer;
+            Verify.IsNotNull(peer, "TreeViewItem should create a TreeViewItemAutomationPeer");
+            return peer;
+        }
+
+        [TestMethod]
+        public void TreeViewItemPeerReportsPositionSizeAndLevel()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                treeView.Expand(nodeA);
+                Content.UpdateLayout();
+
+                var peerA = GetItemPeer(treeView, nodeA);
+                Verify.AreEqual(1, peerA.GetPositionInSet());
+                Verify.AreEqual(2, peerA.GetSizeOfSet());
+                Verify.AreEqual(1, peerA.GetLevel());
+
+                var peerB = GetItemPeer(treeView, nodeB);
+                Verify.AreEqual(2, peerB.GetPositionInSet());
+                Verify.AreEqual(2, peerB.GetSizeOfSet());
+                Verify.AreEqual(1, peerB.GetLevel());
+
+                var peerA0 = GetItemPeer(treeView, nodeA0);
+                Verify.AreEqual(1, peerA0.GetPositionInSet());
+                Verify.AreEqual(2, peerA0.GetSizeOfSet());
+                Verify.AreEqual(2, peerA0.GetLevel());
+
+                var peerA1 = GetItemPeer(treeView, nodeA1);
+                Verify.AreEqual(2, peerA1.GetPositionInSet());
+                Verify.AreEqual(2, peerA1.GetSizeOfSet());
+                Verify.AreEqual(2, peerA1.GetLevel());
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewItemPeerIdentity()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                var peerA = GetItemPeer(treeView, nodeA);
+
+                Verify.AreEqual(AutomationControlType.TreeItem, peerA.GetAutomationControlType());
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.TreeViewItem", peerA.GetClassName());
+                Verify.IsNotNull(peerA.GetPattern(PatternInterface.ExpandCollapse));
+                Verify.AreEqual(peerA, peerA.GetPattern(PatternInterface.ExpandCollapse));
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewItemPeerNameUsesExplicitAutomationName()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                var containerB = treeView.ContainerFromNode(nodeB) as TreeViewItem;
+                AutomationProperties.SetName(containerB, "Explicit name");
+
+                var peerB = GetItemPeer(treeView, nodeB);
+                Verify.AreEqual("Explicit name", peerB.GetName());
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewItemPeerNameFallsBackToNodeContent()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                var peerA = GetItemPeer(treeView, nodeA);
+                Log.Comment("Name for node with string content: '" + peerA.GetName() + "'");
+                Verify.AreEqual("A", peerA.GetName());
+
+                // A node without content must still expose a non-empty name.
+                var emptyNode = new TreeViewNode();
+                treeView.RootNodes.Add(emptyNode);
+                Content.UpdateLayout();
+                var emptyPeer = GetItemPeer(treeView, emptyNode);
+                Log.Comment("Name for node without content: '" + emptyPeer.GetName() + "'");
+                Verify.IsFalse(string.IsNullOrEmpty(emptyPeer.GetName()));
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewItemPeerExpandCollapseProvider()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                var expandingNodes = new List<TreeViewNode>();
+                var collapsedNodes = new List<TreeViewNode>();
+                treeView.Expanding += (sender, args) => expandingNodes.Add(args.Node);
+                treeView.Collapsed += (sender, args) => collapsedNodes.Add(args.Node);
+
+                var peerA = GetItemPeer(treeView, nodeA);
+                var peerB = GetItemPeer(treeView, nodeB);
+
+                Verify.AreEqual(ExpandCollapseState.Collapsed, peerA.ExpandCollapseState);
+                Verify.AreEqual(ExpandCollapseState.LeafNode, peerB.ExpandCollapseState);
+
+                peerA.Expand();
+                Verify.IsTrue(nodeA.IsExpanded);
+                Verify.AreEqual(ExpandCollapseState.Expanded, peerA.ExpandCollapseState);
+                Verify.AreEqual(1, expandingNodes.Count);
+                Verify.AreEqual(nodeA, expandingNodes[0]);
+
+                peerA.Collapse();
+                Verify.IsFalse(nodeA.IsExpanded);
+                Verify.AreEqual(ExpandCollapseState.Collapsed, peerA.ExpandCollapseState);
+                Verify.AreEqual(1, collapsedNodes.Count);
+                Verify.AreEqual(nodeA, collapsedNodes[0]);
+
+                // Expanding a leaf must not change its state.
+                peerB.Expand();
+                Verify.AreEqual(ExpandCollapseState.LeafNode, peerB.ExpandCollapseState);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewItemPeerWithoutTreeViewReportsDefaults()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var item = new TreeViewItem();
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(item) as TreeViewItemAutomationPeer;
+                Verify.IsNotNull(peer);
+
+                Verify.AreEqual(ExpandCollapseState.LeafNode, peer.ExpandCollapseState);
+                Verify.AreEqual(-1, peer.GetLevel());
+                Verify.AreEqual(0, peer.GetPositionInSet());
+                Verify.AreEqual(0, peer.GetSizeOfSet());
+
+                // These must be harmless no-ops without an owning TreeView.
+                peer.Expand();
+                peer.Collapse();
+                Verify.AreEqual(ExpandCollapseState.LeafNode, peer.ExpandCollapseState);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewItemPeerSelectionItemPatternSingleMode()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                treeView.SelectionMode = TreeViewSelectionMode.Single;
+                Content.UpdateLayout();
+
+                var peerB = GetItemPeer(treeView, nodeB);
+                var selectionItem = peerB.GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                Verify.IsNotNull(selectionItem);
+                Verify.IsNotNull(selectionItem.SelectionContainer);
+                Verify.IsFalse(selectionItem.IsSelected);
+
+                selectionItem.Select();
+                Verify.IsTrue(selectionItem.IsSelected);
+                Verify.AreEqual(nodeB, treeView.SelectedNode);
+                Verify.IsNotNull(treeView.SelectedItem, "SelectedItem should be updated by OnListControlSelectionChanged");
+                Verify.IsTrue(treeView.SelectedItem == nodeB || (treeView.SelectedItem as string) == "B",
+                    "SelectedItem should reflect the selected node or its content");
+
+                selectionItem.RemoveFromSelection();
+                Verify.IsFalse(selectionItem.IsSelected);
+                Verify.IsNull(treeView.SelectedNode);
+                Verify.IsNull(treeView.SelectedItem, "SelectedItem should be cleared after RemoveFromSelection");
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewItemPeerSelectionItemPatternMultipleMode()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                treeView.SelectionMode = TreeViewSelectionMode.Multiple;
+                Content.UpdateLayout();
+
+                var selectionA = GetItemPeer(treeView, nodeA).GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                var selectionB = GetItemPeer(treeView, nodeB).GetPattern(PatternInterface.SelectionItem) as ISelectionItemProvider;
+                Verify.IsNotNull(selectionA);
+                Verify.IsNotNull(selectionB);
+
+                selectionA.AddToSelection();
+                selectionB.AddToSelection();
+                Verify.IsTrue(treeView.SelectedNodes.Contains(nodeA));
+                Verify.IsTrue(treeView.SelectedNodes.Contains(nodeB));
+                Verify.IsTrue(selectionA.IsSelected);
+                Verify.IsTrue(selectionB.IsSelected);
+
+                selectionA.RemoveFromSelection();
+                Verify.IsFalse(treeView.SelectedNodes.Contains(nodeA));
+                Verify.IsTrue(treeView.SelectedNodes.Contains(nodeB));
+                Verify.IsFalse(selectionA.IsSelected);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewItemPeerHasNoSelectionItemPatternWhenSelectionModeIsNone()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                treeView.SelectionMode = TreeViewSelectionMode.None;
+                Content.UpdateLayout();
+
+                var peerA = GetItemPeer(treeView, nodeA);
+                var pattern = peerA.GetPattern(PatternInterface.SelectionItem);
+                Log.Comment("SelectionItem pattern with SelectionMode=None: " + (pattern == null ? "null" : pattern.GetType().Name));
+                Verify.IsNull(pattern);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewListPeerReportsTreeControlType()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                var listPeer = FrameworkElementAutomationPeer.CreatePeerForElement(listControl) as TreeViewListAutomationPeer;
+                Verify.IsNotNull(listPeer);
+                Verify.AreEqual(AutomationControlType.Tree, listPeer.GetAutomationControlType());
+                Verify.IsNotNull(listPeer.GetPattern(PatternInterface.DropTarget));
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewListPeerSelectionPatternMultipleMode()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                treeView.SelectionMode = TreeViewSelectionMode.Multiple;
+                Content.UpdateLayout();
+
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                var listPeer = FrameworkElementAutomationPeer.CreatePeerForElement(listControl);
+                var selection = listPeer.GetPattern(PatternInterface.Selection) as ISelectionProvider;
+                Verify.IsNotNull(selection);
+                Verify.IsTrue(selection.CanSelectMultiple);
+                Verify.IsFalse(selection.IsSelectionRequired);
+
+                // The selected items may be collapsed or virtualized, so the peer reports none.
+                treeView.SelectedNodes.Add(nodeB);
+                var selected = selection.GetSelection();
+                Verify.AreEqual(0, selected == null ? 0 : selected.Length);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewListPeerCannotSelectMultipleInSingleMode()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                treeView.SelectionMode = TreeViewSelectionMode.Single;
+                Content.UpdateLayout();
+
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                var listPeer = FrameworkElementAutomationPeer.CreatePeerForElement(listControl);
+                var selection = listPeer.GetPattern(PatternInterface.Selection) as ISelectionProvider;
+                Verify.IsNotNull(selection);
+                Verify.IsFalse(selection.CanSelectMultiple);
+                Verify.IsFalse(selection.IsSelectionRequired);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewListPeerCreatesDataPeersThatForwardExpandCollapse()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                var listPeer = FrameworkElementAutomationPeer.CreatePeerForElement(listControl) as TreeViewListAutomationPeer;
+
+                var dataPeerA = new TreeViewItemDataAutomationPeer(nodeA, listPeer);
+                var dataPeerB = new TreeViewItemDataAutomationPeer(nodeB, listPeer);
+                Verify.IsNotNull(dataPeerA.GetPattern(PatternInterface.ExpandCollapse));
+
+                Verify.AreEqual(ExpandCollapseState.Collapsed, dataPeerA.ExpandCollapseState);
+                Verify.AreEqual(ExpandCollapseState.LeafNode, dataPeerB.ExpandCollapseState);
+
+                dataPeerA.Expand();
+                Verify.IsTrue(nodeA.IsExpanded);
+                Verify.AreEqual(ExpandCollapseState.Expanded, dataPeerA.ExpandCollapseState);
+
+                dataPeerA.Collapse();
+                Verify.IsFalse(nodeA.IsExpanded);
+                Verify.AreEqual(ExpandCollapseState.Collapsed, dataPeerA.ExpandCollapseState);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewDataPeerForUnrealizedItemThrowsElementNotEnabled()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+                var listPeer = FrameworkElementAutomationPeer.CreatePeerForElement(listControl) as TreeViewListAutomationPeer;
+
+                // A0 is not realized because A is collapsed.
+                Verify.IsNull(treeView.ContainerFromNode(nodeA0));
+                var dataPeer = new TreeViewItemDataAutomationPeer(nodeA0, listPeer);
+
+                const int UIA_E_ELEMENTNOTENABLED = unchecked((int)0x80040200);
+                int hr = 0;
+                try
+                {
+                    var state = dataPeer.ExpandCollapseState;
+                }
+                catch (Exception e)
+                {
+                    hr = e.HResult;
+                }
+                Verify.AreEqual(UIA_E_ELEMENTNOTENABLED, hr);
+
+                hr = 0;
+                try
+                {
+                    dataPeer.Expand();
+                }
+                catch (Exception e)
+                {
+                    hr = e.HResult;
+                }
+                Verify.AreEqual(UIA_E_ELEMENTNOTENABLED, hr);
+                Verify.IsFalse(nodeA0.IsExpanded);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewExpandingAndCollapsedEventArgsExposeNodeAndItemInNodeMode()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                TreeViewExpandingEventArgs expandingArgs = null;
+                TreeViewCollapsedEventArgs collapsedArgs = null;
+                int expandingCount = 0;
+                int collapsedCount = 0;
+                treeView.Expanding += (sender, args) => { expandingArgs = args; expandingCount++; };
+                treeView.Collapsed += (sender, args) => { collapsedArgs = args; collapsedCount++; };
+
+                treeView.Expand(nodeA);
+                Verify.AreEqual(1, expandingCount);
+                Verify.AreEqual(0, collapsedCount);
+                Verify.AreEqual(nodeA, expandingArgs.Node);
+                Verify.AreEqual("A", expandingArgs.Item as string);
+
+                treeView.Collapse(nodeA);
+                Verify.AreEqual(1, expandingCount);
+                Verify.AreEqual(1, collapsedCount);
+                Verify.AreEqual(nodeA, collapsedArgs.Node);
+                Verify.AreEqual("A", collapsedArgs.Item as string);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewExpandingAndCollapsedEventArgsExposeDataItemInContentMode()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var items = CreateTreeViewItemsSource();
+                var treeView = new TreeView() { Width = 400, Height = 400, ItemsSource = items };
+                Content = treeView;
+                Content.UpdateLayout();
+
+                TreeViewExpandingEventArgs expandingArgs = null;
+                TreeViewCollapsedEventArgs collapsedArgs = null;
+                treeView.Expanding += (sender, args) => expandingArgs = args;
+                treeView.Collapsed += (sender, args) => collapsedArgs = args;
+
+                var node = treeView.RootNodes[0];
+                treeView.Expand(node);
+                Verify.IsNotNull(expandingArgs);
+                Verify.AreEqual(node, expandingArgs.Node);
+                Verify.AreEqual(items[0], expandingArgs.Item);
+
+                treeView.Collapse(node);
+                Verify.IsNotNull(collapsedArgs);
+                Verify.AreEqual(node, collapsedArgs.Node);
+                Verify.AreEqual(items[0], collapsedArgs.Item);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewExpandCollapseUpdatesContainerAndGlyphVisibility()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                var containerA = treeView.ContainerFromNode(nodeA) as TreeViewItem;
+                Verify.IsFalse(containerA.IsExpanded);
+
+                treeView.Expand(nodeA);
+                Verify.IsTrue(nodeA.IsExpanded);
+                Verify.IsTrue(containerA.IsExpanded);
+                Verify.AreEqual(Visibility.Visible, containerA.TreeViewItemTemplateSettings.ExpandedGlyphVisibility);
+                Verify.AreEqual(Visibility.Collapsed, containerA.TreeViewItemTemplateSettings.CollapsedGlyphVisibility);
+
+                treeView.Collapse(nodeA);
+                Verify.IsFalse(nodeA.IsExpanded);
+                Verify.IsFalse(containerA.IsExpanded);
+                Verify.AreEqual(Visibility.Collapsed, containerA.TreeViewItemTemplateSettings.ExpandedGlyphVisibility);
+                Verify.AreEqual(Visibility.Visible, containerA.TreeViewItemTemplateSettings.CollapsedGlyphVisibility);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewSelectionModeChangeUpdatesListControlSelectionMode()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var treeView = CreateLaidOutTreeView(out var nodeA, out var nodeA0, out var nodeA1, out var nodeB);
+                var listControl = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl") as TreeViewList;
+
+                treeView.SelectionMode = TreeViewSelectionMode.Single;
+                Verify.AreEqual(ListViewSelectionMode.Single, listControl.SelectionMode);
+
+                // Multi-select is implemented by TreeView itself, so the list stays unselectable.
+                treeView.SelectionMode = TreeViewSelectionMode.Multiple;
+                Verify.AreEqual(ListViewSelectionMode.None, listControl.SelectionMode);
+
+                treeView.SelectionMode = TreeViewSelectionMode.None;
+                Verify.AreEqual(ListViewSelectionMode.None, listControl.SelectionMode);
+
+                treeView.SelectionMode = TreeViewSelectionMode.Single;
+                Verify.AreEqual(ListViewSelectionMode.Single, listControl.SelectionMode);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewSelectedItemPropertySelectsMatchingNode()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var items = CreateTreeViewItemsSource();
+                var treeView = new TreeView() { Width = 400, Height = 400, ItemsSource = items };
+                treeView.SelectionMode = TreeViewSelectionMode.Single;
+                Content = treeView;
+                Content.UpdateLayout();
+
+                treeView.SelectedItem = items[1];
+                Verify.AreEqual(items[1], treeView.SelectedItem);
+                Verify.AreEqual(treeView.RootNodes[1], treeView.SelectedNode);
+                Verify.AreEqual(1, treeView.SelectedItems.Count);
+                Verify.AreEqual(items[1], treeView.SelectedItems[0]);
+
+                treeView.SelectedItem = items[0];
+                Verify.AreEqual(treeView.RootNodes[0], treeView.SelectedNode);
+                Verify.AreEqual(1, treeView.SelectedItems.Count);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewNodeStringRepresentationUsesContent()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var textNode = new TreeViewNode() { Content = "Node" };
+                var provider = textNode as Microsoft.UI.Xaml.Data.ICustomPropertyProvider;
+                Verify.IsNotNull(provider);
+                Verify.AreEqual("Node", provider.GetStringRepresentation());
+                Verify.AreEqual("TreeViewNode", provider.Type.Name);
+
+                // Without content the node falls back to its full type name; non-string content is stringified.
+                var emptyNode = new TreeViewNode();
+                Verify.AreEqual("Microsoft.UI.Xaml.Controls.TreeViewNode",
+                    (emptyNode as Microsoft.UI.Xaml.Data.ICustomPropertyProvider).GetStringRepresentation());
+
+                var numberNode = new TreeViewNode() { Content = 42 };
+                Verify.AreEqual("42",
+                    (numberNode as Microsoft.UI.Xaml.Data.ICustomPropertyProvider).GetStringRepresentation());
+
+                Verify.IsNull(provider.GetCustomProperty("Content"));
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewNodeChildrenRemoveAtOutOfRangeThrowsAndLeavesChildrenIntact()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var parent = new TreeViewNode();
+                var child = new TreeViewNode();
+                parent.Children.Add(child);
+
+                bool threw = false;
+                try
+                {
+                    parent.Children.RemoveAt(1);
+                }
+                catch (Exception)
+                {
+                    threw = true;
+                }
+
+                Verify.IsTrue(threw, "RemoveAt past the end must throw");
+                Verify.AreEqual(1, parent.Children.Count);
+                Verify.AreEqual(parent, child.Parent);
+                Verify.AreEqual(0, child.Depth);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewNodeChildrenSetAtReplacesChildAndReparents()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var parent = new TreeViewNode();
+                var first = new TreeViewNode() { Content = "first" };
+                var second = new TreeViewNode() { Content = "second" };
+                var replacement = new TreeViewNode() { Content = "replacement" };
+                parent.Children.Add(first);
+                parent.Children.Add(second);
+
+                parent.Children[0] = replacement;
+
+                Verify.AreEqual(2, parent.Children.Count);
+                Verify.AreEqual(replacement, parent.Children[0]);
+                Verify.AreEqual(second, parent.Children[1]);
+                Verify.AreEqual(parent, replacement.Parent);
+                Verify.AreEqual(0, replacement.Depth);
+                Verify.IsNull(first.Parent);
+                Verify.AreEqual(-1, first.Depth);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewNodeChildrenClearDetachesAllChildren()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var root = new TreeViewNode();
+                var parent = new TreeViewNode();
+                var child1 = new TreeViewNode();
+                var child2 = new TreeViewNode();
+                root.Children.Add(parent);
+                parent.Children.Add(child1);
+                parent.Children.Add(child2);
+                parent.IsExpanded = true;
+
+                parent.Children.Clear();
+
+                Verify.AreEqual(0, parent.Children.Count);
+                Verify.IsNull(child1.Parent);
+                Verify.IsNull(child2.Parent);
+                Verify.AreEqual(-1, child1.Depth);
+                Verify.IsFalse(parent.HasChildren);
+                Verify.IsFalse(parent.IsExpanded);
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewNodeDepthFollowsReparenting()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var root = new TreeViewNode();
+                var mid = new TreeViewNode();
+                var leaf = new TreeViewNode();
+                mid.Children.Add(leaf);
+                Verify.AreEqual(0, leaf.Depth);
+
+                root.Children.Add(mid);
+                Verify.AreEqual(0, mid.Depth);
+
+                root.Children.Remove(mid);
+                Verify.AreEqual(-1, mid.Depth);
+                Verify.IsNull(mid.Parent);
+                Verify.AreEqual(mid, leaf.Parent);
             });
         }
 
