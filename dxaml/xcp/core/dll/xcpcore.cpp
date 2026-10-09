@@ -79,6 +79,7 @@
 #include "RefreshRateInfo.h"
 #include "GraphicsTelemetry.h"
 #include "XamlTelemetry.h"
+#include <wil/win32_helpers.h>
 
 #if XCP_MONITOR
 #include "XcpAllocationDebug.h"
@@ -8596,6 +8597,32 @@ private:
     CCoreServices* m_core;
 };
 
+struct AdaptersChangedListenerContext
+{
+    CCoreServices* core;
+    DWORD retryDelayMilliseconds = 100;
+    bool registered = false;
+};
+
+class AdaptersChangedDispatcher final : public CXcpObjectBase<IPALExecuteOnUIThread>
+{
+public:
+    explicit AdaptersChangedDispatcher(std::shared_ptr<AdaptersChangedListenerContext> context)
+        : m_context(std::move(context))
+    {
+    }
+
+    _Check_return_ HRESULT Execute() override
+    {
+        // Both cancellation and execution run on the UI thread. Queued work can outlive
+        // the wait registration, including during shutdown or a device replacement.
+        return m_context->core ? m_context->core->OnAdaptersChanged() : S_OK;
+    }
+
+private:
+    std::shared_ptr<AdaptersChangedListenerContext> m_context;
+};
+
 _Check_return_ HRESULT CCoreServices::EnsureDeviceLostListener()
 {
     // Register ourselves with the D3D device to receive a callback when the device is lost.
@@ -8649,11 +8676,14 @@ _Check_return_ HRESULT CCoreServices::EnsureDeviceLostListener()
         SetThreadpoolWait(m_deviceLostWaiter.get(), m_deviceLostEvent.get(), nullptr /*timeout*/);
     }
 
+    IFC_RETURN(EnsureAdaptersChangedListener());
     return S_OK;
 }
 
 void CCoreServices::ReleaseDeviceLostListener()
 {
+    ReleaseAdaptersChangedListener();
+
     if (m_deviceLostWaiter != nullptr)
     {
         CD3D11Device *device = m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
@@ -8664,6 +8694,121 @@ void CCoreServices::ReleaseDeviceLostListener()
         m_deviceLostWaiter.reset();
         m_deviceLostEvent.reset();
         m_deviceLostEventCookie = 0;
+    }
+}
+
+_Check_return_ HRESULT CCoreServices::EnsureAdaptersChangedListener()
+{
+    if (m_adaptersChangedListenerContext)
+    {
+        return S_OK;
+    }
+
+    auto context = std::make_shared<AdaptersChangedListenerContext>();
+    context->core = this;
+
+    wil::unique_handle event(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    IFCW32FAILFAST(event != nullptr);
+    wil::unique_threadpool_wait waiter(CreateThreadpoolWait(
+        [](PTP_CALLBACK_INSTANCE, void* context, TP_WAIT*, TP_WAIT_RESULT)
+        {
+            auto core = static_cast<CCoreServices*>(context);
+            xref_ptr<AdaptersChangedDispatcher> dispatcher;
+            dispatcher.init(new AdaptersChangedDispatcher(core->m_adaptersChangedListenerContext));
+            IFCFAILFAST(core->ExecuteOnUIThread(dispatcher, ReentrancyBehavior::BlockReentrancy));
+        },
+        this,
+        nullptr));
+    IFCW32FAILFAST(waiter != nullptr);
+
+    auto device = m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
+    HRESULT hr = device->RegisterAdaptersChangedEvent(event.get());
+    m_adaptersChangedListenerContext = std::move(context);
+    if (hr == S_FALSE)
+    {
+        return S_OK;
+    }
+
+    m_adaptersChangedListenerContext->registered = SUCCEEDED(hr);
+    m_adaptersChangedEvent = std::move(event);
+    m_adaptersChangedWaiter = std::move(waiter);
+    ArmAdaptersChangedWait(hr);
+    return S_OK;
+}
+
+void CCoreServices::ReleaseAdaptersChangedListener()
+{
+    // Drain callbacks before invalidating their core pointer or closing the event.
+    m_adaptersChangedWaiter.reset();
+    if (m_adaptersChangedListenerContext)
+    {
+        m_adaptersChangedListenerContext->core = nullptr;
+    }
+    if (m_adaptersChangedEvent)
+    {
+        auto device = m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
+        device->UnregisterAdaptersChangedEvent(m_adaptersChangedEvent.get());
+        m_adaptersChangedEvent.reset();
+    }
+    m_adaptersChangedListenerContext.reset();
+}
+
+_Check_return_ HRESULT CCoreServices::OnAdaptersChanged()
+{
+    if (m_deviceLost != DeviceLostState::None)
+    {
+        return S_OK;
+    }
+
+    auto device = m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
+    if (!m_adaptersChangedListenerContext->registered)
+    {
+        HRESULT registrationHR = device->RegisterAdaptersChangedEvent(m_adaptersChangedEvent.get());
+        if (registrationHR == S_FALSE)
+        {
+            // Keep polling as the compatibility fallback, without a timed retry.
+            m_adaptersChangedWaiter.reset();
+            m_adaptersChangedEvent.reset();
+            return S_OK;
+        }
+        if (FAILED(registrationHR))
+        {
+            ArmAdaptersChangedWait(registrationHR);
+            return S_OK;
+        }
+        m_adaptersChangedListenerContext->registered = true;
+    }
+
+    // DetermineDeviceLost only checks the existing device's removal state; an
+    // adapter transition can leave that state healthy while the device is stale.
+    HRESULT hr = device->CheckForAdapterChange();
+    HandleDeviceLost(&hr);
+    if (m_deviceLost == DeviceLostState::None)
+    {
+        ArmAdaptersChangedWait(hr);
+        return S_OK;
+    }
+    IFC_RETURN(hr);
+    return S_OK;
+}
+
+void CCoreServices::ArmAdaptersChangedWait(HRESULT result)
+{
+    if (FAILED(result))
+    {
+        // Executor HRESULTs are not propagated by the browser host. Retry without
+        // requiring another frame or adapter event, including after failed setup.
+        LOG_IF_FAILED(result);
+        auto timeout = wil::filetime::from_int64(
+            0ULL - wil::filetime::convert_msec_to_100ns(m_adaptersChangedListenerContext->retryDelayMilliseconds));
+        SetThreadpoolWait(m_adaptersChangedWaiter.get(), m_adaptersChangedEvent.get(), &timeout);
+        m_adaptersChangedListenerContext->retryDelayMilliseconds =
+            std::min<DWORD>(m_adaptersChangedListenerContext->retryDelayMilliseconds * 2, 5000);
+    }
+    else
+    {
+        m_adaptersChangedListenerContext->retryDelayMilliseconds = 100;
+        SetThreadpoolWait(m_adaptersChangedWaiter.get(), m_adaptersChangedEvent.get(), nullptr);
     }
 }
 
