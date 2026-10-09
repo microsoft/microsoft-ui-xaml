@@ -913,9 +913,8 @@ void TableView::ClearCoalescedEditReshape()
 
 void TableView::DrainCoalescedEditReshape()
 {
-    // Every edit close passes through here. A live reshape held while the editor was open is
-    // released first, and unconditionally: it is posted, so even a close inside a layout pass
-    // (gated below) is safe to release it from.
+    // Every edit close lands here. Release a held live reshape unconditionally: it is posted, so
+    // safe even inside a layout pass.
     if (!IsEditing())
     {
         if (auto const source = m_activeSource.get())

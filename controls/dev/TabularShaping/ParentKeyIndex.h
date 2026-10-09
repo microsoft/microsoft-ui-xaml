@@ -12,31 +12,26 @@
 
 namespace ShapingHelpers
 {
-// The validated tree over the UNFILTERED source, in source order: every row's key and the
-// position of its parent. It depends only on the source and the key/parent selectors, never on
-// filter or sort, so a reshape can reuse it once the caller has established that no key or parent
-// key moved (ParentStructureStillMatches, or live-shaping snapshots). Immutable once built.
+// Validated tree over the UNFILTERED source, in source order. Independent of filter/sort, so a
+// reshape can reuse it once no key or parent key moved. Immutable once built.
 struct ParentStructure
 {
     static constexpr size_t Root = SIZE_MAX;
 
-    // Source order. Holds every keyed row alive, so no KeyByItem entry can outlive its object and
-    // alias a new one at the same address.
+    // Source order. Keeps keyed rows alive so no KeyByItem address can be recycled.
     std::vector<winrt::IInspectable> Rows;
     // ABI pointer -> nodeKey, for every row.
     std::unordered_map<void*, std::wstring> KeyByItem;
     // nodeKey -> position in Rows. Keys view KeyByItem's values (node-based, so they stay put).
     std::unordered_map<std::wstring_view, size_t> IndexByKey;
-    // Per row (by position in Rows): its key (points into KeyByItem), parent position or Root, and
-    // child positions in source order.
+    // Per row: key (into KeyByItem), parent position or Root, children in source order.
     std::vector<std::wstring const*> NodeKeys;
     std::vector<size_t> ParentIndex;
     std::vector<std::vector<size_t>> ChildIndices;
     std::vector<size_t> RootIndices;
 };
 
-// Parent-key index: one filtered and sorted reading of a ParentStructure. Pure and immutable once
-// built.
+// Parent-key index: one filtered, sorted reading of a ParentStructure. Immutable once built.
 struct ParentKeyIndex
 {
     // Items are in sorted order within every sibling list.
@@ -44,9 +39,7 @@ struct ParentKeyIndex
     // parent nodeKey -> children. Keys view strings owned by Structure.
     std::unordered_map<std::wstring_view, std::vector<winrt::IInspectable>> Children;
     std::unordered_set<std::wstring> ContextKeys; // kept only because a descendant matched the filter
-    // Owns the keys every lookup above resolves against. Its key table also covers rows the filter
-    // hid, which is harmless: lookups only ever ask about indexed rows. Its keys are the complete
-    // unfiltered key set (expansion pruning).
+    // Owns the keys all lookups resolve against; its key set is complete and unfiltered.
     std::shared_ptr<const ParentStructure> Structure;
 
     const std::vector<winrt::IInspectable>* TryGetChildren(std::wstring_view nodeKey) const;
@@ -57,8 +50,8 @@ using ParentKeyFilter = std::function<bool(winrt::IInspectable const&)>;
 // Sorts one sibling list in place, stably. Called only for lists of two or more rows.
 using SiblingSorter = std::function<void(std::vector<winrt::IInspectable>&)>;
 
-// `rows` is the source, in source order. Runs the key and parent selectors once per row. Returns
-// false and fills `error` on a duplicate / null key, self-parent or cycle.
+// Runs key/parent selectors once per row. False with `error` on duplicate/null key, self-parent
+// or cycle.
 bool BuildParentStructure(
     std::vector<winrt::IInspectable> const& rows,
     KeySelector const& keySelector,
@@ -66,21 +59,15 @@ bool BuildParentStructure(
     ParentStructure& out,
     winrt::hstring& error);
 
-// Re-runs the key and parent selectors over `structure.Rows` and reports whether every row still
-// has the same key and resolves to the same parent, i.e. whether a rebuild would produce this
-// structure again. Builds no maps and allocates nothing beyond each row's key strings. Returns
-// false at the first difference, on any selector failure, and on any object (reference-identity)
-// key: those are compared by address, and a released key object's address can be reused by a new
-// one, so they cannot be proven unchanged.
+// True when re-running the selectors over `structure.Rows` yields the same keys and parents.
+// Object keys always fail: a freed key's address can be reused, so they cannot be proven unchanged.
 bool ParentStructureStillMatches(
     ParentStructure const& structure,
     KeySelector const& keySelector,
     KeySelector const& parentKeySelector);
 
-// Runs no key or parent selector. `filter` may be empty (no filter); when set, only matches and
-// their ancestors are indexed. `sort` may be empty (source order); otherwise each sibling list is
-// sorted among its own peers -- the roots too, unless `sortRoots` is false (the grouped path orders
-// those itself). Ties keep source order.
+// Runs no selector. Empty `filter`/`sort` = none. Filter keeps matches plus ancestors; sort orders
+// each sibling list (roots only if `sortRoots`), ties in source order.
 void BuildParentKeyIndex(
     std::shared_ptr<const ParentStructure> const& structure,
     ParentKeyFilter const& filter,
@@ -91,8 +78,7 @@ void BuildParentKeyIndex(
 // Exposed for the adapter: "node:" + lookup key, or empty when `key` means "no key".
 std::wstring MakeNodeKey(winrt::IInspectable const& key);
 
-// True when MakeNodeKey keyed the value by object address. Such a key cannot prove an edge is
-// unchanged: a freed key object's address can be handed to a new one.
+// True when MakeNodeKey keyed by object address (address may be recycled, so unprovable).
 bool IsObjectNodeKey(std::wstring_view nodeKey) noexcept;
 
 }

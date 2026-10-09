@@ -278,9 +278,7 @@ winrt::Size TableViewCellsPanel::ArrangeOverride(winrt::Size const& finalSize)
         x += w;
     }
 
-    // The hierarchy chevron overlays the lead cell from outside this panel; it is confined to the
-    // slot arranged here, which is the one place every width change (resize, star redistribution,
-    // column visibility) is guaranteed to pass through.
+    // Report the lead slot so the chevron is confined to it; every width change passes through here.
     if (auto const row = m_owningRow.get())
     {
         winrt::get_self<TableViewRow>(row)->OnCellsArrangedInternal(leadLeft, leadWidth, finalSize.Height);

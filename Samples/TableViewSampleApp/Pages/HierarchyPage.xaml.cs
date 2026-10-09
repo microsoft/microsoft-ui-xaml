@@ -197,8 +197,7 @@ public sealed partial class HierarchyPage : Page
 
     private void Group_Toggled(object sender, RoutedEventArgs e) => ApplyGroup();
 
-    // Live shaping on both sources. Under ParentBy it also tracks each row's key and parent key, so
-    // a ManagerId / MentorId edit reparents.
+    // Under ParentBy, live shaping also tracks keys, so a ManagerId/MentorId edit reparents.
     private void ApplyLive()
     {
         bool live = LiveToggle.IsOn;
@@ -221,8 +220,7 @@ public sealed partial class HierarchyPage : Page
 
     private const string RenamePrefix = "zz ";
 
-    // Toggles a prefix that sorts last, so under "Name ascending" the row jumps to the end of its
-    // sibling set and back, and it flips whether it matches a name filter.
+    // Prefix sorts last and flips name-filter matching.
     private void Rename_Click(object sender, RoutedEventArgs e)
     {
         if (SelectedEmployee() is { } selected)
@@ -234,8 +232,7 @@ public sealed partial class HierarchyPage : Page
         }
     }
 
-    // Only ROOTS are bucketed, so with "Group roots by Dept" on a root moves to another group with
-    // its whole subtree; a descendant's Dept changes its cell but not its place in the tree.
+    // Only roots are bucketed: a root changes group with its subtree; a descendant only its cell.
     private void NextDept_Click(object sender, RoutedEventArgs e)
     {
         if (SelectedEmployee() is { } selected)
@@ -282,8 +279,7 @@ public sealed partial class HierarchyPage : Page
         UpdateStatus();
     }
 
-    // Removing a person does not remove their reports: their parent key no longer matches any
-    // row, so they become orphan roots.
+    // Orphaned reports become roots (parent key no longer matches).
     private void Remove_Click(object sender, RoutedEventArgs e)
     {
         if (SelectedEmployee() is { } selected)
@@ -293,11 +289,8 @@ public sealed partial class HierarchyPage : Page
         }
     }
 
-    // Moves the selected employee under a different manager. With live shaping on the edit is just
-    // a property set: both sources observe ManagerId and reparent the row on the next dispatcher
-    // turn. With it off, a property set would leave the row where it was, so the item is replaced
-    // in the collection instead -- the collection change is what announces the new key.
-    // The candidate must not be the employee or one of its reports, or the relation would cycle.
+    // Moves selection under another manager (never itself or a report, which would cycle). Live: a
+    // property set reparents. Off: the item is replaced so the collection change carries the new key.
     private void Reparent_Click(object sender, RoutedEventArgs e)
     {
         if (SelectedEmployee() is not { } selected)
@@ -399,10 +392,8 @@ public sealed partial class HierarchyPage : Page
 
     private async void Perf_Click(object sender, RoutedEventArgs e) => await RunPerfAsync();
 
-    // Times the hierarchy pipeline (ParentBy, Sort, ExpandAllRows) against a GroupBy(Dept)
-    // baseline (GroupBy, Sort, CollapseAllGroups [untimed], ExpandAllGroups) over the same 100k flat
-    // rows. Each step includes a synchronous layout pass. Three runs each; per-step medians and the
-    // median of per-run totals are reported. Writes perf-results.txt.
+    // Times ParentBy/Sort/ExpandAllRows vs a GroupBy(Dept) baseline over 100k rows, each step with
+    // a sync layout pass. Reports medians of 3 runs to perf-results.txt.
     private async Task RunPerfAsync()
     {
         if (_perfRunning)

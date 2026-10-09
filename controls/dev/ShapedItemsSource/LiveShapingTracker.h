@@ -11,17 +11,9 @@
 #include <winrt/Microsoft.UI.Xaml.Data.h>
 #include <winrt/Windows.Foundation.h>
 
-// Per-item INotifyPropertyChanged subscriptions for live shaping.
-//
-// Holds each item WEAKLY when it supports weak references. The auto-revoker already keeps only a
-// weak reference to its sender, so the subscription entry was the sole strong reference; keeping
-// one here would pin every item the source has already dropped. The weak reference is not merely
-// absence of ownership -- it is what lets Subscribe detect a recycled ABI address (see the .cpp).
-//
-// An item without weak reference support cannot use an auto-revoker (it needs a weak reference to
-// the sender). That entry holds the item strongly and removes its handler by token instead; the
-// entry only lives while the item is in the source, and the strong reference also keeps its
-// address from being recycled.
+// Per-item INotifyPropertyChanged subscriptions for live shaping. Items are held weakly so dropped
+// items are not pinned; the weak ref also lets Subscribe detect a recycled ABI address. Items
+// without weak ref support are held strongly and revoked by token.
 class LiveShapingTracker
 {
 public:
@@ -31,12 +23,10 @@ public:
 
     void SetChangeHandler(ChangeHandler handler) { m_changeHandler = std::move(handler); }
 
-    // Idempotent: re-subscribing an already-tracked item is a no-op, so callers can subscribe
-    // defensively without paying a revoke/re-add round trip.
+    // Idempotent: re-subscribing an already-tracked item is a no-op.
     void Subscribe(winrt::IInspectable const& item);
     void Unsubscribe(winrt::IInspectable const& item);
-    // Sweep half of a mark-and-sweep reconcile: revoke every subscription whose item is not in
-    // `live`. Retained entries keep their existing revoker untouched.
+    // Revokes every subscription whose item is not in `live`.
     void RetainOnly(std::unordered_set<void const*> const& live);
     void UnsubscribeAll() noexcept;
 
@@ -44,8 +34,7 @@ private:
     struct Subscription
     {
         winrt::weak_ref<winrt::IInspectable> Item{ nullptr };
-        // False when the item does not support IWeakReferenceSource, in which case Item is empty
-        // and cannot be used to validate the entry.
+        // False when the item has no IWeakReferenceSource (Item is empty).
         bool CanResolveItem{ false };
         winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged::PropertyChanged_revoker Revoker{};
         // Only for an item without weak reference support (Revoker is empty then).

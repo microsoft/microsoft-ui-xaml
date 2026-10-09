@@ -200,9 +200,8 @@ bool TableView::DrainPendingSelection()
         auto const pendingIdentity = m_pendingSelectedIdentity;
         ClearPendingSelection();
 
-        // A tree re-anchors on the node key first: the app may have replaced the object with a new
-        // one for the same node. Object identity remains the fallback (and the only anchor for a
-        // non-tree source).
+        // Tree: re-anchor on node key first (app may have replaced the object); object identity is
+        // the fallback.
         int32_t index = -1;
         if (!pendingIdentity.empty() && m_tableViewSourceRowMetadata &&
             m_tableViewSourceRowMetadata->IsHierarchicalSource())
@@ -296,10 +295,9 @@ void TableView::ApplySelection(int32_t index)
     }
 
     // Capture the intentional selection by object identity. This is the single selection writer, so
-    // every user gesture / programmatic set / restore passes through here. The only other place the
-    // sticky anchor moves is OnSelectionModelSelectionChanged, which drops it when an incremental
-    // change clears the model outside a restore. A Reset-driven model clear runs under the restore
-    // flag, so it leaves the anchor intact for the identity restore.
+    // every gesture / programmatic set / restore passes through here; the anchor otherwise moves only
+    // in OnSelectionModelSelectionChanged (incremental clear outside a restore). A Reset-driven clear
+    // runs under the restore flag, keeping it for the identity restore.
     m_stickySelectedItem.set(index >= 0 ? SelectedItemForIndex(index) : nullptr);
     m_stickySelectedIdentity = (index >= 0 && m_stickySelectedItem.get()) ? HierarchyIdentityForIndex(index) : winrt::hstring{};
 
@@ -352,9 +350,8 @@ void TableView::OnSelectionModelSelectionChanged(
         return;
     }
 
-    // Outside a restore, a model-driven clear means the selected row really left the view (an
-    // incremental Remove, such as collapsing a small subtree). Drop the anchor with it, so a later
-    // Reset does not resurrect a selection the model already gave up.
+    // Outside a restore, a model clear means the row left the view (e.g. subtree collapse). Drop the
+    // anchor so a later Reset doesn't resurrect it.
     if (newIndex < 0)
     {
         m_stickySelectedItem.set(nullptr);

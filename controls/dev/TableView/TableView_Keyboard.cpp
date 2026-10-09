@@ -1680,8 +1680,7 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
         auto const row = GetRealizedRowAt(m_navAnchorRowContainer);
         if (!row)
         {
-            // Consume Left anyway: an unconsumed Left reaches directional focus navigation, which
-            // would walk focus sideways out of the table.
+            // Consume Left so directional focus navigation cannot walk out of the table.
             if (!drillIn)
             {
                 args.Handled(true);
@@ -1690,9 +1689,8 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
             return false;
         }
 
-        // A hierarchical row adds the ARIA treegrid tree level on top of the row/cell drill:
-        // forward expands a collapsed node and otherwise drills into the cells; backward collapses
-        // an expanded node, else moves to the parent row. Shift chords keep the plain drill.
+        // Treegrid level: forward expands a collapsed node else drills in; backward collapses an
+        // expanded node else moves to the parent. Shift chords keep the plain drill.
         if (row.Level() > 0 && !IsKeyDown(winrt::VirtualKey::Shift))
         {
             if (drillIn && row.IsExpandable() && !row.IsExpanded())

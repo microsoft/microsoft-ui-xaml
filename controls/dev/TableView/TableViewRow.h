@@ -56,21 +56,17 @@ public:
     // which clears it without transitions.
     void SetIsSelectedInternal(bool isSelected);
 
-    // Owner-only writer for the read-only hierarchy DPs, fed from the row metadata for this row's
-    // index. Pass level 0 to clear the affordance (flat and grouped sources).
+    // Owner-only writer for the read-only hierarchy DPs. Level 0 clears (flat/grouped sources).
     void SetHierarchyStateInternal(int32_t level, bool isExpandable, bool isExpanded);
 
-    // Re-applies the indent and chevron from the current DP values. Called on template apply and
-    // after every cell rebuild, both of which discard the previous pass's layout.
+    // Re-applies indent and chevron; template apply and cell rebuild both discard prior layout.
     void ApplyHierarchyAffordance();
     void ApplyHierarchyIndentToCells();
-    // Overload for callers that have already resolved the indent, so a single row preparation pays
-    // for the TableViewRowIndentSize lookup once instead of twice.
+    // Overload taking a pre-resolved indent, avoiding a second TableViewRowIndentSize lookup.
     void ApplyHierarchyIndentToCells(double indent);
     double HierarchyIndent();
 
-    // The state this row reports through ExpandCollapsePattern: LeafNode unless it is an
-    // expandable tree row.
+    // ExpandCollapsePattern state: LeafNode unless an expandable tree row.
     winrt::ExpandCollapseState HierarchyExpandCollapseState();
 
     // Used by automation peers to enumerate live cells after template application.
@@ -103,8 +99,7 @@ public:
 
     void RefreshFrozenColumnLayout(double horizontalOffset, double leadingFrozenWidth);
     void SyncExpanderGutterWithLeadCell(winrt::Panel const& host);
-    // The cells panel reports the lead (first visible) cell's arranged slot after every arrange,
-    // so the chevron can be confined to it. leadWidth < 0 means there is no visible cell.
+    // Cells panel reports the lead cell's arranged slot to confine the chevron. leadWidth < 0: none.
     void OnCellsArrangedInternal(double leadLeft, double leadWidth, double height);
     void RefreshDensity();
     void RefreshCells();
@@ -156,8 +151,7 @@ private:
     // Routes an expansion-state transition to this row's automation peer, if a client is listening.
     void RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
 
-    // True when keyboard focus is on the row container itself rather than on something inside a
-    // cell, so cell content keeps its own arrow keys.
+    // True when focus is on the row itself, not cell content (which keeps its own arrow keys).
     bool IsRowItselfFocused();
 
     // Directional expand/collapse for the keyboard, routed through the owner like the chevron.
@@ -210,8 +204,7 @@ private:
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
-    // The hierarchy chevron's hit target. Null for a re-template that drops the part, which simply
-    // means no toggle affordance -- the indent still applies.
+    // Chevron hit target. Null if a re-template drops the part (indent still applies).
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
     winrt::UIElement::PointerPressed_revoker m_gutterPointerPressedRevoker{};
     // Lead cell's last arranged slot in the cells host (negative width: none yet / none visible).

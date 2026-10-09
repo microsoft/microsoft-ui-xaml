@@ -59,13 +59,8 @@ winrt::IInspectable TableViewRowAutomationPeer::GetPatternCore(winrt::PatternInt
         return *this;
     }
 
-    // ExpandCollapse is conditional here, unlike on the group header: that container is only ever
-    // a group, whereas a row is a tree node only under a hierarchical source. Advertising the
-    // pattern on a flat or grouped table would report every row as a LeafNode, telling a screen
-    // reader the grid is a tree that happens to be fully collapsed.
-    //
-    // Keyed off Level rather than IsExpandable so a LEAF of a tree keeps the pattern and reports
-    // LeafNode, which is what lets a client tell "nothing to expand" apart from "not a tree".
+    // Tree rows only (keyed off Level, not IsExpandable): a tree leaf reports LeafNode, while flat/
+    // grouped rows withhold the pattern so the grid isn't announced as a collapsed tree.
     if (patternInterface == winrt::PatternInterface::ExpandCollapse && IsHierarchicalRow())
     {
         return *this;
@@ -81,8 +76,7 @@ winrt::TableViewRow TableViewRowAutomationPeer::GetRow() const
 
 bool TableViewRowAutomationPeer::IsHierarchicalRow() const
 {
-    // Level is 0 for flat and grouped sources and 1-based for tree rows, which is exactly the
-    // "is this a tree node" question -- see the Level DP's comment in TableView.idl.
+    // Level: 0 for flat/grouped, 1-based for tree rows.
     auto const row = GetRow();
     return row && row.Level() > 0;
 }
@@ -646,8 +640,7 @@ winrt::ExpandCollapseState TableViewRowAutomationPeer::ExpandCollapseState()
     auto const row = GetRow();
     if (!row || !row.IsExpandable())
     {
-        // Covers both a genuine leaf and a recycled row. A client that asked for the pattern on a
-        // non-tree row cannot get here, because GetPatternCore withheld it.
+        // Leaf or recycled row; non-tree rows never expose the pattern.
         return winrt::ExpandCollapseState::LeafNode;
     }
 
@@ -674,14 +667,8 @@ void TableViewRowAutomationPeer::SetExpansion(bool expand)
         return;
     }
 
-    // Direction is passed through rather than resolved into a toggle here, for the reason spelled
-    // out in TableViewGroupHeaderAutomationPeer::SetExpansion: the mutation is applied on a later
-    // turn, so a guard reading IsExpanded() (the last state pushed to this container) cannot make
-    // the request directional, and ExpandCollapsePattern requires Expand/Collapse to be idempotent.
-    //
-    // SetGroupExpansion is the shared entry point for both axes -- it resolves the container's
-    // identity while its index is still current and defers only the reshape -- which is the same
-    // path the chevron gesture takes in TableViewRow::OnExpanderGutterPointerPressed.
+    // Pass direction, not a toggle: the mutation is deferred, so IsExpanded() can't make it
+    // idempotent as ExpandCollapsePattern requires. Same entry point as the chevron gesture.
     if (auto const tableView = GetOwningTableView())
     {
         winrt::get_self<TableView>(tableView)->SetGroupExpansion(row, expand);
@@ -719,17 +706,13 @@ void TableViewRowAutomationPeer::RaiseExpandCollapseAutomationEvent(
 
 int32_t TableViewRowAutomationPeer::GetLevelCore()
 {
-    // The Level DP is already 1-based precisely so it can be handed to UIA unmodified. A flat or
-    // grouped (non-tree) row defers to the base peer, which honours AutomationProperties.Level set
-    // by the app and otherwise reports "not applicable".
+    // Level is already 1-based. Non-tree rows defer to base (honours AutomationProperties.Level).
     auto const row = GetRow();
     const int32_t level = row ? row.Level() : 0;
     return level > 0 ? level : __super::GetLevelCore();
 }
 
-// Reports this row's position within its SIBLING set, not its flat-axis coordinates -- otherwise a
-// screen reader would announce "4,217 of 900,000" for the second child of a node. The hierarchy
-// descriptor carries the sibling position, so this is O(1).
+// Position within the sibling set (not the flat axis), O(1) from the hierarchy descriptor.
 bool TableViewRowAutomationPeer::TryGetSiblingPosition(int32_t& positionInSet, int32_t& sizeOfSet)
 {
     positionInSet = 0;

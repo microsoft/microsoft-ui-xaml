@@ -34,10 +34,8 @@ namespace
         try { return selector(item); } catch (...) { return nullptr; }
     }
 
-    // Value-typed boxes the shared lookup-key formatter does not cover. A WinRT enum boxes as an
-    // IPropertyValue of type OtherType whose integer getters still read the value, so they key by
-    // (type, value); a fresh box per selector call must not change the key. Returns empty when the
-    // value is not one of these, leaving the shared formatter to decide.
+    // Value boxes the shared formatter misses (e.g. WinRT enums as OtherType), keyed by
+    // (type, value) so a fresh box per call keeps the key. Empty when not handled.
     std::wstring TryFormatExtraValueKey(winrt::IInspectable const& key)
     {
         auto const pv = key.try_as<winrt::Windows::Foundation::IPropertyValue>();
@@ -102,9 +100,7 @@ namespace
         try { return filter(item); } catch (...) { return false; }
     }
 
-    // User-facing form of a node key for error text: the raw value for a value key (the internal
-    // "value:<type-tag>:" prefix stripped), or a placeholder for an object key, whose lookup form
-    // is only a pointer.
+    // User-facing node key for error text: raw value, or a placeholder for an object key.
     winrt::hstring DescribeNodeKey(std::wstring const& nodeKey)
     {
         std::wstring_view view{ nodeKey };
@@ -193,8 +189,8 @@ bool BuildParentStructure(
 
     auto& indexByKey = result.IndexByKey;
 
-    // An object key's lookup form is its address, so every key and parent key is held for the
-    // whole build: a released temporary's address could be reused by the next one and alias it.
+    // Hold every key for the whole build: an object key is its address, which a released
+    // temporary could hand to the next one.
     std::vector<winrt::IInspectable> keepAlive;
     keepAlive.reserve(n * 2);
 
@@ -272,9 +268,7 @@ bool BuildParentStructure(
         {
             if (!seen[i])
             {
-                // An unreached node may only hang BELOW a cycle. Its parent chain never reaches a
-                // root, so walking it must revisit a node, and the first one revisited is on the
-                // cycle itself -- the key worth naming.
+                // Unreached nodes hang below a cycle; the first revisited node is on the cycle.
                 std::vector<bool> onPath(n, false);
                 size_t p = i;
                 while (!onPath[p])
@@ -308,10 +302,8 @@ bool ParentStructureStillMatches(
             return false;
         }
 
-        // Every key checked so far matches, and any later mismatch fails the whole check, so
-        // resolving against the retained key table answers exactly as a rebuild would: a known key
-        // is that row, an unknown one is an orphan root, and a self-parent resolves to `i`, which
-        // no valid structure stores.
+        // All keys so far match (any later mismatch fails anyway), so resolving against the
+        // retained key table answers as a rebuild would.
         auto const parentKey = MakeNodeKey(SafeSelect(parentKeySelector, s.Rows[i]));
         size_t parent = c_root;
         if (!parentKey.empty())
@@ -357,8 +349,7 @@ void BuildParentKeyIndex(
         }
     }
 
-    // Each sibling list is sorted among its own peers only, in source order going in, so a stable
-    // sort breaks ties exactly as one sort over the whole source would.
+    // Per-sibling-list stable sort over source order breaks ties like one global sort.
     ParentKeyIndex result;
     for (size_t i : s.RootIndices) if (state[i]) result.Roots.push_back(s.Rows[i]);
     if (sort && sortRoots && result.Roots.size() > 1) sort(result.Roots);

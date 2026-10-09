@@ -15,8 +15,7 @@
     xmlns:controls="using:TableViewSampleApp.Controls">
 
     <Page.Resources>
-        <!-- Headers only ever appear at the top level: GroupBy buckets the ROOTS, and a descendant
-             stays under its parent rather than being pulled out to join a bucket. -->
+        <!-- GroupBy buckets only ROOTS; descendants stay under their parent. -->
         <DataTemplate x:Key="GroupHeader">
             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                 <TextBlock Text="{Binding KeyText}" FontWeight="SemiBold"/>
@@ -124,10 +123,8 @@
                     <ToggleSwitch x:Name="GroupToggle" Header="Group roots by department"
                                   AutomationProperties.AutomationId="HierarchyGroupToggle"
                                   Toggled="Group_Toggled"/>
-                    <!-- On: both sources set IsLiveShaping, so editing a property (Reparent / Rename /
-                         Next department) reshapes the tree in place. Off: the edit is applied to the
-                         data but the rows stay where they were until the next reshape, so Reparent
-                         falls back to replacing the item in the collection. -->
+                    <!-- On: edits reshape the tree in place. Off: rows stay put until the next
+                         reshape; Reparent replaces the item instead. -->
                     <ToggleSwitch x:Name="LiveToggle" Header="Live shaping" IsOn="True"
                                   AutomationProperties.AutomationId="HierarchyLiveShapingToggle"
                                   Toggled="Live_Toggled"/>

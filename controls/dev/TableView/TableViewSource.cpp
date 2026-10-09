@@ -257,15 +257,15 @@ void TableViewSource::OnProjectionRebuilt()
             MUX_ASSERT_MSG(false, L"TableViewSource: Hierarchical projection published without a hierarchical adapter.");
             return;
         }
-        // Same as grouped: the adapter's view IS an ItemsSourceView, consumed directly.
+        // Same as grouped: consumed directly.
         m_itemsSourceView.set(adapter->Entries());
         m_rowMetadata = tabularPrimitives::RowMetadataProvider::CreateForHierarchicalRows(adapter, MakeIdentitySelector());
         break;
     }
     case ::ShapedItemsSource::ProjectionKind::GroupedHierarchical:
     {
-        // The presented axis is the GROUPED adapter's: it carries the header rows. The hierarchy
-        // adapter is handed over too, because level and node expansion are only knowable there.
+        // Grouped adapter supplies the presented axis (header rows); hierarchy adapter supplies
+        // level and expansion.
         auto const groupedAdapter = m_engine->GroupedAdapter();
         auto const hierarchicalAdapter = m_engine->HierarchicalAdapter();
         if (!groupedAdapter || !hierarchicalAdapter)

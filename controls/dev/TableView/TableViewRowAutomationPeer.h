@@ -25,9 +25,8 @@ public:
     hstring GetNameCore();
 
     // Rows are virtualized: UIA only ever sees the realized window, so the control has to supply
-    // "row i of n" on the same flat basis as IGridProvider. A tree row reports its position and
-    // size within its SIBLING set instead, so a screen reader announces "2 of 3" for the second
-    // child of a node rather than its offset into the whole table.
+    // "row i of n" on the same flat basis as IGridProvider. A tree row reports its position
+    // within its sibling set instead.
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
 
@@ -61,9 +60,7 @@ public:
     // IAutomationPeerOverrides3. Level is the row's 1-based tree depth.
     int32_t GetLevelCore();
 
-    // Called by the owning row when its expansion state changes, so a connected client is not
-    // left reading a stale ExpandCollapseState. Mirrors
-    // TableViewGroupHeaderAutomationPeer::RaiseExpandCollapseAutomationEvent.
+    // Raised by the owning row on expansion change so clients don't read stale state.
     void RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
 
 private:
@@ -106,13 +103,10 @@ private:
     TableViewTrackedItemIdentity m_item;
     int32_t m_lastKnownRowIndex{ -1 };
     int32_t m_trackedItemOccurrence{ -1 };
-    // The owning row, or null when this peer has outlived it.
     winrt::TableViewRow GetRow() const;
-    // True when this row belongs to a tree projection, i.e. Level is 1-based rather than 0.
     bool IsHierarchicalRow() const;
-    // Directional expansion, passed through to the owner unresolved so it stays idempotent.
+    // Passed to the owner unresolved so it stays idempotent.
     void SetExpansion(bool expand);
-    // Position and size within this row's sibling set, read from the row's hierarchy descriptor.
-    // False when the row is not a realized tree row, in which case UIA gets 0 ("unknown").
+    // Sibling-set position/size. False when not a realized tree row (UIA gets 0, "unknown").
     bool TryGetSiblingPosition(int32_t& positionInSet, int32_t& sizeOfSet);
 };

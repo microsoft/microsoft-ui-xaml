@@ -420,6 +420,21 @@ The gutter toggles on a primary-button press (as the group header does); a secon
 press is left unhandled for the row. A press on a leaf's gutter is also left unhandled, so it
 selects the row.
 
+**Template contract.** `PART_RowExpanderGutter` and `PART_RowExpanderIcon` are optional, but a
+template declares them together with the `HierarchyStates`, `ExpandabilityStates` and
+`ExpansionStates` groups or not at all: the groups are entered on every row (flat and grouped
+tables included) and the default template's states resolve `PART_RowExpanderIcon` by name, so
+groups without the part fail at state application, while neither is fine. Code null-checks the
+gutter, so omitting it loses only the pointer gesture and visible chevron (keyboard and the
+ExpandCollapse pattern still work); the lead cell's chevron reservation is not tied to it. In the
+default template the gutter sits inside `PART_CellForegroundPresenter`, after the cells host for
+hit-testing, and the icon sets no `Foreground` of its own so it inherits the selected/High Contrast
+foreground. Recolouring it from the `Selected*` states would reference it from the required
+`CommonStates` group and make it required.
+
+`TableViewRowAutomationPeer` advertises ExpandCollapse only for rows of a hierarchical source;
+reporting `LeafNode` on every row of a flat or grouped table would present it as a collapsed tree.
+
 ## 8. Keyboard
 
 On a focused hierarchical row (row container focused, not a cell editor):

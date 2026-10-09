@@ -32,14 +32,9 @@ static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGri
 // unusable.
 static constexpr double c_resizeGripperWidthFallback{ 8.0 };
 
-// Mirrors the TableViewRowIndentSize resource shipped in TableView.xaml. Used when the resource is
-// missing or unusable.
+// Fallbacks mirroring the resources shipped in TableView.xaml.
 static constexpr double c_defaultRowIndentSize{ 16.0 };
-
-// Mirrors the TableViewRowExpanderSize resource shipped in TableView.xaml.
 static constexpr double c_defaultRowExpanderSize{ 24.0 };
-
-// Mirrors the TableViewGroupExpanderSize resource shipped in TableView.xaml.
 static constexpr double c_defaultGroupExpanderSize{ 24.0 };
 
 // The ColumnSpacing of the Grid hosting PART_ExpanderGutter in the group-header template.
@@ -513,8 +508,7 @@ void TableView::OnThemeSettingsChanged(
         RebuildHeaders();
         RefreshGridLinesOnRealizedRows();
         QueueTerminalGridLineRefresh();
-        // The chevron's width is a ThemeResource but the lead cell's matching padding and the
-        // indent are applied imperatively; re-derive them from the re-resolved metrics.
+        // Lead-cell padding and indent are imperative; re-derive from the new metrics.
         RefreshRealizedRowHierarchyState();
     }
 }
@@ -764,8 +758,7 @@ void TableView::OnApplyTemplate()
                     strongThis->RebuildHeaders();
                     strongThis->RefreshGridLinesOnRealizedRows();
                     strongThis->QueueTerminalGridLineRefresh();
-                    // Re-apply indent and lead-cell reservation against the new theme's metrics,
-                    // which the chevron's ThemeResource width has already picked up.
+                    // Re-apply indent and lead-cell reservation against the new theme's metrics.
                     strongThis->RefreshRealizedRowHierarchyState();
                 }
                 catch (...)
@@ -1483,15 +1476,13 @@ void TableView::AdoptItemsSource()
                 strongThis->OnTableViewSourceShapingChanged(reorderOnly);
             }
         });
-        // A live reshape is not the user's doing, so it must not end their edit: hold it until
-        // the editor closes (DrainCoalescedEditReshape resumes it).
+        // Live reshape must not end the user's edit; DrainCoalescedEditReshape resumes it.
         sourceImpl->SetLiveShapingHold([weakThis]()
         {
             auto strongThis = weakThis.get();
             return strongThis && strongThis->IsEditing();
         });
-        // A CustomSortComparer column sorts by ranks frozen at the header sort; without this an
-        // edit to the compared property would leave the row where it was.
+        // CustomSortComparer ranks are frozen at header sort; re-place the edited row.
         sourceImpl->SetLiveItemChangedHook([weakThis](winrt::IInspectable const& item, bool reshapePending)
         {
             auto strongThis = weakThis.get();
@@ -1573,11 +1564,8 @@ void TableView::OnTableViewSourceProjectionChanged()
     RefreshRowsPipeline();
     QueueGroupExpansionRowRefresh();
 
-    // The pipeline above only re-points the repeater when the projected view OBJECT changed; a
-    // verb that rewrites the projection in place (declaring or retracting a hierarchy over the same
-    // view) tears nothing down, so no row is re-prepared and every realized row keeps the level and
-    // chevron it was stamped with under the previous shape. Deferred, because the repeater has not
-    // necessarily reconciled the new shape at the moment this notification is raised.
+    // In-place projection rewrites (e.g. declaring a hierarchy over the same view) re-prepare no
+    // rows, so restamp them. Deferred until the repeater reconciles.
     QueueRefreshRealizedRowHierarchyState();
 }
 
@@ -1594,7 +1582,6 @@ void TableView::UpdateRowHierarchyResetSubscription()
         return;
     }
 
-    // auto_revoke drops the prior source's subscription.
     m_rowHierarchyResetRevoker = {};
     m_rowHierarchyResetView = nullptr;
 
@@ -1610,12 +1597,8 @@ void TableView::OnRowsSourceResetForHierarchy(
     const winrt::IInspectable& /*sender*/,
     const winrt::NotifyCollectionChangedEventArgs& args)
 {
-    // Reset ONLY. An expand/collapse splices rows in and out, and every realized row it affects
-    // either moves index (ElementIndexChanged restamps it) or is the toggled row itself (already
-    // restamped by the verb) -- restamping on those would be pure overhead on the hot path. A Reset
-    // is the projection saying "every index you hold may now describe a different node", which is
-    // exactly the case nothing else covers: a rebuild that republishes metadata for the same rows,
-    // such as a node whose last child was removed while it was collapsed.
+    // Reset only: splices restamp via ElementIndexChanged or the toggling verb. A Reset may
+    // republish metadata for the same rows (e.g. a collapsed node losing its last child).
     if (!args || args.Action() != winrt::NotifyCollectionChangedAction::Reset)
     {
         return;
@@ -1626,9 +1609,7 @@ void TableView::OnRowsSourceResetForHierarchy(
 
 void TableView::QueueRefreshRealizedRowHierarchyState()
 {
-    // Deferred and coalesced: the notifications that bring us here are raised from inside the
-    // projection's own rebuild, before the repeater has reconciled it. Reading element indices then
-    // would stamp one row's level onto another, and a rebuild can raise several notifications.
+    // Deferred and coalesced: raised mid-rebuild, before the repeater reconciles indices.
     if (m_rowHierarchyRefreshQueued)
     {
         return;
@@ -1919,14 +1900,8 @@ double TableView::GetHeaderFontSize()
 
 double TableView::GetRowIndentSize()
 {
-    // Cached like the density and font metrics: this is reached for every realized row on every
-    // scroll, recycle and reindex pass, and LookupElementResource walks control resources, then
-    // every ancestor, then application resources, then the generic dictionary before answering.
-    //
-    // A theme resource carries no change notification, so the cache cannot be refreshed on a swap.
-    // It is cleared by the same density / theme / high-contrast invalidation as the neighbouring
-    // metrics; swapping the resource outside one of those still requires the rows to be re-prepared
-    // before it is visible, which is the documented behaviour of every other resource here.
+    // Cached: hit per realized row on every pass, and resource lookup walks the whole tree. Cleared
+    // by density/theme/HC invalidation; other runtime swaps need rows re-prepared.
     auto& cache = GetTableViewResourceCache(this);
     if (cache.hierarchy.hasRowIndentSize)
     {
@@ -1937,8 +1912,7 @@ double TableView::GetRowIndentSize()
     if (auto raw = LookupElementResource(*this, L"TableViewRowIndentSize"))
     {
         const double value = winrt::unbox_value_or<double>(raw, c_defaultRowIndentSize);
-        // A negative or non-finite indent would pull cell content left, under the chevron. Fall
-        // back rather than render an unreadable row.
+        // Negative or non-finite indent would pull content under the chevron; fall back.
         if (std::isfinite(value) && value >= 0.0)
         {
             resolved = value;
@@ -1973,9 +1947,7 @@ double TableView::GetRowExpanderSize()
     return resolved;
 }
 
-// Where a group header's own content starts: its chevron gutter (TableViewGroupExpanderSize) plus
-// the template's column spacing. Root rows under a header start here so they line up with the
-// header's text even when an app overrides the expander size.
+// Group header content start (expander gutter + column spacing), so root rows align with it.
 double TableView::GetGroupHeaderContentOffset()
 {
     auto& cache = GetTableViewResourceCache(this);
@@ -2215,8 +2187,7 @@ void TableView::OnRowElementIndexChanged(
         rowImpl->RefreshRowBackground();
     }
 
-    // ...and so must the hierarchy affordance: a row whose index moved is at a new depth, which is
-    // exactly what an expand above it does to every row below.
+    // ...and so must hierarchy state: a moved row may be at a new depth.
     RefreshRowHierarchyState(row, args.NewIndex());
 
     // ...and so must selected chrome. The element keeps its item here (only its index moved), so
@@ -2225,8 +2196,7 @@ void TableView::OnRowElementIndexChanged(
     RefreshRowSelectionState(row);
 }
 
-// Pushes this index's hierarchy metadata onto the row. A flat or grouped source reports Level 0
-// here, which is what makes the chevron and indent disappear without a mode switch.
+// Pushes this index's hierarchy metadata onto the row (Level 0 for flat/grouped sources).
 void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t index)
 {
     if (!row)
@@ -2235,10 +2205,8 @@ void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t
     }
 
     TableViewRowInfo rowInfo{};
-    // Trust the metadata only when it actually describes a data row. A realized row can be
-    // re-prepared at an index that has just become a GROUP HEADER, where the info is valid but
-    // describes the header - taking IsExpandable/IsExpanded from that would give a data row a
-    // chevron for someone else's group. Same window, same guard as PrepareGroupHeaderElement.
+    // Use only data-row metadata: a recycled row can be re-prepared at an index that just became
+    // a group header (same guard as PrepareGroupHeaderElement).
     const bool hasRowInfo =
         TryGetTableViewSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::Data;
 
@@ -2249,10 +2217,8 @@ void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t
         return;
     }
 
-    // A grouped source also reports Level 1 for its data rows, but never IsExpandable - a data row
-    // under a group has nothing to expand. Asking the SOURCE whether it is a tree, rather than
-    // inferring it from this row, is what keeps a leaf root (Level 1, not expandable) aligned with
-    // its expandable siblings while leaving a merely grouped table rendering exactly as before.
+    // Ask the source whether it is a tree: a leaf root (Level 1, not expandable) looks like a
+    // grouped data row but must still reserve chevron width.
     const bool isHierarchicalRow =
         m_tableViewSourceRowMetadata && m_tableViewSourceRowMetadata->IsHierarchicalSource();
     rowImpl->SetHierarchyStateInternal(

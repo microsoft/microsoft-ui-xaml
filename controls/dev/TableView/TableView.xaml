@@ -243,9 +243,7 @@
                                 </VisualState>
                             </VisualStateGroup>
 
-                            <!-- Hierarchy. All three groups are inert for a flat or grouped source,
-                                 where Level is 0 and the gutter stays collapsed, so this template
-                                 is unchanged for every non-tree table. -->
+                            <!-- Hierarchy groups. Inert for flat/grouped sources (Level 0). -->
                             <VisualStateGroup x:Name="ExpansionStates">
                                 <VisualState x:Name="Collapsed">
                                     <VisualState.Setters>
@@ -261,9 +259,8 @@
 
                             <VisualStateGroup x:Name="ExpandabilityStates">
                                 <VisualState x:Name="Expandable" />
-                                <!-- Only the glyph hides. PART_RowExpanderGutter keeps its width so a
-                                     leaf's text starts exactly where a sibling branch's text does;
-                                     collapsing the gutter instead would make every leaf jog left. -->
+                                <!-- Only the glyph hides; the gutter keeps its width so leaf text
+                                     aligns with sibling branch text. -->
                                 <VisualState x:Name="NotExpandable">
                                     <VisualState.Setters>
                                         <Setter Target="PART_RowExpanderIcon.Visibility" Value="Collapsed" />
@@ -272,11 +269,8 @@
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="HierarchyStates">
-                                <!-- Neither state touches PART_RowExpanderGutter.Visibility: the
-                                     base value is Collapsed, so a state that undoes another state's
-                                     setter would only revert to Collapsed again. TableViewRow sets
-                                     the visibility directly. The states remain so a retemplating app
-                                     can key off them. -->
+                                <!-- TableViewRow sets gutter Visibility directly; these states exist
+                                     for retemplating apps to key off. -->
                                 <VisualState x:Name="NotHierarchical" />
                                 <VisualState x:Name="Hierarchical" />
                             </VisualStateGroup>
@@ -307,22 +301,10 @@
                                     <controls:TableViewCellsPanel x:Name="PART_CellsHost"
                                                                   HorizontalAlignment="Left" />
 
-                                    <!-- Hierarchy chevron. Overlays the first cell rather than sitting in a
-                                         column of its own: a real gutter column would push every cell right
-                                         while the header row stayed put, breaking header/cell alignment,
-                                         the one thing a tree GRID must preserve. TableViewRow sets the left
-                                         Margin from Level and pads the first cell by the same amount, so the
-                                         chevron lands in the space it reserved rather than over the text.
-                                         Hit-testable (unlike the selection indicator) because it is the
-                                         toggle target, so it is the LATER child and stays on top.
-
-                                         It lives INSIDE PART_CellForegroundPresenter, and the icon carries no
-                                         Foreground of its own, so the chevron inherits whatever foreground the
-                                         Selected* states push onto the presenter — exactly like cell text.
-                                         Setting the icon's Foreground from the Selected* states instead would
-                                         put a by-name reference to PART_RowExpanderIcon inside CommonStates,
-                                         which is a REQUIRED state group, and would thereby make an optional
-                                         template part mandatory. -->
+                                    <!-- Hierarchy chevron. Overlays the first cell (TableViewRow pads it by
+                                         the same indent) so cells stay aligned with headers; later child so it
+                                         stays on top as the hit target. No own Foreground: inherits the
+                                         presenter's, keeping this optional part out of CommonStates. -->
                                     <Border x:Name="PART_RowExpanderGutter"
                                             Width="{ThemeResource TableViewRowExpanderSize}"
                                             Background="Transparent"

@@ -37,10 +37,8 @@ void LiveShapingTracker::Subscribe(winrt::IInspectable const& item)
 
     if (auto const existing = m_subscriptions.find(identity); existing != m_subscriptions.end())
     {
-        // Already tracking this address. The key is a raw ABI pointer, so an address freed by a
-        // dead item can be handed to a new one -- an entry that resolves to a DIFFERENT object is
-        // stale and would otherwise leave the new item silently unsubscribed. An entry for an item
-        // without weak references holds it strongly, so its address cannot have been recycled.
+        // Key is a raw ABI pointer that a dead item's address may have been recycled into; an entry
+        // resolving to a different object is stale. Strongly held entries cannot be recycled.
         if (!existing->second.CanResolveItem || existing->second.Item.get() == item)
         {
             return;
@@ -94,9 +92,8 @@ void LiveShapingTracker::Unsubscribe(winrt::IInspectable const& item)
     }
 }
 
-// Revoking calls the item's remove_PropertyChanged, which is app code and may re-enter this
-// tracker. Every path below therefore takes entries out of the map first and revokes afterwards,
-// so no iterator into m_subscriptions is live while app code runs.
+// Revoking runs app code that may re-enter; entries leave the map before revoke so no
+// m_subscriptions iterator is live meanwhile.
 void LiveShapingTracker::RetainOnly(std::unordered_set<void const*> const& live)
 {
     std::vector<Subscription> departed;

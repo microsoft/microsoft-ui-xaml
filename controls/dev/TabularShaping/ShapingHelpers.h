@@ -33,11 +33,8 @@ namespace ShapingHelpers
         virtual winrt::hstring StableGroupIdentity() const = 0;
     };
 
-    // A group's count of IMMEDIATE children. Over a flat source that is just its row count, so
-    // nothing implements this; over a hierarchy a group's rows are its roots plus every visible
-    // descendant, and reporting that as the header's count would make the number jump every time
-    // an unrelated node deep in the group was expanded. Only the projection that sliced the group
-    // knows how many of those rows were roots, so it publishes the answer here.
+    // A group's count of IMMEDIATE children. Over a hierarchy a group's rows include visible
+    // descendants, so only the projection that sliced the group knows the root count.
     struct __declspec(uuid("9D3B0F7A-6B2E-4E67-93A2-1C8A9F5E4B10")) IGroupChildCount : ::IUnknown
     {
         virtual int32_t GroupChildCount() const = 0;
@@ -244,11 +241,9 @@ namespace ShapingHelpers
         // that closed over it by shared_ptr stays valid.
         void Reset();
 
-        // Re-places one item because a property the comparer may read has changed. Returns true
-        // when any row's key changed, so the caller knows a reshape is due even if the item's own
-        // key did not move. With deferPlacement (a reshape is already pending) the item's rank is
-        // only dropped and the next KeyFor re-places it; once more items are waiting than a full
-        // re-rank would cost, that KeyFor re-ranks everything in one pass instead.
+        // Re-places an item whose comparer-read property changed; true when any row's key changed.
+        // With deferPlacement the rank is only dropped and the next KeyFor re-places it (or
+        // re-ranks everything once that is cheaper).
         bool Reposition(winrt::IInspectable const& item, bool deferPlacement);
 
         bool HasComparer() const noexcept { return static_cast<bool>(m_comparer); }
@@ -292,21 +287,17 @@ namespace ShapingHelpers
         // guard and have just cleared the ranks.
         void PopulateRanks(std::vector<winrt::IInspectable> const& rows, uint64_t generation);
 
-        // Re-ranks every ranked and evicted item in one pass, keeping the current order as the
-        // tie-break so equal items do not trade places.
+        // Re-ranks every ranked and evicted item; current order breaks ties.
         void RerankAll();
 
-        // Places an item the ranks do not hold, shifting the ranks above it. Returns false when the
-        // ranks were cleared underneath a reentrant comparer call.
-        // `tied` reports that it joined an existing rank rather than opening a new one.
+        // Places an unranked item. False when a reentrant comparer cleared the ranks. `tied`: it
+        // joined an existing rank.
         bool PlaceUnranked(winrt::IInspectable const& item, uint64_t generation, int32_t& rank, bool& tied);
 
-        // Drops an item's rank and closes the gap if no other item held it, then queues the item
-        // for re-placement. Returns false when the item was not ranked.
+        // Drops an item's rank (closing any gap) and queues it for re-placement. False if unranked.
         bool EvictEntry(winrt::IInspectable const& item, int32_t& oldRank, bool& wasShared);
 
-        // Re-places every evicted item before any key is handed out, so a reshape never reads some
-        // keys before the shift and some after.
+        // Re-places all evicted items before handing out any key, so keys are consistent.
         void PlaceEvicted();
 
         PairwiseComparer m_comparer{ nullptr };

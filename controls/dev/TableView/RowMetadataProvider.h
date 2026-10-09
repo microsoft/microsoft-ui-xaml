@@ -40,17 +40,13 @@ public:
         GroupedSourceAdapterPtr const& adapter,
         ItemKeySelector const& itemKeySelector = {});
 
-    // Hierarchical rows are all DATA rows -- there is no header type to discriminate -- so the
-    // adapter's per-row descriptor is the only source of level/expandability, and the expansion
-    // key is the node's "node:" key rather than a "group:" key.
+    // All rows are data rows; level/expandability come from the adapter descriptor, keys are "node:".
     static TableViewRowMetadataProvider CreateForHierarchicalRows(
         HierarchicalSourceAdapterPtr const& adapter,
         ItemKeySelector const& itemKeySelector = {});
 
-    // Both axes: GroupBy applied to the roots of a hierarchy. The presented row axis is the
-    // GROUPED adapter's, so header rows exist and their indices interleave with data rows -- which
-    // means a data row's index here does NOT address the hierarchy adapter. The row's item does,
-    // via TryGetNodeRowForItem, and that is how level/expandability are recovered.
+    // GroupBy over hierarchy roots. Row indices are the grouped axis (with headers), so node
+    // metadata is resolved by item via TryGetNodeRowForItem.
     static TableViewRowMetadataProvider CreateForGroupedHierarchicalRows(
         GroupedSourceAdapterPtr const& groupedAdapter,
         HierarchicalSourceAdapterPtr const& hierarchicalAdapter,
@@ -80,8 +76,7 @@ public:
         Flat,
         Grouped,
         Hierarchical,
-        // Grouped rows whose DATA rows are also tree nodes. Row kinds and identities come from the
-        // grouped axis; level, expandability and node expansion come from the hierarchy adapter.
+        // Row kinds/identities from the grouped axis; level/expansion from the hierarchy adapter.
         GroupedHierarchical,
     };
 
@@ -98,16 +93,13 @@ private:
     // Single implementation behind all six expand/collapse/toggle entry points. They differ only
     // in how the caller names the group (row key vs. the app's GroupBy key), so resolution stays
     // in the wrappers and the state change lives here exactly once. `desired` empty means toggle.
-    // Returns true when the expansion state changed (in either direction); false when there is no
-    // group, no adapter, or the request was a no-op.
+    // Returns true when the expansion state changed.
     bool SetGroupExpandedCore(winrt::IInspectable const& group, std::optional<bool> desired);
 
-    // The hierarchy equivalent, keyed by node key rather than by a resolved group object. No
-    // resolution step: the node key IS the adapter's addressing scheme.
+    // Hierarchy equivalent; the node key is the adapter's addressing scheme.
     bool SetNodeExpandedCore(winrt::hstring const& nodeKey, std::optional<bool> desired);
 
-    // True when `key` addresses a tree node rather than a group. Required because the composed
-    // projection routes both key spaces through the same Expand/Collapse/Toggle surface.
+    // Composed projection routes both key spaces through Expand/Collapse/Toggle.
     bool IsNodeExpansionKey(winrt::hstring const& key) const;
 
     winrt::IInspectable GetGroupedRow(int32_t index) const;

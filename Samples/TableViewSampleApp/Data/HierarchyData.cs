@@ -5,14 +5,8 @@ using System.Runtime.CompilerServices;
 
 namespace TableViewSampleApp.Data;
 
-// Flat row model for the hierarchy page. The rows carry no Level, no IsExpanded and no children
-// collection: the tree is described to the TableViewSource by key selectors (Id, and either
-// ManagerId or MentorId as the parent key), so one list can be shown through two different
-// relations at once.
-//
-// Observable, so a source with live shaping on follows property edits: changing ManagerId moves
-// the row under its new manager, changing Name re-sorts / re-filters it, and changing a root's
-// Dept moves it (with its subtree) to another group.
+// Flat row model: no Level/IsExpanded/children. The tree comes from key selectors (Id plus
+// ManagerId or MentorId), so one list can show two relations. Observable for live shaping.
 public sealed class Employee : INotifyPropertyChanged
 {
     private int? _managerId;
@@ -50,9 +44,8 @@ internal static class HierarchyData
     private static readonly string[] Titles = { "Director", "Manager", "Lead", "Senior", "Engineer", "Associate" };
     private static readonly string[] First = { "Ada", "Ben", "Cy", "Dan", "Eve", "Fay", "Gus", "Hal", "Ivy", "Jo" };
 
-    // Generates count employees. Manager relation: 5 roots, then every employee reports to an
-    // earlier one with `Branching` reports each. Mentor relation: 8 roots, and a different, wider
-    // shape (each earlier employee mentors ~2.5 people), so the two views visibly differ.
+    // Manager relation: 5 roots, `Branching` reports each. Mentor relation: 8 roots, wider (~2.5
+    // mentees each), so the two views differ.
     public static List<Employee> Generate(int count)
     {
         const int managerRoots = 5;
