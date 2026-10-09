@@ -312,7 +312,11 @@ winrt::Brush TableView::GetGridLineBrush()
 
 TableView::~TableView()
 {
+    StopTelemetryLayout();
     IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Unloaded);
+    TableViewTelemetry::AbandonSession(m_telemetry);
+    m_telemetry.initialCompleted = nullptr;
+    m_telemetry.initialCompletedContext = nullptr;
     // Must run while this control still holds the selector: once anything has been recycled the
     // pools hang off the cached templates and close a cycle the reference tracker cannot walk.
     // Destructor runs off the reference tracker's teardown path (e.g. UIAffinityReleaseQueue),
@@ -330,6 +334,11 @@ TableView::TableView()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TableView);
 
     SetDefaultStyleKey(this);
+    m_telemetry.initialCompletedContext = this;
+    m_telemetry.initialCompleted = [](void* context) noexcept
+    {
+        static_cast<TableView*>(context)->StopTelemetryLayout();
+    };
 
     // Columns must be observable; OnColumnsPropertyChanged owns the VectorChanged subscription to avoid duplicate callbacks.
     auto columns = winrt::single_threaded_observable_vector<winrt::TableViewColumn>();
@@ -450,6 +459,9 @@ TableView::TableView()
 
 void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
+    TableViewTelemetry::BeginSession(m_telemetry);
+    m_scrollTelemetry.usageOwner = &m_telemetry;
+    RefreshTelemetryConfiguration();
     BeginInitializationTelemetry(TableViewTelemetry::Origin::Loaded);
     QueueTelemetryLayout();
     // ThemeSettings requires a WindowId, so it can only be created once we have a XamlRoot.
@@ -509,6 +521,8 @@ void TableView::OnApplyTemplate()
 {
     m_headerSortSpaceArmedColumn = nullptr;
     StopTelemetryLayout();
+    if (m_telemetryTemplateApplied) { TableViewTelemetry::RecordRetemplate(m_telemetry); }
+    m_telemetryTemplateApplied = true;
     IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Retemplated, TableViewTelemetry::Stage::Template);
     BeginInitializationTelemetry(TableViewTelemetry::Origin::Template);
     bool completed = false;
@@ -516,7 +530,7 @@ void TableView::OnApplyTemplate()
     {
         if (!completed)
         {
-            FailOperationTelemetry(TableViewTelemetry::Operation::InitialLayout, 0, TableViewTelemetry::Stage::Template);
+            IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::InitialLayout, 0, TableViewTelemetry::Stage::Template);
         }
     });
     __super::OnApplyTemplate();
@@ -782,9 +796,12 @@ TableView::ActionTelemetry::ActionTelemetry(
         if (admitted && owner.IsLoaded() && !owner.m_rowsSourceDrained)
         {
             m_state.origin = owner.m_telemetry.origin;
+            m_state.usageOwner = &owner.m_telemetry;
             if (TableViewTelemetry::UpdateConfiguration(m_state, owner.m_telemetry.configuration))
             {
+                m_controlGenerationAtAdmission = owner.m_telemetry.operationGeneration;
                 m_generation = TableViewTelemetry::BeginOperation(m_state, operation);
+                if (m_generation) { m_previousAction = std::exchange(owner.m_activeActionTelemetry, this); }
             }
         }
     }
@@ -797,6 +814,7 @@ TableView::ActionTelemetry::ActionTelemetry(
 TableView::ActionTelemetry::~ActionTelemetry()
 {
     if (!m_generation) { return; }
+    m_owner.m_activeActionTelemetry = m_previousAction;
     if (m_lifetimeGeneration != m_owner.m_telemetryLifetimeGeneration)
     {
         TableViewTelemetry::IgnoreOperation(m_state, m_generation, m_owner.m_telemetryCancellationReason);
@@ -805,8 +823,7 @@ TableView::ActionTelemetry::~ActionTelemetry()
     auto const sourceGeneration = m_owner.m_rowMetadataGeneration;
     auto const selectionVersion = m_owner.m_selectionVersion;
     auto const editGeneration = m_owner.m_editGeneration;
-    auto const configuration = m_owner.SnapshotTelemetryConfiguration(
-        m_owner.m_telemetry.configuration.content, m_owner.m_telemetry.configuration.available);
+    auto const configuration = m_owner.SnapshotTelemetryConfiguration();
     if (m_lifetimeGeneration != m_owner.m_telemetryLifetimeGeneration)
     {
         TableViewTelemetry::IgnoreOperation(m_state, m_generation, m_owner.m_telemetryCancellationReason);
@@ -823,9 +840,20 @@ TableView::ActionTelemetry::~ActionTelemetry()
         TableViewTelemetry::IgnoreOperation(m_state, m_generation, TableViewTelemetry::IgnoreReason::Stale);
         return;
     }
-    if (m_failed || std::uncaught_exceptions() > m_exceptions)
+    if (m_appFaultKind != TableViewTelemetry::AppFaultKind::None)
+    {
+        TableViewTelemetry::IgnoreOperation(m_state, m_generation, TableViewTelemetry::IgnoreReason::ApplicationFault, m_error, m_appFaultKind);
+        TableViewTelemetry::ReportError(m_state, m_state.operation, m_stage, true,
+            TableViewTelemetry::Attribution::Application, m_error, m_appFaultKind);
+    }
+    else if (m_failed)
     {
         TableViewTelemetry::FailOperation(m_state, m_state.operation, m_generation, m_stage, m_error);
+    }
+    else if (std::uncaught_exceptions() > m_exceptions)
+    {
+        TableViewTelemetry::IgnoreOperation(m_state, m_generation, TableViewTelemetry::IgnoreReason::UnattributedFault);
+        TableViewTelemetry::ReportError(m_state, m_state.operation, m_stage, false);
     }
     else if (m_completed)
     {
@@ -841,6 +869,45 @@ void TableView::ActionTelemetry::Fail(std::optional<HRESULT> error) noexcept
 {
     if (!m_failed) { m_error = error; }
     m_failed = true;
+}
+
+void TableView::ActionTelemetry::ApplicationFault(TableViewTelemetry::AppFaultKind kind, std::optional<HRESULT> error) noexcept
+{
+    if (m_appFaultKind == TableViewTelemetry::AppFaultKind::None)
+    {
+        m_appFaultKind = kind;
+        m_error = error;
+    }
+}
+
+TableView::ApplicationCalloutTelemetry::ApplicationCalloutTelemetry(
+    TableView& owner, TableViewTelemetry::Stage stage, TableViewTelemetry::AppFaultKind kind) noexcept :
+    m_owner(owner), m_action(owner.m_activeActionTelemetry &&
+        (!TableViewTelemetry::IsOperationStarted(owner.m_telemetry) ||
+            owner.m_activeActionTelemetry->ControlGenerationAtAdmission() == owner.m_telemetry.operationGeneration) ?
+        owner.m_activeActionTelemetry : nullptr),
+    m_operation(TableViewTelemetry::IsOperationStarted(owner.m_telemetry) ?
+        owner.m_telemetry.operation : TableViewTelemetry::Operation::InitialLayout),
+    m_stage(stage), m_kind(kind), m_generation(owner.m_telemetry.operationGeneration),
+    m_lifetime(owner.m_telemetryLifetimeGeneration)
+{
+}
+
+void TableView::ApplicationCalloutTelemetry::Fault(std::optional<HRESULT> error) noexcept
+{
+    if (m_lifetime != m_owner.m_telemetryLifetimeGeneration) { return; }
+    if (m_action)
+    {
+        m_action->ApplicationFault(m_kind, error);
+    }
+    else if (m_generation == m_owner.m_telemetry.operationGeneration)
+    {
+        TableViewTelemetry::IgnoreOperation(m_owner.m_telemetry, m_generation,
+            TableViewTelemetry::IgnoreReason::ApplicationFault, error, m_kind);
+        TableViewTelemetry::IgnoreInitial(m_owner.m_telemetry, TableViewTelemetry::IgnoreReason::ApplicationFault, m_stage, error, m_kind);
+        TableViewTelemetry::ReportError(m_owner.m_telemetry, m_operation, m_stage, true,
+            TableViewTelemetry::Attribution::Application, error, m_kind);
+    }
 }
 
 void TableView::IgnoreTelemetry(TableViewTelemetry::IgnoreReason reason, TableViewTelemetry::Stage stage) noexcept
@@ -869,31 +936,28 @@ void TableView::BeginInitializationTelemetry(TableViewTelemetry::Origin origin) 
 void TableView::StopTelemetryLayout() noexcept
 {
     ++m_telemetryLayoutGeneration;
-    m_telemetrySourceChangedRevoker.revoke();
-    m_telemetryViewportChangedRevoker.revoke();
-    m_telemetryRootChangedRevoker.revoke();
     auto watches = std::move(m_telemetryVisualWatches);
     m_telemetryVisualWatches.clear();
-    for (auto const& watch : watches)
+    for (auto& watch : watches)
     {
-        if (auto object = watch.object.get(); object && watch.token)
-        {
-            try { object.UnregisterPropertyChangedCallback(watch.property, *watch.token); }
-            catch (...) { OutputDebugStringW(L"TableView telemetry: visual observer removal failed.\n"); }
-        }
+        watch.registration.Reset();
     }
-    auto const token = std::exchange(m_telemetryLayoutToken, {});
-    if (!token.value) { return; }
-    try { LayoutUpdated(token); }
-    catch (...) { OutputDebugStringW(L"TableView telemetry: layout observer removal failed.\n"); }
+    m_telemetryLayoutToken = {};
+    m_telemetryLayoutRegistration.Reset();
 }
 
 bool TableView::WatchTelemetryVisualProperty(
     winrt::DependencyObject const& object, winrt::DependencyProperty const& property)
 {
+    if (!TableViewTelemetry::NeedsLayout(m_telemetry)) { return false; }
     for (auto const& watch : m_telemetryVisualWatches)
     {
         if (watch.property == property && watch.object.get() == object) { return false; }
+    }
+    if (m_telemetryVisualWatches.size() >= 64)
+    {
+        m_telemetryObservationLimited = true;
+        return false;
     }
     auto const dispatcher = DispatcherQueue();
     if (!dispatcher)
@@ -902,10 +966,19 @@ bool TableView::WatchTelemetryVisualProperty(
         return false;
     }
     auto const generation = m_telemetryLayoutGeneration;
-    m_telemetryVisualWatches.push_back({ winrt::make_weak(object), property, std::nullopt });
+    TableViewTelemetry::Registration registration;
+    auto const iid = winrt::guid_of<winrt::IDependencyObject>();
+    if (!registration.Prepare(reinterpret_cast<::IUnknown*>(winrt::get_abi(object)),
+        reinterpret_cast<::GUID const&>(iid), reinterpret_cast<::IInspectable*>(winrt::get_abi(property)),
+        [](::IInspectable* publisher, ::IInspectable* argument, int64_t token) noexcept -> HRESULT
+        {
+            return reinterpret_cast<winrt::impl::abi_t<winrt::IDependencyObject>*>(publisher)->
+                UnregisterPropertyChangedCallback(argument, token);
+        })) { return false; }
+    m_telemetryVisualWatches.push_back({ winrt::make_weak(object), property, std::move(registration) });
     try
     {
-        m_telemetryVisualWatches.back().token = object.RegisterPropertyChangedCallback(
+        auto const token = object.RegisterPropertyChangedCallback(
             property, [weakThis = get_weak(), generation, dispatcher](auto&&, auto&&)
             {
                 try
@@ -927,6 +1000,7 @@ bool TableView::WatchTelemetryVisualProperty(
                     OutputDebugStringW(L"TableView telemetry: visual observer dispatch failed.\n");
                 }
             });
+        m_telemetryVisualWatches.back().registration.Arm(token);
     }
     catch (...)
     {
@@ -938,7 +1012,7 @@ bool TableView::WatchTelemetryVisualProperty(
 
 void TableView::WatchTelemetryTransform(winrt::Transform const& transform)
 {
-    if (!transform) { return; }
+    if (!transform || !SpendTelemetryInspectionBudget()) { return; }
     auto const watch = [this, &transform](std::initializer_list<winrt::DependencyProperty> properties)
     {
         for (auto const& property : properties) { WatchTelemetryVisualProperty(transform, property); }
@@ -978,92 +1052,70 @@ void TableView::WatchTelemetryTransform(winrt::Transform const& transform)
     {
         if (WatchTelemetryVisualProperty(group, winrt::TransformGroup::ChildrenProperty()))
         {
-            for (auto const& child : group.Children()) { WatchTelemetryTransform(child); }
+            for (auto const& child : group.Children())
+            {
+                if (m_telemetryObservationLimited) { break; }
+                WatchTelemetryTransform(child);
+            }
         }
     }
 }
 
-void TableView::WatchTelemetrySourceChanges()
+bool TableView::SpendTelemetryInspectionBudget() noexcept
 {
-    if ((!TableViewTelemetry::IsOperationStarted(m_telemetry) &&
-        !TableViewTelemetry::IsOperationStarted(m_scrollTelemetry)) || !m_rowsItemsSourceView) { return; }
-    auto const generation = m_telemetryLayoutGeneration;
-    m_telemetrySourceChangedRevoker = m_rowsItemsSourceView.CollectionChanged(winrt::auto_revoke,
-        [weakThis = get_weak(), generation](auto&&, auto&&)
-        {
-            if (auto self = weakThis.get(); self && self->m_telemetryLayoutGeneration == generation)
-            {
-                self->InvalidateOperationTelemetry();
-            }
-        });
+    if (!m_telemetryInspectionBudget)
+    {
+        m_telemetryObservationLimited = true;
+        return false;
+    }
+    --m_telemetryInspectionBudget;
+    return true;
 }
 
 void TableView::QueueTelemetryLayout() noexcept
 {
     if (m_telemetryMutationDepth || m_telemetryLayoutToken.value ||
-        (!TableViewTelemetry::NeedsLayout(m_telemetry) &&
-            !(m_scrollTelemetrySettled && TableViewTelemetry::IsOperationStarted(m_scrollTelemetry)))) { return; }
+        !TableViewTelemetry::NeedsLayout(m_telemetry)) { return; }
     try
     {
         if (!IsLoaded()) { return; }
         auto const generation = m_telemetryLayoutGeneration;
-        m_telemetryLayoutToken = LayoutUpdated([weakThis = get_weak(), generation](auto&&, auto&&)
+        auto const element = static_cast<winrt::TableView>(*this).as<winrt::IFrameworkElement>();
+        auto const iid = winrt::guid_of<winrt::IFrameworkElement>();
+        TableViewTelemetry::Registration registration;
+        if (!registration.Prepare(reinterpret_cast<::IUnknown*>(winrt::get_abi(element)),
+            reinterpret_cast<::GUID const&>(iid), nullptr,
+            [](::IInspectable* publisher, ::IInspectable*, int64_t token) noexcept -> HRESULT
+            {
+                return reinterpret_cast<winrt::impl::abi_t<winrt::IFrameworkElement>*>(publisher)->
+                    remove_LayoutUpdated(winrt::event_token{ token });
+            }))
+        {
+            TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::Stale);
+            return;
+        }
+        auto const token = LayoutUpdated([weakThis = get_weak(), generation](auto&&, auto&&)
         {
             if (auto self = weakThis.get(); self && self->m_telemetryLayoutGeneration == generation)
             {
                 self->OnTelemetryLayout();
             }
         });
-        WatchTelemetrySourceChanges();
+        registration.Arm(token.value);
+        m_telemetryLayoutToken = token;
+        m_telemetryLayoutRegistration = std::move(registration);
     }
     catch (...)
     {
         StopTelemetryLayout();
-        TableViewTelemetry::IgnoreOperation(m_telemetry, m_telemetry.operationGeneration, TableViewTelemetry::IgnoreReason::Stale);
-        IgnoreScrollTelemetry(TableViewTelemetry::IgnoreReason::Stale);
+        TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::Stale);
         OutputDebugStringW(L"TableView telemetry: layout observation failed.\n");
     }
 }
 
-void TableView::WatchTelemetryViewport()
+TableViewTelemetry::Configuration TableView::SnapshotTelemetryConfiguration() noexcept
 {
-    auto const dispatcher = DispatcherQueue();
-    if (!dispatcher)
-    {
-        OutputDebugStringW(L"TableView telemetry: viewport observer has no dispatcher.\n");
-        return;
-    }
-    auto const generation = m_telemetryLayoutGeneration;
-    auto const changed = [weakThis = get_weak(), generation, dispatcher](auto&&, auto&&)
-    {
-        try
-        {
-            if (!dispatcher.TryEnqueue([weakThis, generation]()
-                {
-                    if (auto self = weakThis.get(); self && self->m_telemetryLayoutGeneration == generation)
-                    {
-                        self->OnTelemetryLayout();
-                    }
-                }))
-            {
-                OutputDebugStringW(L"TableView telemetry: viewport observer dispatch failed.\n");
-            }
-        }
-        catch (...)
-        {
-            OutputDebugStringW(L"TableView telemetry: viewport observer dispatch failed.\n");
-        }
-    };
-    m_telemetryViewportChangedRevoker = EffectiveViewportChanged(winrt::auto_revoke, changed);
-    if (auto const root = XamlRoot())
-    {
-        m_telemetryRootChangedRevoker = root.Changed(winrt::auto_revoke, changed);
-    }
-}
-
-TableViewTelemetry::Configuration TableView::SnapshotTelemetryConfiguration(TableViewTelemetry::Content content, bool contentAvailable) noexcept
-{
-    TableViewTelemetry::Configuration configuration{ content, 0, false, false };
+    TableViewTelemetry::Configuration configuration{ TableViewTelemetry::Content::Empty, 0, false, false };
     try
     {
         auto const columns = Columns();
@@ -1076,9 +1128,23 @@ TableViewTelemetry::Configuration TableView::SnapshotTelemetryConfiguration(Tabl
             {
                 configuration.rowCountBucket = TableViewTelemetry::CountBucket(*count);
                 configuration.rowCountAvailable = true;
-                if (auto const view = sourceImpl->GetItemsSourceView(); view && view.Count() == 0)
+                if (auto const view = sourceImpl->GetItemsSourceView())
                 {
-                    configuration.content = TableViewTelemetry::Content::Empty;
+                    if (view.Count() == 0)
+                    {
+                        configuration.content = TableViewTelemetry::Content::Empty;
+                        configuration.available = true;
+                    }
+                    else if (!configuration.grouped)
+                    {
+                        configuration.content = TableViewTelemetry::Content::Rows;
+                        configuration.available = true;
+                    }
+                    else
+                    {
+                        // Header-free shaped data includes collapsed rows; it cannot certify presented content.
+                        configuration.content = TableViewTelemetry::Content::GroupHeaders;
+                    }
                 }
             }
         }
@@ -1086,8 +1152,8 @@ TableViewTelemetry::Configuration TableView::SnapshotTelemetryConfiguration(Tabl
         {
             configuration.rowCountAvailable = true;
             configuration.content = TableViewTelemetry::Content::Empty;
+            configuration.available = true;
         }
-        configuration.available = contentAvailable;
     }
     catch (...)
     {
@@ -1103,6 +1169,7 @@ bool TableView::TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& 
     {
         for (; node; node = winrt::VisualTreeHelper::GetParent(node))
         {
+            if (!SpendTelemetryInspectionBudget()) { return false; }
             if (auto element = node.try_as<winrt::UIElement>())
             {
                 if (element.Visibility() != winrt::Visibility::Visible) { return false; }
@@ -1150,9 +1217,12 @@ bool TableView::TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& 
             element.TransformToVisual(scroller).TransformBounds(
                 { 0, 0, static_cast<float>(element.ActualWidth()), static_cast<float>(element.ActualHeight()) }),
             { 0, 0, static_cast<float>(scroller.ViewportWidth()), static_cast<float>(scroller.ViewportHeight()) });
+        winrt::DependencyObject observationBoundary{ nullptr };
+        if (visible.Width <= 0 || visible.Height <= 0) { observationBoundary = scroller; }
         for (winrt::DependencyObject node = element; node && visible.Width > 0 && visible.Height > 0;
              node = winrt::VisualTreeHelper::GetParent(node))
         {
+            if (!SpendTelemetryInspectionBudget()) { return false; }
             if (auto visual = node.try_as<winrt::UIElement>(); visual)
             {
                 if (auto clip = visual.Clip())
@@ -1160,6 +1230,7 @@ bool TableView::TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& 
                     visible = intersect(visible, visual.TransformToVisual(scroller).TransformBounds(clip.Bounds()));
                     if (visible.Width <= 0 || visible.Height <= 0)
                     {
+                        observationBoundary = node;
                         WatchTelemetryVisualProperty(visual, winrt::UIElement::ClipProperty());
                         WatchTelemetryVisualProperty(clip, winrt::RectangleGeometry::RectProperty());
                         WatchTelemetryVisualProperty(clip, winrt::Geometry::TransformProperty());
@@ -1171,8 +1242,11 @@ bool TableView::TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& 
         visible = intersect(bodyToRoot.TransformBounds(visible), hostVisible);
         if (visible.Width <= 0 || visible.Height <= 0)
         {
-            for (winrt::DependencyObject node = element; node; node = winrt::VisualTreeHelper::GetParent(node))
+            // Transforms at or above this boundary move both shapes together.
+            for (winrt::DependencyObject node = element; node && node != observationBoundary;
+                 node = winrt::VisualTreeHelper::GetParent(node))
             {
+                if (!SpendTelemetryInspectionBudget()) { return false; }
                 if (auto visual = node.try_as<winrt::UIElement>())
                 {
                     WatchTelemetryVisualProperty(visual, winrt::UIElement::RenderTransformProperty());
@@ -1192,6 +1266,7 @@ bool TableView::TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& 
         auto const count = winrt::VisualTreeHelper::GetChildrenCount(repeater);
         for (int32_t index = 0; index < count && !found; ++index)
         {
+            if (!SpendTelemetryInspectionBudget()) { return false; }
             auto const child = winrt::VisualTreeHelper::GetChild(repeater, index).try_as<winrt::FrameworkElement>();
             if (!child || !child.IsLoaded() || repeater.GetElementIndex(child) < 0 ||
                 child.ActualWidth() <= 0 || child.ActualHeight() <= 0 ||
@@ -1207,6 +1282,7 @@ bool TableView::TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& 
                 if (rowImpl->GetOwningTableView() != *this || !cells) { continue; }
                 for (auto const& cell : cells.Children())
                 {
+                    if (!SpendTelemetryInspectionBudget()) { return false; }
                     if (auto element = cell.try_as<winrt::FrameworkElement>();
                         element && element.Visibility() == winrt::Visibility::Visible &&
                         element.ActualWidth() > 0 && element.ActualHeight() > 0 &&
@@ -1225,7 +1301,13 @@ bool TableView::TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& 
             configuration.content = TableViewTelemetry::Content::GroupHeaders;
         }
     }
-    configuration = SnapshotTelemetryConfiguration(configuration.content, true);
+    auto const observedContent = configuration.content;
+    configuration = SnapshotTelemetryConfiguration();
+    if (configuration.grouped && configuration.rowCountAvailable)
+    {
+        configuration.content = observedContent;
+        configuration.available = true;
+    }
     return true;
 }
 
@@ -1233,26 +1315,36 @@ void TableView::OnTelemetryLayout()
 {
     StopTelemetryLayout();
     if (m_telemetryMutationDepth || m_pendingGroupRowRefreshLayoutToken.value ||
-        (!TableViewTelemetry::NeedsLayout(m_telemetry) &&
-        !(m_scrollTelemetrySettled && TableViewTelemetry::IsOperationStarted(m_scrollTelemetry)))) { return; }
-    auto const generation = m_telemetry.operationGeneration;
+        !TableViewTelemetry::NeedsLayout(m_telemetry)) { return; }
+    if (++m_telemetryInspectionCount > 64)
+    {
+        TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::ObservationLimit);
+        return;
+    }
+    m_telemetryInspectionBudget = 256;
     auto const lifetime = m_telemetryLifetimeGeneration;
     auto const sourceGeneration = m_rowMetadataGeneration;
-    auto const scrollGeneration = m_scrollTelemetry.operationGeneration;
-    auto const scrollVersion = m_scrollTelemetryVersion;
     try
     {
         TableViewTelemetry::Configuration configuration;
         if (!TryGetTelemetryConfiguration(configuration))
         {
-            WatchTelemetrySourceChanges();
-            WatchTelemetryViewport();
+            if (m_telemetryObservationLimited)
+            {
+                StopTelemetryLayout();
+                TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::ObservationLimit);
+            }
             return;
         }
         StopTelemetryLayout();
+        if (m_telemetryObservationLimited)
+        {
+            TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::ObservationLimit);
+            return;
+        }
         if (m_telemetryMutationDepth || m_pendingGroupRowRefreshLayoutToken.value ||
             lifetime != m_telemetryLifetimeGeneration ||
-            sourceGeneration != m_rowMetadataGeneration || generation != m_telemetry.operationGeneration)
+            sourceGeneration != m_rowMetadataGeneration)
         {
             QueueTelemetryLayout();
             return;
@@ -1262,26 +1354,10 @@ void TableView::OnTelemetryLayout()
             if (TableViewTelemetry::UpdateConfiguration(m_telemetry, configuration))
             {
                 TableViewTelemetry::CompleteInitial(m_telemetry, TableViewTelemetry::Result::Success);
-                TableViewTelemetry::CompleteOperation(m_telemetry, generation, TableViewTelemetry::Result::Success);
-                TableViewTelemetry::ReportUsage(m_telemetry, configuration);
             }
             else
             {
                 TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::Stale);
-                TableViewTelemetry::IgnoreOperation(m_telemetry, generation, TableViewTelemetry::IgnoreReason::Stale);
-            }
-        }
-        if (m_scrollTelemetrySettled && scrollVersion == m_scrollTelemetryVersion &&
-            TableViewTelemetry::IsOperationStarted(m_scrollTelemetry))
-        {
-            if (TableViewTelemetry::UpdateConfiguration(m_scrollTelemetry, configuration))
-            {
-                TableViewTelemetry::CompleteOperation(m_scrollTelemetry, scrollGeneration, TableViewTelemetry::Result::Success);
-                m_scrollTelemetrySettled = false;
-            }
-            else
-            {
-                IgnoreScrollTelemetry(TableViewTelemetry::IgnoreReason::Stale);
             }
         }
         if (!m_scrollTelemetryViewport.known)
@@ -1292,8 +1368,7 @@ void TableView::OnTelemetryLayout()
     catch (...)
     {
         StopTelemetryLayout();
-        TableViewTelemetry::IgnoreOperation(m_telemetry, generation, TableViewTelemetry::IgnoreReason::Stale);
-        TableViewTelemetry::IgnoreOperation(m_scrollTelemetry, scrollGeneration, TableViewTelemetry::IgnoreReason::Stale);
+        TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::Stale);
         OutputDebugStringW(L"TableView telemetry: usable layout could not be inspected.\n");
     }
 }
@@ -1301,12 +1376,15 @@ void TableView::OnTelemetryLayout()
 uint64_t TableView::BeginOperationTelemetry(TableViewTelemetry::Operation operation, bool admitted) noexcept
 {
     ++m_telemetryMutationDepth;
-    StopTelemetryLayout();
     if (!admitted) { return 0; }
     IgnoreScrollTelemetry(TableViewTelemetry::IgnoreReason::Superseded);
     try
     {
-        if (IsLoaded()) { return TableViewTelemetry::BeginOperation(m_telemetry, operation); }
+        if (IsLoaded() && !m_rowsSourceDrained)
+        {
+            RefreshTelemetryConfiguration();
+            return TableViewTelemetry::BeginOperation(m_telemetry, operation);
+        }
     }
     catch (...) { OutputDebugStringW(L"TableView telemetry: operation attachment check failed.\n"); }
     return 0;
@@ -1330,23 +1408,46 @@ void TableView::InvalidateOperationTelemetry() noexcept
     {
         return;
     }
-    StopTelemetryLayout();
     TableViewTelemetry::IgnoreOperation(m_telemetry, m_telemetry.operationGeneration, TableViewTelemetry::IgnoreReason::Superseded);
-    QueueTelemetryLayout();
 }
 
-void TableView::FailOperationTelemetry(
+void TableView::IgnoreUnattributedTelemetry(
     TableViewTelemetry::Operation operation, uint64_t generation, TableViewTelemetry::Stage stage, std::optional<HRESULT> error) noexcept
 {
-    if (m_telemetry.initial == TableViewTelemetry::InitialState::NotStarted) { return; }
     if (generation != m_telemetry.operationGeneration &&
         !(operation == TableViewTelemetry::Operation::InitialLayout && generation == 0)) { return; }
+    if (TableViewTelemetry::IsOperationHandled(m_telemetry, operation, generation)) { return; }
     auto const currentGeneration = m_telemetry.operationGeneration;
-    auto const configuration = SnapshotTelemetryConfiguration(m_telemetry.configuration.content, m_telemetry.configuration.available);
+    auto const configuration = SnapshotTelemetryConfiguration();
     if (currentGeneration == m_telemetry.operationGeneration &&
+        !TableViewTelemetry::IsOperationHandled(m_telemetry, operation, generation) &&
         TableViewTelemetry::UpdateConfiguration(m_telemetry, configuration))
     {
-        TableViewTelemetry::FailOperation(m_telemetry, operation, generation, stage, error);
+        TableViewTelemetry::IgnoreOperation(m_telemetry, generation, TableViewTelemetry::IgnoreReason::UnattributedFault, error);
+        TableViewTelemetry::IgnoreInitial(m_telemetry, TableViewTelemetry::IgnoreReason::UnattributedFault, stage, error);
+        TableViewTelemetry::ReportError(m_telemetry, operation, stage, false, TableViewTelemetry::Attribution::Unknown, error);
+    }
+}
+
+void TableView::RefreshTelemetryConfiguration() noexcept
+{
+    if (m_telemetry.session.active || TableViewTelemetry::NeedsLayout(m_telemetry) ||
+        TableViewTelemetry::IsOperationStarted(m_telemetry))
+    {
+        TableViewTelemetry::UpdateConfiguration(m_telemetry,
+            SnapshotTelemetryConfiguration());
+    }
+}
+
+void TableView::CompleteOperationTelemetry(uint64_t generation) noexcept
+{
+    if (!generation || generation != m_telemetry.operationGeneration ||
+        !TableViewTelemetry::IsOperationStarted(m_telemetry)) { return; }
+    auto const lifetime = m_telemetryLifetimeGeneration;
+    RefreshTelemetryConfiguration();
+    if (lifetime == m_telemetryLifetimeGeneration)
+    {
+        TableViewTelemetry::CompleteOperation(m_telemetry, generation, TableViewTelemetry::Result::Success);
     }
 }
 
@@ -1391,7 +1492,7 @@ void TableView::ObserveScrollTelemetry(winrt::ScrollViewer const& scroller, bool
             {
                 m_scrollTelemetry.origin = m_telemetry.origin;
                 if (!TableViewTelemetry::UpdateConfiguration(m_scrollTelemetry,
-                    SnapshotTelemetryConfiguration(m_telemetry.configuration.content, m_telemetry.configuration.available))) { return; }
+                    SnapshotTelemetryConfiguration())) { return; }
                 TableViewTelemetry::BeginOperation(m_scrollTelemetry, TableViewTelemetry::Operation::Scroll);
             }
         }
@@ -1487,6 +1588,8 @@ void TableView::OnBodyScrollerViewChanged(
 
     ObserveScrollTelemetry(bodyScroller, args.IsIntermediate());
     auto const generation = m_scrollTelemetry.operationGeneration;
+    auto const version = m_scrollTelemetryVersion;
+    auto const lifetime = m_telemetryLifetimeGeneration;
     try
     {
         const double bodyHOffset = bodyScroller.HorizontalOffset();
@@ -1523,14 +1626,24 @@ void TableView::OnBodyScrollerViewChanged(
     catch (...)
     {
         if (TableViewTelemetry::UpdateConfiguration(m_scrollTelemetry,
-            SnapshotTelemetryConfiguration(m_telemetry.configuration.content, m_telemetry.configuration.available)))
+            SnapshotTelemetryConfiguration()))
         {
-            TableViewTelemetry::FailOperation(m_scrollTelemetry, TableViewTelemetry::Operation::Scroll,
-                generation, TableViewTelemetry::Stage::Scroll, winrt::to_hresult());
+            TableViewTelemetry::IgnoreOperation(m_scrollTelemetry, generation,
+                TableViewTelemetry::IgnoreReason::UnattributedFault, winrt::to_hresult());
         }
         throw;
     }
-    if (m_scrollTelemetrySettled) { OnTelemetryLayout(); }
+    if (m_scrollTelemetrySettled && version == m_scrollTelemetryVersion && lifetime == m_telemetryLifetimeGeneration)
+    {
+        auto const configuration = SnapshotTelemetryConfiguration();
+        if (version == m_scrollTelemetryVersion && lifetime == m_telemetryLifetimeGeneration &&
+            generation == m_scrollTelemetry.operationGeneration &&
+            TableViewTelemetry::UpdateConfiguration(m_scrollTelemetry, configuration))
+        {
+            TableViewTelemetry::CompleteOperation(m_scrollTelemetry, generation, TableViewTelemetry::Result::Success);
+            if (version == m_scrollTelemetryVersion) { m_scrollTelemetrySettled = false; }
+        }
+    }
     QueueTelemetryLayout();
 }
 
@@ -1553,8 +1666,9 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     {
         if (!completed)
         {
-            FailOperationTelemetry(TableViewTelemetry::Operation::ReplaceSource, telemetryGeneration, TableViewTelemetry::Stage::Source);
+            IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::ReplaceSource, telemetryGeneration, TableViewTelemetry::Stage::Source);
         }
+        else { CompleteOperationTelemetry(telemetryGeneration); }
         EndOperationTelemetry();
     });
 
@@ -2076,17 +2190,16 @@ void TableView::QueueGroupExpansionRowRefresh()
                 const auto error = winrt::to_hresult();
                 if (lifetime == strongThis->m_telemetryLifetimeGeneration)
                 {
-                    strongThis->FailOperationTelemetry(TableViewTelemetry::Operation::Layout,
+                    strongThis->IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::Layout,
                         telemetryGeneration, TableViewTelemetry::Stage::Layout, error);
                     if (lifetime == strongThis->m_telemetryLifetimeGeneration &&
                         scrollGeneration == strongThis->m_scrollTelemetry.operationGeneration &&
                         TableViewTelemetry::IsOperationStarted(strongThis->m_scrollTelemetry) &&
                         TableViewTelemetry::UpdateConfiguration(strongThis->m_scrollTelemetry,
-                            strongThis->SnapshotTelemetryConfiguration(strongThis->m_telemetry.configuration.content,
-                                strongThis->m_telemetry.configuration.available)))
+                            strongThis->SnapshotTelemetryConfiguration()))
                     {
-                        TableViewTelemetry::FailOperation(strongThis->m_scrollTelemetry, TableViewTelemetry::Operation::Scroll,
-                            scrollGeneration, TableViewTelemetry::Stage::Scroll, error);
+                        TableViewTelemetry::IgnoreOperation(strongThis->m_scrollTelemetry, scrollGeneration,
+                            TableViewTelemetry::IgnoreReason::UnattributedFault, error);
                     }
                 }
                 // Best-effort repair after a deferred grouped reshape.
@@ -2162,12 +2275,18 @@ void TableView::AdoptItemsSource()
                 strongThis->OnTableViewSourceShapingChanged(reorderOnly);
             }
         });
-        sourceImpl->SetShapingOperationHandlers(
-            [weakThis](TableViewTelemetry::Operation operation, bool admitted) noexcept -> uint64_t
+        auto const weakSource = winrt::make_weak(tableViewSource);
+        sourceImpl->SetShapingOperationHandlers(*this,
+            [weakThis, weakSource](TableViewTelemetry::Operation operation, bool admitted) noexcept -> uint64_t
             {
                 if (auto self = weakThis.get())
                 {
                     ++self->m_telemetrySourceMutationDepth;
+                    if (self->m_activeSource.get() != weakSource.get())
+                    {
+                        ++self->m_telemetryMutationDepth;
+                        return 0;
+                    }
                     if (operation == TableViewTelemetry::Operation::Sort && self->m_isApplyingControlInitiatedSort)
                     {
                         ++self->m_telemetryMutationDepth;
@@ -2181,24 +2300,48 @@ void TableView::AdoptItemsSource()
                 }
                 return 0;
             },
-            [weakThis](TableViewTelemetry::Operation operation, uint64_t generation,
-                TableViewTelemetry::Result result, std::optional<HRESULT> error) noexcept
+            [weakThis, weakSource](TableViewTelemetry::Operation operation, uint64_t generation,
+                std::optional<TableViewTelemetry::IgnoreReason> reason, std::optional<HRESULT> error,
+                TableViewTelemetry::AppFaultKind kind) noexcept
             {
                 if (auto self = weakThis.get())
                 {
-                    if (generation && result == TableViewTelemetry::Result::Failure)
+                    auto completeScope = gsl::finally([&self]() noexcept
                     {
-                        auto const stage = operation == TableViewTelemetry::Operation::Filter ? TableViewTelemetry::Stage::Filter :
-                            operation == TableViewTelemetry::Operation::Sort ? TableViewTelemetry::Stage::Sort : TableViewTelemetry::Stage::Grouping;
-                        self->FailOperationTelemetry(operation, generation, stage, error);
-                    }
-                    else if (generation && result == TableViewTelemetry::Result::Cancelled &&
-                        !self->m_isApplyingControlInitiatedSort)
+                        --self->m_telemetrySourceMutationDepth;
+                        self->EndOperationTelemetry();
+                    });
+                    if (!generation || self->m_activeSource.get() != weakSource.get() ||
+                        generation != self->m_telemetry.operationGeneration) { return; }
+                    auto const stage = operation == TableViewTelemetry::Operation::Filter ? TableViewTelemetry::Stage::Filter :
+                        operation == TableViewTelemetry::Operation::Sort ? TableViewTelemetry::Stage::Sort : TableViewTelemetry::Stage::Grouping;
+                    if (reason)
                     {
-                        TableViewTelemetry::IgnoreOperation(self->m_telemetry, generation, TableViewTelemetry::IgnoreReason::Stale);
+                        TableViewTelemetry::IgnoreOperation(self->m_telemetry, generation, *reason, error, kind);
+                        if (*reason == TableViewTelemetry::IgnoreReason::ApplicationFault ||
+                            *reason == TableViewTelemetry::IgnoreReason::UnattributedFault)
+                        {
+                            TableViewTelemetry::IgnoreInitial(self->m_telemetry, *reason, stage, error, kind);
+                            TableViewTelemetry::ReportError(self->m_telemetry, operation, stage, false,
+                                kind == TableViewTelemetry::AppFaultKind::None ? TableViewTelemetry::Attribution::Unknown :
+                                    TableViewTelemetry::Attribution::Application, error, kind);
+                        }
                     }
-                    --self->m_telemetrySourceMutationDepth;
-                    self->EndOperationTelemetry();
+                    else if (operation == TableViewTelemetry::Operation::Sort && self->m_isApplyingControlInitiatedSort)
+                    {
+                        self->m_controlSortPublishedGeneration = generation;
+                    }
+                    else { self->CompleteOperationTelemetry(generation); }
+                }
+            },
+            [weakThis, weakSource](TableViewTelemetry::Operation operation, TableViewTelemetry::AppFaultKind kind, HRESULT error) noexcept
+            {
+                if (auto self = weakThis.get(); self && self->m_activeSource.get() == weakSource.get())
+                {
+                    TableViewTelemetry::ReportError(self->m_telemetry, operation, TableViewTelemetry::Stage::Source,
+                        kind == TableViewTelemetry::AppFaultKind::Binding,
+                        kind == TableViewTelemetry::AppFaultKind::None ? TableViewTelemetry::Attribution::Unknown :
+                            TableViewTelemetry::Attribution::Application, error, kind);
                 }
             });
     }
@@ -2265,6 +2408,7 @@ void TableView::RefreshRowsPipeline()
 void TableView::OnTableViewSourceProjectionChanged()
 {
     InvalidateOperationTelemetry();
+    RefreshTelemetryConfiguration();
     // A shaping verb swapped the projected shape after we bound, so the cached view and row
     // metadata describe the previous projection. Re-read them and re-drive the rows.
     if (IsEditing())
@@ -2281,6 +2425,7 @@ void TableView::OnTableViewSourceProjectionChanged()
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
 {
     InvalidateOperationTelemetry();
+    RefreshTelemetryConfiguration();
     if (!reorderOnly)
     {
         QueueGroupExpansionRowRefresh();
@@ -2350,6 +2495,8 @@ void TableView::UpdateItemsSourceCollectionChangedSubscription()
 
 void TableView::OnItemsSourceCollectionChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
 {
+    InvalidateOperationTelemetry();
+    RefreshTelemetryConfiguration();
     UpdateEmptyState();
     QueueTerminalGridLineRefresh();
 }
@@ -3231,7 +3378,9 @@ void TableView::OnTableViewUnloaded()
 {
     m_headerSortSpaceArmedColumn = nullptr;
     StopTelemetryLayout();
+    RefreshTelemetryConfiguration();
     IgnoreTelemetry(TableViewTelemetry::IgnoreReason::Unloaded);
+    TableViewTelemetry::EndSession(m_telemetry);
     if (m_pendingFocusLayoutToken.value)
     {
         LayoutUpdated(m_pendingFocusLayoutToken);

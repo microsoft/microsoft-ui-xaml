@@ -52,7 +52,7 @@ public:
     winrt::TableViewSource GroupBy(winrt::TableViewKeySelector const& key, winrt::TableViewIdentitySelector const& groupIdentitySelector);
     winrt::TableViewSource Sort(winrt::TableViewKeySelector const& key, winrt::SortDirection direction);
     winrt::TableViewSource Sort(winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
-    winrt::TableViewSource SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
+    winrt::TableViewSource SortReplacing(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction, bool applicationKey = true);
     winrt::TableViewSource ClearFilter();
     winrt::TableViewSource ClearGroupBy();
     winrt::TableViewSource ClearSort();
@@ -106,20 +106,26 @@ public:
     // Raised when a shaping verb rewrote the projection. `reorderOnly` is true when membership is
     // unchanged and only the order moved.
     void SetShapingChangedHandler(std::function<void(bool)> handler) { m_shapingChanged = std::move(handler); }
-    using ShapingOperationCompleted = std::function<void(TableViewTelemetry::Operation, uint64_t, TableViewTelemetry::Result, std::optional<HRESULT>)>;
+    using ShapingOperationCompleted = std::function<void(TableViewTelemetry::Operation, uint64_t,
+        std::optional<TableViewTelemetry::IgnoreReason>, std::optional<HRESULT>, TableViewTelemetry::AppFaultKind)>;
     void SetShapingOperationHandlers(
+        winrt::IInspectable const& owner,
         std::function<uint64_t(TableViewTelemetry::Operation, bool)> begin,
-        ShapingOperationCompleted complete)
-    {
-        m_beginShapingOperation = std::move(begin);
-        m_completeShapingOperation = std::move(complete);
-    }
-    // Owned key resolvers report only caught exceptions; the engine's computation owns the fact.
-    void ObserveShapingFailure(HRESULT error) noexcept;
+        ShapingOperationCompleted complete,
+        std::function<void(TableViewTelemetry::Operation, TableViewTelemetry::AppFaultKind, HRESULT)> unownedAppFault);
+    void ObserveShapingFailure(HRESULT error,
+        TableViewTelemetry::AppFaultKind kind = TableViewTelemetry::AppFaultKind::Callback,
+        TableViewTelemetry::Operation operation = TableViewTelemetry::Operation::Sort) noexcept;
 
 private:
     struct ShapingOperation;
-    winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);
+    struct ShapingTelemetryHandlers
+    {
+        std::function<uint64_t(TableViewTelemetry::Operation, bool)> begin;
+        ShapingOperationCompleted complete;
+        std::function<void(TableViewTelemetry::Operation, TableViewTelemetry::AppFaultKind, HRESULT)> unownedAppFault;
+    };
+    winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction, bool applicationKey = true);
     // Re-derives everything this class caches from the shape the engine just produced.
     void OnProjectionRebuilt();
     TableViewRowItemKeySelector MakeIdentitySelector() const;
@@ -139,8 +145,10 @@ private:
     // source that has been swapped out cannot drive its former owner.
     std::function<void()> m_projectionChanged{};
     std::function<void(bool)> m_shapingChanged{};
-    std::function<uint64_t(TableViewTelemetry::Operation, bool)> m_beginShapingOperation;
-    ShapingOperationCompleted m_completeShapingOperation;
+    std::shared_ptr<ShapingTelemetryHandlers> m_shapingTelemetryHandlers;
+    ShapingOperation* m_shapingOperation{};
+    uint64_t m_ownerGeneration{};
+    uint32_t m_notificationDepth{};
     bool m_hasFilter{};
     bool m_hasGroup{};
     // tracker_ref so the GC can walk this strong reference into the (possibly managed) projected

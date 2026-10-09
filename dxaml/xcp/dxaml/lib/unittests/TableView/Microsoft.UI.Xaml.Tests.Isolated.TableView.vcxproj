@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectName>Microsoft.UI.Xaml.Tests.Isolated.TableView</ProjectName>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ProjectGuid>{BC19E4F0-51F4-4D9C-9095-8CBD11FB3550}</ProjectGuid>
+    <TestCode>true</TestCode>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(MuxControlsPath)\dev\TableView\TableView.TestInProduction.props" />
+  <PropertyGroup>
+    <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) TEST_CODE=1;MUXCONTROLS_TABULAR;</ProjectPreprocessorDefinitions>
+    <ProjectPreprocessorDefinitions Condition="'$(TestInProductionIsReal)' == 'true'">$(ProjectPreprocessorDefinitions) TABLEVIEW_TIP_REAL_LIBRARY=1;</ProjectPreprocessorDefinitions>
+    <ProjectPreprocessorDefinitions Condition="'$(TestInProductionIsReal)' != 'true'">$(ProjectPreprocessorDefinitions) TABLEVIEW_TIP_REAL_LIBRARY=0;</ProjectPreprocessorDefinitions>
+    <ProjectIncludeDirectories>$(ProjectIncludeDirectories);$(MSBuildThisFileDirectory);$(MuxControlsPath)\dev\TableView;$(MuxControlsPath)\dev\Telemetry;$(MuxControlsPath)\dev\inc;$(XcpPath)\inc;$(TempDir);</ProjectIncludeDirectories>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="TableViewTipTests_UnitTests.cpp" />
+    <ClCompile Include="TableViewTelemetry_UnitTests.cpp" />
+    <ClCompile Include="TableViewTelemetryRegistration_UnitTests.cpp" />
+    <ClCompile Include="$(MuxControlsPath)\dev\TableView\TableViewTelemetry.cpp" />
+    <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <AdditionalOptions>$([System.String]::Copy('%(AdditionalOptions)').Replace('/Zc:noexceptTypes-', '/Zc:noexceptTypes'))</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>onecoreuap.lib;tdh.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+  <Target Name="EnsureTableViewPolicyPackageImports" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('$(TestInProductionTargetsFile)')" Text="Restore the selected TableView TestInProduction package: $(TestInProductionTargetsFile)" />
+    <Error Condition="!Exists('$(TaefPkgDirectory)\build\Microsoft.Taef.targets')" Text="Restore the declared Microsoft.Taef package." />
+  </Target>
+  <Import Project="$(TestInProductionTargetsFile)" Condition="Exists('$(TestInProductionTargetsFile)')" />
+  <Import Project="$(TaefPkgDirectory)\build\Microsoft.Taef.targets" Condition="Exists('$(TaefPkgDirectory)\build\Microsoft.Taef.targets')" />
+</Project>

@@ -15,7 +15,6 @@
 #include <cmath>
 #include <algorithm>
 #include <string_view>
-#include <exception>
 #include <unordered_set>
 #include <winrt/Microsoft.UI.Dispatching.h>
 
@@ -55,93 +54,16 @@ ShapedItemsSource::~ShapedItemsSource()
     UnsubscribeFromSourceCollectionChanges();
 }
 
-ShapedItemsSource::ShapingOperation::~ShapingOperation()
-{
-    if (m_started && !m_finished) { m_callback(Status::Cancelled, {}); }
-}
-
-void ShapedItemsSource::ShapingOperation::Start() noexcept
-{
-    m_started = true;
-    m_callback(Status::Started, {});
-}
-
-void ShapedItemsSource::ShapingOperation::EndBody(bool completed) noexcept
-{
-    m_bodyEnded = true;
-    if (!completed)
-    {
-        Fail();
-        m_computationEnded = true;
-    }
-    Complete();
-}
-
-void ShapedItemsSource::ShapingOperation::Computed(bool completed) noexcept
-{
-    m_computationEnded = true;
-    m_computed = completed;
-    Complete();
-}
-
-void ShapedItemsSource::ShapingOperation::Supersede() noexcept
-{
-    m_superseded = true;
-    m_computationEnded = true;
-    Complete();
-}
-
-void ShapedItemsSource::ShapingOperation::Fail(std::optional<HRESULT> error) noexcept
-{
-    if (!m_failed) { m_error = error; }
-    m_failed = true;
-}
-
-void ShapedItemsSource::ShapingOperation::Complete() noexcept
-{
-    if (!m_started || m_finished || !m_bodyEnded || !m_computationEnded) { return; }
-    m_finished = true;
-    m_callback(m_superseded ? Status::Cancelled : m_failed ? Status::Failed :
-        m_computed ? Status::Succeeded : Status::Cancelled, m_error);
-}
-
-ShapedItemsSource::ComputationScope::ComputationScope(ShapedItemsSource& owner) noexcept :
-    m_owner(owner), m_operation(owner.m_pendingShapingOperation),
-    m_previous(std::exchange(owner.m_computingShapingOperation, m_operation)),
-    m_exceptions(std::uncaught_exceptions())
-{
-}
-
-ShapedItemsSource::ComputationScope::~ComputationScope()
-{
-    if (m_operation && std::uncaught_exceptions() > m_exceptions) { m_operation->Fail(); }
-    m_owner.m_computingShapingOperation = std::move(m_previous);
-}
-
-void ShapedItemsSource::ObserveShapingFailure(HRESULT error) noexcept
-{
-    if (m_computingShapingOperation) { m_computingShapingOperation->Fail(error); }
-}
-
-void ShapedItemsSource::CompleteShapingOperation() noexcept
-{
-    if (m_shapingOperationDepth || m_isRefreshing || m_isApplyingIncrementalChange || m_pendingRefresh) { return; }
-    auto operation = std::exchange(m_pendingShapingOperation, {});
-    const bool computed = operation && m_computedShapingOperation == operation;
-    m_computedShapingOperation.reset();
-    if (operation) { operation->Computed(computed); }
-}
-
 void ShapedItemsSource::Start()
 {
     SubscribeToSourceCollectionChanges();
     Refresh();
 }
 
-void ShapedItemsSource::SetFilter(ShapingHelpers::Predicate const& predicate, ShapingOperationPtr const& operation)
+void ShapedItemsSource::SetFilter(ShapingHelpers::Predicate const& predicate)
 {
     m_pipeline.SetFilter(predicate);
-    ApplyShapingChange(operation);
+    ApplyShapingChange();
 }
 
 void ShapedItemsSource::SetFilter(winrt::hstring const& axisToken, ShapingHelpers::Predicate const& predicate)
@@ -150,10 +72,10 @@ void ShapedItemsSource::SetFilter(winrt::hstring const& axisToken, ShapingHelper
     ApplyShapingChange();
 }
 
-void ShapedItemsSource::ClearFilter(ShapingOperationPtr const& operation)
+void ShapedItemsSource::ClearFilter()
 {
     m_pipeline.ClearFilter();
-    ApplyShapingChange(operation);
+    ApplyShapingChange();
 }
 
 void ShapedItemsSource::ClearFilter(winrt::hstring const& axisToken)
@@ -164,21 +86,20 @@ void ShapedItemsSource::ClearFilter(winrt::hstring const& axisToken)
 
 void ShapedItemsSource::SetGroup(
     ShapingHelpers::KeySelector const& key,
-    RowIdentity::IdentitySelector const& groupIdentitySelector,
-    ShapingOperationPtr const& operation)
+    RowIdentity::IdentitySelector const& groupIdentitySelector)
 {
     m_groupSelector = key;
     m_groupIdentitySelector = groupIdentitySelector;
     m_pipeline.MarkGroupVerb(key);
-    ApplyShapingChange(operation);
+    ApplyShapingChange();
 }
 
-void ShapedItemsSource::ClearGroup(ShapingOperationPtr const& operation)
+void ShapedItemsSource::ClearGroup()
 {
     m_groupSelector = nullptr;
     m_groupIdentitySelector = nullptr;
     m_pipeline.ClearGroupVerb();
-    ApplyShapingChange(operation);
+    ApplyShapingChange();
 }
 
 void ShapedItemsSource::SetSort(
@@ -187,29 +108,28 @@ void ShapedItemsSource::SetSort(
     ShapingHelpers::KeySelector const& key,
     winrt::Windows::Foundation::IUnknown const& keyIdentity,
     winrt::hstring const& sortMemberPath,
-    winrt::SortDirection direction,
-    ShapingOperationPtr const& operation)
+    winrt::SortDirection direction)
 {
     m_pipeline.SetSort(previousAxisToken, axisToken, key, keyIdentity, sortMemberPath, direction);
-    ApplyShapingChange(operation);
+    ApplyShapingChange();
 }
 
-void ShapedItemsSource::ClearSorts(ShapingOperationPtr const& operation)
+void ShapedItemsSource::ClearSorts()
 {
     m_pipeline.ClearSorts();
-    ApplyShapingChange(operation);
+    ApplyShapingChange();
 }
 
-void ShapedItemsSource::ClearSort(winrt::hstring const& axisToken, ShapingOperationPtr const& operation)
+void ShapedItemsSource::ClearSort(winrt::hstring const& axisToken)
 {
     m_pipeline.ClearSort(axisToken);
-    ApplyShapingChange(operation);
+    ApplyShapingChange();
 }
 
-void ShapedItemsSource::ClearSortsExcept(winrt::hstring const& axisToken, ShapingOperationPtr const& operation)
+void ShapedItemsSource::ClearSortsExcept(winrt::hstring const& axisToken)
 {
     m_pipeline.ClearSortsExcept(axisToken);
-    ApplyShapingChange(operation);
+    ApplyShapingChange();
 }
 
 std::vector<ShapedItemsSource::ActiveSortAxisInfo> ShapedItemsSource::ActiveSortAxisInfos() const
@@ -222,7 +142,7 @@ std::vector<ShapedItemsSource::ActiveSortAxisInfo> ShapedItemsSource::ActiveSort
     return infos;
 }
 
-void ShapedItemsSource::ApplyShapingChange(ShapingOperationPtr const& operation)
+void ShapedItemsSource::ApplyShapingChange()
 {
     // Commit unconditionally, even when the in-place path is not taken: the committed spec is
     // the baseline the NEXT verb diffs against, so skipping it would make that diff report a
@@ -231,7 +151,6 @@ void ShapedItemsSource::ApplyShapingChange(ShapingOperationPtr const& operation)
 
     if (delta.IsNoOp())
     {
-        if (operation) { operation->Computed(true); }
         // Re-declaring the identical shape. The projection already satisfies it, and a rebuild
         // would fire a Reset that drops every realized row for nothing. Reachable only from a
         // Clear* verb against a shape that has nothing to clear — every declaration re-mints its
@@ -239,21 +158,7 @@ void ShapedItemsSource::ApplyShapingChange(ShapingOperationPtr const& operation)
         return;
     }
 
-    ++m_shapingOperationDepth;
-    auto completion = wil::scope_exit([this]() noexcept
-    {
-        --m_shapingOperationDepth;
-        CompleteShapingOperation();
-    });
-    auto previousOperation = std::exchange(m_pendingShapingOperation, operation);
-    if (previousOperation && previousOperation != operation) { previousOperation->Supersede(); }
-    bool applied = false;
-    {
-        ComputationScope computation{ *this };
-        applied = TryApplyShapingDeltaInPlace(delta);
-        if (applied) { m_computedShapingOperation = computation.Operation(); }
-    }
-    if (applied)
+    if (TryApplyShapingDeltaInPlace(delta))
     {
         RaiseShapingChanged(true /* reorderOnly */);
         return;
@@ -423,7 +328,6 @@ void ShapedItemsSource::OnSourceCollectionChanged()
 
 void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
-    auto completion = wil::scope_exit([this]() noexcept { CompleteShapingOperation(); });
     // See the UI-thread contract on OnSourceCollectionChanged(): incremental InsertAt/RemoveAt/
     // SetAt below mutate the UI-affine projection directly, so they must run on the owning thread.
 
@@ -465,7 +369,6 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
 
 void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
 {
-    auto completion = wil::scope_exit([this]() noexcept { CompleteShapingOperation(); });
     // See the UI-thread contract on OnSourceCollectionChanged().
 
     if (m_isRefreshing)
@@ -1111,7 +1014,6 @@ void ShapedItemsSource::Refresh()
         return;
     }
 
-    auto completion = wil::scope_exit([this]() noexcept { CompleteShapingOperation(); });
     bool const wasProjectedAsGrouped = m_projectedAsGrouped;
     bool runPendingRefresh = false;
     {
@@ -1125,31 +1027,19 @@ void ShapedItemsSource::Refresh()
         });
 
         auto const authoritativeSource = m_source;
-        std::vector<winrt::IInspectable> rows;
-        {
-            ComputationScope computation{ *this };
-            rows = Materialize(authoritativeSource);
-        }
+        auto rows = Materialize(authoritativeSource);
 
         if (!HasAnyShapingVerb())
         {
-            ComputationScope computation{ *this };
             // Nothing is being shaped, so this is a plain mirror of the source. Identity buys
             // nothing here -- there is no reordering to anchor against and no membership change to
             // splice surgically -- and minting it would cost a QI plus a string format per row on
             // every refresh of a table that asked for none of it.
             RebuildUnshapedRows(rows, L"no shaping verb");
-            m_computedShapingOperation = computation.Operation();
         }
         else
         {
-            {
-                ComputationScope computation{ *this };
-                ApplyFilter(rows);
-            }
-            // A predicate can install a new grouping/sort request. Bind the next phase to
-            // that recipe's operation, not to the lexical caller that started this Refresh.
-            ComputationScope computation{ *this };
+            ApplyFilter(rows);
 
             // A shaping verb is in force here (the branch above took the no-verb case), and a verb
             // always requires identity, so there is nothing to gate on.
@@ -1189,7 +1079,6 @@ void ShapedItemsSource::Refresh()
             {
                 RebuildFlat(rows);
             }
-            m_computedShapingOperation = computation.Operation();
         }
         MUX_ASSERT(m_source == authoritativeSource);
     }
@@ -1212,13 +1101,6 @@ void ShapedItemsSource::Refresh()
     {
         RaiseShapeSwapped();
     }
-}
-
-void ShapedItemsSource::ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder, int32_t beforeOrder)
-{
-    // Group callbacks can install a newer sort; capture ownership at the actual recipe read.
-    ComputationScope computation{ *this };
-    m_pipeline.ApplySort(rows, afterOrder, beforeOrder);
 }
 
 void ShapedItemsSource::RebuildFlat(std::vector<winrt::IInspectable>& rows)
@@ -1445,3 +1327,4 @@ winrt::hstring ShapedItemsSource::Diagnostic(std::wstring_view text) const
 {
     return m_diagnosticName + L": " + winrt::hstring{ text };
 }
+

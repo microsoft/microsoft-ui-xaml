@@ -223,7 +223,7 @@ bool TableView::RaiseBeginningEdit(winrt::IInspectable const& item, winrt::Table
     }
     catch (...)
     {
-        telemetry.Fail(winrt::to_hresult());
+        telemetry.ApplicationFault(TableViewTelemetry::AppFaultKind::Callback, winrt::to_hresult());
         LogConsumerHandlerThrow(L"BeginningEdit");
     }
     return !args->Cancel();
@@ -245,15 +245,31 @@ TableView::EditEndingResult TableView::RaiseEditEnding(
     {
         auto cellArgs = winrt::make_self<TableViewCellEditEndingEventArgs>(item, column, action);
         auto const self = get_strong();
-        PostEditNotification([self, cellArgs, telemetry = m_insideLayoutPass ? nullptr : telemetry]()
+        const auto lifetime = m_telemetryLifetimeGeneration;
+        PostEditNotification([self, cellArgs, lifetime, deferred = m_insideLayoutPass,
+            operation = action == winrt::TableViewEditAction::Commit ?
+                TableViewTelemetry::Operation::CommitEdit : TableViewTelemetry::Operation::CancelEdit,
+            telemetry = m_insideLayoutPass ? nullptr : telemetry]()
         {
+            std::optional<ApplicationCalloutTelemetry> callout;
+            if (!deferred)
+            {
+                callout.emplace(*self, TableViewTelemetry::Stage::Editing, TableViewTelemetry::AppFaultKind::Callback);
+            }
             try
             {
                 self->m_cellEditEndingEventSource(*self, *cellArgs);
             }
             catch (...)
             {
-                if (telemetry) { telemetry->Fail(winrt::to_hresult()); }
+                if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Callback, winrt::to_hresult()); }
+                else if (callout) { callout->Fault(winrt::to_hresult()); }
+                else if (lifetime == self->m_telemetryLifetimeGeneration)
+                {
+                    TableViewTelemetry::ReportError(self->m_telemetry, operation,
+                        TableViewTelemetry::Stage::Editing, true, TableViewTelemetry::Attribution::Application,
+                        winrt::to_hresult(), TableViewTelemetry::AppFaultKind::Callback);
+                }
                 LogConsumerHandlerThrow(L"CellEditEnding");
             }
         });
@@ -506,8 +522,13 @@ void TableView::EndEditVisual(winrt::TableViewEditAction action, ActionTelemetry
         else
         {
             std::optional<HRESULT> displayFailure;
-            winrt::get_self<TableViewRow>(row)->EndCellEdit(action, telemetry ? &displayFailure : nullptr);
-            if (displayFailure && telemetry) { telemetry->Fail(*displayFailure); }
+            bool applicationFault = false;
+            winrt::get_self<TableViewRow>(row)->EndCellEdit(action, telemetry ? &displayFailure : nullptr, &applicationFault);
+            if (displayFailure && telemetry)
+            {
+                if (applicationFault) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Factory, *displayFailure); }
+                else { telemetry->Fail(*displayFailure); }
+            }
         }
     }
     m_currentEditRow.set(nullptr);
@@ -597,6 +618,8 @@ bool TableView::HasBlockingValidationErrors(
     // unrelated, pre-existing error on a different property block this cell permanently -
     // the user could never leave the edit.
     const auto editingPath = column ? ResolveEditingPropertyPath(column) : winrt::hstring{};
+    ApplicationCalloutTelemetry callout{ *const_cast<TableView*>(this), TableViewTelemetry::Stage::Editing,
+        TableViewTelemetry::AppFaultKind::Validation };
 
     if (!editingPath.empty())
     {
@@ -619,7 +642,8 @@ bool TableView::HasBlockingValidationErrors(
         }
         catch (...)
         {
-            if (telemetry) { telemetry->Fail(winrt::to_hresult()); }
+            if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Validation, winrt::to_hresult()); }
+            else { callout.Fault(winrt::to_hresult()); }
             return false;
         }
     }
@@ -630,7 +654,8 @@ bool TableView::HasBlockingValidationErrors(
     }
     catch (...)
     {
-        if (telemetry) { telemetry->Fail(winrt::to_hresult()); }
+        if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Validation, winrt::to_hresult()); }
+        else { callout.Fault(winrt::to_hresult()); }
         return false;
     }
 }
@@ -658,7 +683,7 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
             }
             catch (...)
             {
-                if (telemetry) { telemetry->Fail(winrt::to_hresult()); }
+                if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Write, winrt::to_hresult()); }
                 LogConsumerHandlerThrow(L"CommitCellEdit");
                 wrote = false;
             }
@@ -668,7 +693,7 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
         {
             if (telemetry)
             {
-                if (column && editingElement) { telemetry->Fail(); }
+                if (column && editingElement) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Write); }
                 else { telemetry->Ignore(TableViewTelemetry::IgnoreReason::Stale); }
             }
             // Nothing reached the item - a setter threw, or no writable binding could be resolved.
@@ -697,14 +722,18 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
                 // value to push the pre-edit value back to the source. Without this second write
                 // the item keeps the value the control just rejected, and the user's typed text is
                 // replaced in the editor as well: invalid data on the item, nothing on screen.
-                winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, m_editUneditedValue.get());
-
-                if (!winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement))
+                ApplicationCalloutTelemetry callout{ *this, TableViewTelemetry::Stage::Editing, TableViewTelemetry::AppFaultKind::Write };
+                try
                 {
-                    if (telemetry) { telemetry->Fail(); }
-                    TVDiag::LogRetailF(
-                        L"[TableView] A rejected value could not be rolled back; the item still holds it.");
+                    winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, m_editUneditedValue.get());
+                    if (!winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement))
+                    {
+                        if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Write); }
+                        TVDiag::LogRetailF(
+                            L"[TableView] A rejected value could not be rolled back; the item still holds it.");
+                    }
                 }
+                catch (...) { callout.Fault(winrt::to_hresult()); throw; }
                 m_editSourceWritten = false;
             }
             return false;
@@ -734,12 +763,12 @@ bool TableView::FinishEditTeardown(EditingUnit unit, winrt::TableViewEditAction 
                     winrt::get_self<TableViewColumn>(column)->CancelCellEdit(editingElement, m_editUneditedValue.get());
                     if (!winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement))
                     {
-                        if (telemetry) { telemetry->Fail(); }
+                        if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Write); }
                     }
                 }
                 catch (...)
                 {
-                    if (telemetry) { telemetry->Fail(winrt::to_hresult()); }
+                    if (telemetry) { telemetry->ApplicationFault(TableViewTelemetry::AppFaultKind::Write, winrt::to_hresult()); }
                     LogConsumerHandlerThrow(L"CancelCellEdit");
                 }
 
@@ -875,12 +904,15 @@ bool TableView::TerminateEditForReset(bool force)
         {
             if (auto const editingElement = CurrentEditingElement())
             {
+                ApplicationCalloutTelemetry callout{ *this, TableViewTelemetry::Stage::Editing, TableViewTelemetry::AppFaultKind::Write };
                 try
                 {
                     wrote = winrt::get_self<TableViewColumn>(column)->CommitCellEdit(editingElement);
+                    if (!wrote) { callout.Fault(); }
                 }
                 catch (...)
                 {
+                    callout.Fault(winrt::to_hresult());
                     LogConsumerHandlerThrow(L"CommitCellEdit");
                 }
             }
@@ -1064,7 +1096,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
             }
             catch (...)
             {
-                telemetry.Fail(winrt::to_hresult());
+                telemetry.ApplicationFault(TableViewTelemetry::AppFaultKind::Factory, winrt::to_hresult());
                 LogConsumerHandlerThrow(L"PrepareCellForEdit");
             }
         }

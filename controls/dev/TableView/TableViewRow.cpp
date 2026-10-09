@@ -1226,7 +1226,26 @@ void TableViewRow::RebuildCells(bool updateExistingCellPeerItems)
         // No local DataContext anywhere on the cell path: cells inherit the row item so recycled
         // rows update reactively. Custom columns must also bind to inherited DataContext, not bake
         // in the initial dataItem.
-        if (auto cellElement = column.GenerateElement(dataItem))
+        std::optional<TableView::ApplicationCalloutTelemetry> callout;
+        if (TableViewTelemetry::NeedsLayout(ownerImpl->m_telemetry) || ownerImpl->m_activeActionTelemetry ||
+            TableViewTelemetry::IsOperationStarted(ownerImpl->m_telemetry))
+        {
+            callout.emplace(*ownerImpl, TableViewTelemetry::Stage::Layout, TableViewTelemetry::AppFaultKind::Factory);
+        }
+        winrt::FrameworkElement cellElement{ nullptr };
+        try { cellElement = column.GenerateElement(dataItem); }
+        catch (...)
+        {
+            if (callout) { callout->Fault(winrt::to_hresult()); }
+            else
+            {
+                TableViewTelemetry::ReportError(ownerImpl->m_telemetry, TableViewTelemetry::Operation::Layout,
+                    TableViewTelemetry::Stage::Layout, false, TableViewTelemetry::Attribution::Application,
+                    winrt::to_hresult(), TableViewTelemetry::AppFaultKind::Factory);
+            }
+            throw;
+        }
+        if (cellElement)
         {
             AttachCellContent(cellWrapper, cellElement);
         }
@@ -1489,7 +1508,19 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
         return false;
     }
 
-    auto const editingElement = winrt::get_self<TableViewColumn>(column)->GenerateEditingElement(dataItem);
+    auto const owner = GetOwningTableView();
+    std::optional<TableView::ApplicationCalloutTelemetry> callout;
+    if (owner)
+    {
+        callout.emplace(*winrt::get_self<TableView>(owner), TableViewTelemetry::Stage::Editing, TableViewTelemetry::AppFaultKind::Factory);
+    }
+    winrt::FrameworkElement editingElement{ nullptr };
+    try { editingElement = winrt::get_self<TableViewColumn>(column)->GenerateEditingElement(dataItem); }
+    catch (...)
+    {
+        if (callout) { callout->Fault(winrt::to_hresult()); }
+        throw;
+    }
     if (!editingElement)
     {
         return false;
@@ -1550,7 +1581,7 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
     return true;
 }
 
-void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<HRESULT>* displayFailure)
+void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<HRESULT>* displayFailure, bool* applicationFault)
 {
     auto const cellWrapper = m_editingCellWrapper.get();
     auto const weakPeer = m_editingAutomationPeer;
@@ -1639,9 +1670,12 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<
     {
         if (auto const column = m_editingColumn.get())
         {
+            bool factoryReturned = false;
             try
             {
-                if (auto const refreshed = column.GenerateElement(DataContext()))
+                auto const refreshed = column.GenerateElement(DataContext());
+                factoryReturned = true;
+                if (refreshed)
                 {
                     AttachCellContent(cellWrapper, refreshed);
                     displayElement = nullptr;
@@ -1650,6 +1684,7 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<
             catch (...)
             {
                 if (displayFailure) { *displayFailure = winrt::to_hresult(); }
+                if (applicationFault) { *applicationFault = !factoryReturned; }
                 // A column that throws while regenerating must not strand the row in edit mode;
                 // fall back to the parked element, which is stale but present.
                 displayElement = m_editingDisplayElement.get();

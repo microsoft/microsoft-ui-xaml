@@ -411,7 +411,9 @@ void TableView::RaiseSelectionChanged(winrt::IInspectable const& addedItem)
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(removed)),
         winrt::single_threaded_vector<winrt::IInspectable>(std::move(added)) };
 
-    m_selectionChangedEventSource(*this, args);
+    ApplicationCalloutTelemetry callout{ *this, TableViewTelemetry::Stage::Selection, TableViewTelemetry::AppFaultKind::Callback };
+    try { m_selectionChangedEventSource(*this, args); }
+    catch (...) { callout.Fault(winrt::to_hresult()); throw; }
 }
 
 void TableView::RaiseSelectionAutomationEvents(

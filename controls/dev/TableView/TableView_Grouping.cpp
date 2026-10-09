@@ -412,8 +412,9 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     {
         if (admitted && !completed)
         {
-            FailOperationTelemetry(TableViewTelemetry::Operation::GroupExpansion, telemetryGeneration, TableViewTelemetry::Stage::Grouping);
+            IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::GroupExpansion, telemetryGeneration, TableViewTelemetry::Stage::Grouping);
         }
+        else if (admitted) { CompleteOperationTelemetry(telemetryGeneration); }
         EndOperationTelemetry();
     });
     const auto previousCount = GetItemsSourceCount();
@@ -440,7 +441,7 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     }
     catch (...)
     {
-        FailOperationTelemetry(TableViewTelemetry::Operation::GroupExpansion, telemetryGeneration,
+        IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::GroupExpansion, telemetryGeneration,
             TableViewTelemetry::Stage::Grouping, winrt::to_hresult());
         // Best-effort: the grouping source or its state can change during cleanup.
     }
@@ -612,8 +613,9 @@ void TableView::SetAllGroupsExpansion(bool expand)
     {
         if (admitted && !completed)
         {
-            FailOperationTelemetry(TableViewTelemetry::Operation::GroupExpansion, telemetryGeneration, TableViewTelemetry::Stage::Grouping);
+            IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::GroupExpansion, telemetryGeneration, TableViewTelemetry::Stage::Grouping);
         }
+        else if (admitted) { CompleteOperationTelemetry(telemetryGeneration); }
         EndOperationTelemetry();
     });
     const auto generation = m_rowMetadataGeneration;
@@ -633,7 +635,7 @@ void TableView::SetAllGroupsExpansion(bool expand)
     }
     catch (...)
     {
-        FailOperationTelemetry(TableViewTelemetry::Operation::GroupExpansion, telemetryGeneration,
+        IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::GroupExpansion, telemetryGeneration,
             TableViewTelemetry::Stage::Grouping, winrt::to_hresult());
         // Best-effort: the grouping source or its state can change during cleanup.
     }

@@ -391,7 +391,13 @@ bool TableView::RaiseSortingAndCheckCanceled(
     }
 
     auto args = winrt::make_self<TableViewSortingEventArgs>(trigger, direction);
-    m_sortingEventSource(*this, *args);
+    try { m_sortingEventSource(*this, *args); }
+    catch (...)
+    {
+        TableViewTelemetry::ReportError(m_telemetry, TableViewTelemetry::Operation::Sort, TableViewTelemetry::Stage::Sort,
+            false, TableViewTelemetry::Attribution::Application, winrt::to_hresult(), TableViewTelemetry::AppFaultKind::Callback);
+        throw;
+    }
 
     return args->Cancel();
 }
@@ -418,7 +424,7 @@ winrt::TableViewKeySelector TableView::GetTableViewSourceSortKeySelector(
             {
                 if (auto source = weakSource.get())
                 {
-                    winrt::get_self<::TableViewSource>(source)->ObserveShapingFailure(error);
+                    winrt::get_self<::TableViewSource>(source)->ObserveShapingFailure(error, TableViewTelemetry::AppFaultKind::Binding);
                 }
             });
         m_tableViewSourceSort.KeySelector = winrt::TableViewKeySelector{
@@ -491,8 +497,7 @@ bool TableView::SyncTableViewSourceSort(
 
                 if (auto const& rankAdapter = m_tableViewSourceSort.CustomSortState)
                 {
-                    // Only the initial Rank call owns this fact. The retained comparer later
-                    // reports KeyFor failures to the engine phase that actually invokes it.
+                    // The initial rank has explicit control ownership; retained failures use the facade's current call.
                     auto rankFailure = std::make_shared<std::optional<HRESULT>>();
                     ShapingHelpers::PairwiseComparer comparer =
                         [customComparer, weakSource = winrt::make_weak(tableViewSource),
@@ -519,8 +524,10 @@ bool TableView::SyncTableViewSourceSort(
                     rankFailure.reset();
                     if (failure)
                     {
-                        FailOperationTelemetry(TableViewTelemetry::Operation::Sort, telemetryGeneration,
-                            TableViewTelemetry::Stage::Sort, *failure);
+                        TableViewTelemetry::IgnoreOperation(m_telemetry, telemetryGeneration,
+                            TableViewTelemetry::IgnoreReason::ApplicationFault, *failure, TableViewTelemetry::AppFaultKind::Callback);
+                        TableViewTelemetry::ReportError(m_telemetry, TableViewTelemetry::Operation::Sort, TableViewTelemetry::Stage::Sort,
+                            true, TableViewTelemetry::Attribution::Application, *failure, TableViewTelemetry::AppFaultKind::Callback);
                     }
                 }
             }
@@ -528,7 +535,10 @@ bool TableView::SyncTableViewSourceSort(
         else
         {
             // Projected dispatch - see the note in HasResolvedSortMemberPath.
-            const auto sortMemberPath = trigger.GetSortMemberPathCore();
+            ApplicationCalloutTelemetry callout{ *this, TableViewTelemetry::Stage::Sort, TableViewTelemetry::AppFaultKind::Callback };
+            winrt::hstring sortMemberPath;
+            try { sortMemberPath = trigger.GetSortMemberPathCore(); }
+            catch (...) { callout.Fault(winrt::to_hresult()); throw; }
             if (sortMemberPath.empty())
             {
                 return false;
@@ -573,7 +583,7 @@ bool TableView::SyncTableViewSourceSort(
     {
         // Replacing rather than adding: re-sorting a column must swap its axis, not stack a
         // second one on top of the first.
-        tableViewSourceImpl->SortReplacing(m_tableViewSourceSort.AxisToken, sortAxisToken, keySelector, axisSortMemberPath, direction);
+        tableViewSourceImpl->SortReplacing(m_tableViewSourceSort.AxisToken, sortAxisToken, keySelector, axisSortMemberPath, direction, false);
         tableViewSourceImpl->ClearSortsExcept(sortAxisToken);
     }
 
@@ -671,12 +681,21 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     const auto invalidatedSort = !reportTelemetry && m_telemetry.operation == TableViewTelemetry::Operation::Sort
         ? m_telemetry.operationGeneration : 0;
     auto const telemetryGeneration = BeginOperationTelemetry(TableViewTelemetry::Operation::Sort, reportTelemetry);
+    m_controlSortPublishedGeneration = 0;
     bool completed = false;
     auto telemetryCompletion = wil::scope_exit([this, telemetryGeneration, reportTelemetry, &completed]() noexcept
     {
         if (reportTelemetry && !completed)
         {
-            FailOperationTelemetry(TableViewTelemetry::Operation::Sort, telemetryGeneration, TableViewTelemetry::Stage::Sort);
+            IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::Sort, telemetryGeneration, TableViewTelemetry::Stage::Sort);
+        }
+        else if (reportTelemetry && m_controlSortPublishedGeneration == telemetryGeneration)
+        {
+            CompleteOperationTelemetry(telemetryGeneration);
+        }
+        else if (reportTelemetry)
+        {
+            TableViewTelemetry::IgnoreOperation(m_telemetry, telemetryGeneration, TableViewTelemetry::IgnoreReason::DeferredOrUnproven);
         }
         EndOperationTelemetry();
     });
@@ -709,17 +728,14 @@ void TableView::RecomputeSortDPsAndRaiseInternal(
     {
         const auto appliedDirection = trigger ? trigger.SortDirection() : winrt::SortDirection::None;
         auto args = winrt::make_self<TableViewSortedEventArgs>(trigger, appliedDirection);
+        ApplicationCalloutTelemetry callout{ *this, TableViewTelemetry::Stage::Sort, TableViewTelemetry::AppFaultKind::Callback };
         try
         {
             m_sortedEventSource(*this, *args);
         }
         catch (...)
         {
-            if (reportTelemetry)
-            {
-                FailOperationTelemetry(TableViewTelemetry::Operation::Sort, telemetryGeneration,
-                    TableViewTelemetry::Stage::Sort, winrt::to_hresult());
-            }
+            callout.Fault(winrt::to_hresult());
             throw;
         }
     }

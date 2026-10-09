@@ -125,19 +125,24 @@ winrt::Size TableView::MeasureOverride(winrt::Size const& availableSize)
         auto desired = __super::MeasureOverride(availableSize);
         ResolveColumnWidths();
         QueueTerminalGridLineRefresh();
+        if (!m_scrollTelemetryViewport.known && !m_headerScrollTelemetryOffset &&
+            !TableViewTelemetry::IsOperationStarted(m_scrollTelemetry))
+        {
+            if (auto const scroller = m_bodyScroller.get()) { ObserveScrollTelemetry(scroller, false, false); }
+        }
         QueueTelemetryLayout();
         return desired;
     }
     catch (...)
     {
-        FailOperationTelemetry(TableViewTelemetry::Operation::Layout,
+        IgnoreUnattributedTelemetry(TableViewTelemetry::Operation::Layout,
             telemetryGeneration, TableViewTelemetry::Stage::Layout, winrt::to_hresult());
         if (TableViewTelemetry::IsOperationStarted(m_scrollTelemetry) &&
             TableViewTelemetry::UpdateConfiguration(m_scrollTelemetry,
-                SnapshotTelemetryConfiguration(m_telemetry.configuration.content, m_telemetry.configuration.available)))
+                SnapshotTelemetryConfiguration()))
         {
-            TableViewTelemetry::FailOperation(m_scrollTelemetry, TableViewTelemetry::Operation::Scroll,
-                scrollGeneration, TableViewTelemetry::Stage::Scroll, winrt::to_hresult());
+            TableViewTelemetry::IgnoreOperation(m_scrollTelemetry, scrollGeneration,
+                TableViewTelemetry::IgnoreReason::UnattributedFault, winrt::to_hresult());
         }
         throw;
     }

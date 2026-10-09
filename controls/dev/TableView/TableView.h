@@ -15,6 +15,7 @@
 #include "TableView.properties.h"
 #include "TableViewRowInfo.h"
 #include "TableViewTelemetry.h"
+#include "TableViewTelemetryRegistration.h"
 
 // ThemeSettings (Microsoft.UI.System) is used below for UI-thread High Contrast change notifications.
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
@@ -421,6 +422,7 @@ public:
 
 private:
     class ActionTelemetry;
+    friend class TableViewRow;
     // Drives the SelectionModel; its SelectionChanged is the single funnel that publishes.
     void ApplySelection(int32_t index, bool reportTelemetry = false);
 
@@ -630,7 +632,7 @@ private:
         ActionTelemetry* telemetry = nullptr) const;
 
 private:
-    // Synchronous actions cannot replace a source operation awaiting layout.
+    // Synchronous actions have separate native ownership and share only the loaded-session counters.
     class ActionTelemetry
     {
     public:
@@ -641,40 +643,62 @@ private:
         void Complete() noexcept { m_completed = true; }
         void Ignore(TableViewTelemetry::IgnoreReason reason) noexcept { m_completed = false; m_ignoreReason = reason; }
         void Fail(std::optional<HRESULT> error = {}) noexcept;
+        void ApplicationFault(TableViewTelemetry::AppFaultKind kind, std::optional<HRESULT> error = {}) noexcept;
+        uint64_t ControlGenerationAtAdmission() const noexcept { return m_controlGenerationAtAdmission; }
 
     private:
         TableView& m_owner;
+        ActionTelemetry* m_previousAction{};
         TableViewTelemetry::State m_state;
         TableViewTelemetry::Stage m_stage;
         uint64_t m_generation{};
+        uint64_t m_controlGenerationAtAdmission{};
         uint64_t m_lifetimeGeneration{};
         int m_exceptions{};
         bool m_completed{};
         bool m_failed{};
         TableViewTelemetry::IgnoreReason m_ignoreReason{ TableViewTelemetry::IgnoreReason::Stale };
         std::optional<HRESULT> m_error;
+        TableViewTelemetry::AppFaultKind m_appFaultKind{};
+    };
+
+    class ApplicationCalloutTelemetry
+    {
+    public:
+        ApplicationCalloutTelemetry(TableView& owner, TableViewTelemetry::Stage stage, TableViewTelemetry::AppFaultKind kind) noexcept;
+        void Fault(std::optional<HRESULT> error = {}) noexcept;
+    private:
+        TableView& m_owner;
+        ActionTelemetry* m_action{};
+        TableViewTelemetry::Operation m_operation{};
+        TableViewTelemetry::Stage m_stage{};
+        TableViewTelemetry::AppFaultKind m_kind{};
+        uint64_t m_generation{};
+        uint64_t m_lifetime{};
     };
 
     void BeginInitializationTelemetry(TableViewTelemetry::Origin origin) noexcept;
     void QueueTelemetryLayout() noexcept;
     void StopTelemetryLayout() noexcept;
     void OnTelemetryLayout();
-    void WatchTelemetrySourceChanges();
     bool WatchTelemetryVisualProperty(winrt::DependencyObject const& object, winrt::DependencyProperty const& property);
     void WatchTelemetryTransform(winrt::Transform const& transform);
-    void WatchTelemetryViewport();
-    TableViewTelemetry::Configuration SnapshotTelemetryConfiguration(TableViewTelemetry::Content content, bool contentAvailable = false) noexcept;
+    bool SpendTelemetryInspectionBudget() noexcept;
+    TableViewTelemetry::Configuration SnapshotTelemetryConfiguration() noexcept;
     bool TryGetTelemetryConfiguration(TableViewTelemetry::Configuration& configuration);
     uint64_t BeginOperationTelemetry(TableViewTelemetry::Operation operation, bool admitted = true) noexcept;
     void EndOperationTelemetry() noexcept;
     void InvalidateOperationTelemetry() noexcept;
-    void FailOperationTelemetry(TableViewTelemetry::Operation operation, uint64_t generation, TableViewTelemetry::Stage stage, std::optional<HRESULT> error = {}) noexcept;
+    void IgnoreUnattributedTelemetry(TableViewTelemetry::Operation operation, uint64_t generation, TableViewTelemetry::Stage stage, std::optional<HRESULT> error = {}) noexcept;
+    void CompleteOperationTelemetry(uint64_t generation) noexcept;
+    void RefreshTelemetryConfiguration() noexcept;
     void IgnoreTelemetry(TableViewTelemetry::IgnoreReason reason, TableViewTelemetry::Stage stage = TableViewTelemetry::Stage::None) noexcept;
     void ObserveScrollTelemetry(winrt::ScrollViewer const& scroller, bool intermediate, bool admit = true) noexcept;
     void IgnoreScrollTelemetry(TableViewTelemetry::IgnoreReason reason) noexcept;
 
     TableViewTelemetry::State m_telemetry;
     TableViewTelemetry::State m_scrollTelemetry;
+    ActionTelemetry* m_activeActionTelemetry{};
     uint64_t m_telemetryLifetimeGeneration{};
     TableViewTelemetry::IgnoreReason m_telemetryCancellationReason{ TableViewTelemetry::IgnoreReason::Cancelled };
     struct ScrollTelemetryViewport
@@ -693,17 +717,19 @@ private:
     bool m_scrollTelemetrySettled{};
     uint64_t m_scrollTelemetryVersion{};
     winrt::event_token m_telemetryLayoutToken{};
-    winrt::ItemsSourceView::CollectionChanged_revoker m_telemetrySourceChangedRevoker{};
-    winrt::FrameworkElement::EffectiveViewportChanged_revoker m_telemetryViewportChangedRevoker{};
-    winrt::XamlRoot::Changed_revoker m_telemetryRootChangedRevoker{};
+    TableViewTelemetry::Registration m_telemetryLayoutRegistration;
     struct TelemetryVisualWatch
     {
         winrt::weak_ref<winrt::DependencyObject> object{ nullptr };
         winrt::DependencyProperty property{ nullptr };
-        std::optional<int64_t> token;
+        TableViewTelemetry::Registration registration;
     };
     std::vector<TelemetryVisualWatch> m_telemetryVisualWatches;
     uint64_t m_telemetryLayoutGeneration{};
+    uint32_t m_telemetryInspectionCount{};
+    uint32_t m_telemetryInspectionBudget{};
+    bool m_telemetryObservationLimited{};
+    bool m_telemetryTemplateApplied{};
     uint32_t m_telemetryMutationDepth{};
     uint32_t m_telemetrySourceMutationDepth{};
 
@@ -934,6 +960,7 @@ private:
     // be mistaken for the app declaring a sort behind the control's back.
     bool m_isApplyingControlInitiatedSort{ false };
     uint64_t m_controlSortTelemetryGeneration{};
+    uint64_t m_controlSortPublishedGeneration{};
     bool m_sortReconcileQueued{ false };
     winrt::event_token m_rowsRepeaterLoadedToken{};
     // Terminal-edge geometry is evaluated once after layout settles; gridline rendering then

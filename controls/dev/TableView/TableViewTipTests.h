@@ -20,8 +20,10 @@ namespace TableViewTelemetry
     enum class IgnoreReason : unsigned short
     {
         Cancelled = 100, Vetoed = 101, ValidationRejected = 102, Superseded = 103,
-        Unloaded = 104, Retemplated = 105, Stale = 106
+        Unloaded = 104, Retemplated = 105, Stale = 106,
+        DeferredOrUnproven = 107, ApplicationFault = 108, ObservationLimit = 109, UnattributedFault = 110
     };
+    enum class AppFaultKind : uint32_t { None = 0, Callback = 1, Binding = 2, Validation = 3, Write = 4, Factory = 5, Data = 6 };
 
     constexpr bool IsMeasuredOperation(Operation operation) noexcept
     {
@@ -49,7 +51,8 @@ namespace TableViewTelemetry
         template_failure = 10, source_failure = 11, shaping_failure = 12, realization_failure = 13,
         selection_failure = 14, editing_failure = 15, scroll_failure = 16, internal_failure = 17,
         cancelled = 100, vetoed = 101, validation_rejected = 102, superseded = 103,
-        unloaded = 104, retemplated = 105, stale = 106
+        unloaded = 104, retemplated = 105, stale = 106,
+        deferred_or_unproven = 107, application_fault = 108, observation_limit = 109, unattributed_fault = 110
     };
 
     struct TableViewTipDimensions
@@ -76,13 +79,16 @@ namespace TableViewTelemetry
 
     TIP_declare_test(TableViewInitializationTest, 64477764)
     {
-        TIP_set_data_version(1);
+        TIP_set_data_version(2);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 
         TableViewTipDimensions dimensions;
         HRESULT failureHResult{};
         bool failureHResultAvailable{};
+        HRESULT diagnosticHResult{};
+        bool diagnosticHResultAvailable{};
+        AppFaultKind appFaultKind{};
 
         TIP_require_all_flags_clear(reason::template_failure, reason::source_failure, reason::shaping_failure,
             reason::realization_failure, reason::selection_failure, reason::editing_failure,
@@ -98,7 +104,8 @@ namespace TableViewTelemetry
         template<class Archive>
         void serialize(Archive& archive)
         {
-            archive(TIP_value(dimensions), TIP_value(failureHResult), TIP_value(failureHResultAvailable));
+            archive(TIP_value(dimensions), TIP_value(failureHResult), TIP_value(failureHResultAvailable),
+                TIP_value(diagnosticHResult), TIP_value(diagnosticHResultAvailable), TIP_value(appFaultKind));
         }
 
         template<class Archive>
@@ -111,7 +118,7 @@ namespace TableViewTelemetry
 
     TIP_declare_test(TableViewOperationTest, 64477774)
     {
-        TIP_set_data_version(1);
+        TIP_set_data_version(2);
         TIP_set_metrics_enabled();
         using reason = TableViewTipReason;
 
@@ -119,6 +126,9 @@ namespace TableViewTelemetry
         Operation operation{};
         HRESULT failureHResult{};
         bool failureHResultAvailable{};
+        HRESULT diagnosticHResult{};
+        bool diagnosticHResultAvailable{};
+        AppFaultKind appFaultKind{};
 
         TIP_require_all_flags_clear(reason::template_failure, reason::source_failure, reason::shaping_failure,
             reason::realization_failure, reason::selection_failure, reason::editing_failure,
@@ -134,7 +144,8 @@ namespace TableViewTelemetry
         template<class Archive>
         void serialize(Archive& archive)
         {
-            archive(TIP_value(dimensions), TIP_value(operation), TIP_value(failureHResult), TIP_value(failureHResultAvailable));
+            archive(TIP_value(dimensions), TIP_value(operation), TIP_value(failureHResult), TIP_value(failureHResultAvailable),
+                TIP_value(diagnosticHResult), TIP_value(diagnosticHResultAvailable), TIP_value(appFaultKind));
         }
 
         template<class Archive>

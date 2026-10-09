@@ -3,6 +3,7 @@
 
 #include <Windows.h>
 #include <ole2.h>
+#include <string>
 #include <TableViewTipTests.h>
 #include <WexTestClass.h>
 
@@ -71,7 +72,9 @@ public:
         const auto ignores = {
             TableViewTipReason::cancelled, TableViewTipReason::vetoed,
             TableViewTipReason::validation_rejected, TableViewTipReason::superseded,
-            TableViewTipReason::unloaded, TableViewTipReason::retemplated, TableViewTipReason::stale };
+            TableViewTipReason::unloaded, TableViewTipReason::retemplated, TableViewTipReason::stale,
+            TableViewTipReason::deferred_or_unproven, TableViewTipReason::application_fault,
+            TableViewTipReason::observation_limit, TableViewTipReason::unattributed_fault };
         for (auto reason : ignores)
         {
             auto test = tip::start<TableViewOperationTest>();
@@ -102,8 +105,8 @@ public:
         const auto operation = TableViewOperationTest::info();
         VERIFY_ARE_EQUAL(64477764u, initial.testCaseId);
         VERIFY_ARE_EQUAL(64477774u, operation.testCaseId);
-        VERIFY_ARE_EQUAL(static_cast<unsigned char>(1), initial.version);
-        VERIFY_ARE_EQUAL(static_cast<unsigned char>(1), operation.version);
+        VERIFY_ARE_EQUAL(static_cast<unsigned char>(2), initial.version);
+        VERIFY_ARE_EQUAL(static_cast<unsigned char>(2), operation.version);
         VERIFY_IS_TRUE(initial.storage == TestStorage::Process && operation.storage == TestStorage::Process);
         constexpr auto forbidden = TestProperties::ExtendedLifetime | TestProperties::RuntimeExtended |
             TestProperties::RuntimeMax | TestProperties::PerfTrack | TestProperties::KeyMoment |
@@ -126,7 +129,7 @@ public:
             auto const expected = dimensions;
 
             tson::write_buffer buffer;
-            tson::output_archive output(buffer, 1);
+            tson::output_archive output(buffer, 2);
             output(TIP_value(dimensions));
             VERIFY_SUCCEEDED(output.finish());
 
@@ -136,7 +139,7 @@ public:
             dimensions.configurationAvailable = true;
             dimensions.rowCountAvailable = true;
             tson::read_buffer inputBuffer(buffer.data(), buffer.size());
-            tson::input_archive input(inputBuffer, 1);
+            tson::input_archive input(inputBuffer, 2);
             input(TIP_value(dimensions));
             VERIFY_SUCCEEDED(input.finish());
             VERIFY_IS_TRUE(dimensions.origin == expected.origin && dimensions.content == expected.content);
@@ -150,8 +153,30 @@ public:
             VERIFY_ARE_EQUAL(expected.componentBuild, dimensions.componentBuild);
 
             tson::read_buffer wrongVersionBuffer(buffer.data(), buffer.size());
-            tson::input_archive wrongVersion(wrongVersionBuffer, 2);
+            tson::input_archive wrongVersion(wrongVersionBuffer, 1);
             VERIFY_FAILED(wrongVersion.finish());
+
+            TableViewOperationTest::tip_test_data custom;
+            custom.dimensions = expected;
+            custom.operation = nonzero ? Operation::Scroll : Operation::InitialLayout;
+            custom.diagnosticHResult = nonzero ? E_INVALIDARG : S_OK;
+            custom.diagnosticHResultAvailable = nonzero;
+            custom.appFaultKind = nonzero ? AppFaultKind::Binding : AppFaultKind::None;
+            auto const expectedOperation = custom.operation;
+            tson::write_buffer customBuffer;
+            tson::output_archive customOutput(customBuffer, 2);
+            custom.serialize(customOutput);
+            VERIFY_SUCCEEDED(customOutput.finish());
+            custom = {};
+            tson::read_buffer customInputBuffer(customBuffer.data(), customBuffer.size());
+            tson::input_archive customInput(customInputBuffer, 2);
+            custom.serialize(customInput);
+            VERIFY_SUCCEEDED(customInput.finish());
+            VERIFY_IS_TRUE(custom.operation == expectedOperation);
+            VERIFY_ARE_EQUAL(nonzero ? E_INVALIDARG : S_OK, custom.diagnosticHResult);
+            VERIFY_ARE_EQUAL(nonzero, custom.diagnosticHResultAvailable);
+            VERIFY_IS_TRUE(custom.appFaultKind == (nonzero ? AppFaultKind::Binding : AppFaultKind::None));
+            VERIFY_IS_FALSE(custom.failureHResultAvailable);
         }
     }
 #else

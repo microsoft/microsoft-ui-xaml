@@ -42,6 +42,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.Common.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)..\TableView\TableView.TestInProduction.props" />
   <Import Project="$(TestInProductionTargetsFile)" Condition="Exists('$(TestInProductionTargetsFile)')" />
   <PropertyGroup>
     <!-- Apply Tabular's existing external-header analysis policy to the restored TiP package. -->
