@@ -60,6 +60,7 @@ namespace RuntimeFeatureBehavior
         DenyRoundedCalendarViewBaseItemChrome,
         EnableUWPWindow,                   // if enabled, it will allow creating an UWP window and thus launching UWP apps // task 31614767 : UWP window creation has been disabled
         EnableReentrancyChecks, // If enabled, we will FailFast when reentrancy is detected
+        EnableLegacyImeAuxiliaryUi, // Per-app opt-in (Option A, bug 62702548). If enabled, DXamlCore init skips ImmDisableLegacyIME() and installs the ImeFocusPark so legacy (IMM/CUAS) IMEs show their status bar in text controls without ambiguating text-input focus. Default off keeps the historical ImmDisableLegacyIME() behavior.
         // add entries before here to be safe as C# test code uses fixed numeric values instead of this enum so if added after DBG entry, the enum value can change
         #if DBG
         CaptureTrackerPtrCallStack, // Capture the stack that calls TrackerPtr.Set
