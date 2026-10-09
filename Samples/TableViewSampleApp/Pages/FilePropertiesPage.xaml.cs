@@ -41,7 +41,6 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         PropTable.Density = TableViewDensity.Compact;
         // </snippet>
 
-        // Starts Grouped by section (ShapingOptions InitialMode="grouped"): InitializeSample applies it.
         InitializeSample(Status, Shaping.Attach(PropTable, Source, (row, key) => KeyOf(row as FilePropertyEntry, key)));
         TrackLifetime(ListFilesOnce);
     }
@@ -232,8 +231,7 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         var from = entry.Section;
         entry.Section = SampleShaping.Next(s_sections, from);
 
-        // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row;
-        // the shaping restores the selection in its new section.
+        // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row.
         ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", entry.Property, from, entry.Section));
     }
@@ -283,7 +281,7 @@ public sealed partial class FilePropertiesPage : SamplePageBase
     }
 
     // <snippet>
-    // GroupBy key for this page's model. Never returns a blank key: TableViewSource fails fast on an empty group identity.
+    // Never blank: TableViewSource fails fast on an empty group identity.
     private static object KeyOf(FilePropertyEntry? entry, string key)
     {
         var value = key == nameof(FilePropertyEntry.Source) ? entry?.Source : entry?.Section;

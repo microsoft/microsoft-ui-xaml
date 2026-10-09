@@ -6,10 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace TableViewSampleApp.Controls;
 
-/// <summary>
-/// A XAML content collection that tells its owner about every insert and removal as it happens,
-/// so the owner can place the item synchronously (StatusPanel.Readouts, ShapingOptions.GroupKeys).
-/// </summary>
+// Notifies the owner synchronously on every insert and removal, so it can place the item at once.
 internal sealed partial class CallbackCollection<T> : Collection<T>
 {
     private readonly Action<int, T> _inserted;

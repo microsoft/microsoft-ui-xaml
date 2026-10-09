@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Grid lines visibility: TableView.GridLinesVisibility (None / Horizontal / Vertical / All)
-    across text and template cells, against default or custom row banding, flat or grouped. The
-    page holds only the grid-lines behaviour: the table, the banding Style, the Grid lines and Row
-    banding sections and the Actions. Try it / What to look for are presenter attributes; Shaping
-    and Status are the shared ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.GridLinesVisibilityPage"
     NavigationCacheMode="Disabled"

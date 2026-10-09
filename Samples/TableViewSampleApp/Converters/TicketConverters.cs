@@ -7,12 +7,6 @@ using Microsoft.UI.Xaml.Media;
 
 namespace TableViewSampleApp.Converters;
 
-/// <summary>
-/// x:Bind functions for the support tickets' Priority chip (HeadersVisibilityPage). Every brush is
-/// created once and shared. Under a Contrast theme the tint drops to transparent and the dot to the
-/// theme text brush (the shared <see cref="ChipBrushes"/> rule), so the chip never relies on
-/// colour alone.
-/// </summary>
 public static class TicketChipPalette
 {
     private static readonly Dictionary<string, (SolidColorBrush Tint, SolidColorBrush Dot)> s_priorityBrushes = new(StringComparer.Ordinal)

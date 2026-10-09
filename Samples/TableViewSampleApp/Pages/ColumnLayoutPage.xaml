@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Column layout & sizing: Width intent (Pixel / Auto / Star / Mixed), the MinWidth / MaxWidth
-    clamp, the resulting ActualWidth, and the resize gates. Shaping is excluded on purpose
-    (grouping does not change column widths), so the rail has no ShapingOptions, only a Shaping
-    section that says so. The columns are built in code per mode, so this is the one page where
-    Width="Auto" is allowed: Auto is the thing being demonstrated. Try it / What to look for are
-    presenter attributes; Status is the shared StatusPanel (see Pages\SamplePageBase.cs).
--->
+<!-- The one page that uses Width="Auto": Auto is the lesson. -->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.ColumnLayoutPage"
     NavigationCacheMode="Disabled"

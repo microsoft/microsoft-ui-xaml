@@ -8,29 +8,8 @@
     VerticalAlignment="Stretch">
 
     <!--
-        Sample page scaffold. The title and description sit in HeaderPanel, ABOVE the page
-        ScrollViewer, so they stay on screen however far the page scrolls (expanding Source
-        scrolls it to reveal the code). Below them, OuterGrid is a 3-row, 2-col grid:
-            Row 0: Example      (left col)        |  Options rail card   (right col, only if Options set)
-            Row 1: Source expander (spans both, wide mode) OR Options rail (narrow mode)
-            Row 2: Source expander (spans both, narrow mode only — keeps it below the reparented Options rail)
-
-        The OptionsColumn is FIXED at 320 px when Options is set in wide layouts,
-        0 px otherwise. Auto-sizing here caused the right pane (and consequently
-        the table) to shake on navigation between right-pane pages, because each
-        page's options content has a different natural width. Fixed width = stable
-        layout. Narrow layouts stack the options card below the example so portrait
-        windows do not clip the demo or options content.
-
-        Theme toggle is intentionally absent from this scaffold — the shell
-        MainWindow.xaml hosts the single app-wide theme cycle button in the
-        title bar (see ThemeToggleButton). A per-page theme button that flipped
-        only ExampleContainer.RequestedTheme caused FilterPage to blank when
-        clicked (nested RequestedTheme on TableView unbinds repeater children
-        mid-realization).
-
-        Inspired by w-ahmad/WinUI.TableView SamplePresenter — adapted to
-        our existing CodeBlock + SamplePageHeader style + theme tokens.
+        The header sits above OuterScroller so it stays visible. The Options column is a fixed 320 px:
+        auto-sizing made the table shake between pages. Narrow layouts stack the rail under the Example.
     -->
     <Grid>
     <Grid.RowDefinitions>
@@ -38,15 +17,12 @@
         <RowDefinition Height="*"/>
     </Grid.RowDefinitions>
 
-    <!-- Sticky page header. Margins and Width are set in code from PageContentMargin so the text
-         lines up with OuterGrid and the gap to the Example matches the two old 8 px row gaps. -->
     <Grid x:Name="HeaderPanel" Grid.Row="0" RowSpacing="8" MaxWidth="{StaticResource PageMaxContentWidth}" HorizontalAlignment="Left">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Title; per-page Theme button removed (see file comment). -->
         <TextBlock
             x:Name="HeaderText"
             Grid.Row="0"
@@ -94,10 +70,7 @@
             BorderThickness="1"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             Background="{ThemeResource SubtleFillColorTransparentBrush}">
-            <!-- No x:Name on the InfoBars: WinUI reports an unset AutomationId as the x:Name, which
-                 would add AutomationIds the pages' inline InfoBars never had.
-                 Try it (when set) above the page's Example. The host row is `*` on a stretch page,
-                 Auto otherwise; RowSpacing is 0 while there is no Try it (see UpdateTryIt). -->
+            <!-- No x:Name on the InfoBars: WinUI reports an unset AutomationId as the x:Name. -->
             <Grid x:Name="ExampleGrid" RowSpacing="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -147,7 +120,6 @@
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Stretch"
                         Content="{x:Bind Options, Mode=OneWay}"/>
-                    <!-- What to look for (when set): always last in the rail, no heading above it. -->
                     <InfoBar
                         Title="What to look for"
                         Severity="Informational"
@@ -178,14 +150,6 @@
                     <TextBlock Text="Source" FontWeight="SemiBold"/>
                 </StackPanel>
             </Expander.Header>
-            <!--
-                The source content is bounded and scrolls internally (MaxHeight set from
-                ApplyStretchSizing). On a pinned page the Example row shrinks towards its minimum
-                to make room; on a scrolling page the Example drops to its minimum, the code is
-                capped to the rest of the viewport, and expanding scrolls the block into view
-                (RevealSourceIfPending), so the code is never left below the window. The title
-                and description are outside OuterScroller, so that scroll never hides them.
-            -->
             <ScrollViewer
                 x:Name="SourceContentScroller"
                 VerticalScrollMode="Auto"

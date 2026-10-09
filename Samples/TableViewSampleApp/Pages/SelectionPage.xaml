@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Selection: SelectionMode, the index-based selection API (Select, DeselectAll, SelectedItem,
-    SelectedIndex), and what selection does across a reshape, an insert and a remove.
-    The page holds only the selection behaviour: the table, the Selection mode section and the
-    Actions. Try it / What to look for are presenter attributes; Shaping and Status are the shared
-    ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.SelectionPage"
     NavigationCacheMode="Disabled"

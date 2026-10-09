@@ -1,5 +1,4 @@
-<!-- The columns are declared in XAML; the page then moves, hides, adds and removes them in code.
-     Template columns sort by SortMemberPath, the value behind the control. -->
+<!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.AutomationId="ColumnLifecycleTable"

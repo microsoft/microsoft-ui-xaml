@@ -39,8 +39,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
         PeopleTable.ItemsSource = _source;
         UpdateActionLabels();
 
-        // No re-selection fallback: the control keeps the selection on its item across a reshape;
-        // Rename re-selects its row by index as it scrolls.
+        // No re-selection fallback: the control keeps the selection on its item across a reshape.
         Shaping.RestoreSelection = false;
         InitializeSample(Status, Shaping.Attach(PeopleTable, _source));
 
@@ -155,17 +154,9 @@ public sealed partial class VirtualizationPage : SamplePageBase
         ScrollToRow(1, "Jumped to the first row");
 
     // <snippet>
-    /// <summary>
-    /// Selects row <paramref name="number"/> (1-based, source order) and scrolls to it.
-    /// <para>
-    /// Workaround, not a pattern to copy: this release has no TableView.ScrollIntoView, so the
-    /// sample scrolls the template's body ScrollViewer to an estimated offset, then corrects the
-    /// estimate from a realized row whose display index it knows (unrealized rows only have an
-    /// estimated height), and finally lets the target row bring itself into view once it is
-    /// realized. It relies on this page's preconditions: no sort (every column has CanSort=False),
-    /// every group expanded, and a uniform row height.
-    /// </para>
-    /// </summary>
+    // Workaround, not a pattern to copy: this release has no TableView.ScrollIntoView, so scroll the body
+    // ScrollViewer to an estimated offset and correct it from a realized row. Assumes no sort, every
+    // group expanded and a uniform row height.
     private void ScrollToRow(int number, string message)
     {
         if (_people.Count == 0)
@@ -314,9 +305,8 @@ public sealed partial class VirtualizationPage : SamplePageBase
     }
 
     // <snippet>
-    // Reading realization: the control exposes no realized-row count, so the readout walks the
-    // visual tree for TableViewRow (a public type). A row counts as realized when it is visible and
-    // its bounds intersect the body viewport.
+    // The control exposes no realized-row count, so walk the visual tree for TableViewRow and count the
+    // visible rows that intersect the body viewport.
     private static bool InViewport(TableViewRow row, ScrollViewer scroller)
     {
         if (row.Visibility != Visibility.Visible || row.ActualHeight <= 0)

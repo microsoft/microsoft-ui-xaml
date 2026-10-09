@@ -110,7 +110,6 @@ public sealed partial class FileExplorerPage : SamplePageBase
     }
     // </snippet>
 
-    // How focus sits in the table, or Unfocused when it is elsewhere on the page.
     private FocusState TableFocusState()
     {
         var focused = XamlRoot is null ? null : FocusManager.GetFocusedElement(XamlRoot) as DependencyObject;
@@ -125,10 +124,8 @@ public sealed partial class FileExplorerPage : SamplePageBase
         return FocusState.Unfocused;
     }
 
-    // Workaround: TableView v1 has no public focus-by-item API. Refilling the collection recycles
-    // every row, so the focused row container is left showing nothing. Like File Explorer, move
-    // focus and selection to the first row of the new folder. Not a pattern to copy: it walks the
-    // realized containers and focuses the row directly.
+    // Workaround, not a pattern to copy: TableView v1 has no focus-by-item API, and refilling the
+    // collection leaves the focused row container empty.
     private void FocusFirstRowAfterLayout(FocusState focusState)
     {
         void OnLayoutUpdated(object? sender, object e)
@@ -335,9 +332,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
     }
 
     // <snippet>
-    // Groups appear in the order of their first row, and a sort declared BEFORE GroupBy orders
-    // them. Sorting newest first makes the Date modified buckets read Today, Yesterday, ... and
-    // the Date modified header shows that sort.
+    // A sort declared BEFORE GroupBy orders the groups: newest first reads Today, Yesterday, ...
     protected override void OnShapingApplying(ShapingApplyingEventArgs e)
     {
         if (e.Mode == "grouped" && e.Key == nameof(FileSystemEntry.DateModified))
@@ -345,7 +340,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
             FileTable.SortByColumn(DateModifiedColumn, SortDirection.Descending);
         }
     }
-    // GroupBy key for this page's model. Never returns a blank key: TableViewSource fails fast on an empty group identity.
+    // Never blank: TableViewSource fails fast on an empty group identity.
     private static object KeyOf(FileSystemEntry? entry, string key)
     {
         if (entry is null)

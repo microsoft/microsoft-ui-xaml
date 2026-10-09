@@ -14,9 +14,6 @@ namespace TableViewSampleApp.Pages;
 /// Single source of truth for the persisted app theme. Reads
 /// <see cref="AppSettings.LoadTheme"/> on navigation in, writes via
 /// <see cref="AppSettings.ApplyAndPersist"/> on selection change.
-/// The shell title-bar theme button reuses the same helper; while loaded,
-/// the page follows <see cref="AppSettings.ThemeChanged"/> so the picker
-/// shows a theme changed from the title bar.
 ///
 /// Settings layout: a ComboBox theme picker plus a Storage card,
 /// styled to mirror the CommunityToolkit SettingsCard look using the
@@ -27,9 +24,7 @@ namespace TableViewSampleApp.Pages;
 /// </summary>
 public sealed partial class SettingsPage : Page
 {
-    // Guards SelectionChanged so a programmatic pre-select (Loaded, or a
-    // theme changed from the title bar) doesn't re-fire ApplyAndPersist
-    // (which would no-op but also raise ThemeChanged needlessly).
+    // Guards SelectionChanged during a programmatic pre-select (Loaded, or a title-bar theme change).
     private bool _initializing;
 
     public SettingsPage()
@@ -43,12 +38,8 @@ public sealed partial class SettingsPage : Page
     {
         SelectTheme(AppSettings.LoadTheme());
 
-        // The title-bar theme button changes the theme while this page is open.
         AppSettings.ThemeChanged += OnThemeChanged;
 
-        // -------- Storage card: show the user where the setting lives.
-        // Useful when troubleshooting or copying settings between dev
-        // boxes. Unchanged from the pre-Q4 page.
         var path = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "TableViewSampleApp",
@@ -62,8 +53,7 @@ public sealed partial class SettingsPage : Page
 
     private void OnThemeChanged(object? sender, ElementTheme theme) => SelectTheme(theme);
 
-    // Selects the ComboBoxItem whose Tag matches the ElementTheme (ComboBox doesn't auto-select
-    // by Tag), without re-applying the theme.
+    // ComboBox does not auto-select by Tag.
     private void SelectTheme(ElementTheme current)
     {
         _initializing = true;

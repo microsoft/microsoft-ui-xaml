@@ -18,12 +18,6 @@ using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
 
 namespace TableViewSampleApp.Pages;
 
-/// <summary>
-/// Task Manager scenario: template columns (icon + name, status, four heat-map metric cells),
-/// live data from a DispatcherTimer that stays sorted, search through TableViewSource.Filter and
-/// the Task Manager category bands through TableViewSource.GroupBy. The process list is
-/// Data\ProcessData.cs. The page follows the app theme; the title-bar button owns it.
-/// </summary>
 public sealed partial class TaskManagerPage : SamplePageBase
 {
     private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(2) };

@@ -35,7 +35,6 @@ public sealed partial class GroupsPage : SamplePageBase
     private readonly DoubleTappedEventHandler _doubleTappedHandler;
     private readonly KeyEventHandler _keyDownHandler;
 
-    // Measured in OnShapingApplying, against the key the groups were built on.
     private bool _wasAllCollapsed;
 
     public GroupsPage()
@@ -53,8 +52,6 @@ public sealed partial class GroupsPage : SamplePageBase
         ApplyGroupHeaderTemplate();
         // </snippet>
 
-        // Grouping is this page's subject, so it starts Grouped (ShapingOptions InitialMode="grouped");
-        // InitializeSample applies the grouping now that every element exists.
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackItems(People, OnPersonChanged);
 
@@ -130,8 +127,6 @@ public sealed partial class GroupsPage : SamplePageBase
                 break; // snippet:skip
         }
     }
-
-    // ---- Expansion across a reshape -------------------------------------------------------
 
     protected override void OnShapingApplying(ShapingApplyingEventArgs e)
     {

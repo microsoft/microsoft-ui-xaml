@@ -8,8 +8,7 @@
     IsReadOnly="False"
     VerticalAlignment="Stretch"
     MinHeight="320">
-    <!-- The name columns are editable text (F2 or double-tap) so caret order and
-         bidi text can be checked; the template columns keep their own editors. -->
+    <!-- The name columns are editable text so caret order and bidi text can be checked. -->
     <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTextColumn x:Name="FirstNameColumn" Header="First name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FirstName}" CellToolTipBinding="{Binding Bio}" HeaderToolTip="Editable. Hover a name for that person's notes."/>
     <tv:TableViewTextColumn x:Name="LastNameColumn" Header="Last name" Width="{StaticResource ColWidthStatus}" Binding="{Binding LastName}" HeaderToolTip="Editable."/>

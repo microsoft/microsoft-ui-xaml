@@ -43,8 +43,6 @@ private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     }
 }
 
-// ---- Expansion across a reshape -------------------------------------------------------
-
 protected override void OnShapingApplying(ShapingApplyingEventArgs e)
 {
     _wasAllCollapsed = ExpansionSummary() == AllCollapsed;
@@ -122,7 +120,7 @@ private void OnAddPersonClick(object sender, RoutedEventArgs e)
 // …
 
 // From Controls\ShapingOptions.xaml.cs
-// Every page reshapes its ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
 private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
 {
     if (mode == "grouped")
@@ -132,9 +130,7 @@ private static void ApplyShaping(TableViewSource source, string mode, Func<objec
     }
     else
     {
-        // Hierarchical (tree) rows are not available in this release, so the "Hierarchy" and
-        // "Grouped hierarchy" modes ship disabled. When hierarchy ships, it composes with the
-        // GroupBy stage on this same source rather than replacing it.
+        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
         source.ClearGroupBy();
     }
 }
@@ -142,7 +138,6 @@ private static void ApplyShaping(TableViewSource source, string mode, Func<objec
 // …
 
 // From Pages\GroupsPage.Status.cs
-// Which group a header gesture toggled, and its new state.
 private void NoteHeaderExpansion(DependencyObject? source, bool? desired)
 {
     while (source is not null && source is not TableViewGroupHeader)

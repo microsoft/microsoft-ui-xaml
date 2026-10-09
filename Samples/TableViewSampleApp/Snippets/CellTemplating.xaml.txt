@@ -7,8 +7,7 @@
     IsReadOnly="False"
     VerticalAlignment="Stretch"
     MinHeight="320">
-    <!-- Every CellTemplate is a shared key from Templates\PersonCellTemplates.xaml.
-         The template renders a control; SortMemberPath names the value that orders the rows. -->
+    <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
     <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
     <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}" IsReadOnly="True" HeaderToolTip="Read-only text column. Takes the width the other columns leave."/>
     <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department" HeaderToolTip="Read-only chip template: a tinted badge with a colour dot and the department name."/>

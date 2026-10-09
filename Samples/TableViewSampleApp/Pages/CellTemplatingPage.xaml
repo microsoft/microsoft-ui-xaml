@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Cell templating: TableViewTemplateColumn cells that are read-only visuals or two-way bound
-    editors, and a run-time CellTemplate swap. The cell templates come from
-    Templates\PersonCellTemplates.xaml; this page declares none. The page holds only the
-    templating behaviour: the table, the Join date editor section and the Actions. Try it / What
-    to look for are presenter attributes; Shaping and Status are the shared ShapingOptions /
-    StatusPanel controls (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.CellTemplatingPage"
     NavigationCacheMode="Disabled"
@@ -36,8 +28,7 @@
                     IsReadOnly="False"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
-                    <!-- Every CellTemplate is a shared key from Templates\PersonCellTemplates.xaml.
-                         The template renders a control; SortMemberPath names the value that orders the rows. -->
+                    <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
                     <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
                     <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}" IsReadOnly="True" HeaderToolTip="Read-only text column. Takes the width the other columns leave."/>
                     <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department" HeaderToolTip="Read-only chip template: a tinted badge with a colour dot and the department name."/>

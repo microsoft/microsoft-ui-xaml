@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    File Explorer scenario: a 32 px address row (Back, Up, path, Refresh) over one stretched
-    table, then the rail: Filter, Shaping, Actions, Status. Try it / What to look for are
-    presenter attributes; Shaping and Status are the shared ShapingOptions / StatusPanel controls
-    (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.FileExplorerPage"
     NavigationCacheMode="Disabled"

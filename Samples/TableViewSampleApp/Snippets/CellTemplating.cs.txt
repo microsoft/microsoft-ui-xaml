@@ -3,8 +3,7 @@ InitializeComponent();
 
 // …
 
-// The editors are two-way bound, so nothing commits them by hand. The page only observes
-// the model to report each commit, while it is loaded.
+// The editors are two-way bound; the page only observes the model to report each commit.
 TrackItems(People, OnPersonChanged);
 TrackLifetime(
     () => PersonCellTemplates.DetailsOpened += OnDetailsOpened,
@@ -52,7 +51,7 @@ private void OnChangeDepartmentClick(object sender, RoutedEventArgs e)
 // …
 
 // From Controls\ShapingOptions.xaml.cs
-// Every page reshapes its ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
 private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
 {
     if (mode == "grouped")
@@ -62,9 +61,7 @@ private static void ApplyShaping(TableViewSource source, string mode, Func<objec
     }
     else
     {
-        // Hierarchical (tree) rows are not available in this release, so the "Hierarchy" and
-        // "Grouped hierarchy" modes ship disabled. When hierarchy ships, it composes with the
-        // GroupBy stage on this same source rather than replacing it.
+        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
         source.ClearGroupBy();
     }
 }

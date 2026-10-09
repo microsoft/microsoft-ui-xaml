@@ -95,9 +95,7 @@ private int VisibleCount() => SampleShaping.SelectedTag(FilterSelector, "all") s
 
 // …
 
-// Groups appear in the order of their first row, and a sort declared BEFORE GroupBy orders
-// them. Sorting newest first makes the Date modified buckets read Today, Yesterday, ... and
-// the Date modified header shows that sort.
+// A sort declared BEFORE GroupBy orders the groups: newest first reads Today, Yesterday, ...
 protected override void OnShapingApplying(ShapingApplyingEventArgs e)
 {
     if (e.Mode == "grouped" && e.Key == nameof(FileSystemEntry.DateModified))
@@ -105,7 +103,7 @@ protected override void OnShapingApplying(ShapingApplyingEventArgs e)
         FileTable.SortByColumn(DateModifiedColumn, SortDirection.Descending);
     }
 }
-// GroupBy key for this page's model. Never returns a blank key: TableViewSource fails fast on an empty group identity.
+// Never blank: TableViewSource fails fast on an empty group identity.
 private static object KeyOf(FileSystemEntry? entry, string key)
 {
     if (entry is null)

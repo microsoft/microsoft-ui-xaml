@@ -1,10 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    File properties scenario: the scenario's two panes (Files list and the property table) in the
-    stretched row, then the rail: Filter, Shaping (starts Grouped by section), Actions, Status.
-    Try it / What to look for are presenter attributes; Shaping and Status are the shared
-    ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.FilePropertiesPage"
     NavigationCacheMode="Disabled"
@@ -24,7 +18,6 @@
         WhatToLookFor="Picking another file keeps the filter and the grouping, because the same source re-projects the refilled collection. A moved property stays selected in its new section, since the page restores the selection after re-applying GroupBy. Removing the last row of a section removes its header, and Match nothing leaves zero groups.">
 
         <controls:SamplePresenter.Example>
-            <!-- The scenario's two panes: the file picker and the properties table. -->
             <Grid ColumnSpacing="12" RowSpacing="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" MinWidth="220"/>
@@ -64,8 +57,7 @@
                         SelectionChanged="OnPropSelectionChanged"
                         VerticalAlignment="Stretch"
                         MinHeight="320">
-                        <!-- Property is fixed; Value takes the rest. Not Auto: an Auto column is
-                             measured from the realized rows only, so it changes width while you scroll. -->
+                        <!-- Not Auto: an Auto column is measured from the realized rows only, so it changes width while you scroll. -->
                         <tv:TableViewTextColumn Header="Property" Width="{StaticResource ColWidthPropertyName}" Binding="{Binding Property}"/>
                         <tv:TableViewTextColumn Header="Value" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Value}"/>
                     </tv:TableView>

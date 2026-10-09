@@ -64,11 +64,8 @@ private bool ResortIfSortedOn(params string[] propertyNames)
         return false;
     }
 
-    // SortByColumn ignores a request for the sort that is already applied. Re-declaring the
-    // same path on the source re-reads every key: one reshape and one Sorted, the column keeps
-    // its sort indicator, and the control keeps the selection on the same item. It is a new
-    // declaration, after any GroupBy, so OnSortRedeclared re-applies GroupBy when the sort
-    // used to order the groups.
+    // SortByColumn ignores a request for the sort already applied; re-declaring the same path on the
+    // source re-reads every key. That is a new declaration after any GroupBy, hence OnSortRedeclared.
     _isResorting = true;
     try
     {
@@ -148,7 +145,7 @@ private void OnPostponeClick(object sender, RoutedEventArgs e)
 // …
 
 // From Controls\ShapingOptions.xaml.cs
-// Every page reshapes its ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
 private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
 {
     if (mode == "grouped")
@@ -158,9 +155,7 @@ private static void ApplyShaping(TableViewSource source, string mode, Func<objec
     }
     else
     {
-        // Hierarchical (tree) rows are not available in this release, so the "Hierarchy" and
-        // "Grouped hierarchy" modes ship disabled. When hierarchy ships, it composes with the
-        // GroupBy stage on this same source rather than replacing it.
+        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
         source.ClearGroupBy();
     }
 }

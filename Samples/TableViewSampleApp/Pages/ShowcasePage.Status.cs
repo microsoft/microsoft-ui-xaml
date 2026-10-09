@@ -9,8 +9,6 @@ using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Pages;
 
-// ShowcasePage readouts: Selection, Sort, Columns and Rows. The Shaping and Last action rows are
-// written by SamplePageBase; this file only computes the page's own values.
 public sealed partial class ShowcasePage
 {
     protected override void RefreshReadouts()

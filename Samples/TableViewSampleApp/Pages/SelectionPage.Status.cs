@@ -9,9 +9,6 @@ using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Pages;
 
-// SelectionPage readouts: SelectedItem, SelectedIndex, SelectionChanged fires, Last delta and Rows,
-// plus the Select first / Select last gating. The Shaping and Last action rows are written by
-// SamplePageBase; this file only computes the page's own values.
 public sealed partial class SelectionPage
 {
     private int _changeCount;

@@ -1,18 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    The canonical Shaping section, once for every page. A UserControl creates no
-    automation peer, so these elements surface in the UIA tree exactly where the inline block was.
-    The page supplies only its AutomationIdPrefix, its Description and its group-key items:
-
-        <controls:ShapingOptions x:Name="Shaping" AutomationIdPrefix="Sort" Description="…">
-            <ComboBoxItem Content="Group" Tag="Group"/>   (Tag = key passed to the key selector)
-        </controls:ShapingOptions>
-
-    and calls Shaping.Attach(table, source, keyOf) in its constructor. ShapingOptions.xaml.cs
-    owns ApplyShaping, the re-selection fallback, gating and the hierarchy stub.
-
-    Only the four controls whose AutomationIds come from AutomationIdPrefix carry an x:Name: WinUI
-    reports an unset AutomationId as the x:Name, which the inline block never had.
+    Only the controls whose AutomationIds come from AutomationIdPrefix carry an x:Name:
+    WinUI reports an unset AutomationId as the x:Name.
 -->
 <UserControl
     x:Class="TableViewSampleApp.Controls.ShapingOptions"
@@ -31,10 +20,7 @@
             HorizontalAlignment="Stretch">
             <ComboBoxItem Content="Flat" Tag="flat"/>
             <ComboBoxItem Content="Grouped" Tag="grouped"/>
-            <!-- Hierarchical rows are not available in this release. These two options stay
-                 visible but disabled so the shape of the feature is discoverable. When the
-                 control ships hierarchy, enable them and uncomment the matching branch in
-                 ShapingOptions.Apply. -->
+            <!-- Hierarchy is not available in this release: shown disabled so the feature is discoverable. -->
             <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"
                           AutomationProperties.HelpText="Hierarchical rows are not available in this release."/>
             <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"

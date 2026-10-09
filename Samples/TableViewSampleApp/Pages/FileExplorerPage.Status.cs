@@ -8,8 +8,6 @@ using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Pages;
 
-// FileExplorerPage readouts: Folder, Items, Selected and Rows. The Shaping and Last action rows are
-// written by SamplePageBase; this file only computes the page's own values.
 public sealed partial class FileExplorerPage
 {
     protected override void RefreshReadouts()

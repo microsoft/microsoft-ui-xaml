@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Hierarchy: a placeholder. Hierarchical rows are not available in this release, so this page has
-    no table and no behaviour. The rail shows the canonical Shaping section every table page carries,
-    with every option except Flat disabled, so the intended shape of the feature is discoverable.
-    The Shaping section stays inline (not ShapingOptions): there is no table to attach to, and its
-    options, help texts and caption differ from the shared control. Status is the shared StatusPanel
-    without the Rows and Last action rows.
+    Placeholder: hierarchical rows are not available in this release. The Shaping section stays
+    inline because there is no table to attach ShapingOptions to.
 -->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.HierarchyPage"

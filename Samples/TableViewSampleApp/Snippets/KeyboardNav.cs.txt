@@ -1,4 +1,3 @@
-// The keyboard table reads from one TableViewSource, created once and reshaped in place.
 Source = TableViewSource.From(People);
 InitializeComponent();
 PeopleTable.ItemsSource = Source;
@@ -86,7 +85,6 @@ private void ConfigureColumns()
 
 // …
 
-// The fixture groups with its own switch (a documented exception to the Shaping list).
 private void OnGroupingToggled(object sender, RoutedEventArgs e)
 {
     if (_updating || _fixtureSource is null || !CloseEditForSetup())

@@ -9,8 +9,6 @@ using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Pages;
 
-// TaskManagerPage readouts: Selected, Live, Totals and Rows (plus the End task gating). The Shaping
-// and Last action rows are written by SamplePageBase; this file only computes the page's own values.
 public sealed partial class TaskManagerPage
 {
     private const int SimulatedCores = 12;

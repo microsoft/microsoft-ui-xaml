@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Virtualization: tens of thousands of in-memory rows, of which only the visible ones are
-    realized. Navigation cache stays disabled because this page can hold 50,000 rows. The page
-    holds only the virtualization behaviour: the table, the Dataset section and the Actions. Try
-    it / What to look for are presenter attributes; Shaping and Status are the shared
-    ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
--->
+<!-- Navigation cache stays disabled: this page can hold 50,000 rows. -->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.VirtualizationPage"
     NavigationCacheMode="Disabled"
@@ -26,9 +20,8 @@
         <controls:SamplePresenter.Example>
             <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                 <!-- snippet -->
-                <!-- There is no virtualization switch to set: bind a large source and TableView realizes only
-                     the rows in the viewport. Exactly one * column (Role); the rest use width tokens, never
-                     Auto, because Auto re-measures against whatever rows happen to be realized. -->
+                <!-- No virtualization switch: bind a large source and only the viewport's rows are realized. Width
+                     tokens, never Auto: Auto re-measures against whichever rows happen to be realized. -->
                 <tv:TableView
                     x:Name="PeopleTable"
                     AutomationProperties.AutomationId="VirtualizationTable"

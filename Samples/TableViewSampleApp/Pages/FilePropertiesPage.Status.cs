@@ -7,8 +7,6 @@ using TableViewSampleApp.Helpers;
 
 namespace TableViewSampleApp.Pages;
 
-// FilePropertiesPage readouts: File, Sections and Rows. The Shaping and Last action rows are
-// written by SamplePageBase; this file only computes the page's own values.
 public sealed partial class FilePropertiesPage
 {
     protected override void RefreshReadouts()

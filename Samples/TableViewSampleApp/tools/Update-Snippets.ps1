@@ -156,7 +156,6 @@ function Remove-Narration([string[]]$lines, [string]$where) {
                 $i++
                 if ($depth -le 0 -and $null -eq $state -and $code.TrimEnd().EndsWith(';')) { break }
             }
-            # Remember where the statement was, in case it was the only one in its block.
             $out.Add("$indent$([char]0)")
             continue
         }
@@ -237,7 +236,6 @@ $allFiles = Get-ChildItem -Path $ProjectDir -Recurse -File -Include '*.xaml', '*
     Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' } |
     Sort-Object FullName
 
-# Tag -> @{ xaml = regions; cs = regions } from the page's own unnamed regions.
 $own = @{}
 $named = New-Object System.Collections.Generic.List[object]
 foreach ($file in $allFiles) {
@@ -293,8 +291,7 @@ foreach ($tag in $selected) {
     }
 }
 
-# Every snippet a page names must exist: SourceSnippet / AdditionalSnippet name a file, and
-# Snippet="Sort" names both Sort.xaml.txt and Sort.cs.txt (SamplePresenter.Snippet).
+# Every snippet a page names must exist (Snippet="Sort" names both Sort.xaml.txt and Sort.cs.txt).
 function Get-MissingSnippets {
     $present = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     if (Test-Path $snippetDir) {

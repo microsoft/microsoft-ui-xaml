@@ -40,12 +40,8 @@ public sealed partial class CodeBlock : UserControl
         CodeText.PointerWheelChanged += OnCodeWheelChanged;
     }
 
-    // A vertical mouse wheel over the code must scroll vertically. When the block does not
-    // scroll vertically itself (CodeMaxHeight is infinite inside the Source scroller, or the code
-    // is short), the ScrollViewer would otherwise turn the wheel into horizontal scrolling,
-    // because horizontal is the only axis it can move. Handling the wheel here, on the content,
-    // runs before the ScrollViewer sees it; the nearest vertically scrollable ancestor scrolls
-    // instead. Shift, Ctrl and a horizontal (tilt) wheel keep their default behaviour.
+    // Without this, a ScrollViewer that cannot scroll vertically turns a vertical wheel into horizontal
+    // scrolling; hand the wheel to the nearest vertically scrollable ancestor instead.
     private void OnCodeWheelChanged(object sender, PointerRoutedEventArgs e)
     {
         if (e.Handled || CodeScroller.ScrollableHeight > 0.5
@@ -94,11 +90,6 @@ public sealed partial class CodeBlock : UserControl
         DependencyProperty.Register(nameof(Code), typeof(string), typeof(CodeBlock),
             new PropertyMetadata(string.Empty, OnContentChanged));
 
-    /// <summary>
-    /// Maximum height of the code viewport. Defaults to 360. Set to
-    /// <see cref="double.PositiveInfinity"/> when an outer scroller already bounds the block;
-    /// the block then stops scrolling vertically itself (one vertical scroller).
-    /// </summary>
     public double CodeMaxHeight
     {
         get => (double)GetValue(CodeMaxHeightProperty);

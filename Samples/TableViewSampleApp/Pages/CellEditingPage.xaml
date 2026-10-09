@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Cell editing: built-in in-place editing of text columns, a CellEditingTemplate editor, the
-    table-wide TableView.IsReadOnly gate, CommitEdit / CancelEdit and the edit log. The page holds
-    only the editing behaviour: the table, its Department templates, the Editing section, the
-    Actions and the Edit log. Try it / What to look for are presenter attributes; Shaping and
-    Status are the shared ShapingOptions / StatusPanel controls (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.CellEditingPage"
     NavigationCacheMode="Disabled"

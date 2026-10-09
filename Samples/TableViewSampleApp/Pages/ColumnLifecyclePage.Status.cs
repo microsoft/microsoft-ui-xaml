@@ -8,8 +8,6 @@ using TableViewSampleApp.Helpers;
 
 namespace TableViewSampleApp.Pages;
 
-// ColumnLifecyclePage readouts: Columns, Hidden, Groups and Rows. The Shaping and Last action rows
-// are written by SamplePageBase; this file only computes the page's own values.
 public sealed partial class ColumnLifecyclePage
 {
     protected override void RefreshReadouts()

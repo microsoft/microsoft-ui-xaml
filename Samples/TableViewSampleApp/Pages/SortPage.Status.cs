@@ -12,8 +12,6 @@ using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
 
 namespace TableViewSampleApp.Pages;
 
-// SortPage readouts: Active sort, Sorted event, Top 5 in view and Rows. The Shaping and Last action
-// rows are written by SamplePageBase; this file only computes the page's own values.
 public sealed partial class SortPage
 {
     private int _sortedFiredCount;
@@ -35,7 +33,6 @@ public sealed partial class SortPage
         TopRowsText.Text = top.Count > 0 ? string.Join(Environment.NewLine, top) : "(no rows)";
     }
 
-    // The rows in the order the table shows them (shared rules: SampleShaping.InViewOrder).
     private IEnumerable<LeagueTeam> InViewOrder() =>
         SampleShaping.InViewOrder(TeamsTable, Teams, SortKey, IsGrouped ? t => LeagueData.GroupKeyOf(t, AppliedGroupKey) : null, SortOrdersGroups);
 

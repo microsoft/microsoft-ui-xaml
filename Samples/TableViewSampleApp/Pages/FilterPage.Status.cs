@@ -8,8 +8,6 @@ using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Pages;
 
-// FilterPage readouts: Filter, Selected and Rows. The Shaping and Last action rows are written by
-// SamplePageBase; this file only computes the page's own values.
 public sealed partial class FilterPage
 {
     protected override void RefreshReadouts()

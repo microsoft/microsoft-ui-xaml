@@ -32,9 +32,7 @@ namespace TableViewSampleApp.Pages;
 /// </summary>
 public sealed partial class KeyboardNavPage : SamplePageBase
 {
-    // The fixture's value is determinism: the same 24 objects, in the same order, under every
-    // scenario. Reset restores values AND membership without creating new objects, so a UIA
-    // inspector can stay open across a reset.
+    // Reset restores values AND membership without new objects, so a UIA inspector stays valid across it.
     private readonly AccessibilityFixtureData _data = new();
     private TableViewSource? _fixtureSource;
     private bool _updating = true;
@@ -43,7 +41,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
     public KeyboardNavPage()
     {
         // <snippet>
-        // The keyboard table reads from one TableViewSource, created once and reshaped in place.
         Source = TableViewSource.From(People);
         InitializeComponent();
         PeopleTable.ItemsSource = Source;
@@ -215,7 +212,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
     }
     // </snippet>
 
-    // What to check in each scenario: shown under the fixture table.
     private static string ExpectedObservations(string scenario) =>
         scenario switch
         {
@@ -268,7 +264,6 @@ public sealed partial class KeyboardNavPage : SamplePageBase
     private void OnResetClick(object sender, RoutedEventArgs e) => ResetFixture(announce: true);
 
     // <snippet>
-    // The fixture groups with its own switch (a documented exception to the Shaping list).
     private void OnGroupingToggled(object sender, RoutedEventArgs e)
     {
         if (_updating || _fixtureSource is null || !CloseEditForSetup())

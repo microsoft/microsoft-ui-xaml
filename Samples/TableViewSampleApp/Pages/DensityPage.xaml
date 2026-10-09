@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Density: TableView.Density (Compact / Standard / Comfortable) switched live over text and
-    read-only template cells, alongside grouping, whose headers keep a fixed height. The page holds
-    only the density behaviour: the table, the Density section and the Actions. Try it / What to
-    look for are presenter attributes; Shaping and Status are the shared ShapingOptions /
-    StatusPanel controls (see Pages\SamplePageBase.cs).
--->
 <pages:SamplePageBase
     x:Class="TableViewSampleApp.Pages.DensityPage"
     NavigationCacheMode="Disabled"
@@ -26,8 +19,7 @@
         <controls:SamplePresenter.Example>
             <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
                 <!-- snippet -->
-                <!-- Density is one table-level property; the template cells take the new row height
-                     with no change of their own. -->
+                <!-- Template cells follow Density with no change of their own. -->
                 <tv:TableView
                     x:Name="PeopleTable"
                     AutomationProperties.AutomationId="DensityTable"

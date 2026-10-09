@@ -1,6 +1,4 @@
-<!-- Shown when the filter narrows the projection to zero rows.
-     MaxWidth: the row area scrolls sideways, so it measures its content at infinite width;
-     without a cap the wrapping text lays out as one line wider than the table. -->
+<!-- MaxWidth: the row area measures at infinite width, so uncapped text lays out as one wide line. -->
 <DataTemplate x:Key="FilterEmptyTemplate" x:DataType="system:Object">
     <StackPanel Spacing="4" Padding="24" MaxWidth="400" HorizontalAlignment="Center" VerticalAlignment="Center">
         <TextBlock Text="No rows match the filter" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>

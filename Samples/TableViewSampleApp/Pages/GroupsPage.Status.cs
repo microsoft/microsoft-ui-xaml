@@ -16,9 +16,6 @@ using Windows.System;
 
 namespace TableViewSampleApp.Pages;
 
-// GroupsPage readouts: Groups, Expansion and Rows, plus the per-group expansion bookkeeping the
-// Expansion readout needs. The Shaping and Last action rows are written by SamplePageBase; this
-// file only computes the page's own values.
 public sealed partial class GroupsPage
 {
     private const string AllExpanded = "All expanded";
@@ -51,7 +48,6 @@ public sealed partial class GroupsPage
         ExpansionText.Text = ExpansionSummary();
     }
 
-    // The rows in the order the table shows them (shared rules: SampleShaping.InViewOrder).
     private IEnumerable<Person> InViewOrder() =>
         SampleShaping.InViewOrder(PeopleTable, People, SortKey, IsGrouped ? p => SampleShaping.KeyOf(p, AppliedGroupKey) : null, SortOrdersGroups);
 
@@ -65,7 +61,6 @@ public sealed partial class GroupsPage
         _ => null,
     };
 
-    // Identities of the groups the current rows produce.
     private HashSet<string> CurrentGroupIdentities()
     {
         var key = AppliedGroupKey;
@@ -86,7 +81,6 @@ public sealed partial class GroupsPage
             : string.Format(CultureInfo.CurrentCulture, "Mixed: {0:N0} of {1:N0} collapsed", collapsed, groups.Count);
     }
 
-    // Expand all / Collapse all (Shaping section): record the new state before the base narrates it.
     protected override void OnShapingAction(ShapingActionEventArgs e)
     {
         _collapsedGroups.Clear();
@@ -96,12 +90,7 @@ public sealed partial class GroupsPage
         }
     }
 
-    // ---- One group toggled from its header ----------------------------------------------
-
-    // A header click or Enter/Space toggles its group; Right and Left expand and collapse it (the
-    // reverse in RTL). The control resolves the group at once but applies the change on a later
-    // dispatcher turn, so header.IsExpanded still holds the OLD state here and for a while after.
-    // The page therefore computes the new state itself instead of reading the header back.
+    // Header click or Enter/Space toggles the group; Right and Left expand and collapse it (reversed in RTL).
     private void OnTableTapped(object sender, TappedRoutedEventArgs e) => NoteHeaderExpansion(e.OriginalSource as DependencyObject, desired: null);
 
     // The second click of a double-click toggles the group again but raises DoubleTapped, not Tapped.
@@ -124,7 +113,6 @@ public sealed partial class GroupsPage
     }
 
     // <snippet Groups>
-    // Which group a header gesture toggled, and its new state.
     private void NoteHeaderExpansion(DependencyObject? source, bool? desired)
     {
         while (source is not null && source is not TableViewGroupHeader)

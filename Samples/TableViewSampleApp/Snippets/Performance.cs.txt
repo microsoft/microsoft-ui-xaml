@@ -92,10 +92,8 @@ private async void OnPerItemAddClick(object sender, RoutedEventArgs e)
     }
 }
 
-// Under an active GroupBy every Add regroups every row added so far, synchronously, so 10,000
-// Adds cost O(n^2) and would freeze the window for minutes. The grouped run therefore does
-// two things: (1) it times per-row Adds under the live grouping only until a time cap, and
-// (2) it does the real 10,000 Adds with the grouping detached, then groups once.
+// Under GroupBy every Add regroups all rows so far (O(n^2)): time per-row Adds only up to a cap,
+// then do the real Adds with the grouping detached and group once.
 private async Task RunPerItemAddGroupedAsync(IReadOnlyList<Person> rows)
 {
     var key = Shaping.SelectedKey;
@@ -169,8 +167,6 @@ private async Task RunPerItemAddGroupedAsync(IReadOnlyList<Person> rows)
         Shaping.SetBusy(false);
     }
 }
-
-// ---- Shaping is timed like every other run (Shaping.TimeCall = Timed) ------------------
 
 protected override void OnShapingApplied(ShapingAppliedEventArgs e)
 {

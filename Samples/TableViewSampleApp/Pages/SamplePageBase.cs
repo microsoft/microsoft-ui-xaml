@@ -13,19 +13,7 @@ using TableViewSampleApp.Controls;
 
 namespace TableViewSampleApp.Pages;
 
-/// <summary>
-/// Base of every sample page: the generic plumbing (Status, Shaping, Last action, Loaded/Unloaded
-/// bookkeeping) so the page itself holds only the TableView behaviour it demonstrates.
-/// <para>
-/// A page calls <see cref="InitializeSample"/> once in its constructor, overrides
-/// <see cref="RefreshReadouts"/> (in its <c>&lt;X&gt;Page.Status.cs</c> partial) and, where its
-/// feature reacts to shaping, <see cref="OnShapingApplying"/> / <see cref="OnShapingApplied"/>.
-/// </para>
-/// <para>
-/// Non-abstract with a public parameterless constructor so it can be a XAML root
-/// (<c>&lt;pages:SamplePageBase x:Class="…"&gt;</c>); partial for CsWinRT.
-/// </para>
-/// </summary>
+// Non-abstract with a public parameterless constructor so it can be a XAML root.
 public partial class SamplePageBase : Page
 {
     private readonly List<Action> _onLoaded = new();
@@ -36,22 +24,14 @@ public partial class SamplePageBase : Page
     private bool _isLoadedHooked;
     private int _bulkUpdateDepth;
 
-    /// <summary>True after a GroupBy returned in Grouped mode (never while it is being applied).</summary>
     protected bool IsGrouped => _shaping?.IsGrouped ?? false;
 
-    /// <summary>The group key last applied (the group-key ComboBoxItem Tag).</summary>
     protected string AppliedGroupKey => _shaping?.AppliedKey ?? string.Empty;
 
-    /// <summary>True when the active sort was declared before the grouping, so it orders the groups.</summary>
     protected bool SortOrdersGroups => _shaping?.SortOrdersGroups ?? false;
 
-    /// <summary>True inside a <see cref="BeginBulkUpdate"/> scope: per-item change handlers should skip.</summary>
     protected bool IsBulkUpdating => _bulkUpdateDepth > 0;
 
-    /// <summary>
-    /// Connects the page's Status section and, if it has one, its Shaping section (already
-    /// <see cref="ShapingOptions.Attach"/>ed). Applies the initial shaping, then refreshes the readouts.
-    /// </summary>
     protected void InitializeSample(StatusPanel status, ShapingOptions? shaping = null)
     {
         _status = status;
@@ -77,10 +57,6 @@ public partial class SamplePageBase : Page
         RefreshReadouts();
     }
 
-    /// <summary>
-    /// The only writer of the Last action readout. Also refreshes every readout, then calls
-    /// <see cref="OnLastActionSet"/>.
-    /// </summary>
     protected void SetLastAction(string message)
     {
         if (_status is not null)
@@ -92,53 +68,30 @@ public partial class SamplePageBase : Page
         OnLastActionSet(message);
     }
 
-    /// <summary>
-    /// Runs after every Last action write and its readout refresh (e.g. to read the readouts again
-    /// once layout has settled).
-    /// </summary>
     protected virtual void OnLastActionSet(string message)
     {
     }
 
-    /// <summary>Writes the page's readouts. Override in <c>&lt;X&gt;Page.Status.cs</c>.</summary>
     protected virtual void RefreshReadouts()
     {
     }
 
-    /// <summary>Runs before GroupBy / ClearGroupBy (e.g. a pre-sort, capturing state).</summary>
     protected virtual void OnShapingApplying(ShapingApplyingEventArgs e)
     {
     }
 
-    /// <summary>
-    /// Runs after the reshape, before the readouts refresh. Order: Shaping readout ← e.Text, this
-    /// hook, then Last action ← e.Message (announced) or RefreshReadouts.
-    /// </summary>
     protected virtual void OnShapingApplied(ShapingAppliedEventArgs e)
     {
     }
 
-    /// <summary>
-    /// Runs after Expand all / Collapse all (Shaping section), before Last action ← e.Message.
-    /// <see cref="ShapingActionEventArgs.Action"/> says which; a page may extend e.Message.
-    /// </summary>
     protected virtual void OnShapingAction(ShapingActionEventArgs e)
     {
     }
 
-    /// <summary>Applies the grouping again if it is on <paramref name="propertyName"/>.</summary>
     protected void ReapplyIfGroupedOn(string? propertyName) => _shaping?.ReapplyIfGroupedOn(propertyName);
 
-    /// <summary>
-    /// Call after re-declaring the active sort with TableViewSource.Sort: keeps the sort ordering the
-    /// groups when it did before (see <see cref="ShapingOptions.OnSortRedeclared"/>).
-    /// </summary>
     protected void OnSortRedeclared() => _shaping?.OnSortRedeclared();
 
-    /// <summary>
-    /// Listens to PropertyChanged of every item while the page is loaded, following adds, removes
-    /// and resets (Clear); detaches on Unloaded.
-    /// </summary>
     protected void TrackItems<T>(ObservableCollection<T> items, PropertyChangedEventHandler onItemChanged)
         where T : class, INotifyPropertyChanged
     {
@@ -207,16 +160,8 @@ public partial class SamplePageBase : Page
             });
     }
 
-    /// <summary>
-    /// Runs <paramref name="onLoaded"/> on every Loaded (before the readouts refresh) and
-    /// <paramref name="onUnloaded"/>, if any, on every Unloaded. Loaded and Unloaded are paired: a
-    /// second Loaded without an Unloaded in between (reparenting) does not run the actions again.
-    /// Registered after the page has loaded, <paramref name="onLoaded"/> runs immediately.
-    /// <para>
-    /// The actions are lambdas held by this page only, so they live exactly as long as the page; the
-    /// page never subscribes to anything longer-lived without an <paramref name="onUnloaded"/>.
-    /// </para>
-    /// </summary>
+    // Loaded and Unloaded are paired: a second Loaded without an Unloaded (reparenting) does not run
+    // onLoaded again.
     protected void TrackLifetime(Action onLoaded, Action? onUnloaded = null)
     {
         HookLifetime();
@@ -232,10 +177,6 @@ public partial class SamplePageBase : Page
         }
     }
 
-    /// <summary>
-    /// Stops <paramref name="timer"/> when the page unloads and, on every Loaded, starts it again
-    /// if <paramref name="runWhenLoaded"/> returns true.
-    /// </summary>
     protected void TrackTimer(DispatcherQueueTimer timer, Func<bool>? runWhenLoaded = null) =>
         TrackLifetime(
             () =>
@@ -247,7 +188,6 @@ public partial class SamplePageBase : Page
             },
             timer.Stop);
 
-    /// <inheritdoc cref="TrackTimer(DispatcherQueueTimer, Func{bool}?)"/>
     protected void TrackTimer(DispatcherTimer timer, Func<bool>? runWhenLoaded = null) =>
         TrackLifetime(
             () =>
@@ -259,10 +199,7 @@ public partial class SamplePageBase : Page
             },
             timer.Stop);
 
-    /// <summary>
-    /// Queues <paramref name="action"/> on the page's dispatcher and runs it only if the page is still
-    /// loaded then (a queued callback must never touch a page that was navigated away from).
-    /// </summary>
+    // A queued callback must never touch a page that was navigated away from.
     protected bool EnqueueIfLoaded(Action action, DispatcherQueuePriority priority = DispatcherQueuePriority.Normal) =>
         DispatcherQueue.TryEnqueue(priority, () =>
         {
@@ -274,9 +211,6 @@ public partial class SamplePageBase : Page
             action();
         });
 
-    /// <summary>
-    /// A scope in which <see cref="IsBulkUpdating"/> is true: <c>using (BeginBulkUpdate()) { … }</c>.
-    /// </summary>
     protected IDisposable BeginBulkUpdate()
     {
         _bulkUpdateDepth++;

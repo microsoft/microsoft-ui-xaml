@@ -7,7 +7,6 @@ using Microsoft.UI.Xaml.Data;
 
 namespace TableViewSampleApp.Converters;
 
-/// <summary>Expansion chip text for the custom group header.</summary>
 public sealed partial class GroupExpansionTextConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
@@ -17,10 +16,7 @@ public sealed partial class GroupExpansionTextConverter : IValueConverter
         => throw new NotImplementedException();
 }
 
-/// <summary>
-/// Formats TableViewGroupInfo.ItemCount for the custom group header. Bound to ItemCount (Int32)
-/// rather than the ItemCountText projection so the header always shows a count.
-/// </summary>
+// Bound to ItemCount rather than ItemCountText so the header always shows a count.
 public sealed partial class GroupCountTextConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)

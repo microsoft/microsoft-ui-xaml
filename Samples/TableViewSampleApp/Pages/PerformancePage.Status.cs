@@ -7,9 +7,6 @@ using TableViewSampleApp.Helpers;
 
 namespace TableViewSampleApp.Pages;
 
-// PerformancePage readouts: Build and Rows here, Memory from the snapshot; each timed run writes its
-// own result row (Load, Sort, Filter, Group, Per-item Add) where it is measured. The Shaping and
-// Last action rows are written by SamplePageBase.
 public sealed partial class PerformancePage
 {
     private long _baselineWorkingSet;
