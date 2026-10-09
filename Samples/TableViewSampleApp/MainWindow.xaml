@@ -111,9 +111,6 @@
                 <muxc:NavigationViewItem Tag="Virtualization" Content="Virtualization"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8C6;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="Performance" Content="Performance"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE916;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItemSeparator/>
-                <muxc:NavigationViewItemHeader Content="Self-checks"/>
-                <muxc:NavigationViewItem Tag="HierarchySelfCheck" Content="Hierarchy self-check"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE9D5;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
-                <muxc:NavigationViewItem Tag="LiveShapingSelfCheck" Content="Live shaping self-check"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE9D5;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
             </muxc:NavigationView.MenuItems>
 
             <muxc:NavigationView.FooterMenuItems>

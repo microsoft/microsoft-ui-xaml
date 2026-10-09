@@ -7,8 +7,8 @@ using Microsoft.UI.Xaml.Data;
 
 namespace TableViewSampleApp.Helpers;
 
-// Column factory for pages that build their columns in code (Hierarchy and the self-checks), so a
-// column is just header, bound property and width.
+// Column factory for pages that build their columns in code (Hierarchy), so a column is just
+// header, bound property and width.
 internal static class SampleColumns
 {
     public static TableViewTextColumn Text(string header, string propertyPath, GridLength width) =>

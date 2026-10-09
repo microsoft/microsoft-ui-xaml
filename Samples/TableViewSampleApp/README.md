@@ -62,15 +62,6 @@ only when `TableViewSampleEnableVerificationLogs=true` is passed to MSBuild, and
 `--verify-groups` or `--verify-selection`. Normal public sample builds do not write log files next
 to the executable.
 
-### Self-checks
-
-The **Self-checks** section of the navigation runs scripted checks against the public API and shows
-PASS/FAIL per case: **Hierarchy self-check** (`ParentBy` / `ClearParentBy`) and **Live shaping
-self-check** (`IsLiveShaping` on flat, grouped and hierarchical sources). To run one unattended,
-create an empty file named `autorun-selfcheck` or `autorun-livecheck` next to the exe; the app opens
-the page, writes `selfcheck-results.txt` or `livecheck-results.txt` there, and exits. Each results
-file ends with `SUMMARY PASS <n> / FAIL <m>`.
-
 ## Using TableView in your own app
 
 Reference `Microsoft.WindowsAppSDK.WinUI` and use the control. In `App.xaml`, merge
