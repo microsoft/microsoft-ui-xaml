@@ -441,7 +441,6 @@ public:
     void ExpandRowSubtree(winrt::UIElement const& container);
 
     // Tree keyboard navigation. Each moves row focus and returns whether it did.
-    bool TryFocusFirstChildRow(winrt::UIElement const& container);
     bool TryFocusParentRow(winrt::UIElement const& container);
 
     // Public bulk expansion commands (from TableView IDL), one pair per axis.

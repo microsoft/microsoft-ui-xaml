@@ -25,7 +25,9 @@ public:
     hstring GetNameCore();
 
     // Rows are virtualized: UIA only ever sees the realized window, so the control has to supply
-    // "row i of n" on the same flat basis as IGridProvider.
+    // "row i of n" on the same flat basis as IGridProvider. A tree row reports its position and
+    // size within its SIBLING set instead, so a screen reader announces "2 of 3" for the second
+    // child of a node rather than its offset into the whole table.
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
 
@@ -49,18 +51,15 @@ public:
     bool CanReuseForRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     void TrackCurrentRowItem(winrt::TableViewRow const& row, winrt::TableView const& tableView);
     void DropCellPeerCache();
+
     // IExpandCollapseProvider — hierarchical rows only. A leaf reports LeafNode rather than the
     // pattern being withdrawn, matching TableViewGroupHeaderAutomationPeer.
     winrt::ExpandCollapseState ExpandCollapseState();
     void Expand();
     void Collapse();
 
-    // IAutomationPeerOverrides3. Level is the row's 1-based tree depth; position and set size are
-    // reported within the SIBLING set, not the flat row axis, so a screen reader announces
-    // "2 of 3" for the second child of a node rather than its offset into the whole table.
+    // IAutomationPeerOverrides3. Level is the row's 1-based tree depth.
     int32_t GetLevelCore();
-    int32_t GetPositionInSetCore();
-    int32_t GetSizeOfSetCore();
 
     // Called by the owning row when its expansion state changes, so a connected client is not
     // left reading a stale ExpandCollapseState. Mirrors

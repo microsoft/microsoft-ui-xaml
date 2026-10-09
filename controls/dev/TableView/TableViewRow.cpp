@@ -1021,12 +1021,9 @@ void TableViewRow::RaiseExpandCollapseStateChanged(
     }
 }
 
-// Tree keys, mirrored under RTL -- the TreeViewItem / Expander convention the group header already
-// follows in TableViewGroupHeader::OnKeyDown. Forward (Right, or Left under RTL): expand a collapsed
-// row, else move to its first child. Backward: collapse an expanded row, else move to its parent.
-// Multiply expands the whole subtree. Handled only when an action ran, so a leaf's forward key
-// still falls through. Handled on the row rather than in TableView's navigation handler because
-// that handler owns the row-to-row cursor, and these keys move within the tree.
+// Multiply expands the whole subtree, as TreeViewItem does. Left/Right are not handled here:
+// TableView::TryHandleRowLevelDrillKey owns them, because it also processes keys a focused row has
+// already handled, so taking them here as well would run two actions for one key press.
 //
 // Space is deliberately left alone: it selects the focused row, and group headers are only free to
 // toggle on it because they are not selectable. Taking it here would change selection behavior for
@@ -1046,55 +1043,10 @@ void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         !isModifierDown(winrt::VirtualKey::Shift) &&
         !isModifierDown(winrt::VirtualKey::Menu))
     {
-        const bool isRtl = FlowDirection() == winrt::FlowDirection::RightToLeft;
         auto const owner = GetOwningTableView();
-        auto const ownerImpl = owner ? winrt::get_self<TableView>(owner) : nullptr;
-        bool acted = false;
-
-        switch (args.Key())
+        if (args.Key() == winrt::VirtualKey::Multiply && IsExpandable() && owner)
         {
-        case winrt::VirtualKey::Right:
-        case winrt::VirtualKey::Left:
-        {
-            const bool forward = (args.Key() == winrt::VirtualKey::Right) != isRtl;
-            if (forward)
-            {
-                if (IsExpandable() && !IsExpanded())
-                {
-                    RequestExpansion(true);
-                    acted = true;
-                }
-                else if (IsExpandable() && ownerImpl)
-                {
-                    acted = ownerImpl->TryFocusFirstChildRow(*this);
-                }
-            }
-            else if (IsExpandable() && IsExpanded())
-            {
-                RequestExpansion(false);
-                acted = true;
-            }
-            else if (ownerImpl)
-            {
-                acted = ownerImpl->TryFocusParentRow(*this);
-            }
-            break;
-        }
-
-        case winrt::VirtualKey::Multiply:
-            if (IsExpandable() && ownerImpl)
-            {
-                ownerImpl->ExpandRowSubtree(*this);
-                acted = true;
-            }
-            break;
-
-        default:
-            break;
-        }
-
-        if (acted)
-        {
+            winrt::get_self<TableView>(owner)->ExpandRowSubtree(*this);
             args.Handled(true);
         }
     }
@@ -1115,21 +1067,6 @@ bool TableViewRow::IsRowItselfFocused()
 
     auto const focused = winrt::FocusManager::GetFocusedElement(root).try_as<winrt::UIElement>();
     return focused && focused == *this;
-}
-
-void TableViewRow::RequestExpansion(bool expand)
-{
-    if (!IsExpandable())
-    {
-        return;
-    }
-
-    // Same entry point as the chevron gesture and the ExpandCollapse peer: it resolves this
-    // container's identity while the index is still current and defers only the reshape.
-    if (auto const owner = GetOwningTableView())
-    {
-        winrt::get_self<TableView>(owner)->SetGroupExpansion(*this, expand);
-    }
 }
 
 // Places the chevron and reserves the matching room in the first cell. Split from

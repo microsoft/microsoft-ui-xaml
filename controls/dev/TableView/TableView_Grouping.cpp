@@ -188,35 +188,6 @@ void TableView::ExpandRowSubtree(winrt::UIElement const& container)
     RequestGroupExpansion(container, true, true /* subtree */);
 }
 
-bool TableView::TryFocusFirstChildRow(winrt::UIElement const& container)
-{
-    auto const repeater = m_rowsRepeater.get();
-    if (!repeater || !container)
-    {
-        return false;
-    }
-
-    const auto index = repeater.GetElementIndex(container);
-    TableViewRowInfo info{};
-    TableViewRowInfo next{};
-    if (index < 0 || !TryGetTableViewSourceRowInfo(index, info) || info.Level <= 0 ||
-        !TryGetTableViewSourceRowInfo(index + 1, next) ||
-        next.Kind != TableViewRowKind::Data || next.Level != info.Level + 1)
-    {
-        return false;
-    }
-
-    if (!FocusRow(index + 1))
-    {
-        return false;
-    }
-
-    // Selection follows the keyboard cursor, as for Up/Down (OnKeyDownForNavigation). The row
-    // handler only reaches here with no modifier down, so this is never a Ctrl+arrow move.
-    SelectRowIndexFromInteraction(index + 1, false /* toggle */);
-    return true;
-}
-
 bool TableView::TryFocusParentRow(winrt::UIElement const& container)
 {
     auto const repeater = m_rowsRepeater.get();
@@ -239,7 +210,8 @@ bool TableView::TryFocusParentRow(winrt::UIElement const& container)
         return false;
     }
 
-    // Selection follows the keyboard cursor; see TryFocusFirstChildRow.
+    // Selection follows the keyboard cursor, as for Up/Down (OnKeyDownForNavigation). The drill
+    // handler only reaches here without Ctrl, so this is never a focus-without-select move.
     SelectRowIndexFromInteraction(parentIndex, false /* toggle */);
     return true;
 }

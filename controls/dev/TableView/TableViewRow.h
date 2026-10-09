@@ -161,7 +161,6 @@ private:
     bool IsRowItselfFocused();
 
     // Directional expand/collapse for the keyboard, routed through the owner like the chevron.
-    void RequestExpansion(bool expand);
 
     // Installs a generated display element as a cell's content, wiring the ContentPresenter Content
     // binding a template column needs. GenerateElement alone is not a complete cell.

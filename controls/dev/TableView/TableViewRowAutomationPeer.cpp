@@ -486,6 +486,14 @@ int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
         return provided;
     }
 
+    // A tree row reports its place among its siblings, not its offset into the flat row axis.
+    int32_t position = 0;
+    int32_t sizeOfSet = 0;
+    if (TryGetSiblingPosition(position, sizeOfSet))
+    {
+        return position;
+    }
+
     const auto index = GetRowIndex();
     if (index < 0)
     {
@@ -506,6 +514,13 @@ int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
     if (const auto provided = __super::GetSizeOfSetCore(); provided > 0)
     {
         return provided;
+    }
+
+    int32_t position = 0;
+    int32_t sizeOfSet = 0;
+    if (TryGetSiblingPosition(position, sizeOfSet))
+    {
+        return sizeOfSet;
     }
 
     if (auto const tableView = GetOwningTableView())
@@ -710,22 +725,6 @@ int32_t TableViewRowAutomationPeer::GetLevelCore()
     auto const row = GetRow();
     const int32_t level = row ? row.Level() : 0;
     return level > 0 ? level : __super::GetLevelCore();
-}
-
-int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
-{
-    int32_t position = 0;
-    int32_t sizeOfSet = 0;
-    // A non-tree row defers to the base peer (AutomationProperties.PositionInSet).
-    return TryGetSiblingPosition(position, sizeOfSet) ? position : __super::GetPositionInSetCore();
-}
-
-int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
-{
-    int32_t position = 0;
-    int32_t sizeOfSet = 0;
-    // A non-tree row defers to the base peer (AutomationProperties.SizeOfSet).
-    return TryGetSiblingPosition(position, sizeOfSet) ? sizeOfSet : __super::GetSizeOfSetCore();
 }
 
 // Reports this row's position within its SIBLING set, not its flat-axis coordinates -- otherwise a

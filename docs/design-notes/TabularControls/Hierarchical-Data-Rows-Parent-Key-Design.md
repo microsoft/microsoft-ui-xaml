@@ -424,13 +424,18 @@ On a focused hierarchical row (row container focused, not a cell editor):
 
 | Key | Collapsed expandable | Expanded | Leaf |
 | --- | --- | --- | --- |
-| `Right` (mirrored in RTL) | Expand | Move focus to the first child | Not handled |
+| `Right` (mirrored in RTL) | Expand | Focus the first cell | Focus the first cell |
 | `Left` (mirrored in RTL) | Move focus to the parent | Collapse | Move focus to the parent |
 | `*` (Multiply) | Expand this subtree | Expand this subtree | Not handled |
 
-These keys act only when Ctrl, Shift and Alt are all up, as in `TreeViewItem`; with a modifier held
-they fall through to TableView's own navigation. A move to the parent or the first child selects
-that row, as Up/Down do (selection follows the keyboard cursor).
+This is the ARIA treegrid pattern layered on TableView's row/cell drill
+(`TableView::TryHandleRowLevelDrillKey`): `Right` on a row that has nothing to expand drills into its
+cells, and `Left` on the first cell returns to the row. `Left` on a root row is consumed, so focus
+does not leave the table. `Left`/`Right` are handled in TableView rather than on the row, because
+TableView also processes keys a focused row already handled; taking them in both places would run
+two actions for one press. The tree actions need Ctrl, Shift and Alt up; with Shift the plain drill
+applies, and Ctrl/Alt chords fall through. A move to the parent selects that row, as Up/Down do
+(selection follows the keyboard cursor). Down reaches the first child of an expanded row.
 
 "Move to parent" resolves `NodeRow::ParentKey` to an index through the key map, which is O(1).
 

@@ -1691,6 +1691,35 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
             return false;
         }
 
+        // A hierarchical row adds the ARIA treegrid tree level on top of the row/cell drill:
+        // forward expands a collapsed node and otherwise drills into the cells; backward collapses
+        // an expanded node, else moves to the parent row. Shift chords keep the plain drill.
+        if (row.Level() > 0 && !IsKeyDown(winrt::VirtualKey::Shift))
+        {
+            if (drillIn && row.IsExpandable() && !row.IsExpanded())
+            {
+                SetGroupExpansion(row, true);
+                args.Handled(true);
+                return true;
+            }
+
+            if (!drillIn)
+            {
+                if (row.IsExpandable() && row.IsExpanded())
+                {
+                    SetGroupExpansion(row, false);
+                }
+                else
+                {
+                    TryFocusParentRow(row);
+                }
+
+                // Consumed even at a root, for the same reason as the flat row below.
+                args.Handled(true);
+                return true;
+            }
+        }
+
         auto const rowImpl = winrt::get_self<TableViewRow>(row);
         const int32_t cellCount = rowImpl->GetVisibleCellCountInternal();
         if (cellCount <= 0)
