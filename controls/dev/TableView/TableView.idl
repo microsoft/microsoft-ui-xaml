@@ -178,7 +178,9 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     String SortMemberPath { get; set; };
 
     // Optional comparer supplied by the column for custom sort ordering. Takes precedence over
-    // SortMemberPath.
+    // SortMemberPath. When the rows come from a TableViewSource with IsLiveShaping on, a changed
+    // item is re-compared and moves to its new place; without it, the order holds until the
+    // column is sorted again.
     ITableViewSortComparer CustomSortComparer { get; set; };
 
     // Read-only DP driven by the owning TableView. None means the column is not part of the

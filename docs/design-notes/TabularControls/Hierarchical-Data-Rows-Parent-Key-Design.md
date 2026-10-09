@@ -333,6 +333,11 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
   Otherwise reparenting through `INotifyPropertyChanged` on `ManagerId` takes effect at the next
   collection change or reshape, the same contract as sort keys. To reparent immediately, an app
   replaces the item or removes and re-inserts it. Documented on `ParentBy`.
+- **Custom comparer columns.** A header sort on a `CustomSortComparer` column ranks the rows once
+  and sorts by those ranks. With `IsLiveShaping` on, each changed item is taken out of the ranking
+  and compared back in (O(n) comparer calls), and the reshape runs when any row's rank moved. A
+  burst of changes that already has a reshape pending only drops ranks; once more items wait than
+  log2(n), the next key read re-ranks everything in one merge sort.
 - `Rows()` is the snapshot of the visible rows.
 
 ### 6.3 Layer 3 — `HierarchicalSourceAdapter`

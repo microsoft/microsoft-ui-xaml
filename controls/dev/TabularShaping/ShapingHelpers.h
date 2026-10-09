@@ -244,6 +244,13 @@ namespace ShapingHelpers
         // that closed over it by shared_ptr stays valid.
         void Reset();
 
+        // Re-places one item because a property the comparer may read has changed. Returns true
+        // when any row's key changed, so the caller knows a reshape is due even if the item's own
+        // key did not move. With deferPlacement (a reshape is already pending) the item's rank is
+        // only dropped and the next KeyFor re-places it; once more items are waiting than a full
+        // re-rank would cost, that KeyFor re-ranks everything in one pass instead.
+        bool Reposition(winrt::IInspectable const& item, bool deferPlacement);
+
         bool HasComparer() const noexcept { return static_cast<bool>(m_comparer); }
 
     private:
@@ -281,8 +288,31 @@ namespace ShapingHelpers
         // before trusting ranks written for a pass that is no longer current.
         void ClearRanks();
 
+        // Orders `rows` with the comparer and writes their dense ranks. Callers hold the reentrancy
+        // guard and have just cleared the ranks.
+        void PopulateRanks(std::vector<winrt::IInspectable> const& rows, uint64_t generation);
+
+        // Re-ranks every ranked and evicted item in one pass, keeping the current order as the
+        // tie-break so equal items do not trade places.
+        void RerankAll();
+
+        // Places an item the ranks do not hold, shifting the ranks above it. Returns false when the
+        // ranks were cleared underneath a reentrant comparer call.
+        // `tied` reports that it joined an existing rank rather than opening a new one.
+        bool PlaceUnranked(winrt::IInspectable const& item, uint64_t generation, int32_t& rank, bool& tied);
+
+        // Drops an item's rank and closes the gap if no other item held it, then queues the item
+        // for re-placement. Returns false when the item was not ranked.
+        bool EvictEntry(winrt::IInspectable const& item, int32_t& oldRank, bool& wasShared);
+
+        // Re-places every evicted item before any key is handed out, so a reshape never reads some
+        // keys before the shift and some after.
+        void PlaceEvicted();
+
         PairwiseComparer m_comparer{ nullptr };
         std::vector<RankEntry> m_ranks;
+        // Items whose rank was dropped by Evict and not yet re-placed.
+        std::vector<winrt::IInspectable> m_evicted;
         // O(1) identity -> rank lookup for the common (reference-type item) case; falls back to the
         // comparer scan on a miss, e.g. a boxed value type whose CCW churned.
         std::unordered_map<void*, int32_t> m_rankByIdentity;

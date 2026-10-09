@@ -113,6 +113,9 @@ public:
     // closes (see ShapedItemsSource::SetLiveShapingHold).
     void SetLiveShapingHold(std::function<bool()> isHeld);
     void ResumeHeldLiveShaping();
+    // Lets the owner refresh a custom comparer's ranks as items change (see
+    // ShapedItemsSource::SetLiveItemChangedHook).
+    void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook);
 
 private:
     winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);

@@ -2602,6 +2602,14 @@ void ShapedItemsSource::OnLiveShapedItemChanged(
         return;
     }
 
+    // Ahead of the coalescing early-out: every changed item has to reach the owner, or derived
+    // state the restore reads would miss items that changed after the first.
+    if (m_liveItemChangedHook && m_liveItemChangedHook(item, m_liveShapingDirty))
+    {
+        MarkLiveShapingDirty();
+        return;
+    }
+
     // A restore is already posted, and it re-shapes from the source in full. A second changed item
     // cannot add anything to that, so there is nothing to learn by pricing its snapshot. This is
     // what makes a bulk mutation cost one snapshot capture rather than one per changed row --

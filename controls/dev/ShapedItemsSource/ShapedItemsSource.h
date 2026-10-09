@@ -183,6 +183,12 @@ public:
     void SetLiveShapingHold(std::function<bool()> isHeld) { m_liveShapingHold = std::move(isHeld); }
     void ResumeHeldLiveShaping();
 
+    // Runs for every live-tracked item change before the snapshot comparison, so the owner can
+    // refresh derived state the selectors read (a custom comparer's ranks). reshapePending is true
+    // when a restore is already posted. Returning true forces a reshape even if the item's own
+    // snapshot did not change.
+    void SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook) { m_liveItemChangedHook = std::move(hook); }
+
 private:
     void SubscribeToSourceCollectionChanges();
     void UnsubscribeFromSourceCollectionChanges();
@@ -419,6 +425,7 @@ private:
     std::function<bool()> m_liveShapingHold{};
     // A restore found the hold on and parked; ResumeHeldLiveShaping re-posts it.
     bool m_liveShapingHeld{ false };
+    std::function<bool(winrt::IInspectable const&, bool)> m_liveItemChangedHook{};
 
     // The parent-key relation. Both set or both null; m_parentKeySelector is the "hierarchy is
     // declared" test everywhere.

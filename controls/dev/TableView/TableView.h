@@ -874,6 +874,9 @@ private:
     // TableViewSource, or the trigger column resolves no sort key.
     bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
     winrt::TableViewKeySelector GetTableViewSourceSortKeySelector(const winrt::hstring& sortMemberPath);
+    // A live-tracked item changed: re-place it among a CustomSortComparer column's ranks, which
+    // are otherwise frozen at the last header sort. Returns true when any row's sort key moved.
+    bool RepositionCustomSortItem(const winrt::IInspectable& item, bool reshapePending);
     bool RaiseSortingAndCheckCanceled(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
     // Single funnel for "the sort state has been written to the columns": reshapes, restores the
     // selection, raises Sorted, and announces.

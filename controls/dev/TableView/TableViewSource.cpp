@@ -380,6 +380,7 @@ void TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
         // A restore held for the former owner's editor must not wait on an edit it will no longer
         // hear the end of.
         m_engine->SetLiveShapingHold(nullptr);
+        m_engine->SetLiveItemChangedHook(nullptr);
         m_engine->ResumeHeldLiveShaping();
     }
 }
@@ -387,6 +388,11 @@ void TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
 void TableViewSource::SetLiveShapingHold(std::function<bool()> isHeld)
 {
     m_engine->SetLiveShapingHold(std::move(isHeld));
+}
+
+void TableViewSource::SetLiveItemChangedHook(std::function<bool(winrt::IInspectable const&, bool)> hook)
+{
+    m_engine->SetLiveItemChangedHook(std::move(hook));
 }
 
 void TableViewSource::ResumeHeldLiveShaping()

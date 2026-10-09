@@ -1490,6 +1490,13 @@ void TableView::AdoptItemsSource()
             auto strongThis = weakThis.get();
             return strongThis && strongThis->IsEditing();
         });
+        // A CustomSortComparer column sorts by ranks frozen at the header sort; without this an
+        // edit to the compared property would leave the row where it was.
+        sourceImpl->SetLiveItemChangedHook([weakThis](winrt::IInspectable const& item, bool reshapePending)
+        {
+            auto strongThis = weakThis.get();
+            return strongThis && strongThis->RepositionCustomSortItem(item, reshapePending);
+        });
     }
 }
 
