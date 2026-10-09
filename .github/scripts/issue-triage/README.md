@@ -30,9 +30,10 @@ they no longer depend on a tool's per-line output limit. A one-MiB evidence limi
 and two-MiB final-prompt limit fail visibly before inference rather than truncate
 input silently. These byte limits are separate from model credit/context limits.
 
-The model returns the structured safe-output arguments directly. Shell readers,
-writers, and search utilities remain denied, and no additional agent permissions
-are granted. The publisher still rebuilds live evidence independently.
+The model returns structured arguments through the native safe-output MCP tool,
+not a shell-mounted CLI. All agent shell execution and file writes are denied;
+trusted preprocessing steps still run outside the agent sandbox. The publisher
+still rebuilds live evidence independently.
 
 ## Behavior
 
@@ -203,7 +204,9 @@ and failure handling; it is not converted to success.
 
 This does not relax publication safety. Successful analysis still requires a
 successful detection job **and** `detection_success == true` before the
-independent publisher can run. Real detection warnings/failures are still
+independent publisher can run. Detection has `continue-on-error: false`: an
+incomplete/failed safety analysis fails the job visibly rather than producing an
+overall green run with a skipped publisher. Real detection failures are still
 reported and block publication. Historical comments in the framework-managed
 Detection Runs issue are not edited or removed.
 
@@ -211,8 +214,8 @@ Detection Runs issue are not edited or removed.
 
 - Prepared JSON is attached directly to the rendered prompt by trusted code,
   preserving the complete bounded evidence and fingerprint without agent file
-  reads. Shell readers/searches (`cat`, `grep`, `head`, etc.) remain denied; only
-  the safe-output CLI is allowed.
+  reads. Agent shell execution is disabled, and safe outputs use the native MCP
+  interface rather than CLI wrappers.
 - Issue content, comments, code samples, links, and candidate text are untrusted.
   The model cannot search GitHub, download attachments, run sample code, or write
   directly to issues. It can only return a structured triage result.

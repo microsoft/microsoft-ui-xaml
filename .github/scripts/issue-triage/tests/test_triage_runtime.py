@@ -218,11 +218,15 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertRegex(self.source, r"(?m)^max-daily-ai-credits: 100$")
 
     def test_fix_preserves_shell_and_publication_restrictions(self):
-        self.assertIn("bash: [safeoutputs]", self.source)
+        self.assertIn("bash: false", self.source)
+        self.assertIn("cli-proxy: false", self.source)
         self.assertIn("edit: false", self.source)
         self.assertIn("github: false", self.source)
-        for tool in ("write", "shell(cat)", "shell(grep)", "shell(head)"):
+        for tool in ("write", "shell"):
             self.assertIn(f'    - "--deny-tool"\n    - "{tool}"', self.source)
+        self.assertNotIn("mcp_cli_tools_with_safeoutputs_prompt.md", self.lock)
+        self.assertIn("--allow-tool safeoutputs --deny-tool write --deny-tool shell", self.lock)
+        self.assertNotIn("--allow-tool '\\''shell(safeoutputs)", self.lock)
         self.assertIn("needs.agent.result == 'success'", self.source)
         self.assertIn("needs.detection.outputs.detection_success == 'true'", self.source)
 
@@ -255,6 +259,8 @@ class WorkflowRuntimeTests(unittest.TestCase):
         self.assertIn("name: Handle agent failure", conclusion)
         self.assertIn("name: Log detection run", conclusion)
         self.assertIn("name: Execute threat detection with AWF", detection)
+        self.assertIn("threat-detection:\n    continue-on-error: false", self.source)
+        self.assertIn('GH_AW_DETECTION_CONTINUE_ON_ERROR: "false"', detection)
 
     def test_external_reporters_are_not_subject_to_a_role_gate(self):
         self.assertIn("  roles: all", self.source)

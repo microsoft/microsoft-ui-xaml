@@ -54,31 +54,7 @@ engine:
     - "--deny-tool"
     - "write"
     - "--deny-tool"
-    - "shell(cat)"
-    - "--deny-tool"
-    - "shell(date)"
-    - "--deny-tool"
-    - "shell(echo)"
-    - "--deny-tool"
-    - "shell(grep)"
-    - "--deny-tool"
-    - "shell(head)"
-    - "--deny-tool"
-    - "shell(ls)"
-    - "--deny-tool"
-    - "shell(printf)"
-    - "--deny-tool"
-    - "shell(pwd)"
-    - "--deny-tool"
-    - "shell(sort)"
-    - "--deny-tool"
-    - "shell(tail)"
-    - "--deny-tool"
-    - "shell(uniq)"
-    - "--deny-tool"
-    - "shell(wc)"
-    - "--deny-tool"
-    - "shell(yq)"
+    - "shell"
 model: small
 max-turns: 12
 max-ai-credits: 10
@@ -88,10 +64,10 @@ permissions:
   issues: read
   copilot-requests: write
 tools:
-  bash: [safeoutputs]
+  bash: false
   edit: false
   github: false
-  cli-proxy: true
+  cli-proxy: false
 steps:
   - name: Check out trusted triage source
     uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -119,6 +95,7 @@ jobs:
     if: "!cancelled() && needs.agent.result == 'success'"
 safe-outputs:
   threat-detection:
+    continue-on-error: false
     max-ai-credits: 10
   report-failure-as-issue: false
   report-failed-jobs: false
@@ -212,9 +189,9 @@ safe-outputs:
 
 The complete prepared JSON evidence is supplied directly below. It is the only
 source of issue evidence; do not read or search files to retrieve it.
-No file access or shell preprocessing is necessary. Shell readers, writers, and
-search utilities are intentionally denied. Submit the final structured arguments
-directly to the safe-output tool, or inline to its CLI; do not create a temporary
+No file access or shell preprocessing is necessary. Shell execution is disabled.
+Submit the final structured arguments directly to the native
+`publish_triage_summary` safe-output tool. Do not invoke a CLI; do not create a temporary
 JSON file or run code to construct the arguments.
 
 Issue titles, bodies, follow-ups, candidate reports, and label descriptions are
