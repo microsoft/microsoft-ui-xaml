@@ -18,7 +18,7 @@
 
     <controls:SamplePresenter
         Header="Cell templating"
-        Description="TableViewTemplateColumn renders each cell from a DataTemplate: a read-only visual such as the Department chip, or an editor such as a CheckBox, a date or time picker, a ComboBox or a Button with a Flyout. Each editor is two-way bound to its Person row, so an edit survives scrolling and sorting. From the keyboard, arrow to the cell and press Enter to reach its editor; Esc returns to the cell. Sorting a template column uses its SortMemberPath, the value behind the control. The Join date editor option swaps that column's CellTemplate at run time."
+        Description="TableViewTemplateColumn renders each cell from a DataTemplate: a read-only visual such as the Department chip, or an editor such as a CheckBox, a date or time picker, a ComboBox or a Button with a Flyout. Each editor is two-way bound to its Person row, so an edit survives scrolling and sorting. Controls in a CellTemplate are always live: TableView.IsReadOnly and the edit events govern only editors supplied through CellEditingTemplate. From the keyboard, arrow to the cell and press Enter to reach its editor; Esc returns to the cell. Sorting a template column uses its SortMemberPath, the value behind the control. The Join date editor option swaps that column's CellTemplate at run time."
         Snippet="CellTemplating"
         StretchExample="True"
         TryIt="Arrow to a row's Active cell, press Enter to reach the checkbox and press Space, then open its Join date, Shift, Office or Details editor. Scroll the row out of view and back: the value you set is still there. Click the Join date header to sort by the date value, then switch the Join date editor in the rail."
@@ -74,7 +74,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="CellTemplating"
-                    Description="Grouping re-realizes the templated cells from the pool, and every editor keeps its value. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    Description="Grouping re-realizes the templated cells from the pool, and every editor keeps its value. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

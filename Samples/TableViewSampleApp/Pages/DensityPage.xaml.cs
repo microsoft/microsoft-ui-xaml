@@ -32,15 +32,12 @@ public sealed partial class DensityPage : SamplePageBase
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
-        Shaping.ProbeLimit = () => MaxProbeIndex;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
     }
 
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
     public TableViewSource Source { get; }
-
-    private int MaxProbeIndex => People.Count + PersonData.Roles.Count;
 
     // <snippet>
     // ---- Density ------------------------------------------------------------------------
@@ -150,9 +147,6 @@ public sealed partial class DensityPage : SamplePageBase
 
     private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        if (!SampleShaping.IsReselecting)
-        {
-            RefreshReadouts();
-        }
+        RefreshReadouts();
     }
 }

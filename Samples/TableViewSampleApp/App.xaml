@@ -133,7 +133,7 @@
                 <Setter Property="FontSize" Value="12"/>
                 <Setter Property="TextWrapping" Value="Wrap"/>
             </Style>
-            <!-- Canonical rail (FIX-PLAN §1.1): one StackPanel per section, a caption under the
+            <!-- Canonical rail: one StackPanel per section, a caption under the
                  Shaping controls, and the Status grid. -->
             <Style x:Key="RailSectionStyle" TargetType="StackPanel">
                 <Setter Property="Spacing" Value="4"/>

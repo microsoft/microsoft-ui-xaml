@@ -69,7 +69,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Performance"
-                    Description="Grouping is timed too: Last action reports how long GroupBy or ClearGroupBy took on the current dataset. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    Description="Grouping is timed too: Last action reports how long GroupBy or ClearGroupBy took on the current dataset. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

@@ -33,7 +33,6 @@ public sealed partial class SelectionPage : SamplePageBase
         InitializeComponent();
         PeopleTable.ItemsSource = Source;
         // </snippet>
-        Shaping.ProbeLimit = () => People.Count + PersonData.Departments.Count + PersonData.Offices.Count;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackItems(People, OnPersonChanged);
         TrackLifetime(
@@ -206,12 +205,6 @@ public sealed partial class SelectionPage : SamplePageBase
 
     private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        // Reselect probes indexes after a reshape; only the final state is worth reporting.
-        if (SampleShaping.IsReselecting)
-        {
-            return;
-        }
-
         _changeCount++;
         _lastDelta = string.Format(CultureInfo.CurrentCulture, "+[{0}] -[{1}]", DescribeAll(args.AddedItems), DescribeAll(args.RemovedItems));
         RefreshReadouts();

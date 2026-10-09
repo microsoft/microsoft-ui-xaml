@@ -60,7 +60,6 @@ public sealed partial class ShowcasePage : SamplePageBase
         _liveTimer.Tick += OnLiveTimerTick;
 
         _ready = true;
-        Shaping.ProbeLimit = () => MaxProbeIndex;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackItems(People, OnPersonChanged);
         TrackLifetime(
@@ -73,7 +72,8 @@ public sealed partial class ShowcasePage : SamplePageBase
 
     public TableViewSource Source { get; }
 
-    private int MaxProbeIndex => People.Count + PersonData.Roles.Count + PersonData.Departments.Count;
+    // Upper bound of the display indexes (rows plus one header per group).
+    private int LastDisplayIndex => People.Count + PersonData.Roles.Count + PersonData.Departments.Count;
 
     protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
@@ -267,18 +267,19 @@ public sealed partial class ShowcasePage : SamplePageBase
             return;
         }
 
-        var selected = PeopleTable.SelectedItem;
         _isResorting = true;
         try
         {
             Source.Sort(column.SortMemberPath, column.SortDirection);
+            OnSortRedeclared();   // keeps a sort that ordered the groups doing so
         }
         finally
         {
             _isResorting = false;
         }
 
-        SampleShaping.Reselect(PeopleTable, selected, MaxProbeIndex, RefreshReadouts);
+        // Sort raises a Reset, and the control keeps the selection on the same item.
+        RefreshReadouts();
     }
     // </snippet>
 
@@ -320,7 +321,7 @@ public sealed partial class ShowcasePage : SamplePageBase
         // Select ignores group-header indexes, so walk forward to the first data row. Clear any
         // current selection first, so the walk starts even when a later row is selected.
         PeopleTable.DeselectAll();
-        for (var i = 0; i <= MaxProbeIndex && PeopleTable.SelectedItem is null; i++)
+        for (var i = 0; i <= LastDisplayIndex && PeopleTable.SelectedItem is null; i++)
         {
             PeopleTable.Select(i);
         }
@@ -395,9 +396,6 @@ public sealed partial class ShowcasePage : SamplePageBase
 
     private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        if (!SampleShaping.IsReselecting)
-        {
-            RefreshReadouts();
-        }
+        RefreshReadouts();
     }
 }

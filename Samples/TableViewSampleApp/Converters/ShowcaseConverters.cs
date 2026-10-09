@@ -41,13 +41,13 @@ public sealed partial class ShowcaseDepartmentDotConverter : IValueConverter
 /// </summary>
 public sealed partial class ShowcaseSalaryTintConverter : IValueConverter
 {
-    private static readonly SolidColorBrush s_high = new(ColorHelper.FromArgb(0x4D, 0x16, 0xA3, 0x4A));
-    private static readonly SolidColorBrush s_mid = new(ColorHelper.FromArgb(0x4D, 0xF5, 0x9E, 0x0B));
-    private static readonly SolidColorBrush s_low = new(ColorHelper.FromArgb(0x4D, 0xDC, 0x26, 0x26));
+    private static readonly SolidColorBrush s_high = ChipBrushes.CreateTint(0x16, 0xA3, 0x4A, alpha: 0x4D);
+    private static readonly SolidColorBrush s_mid = ChipBrushes.CreateTint(0xF5, 0x9E, 0x0B, alpha: 0x4D);
+    private static readonly SolidColorBrush s_low = ChipBrushes.CreateTint(0xDC, 0x26, 0x26, alpha: 0x4D);
 
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (!ShowcasePage.Vibrant || ChipBrushes.IsHighContrast || value is not double salary)
+        if (!ShowcasePage.Vibrant || value is not double salary)
         {
             return ChipBrushes.Transparent;
         }

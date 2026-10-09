@@ -25,12 +25,17 @@ namespace TableViewSampleApp.Pages;
 /// SortByColumn / ToggleSortDirection / ClearSort API and the Sorted event) and reorders the
 /// bound rows itself. Template columns (Seeded CheckBox, Next match date picker, Kickoff time
 /// picker, Country and Standing chips) sort through SortMemberPath, by the value behind the
-/// control. Grouped shaping plus a sort reorders rows within each group.
+/// control. Grouped, a sort applied after GroupBy reorders rows within each group; one applied
+/// before it orders the groups too (TableViewSource applies its verbs in declaration order).
 /// </summary>
 public sealed partial class SortPage : SamplePageBase
 {
     private bool _isResorting;
-    private bool _resortQueued;
+    private TableViewColumn? _reportedSortColumn;
+    private TableViewSortDirection _reportedSortDirection;
+
+    // Edits made in the same dispatcher turn, re-applied together by one queued callback.
+    private readonly HashSet<string> _pendingProperties = new();
     private int _lateEntrantCount;
 
     // Rows removed by "Clear all rows", held so the empty state is reversible.
@@ -42,9 +47,11 @@ public sealed partial class SortPage : SamplePageBase
         Source = TableViewSource.From(Teams);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
-        Shaping.ProbeLimit = () => Teams.Count + 40;
         InitializeSample(Status, Shaping.Attach(TeamsTable, Source, (row, key) => LeagueData.GroupKeyOf(row as LeagueTeam, key)));
         TrackItems(Teams, OnTeamChanged);
+
+        // A callback queued just before the page unloaded never runs; start clean on the next Loaded.
+        TrackLifetime(_pendingProperties.Clear);
     }
 
     public ObservableCollection<LeagueTeam> Teams { get; } = LeagueData.All();
@@ -90,7 +97,13 @@ public sealed partial class SortPage : SamplePageBase
     {
         _sortedFiredCount++;
         _lastSortedColumn = args.Column is null ? "cleared" : ColumnLabel(args.Column);
-        if (_isResorting)
+
+        // A re-sort (ResortIfSortedOn) raises Sorted again with the same column and direction,
+        // possibly on a later turn: that is not a new sort, so keep the action's own narration.
+        var unchanged = ReferenceEquals(args.Column, _reportedSortColumn) && args.Direction == _reportedSortDirection;
+        _reportedSortColumn = args.Column;
+        _reportedSortDirection = args.Direction;
+        if (_isResorting || unchanged)
         {
             RefreshReadouts();
             return;
@@ -115,14 +128,16 @@ public sealed partial class SortPage : SamplePageBase
             return false;
         }
 
-        // SortByColumn ignores a request for the sort that is already applied, so clear the
-        // column's sort and apply it again: the rows are re-ordered by the new values.
-        var direction = column.SortDirection;
+        // SortByColumn ignores a request for the sort that is already applied. Re-declaring the
+        // same path on the source re-reads every key: one reshape and one Sorted, the column keeps
+        // its sort indicator, and the control keeps the selection on the same item. It is a new
+        // declaration, after any GroupBy, so OnSortRedeclared re-applies GroupBy when the sort
+        // used to order the groups.
         _isResorting = true;
         try
         {
-            TeamsTable.SortByColumn(column, TableViewSortDirection.None);
-            TeamsTable.SortByColumn(column, direction);
+            Source.Sort(SampleShaping.SortPathOf(column)!, column.SortDirection);
+            OnSortRedeclared();
         }
         finally
         {
@@ -157,22 +172,29 @@ public sealed partial class SortPage : SamplePageBase
                 return;
         }
 
-        // Let the in-cell editor finish its own update first, then re-sort and re-group once.
-        var property = e.PropertyName;
-        if (_resortQueued)
+        // Let the in-cell editor finish its own update first, then re-group and re-sort once for
+        // every property edited in this turn.
+        if (_pendingProperties.Count == 0)
         {
-            return;
+            EnqueueIfLoaded(ApplyPendingEdits);
         }
 
-        _resortQueued = true;
-        EnqueueIfLoaded(() =>
+        _pendingProperties.Add(e.PropertyName);
+    }
+
+    private void ApplyPendingEdits()
+    {
+        var properties = new List<string>(_pendingProperties);
+        _pendingProperties.Clear();
+        foreach (var property in properties)
         {
-            _resortQueued = false;
             ReapplyIfGroupedOn(property);
-            ResortIfSortedOn(property, nameof(LeagueTeam.NextMatchText));
-            SampleShaping.Reselect(TeamsTable, team, Teams.Count + 40);
-            RefreshReadouts();
-        });
+        }
+
+        // The text-date column sorts by NextMatchText, which follows NextMatchDate.
+        properties.Add(nameof(LeagueTeam.NextMatchText));
+        ResortIfSortedOn(properties.ToArray());
+        RefreshReadouts();
     }
 
     // </snippet>
@@ -239,7 +261,6 @@ public sealed partial class SortPage : SamplePageBase
         }
 
         var resorted = ResortIfSortedOn(nameof(LeagueTeam.NextMatchDate), nameof(LeagueTeam.NextMatchText));
-        SampleShaping.Reselect(TeamsTable, team, Teams.Count + 40);
         SetLastAction(string.Format(
             CultureInfo.CurrentCulture,
             "Postponed the {0} match from {1} to {2}{3}",
@@ -249,6 +270,8 @@ public sealed partial class SortPage : SamplePageBase
             resorted ? "; re-sorted, so the row moved" : string.Empty));
     }
     // </snippet>
+
+    private void OnTeamsSelectionChanged(TableView sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs args) => RefreshReadouts();
 
     private void OnToggleTextDateClick(object sender, RoutedEventArgs e)
     {

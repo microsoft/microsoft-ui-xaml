@@ -46,6 +46,7 @@
     IsReadOnly="False"
     EmptyTemplate="{StaticResource SortEmptyTemplate}"
     Sorted="OnTableSorted"
+    SelectionChanged="OnTeamsSelectionChanged"
     VerticalAlignment="Stretch"
     MinHeight="320">
     <!-- The template renders a control; SortMemberPath names the value that orders

@@ -28,6 +28,7 @@ public sealed partial class SortPage
         SortedFiredText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} (last: {1})", _sortedFiredCount, _lastSortedColumn);
         Status.Rows = SampleShaping.RowCountText(Teams.Count);
         ToggleEmptyButton.Content = Teams.Count > 0 ? "Clear all rows" : "Restore rows";
+        PostponeButton.IsEnabled = TeamsTable.SelectedItem is LeagueTeam;
 
         var top = InViewOrder().Take(5).Select((t, i) => string.Format(
             CultureInfo.CurrentCulture, "{0}. {1} ({2} pts, {3:+0;-0;0} GD)", i + 1, t.Team, t.Points, t.GoalDifference)).ToList();

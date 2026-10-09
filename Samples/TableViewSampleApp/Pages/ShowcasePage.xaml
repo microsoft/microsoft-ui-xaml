@@ -52,7 +52,7 @@
         Snippet="Showcase"
         StretchExample="True"
         TryIt="Live updates are on: watch the Salary tints and Active checkboxes change on the first rows. Click the Salary header to sort, select a row and give it a raise, and watch it move to its sorted place. Then switch Shaping to Grouped, or turn on the Shift, Office or Email column in the rail."
-        WhatToLookFor="Select a row, then switch to Grouped: the selection survives because the source is reshaped in place, not rebuilt. Sorted by Salary, each live update and raise re-applies the sort, so the rows stay in order; grouped, they sort within each group. The template columns sort by their SortMemberPath (Department, IsActive, JoinDate, Salary), not by the control they show.">
+        WhatToLookFor="Select a row, then switch to Grouped: the control keeps the selection because the source is reshaped in place, not rebuilt. Sorted by Salary, each live update and raise re-applies the sort, so the rows stay in order; grouped, they sort within each group when the sort was applied after grouping. The template columns sort by their SortMemberPath (Department, IsActive, JoinDate, Salary), not by the control they show.">
 
         <controls:SamplePresenter.Example>
             <Border Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
@@ -143,7 +143,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Showcase"
-                    Description="Grouped, a header sort orders the rows within each group, and live updates keep running. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    Description="Grouped, a header sort applied after grouping orders the rows within each group (a sort applied before grouping orders the groups too), and live updates keep running. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

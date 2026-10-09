@@ -97,7 +97,7 @@ public sealed partial class CodeBlock : UserControl
     /// <summary>
     /// Maximum height of the code viewport. Defaults to 360. Set to
     /// <see cref="double.PositiveInfinity"/> when an outer scroller already bounds the block;
-    /// the block then stops scrolling vertically itself (one vertical scroller, D:S9).
+    /// the block then stops scrolling vertically itself (one vertical scroller).
     /// </summary>
     public double CodeMaxHeight
     {

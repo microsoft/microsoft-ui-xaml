@@ -29,7 +29,6 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
-        Shaping.ProbeLimit = () => People.Count * 2;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
 
         // The actions below attach and detach the rows they add and remove themselves.
@@ -122,9 +121,9 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         }
 
         var person = People[2];
-        SetLastAction(SampleShaping.Reselect(PeopleTable, person, People.Count * 2)
+        SetLastAction(SampleShaping.SelectItem(PeopleTable, person)
             ? string.Format(CultureInfo.CurrentCulture, "Selected {0}", person.FullName)
-            : string.Format(CultureInfo.CurrentCulture, "{0} is not displayed (collapsed group?); expand the groups first.", person.FullName));
+            : string.Format(CultureInfo.CurrentCulture, "{0} has no row on screen (collapsed group?); expand the groups first.", person.FullName));
     }
 
     // <snippet>

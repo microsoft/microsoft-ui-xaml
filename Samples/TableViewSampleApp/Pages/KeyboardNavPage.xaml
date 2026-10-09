@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Keyboard navigation + accessibility. Two tables, so this page does not stretch its Example
-    (FIX-PLAN §1.0 "Table sizing", multi-table rule): every Example row is Auto, both tables
+    (multi-table rule, see SamplePresenter): every Example row is Auto, both tables
     have a fixed Height so they still virtualize, and the page scrolls.
     Top: keyboard navigation over mixed cells, with focus sentinels either side. Its Shaping
     section is the shared ShapingOptions, attached to the top table only.
@@ -192,7 +192,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="KeyboardNav"
-                    Description="Shapes the first table. When grouped, check how Up and Down treat the group header rows. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    Description="Shapes the first table. When grouped, check how Up and Down treat the group header rows. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

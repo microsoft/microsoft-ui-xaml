@@ -40,7 +40,6 @@ public sealed partial class CellEditingPage : SamplePageBase
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
-        Shaping.ProbeLimit = () => People.Count + PersonData.Roles.Count;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
         TrackItems(People, OnPersonChanged);
     }
@@ -172,9 +171,11 @@ public sealed partial class CellEditingPage : SamplePageBase
         return false;
     }
 
-    // Re-applying GroupBy recycles the row containers, so keyboard focus would land on whatever
-    // container now sits where the edited row was, often a group header. After the next layout
-    // pass, put it back on the edited row in its new group.
+    // Workaround: TableView v1 has no public focus-by-item API. Re-applying GroupBy recycles the
+    // row containers, and the control keeps focus at the same projected POSITION, so it would land
+    // on whatever container now sits where the edited row was, often a group header. After the next
+    // layout pass, put it back on the edited row in its new group. Not a pattern to copy: it walks
+    // the realized containers and focuses the row directly.
     private void RestoreRowFocusAfterLayout(Person person)
     {
         void OnLayoutUpdated(object? sender, object e)
@@ -243,9 +244,6 @@ public sealed partial class CellEditingPage : SamplePageBase
 
     private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        if (!SampleShaping.IsReselecting)
-        {
-            RefreshReadouts();
-        }
+        RefreshReadouts();
     }
 }

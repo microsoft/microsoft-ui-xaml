@@ -27,7 +27,6 @@ public sealed partial class CellTemplatingPage : SamplePageBase
         Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
         // </snippet>
-        Shaping.ProbeLimit = () => People.Count + PersonData.Departments.Count + PersonData.Offices.Count;
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
 
         // <snippet>

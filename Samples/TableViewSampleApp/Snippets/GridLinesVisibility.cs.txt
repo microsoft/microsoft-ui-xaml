@@ -69,21 +69,19 @@ private void OnMoveToNextGroupClick(object sender, RoutedEventArgs e)
 // …
 
 // From Controls\ShapingOptions.xaml.cs
-switch (mode)
+// Every page reshapes its ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
 {
-    case "grouped":
+    if (mode == "grouped")
+    {
         // The key selector receives the ROW; the identity selector receives the KEY.
-        source.GroupBy(item => _groupKeyOf(item, key), SampleShaping.GroupIdentity);
-        break;
-    // case "hierarchy":
-    // case "groupedHierarchy":
-    //     Hierarchical (tree) rows are not available in this release, so the two matching
-    //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
-    //     member today. When hierarchy ships, apply it to this same source here, composed
-    //     with the GroupBy stage above rather than replacing it, and set AppliedMode only
-    //     after the call returns.
-    default:
+        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+    }
+    else
+    {
+        // Hierarchical (tree) rows are not available in this release, so the "Hierarchy" and
+        // "Grouped hierarchy" modes ship disabled. When hierarchy ships, it composes with the
+        // GroupBy stage on this same source rather than replacing it.
         source.ClearGroupBy();
-        mode = "flat";
-        break;
+    }
 }

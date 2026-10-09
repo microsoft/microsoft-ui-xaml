@@ -53,7 +53,6 @@ public sealed partial class TaskManagerPage : SamplePageBase
         // </snippet>
 
         UpdateTotals();
-        Shaping.ProbeLimit = () => Processes.Count + ProcessData.Categories.Count + 3;
         InitializeSample(Status, Shaping.Attach(ProcessTable, Source, (row, key) => ProcessData.GroupKeyOf(row as ProcessItem, key)));
         TrackTimer(_timer, () => LiveUpdatesToggle.IsOn);
     }
@@ -257,11 +256,6 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
     private void OnSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        if (SampleShaping.IsReselecting)
-        {
-            return;
-        }
-
         RefreshReadouts();
     }
 

@@ -33,6 +33,7 @@ public partial class SamplePageBase : Page
     private StatusPanel? _status;
     private ShapingOptions? _shaping;
     private bool _lifetimeHooked;
+    private bool _isLoadedHooked;
     private int _bulkUpdateDepth;
 
     /// <summary>True after a GroupBy returned in Grouped mode (never while it is being applied).</summary>
@@ -65,6 +66,10 @@ public partial class SamplePageBase : Page
                 SetLastAction(e.Message);
             };
             shaping.SelectionRestored += (_, _) => RefreshReadouts();
+
+            // A header-click sort raises Sorted to the page's own XAML handler BEFORE ShapingOptions
+            // records it (XAML subscribes first), so refresh again once the sort state is current.
+            shaping.SortStateChanged += (_, _) => RefreshReadouts();
         }
 
         HookLifetime();
@@ -123,6 +128,12 @@ public partial class SamplePageBase : Page
 
     /// <summary>Applies the grouping again if it is on <paramref name="propertyName"/>.</summary>
     protected void ReapplyIfGroupedOn(string? propertyName) => _shaping?.ReapplyIfGroupedOn(propertyName);
+
+    /// <summary>
+    /// Call after re-declaring the active sort with TableViewSource.Sort: keeps the sort ordering the
+    /// groups when it did before (see <see cref="ShapingOptions.OnSortRedeclared"/>).
+    /// </summary>
+    protected void OnSortRedeclared() => _shaping?.OnSortRedeclared();
 
     /// <summary>
     /// Listens to PropertyChanged of every item while the page is loaded, following adds, removes
@@ -198,7 +209,13 @@ public partial class SamplePageBase : Page
 
     /// <summary>
     /// Runs <paramref name="onLoaded"/> on every Loaded (before the readouts refresh) and
-    /// <paramref name="onUnloaded"/>, if any, on every Unloaded.
+    /// <paramref name="onUnloaded"/>, if any, on every Unloaded. Loaded and Unloaded are paired: a
+    /// second Loaded without an Unloaded in between (reparenting) does not run the actions again.
+    /// Registered after the page has loaded, <paramref name="onLoaded"/> runs immediately.
+    /// <para>
+    /// The actions are lambdas held by this page only, so they live exactly as long as the page; the
+    /// page never subscribes to anything longer-lived without an <paramref name="onUnloaded"/>.
+    /// </para>
     /// </summary>
     protected void TrackLifetime(Action onLoaded, Action? onUnloaded = null)
     {
@@ -207,6 +224,11 @@ public partial class SamplePageBase : Page
         if (onUnloaded is not null)
         {
             _onUnloaded.Add(onUnloaded);
+        }
+
+        if (_isLoadedHooked)
+        {
+            onLoaded();
         }
     }
 
@@ -293,6 +315,12 @@ public partial class SamplePageBase : Page
 
     private void OnSampleLoaded(object sender, RoutedEventArgs e)
     {
+        if (_isLoadedHooked)
+        {
+            return;
+        }
+
+        _isLoadedHooked = true;
         foreach (var action in _onLoaded)
         {
             action();
@@ -303,6 +331,12 @@ public partial class SamplePageBase : Page
 
     private void OnSampleUnloaded(object sender, RoutedEventArgs e)
     {
+        if (!_isLoadedHooked)
+        {
+            return;
+        }
+
+        _isLoadedHooked = false;
         foreach (var action in _onUnloaded)
         {
             action();

@@ -10,8 +10,8 @@ using TableViewSampleApp.Models;
 namespace TableViewSampleApp.Data;
 
 /// <summary>
-/// People with Arabic and Hebrew names and notes for the Right-to-left page (FIX-PLAN R6
-/// exception, moved out of the page). <see cref="Mixed"/> mixes the first <see cref="MixedInCount"/>
+/// People with Arabic and Hebrew names and notes for the Right-to-left page, kept
+/// out of the page so it holds only the RTL behaviour. <see cref="Mixed"/> mixes the first <see cref="MixedInCount"/>
 /// into <see cref="PersonData"/>'s rows; "Add a person" takes the rest in turn through <see cref="Create"/>.
 /// </summary>
 public static class RtlPersonData

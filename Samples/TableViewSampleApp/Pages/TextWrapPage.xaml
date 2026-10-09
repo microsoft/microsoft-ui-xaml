@@ -116,7 +116,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="TextWrap"
-                    Description="Grouped puts fixed-height group header bands between rows whose height follows their bios. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    Description="Grouped puts fixed-height group header bands between rows whose height follows their bios. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

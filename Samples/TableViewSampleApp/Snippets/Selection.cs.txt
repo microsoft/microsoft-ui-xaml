@@ -94,12 +94,6 @@ private void OnRemoveSelectedClick(object sender, RoutedEventArgs e)
 
 private void OnTableSelectionChanged(TableView sender, SelectionChangedEventArgs args)
 {
-    // Reselect probes indexes after a reshape; only the final state is worth reporting.
-    if (SampleShaping.IsReselecting)
-    {
-        return;
-    }
-
     _changeCount++;
     _lastDelta = string.Format(CultureInfo.CurrentCulture, "+[{0}] -[{1}]", DescribeAll(args.AddedItems), DescribeAll(args.RemovedItems));
 }

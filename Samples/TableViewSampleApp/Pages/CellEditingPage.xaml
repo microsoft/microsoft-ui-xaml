@@ -48,7 +48,7 @@
 
     <controls:SamplePresenter
         Header="Cell editing"
-        Description="TableView edits a cell in place: double-click it or press F2, then press Enter or Tab to commit or Esc to cancel. TableView.IsReadOnly is the table-wide gate; it starts False on this page, and turning it on locks every cell at once. Text columns get a built-in TextBox editor, and the Department column shows how a TableViewTemplateColumn supplies its own editor through CellEditingTemplate, here a ComboBox. A committed edit writes to the Person model, so the edit log updates and, when the table is grouped on the edited value, the row moves to its new group."
+        Description="TableView edits a cell in place: double-click it or press F2, then press Enter or Tab to commit or Esc to cancel. TableView.IsReadOnly is the table-wide gate; it starts False on this page, and turning it on stops in-place editing in every column at once. Text columns get a built-in TextBox editor, and the Department column shows how a TableViewTemplateColumn supplies its own editor through CellEditingTemplate, here a ComboBox. A committed edit writes to the Person model, so the edit log updates and, when the table is grouped on the edited value, the row moves to its new group."
         Snippet="CellEditing"
         StretchExample="True"
         TryIt="Double-click a Role cell, or click it and press F2, type a new value and press Enter. Press F2 on a Department cell to pick from a list, then press Esc to cancel. Group by Department and change a row's department: the row moves to its new group. Then turn on IsReadOnly and try again."
@@ -107,7 +107,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="CellEditing"
-                    Description="Grouped, an edit to the grouped-on value moves the row to its new group. TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    Description="Grouped, an edit to the grouped-on value moves the row to its new group. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
                 </controls:ShapingOptions>

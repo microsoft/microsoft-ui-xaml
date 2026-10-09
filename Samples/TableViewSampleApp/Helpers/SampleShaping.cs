@@ -5,31 +5,27 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using TableViewSampleApp.Models;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
+using TableViewRow = Microsoft.UI.Xaml.Controls.Tabular.TableViewRow;
 using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 using TableViewTextColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewTextColumn;
 
 namespace TableViewSampleApp.Helpers;
 
 /// <summary>
-/// Generic helpers for the canonical Shaping section every table page carries
-/// (FIX-PLAN §1.2/§1.3). Pages keep only their feature code; key resolution, group identity,
-/// labels and re-selection come from here so the behaviour is identical everywhere.
+/// Generic helpers for the canonical Shaping section every table page carries. Pages keep only
+/// their feature code; key resolution, group identity, labels and selecting an item come from here
+/// so the behaviour is identical everywhere.
 /// </summary>
 public static class SampleShaping
 {
     /// <summary>Bucket label used for a null or blank group key.</summary>
     public const string NoneKey = "(none)";
-
-    /// <summary>
-    /// True while <see cref="Reselect"/> is probing indexes. A page's SelectionChanged handler
-    /// can return early while this is set, so its readouts are written once, afterwards.
-    /// </summary>
-    public static bool IsReselecting { get; private set; }
 
     /// <summary>The <c>Tag</c> of the selected <see cref="ComboBoxItem"/>, or <paramref name="fallback"/>.</summary>
     public static string SelectedTag(ComboBox? comboBox, string fallback) =>
@@ -71,75 +67,117 @@ public static class SampleShaping
     }
 
     /// <summary>
-    /// Restores the selection to <paramref name="item"/> after a reshape. TableView selection is
-    /// index-only in this release (<c>TableView.Select(int)</c>; <c>SelectedItem</c> and
-    /// <c>SelectedIndex</c> are read-only, TableView.idl "Selection"), and the displayed row
-    /// projection (which includes group headers) is not exposed, so the item's index is found
-    /// by probing: Select(i) and compare SelectedItem by reference. Select ignores group-header
-    /// and out-of-range indexes. Returns true when the item is selected immediately.
+    /// Selects <paramref name="item"/> with ONE <c>Select(int)</c> call.
     /// <para>
-    /// Right after a group-KEY change the new groups' rows become selectable only once the
-    /// projection is rebuilt, so when the immediate probe fails this retries once on the next
-    /// (low-priority) dispatcher turn, if the table is still loaded and nothing else was selected
-    /// meanwhile. <paramref name="onDeferredSelected"/> runs only when that retry selects the
-    /// item, so the page can refresh selection readouts that skipped the probe.
+    /// Workaround for an API gap: TableView selection is index-only in this release
+    /// (<c>TableView.Select(int)</c>; <c>SelectedItem</c> is read-only, TableView.idl "Selection")
+    /// and the displayed projection, which includes group headers, has no IndexOf. The table's rows
+    /// ItemsRepeater is bound to that projection, so this looks the item up in the repeater's
+    /// ItemsSourceView (a read-only scan: no selection events) and selects that index once. Returns
+    /// false, and leaves the selection as it was, when the item is not displayed (filtered out,
+    /// removed) or no row is realized yet.
+    /// </para>
+    /// <para>
+    /// Usually not needed after a reshape: GroupBy, Sort and Filter raise a Reset, and the control
+    /// re-anchors the selection by item identity itself.
     /// </para>
     /// </summary>
-    /// <param name="maxIndex">Upper bound of the probe: rows + group headers. Defaults to 5000.</param>
-    /// <param name="onDeferredSelected">Optional; called after a successful deferred retry.</param>
-    public static bool Reselect(TableView? table, object? item, int maxIndex = 5000, Action? onDeferredSelected = null)
+    public static bool SelectItem(TableView? table, object? item)
     {
         if (table is null || item is null)
         {
             return false;
         }
 
-        if (Probe(table, item, maxIndex))
-        {
-            return true;
-        }
-
-        table.DispatcherQueue?.TryEnqueue(DispatcherQueuePriority.Low, () =>
-        {
-            if (table.IsLoaded && table.SelectedItem is null && Probe(table, item, maxIndex))
-            {
-                onDeferredSelected?.Invoke();
-            }
-        });
-
-        return false;
-    }
-
-    private static bool Probe(TableView table, object item, int maxIndex)
-    {
         if (ReferenceEquals(table.SelectedItem, item))
         {
             return true;
         }
 
-        IsReselecting = true;
-        try
+        var index = ProjectionIndexOf(table, item);
+        if (index < 0)
         {
-            for (var i = 0; i <= maxIndex; i++)
-            {
-                table.Select(i);
-                if (ReferenceEquals(table.SelectedItem, item))
-                {
-                    return true;
-                }
-            }
-
-            // The item is no longer displayed (filtered out or removed): leave nothing selected
-            // rather than whatever row the probe stopped on.
-            table.DeselectAll();
             return false;
         }
-        finally
-        {
-            IsReselecting = false;
-        }
+
+        table.Select(index);
+        return ReferenceEquals(table.SelectedItem, item);
     }
 
+    /// <summary>Selects the item a realized <paramref name="row"/> shows (see <see cref="SelectItem"/>).</summary>
+    public static bool SelectRow(TableView table, TableViewRow row)
+    {
+        var index = ProjectionIndexOf(row);
+        if (index < 0)
+        {
+            return false;
+        }
+
+        table.Select(index);
+        return ReferenceEquals(table.SelectedItem, row.DataContext);
+    }
+
+    // The index the rows ItemsRepeater gave the container: the projection index Select(int) takes.
+    private static int ProjectionIndexOf(TableViewRow row) =>
+        RowsRepeaterOf(row, out var container) is { } repeater ? repeater.GetElementIndex(container) : -1;
+
+    private static int ProjectionIndexOf(TableView table, object item)
+    {
+        if (FindFirstRow(table) is not { } row || RowsRepeaterOf(row, out _)?.ItemsSourceView is not { } view)
+        {
+            return -1;
+        }
+
+        for (var i = 0; i < view.Count; i++)
+        {
+            if (ReferenceEquals(view.GetAt(i), item))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    // The ItemsRepeater that hosts the row containers, and the row's element directly under it.
+    private static ItemsRepeater? RowsRepeaterOf(TableViewRow row, out UIElement container)
+    {
+        container = row;
+        for (var parent = VisualTreeHelper.GetParent(row); parent is not null; parent = VisualTreeHelper.GetParent(parent))
+        {
+            if (parent is ItemsRepeater repeater)
+            {
+                return repeater;
+            }
+
+            if (parent is UIElement element)
+            {
+                container = element;
+            }
+        }
+
+        return null;
+    }
+
+    private static TableViewRow? FindFirstRow(DependencyObject parent)
+    {
+        var count = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is TableViewRow row)
+            {
+                return row;
+            }
+
+            if (FindFirstRow(child) is { } found)
+            {
+                return found;
+            }
+        }
+
+        return null;
+    }
     /// <summary>
     /// The next value after <paramref name="current"/> in <paramref name="values"/>, wrapping
     /// around; the first value when <paramref name="current"/> is not in the list. Use it for
@@ -183,8 +221,10 @@ public static class SampleShaping
             : (column as TableViewTextColumn)?.Binding?.Path?.Path;
 
     /// <summary>
-    /// <paramref name="rows"/> in the order <paramref name="table"/> shows them. TableViewSource
-    /// does not expose its projection, so this applies the same rules the control does: a stable
+    /// <paramref name="rows"/> in (approximately) the order <paramref name="table"/> shows them, for
+    /// the page readouts. TableView v1 does not expose its projection, so this approximates the
+    /// control's rules; it is not a parity implementation (string order uses .NET culture comparison,
+    /// and custom comparers, key-selector sorts and collapsed groups are not modelled): a stable
     /// sort on the active column's key (<paramref name="sortKey"/>(row, path); culture-aware for
     /// text, nulls first) and, when <paramref name="groupKey"/> is given (grouped mode), groups in
     /// the order their first row appears. The verbs apply in the order they were declared: a sort

@@ -138,7 +138,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="FileExplorer"
-                    Description="Grouping bands the listing like File Explorer's Group by: by item type, folders and files, or date modified (newest first). TableViewSource.GroupBy reshapes the same source in place, so sort, selection and scroll survive.">
+                    Description="Grouping bands the listing like File Explorer's Group by: by item type, folders and files, or date modified (newest first). TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Item type" Tag="TypeDisplay"/>
                     <ComboBoxItem Content="Folder or file" Tag="IsFolder"/>
                     <ComboBoxItem Content="Date modified" Tag="DateModified"/>

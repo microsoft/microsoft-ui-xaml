@@ -81,6 +81,7 @@ private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
     // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only.
     if (IsLoaded)
     {
+        // …
     }
 }
 
@@ -104,7 +105,7 @@ protected override void OnShapingApplying(ShapingApplyingEventArgs e)
         FileTable.SortByColumn(DateModifiedColumn, SortDirection.Descending);
     }
 }
-// Group key resolution for this page's model (FIX-PLAN §1.6 R2). Never returns a blank key.
+// GroupBy key for this page's model. Never returns a blank key: TableViewSource fails fast on an empty group identity.
 private static object KeyOf(FileSystemEntry? entry, string key)
 {
     if (entry is null)
