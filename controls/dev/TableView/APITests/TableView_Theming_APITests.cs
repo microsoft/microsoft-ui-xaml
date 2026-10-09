@@ -24,13 +24,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
     // Category 13 of the TableView API test plan: theming, resources, density and high contrast.
     //
-    // Three dictionaries own distinct things, and a test that looks in the wrong one finds nothing:
+    // Four dictionaries own distinct things, and a test that looks in the wrong one finds nothing:
     //
     //   * CommonStyles\TabularSurfaces_themeresources.xaml - the brush palette. Every TabularSurface*
     //     key, in Default / Light / HighContrast. The canonical source.
     //   * TableView\TableView_themeresources.xaml - the metric tokens ONLY: row heights, font sizes,
     //     cell and header padding, the density variants, gripper width. Brushes are deliberately
     //     excluded; mirroring them would collide on duplicate keys during theme-XBF emission.
+    //   * ResizeGripper\ResizeGripper_themeresources.xaml - the gripper's own styling keys
+    //     (ResizeGripperSeparator*), so a gripper resolves them without TableView.
     //   * TableView\TableView.xaml (root) - last-resort re-resolving {ThemeResource} fallbacks for
     //     hosts that do not merge TabularSurfaces.
     //
@@ -315,7 +317,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // overriding afterwards tests the invalidation path, which is
         // VerifyThemeChangeAfterLoadReResolvesRowsAndHeaders' job.
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product bug: LookupElementResource resolves merged theme dictionaries before app-scope keys, so app overrides lose. Re-enable with the lookup-precedence fix.
         public void VerifyGridLineBrushOverrideChangesRenderedSeparators()
         {
             var expected = Color.FromArgb(0xFF, 0xFF, 0x00, 0x99);
@@ -365,11 +366,187 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifyGridLineBrushAppOverrideWinsInsideElementTheme()
+        {
+            var expected = Color.FromArgb(0xFF, 0x66, 0x22, 0xAA);
+            TableView tableView = null;
+            Grid host = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceGridLineBrush", new SolidColorBrush(expected));
+
+                tableView = CreateThemingTable();
+                host = new Grid { RequestedTheme = ElementTheme.Light };
+                host.Children.Add(tableView);
+
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var actual = RequireCellSeparatorColor(tableView, "with an app override inside a Light subtree");
+
+                    Verify.AreEqual(expected, actual,
+                        "A direct app-scope TabularSurfaceGridLineBrush override must win even when the table is inside an element-scoped theme.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGridLineBrush"));
+            }
+        }
+
+        [TestMethod]
+        public void VerifyElementThemeDictionaryBeatsFartherApplicationResource()
+        {
+            var fartherAppColor = Color.FromArgb(0xFF, 0x66, 0x22, 0xAA);
+            var nearerElementThemeColor = Color.FromArgb(0xFF, 0x11, 0xCC, 0x77);
+            TableView tableView = null;
+            Grid host = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                SetApplicationResource("TabularSurfaceGridLineBrush", new SolidColorBrush(fartherAppColor));
+
+                tableView = CreateThemingTable();
+                host = new Grid { RequestedTheme = ElementTheme.Light };
+                host.Resources = new ResourceDictionary();
+                host.Resources.ThemeDictionaries["Light"] = new ResourceDictionary
+                {
+                    ["TabularSurfaceGridLineBrush"] = new SolidColorBrush(nearerElementThemeColor),
+                };
+                host.Children.Add(tableView);
+
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var actual = RequireCellSeparatorColor(tableView, "with a nearer element theme dictionary and a farther app resource");
+
+                    Verify.AreEqual(nearerElementThemeColor, actual,
+                        "A nearer element-scoped ThemeDictionaries entry must win over a farther plain Application.Resources entry.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGridLineBrush"));
+            }
+        }
+
+        // Under Dark the framework picks ThemeDictionaries["Dark"] ahead of ["Default"], per element.
+        // The differing "Default" entry stops a lookup that only probes "Default" from passing.
+        [TestMethod]
+        public void VerifyElementDarkThemeDictionaryOverrideWins()
+        {
+            var darkColor = Color.FromArgb(0xFF, 0x22, 0x88, 0xDD);
+            var defaultColor = Color.FromArgb(0xFF, 0xDD, 0x44, 0x11);
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+
+                tableView = CreateThemingTable();
+                var host = new Grid { RequestedTheme = ElementTheme.Dark };
+                host.Resources = new ResourceDictionary();
+                host.Resources.ThemeDictionaries["Dark"] = new ResourceDictionary
+                {
+                    ["TabularSurfaceGridLineBrush"] = new SolidColorBrush(darkColor),
+                };
+                host.Resources.ThemeDictionaries["Default"] = new ResourceDictionary
+                {
+                    ["TabularSurfaceGridLineBrush"] = new SolidColorBrush(defaultColor),
+                };
+                host.Children.Add(tableView);
+
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(ElementTheme.Dark, tableView.ActualTheme, "Precondition: the table must be in a Dark subtree.");
+
+                var actual = RequireCellSeparatorColor(tableView, "with an element-scoped Dark theme dictionary");
+                Verify.AreEqual(darkColor, actual,
+                    "Under Dark, an ancestor's ThemeDictionaries[\"Dark\"] entry must win over its [\"Default\"] entry and the TableView default.");
+            });
+        }
+
+        [TestMethod]
+        public void VerifyGridLineBrushSameColorOverrideKeepsObjectAndOpacity()
+        {
+            var themeColor = Color.FromArgb(0x29, 0x00, 0x00, 0x00);
+            SolidColorBrush expectedBrush = null;
+            TableView tableView = null;
+            Grid host = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                expectedBrush = new SolidColorBrush(themeColor) { Opacity = 0.42 };
+                SetApplicationResource("TabularSurfaceGridLineBrush", expectedBrush);
+
+                tableView = CreateThemingTable();
+                host = new Grid { RequestedTheme = ElementTheme.Light };
+                host.Children.Add(tableView);
+
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).FirstOrDefault();
+                    if (row == null)
+                    {
+                        Verify.Fail("The TableView should realize at least one row.");
+                        return;
+                    }
+
+                    var wrapper = GetRowCell(row, 0);
+                    var brush = wrapper.BorderBrush as SolidColorBrush;
+                    if (brush == null)
+                    {
+                        Verify.Fail("A cell wrapper should carry a SolidColorBrush vertical separator when GridLinesVisibility includes Vertical.");
+                        return;
+                    }
+
+                    Verify.AreEqual(themeColor, brush.Color,
+                        "The override deliberately uses the same color as the Light theme default.");
+                    Verify.AreEqual(expectedBrush.Opacity, brush.Opacity,
+                        "A direct app-scope brush override must not be discarded just because its Color equals the theme default.");
+                    Verify.AreSame(expectedBrush, brush,
+                        "The rendered separator must keep the exact app-scope brush object so non-color brush properties are preserved.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => ClearApplicationResource("TabularSurfaceGridLineBrush"));
+            }
+        }
+
         // TableView-dev-spec.md:123 names both keys as part of what "the primitive owns", which makes
         // them a published surface rather than an internal detail. If they are inert a host cannot match
         // the separator to its design language.
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product bug: ResizeGripper styling keys live in its default-style page, so app-scope overrides cannot win. Re-enable once they move to a themeresources dictionary.
         public void VerifyResizeGripperSeparatorResourcesApply()
         {
             var expectedColor = Color.FromArgb(0xFF, 0x00, 0xCC, 0x44);
@@ -425,6 +602,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ClearApplicationResource("ResizeGripperSeparatorThickness");
                 });
             }
+        }
+
+        [TestMethod]
+        public void VerifyResizeGripperDefaultSeparatorBrushesResolve()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var resources = new TabularControlsResources();
+
+                // Read expected colours from the live accent palette, not hex: valid for any user
+                // accent, and a reintroduced literal fails.
+                var expectedLight = RequireApplicationColor("SystemAccentColorDark1");
+                var expectedDark = RequireApplicationColor("SystemAccentColorLight2");
+                Verify.AreNotEqual(expectedLight, expectedDark,
+                    "SystemAccentColorDark1 and SystemAccentColorLight2 must differ, or a Light/Dark swap could not be detected.");
+
+                var light = RequireBrush(resources, "Light", "ResizeGripperSeparatorBrush");
+                Verify.AreEqual(expectedLight, light.Color,
+                    "The Light default ResizeGripperSeparatorBrush must follow AccentFillColorDefaultBrush's Light tier, SystemAccentColorDark1.");
+
+                var dark = RequireBrush(resources, "Default", "ResizeGripperSeparatorBrush");
+                Verify.AreEqual(expectedDark, dark.Color,
+                    "The Default/Dark ResizeGripperSeparatorBrush must follow AccentFillColorDefaultBrush's Dark tier, SystemAccentColorLight2.");
+
+                var highContrast = RequireBrush(resources, "HighContrast", "ResizeGripperSeparatorBrush");
+                var systemColors = CollectSystemColors();
+                Verify.IsGreaterThan(systemColors.Count, 0,
+                    "SystemColor* resources must resolve from the application resources before validating HighContrast.");
+                Verify.IsTrue(systemColors.Contains(highContrast.Color),
+                    "The HighContrast default ResizeGripperSeparatorBrush must resolve through a system colour, not a hardcoded accent or cross-dictionary StaticResource alias.");
+            });
         }
 
         // If the sort glyph cannot be themed it may end up invisible against a customised header
@@ -815,7 +1024,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         //
         // Also guards the cache - override before load, since the resolved value is cached per instance.
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product bug: LookupElementResource resolves merged theme dictionaries before app-scope keys, so app overrides lose. Re-enable with the lookup-precedence fix.
         public void VerifyDensityResourceOverrideWins()
         {
             const double overriddenMinHeight = 71.0;
@@ -1006,6 +1214,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             return colors;
+        }
+
+        internal static Color RequireApplicationColor(string key)
+        {
+            if (!Application.Current.Resources.ContainsKey(key) ||
+                !(Application.Current.Resources[key] is Color color))
+            {
+                Verify.Fail($"'{key}' must resolve to a Color from the application resources.");
+                return default;
+            }
+
+            return color;
         }
 
         internal static SolidColorBrush RequireBrush(ResourceDictionary resources, string themeName, string key)

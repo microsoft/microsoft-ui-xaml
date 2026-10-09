@@ -17,9 +17,24 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!-- ORDER MATTERS: the lab frame clips the page at 1024px, so anything past ~940px is off-window, where
+             UIA Invoke still works but a physical click misses. Physically-clicked controls go first, UIA-driven
+             ones last. Keep one row: the grouped tests need all 12 containers realized. -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
             <Button Content="Dummy Button" AutomationProperties.Name="DummyButton" AutomationProperties.AutomationId="DummyButton" />
             <Button Content="Trailing Button" AutomationProperties.Name="TrailingButton" AutomationProperties.AutomationId="TrailingButton" />
+            <Button Content="Expand All Groups"
+                    AutomationProperties.Name="ExpandAllGroupsButton"
+                    AutomationProperties.AutomationId="ExpandAllGroupsButton"
+                    Click="OnExpandAllGroupsClick" />
+            <Button Content="Collapse All Groups"
+                    AutomationProperties.Name="CollapseAllGroupsButton"
+                    AutomationProperties.AutomationId="CollapseAllGroupsButton"
+                    Click="OnCollapseAllGroupsClick" />
+            <Button Content="Delayed Unload"
+                    AutomationProperties.Name="DelayedUnloadButton"
+                    AutomationProperties.AutomationId="DelayedUnloadButton"
+                    Click="OnDelayedUnloadClick" />
             <CheckBox Content="IsReadOnly"
                       AutomationProperties.Name="IsReadOnlyCheckBox"
                       AutomationProperties.AutomationId="IsReadOnlyCheckBox"
@@ -48,18 +63,6 @@
                     AutomationProperties.Name="ClearFilterButton"
                     AutomationProperties.AutomationId="ClearFilterButton"
                     Click="OnClearFilterClick" />
-            <Button Content="Expand All Groups"
-                    AutomationProperties.Name="ExpandAllGroupsButton"
-                    AutomationProperties.AutomationId="ExpandAllGroupsButton"
-                    Click="OnExpandAllGroupsClick" />
-            <Button Content="Collapse All Groups"
-                    AutomationProperties.Name="CollapseAllGroupsButton"
-                    AutomationProperties.AutomationId="CollapseAllGroupsButton"
-                    Click="OnCollapseAllGroupsClick" />
-            <Button Content="Delayed Unload"
-                    AutomationProperties.Name="DelayedUnloadButton"
-                    AutomationProperties.AutomationId="DelayedUnloadButton"
-                    Click="OnDelayedUnloadClick" />
             <ComboBox AutomationProperties.Name="SelectionModeComboBox"
                       AutomationProperties.AutomationId="SelectionModeComboBox"
                       SelectedIndex="1"
@@ -76,6 +79,20 @@
                 <ComboBoxItem Content="DescendingAscending" AutomationProperties.Name="SortCycleDescendingAscending" />
                 <ComboBoxItem Content="DescendingAscendingNone" AutomationProperties.Name="SortCycleDescendingAscendingNone" />
             </ComboBox>
+            <!-- Focus-neutral re-shape triggers (UIA Invoke only, so last). Nothing can move focus onto them,
+                 so the re-shape runs with focus where the test left it. -->
+            <Button Content="Sort Basic By Age (focus-neutral)"
+                    AutomationProperties.Name="FocusNeutralSortBasicByAgeButton"
+                    AutomationProperties.AutomationId="FocusNeutralSortBasicByAgeButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnFocusNeutralSortBasicByAgeClick" />
+            <Button Content="Filter Source (focus-neutral)"
+                    AutomationProperties.Name="FocusNeutralFilterSourceButton"
+                    AutomationProperties.AutomationId="FocusNeutralFilterSourceButton"
+                    IsTabStop="False"
+                    AllowFocusOnInteraction="False"
+                    Click="OnFilterSourceClick" />
         </StackPanel>
 
         <!-- No Pivot here on purpose: hosting these TableViews in a Pivot asserts in
@@ -192,14 +209,14 @@
                     <controls:TableViewTextColumn Header="ScrollAge" Width="220" Binding="{Binding Age}" />
                     <controls:TableViewTextColumn Header="ScrollId" Width="220" Binding="{Binding Id}" />
                 </controls:TableView>
-                <!-- Publishes PART_BodyScroller's offsets so an out-of-process test can tell whether the body
-                     actually scrolled. Without it, "the header did not move" is vacuous: it also holds when
-                     nothing scrolled at all. -->
+                <!-- Publishes PART_BodyScroller's offsets and the frozen band's rendered geometry for
+                     out-of-process tests. See ReportScrollOffsets in the code-behind. -->
                 <TextBlock x:Name="ScrollOffsetTextBlock"
                            AutomationProperties.Name="ScrollOffsetTextBlock"
                            AutomationProperties.AutomationId="ScrollOffsetTextBlock"
                            IsTabStop="False"
-                           Width="300"
+                           Width="520"
+                           TextWrapping="Wrap"
                            Text="&lt;not resolved&gt;" />
                 </StackPanel>
             </Grid>

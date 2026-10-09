@@ -14,12 +14,32 @@
 
 #include <cmath>
 #include <algorithm>
+#include <mutex>
 #include <string_view>
 #include <unordered_set>
+#include <utility>
 #include <winrt/Microsoft.UI.Dispatching.h>
 
 namespace
 {
+    // First segment of a binding path ("Address.City" -> "Address"): the name an item raises
+    // PropertyChanged for. Empty for "(ns:Type.Prop)" or "[0]", meaning "may depend on anything".
+    std::wstring_view LeadingPropertyName(std::wstring_view path)
+    {
+        auto const begin = path.find_first_not_of(L" \t");
+        if (begin == std::wstring_view::npos)
+        {
+            return {};
+        }
+        path.remove_prefix(begin);
+
+        auto const name = path.substr(0, path.find_first_of(L".[ \t"));
+        if (name.empty() || name.front() == L'(')
+        {
+            return {};
+        }
+        return name;
+    }
 
     winrt::Windows::Foundation::Collections::IVectorChangedEventArgs TryAsVectorChangedArgs(
         winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
@@ -148,6 +168,7 @@ void ShapedItemsSource::ApplyShapingChange()
     // the baseline the NEXT verb diffs against, so skipping it would make that diff report a
     // change that has already been applied.
     auto const delta = m_pipeline.CommitSpec();
+    UpdateSortKeyPropertyFilter();
 
     if (delta.IsNoOp())
     {
@@ -180,7 +201,7 @@ void ShapedItemsSource::ApplyShapingChange()
 // also does NOT preserve realized containers — ReplaceAll is still a Reset, so the repeater
 // re-realizes exactly as it would after a Refresh. Preserving containers across a re-order would
 // require emitting Move notifications instead.
-bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta)
+bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta, bool allowDuringIncrementalChange)
 {
     // Only a pure re-order is safe to do against rows already in hand. Anything touching
     // membership or bucketing needs the source, the group cache and the projection swap that
@@ -203,7 +224,7 @@ bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta
     }
 
     // A rebuild is already going to run and will subsume this change.
-    if (m_isRefreshing || m_isApplyingIncrementalChange || m_pendingRefresh)
+    if (m_isRefreshing || (!allowDuringIncrementalChange && m_isApplyingIncrementalChange) || m_pendingRefresh)
     {
         return false;
     }
@@ -237,6 +258,21 @@ bool ShapedItemsSource::TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta
 
     m_rows.ReplaceAll(m_shapingState.Items);
     RebuildFlatRowIdentityTracking(m_shapingState.Items);
+
+    // Membership is unchanged and subscriptions are keyed by object, so only start/stop observing
+    // when a sort appears or disappears. Every row was just re-sorted, so nothing is dirty.
+    if (!HasActiveSort())
+    {
+        ClearFlatItemPropertyChangedTracking();
+    }
+    else if (!m_flatItemPropertyChangedTrackingActive)
+    {
+        RebuildFlatItemPropertyChangedTracking(m_shapingState.Items);
+    }
+    else
+    {
+        ClearSortDirtyRows();
+    }
     return true;
 }
 
@@ -247,6 +283,7 @@ void ShapedItemsSource::InvalidateShapingState()
     m_shapingState.Items.clear();
     m_shapingState.Buckets.clear();
     m_shapingState.IsGrouped = false;
+    ClearFlatItemPropertyChangedTracking();
 }
 
 void ShapedItemsSource::SubscribeToSourceCollectionChanges()
@@ -354,9 +391,11 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
 
     {
         m_isApplyingIncrementalChange = true;
+        m_raiseReorderAfterIncrementalChange = false;
         auto guard = wil::scope_exit([this]() noexcept { m_isApplyingIncrementalChange = false; });
         ApplyIncrementalChange(args);
     }
+    const bool raiseReorder = std::exchange(m_raiseReorderAfterIncrementalChange, false);
 
     // A notification re-entered while we were applying: now that the projection/identity
     // invariants are consistent again, run exactly one deferred rebuild against live source.
@@ -364,6 +403,13 @@ void ShapedItemsSource::OnSourceCollectionChanged(winrt::Microsoft::UI::Xaml::In
     {
         m_pendingRefresh = false;
         Refresh();
+    }
+
+    // A stale-sort repair re-ordered the projection; raise ShapingChanged(reorderOnly) so the owner
+    // treats the Reset as a re-shape. Raised last so its handler may safely touch the source.
+    if (raiseReorder)
+    {
+        RaiseShapingChanged(true /* reorderOnly */);
     }
 }
 
@@ -398,13 +444,6 @@ void ShapedItemsSource::OnSourceVectorChanged(winrt::Windows::Foundation::Collec
 
 void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
 {
-
-    // Every path below either mutates m_rows without going through Refresh or falls back to
-    // Refresh. The first leaves the retained layer-1 membership describing a projection that no
-    // longer exists, so drop it up front rather than at each of the mutation sites; Refresh
-    // repopulates it, and the in-place shaping path refuses to run without it.
-    InvalidateShapingState();
-
     using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
 
     // A rebuild in flight, a grouped projection, or a not-yet-materialized projection -> full
@@ -415,23 +454,36 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
         return;
     }
 
-    // SORTED flat projection (the Task Manager scenario): a single-item Add/Remove/Replace is
-    // applied by binary-search insertion / find-remove in place, avoiding a full O(n)
-    // re-materialize + re-sort + re-hash on every underlying change. Optional filter is applied
-    // as an admission gate. Falls back to a full rebuild for anything it can't apply exactly.
+    // SORTED flat projection: apply a single-item change in place (binary-search insert / tracked
+    // removal) instead of an O(n) rebuild per change; anything else falls back to Refresh.
     //
     // Invariant: re-sorting is driven by collection notifications on this path. An in-place
     // mutation of a row's sort-key field that raises only INotifyPropertyChanged leaves the row
-    // at its old sort position until the next collection change, matching XAML ItemsControl
-    // sources.
+    // at its old sort position until the next collection change repairs it first. With a filter,
+    // always rebuild: a filter-key INPC change can make the retained FilteredSource stale.
     if (HasActiveSort())
     {
+        const bool canTrySortedIncremental =
+            !m_pipeline.HasFilter() &&
+            ((args.Action() == NotifyCollectionChangedAction::Add &&
+                    args.NewItems() && args.NewItems().Size() == 1) ||
+                (args.Action() == NotifyCollectionChangedAction::Remove &&
+                    args.OldItems() && args.OldItems().Size() == 1) ||
+                (args.Action() == NotifyCollectionChangedAction::Replace &&
+                    args.OldItems() && args.OldItems().Size() == 1 &&
+                    args.NewItems() && args.NewItems().Size() == 1) ||
+                (args.Action() == NotifyCollectionChangedAction::Move &&
+                    args.NewItems() && args.NewItems().Size() == 1));
+
         // Only take the in-place sorted fast-path when a shaped flat projection is active
         // (a Flat projection). After a safe-degrade (an Unshaped projection leaves an UNSORTED
         // mirror in m_rows while a sort is still configured), a binary-search insert would splice
         // into an unsorted list at a bogus index, so fall through to a full Refresh() that
         // re-shapes (or re-degrades) coherently.
-        if (m_kind == ProjectionKind::Flat && TryApplyIncrementalSortedChange(args))
+        if (canTrySortedIncremental &&
+            m_kind == ProjectionKind::Flat &&
+            TryReshapeStaleSortedFlatProjection() &&
+            TryApplyIncrementalSortedChange(args))
         {
             return;
         }
@@ -446,6 +498,10 @@ void ShapedItemsSource::ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Inter
         Refresh();
         return;
     }
+
+    // The paths below mutate m_rows outside Refresh, which would leave the retained layer-1 state
+    // stale, so drop it (Refresh repopulates it). The sorted path above keeps it in lockstep instead.
+    InvalidateShapingState();
 
     // UNSHAPED flat projection: mirrors the source 1:1, so a single-item change maps directly
     // to the same index in the projection observable. When stable row metadata is active, keep
@@ -694,133 +750,433 @@ void ShapedItemsSource::ApplyIncrementalVectorChange(winrt::Windows::Foundation:
     Refresh();
 }
 
-bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+bool ShapedItemsSource::TryReshapeStaleSortedFlatProjection()
 {
-
-    using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
-
-    const bool identityRequired = IsIdentityRequired();
-
-    // A stable sort breaks ties by SOURCE order, and the sorted projection does not carry the
-    // source index of each row, so an item that lands inside a tie group cannot be placed
-    // incrementally — except when it is the last item of the source, where "after every equal-key
-    // row" is exactly what source order demands. Anything else falls back to a full rebuild,
-    // which re-derives the tie order from the retained source.
-    const auto isLastSourceIndex = [&](int32_t startingIndex)
+    if (!HasActiveSort() ||
+        m_kind != ProjectionKind::Flat ||
+        m_groupSelector ||
+        m_projectedAsGrouped ||
+        !m_rows)
     {
-        uint32_t sourceCount = 0;
-        return startingIndex >= 0 &&
-            TryGetSourceItemCount(sourceCount) &&
-            sourceCount > 0 &&
-            static_cast<uint32_t>(startingIndex) == sourceCount - 1;
-    };
+        return true;
+    }
 
-    // Insert one item into the sorted projection (filter-gated, identity-checked). Returns
-    // false to force a full rebuild (empty/duplicate identity, or an ambiguous tie position ->
-    // re-validate + safe-degrade).
-    auto tryInsert = [&](winrt::IInspectable const& item, bool tiesResolvableByAppend) -> bool
+    std::unordered_set<uintptr_t> dirtyRows;
+    bool overflow = false;
     {
-        if (!item)
+        std::lock_guard<std::mutex> lock(m_sortDirtyLock);
+        dirtyRows.swap(m_sortDirtyRows);
+        overflow = std::exchange(m_sortDirtyOverflow, false);
+    }
+
+    if (dirtyRows.empty() && !overflow)
+    {
+        return true;
+    }
+
+    // The projection was sorted before these keys changed, so any out-of-order adjacent pair has a
+    // dirty row: checking dirty rows' neighbours is complete. Above 1/8 dirty, a full scan is cheaper.
+    bool sorted = true;
+    if (overflow || dirtyRows.size() * 8 > m_rows.Size())
+    {
+        sorted = IsFlatProjectionSorted();
+    }
+    else
+    {
+        for (auto const address : dirtyRows)
+        {
+            auto const identity = RowIdentity::FormatObjectIdentity(address);
+            if (m_flatRowIdentityToIndex.find(identity) == m_flatRowIdentityToIndex.end())
+            {
+                continue;
+            }
+
+            uint32_t index = 0;
+            if (!TryGetTrackedFlatRowIndex(identity, index))
+            {
+                sorted = IsFlatProjectionSorted();
+                break;
+            }
+
+            if (!IsFlatRowInSortOrderWithNeighbours(index))
+            {
+                sorted = false;
+                break;
+            }
+        }
+    }
+
+    if (sorted)
+    {
+        return true;
+    }
+
+    ShapingHelpers::ShapingDelta delta;
+    delta.SortChanged = true;
+    delta.RequiredWork = ShapingHelpers::ShapingWork::ReSortWithinBuckets;
+    if (!TryApplyShapingDeltaInPlace(delta, true /* allowDuringIncrementalChange */))
+    {
+        return false;
+    }
+
+    m_raiseReorderAfterIncrementalChange = true;
+    return true;
+}
+
+bool ShapedItemsSource::IsFlatProjectionSorted() const
+{
+    if (!m_rows || m_rows.Size() < 2)
+    {
+        return true;
+    }
+
+    for (uint32_t i = 1; i < m_rows.Size(); ++i)
+    {
+        if (m_pipeline.CompareItemToRow(m_rows.GetAt(i - 1), m_rows.GetAt(i)) > 0)
         {
             return false;
         }
-        if (!m_pipeline.PassesFilter(item))
+    }
+    return true;
+}
+
+bool ShapedItemsSource::IsFlatRowInSortOrderWithNeighbours(uint32_t index) const
+{
+    const uint32_t rowCount = m_rows ? m_rows.Size() : 0;
+    if (index >= rowCount)
+    {
+        return false;
+    }
+
+    auto const row = m_rows.GetAt(index);
+    if (index > 0 && m_pipeline.CompareItemToRow(m_rows.GetAt(index - 1), row) > 0)
+    {
+        return false;
+    }
+    if (index + 1 < rowCount && m_pipeline.CompareItemToRow(row, m_rows.GetAt(index + 1)) > 0)
+    {
+        return false;
+    }
+    return true;
+}
+
+void ShapedItemsSource::UpdateSortKeyPropertyFilter()
+{
+    std::unordered_set<winrt::hstring> names;
+    bool anyProperty = false;
+    for (auto const& axis : m_pipeline.ActiveSortAxes(-1, -1))
+    {
+        // No usable path (delegate key/comparer): any property change may move a row.
+        auto const name = LeadingPropertyName(axis.SortMemberPath);
+        if (name.empty())
         {
-            return true; // filtered out: projection unchanged
+            anyProperty = true;
+            break;
+        }
+        names.emplace(name);
+    }
+
+    std::lock_guard<std::mutex> lock(m_sortDirtyLock);
+    m_sortKeyPropertyNames = std::move(names);
+    m_anyPropertyMayAffectSort = anyProperty;
+}
+
+void ShapedItemsSource::OnFlatItemPropertyChanged(uintptr_t itemAddress, winrt::hstring const& propertyName)
+{
+    // Beyond this, one linear check is cheaper than per-row lookups.
+    constexpr size_t c_maxIndividuallyTrackedDirtyRows = 256;
+
+    std::lock_guard<std::mutex> lock(m_sortDirtyLock);
+
+    // An empty name is INotifyPropertyChanged's "all properties changed".
+    if (!propertyName.empty() &&
+        !m_anyPropertyMayAffectSort &&
+        m_sortKeyPropertyNames.find(propertyName) == m_sortKeyPropertyNames.end())
+    {
+        return;
+    }
+
+    if (m_sortDirtyOverflow)
+    {
+        return;
+    }
+
+    if (m_sortDirtyRows.size() >= c_maxIndividuallyTrackedDirtyRows)
+    {
+        m_sortDirtyRows.clear();
+        m_sortDirtyOverflow = true;
+        return;
+    }
+
+    m_sortDirtyRows.insert(itemAddress);
+}
+
+void ShapedItemsSource::TrackFlatItemPropertyChanged(winrt::IInspectable const& item)
+{
+    auto const propertyChangedItem = item ? item.try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>() : nullptr;
+    if (!propertyChangedItem)
+    {
+        m_flatItemsMayChangeSortWithoutNotification = true;
+        return;
+    }
+
+    auto const address = RowIdentity::GetObjectAddress(item);
+    if (m_flatItemPropertyChangedRevokers.find(address) != m_flatItemPropertyChangedRevokers.end())
+    {
+        return;
+    }
+
+    auto weakThis = weak_from_this();
+    m_flatItemPropertyChangedRevokers.emplace(
+        address,
+        FlatItemPropertyChangedSubscription{
+            item,
+            propertyChangedItem.PropertyChanged(winrt::auto_revoke,
+                [weakThis, address](auto&&, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
+                {
+                    if (auto strongThis = weakThis.lock())
+                    {
+                        strongThis->OnFlatItemPropertyChanged(address, args.PropertyName());
+                    }
+                }) });
+}
+
+void ShapedItemsSource::UntrackFlatItemPropertyChanged(winrt::IInspectable const& item)
+{
+    if (item && !m_flatItemPropertyChangedRevokers.empty())
+    {
+        m_flatItemPropertyChangedRevokers.erase(RowIdentity::GetObjectAddress(item));
+    }
+}
+
+void ShapedItemsSource::ClearSortDirtyRows()
+{
+    std::lock_guard<std::mutex> lock(m_sortDirtyLock);
+    m_sortDirtyRows.clear();
+    m_sortDirtyOverflow = false;
+}
+
+void ShapedItemsSource::ClearFlatItemPropertyChangedTracking()
+{
+    m_flatItemPropertyChangedRevokers.clear();
+    m_flatItemPropertyChangedTrackingActive = false;
+    m_flatItemsMayChangeSortWithoutNotification = false;
+    ClearSortDirtyRows();
+}
+
+void ShapedItemsSource::RebuildFlatItemPropertyChangedTracking(std::vector<winrt::IInspectable> const& rows)
+{
+    // Surviving rows keep their subscription; the rest are revoked when `previous` is destroyed.
+    auto previous = std::move(m_flatItemPropertyChangedRevokers);
+    ClearFlatItemPropertyChangedTracking();
+
+    if (!HasActiveSort())
+    {
+        return;
+    }
+
+    m_flatItemPropertyChangedTrackingActive = true;
+    m_flatItemPropertyChangedRevokers.reserve(rows.size());
+    for (auto const& item : rows)
+    {
+        if (item && !previous.empty())
+        {
+            if (auto const it = previous.find(RowIdentity::GetObjectAddress(item)); it != previous.end())
+            {
+                m_flatItemPropertyChangedRevokers.insert(previous.extract(it));
+                continue;
+            }
+        }
+        TrackFlatItemPropertyChanged(item);
+    }
+}
+
+// Sorted, unfiltered, ungrouped flat projection only. Nothing is mutated until every precondition
+// passes, so a false return leaves all state untouched and the commit cannot fail half-way.
+bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args)
+{
+    using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
+
+    // With no filter, FilteredSource is the source in source order, so the change's own index
+    // addresses it directly; an identity mismatch there falls back to Refresh.
+    if (!m_rows ||
+        m_pipeline.HasFilter() ||
+        !m_shapingState.HasProjection ||
+        m_shapingState.IsGrouped ||
+        m_shapingState.Items.size() != m_rows.Size())
+    {
+        return false;
+    }
+
+    auto& filteredSource = m_shapingState.FilteredSource;
+    const uint32_t rowCount = m_rows.Size();
+
+    // A count mismatch means a change was missed; only a rebuild recovers.
+    auto const liveSourceCountIs = [&](size_t expected)
+    {
+        uint32_t liveCount = 0;
+        return !TryGetSourceItemCount(liveCount) || liveCount == expected;
+    };
+
+    struct RowChange
+    {
+        winrt::IInspectable Item{ nullptr };
+        winrt::hstring Identity;
+        uint32_t RowIndex{};
+        size_t SourceIndex{};
+    };
+
+    auto const planRemove = [&](winrt::IInspectable const& item, int32_t oldStartingIndex, RowChange& removal) -> bool
+    {
+        if (!item || oldStartingIndex < 0)
+        {
+            return false;
         }
 
-        const auto placement = SortedInsertPlacementFor(item);
-        if (placement.TiedWithExistingRow && !tiesResolvableByAppend)
+        const auto sourceIndex = static_cast<size_t>(oldStartingIndex);
+        if (sourceIndex >= filteredSource.size() || filteredSource[sourceIndex] != item)
         {
-            return false; // source order decides this position -> full rebuild
+            return false;
         }
 
-        if (identityRequired)
+        winrt::hstring identity;
+        wchar_t const* reason = nullptr;
+        uint32_t rowIndex = 0;
+        if (!TryGetRequiredRowIdentity(item, identity, reason) ||
+            !TryGetTrackedFlatRowIndex(identity, rowIndex) ||
+            rowIndex >= rowCount)
         {
-            winrt::hstring identity;
-            wchar_t const* reason = nullptr;
-            if (!TryGetRequiredRowIdentity(item, identity, reason))
-            {
-                return false; // missing identity -> full rebuild will safe-degrade
-            }
-            if (!m_flatRowIdentities.insert(identity).second)
-            {
-                return false; // duplicate identity -> full rebuild will safe-degrade
-            }
-            ShiftTrackedFlatRowIndicesForInsert(placement.Index);
-            if (!m_flatRowIdentityToIndex.emplace(identity, placement.Index).second)
-            {
-                return false; // stale identity/index map -> full rebuild will reseed it
-            }
-            m_rows.InsertAt(placement.Index, item);
-            return true;
+            return false;
         }
-        m_rows.InsertAt(placement.Index, item);
+
+        removal = { item, identity, rowIndex, sourceIndex };
         return true;
     };
 
-    // Remove one item from the projection by tracked identity; keep the identity index map in
-    // sync. Returns false to force a full rebuild when consistency can't be proven.
-    auto tryRemove = [&](winrt::IInspectable const& item) -> bool
+    // Indices are as they will be after `removal` (if any) is committed.
+    auto const planInsert = [&](winrt::IInspectable const& item, int32_t newStartingIndex, RowChange const* removal, RowChange& insertion) -> bool
     {
-        if (!item)
+        if (!item || newStartingIndex < 0)
         {
             return false;
         }
-        if (identityRequired)
+
+        const size_t sourceSize = filteredSource.size() - (removal ? 1 : 0);
+        const auto sourceIndex = static_cast<size_t>(newStartingIndex);
+        if (sourceIndex > sourceSize || !liveSourceCountIs(sourceSize + 1))
         {
-            winrt::hstring identity;
-            wchar_t const* reason = nullptr;
-            uint32_t index = 0;
-            // The identity is recomputed from the (current) item. If the item's identity key was
-            // mutated in place before this notification, the recomputed identity won't match the
-            // tracked identity/index; force a full rebuild, which reseeds the tracking from
-            // scratch. Only remove incrementally when the map still points at a row with the same
-            // identity, avoiding m_rows.IndexOf(item)'s O(n) WinRT ABI scan.
-            if (!TryGetRequiredRowIdentity(item, identity, reason) ||
-                !TryGetTrackedFlatRowIndex(identity, index))
-            {
-                return false;
-            }
-            m_flatRowIdentities.erase(identity);
-            m_flatRowIdentityToIndex.erase(identity);
-            ShiftTrackedFlatRowIndicesForRemove(index);
-            m_rows.RemoveAt(index);
-            return true;
+            return false;
         }
 
-        return false;
+        winrt::hstring identity;
+        wchar_t const* reason = nullptr;
+        if (!TryGetRequiredRowIdentity(item, identity, reason))
+        {
+            return false;
+        }
+        if (m_flatRowIdentities.find(identity) != m_flatRowIdentities.end() &&
+            !(removal && removal->Identity == identity))
+        {
+            return false;
+        }
+
+        const uint32_t skippedRow = removal ? removal->RowIndex : rowCount;
+        const uint32_t remainingCount = rowCount - (removal ? 1 : 0);
+        auto const rowAt = [&](uint32_t index) { return m_rows.GetAt(index < skippedRow ? index : index + 1); };
+        const auto placement = m_pipeline.SortedInsertPlacementFor(item, remainingCount, rowAt);
+        if (placement.Index > remainingCount)
+        {
+            return false;
+        }
+
+        // Ties break by source order, which rows don't carry; only a source-last item can be placed
+        // in a tie group (after every equal-key row).
+        if (placement.TiedWithExistingRow && sourceIndex != sourceSize)
+        {
+            return false;
+        }
+
+        // Non-INPC rows may be stale unseen; at least verify the landing neighbourhood is ordered.
+        if (m_flatItemsMayChangeSortWithoutNotification &&
+            ((placement.Index > 0 && m_pipeline.CompareItemToRow(rowAt(placement.Index - 1), item) > 0) ||
+                (placement.Index < remainingCount && m_pipeline.CompareItemToRow(item, rowAt(placement.Index)) > 0)))
+        {
+            return false;
+        }
+
+        insertion = { item, identity, placement.Index, sourceIndex };
+        return true;
+    };
+
+    // m_rows is mutated last so all other state is consistent when listeners are notified.
+    auto const commitRemove = [&](RowChange const& removal)
+    {
+        m_flatRowIdentities.erase(removal.Identity);
+        m_flatRowIdentityToIndex.erase(removal.Identity);
+        ShiftTrackedFlatRowIndicesForRemove(removal.RowIndex);
+        filteredSource.erase(filteredSource.begin() + removal.SourceIndex);
+        m_shapingState.Items.erase(m_shapingState.Items.begin() + removal.RowIndex);
+        UntrackFlatItemPropertyChanged(removal.Item);
+        m_rows.RemoveAt(removal.RowIndex);
+    };
+
+    auto const commitInsert = [&](RowChange const& insertion)
+    {
+        m_flatRowIdentities.insert(insertion.Identity);
+        ShiftTrackedFlatRowIndicesForInsert(insertion.RowIndex);
+        m_flatRowIdentityToIndex.insert_or_assign(insertion.Identity, insertion.RowIndex);
+        filteredSource.insert(filteredSource.begin() + insertion.SourceIndex, insertion.Item);
+        m_shapingState.Items.insert(m_shapingState.Items.begin() + insertion.RowIndex, insertion.Item);
+        if (m_flatItemPropertyChangedTrackingActive)
+        {
+            TrackFlatItemPropertyChanged(insertion.Item);
+        }
+        m_rows.InsertAt(insertion.RowIndex, insertion.Item);
     };
 
     switch (args.Action())
     {
     case NotifyCollectionChangedAction::Add:
-        if (auto const newItems = args.NewItems(); newItems && newItems.Size() == 1)
+    {
+        auto const newItems = args.NewItems();
+        RowChange insertion;
+        if (!newItems || newItems.Size() != 1 ||
+            !planInsert(newItems.GetAt(0), args.NewStartingIndex(), nullptr, insertion))
         {
-            return tryInsert(newItems.GetAt(0), isLastSourceIndex(args.NewStartingIndex()));
+            return false;
         }
-        return false;
+        commitInsert(insertion);
+        return true;
+    }
     case NotifyCollectionChangedAction::Remove:
-        if (auto const oldItems = args.OldItems(); oldItems && oldItems.Size() == 1)
+    {
+        auto const oldItems = args.OldItems();
+        RowChange removal;
+        if (!oldItems || oldItems.Size() != 1 ||
+            !planRemove(oldItems.GetAt(0), args.OldStartingIndex(), removal) ||
+            !liveSourceCountIs(filteredSource.size() - 1))
         {
-            return tryRemove(oldItems.GetAt(0));
+            return false;
         }
-        return false;
+        commitRemove(removal);
+        return true;
+    }
     case NotifyCollectionChangedAction::Replace:
     {
         auto const oldItems = args.OldItems();
         auto const newItems = args.NewItems();
-        if (oldItems && newItems && oldItems.Size() == 1 && newItems.Size() == 1)
+        RowChange removal;
+        RowChange insertion;
+        if (!oldItems || !newItems || oldItems.Size() != 1 || newItems.Size() != 1 ||
+            args.OldStartingIndex() != args.NewStartingIndex() ||
+            !planRemove(oldItems.GetAt(0), args.OldStartingIndex(), removal) ||
+            !planInsert(newItems.GetAt(0), args.NewStartingIndex(), &removal, insertion))
         {
-            // Remove the old row, then re-insert the new value at its (possibly changed) sort
-            // position — this also covers a same-object value change that re-orders the row.
-            if (!tryRemove(oldItems.GetAt(0)))
-            {
-                return false;
-            }
-            return tryInsert(newItems.GetAt(0), isLastSourceIndex(args.NewStartingIndex()));
+            return false;
         }
-        return false;
+        commitRemove(removal);
+        commitInsert(insertion);
+        return true;
     }
     case NotifyCollectionChangedAction::Move:
     {
@@ -829,30 +1185,23 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
         // does reorder the projection. Ties are contiguous, so only the moved row's two sorted
         // neighbours have to be probed; if it has none, the move is genuinely invisible here.
         auto const movedItems = args.NewItems();
-        if (!movedItems || movedItems.Size() != 1)
+        if (!movedItems || movedItems.Size() != 1 ||
+            args.OldStartingIndex() < 0 || args.NewStartingIndex() < 0)
         {
             return false;
         }
+
         auto const moved = movedItems.GetAt(0);
-        if (!moved || !identityRequired)
-        {
-            return false; // can't locate the row cheaply -> full rebuild
-        }
-
-        winrt::hstring identity;
-        wchar_t const* reason = nullptr;
-        uint32_t index = 0;
-        if (!TryGetRequiredRowIdentity(moved, identity, reason) ||
-            !TryGetTrackedFlatRowIndex(identity, index))
+        RowChange removal;
+        const auto newSourceIndex = static_cast<size_t>(args.NewStartingIndex());
+        if (!planRemove(moved, args.OldStartingIndex(), removal) ||
+            newSourceIndex >= filteredSource.size() ||
+            !liveSourceCountIs(filteredSource.size()))
         {
             return false;
         }
 
-        const uint32_t rowCount = m_rows.Size();
-        if (index >= rowCount)
-        {
-            return false;
-        }
+        const uint32_t index = removal.RowIndex;
         if (index > 0 && m_pipeline.CompareItemToRow(moved, m_rows.GetAt(index - 1)) == 0)
         {
             return false;
@@ -861,6 +1210,9 @@ bool ShapedItemsSource::TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xa
         {
             return false;
         }
+
+        filteredSource.erase(filteredSource.begin() + removal.SourceIndex);
+        filteredSource.insert(filteredSource.begin() + newSourceIndex, moved);
         return true;
     }
     default:
@@ -1124,6 +1476,7 @@ void ShapedItemsSource::RebuildFlat(std::vector<winrt::IInspectable>& rows)
     // Seed the identity tracking that the incremental fast-path maintains, so it can detect
     // duplicate/empty identities and locate sorted removes without O(n) WinRT IndexOf scans.
     RebuildFlatRowIdentityTracking(rows);
+    RebuildFlatItemPropertyChangedTracking(rows);
 
     // Releasing any prior grouped projection: switching grouped->flat must not retain the stale
     // group observable/cache. They are rebuilt from scratch by RebuildGrouped on the next GroupBy,
@@ -1305,14 +1658,6 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     RaiseProjectionRebuilt();
 }
 
-ShapingHelpers::ShapingPipeline::SortedInsertPlacement ShapedItemsSource::SortedInsertPlacementFor(winrt::IInspectable const& item) const
-{
-    return m_pipeline.SortedInsertPlacementFor(
-        item,
-        m_rows ? m_rows.Size() : 0,
-        [this](uint32_t index) { return m_rows.GetAt(index); });
-}
-
 bool ShapedItemsSource::TryGetSourceItemCount(uint32_t& count) const
 {
     if (!m_sourceAccessor.IsIndexable())
@@ -1327,4 +1672,3 @@ winrt::hstring ShapedItemsSource::Diagnostic(std::wstring_view text) const
 {
     return m_diagnosticName + L": " + winrt::hstring{ text };
 }
-

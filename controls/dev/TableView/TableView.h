@@ -148,6 +148,7 @@ public:
     void OnRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnAlternatingRowBackgroundPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnEmptyTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Density resources fall back to Standard defaults; rows and columns call these via get_self.
@@ -178,8 +179,7 @@ public:
         const winrt::Grid& headerCell,
         const winrt::TableViewColumn& column,
         double gripperWidth,
-        const winrt::hstring& headerText,
-        winrt::HorizontalAlignment logicalEndAlignment);
+        const winrt::hstring& headerText);
 
     winrt::ResizeGripper FindResizeGripperInCell(const winrt::FrameworkElement& headerCell) const;
 
@@ -193,6 +193,11 @@ public:
     // applied (OnApplyTemplate performs the initial build). Falls back to a synchronous rebuild when
     // no dispatcher is available or the enqueue fails.
     void QueueRebuildHeaders();
+
+    // Coalesces a burst of column changes into one StructureChanged on the next tick, so Narrator
+    // does not re-read the grid once per mutation.
+    void QueueRaiseColumnsStructureChanged();
+    void RaiseColumnsStructureChanged();
 
     // Internal — invoked by TableViewColumn when its Visibility changes so
     // realized header and row cells stay in sync without rebuilding Columns.
@@ -261,13 +266,19 @@ public:
     bool IsCellCursorActiveInternal() const noexcept { return m_cellCursorActive; }
     void SetCellCursorActiveInternal(bool active);
 
+    // Shared header/body column cursor, in visible-column coordinates.
+    int32_t CurrentColumnCursorInternal() const noexcept { return m_currentCellColumn; }
+
     void OnRowCellFocusChanged(winrt::TableViewRow const& row);
 
     bool TryGetFocusedCell(int32_t& rowIndex, int32_t& columnIndex, bool requireExactCell) const;
 
     // Focuses the cell at a visible-column index inside an ALREADY realized container. Group
     // headers share the repeater and have no cells, so they keep taking container focus.
-    bool FocusRealizedRowCell(winrt::UIElement const& element, int32_t visibleColumnIndex);
+    bool FocusRealizedRowCell(
+        winrt::UIElement const& element,
+        int32_t visibleColumnIndex,
+        winrt::FocusState focusState = winrt::FocusState::Keyboard);
 
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 
@@ -752,10 +763,25 @@ private:
     // brand-new source.
     uint64_t m_rowMetadataGeneration{ 0 };
 
-    void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired);    void QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired);
-    void ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation);
+    // Bumped by every bulk expand/collapse so a queued per-group request that predates it is
+    // dropped instead of re-creating the exception the bulk set just erased.
+    uint64_t m_groupExpansionBulkGeneration{ 0 };
+
+    void RequestGroupExpansion(winrt::UIElement const& container, std::optional<bool> desired);
+    void QueueGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired);
+    void ApplyGroupExpansionByIdentity(
+        winrt::hstring const& identity,
+        std::optional<bool> desired,
+        uint64_t generation,
+        uint64_t bulkGeneration);
     void RaiseGroupStructureChanged();
     void SetAllGroupsExpansion(bool expand);
+
+    void ForEachRealizedGroupHeader(std::function<void(winrt::TableViewGroupHeader const&, int32_t)> const& fn);
+
+    // A reshape can rebind a pooled header without ElementPrepared/ElementIndexChanged, leaving its
+    // expansion DPs describing the previous projection.
+    void RefreshRealizedGroupHeadersAfterExpansion();
 
     // Keyboard-driven group toggle loses focus without this: the Enter/Space toggle defers a
     // structural reshape that recycles the focused header container, dropping focus (and its
@@ -868,6 +894,63 @@ private:
     winrt::event_token m_pendingGroupRowRefreshLayoutToken{};
     // Count changes refresh both empty state and the terminal row separator.
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceCollectionChangedRevoker{};
+
+    // --- Re-shape focus restore (dev-spec Keyboard, "Re-shape while focused"); see TableView_Keyboard.cpp ---
+    void CaptureBodyFocusForReshape();
+    void RestoreBodyFocusAfterReshape();
+    bool TryResolveLiveBodyFocusPosition(int32_t& row, int32_t& column, bool& cellLevel) const;
+    bool IsElementInBody(const winrt::DependencyObject& element) const;
+    bool IsFocusOnNonBodyElement() const;
+    void ForgetBodyFocusPosition();
+    static winrt::FocusState GetRestoreFocusStateFor(const winrt::IInspectable& focusedElement);
+    void TrackBodyFocusPosition();
+    void OnTableViewGotFocusForBodyTracking(
+        const winrt::IInspectable& sender,
+        const winrt::RoutedEventArgs& args);
+    void OnTableViewLosingFocusForBodyTracking(
+        const winrt::IInspectable& sender,
+        const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
+    void SuppressBodyFocusTrackingForThisTurn();
+    bool m_lastBodyFocusValid{ false };
+    int32_t m_lastBodyFocusRow{ -1 };
+    int32_t m_lastBodyFocusColumn{ 0 };
+    bool m_lastBodyFocusCellLevel{ false };
+    winrt::FocusState m_lastBodyFocusState{ winrt::FocusState::Keyboard };
+    bool m_suppressBodyFocusTracking{ false };
+    winrt::UIElement::GotFocus_revoker m_bodyFocusTrackerGotFocusRevoker{};
+    winrt::UIElement::LosingFocus_revoker m_bodyFocusTrackerLosingFocusRevoker{};
+    void ArmReshapeFocusAttempt();
+    void OnReshapeFocusAttempt();
+    void CancelReshapeFocusRestore();
+    bool TryLandReshapeFocus();
+    bool IsBodyFocusAtRow(int32_t rowIndex) const;
+    void QueueReshapeFocusCaptureDisarm();
+    void UpdateReshapeFocusDetectorSubscription(const winrt::ItemsSourceView& view);
+    void OnRowsSourceResetForFocus(
+        const winrt::IInspectable& sender,
+        const winrt::NotifyCollectionChangedEventArgs& args);
+    bool m_reshapeFocusValid{ false };
+    bool m_reshapeFocusDisarmQueued{ false };
+    int32_t m_reshapeFocusRow{ -1 };
+    int32_t m_reshapeFocusColumn{ 0 };
+    bool m_reshapeFocusCellLevel{ false };
+    winrt::FocusState m_reshapeFocusState{ winrt::FocusState::Keyboard };
+    // The consumed capture, replayed until it sticks.
+    int32_t m_pendingReshapeFocusRow{ -1 };
+    int32_t m_pendingReshapeFocusColumn{ 0 };
+    bool m_pendingReshapeFocusCellLevel{ false };
+    winrt::FocusState m_pendingReshapeFocusState{ winrt::FocusState::Keyboard };
+    int32_t m_reshapeFocusAttemptsLeft{ 0 };
+    // So each target is scrolled into view only once.
+    int32_t m_reshapeFocusBroughtIntoViewRow{ -1 };
+    bool m_reshapeFocusTurnQueued{ false };
+    winrt::event_token m_reshapeFocusLayoutToken{};
+    // Covers realize -> arrange -> deferred re-shape work, yet bounded so a restore never fights
+    // the user for focus.
+    static constexpr int32_t s_reshapeFocusRestoreAttempts{ 24 };
+    // Subscribed before the repeater so a Reset is observed while the rows are still realized.
+    winrt::ItemsSourceView::CollectionChanged_revoker m_reshapeFocusDetectorRevoker{};
+    winrt::ItemsSourceView m_reshapeFocusDetectorView{ nullptr };
     // ActualThemeChanged refreshes imperatively-resolved brushes that ItemsRepeater rows do not re-pump.
     winrt::event_token m_actualThemeChangedToken{};
 
@@ -903,6 +986,8 @@ private:
     bool m_frozenColumnsActive{ false };
 
     bool m_rebuildHeadersQueued{ false };
+
+    bool m_columnsStructureChangedQueued{ false };
 
     // Per-instance resource cache; replaces the former process-global map keyed by `this`.
     TableViewResourceCache m_resourceCache{};
@@ -991,10 +1076,13 @@ private:
     // cannot wander out of the cell while interaction mode is active.
     bool TryHandleCellInteractionNavigationKey(const winrt::KeyRoutedEventArgs& args);
     // Focus helpers and pre-key anchors for the row/group-header levels.
-    bool FocusRowContainerInternal(winrt::UIElement const& element);
+    bool FocusRowContainerInternal(
+        winrt::UIElement const& element,
+        winrt::FocusState focusState = winrt::FocusState::Keyboard);
     bool FocusRowElementInternal(int32_t rowIndex, int32_t targetColumn, bool cellLevel);
     int32_t GetFocusedRowContainerIndex() const;
     int32_t GetFocusedGroupHeaderIndex() const;
+    bool TryMoveFocusToHeaderBandFromBody(int32_t visibleColumnIndex);
     int32_t m_navAnchorRowContainer{ -1 };
     int32_t m_navAnchorGroupHeader{ -1 };
 

@@ -5,6 +5,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
@@ -1406,7 +1408,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product bug: the sorted flat path applies a later collection change as an incremental insert, so a stale row is never re-shaped. Re-enable once that path re-shapes.
         [TestProperty("Description", "Verifies an INotifyPropertyChanged-only sort key change defers the move until the next collection change.")]
         public void VerifySortKeyPropertyChangeDoesNotMoveTheRowUntilACollectionChange()
         {
@@ -1494,6 +1495,196 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Rafa", "Owen", "Bea" },
                     "the next collection change must re-evaluate membership");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a filter-key INPC change followed by Add rebuilds a filtered+sorted projection in source order.")]
+        public void VerifyFilterAndSortAfterFilterKeyPropertyChangeAndAdd()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>
+                {
+                    new ShapedPerson("A", "Engineer", "60"),
+                    new ShapedPerson("B", "Engineer", "70"),
+                    new ShapedPerson("C", "Engineer", "80"),
+                };
+
+                tableView = CreateShapedTable(
+                    TableViewSource
+                        .From(items)
+                        .Filter(o => int.Parse(Person(o).DepartmentName) > 50)
+                        .Sort("DepartmentName", SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "A", "B", "C" }, "baseline");
+
+                items[0].DepartmentName = "10";
+                VerifyProjection(tableView, new List<string> { "A", "B", "C" },
+                    "INPC-only filter-key changes keep the existing projection until a collection change");
+
+                items.Add(new ShapedPerson("D", "Engineer", "90"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "B", "C", "D" },
+                    "filtered+sorted collection changes must rebuild from current source contents");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the stale-sort repair a collection change triggers is reported as a re-shape, so body focus stays at its projected position.")]
+        public void VerifyStaleSortRepairIsReportedAsAReshape()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            const int focusedIndex = 4;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).Sort("Name", SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "baseline");
+                Verify.IsTrue(GetProjectedRow(tableView, focusedIndex).Focus(FocusState.Keyboard),
+                    "Baseline: the row at the focused index must take keyboard focus.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(IsFocusWithin(tableView, GetProjectedRow(tableView, focusedIndex)),
+                    "Baseline: keyboard focus must be on the row at the focused index.");
+
+                // The INPC-only rename leaves Owen stale; the Add repairs the order before appending Zed.
+                items.First(p => p.Name == "Owen").Name = "Abe";
+                items.Add(new ShapedPerson("Zed", "Engineer", "Platform"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Abe", "Asha", "Diego", "Ines", "Mei", "Rafa", "Zed" },
+                    "the collection change must repair the stale row and then apply the add");
+
+                // Focus is restored to the same projected position only when the repair is reported
+                // as a re-shape (ShapingChanged); a bare Reset would not restore it.
+                var row = GetProjectedRow(tableView, focusedIndex);
+                Verify.IsTrue(IsFocusWithin(tableView, row),
+                    $"Focus must stay at projected index {focusedIndex} (now '{Person(row.DataContext).Name}') across a stale-sort repair.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a PropertyChanged for a property the active sort does not read does not trigger a sort repair.")]
+        public void VerifyNonSortPropertyChangeDoesNotMarkTheSortStale()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
+                tableView = CreateShapedTable(TableViewSource.From(items).Sort("Name", SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "baseline");
+
+                // Silently change the sort key, then notify only for Role, which the sort does not read.
+                var asha = items.First(p => p.Name == "Asha");
+                asha.SetNameWithoutNotification("Zara");
+                asha.Role = "Engineer";
+
+                items.Add(new ShapedPerson("Bea", "Engineer", "Platform"));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // No repair ran: Zara is still in Asha's old slot, with Bea inserted ahead of it.
+                VerifyProjection(tableView, new List<string> { "Bea", "Zara", "Diego", "Ines", "Mei", "Owen", "Rafa" },
+                    "a non-sort property notification must not re-sort the projection");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sorted Add of rows that implement no change notification is inserted in place, without a Reset.")]
+        public void VerifySortedAddOfPlainItemsInsertsInPlaceWithoutReset()
+        {
+            TableView tableView = null;
+            ObservableCollection<PlainShapedPerson> items = null;
+            var actions = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = new ObservableCollection<PlainShapedPerson>(
+                    MakeShapedPeople().Select(p => new PlainShapedPerson { Name = p.Name, Role = p.Role }));
+                tableView = CreateShapedTable(TableViewSource.From(items).Sort("Name", SortDirection.Ascending));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha,Diego,Ines,Mei,Owen,Rafa", PlainNames(tableView), "baseline");
+
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                items.Add(new PlainShapedPerson { Name = "Nadia", Role = "Engineer" });
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha,Diego,Ines,Mei,Nadia,Owen,Rafa", PlainNames(tableView),
+                    "the added row must land at its sort position");
+                Verify.AreEqual("Add", string.Join(",", actions),
+                    "a single sorted Add must reach the projection as one Add, not a Reset");
+            });
+        }
+
+        private static string PlainNames(TableView tableView)
+            => string.Join(",", GetProjectedItems(tableView).Select(o => ((PlainShapedPerson)o).Name));
+
+        private static bool IsFocusWithin(TableView tableView, DependencyObject container)
+        {
+            for (var current = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                current != null;
+                current = VisualTreeHelper.GetParent(current))
+            {
+                if (ReferenceEquals(current, container))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         [TestMethod]
@@ -1835,7 +2026,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Nested object, so "Department.Name" exercises the dotted-path evaluator.
         public Department Department { get; private set; }
 
+        // Makes a row stale without announcing it.
+        internal void SetNameWithoutNotification(string name) => m_name = name;
+
         private void Raise(string propertyName)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    internal sealed class PlainShapedPerson
+    {
+        public string Name { get; set; }
+        public string Role { get; set; }
     }
 }

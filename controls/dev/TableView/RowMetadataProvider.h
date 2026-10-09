@@ -7,6 +7,7 @@
 
 #include <optional>
 #include <string_view>
+#include <vector>
 
 #include "TableViewRowInfo.h"
 #include "GroupedEntry.h"
@@ -49,6 +50,12 @@ public:
     // Bulk group commands. No-ops when the source is not grouped.
     void ExpandAllGroups() override;
     void CollapseAllGroups() override;
+
+    bool TryGetGroupMembership(
+        winrt::IInspectable const& rows,
+        int32_t index,
+        int32_t& positionInGroup,
+        int32_t& groupSize) override;
 
     enum class SourceKind
     {
@@ -99,6 +106,13 @@ private:
     void EnsureIdentityIndex();
     std::unordered_map<winrt::hstring, int32_t> m_identityToIndex;
     bool m_identityIndexValid{ false };
+
+    // Sorted header-band indexes; invalidated on CollectionChanged and keyed to row count. Built by
+    // a plain scan: mid-expand a header's count can lead its inserted rows, so striding skips groups.
+    void InvalidateGroupHeaderIndices();
+    void EnsureGroupHeaderIndices(int32_t rowCount);
+    std::vector<int32_t> m_groupHeaderIndices;
+    int32_t m_groupHeaderIndicesRowCount{ -1 };
 
     // Subscriptions to XAML's ItemsSourceView are held as raw tokens, not auto-revokers.
     //

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <atomic>
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -124,6 +124,7 @@ public:
     // reports an empty token, so a consumer can tell "an axis I do not own exists" from "only mine
     // exists".
     std::vector<ActiveSortAxisInfo> ActiveSortAxisInfos() const;
+    bool HasActiveSort() const;
 
     // -- projection -----------------------------------------------------------------------
     // Name this engine uses to prefix caller-facing diagnostics. Layer 2 must not hardcode a
@@ -154,8 +155,18 @@ private:
     void ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void ApplyIncrementalVectorChange(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
     bool TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
+    bool TryReshapeStaleSortedFlatProjection();
+    bool IsFlatProjectionSorted() const;
+    bool IsFlatRowInSortOrderWithNeighbours(uint32_t index) const;
+    void TrackFlatItemPropertyChanged(winrt::IInspectable const& item);
+    void UntrackFlatItemPropertyChanged(winrt::IInspectable const& item);
+    void ClearFlatItemPropertyChangedTracking();
+    void RebuildFlatItemPropertyChangedTracking(std::vector<winrt::IInspectable> const& rows);
+    void ClearSortDirtyRows();
+    void OnFlatItemPropertyChanged(uintptr_t itemAddress, winrt::hstring const& propertyName);
+    void UpdateSortKeyPropertyFilter();
     void ApplyShapingChange();
-    bool TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta);
+    bool TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta, bool allowDuringIncrementalChange = false);
     void InvalidateShapingState();
     static std::vector<winrt::IInspectable> Materialize(winrt::IInspectable const& source);
     void ApplyFilter(std::vector<winrt::IInspectable>& rows) const { m_pipeline.ApplyFilter(rows); }
@@ -176,7 +187,6 @@ private:
     }
     // Confirm every row in the set a rebuild is about to publish has a usable, distinct identity.
     bool ValidateRowIdentities(std::vector<winrt::IInspectable> const& rows, wchar_t const*& reason) const;
-    bool HasActiveSort() const;
     bool IsSourceMutable() const;
     bool TryGetRequiredRowIdentity(winrt::IInspectable const& item, winrt::hstring& identity, wchar_t const*& reason) const;
     bool TryGetGroupIdentity(winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason) const;
@@ -187,7 +197,6 @@ private:
     void ShiftTrackedFlatRowIndicesForRemove(uint32_t removedIndex);
     // Prefixes a caller-facing message with the consumer's diagnostic name.
     winrt::hstring Diagnostic(std::wstring_view text) const;
-    ShapingHelpers::ShapingPipeline::SortedInsertPlacement SortedInsertPlacementFor(winrt::IInspectable const& item) const;
     bool TryGetSourceItemCount(uint32_t& count) const;
     void RaiseProjectionRebuilt() const { if (m_projectionRebuilt) { m_projectionRebuilt(); } }
     void RaiseShapeSwapped() const { if (m_shapeSwapped) { m_shapeSwapped(); } }
@@ -206,7 +215,8 @@ private:
     // plus the shaped output. Holding FilteredSource is what makes an in-place re-sort produce
     // exactly what a full rebuild would -- a stable sort seeded from the previously sorted order
     // would break ties in the OLD sort's order instead of source order. Only valid while
-    // HasProjection is true; every non-Refresh mutation of m_rows clears it.
+    // HasProjection is true. The sorted incremental path keeps it in lockstep with m_rows; every
+    // other non-Refresh mutation of m_rows clears it.
     ShapingHelpers::ShapingState m_shapingState{};
     ShapingHelpers::KeySelector m_groupSelector{ nullptr };
     RowIdentity::IdentitySelector m_groupIdentitySelector{ nullptr };
@@ -220,6 +230,26 @@ private:
     // locate a removed row without an O(n) WinRT ABI scan.
     std::unordered_set<winrt::hstring> m_flatRowIdentities;
     std::unordered_map<winrt::hstring, uint32_t> m_flatRowIdentityToIndex;
+    // Sort-key changes raise no collection notification, so while sorted, INPC rows are observed
+    // and a change to a sort-key property marks the row dirty for the next collection change.
+    // Keyed by IUnknown address (stable across re-orders); holding Item keeps the address unique.
+    struct FlatItemPropertyChangedSubscription
+    {
+        winrt::IInspectable Item{ nullptr };
+        winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged::PropertyChanged_revoker Revoker{};
+    };
+    std::unordered_map<uintptr_t, FlatItemPropertyChangedSubscription> m_flatItemPropertyChangedRevokers;
+    bool m_flatItemPropertyChangedTrackingActive{ false };
+    bool m_flatItemsMayChangeSortWithoutNotification{ false };
+    // Guards the fields below: PropertyChanged may be raised off the owning thread.
+    std::mutex m_sortDirtyLock;
+    // First path segment of each active sort axis' SortMemberPath.
+    std::unordered_set<winrt::hstring> m_sortKeyPropertyNames;
+    // Some axis has no path (delegate key / comparer), so any property may affect the sort.
+    bool m_anyPropertyMayAffectSort{ false };
+    std::unordered_set<uintptr_t> m_sortDirtyRows;
+    bool m_sortDirtyOverflow{ false };
+    bool m_raiseReorderAfterIncrementalChange{ false };
     // Guards re-entrant Refresh (a source notification arriving while a rebuild's ReplaceAll is
     // already mutating the projection).
     bool m_isRefreshing{ false };

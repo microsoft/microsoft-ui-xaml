@@ -34,6 +34,9 @@ namespace RowIdentity
     // identity.
     ShapingHelpers::KeySelector MakeObjectIdentitySelector();
 
+    // The IUnknown address object identity is formatted from, so an address alone names the same row.
+    uintptr_t GetObjectAddress(winrt::IInspectable const& item);
+    winrt::hstring FormatObjectIdentity(uintptr_t address);
     bool TryGetRequiredRowIdentity(
         winrt::IInspectable const& item,
         ShapingHelpers::KeySelector const& keySelector,

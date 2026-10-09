@@ -483,10 +483,7 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.DataTemplate EmptyTemplate { get; set; };
 
-    // [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)] belongs here -- swapping the template at runtime has
-    // to re-inflate the realized headers. The handler lives in TableView.cpp, which this PR does
-    // not carry, so the attribute travels with it rather than pointing at a method that is not
-    // here yet.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate { get; set; };
 
     // Vertical density preset for row height and built-in cell/header padding.

@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <vector>
 
 // -----------------------------------------------------------------------------
@@ -38,13 +39,15 @@ namespace
     {
         if (factor > 0.0)
         {
-            return column.MinWidth();
+            return NonNegativeFiniteOrZero(column.MinWidth());
         }
 
         // WPF gives 0* a zero share. Preserve that for the default MinWidth, but still honor an
         // explicitly-set MinWidth on a 0* column.
         const auto localMinWidth = column.ReadLocalValue(winrt::TableViewColumn::MinWidthProperty());
-        return localMinWidth == winrt::DependencyProperty::UnsetValue() ? 0.0 : column.MinWidth();
+        return localMinWidth == winrt::DependencyProperty::UnsetValue()
+            ? 0.0
+            : NonNegativeFiniteOrZero(column.MinWidth());
     }
 
     // Divides `available` in proportion to each column's Star factor. A column that would clamp at
@@ -63,7 +66,7 @@ namespace
             double total = 0.0;
             for (auto const& c : pool)
             {
-                total += factorOf(c);
+                total += NonNegativeFiniteOrZero(factorOf(c));
             }
             return total;
         };
@@ -78,10 +81,10 @@ namespace
             for (size_t i = 0; i < pool.size(); ++i)
             {
                 auto const& c = pool[i];
-                const double factor = factorOf(c);
+                const double factor = NonNegativeFiniteOrZero(factorOf(c));
                 const double desired = unit * factor;
                 const double lo = MinWidthForStarFactor(c, factor);
-                const double hi = std::max(lo, c.MaxWidth());
+                const double hi = MaxWidthForColumn(c, lo);
                 const double clamped = std::clamp(desired, lo, hi);
                 // std::clamp returns desired exactly when it is already in [lo, hi], so any
                 // inequality is a real Min/MaxWidth clamp.
@@ -105,9 +108,9 @@ namespace
         double roundedConsumed = 0.0;
         for (auto const& c : pool)
         {
-            const double factor = factorOf(c);
+            const double factor = NonNegativeFiniteOrZero(factorOf(c));
             const double lo = MinWidthForStarFactor(c, factor);
-            const double hi = std::max(lo, c.MaxWidth());
+            const double hi = MaxWidthForColumn(c, lo);
             exactConsumed += std::clamp(unit * factor, lo, hi);
             const double edge = layoutRound(exactConsumed);
             resolve(c, edge - roundedConsumed);
@@ -230,8 +233,8 @@ void TableView::ResolveColumnWidths()
         }
 
         const auto width = column.Width();
-        const double lo = column.MinWidth();
-        const double hi = std::max(lo, column.MaxWidth());
+        const double lo = NonNegativeFiniteOrZero(column.MinWidth());
+        const double hi = MaxWidthForColumn(column, lo);
 
         switch (width.GridUnitType)
         {
@@ -263,10 +266,11 @@ void TableView::ResolveColumnWidths()
             auto columnImpl = winrt::get_self<TableViewColumn>(column);
             // Shrink-capable Auto: size to the CURRENT measured content max rather than a monotonic
             // grow-only max, so the column narrows when its widest content shrinks (CGrid parity).
-            const double desired = pulledMeasuredMax;
+            const double desired = NonNegativeFiniteOrZero(pulledMeasuredMax);
             columnImpl->SetDesiredWidthInternal(desired);
 
-            const double resolved = layoutRound(std::clamp(desired > 0.0 ? desired : c_widthDefault.Value, lo, hi));
+            const double resolved = layoutRound(
+                std::clamp(desired > 0.0 ? desired : c_widthDefault.Value, lo, hi));
             changed |= setResolvedActualWidth(column, resolved);
             fixedTotal += resolved;
             break;
@@ -284,7 +288,9 @@ void TableView::ResolveColumnWidths()
                 break;
             }
 
-            const double resolved = layoutRound(std::clamp(width.Value, lo, hi));
+            const double desired = NonNegativeFiniteOrDefault(width.Value);
+            const double resolved = layoutRound(
+                std::clamp(desired, lo, hi));
             changed |= setResolvedActualWidth(column, resolved);
             fixedTotal += resolved;
             break;
@@ -356,8 +362,8 @@ void TableView::ResolveColumnWidths()
 
             // Clamped and rounded exactly as the resolved pass above does, so the authored basis
             // and the real layout agree on what the fixed columns take.
-            const double lo = c.MinWidth();
-            const double hi = std::max(lo, c.MaxWidth());
+            const double lo = NonNegativeFiniteOrZero(c.MinWidth());
+            const double hi = MaxWidthForColumn(c, lo);
             if (authored.GridUnitType == winrt::GridUnitType::Auto)
             {
                 // The content width, not the width a resize gave it: a dragged Auto column must not
@@ -367,7 +373,9 @@ void TableView::ResolveColumnWidths()
             }
             else
             {
-                authoredFixedTotal += layoutRound(std::clamp(authored.Value, lo, hi));
+                const double desired = NonNegativeFiniteOrDefault(authored.Value);
+                authoredFixedTotal += layoutRound(
+                    std::clamp(desired, lo, hi));
             }
         }
 

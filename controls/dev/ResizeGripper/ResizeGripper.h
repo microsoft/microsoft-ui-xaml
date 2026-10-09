@@ -60,9 +60,14 @@ private:
     double EffectiveKeyboardIncrement();
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
     void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void AttachCancelKeyHandler();
+    void DetachCancelKeyHandler();
+    void OnCancelKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
 
     double m_lastRaisedDelta{ 0.0 };
     bool m_isPointerOver{ false };
     bool m_templateApplied{ false };
-    bool m_containerIsRightToLeft{ false };
+    // Boxed handler passed to AddHandler and its target; null when not dragging.
+    winrt::IInspectable m_cancelKeyHandler{ nullptr };
+    winrt::weak_ref<winrt::UIElement> m_cancelKeyRoot{ nullptr };
 };

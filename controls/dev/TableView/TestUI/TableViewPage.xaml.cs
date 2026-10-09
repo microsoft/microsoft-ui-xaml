@@ -165,22 +165,102 @@ namespace MUXControlsTestApp
             ScrollingTableView.LayoutUpdated -= OnScrollingTableViewLayoutUpdated;
 
             _scrollingHeaderScroller = FindDescendantByName<ScrollViewer>(ScrollingTableView, "PART_HeaderScroller");
+            _scrollingHeaderHost = FindDescendantByName<Panel>(ScrollingTableView, "PART_HeaderHost");
 
             scroller.ViewChanged += (s, args) => ReportScrollOffsets(scroller);
+
+            // The header band and counter-translation settle only after ViewChanged returns, so refresh on
+            // LayoutUpdated too.
+            ScrollingTableView.LayoutUpdated += (s, args) => ReportScrollOffsets(_scrollingBodyScroller);
+
             ReportScrollOffsets(scroller);
         }
 
         private ScrollViewer _scrollingHeaderScroller;
+        private Panel _scrollingHeaderHost;
 
+        // Publishes scroll offsets plus frozen-band geometry that UIA cannot see (the pin is a composition-only
+        // Translation). Format:
+        //   "H=<h>;V=<v>;HeaderH=<h>;FrozenX=<x>;FrozenT=<tx>;ScrollX=<x>;BodyFrozenX=<x>;BodyFrozenT=<tx>;BodyScrollX=<x>;VH=<vh>;RowH=<rh>"
+        // *X is TransformToVisual(ScrollingTableView).X, which already includes Translation; *T is diagnostic only.
+        // Frozen*/Scroll* sample the header band, Body* the first row's PART_CellsHost. VH and RowH are in DIPs.
         private void ReportScrollOffsets(ScrollViewer scroller)
         {
-            ScrollOffsetTextBlock.Text = string.Format(
-                "H={0:F0};V={1:F0};HeaderH={2}",
+            if (scroller == null)
+            {
+                return;
+            }
+
+            Panel bodyCellsHost = FindDescendantByName<Panel>(ScrollingTableView, "PART_CellsHost");
+            TableViewRow firstRow = FindDescendant<TableViewRow>(ScrollingTableView);
+
+            string text = string.Format(
+                System.Globalization.CultureInfo.InvariantCulture,
+                "H={0:F0};V={1:F0};HeaderH={2};FrozenX={3};FrozenT={4};ScrollX={5};BodyFrozenX={6};BodyFrozenT={7};BodyScrollX={8};VH={9:F2};RowH={10}",
                 scroller.HorizontalOffset,
                 scroller.VerticalOffset,
                 _scrollingHeaderScroller == null
                     ? "<none>"
-                    : _scrollingHeaderScroller.HorizontalOffset.ToString("F0"));
+                    : _scrollingHeaderScroller.HorizontalOffset.ToString("F0"),
+                FormatCellRenderedLeft(_scrollingHeaderHost, frozen: true),
+                FormatCellTranslationX(_scrollingHeaderHost, frozen: true),
+                FormatCellRenderedLeft(_scrollingHeaderHost, frozen: false),
+                FormatCellRenderedLeft(bodyCellsHost, frozen: true),
+                FormatCellTranslationX(bodyCellsHost, frozen: true),
+                FormatCellRenderedLeft(bodyCellsHost, frozen: false),
+                scroller.ViewportHeight,
+                firstRow == null || firstRow.ActualHeight <= 0
+                    ? "<none>"
+                    : firstRow.ActualHeight.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
+
+            // Write only on change: LayoutUpdated also drives this, so an unconditional write would loop layout.
+            if (ScrollOffsetTextBlock.Text != text)
+            {
+                ScrollOffsetTextBlock.Text = text;
+            }
+        }
+
+        // Cells carry their TableViewColumn in Tag, the same key the product's frozen layout uses.
+        private static FrameworkElement FindCell(Panel cellsHost, bool frozen)
+        {
+            if (cellsHost == null)
+            {
+                return null;
+            }
+
+            foreach (UIElement child in cellsHost.Children)
+            {
+                if (child is FrameworkElement element &&
+                    element.Tag is TableViewColumn column &&
+                    (column.FrozenEdge == TableViewFrozenEdge.Leading) == frozen)
+                {
+                    return element;
+                }
+            }
+
+            return null;
+        }
+
+        // Already includes the scroller offset and the cell's Translation; add nothing to it.
+        private string FormatCellRenderedLeft(Panel cellsHost, bool frozen)
+        {
+            var cell = FindCell(cellsHost, frozen);
+            if (cell == null)
+            {
+                return "<none>";
+            }
+
+            return cell.TransformToVisual(ScrollingTableView)
+                       .TransformPoint(new Windows.Foundation.Point(0, 0))
+                       .X
+                       .ToString("F0");
+        }
+
+        // Diagnostic only: the counter-translation the product wrote. Never summed into the rendered x.
+        private static string FormatCellTranslationX(Panel cellsHost, bool frozen)
+        {
+            var cell = FindCell(cellsHost, frozen);
+            return cell == null ? "<none>" : cell.Translation.X.ToString("F0");
         }
 
         private static T FindDescendantByName<T>(DependencyObject root, string name) where T : FrameworkElement
@@ -534,6 +614,15 @@ namespace MUXControlsTestApp
         private void OnClearFilterClick(object sender, RoutedEventArgs e)
         {
             _groupedSource.ClearFilter();
+        }
+
+        private void OnFocusNeutralSortBasicByAgeClick(object sender, RoutedEventArgs e)
+        {
+            TableViewColumn age = BasicTableView.Columns.FirstOrDefault(column => (column.Header as string) == "Age");
+            if (age != null)
+            {
+                BasicTableView.SortByColumn(age, SortDirection.Descending);
+            }
         }
     }
 }

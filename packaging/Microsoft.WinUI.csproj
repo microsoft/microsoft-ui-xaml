@@ -40,7 +40,10 @@
   <Target Name="CreateManifestResourceNames" />
   <Target Name="GetMrtPackagingOutputs" />
   
-  <Target Name="FillExtensions" BeforeTargets="_CreateWinUIPackageLayout" Inputs="AppxManifest.xml;$(ArtifactsObjDir)MergedWinMD\LiftedWinRTClassRegistrations.xml" Outputs="$(OutDir)AppxManifest.xml">
+  <!-- Both outputs come from one $(LiftedExtensions) computation, so they must be produced by this one
+       target (a separate incremental target can run with it undefined and write an empty fragment).
+       The project file is an input so stale output trees regenerate. -->
+  <Target Name="FillExtensions" BeforeTargets="_CreateWinUIPackageLayout" Inputs="$(MSBuildProjectFullPath);AppxManifest.xml;$(ArtifactsObjDir)MergedWinMD\LiftedWinRTClassRegistrations.xml" Outputs="$(OutDir)AppxManifest.xml;$(OutDir)package.appxfragment">
     <PropertyGroup>
       <Namespaces>
         <Namespace Prefix="ns" Uri="http://schemas.microsoft.com/appx/manifest/foundation/windows10" />
@@ -70,9 +73,7 @@
         Query="/ns:Package/ns:Extensions"
         Namespaces="$(Namespaces)"
         Value="$(LiftedExtensions)"/>
-  </Target>
-  
-  <Target Name="GenerateAppxFragmentFromAppxManifest" BeforeTargets="_CreateWinUIPackageLayout" DependsOnTargets="FillExtensions" Inputs="$(OutDir)AppxManifest.xml" Outputs="$(OutDir)package.appxfragment">
+
     <PropertyGroup>
       <AppxFragment>
         %3C?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?%3E
@@ -84,7 +85,7 @@
       </AppxFragment>
     </PropertyGroup>
 
-    <WriteLinesToFile File="$(OutDir)package.appxfragment" Lines="$(AppxFragment)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile File="$(OutDir)package.appxfragment" Lines="$(AppxFragment)" Overwrite="true" />
   </Target>
   
   <ItemGroup>

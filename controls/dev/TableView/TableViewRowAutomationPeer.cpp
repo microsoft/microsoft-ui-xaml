@@ -8,12 +8,75 @@
 #include "TableViewRowAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
+#include "TableViewSource.h"
 #include "TableViewRowAutomationPeer.properties.cpp"
 
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
 #include <algorithm>
 #include <string>
+
+namespace
+{
+    // Grouped sources report PositionInSet/SizeOfSet relative to the containing group, excluding
+    // header bands. The provider's cached band index avoids a quadratic per-row walk; the walk
+    // below is the fallback.
+    bool TryGetGroupedRowSetMetadataFromProvider(TableView* tableImpl, int32_t rowIndex, int32_t& positionInSet, int32_t& sizeOfSet)
+    {
+        try
+        {
+            // Grouping exists only on an app-assigned TableViewSource (the ItemsSource itself).
+            auto const source = tableImpl->ItemsSource().try_as<winrt::TableViewSource>();
+            auto const repeater = tableImpl->GetRowsRepeaterInternal();
+            if (!source || !repeater)
+            {
+                return false;
+            }
+
+            auto const metadata = winrt::get_self<::TableViewSource>(source)->GetRowMetadata();
+            return metadata && metadata->TryGetGroupMembership(repeater.ItemsSourceView(), rowIndex, positionInSet, sizeOfSet);
+        }
+        catch (...)
+        {
+            return false;
+        }
+    }
+
+    bool TryGetGroupedRowSetMetadata(TableView* tableImpl, int32_t rowIndex, int32_t& positionInSet, int32_t& sizeOfSet)
+    {
+        if (!tableImpl || rowIndex < 0 || !tableImpl->IsTableViewSourceGrouped())
+        {
+            return false;
+        }
+
+        const auto rowCount = tableImpl->GetRowCountInternal();
+        if (rowIndex >= rowCount || tableImpl->IsGroupHeaderRow(rowIndex))
+        {
+            return false;
+        }
+
+        if (TryGetGroupedRowSetMetadataFromProvider(tableImpl, rowIndex, positionInSet, sizeOfSet))
+        {
+            return true;
+        }
+
+        int32_t first = rowIndex;
+        while (first > 0 && !tableImpl->IsGroupHeaderRow(first - 1))
+        {
+            --first;
+        }
+
+        int32_t last = rowIndex;
+        while (last + 1 < rowCount && !tableImpl->IsGroupHeaderRow(last + 1))
+        {
+            ++last;
+        }
+
+        positionInSet = rowIndex - first + 1;
+        sizeOfSet = last - first + 1;
+        return true;
+    }
+}
 
 TableViewRowAutomationPeer::TableViewRowAutomationPeer(winrt::TableViewRow const& owner)
     : ReferenceTracker(owner)
@@ -470,7 +533,16 @@ int32_t TableViewRowAutomationPeer::GetPositionInSetCore()
 
     if (auto const tableView = GetOwningTableView())
     {
-        return winrt::get_self<TableView>(tableView)->GetDataRowPositionInSetInternal(index);
+        auto const tableImpl = winrt::get_self<TableView>(tableView);
+
+        int32_t positionInSet = 0;
+        int32_t sizeOfSet = 0;
+        if (TryGetGroupedRowSetMetadata(tableImpl, index, positionInSet, sizeOfSet))
+        {
+            return positionInSet;
+        }
+
+        return tableImpl->GetDataRowPositionInSetInternal(index);
     }
 
     return 0;
@@ -485,7 +557,16 @@ int32_t TableViewRowAutomationPeer::GetSizeOfSetCore()
 
     if (auto const tableView = GetOwningTableView())
     {
-        if (const auto count = winrt::get_self<TableView>(tableView)->GetDataRowSizeOfSetInternal(); count > 0)
+        auto const tableImpl = winrt::get_self<TableView>(tableView);
+
+        int32_t positionInSet = 0;
+        int32_t sizeOfSet = 0;
+        if (TryGetGroupedRowSetMetadata(tableImpl, GetRowIndex(), positionInSet, sizeOfSet))
+        {
+            return sizeOfSet;
+        }
+
+        if (const auto count = tableImpl->GetDataRowSizeOfSetInternal(); count > 0)
         {
             return count;
         }

@@ -127,7 +127,7 @@ void TableViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TableView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnGroupHeaderTemplatePropertyChanged));
     }
     if (!s_HeadersVisibilityProperty)
     {
@@ -281,6 +281,14 @@ void TableViewProperties::OnGridLinesVisibilityPropertyChanged(
 {
     auto owner = sender.as<winrt::TableView>();
     winrt::get_self<TableView>(owner)->OnGridLinesVisibilityPropertyChanged(args);
+}
+
+void TableViewProperties::OnGroupHeaderTemplatePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableView>();
+    winrt::get_self<TableView>(owner)->OnGroupHeaderTemplatePropertyChanged(args);
 }
 
 void TableViewProperties::OnHeadersVisibilityPropertyChanged(
