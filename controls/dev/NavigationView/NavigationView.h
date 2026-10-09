@@ -310,6 +310,7 @@ private:
     void ClosePane();
     bool AttemptClosePaneLightly();
     void SetPaneToggleButtonAutomationName();
+    void AnnouncePaneOpenStateChange();
     void SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> newParent, tracker_ref<winrt::ContentControl> oldParent, winrt::hstring const& propertyPathName);
     void UpdateSettingsItemToolTip();
     void UpdatePaneTitleFrameworkElementParents();
@@ -465,6 +466,7 @@ private:
     winrt::NavigationViewItem::LayoutUpdated_revoker m_selectedItemLayoutUpdatedRevoker{};
 
     bool m_wasForceClosed{ false };
+    bool m_previousIsPaneOpen{ false };
     bool m_isClosedCompact{ false };
     bool m_blockNextClosingEvent{ false };
     bool m_initialListSizeStateSet{ false };
