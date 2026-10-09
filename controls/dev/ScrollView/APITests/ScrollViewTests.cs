@@ -52,6 +52,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private const ScrollingChainMode c_defaultZoomChainMode = ScrollingChainMode.Auto;
         private const ScrollingZoomMode c_defaultZoomMode = ScrollingZoomMode.Disabled;
         private const ScrollingContentOrientation c_defaultContentOrientation = ScrollingContentOrientation.Vertical;
+        private const bool c_defaultCanContentRenderOutsideBounds = false;
         private const double c_defaultMinZoomFactor = 0.1;
         private const double c_defaultMaxZoomFactor = 10.0;
         private const double c_defaultAnchorRatio = 0.0;
@@ -80,6 +81,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(c_defaultComputedHorizontalScrollMode, scrollView.ComputedHorizontalScrollMode);
                 Verify.AreEqual(c_defaultComputedVerticalScrollMode, scrollView.ComputedVerticalScrollMode);
                 Verify.AreEqual(c_defaultIgnoredInputKinds, scrollView.IgnoredInputKinds);
+                Verify.AreEqual(c_defaultCanContentRenderOutsideBounds, scrollView.CanContentRenderOutsideBounds);
                 Verify.AreEqual(c_defaultContentOrientation, scrollView.ContentOrientation);
                 Verify.AreEqual(c_defaultHorizontalScrollChainMode, scrollView.HorizontalScrollChainMode);
                 Verify.AreEqual(c_defaultVerticalScrollChainMode, scrollView.VerticalScrollChainMode);
@@ -128,6 +130,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Setting ScrollPresenter-cloned properties to non-default values");
+                    scrollView.CanContentRenderOutsideBounds = true;
                     scrollView.IgnoredInputKinds = ScrollingInputKinds.MouseWheel | ScrollingInputKinds.Pen;
                     scrollView.ContentOrientation = ScrollingContentOrientation.Horizontal;
                     scrollView.HorizontalScrollChainMode = ScrollingChainMode.Always;
@@ -142,6 +145,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollView.MaxZoomFactor = 8.0;
 
                     Log.Comment("Verifying ScrollPresenter-cloned non-default properties");
+                    Verify.IsTrue(scrollView.CanContentRenderOutsideBounds);
+                    Verify.IsTrue(scrollView.ScrollPresenter.CanContentRenderOutsideBounds);
                     Verify.AreEqual(ScrollingInputKinds.MouseWheel | ScrollingInputKinds.Pen, scrollView.IgnoredInputKinds);
                     Verify.AreEqual(ScrollingContentOrientation.Horizontal, scrollView.ContentOrientation);
                     Verify.AreEqual(ScrollingChainMode.Always, scrollView.HorizontalScrollChainMode);

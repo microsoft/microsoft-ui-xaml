@@ -358,6 +358,12 @@ unsealed runtimeclass ScrollPresenter :
     [MUX_PREVIEW]
     event Windows.Foundation.TypedEventHandler<ScrollPresenter, MU_XC_NAMESPACE.ScrollingZoomStartingEventArgs> ZoomStarting;
 
+    [MUX_PREVIEW]
+    {
+        [MUX_DEFAULT_VALUE("ScrollPresenter::s_defaultCanContentRenderOutsideBounds")]
+        Boolean CanContentRenderOutsideBounds { get; set; };
+    }
+
     static Microsoft.UI.Xaml.DependencyProperty BackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ContentProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ContentOrientationProperty { get; };
@@ -376,6 +382,11 @@ unsealed runtimeclass ScrollPresenter :
     static Microsoft.UI.Xaml.DependencyProperty MaxZoomFactorProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HorizontalAnchorRatioProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty VerticalAnchorRatioProperty { get; };
+
+    [MUX_PREVIEW]
+    {
+        static Microsoft.UI.Xaml.DependencyProperty CanContentRenderOutsideBoundsProperty { get; };
+    }
 }
 
 }

@@ -46,6 +46,7 @@
                                 Grid.ColumnSpan="2" Grid.RowSpan="2"
                                 Background="{TemplateBinding Background}"
                                 Content="{TemplateBinding Content}"
+                                CanContentRenderOutsideBounds="{TemplateBinding CanContentRenderOutsideBounds}"
                                 ContentOrientation="{TemplateBinding ContentOrientation}"
                                 Margin="{TemplateBinding Padding}"
                                 HorizontalScrollChainMode="{TemplateBinding HorizontalScrollChainMode}"
