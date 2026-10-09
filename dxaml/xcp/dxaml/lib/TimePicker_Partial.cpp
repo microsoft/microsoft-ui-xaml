@@ -1927,6 +1927,13 @@ _Check_return_ HRESULT TimePicker::RefreshFlyoutButtonAutomationName()
 {
     if (m_tpFlyoutButton.Get())
     {
+        // The parent automation name (AutomationProperties.Name / Header) is intentionally
+        // included in the FlyoutButton's automation name. The FlyoutButton is the only
+        // focusable and invokable element of the TimePicker, so voice-command experiences
+        // (e.g. Voice Access "click <name>") need the parent name here in order to target it.
+        // Double Narrator announcement (GitHub issue #8296) is instead avoided by removing the
+        // containing group peer from the Control/Content views (see TimePickerAutomationPeer),
+        // so the name is exposed on the button only and announced exactly once.
         wrl_wrappers::HString strParentAutomationName;
         IFC_RETURN(DirectUI::AutomationProperties::GetNameStatic(this, strParentAutomationName.ReleaseAndGetAddressOf()));
         if (strParentAutomationName.Length() == 0)
