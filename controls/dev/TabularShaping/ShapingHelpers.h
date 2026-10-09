@@ -253,7 +253,12 @@ namespace ShapingHelpers
         {
             winrt::IInspectable Item{ nullptr };
             int32_t Rank{};
+            // COM identity (IUnknown), cached so lookups compare pointers instead of calling QI.
+            void* Identity{ nullptr };
         };
+
+        static void* IdentityOf(winrt::IInspectable const& item);
+        void AddRanked(winrt::IInspectable const& item, int32_t rank);
 
         // App code, so it never escapes: a throwing comparer degrades to "equal", which keeps the
         // merge stable rather than random. Also normalizes the result to -1 / 0 / 1.
@@ -300,10 +305,16 @@ namespace ShapingHelpers
         // Re-places all evicted items before handing out any key, so keys are consistent.
         void PlaceEvicted();
 
+        // True when re-placing the evicted items costs more than re-ranking everything.
+        bool ShouldRerankAll() const noexcept;
+
         PairwiseComparer m_comparer{ nullptr };
         std::vector<RankEntry> m_ranks;
         // Items whose rank was dropped by Evict and not yet re-placed.
         std::vector<winrt::IInspectable> m_evicted;
+        // Set once enough items are evicted that PlaceEvicted will re-rank everything; further
+        // deferred evictions are then skipped (the re-rank covers them).
+        bool m_rerankAllPending{ false };
         // O(1) identity -> rank lookup for the common (reference-type item) case; falls back to the
         // comparer scan on a miss, e.g. a boxed value type whose CCW churned.
         std::unordered_map<void*, int32_t> m_rankByIdentity;

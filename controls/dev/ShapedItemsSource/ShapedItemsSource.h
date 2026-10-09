@@ -273,6 +273,15 @@ private:
     bool IsSourceMutable() const;
     bool TryGetRequiredRowIdentity(winrt::IInspectable const& item, winrt::hstring& identity, wchar_t const*& reason) const;
     bool TryGetGroupIdentity(winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason) const;
+    // Buckets by m_groupSelector; throws E_INVALIDARG on an invalid group identity.
+    std::vector<ShapingHelpers::KeyedBucket> BucketizeGroupsOrThrow(std::vector<winrt::IInspectable> const& items);
+    // Finds or creates the cached group for the bucket and sets its GroupKey.
+    winrt::com_ptr<ShapedGroup> AcquireCachedGroup(ShapingHelpers::KeyedBucket const& bucket);
+    void PruneGroupCache(std::unordered_set<winrt::hstring> const& liveKeys);
+    // Loads m_groupSource and (re-)attaches the grouped adapter, publishing one Reset.
+    void AttachGroupSource(std::vector<winrt::IInspectable> const& groups);
+    // Detaches the grouped adapter, then clears m_groupSource and m_groupCache.
+    void ReleaseGroupedProjection();
     void ClearFlatRowIdentityTracking();
     void RebuildFlatRowIdentityTracking(std::vector<winrt::IInspectable> const& rows);
     bool TryGetTrackedFlatRowIndex(winrt::hstring const& identity, uint32_t& index) const;

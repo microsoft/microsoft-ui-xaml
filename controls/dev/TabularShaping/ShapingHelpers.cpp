@@ -1108,6 +1108,24 @@ namespace ShapingHelpers
         m_ranks.clear();
         m_rankByIdentity.clear();
         m_evicted.clear();
+        m_rerankAllPending = false;
+    }
+
+    void* CustomSortRankAdapter::IdentityOf(winrt::IInspectable const& item)
+    {
+        // The entry's Item keeps the object alive, so the raw identity stays valid while ranked.
+        auto const unknown = item.try_as<::IUnknown>();
+        return unknown ? unknown.get() : nullptr;
+    }
+
+    void CustomSortRankAdapter::AddRanked(winrt::IInspectable const& item, int32_t rank)
+    {
+        void* const identity = IdentityOf(item);
+        m_ranks.push_back({ item, rank, identity });
+        if (identity)
+        {
+            m_rankByIdentity[identity] = rank;
+        }
     }
 
     void CustomSortRankAdapter::Reset()
@@ -1170,12 +1188,7 @@ namespace ShapingHelpers
                 }
             }
 
-            auto const& item = rows[order[i]];
-            m_ranks.push_back({ item, rank });
-            if (auto unknown = item.try_as<::IUnknown>())
-            {
-                m_rankByIdentity[unknown.get()] = rank;
-            }
+            AddRanked(rows[order[i]], rank);
         }
     }
 
@@ -1246,11 +1259,7 @@ namespace ShapingHelpers
             {
                 rank = entryRank;
                 tied = true;
-                m_ranks.push_back({ item, rank });
-                if (auto unknown = item.try_as<::IUnknown>())
-                {
-                    m_rankByIdentity[unknown.get()] = rank;
-                }
+                AddRanked(item, rank);
                 return true;
             }
             if (comparison < 0)
@@ -1264,18 +1273,14 @@ namespace ShapingHelpers
             if (entry.Rank >= rank)
             {
                 ++entry.Rank;
-                if (auto unknown = entry.Item.try_as<::IUnknown>())
+                if (entry.Identity)
                 {
-                    m_rankByIdentity[unknown.get()] = entry.Rank;
+                    m_rankByIdentity[entry.Identity] = entry.Rank;
                 }
             }
         }
 
-        m_ranks.push_back({ item, rank });
-        if (auto unknown = item.try_as<::IUnknown>())
-        {
-            m_rankByIdentity[unknown.get()] = rank;
-        }
+        AddRanked(item, rank);
         return true;
     }
 
@@ -1290,9 +1295,16 @@ namespace ShapingHelpers
 
         if (deferPlacement)
         {
+            // A full re-rank is already due, and it re-orders this item too.
+            if (m_rerankAllPending)
+            {
+                return false;
+            }
+
             int32_t oldRank = 0;
             bool wasShared = false;
             EvictEntry(item, oldRank, wasShared);
+            m_rerankAllPending = ShouldRerankAll();
             return false;
         }
 
@@ -1338,11 +1350,10 @@ namespace ShapingHelpers
         bool& wasShared)
     {
 
-        auto const identity = item.try_as<::IUnknown>();
+        void* const identity = IdentityOf(item);
         auto const found = std::find_if(m_ranks.begin(), m_ranks.end(), [&](RankEntry const& entry)
         {
-            return entry.Item == item ||
-                (identity && entry.Item.try_as<::IUnknown>() == identity);
+            return entry.Item == item || (identity && entry.Identity == identity);
         });
         if (found == m_ranks.end())
         {
@@ -1354,7 +1365,7 @@ namespace ShapingHelpers
         m_ranks.erase(found);
         if (identity)
         {
-            m_rankByIdentity.erase(identity.get());
+            m_rankByIdentity.erase(identity);
         }
 
         // Keep the ranks dense: re-placing an item that did not move must hand every row back the
@@ -1371,9 +1382,9 @@ namespace ShapingHelpers
                 if (entry.Rank > rank)
                 {
                     --entry.Rank;
-                    if (auto unknown = entry.Item.try_as<::IUnknown>())
+                    if (entry.Identity)
                     {
-                        m_rankByIdentity[unknown.get()] = entry.Rank;
+                        m_rankByIdentity[entry.Identity] = entry.Rank;
                     }
                 }
             }
@@ -1383,7 +1394,7 @@ namespace ShapingHelpers
         return true;
     }
 
-    void CustomSortRankAdapter::PlaceEvicted()
+    bool CustomSortRankAdapter::ShouldRerankAll() const noexcept
     {
         // Re-placing costs about n comparer calls per item, a full re-rank about n log n.
         size_t log2Count = 0;
@@ -1391,7 +1402,12 @@ namespace ShapingHelpers
         {
             ++log2Count;
         }
-        if (m_evicted.size() > log2Count)
+        return m_evicted.size() > log2Count;
+    }
+
+    void CustomSortRankAdapter::PlaceEvicted()
+    {
+        if (m_rerankAllPending || ShouldRerankAll())
         {
             RerankAll();
             return;

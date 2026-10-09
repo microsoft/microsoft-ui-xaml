@@ -1116,6 +1116,135 @@ bool ShapedItemsSource::TryGetGroupIdentity(
     return RowIdentity::TryGetGroupIdentity(key, m_groupIdentitySelector, identity, reason);
 }
 
+std::vector<ShapingHelpers::KeyedBucket> ShapedItemsSource::BucketizeGroupsOrThrow(std::vector<winrt::IInspectable> const& items)
+{
+    std::vector<ShapingHelpers::KeyedBucket> keyedBuckets;
+    wchar_t const* rejectReason = nullptr;
+    const bool grouped = ShapingHelpers::BucketizeToGroups(
+        items,
+        [this](winrt::IInspectable const& item) -> winrt::IInspectable
+        {
+            try { return m_groupSelector(item); }
+            catch (...) { return nullptr; }
+        },
+        [this](winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason)
+        {
+            return TryGetGroupIdentity(key, identity, reason);
+        },
+        [this](winrt::IInspectable const& existingKey, winrt::IInspectable const& newKey)
+        {
+            // Not a collision when the app supplied a groupIdentitySelector (the identity is
+            // authoritative, so two distinct key instances mapping to the same identity is
+            // intentional — e.g. a per-item composite key) or the keys are genuinely equal.
+            return m_groupIdentitySelector || RowIdentity::GroupKeysEqual(existingKey, newKey);
+        },
+        keyedBuckets,
+        rejectReason);
+
+    if (!grouped)
+    {
+        // Spec contract (same shape as the row-identity fail-fast): an unresolvable,
+        // unstable, or colliding *group* identity is a caller bug — the GroupBy(...) key
+        // selector (and optional groupIdentitySelector) must produce a stable, non-empty
+        // string identity per bucket, without two distinct group-key instances collapsing
+        // to the same identity unless the app opted in via groupIdentitySelector. Silently
+        // flattening the projection would let the app ship with grouping mysteriously "not
+        // working" and no diagnostic.
+        //
+        // Thrown, not asserted: caller data, and an assert would skip the unwind in checked builds.
+        LogIdentityProjectionDisabled(rejectReason);
+        winrt::hstring message = Diagnostic(L"GroupBy key selector produced an invalid group identity");
+        if (rejectReason)
+        {
+            message = message + L": " + winrt::hstring{ rejectReason };
+        }
+        throw winrt::hresult_invalid_argument(message);
+    }
+
+    return keyedBuckets;
+}
+
+winrt::com_ptr<ShapedGroup> ShapedItemsSource::AcquireCachedGroup(ShapingHelpers::KeyedBucket const& bucket)
+{
+    winrt::com_ptr<ShapedGroup> group;
+    auto cacheIt = m_groupCache.find(bucket.Identity);
+    if (cacheIt != m_groupCache.end())
+    {
+        // Deliberately keep the cached group's existing key object. The cache is keyed by
+        // identity, so the incoming key is identity-equivalent to the one already held, but it
+        // is a different object whenever the key selector minted a fresh one or the bucket
+        // merged several equal keys. Rebinding it would churn the object ICollectionViewGroup
+        // publishes as Group() on every reshape, for no gain.
+        group = cacheIt->second;
+    }
+    else
+    {
+        group = winrt::make_self<ShapedGroup>(bucket.Key, bucket.Identity);
+        m_groupCache.emplace(bucket.Identity, group);
+    }
+
+    group->GroupKey(bucket.Identity);
+    return group;
+}
+
+void ShapedItemsSource::PruneGroupCache(std::unordered_set<winrt::hstring> const& liveKeys)
+{
+    for (auto it = m_groupCache.begin(); it != m_groupCache.end();)
+    {
+        if (liveKeys.find(it->first) == liveKeys.end())
+        {
+            it = m_groupCache.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
+void ShapedItemsSource::AttachGroupSource(std::vector<winrt::IInspectable> const& groups)
+{
+    if (!m_groupedAdapter)
+    {
+        m_groupedAdapter = std::make_shared<GroupedSourceAdapter>();
+    }
+    else
+    {
+        // A prior grouped projection already attached the adapter to m_groupSource. Detach it
+        // quietly so the ReplaceAll below fires NO subscription: the Source() re-attach then
+        // rebuilds the adapter exactly once against the fully-populated groups. Leaving it
+        // attached would rebuild twice (ReplaceAll's subscription -> synchronous Rebuild, then a
+        // forced Refresh) and briefly publish the intermediate group set.
+        m_groupedAdapter->DetachSourceQuietly();
+    }
+
+    // Populate m_groupSource BEFORE (re-)attaching so the adapter's subscribe + synchronous
+    // Rebuild inside Source(value) sees a fully-loaded m_groupSource and publishes m_entries in
+    // one coherent Reset. Attaching to an empty (or stale) m_groupSource and then loading it
+    // caused an observable intermediate state: consumers saw the wrong entries, then a second
+    // Reset after the rebuild.
+    m_groupSource.ReplaceAll(groups);
+    m_groupedAdapter->Source(m_groupSource);
+}
+
+void ShapedItemsSource::ReleaseGroupedProjection()
+{
+    if (m_groupSource)
+    {
+        // Detach the adapter BEFORE clearing the internal group source. Otherwise Clear() fires
+        // the adapter's outer-source subscription, which rebuilds synchronously and raises an
+        // empty Reset into the ItemsRepeater still bound to the old grouped Entries (with realized
+        // rows) -- an assertion failure / fault mid-teardown. The caller's PublishProjection is the
+        // single controlled swap that moves the row axis to the new projection.
+        if (m_groupedAdapter)
+        {
+            m_groupedAdapter->DetachSourceQuietly();
+        }
+        m_groupSource.Clear();
+    }
+    m_groupCache.clear();
+}
+
 void ShapedItemsSource::RebuildUnshapedRows(std::vector<winrt::IInspectable> const& rows, wchar_t const* reason)
 {
     LogIdentityProjectionDisabled(reason);
@@ -1131,21 +1260,7 @@ void ShapedItemsSource::RebuildUnshapedRows(std::vector<winrt::IInspectable> con
     ClearFlatRowIdentityTracking();
 
     ReleaseHierarchyProjection();
-
-    if (m_groupSource)
-    {
-        // Detach the adapter BEFORE clearing the internal group source. Otherwise Clear() fires
-        // the adapter's outer-source subscription, which rebuilds synchronously and raises an
-        // empty Reset into the ItemsRepeater still bound to the old grouped Entries (with realized
-        // rows) -- an assertion failure / fault mid-teardown. RaiseProjectionRebuilt below is the
-        // single controlled swap that moves the row axis to the flat projection.
-        if (m_groupedAdapter)
-        {
-            m_groupedAdapter->DetachSourceQuietly();
-        }
-        m_groupSource.Clear();
-    }
-    m_groupCache.clear();
+    ReleaseGroupedProjection();
     m_projectedAsGrouped = false;
     PublishProjection();
 }
@@ -1378,18 +1493,7 @@ void ShapedItemsSource::RebuildFlat(std::vector<winrt::IInspectable>& rows)
     // Releasing any prior grouped projection: switching grouped->flat must not retain the stale
     // group observable/cache. They are rebuilt from scratch by RebuildGrouped on the next GroupBy,
     // so holding them here only leaks the previous grouping (and its cached ShapedGroups).
-    if (m_groupSource)
-    {
-        // Detach the adapter before Clear() so its subscription does not re-enter Rebuild()
-        // synchronously and Reset the ItemsRepeater still bound to the old grouped Entries.
-        // RaiseProjectionRebuilt below performs the single controlled swap to the flat row axis.
-        if (m_groupedAdapter)
-        {
-            m_groupedAdapter->DetachSourceQuietly();
-        }
-        m_groupSource.Clear();
-    }
-    m_groupCache.clear();
+    ReleaseGroupedProjection();
     m_projectedAsGrouped = false;
     PublishProjection();
 }
@@ -1411,48 +1515,7 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
     // are applied per bucket below, preserving the group order while sorting within each group.
     ApplySort(rows, -1, m_pipeline.GroupOrder());
 
-    std::vector<ShapingHelpers::KeyedBucket> keyedBuckets;
-    wchar_t const* rejectReason = nullptr;
-    const bool grouped = ShapingHelpers::BucketizeToGroups(
-        rows,
-        [this](winrt::IInspectable const& item) -> winrt::IInspectable
-        {
-            try { return m_groupSelector(item); }
-            catch (...) { return nullptr; }
-        },
-        [this](winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason)
-        {
-            return TryGetGroupIdentity(key, identity, reason);
-        },
-        [this](winrt::IInspectable const& existingKey, winrt::IInspectable const& newKey)
-        {
-            // Not a collision when the app supplied a groupIdentitySelector (the identity is
-            // authoritative, so two distinct key instances mapping to the same identity is
-            // intentional — e.g. a per-item composite key) or the keys are genuinely equal.
-            return m_groupIdentitySelector || RowIdentity::GroupKeysEqual(existingKey, newKey);
-        },
-        keyedBuckets,
-        rejectReason);
-
-    if (!grouped)
-    {
-        // Spec contract (same shape as the row-identity fail-fast): an unresolvable,
-        // unstable, or colliding *group* identity is a caller bug — the GroupBy(...) key
-        // selector (and optional groupIdentitySelector) must produce a stable, non-empty
-        // string identity per bucket, without two distinct group-key instances collapsing
-        // to the same identity unless the app opted in via groupIdentitySelector. Silently
-        // flattening the projection would let the app ship with grouping mysteriously "not
-        // working" and no diagnostic.
-        //
-        // Thrown, not asserted: caller data, and an assert would skip the unwind in checked builds.
-        LogIdentityProjectionDisabled(rejectReason);
-        winrt::hstring message = Diagnostic(L"GroupBy key selector produced an invalid group identity");
-        if (rejectReason)
-        {
-            message = message + L": " + winrt::hstring{ rejectReason };
-        }
-        throw winrt::hresult_invalid_argument(message);
-    }
+    auto keyedBuckets = BucketizeGroupsOrThrow(rows);
 
     // Release any leftover hierarchy adapter, but only after bucketize: if that throws, the
     // previous projection must stay whole.
@@ -1477,66 +1540,17 @@ void ShapedItemsSource::RebuildGrouped(std::vector<winrt::IInspectable>& rows)
 
     for (auto& bucket : keyedBuckets)
     {
-        auto const& keyString = bucket.Identity;
         ApplySort(bucket.Items, m_pipeline.GroupOrder(), -1);
         flatRows.insert(flatRows.end(), bucket.Items.begin(), bucket.Items.end());
 
-        winrt::com_ptr<ShapedGroup> group;
-        auto cacheIt = m_groupCache.find(keyString);
-        if (cacheIt != m_groupCache.end())
-        {
-            // Deliberately keep the cached group's existing key object. The cache is keyed by
-            // identity, so the incoming key is identity-equivalent to the one already held, but it
-            // is a different object whenever the key selector minted a fresh one or the bucket
-            // merged several equal keys. Rebinding it would churn the object ICollectionViewGroup
-            // publishes as Group() on every reshape, for no gain.
-            group = cacheIt->second;
-        }
-        else
-        {
-            group = winrt::make_self<ShapedGroup>(bucket.Key, bucket.Identity);
-            m_groupCache.emplace(keyString, group);
-        }
-
-        group->GroupKey(bucket.Identity);
+        auto group = AcquireCachedGroup(bucket);
         group->SetItems(bucket.Items);
         groups.push_back(group.as<winrt::IInspectable>());
-        liveKeys.insert(keyString);
+        liveKeys.insert(bucket.Identity);
     }
 
-    for (auto it = m_groupCache.begin(); it != m_groupCache.end();)
-    {
-        if (liveKeys.find(it->first) == liveKeys.end())
-        {
-            it = m_groupCache.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
-
-    if (!m_groupedAdapter)
-    {
-        m_groupedAdapter = std::make_shared<GroupedSourceAdapter>();
-    }
-    else
-    {
-        // A prior grouped projection already attached the adapter to m_groupSource. Detach it
-        // quietly so the ReplaceAll below fires NO subscription: the Source() re-attach then
-        // rebuilds the adapter exactly once against the fully-populated groups. Leaving it
-        // attached would rebuild twice (ReplaceAll's subscription -> synchronous Rebuild, then a
-        // forced Refresh) and briefly publish the intermediate group set.
-        m_groupedAdapter->DetachSourceQuietly();
-    }
-
-    // Populate m_groupSource BEFORE (re-)attaching so the adapter's subscribe + synchronous
-    // Rebuild inside Source(value) sees a fully-loaded m_groupSource and publishes m_entries in
-    // one coherent Reset. Attaching to an empty (or stale) m_groupSource and then loading it
-    // caused an observable intermediate state: consumers saw the wrong entries, then a second
-    // Reset after the rebuild.
-    m_groupSource.ReplaceAll(groups);
-    m_groupedAdapter->Source(m_groupSource);
+    PruneGroupCache(liveKeys);
+    AttachGroupSource(groups);
 
     // The presented row axis under grouping is the adapter's computed ItemsSourceView, which has
     // no vector form. Keep Rows() maintained as the flat shaped projection anyway: without this
@@ -1573,15 +1587,7 @@ void ShapedItemsSource::RebuildHierarchical(std::vector<winrt::IInspectable>& ro
     ClearFlatRowIdentityTracking();
 
     // Release any prior grouped projection so its adapter stops publishing headers.
-    if (m_groupSource)
-    {
-        if (m_groupedAdapter)
-        {
-            m_groupedAdapter->DetachSourceQuietly();
-        }
-        m_groupSource.Clear();
-    }
-    m_groupCache.clear();
+    ReleaseGroupedProjection();
     m_hierarchyGroups.clear();
     ++m_hierarchyGeneration;
     m_rootBucketIndex.clear();
@@ -1616,37 +1622,8 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
     std::vector<winrt::IInspectable> roots = index->Roots;
     ApplySort(roots, -1, m_pipeline.GroupOrder());
 
-    std::vector<ShapingHelpers::KeyedBucket> keyedBuckets;
-    wchar_t const* degradeReason = nullptr;
-    const bool grouped = ShapingHelpers::BucketizeToGroups(
-        roots,
-        [this](winrt::IInspectable const& item) -> winrt::IInspectable
-        {
-            try { return m_groupSelector(item); }
-            catch (...) { return nullptr; }
-        },
-        [this](winrt::IInspectable const& key, winrt::hstring& identity, wchar_t const*& reason)
-        {
-            return TryGetGroupIdentity(key, identity, reason);
-        },
-        [this](winrt::IInspectable const& existingKey, winrt::IInspectable const& newKey)
-        {
-            return m_groupIdentitySelector || RowIdentity::GroupKeysEqual(existingKey, newKey);
-        },
-        keyedBuckets,
-        degradeReason);
-
-    if (!grouped)
-    {
-        // Same fail-fast contract as RebuildGrouped.
-        LogIdentityProjectionDisabled(degradeReason);
-        winrt::hstring message = Diagnostic(L"GroupBy key selector produced an invalid group identity");
-        if (degradeReason)
-        {
-            message = message + L": " + winrt::hstring{ degradeReason };
-        }
-        throw winrt::hresult_invalid_argument(message);
-    }
+    // Same fail-fast contract as RebuildGrouped.
+    auto keyedBuckets = BucketizeGroupsOrThrow(roots);
 
     // Roots bucket by bucket. Each bucket's roots must be contiguous: the adapter walks one
     // segment per bucket and the re-slice cuts entries at depth-0 rows.
@@ -1693,53 +1670,18 @@ void ShapedItemsSource::RebuildGroupedHierarchical(std::vector<winrt::IInspectab
 
     for (auto const& bucket : keyedBuckets)
     {
-        auto const& keyString = bucket.Identity;
-
-        winrt::com_ptr<ShapedGroup> group;
-        auto cacheIt = m_groupCache.find(keyString);
-        if (cacheIt != m_groupCache.end())
-        {
-            group = cacheIt->second;
-        }
-        else
-        {
-            group = winrt::make_self<ShapedGroup>(bucket.Key, bucket.Identity);
-            m_groupCache.emplace(keyString, group);
-        }
-
-        group->GroupKey(bucket.Identity);
+        auto group = AcquireCachedGroup(bucket);
         // Items (roots plus visible descendants) are filled by ResliceGroupsFromHierarchy.
         m_hierarchyGroups.push_back(group);
         groups.push_back(group.as<winrt::IInspectable>());
-        liveKeys.insert(keyString);
+        liveKeys.insert(bucket.Identity);
     }
 
-    for (auto it = m_groupCache.begin(); it != m_groupCache.end();)
-    {
-        if (liveKeys.find(it->first) == liveKeys.end())
-        {
-            it = m_groupCache.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
+    PruneGroupCache(liveKeys);
 
     // Fill groups BEFORE attaching the grouped adapter so it publishes one coherent Reset.
     ResliceGroupsFromHierarchy();
-
-    if (!m_groupedAdapter)
-    {
-        m_groupedAdapter = std::make_shared<GroupedSourceAdapter>();
-    }
-    else
-    {
-        m_groupedAdapter->DetachSourceQuietly();
-    }
-
-    m_groupSource.ReplaceAll(groups);
-    m_groupedAdapter->Source(m_groupSource);
+    AttachGroupSource(groups);
 
     // Rows(): visible rows in group order, headers excluded.
     m_rows.ReplaceAll(VisibleHierarchicalRows());

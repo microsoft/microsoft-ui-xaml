@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -19,29 +17,8 @@ namespace TableViewSampleApp.Pages;
 // Filter, Sort and GroupBy are stages on the same sources and compose with the hierarchy.
 public sealed partial class HierarchyPage : Page
 {
-    public const string PerfTriggerFileName = "autorun-perf";
-    public const string PerfResultsFileName = "perf-results.txt";
     private const int PerfCount = 100_000;
     private const int PerfRuns = 3;
-
-    public static bool AutoPerf { get; set; }
-
-    // LocalFolder when the app has package identity; otherwise the exe's directory (the build
-    // produces an unpackaged app, where ApplicationData.Current throws).
-    public static string DataDirectory
-    {
-        get
-        {
-            try
-            {
-                return Windows.Storage.ApplicationData.Current.LocalFolder.Path;
-            }
-            catch (Exception)
-            {
-                return AppContext.BaseDirectory;
-            }
-        }
-    }
 
     private readonly ObservableCollection<Employee> _employees = new(HierarchyData.Generate(200));
     private TableViewSource _managerSource = null!;
@@ -72,16 +49,6 @@ public sealed partial class HierarchyPage : Page
 
         _ready = true;
         UpdateStatus();
-
-        Loaded += async (_, _) =>
-        {
-            if (AutoPerf)
-            {
-                AutoPerf = false;
-                await RunPerfAsync();
-                Application.Current.Exit();
-            }
-        };
     }
 
     private static void BuildColumns(TableView table)
@@ -393,7 +360,7 @@ public sealed partial class HierarchyPage : Page
     private async void Perf_Click(object sender, RoutedEventArgs e) => await RunPerfAsync();
 
     // Times ParentBy/Sort/ExpandAllRows vs a GroupBy(Dept) baseline over 100k rows, each step with
-    // a sync layout pass. Reports medians of 3 runs to perf-results.txt.
+    // a sync layout pass. Shows medians of 3 runs in the status text.
     private async Task RunPerfAsync()
     {
         if (_perfRunning)
@@ -454,15 +421,6 @@ public sealed partial class HierarchyPage : Page
         }
 
         StatusText.Text = string.Join("\n", lines);
-        try
-        {
-            File.WriteAllLines(Path.Combine(DataDirectory, PerfResultsFileName), lines, new UTF8Encoding(false));
-        }
-        catch (Exception ex)
-        {
-            StatusText.Text += "\ncould not write results file: " + ex.Message;
-        }
-
         PerfButton.IsEnabled = true;
         _perfRunning = false;
     }

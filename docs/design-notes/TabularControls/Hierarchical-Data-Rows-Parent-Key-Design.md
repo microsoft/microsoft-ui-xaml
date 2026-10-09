@@ -57,6 +57,9 @@ runtimeclass TableViewSource
     TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
 
     TableViewSource ClearParentBy();
+
+    // Opt-in (default false). Reshapes when an item's PropertyChanged moves a value a verb reads.
+    Boolean IsLiveShaping { get; set; };
 }
 
 runtimeclass TableView
@@ -75,6 +78,26 @@ The names follow the rule the source already uses: the verb is named after the t
 configured, and the removal verb mirrors it (`Filter`/`ClearFilter`, `GroupBy`/`ClearGroupBy`).
 `ParentBy` takes the `GroupBy` form: it reads as "parent the rows by these keys", and
 `ClearParentBy` removes it as `ClearGroupBy` removes `GroupBy`.
+
+`IsLiveShaping` applies to every shaping verb, flat or hierarchical:
+
+- **Default `false`.** Without it, an in-place property edit takes effect at the next collection
+  change or reshape.
+- **What is observed.** Each source item that implements `INotifyPropertyChanged` gets one
+  subscription (held weakly where the item supports weak references). Per item, the source keeps a
+  snapshot of what the declared verbs read: the filter result, the group key, the sort keys, and,
+  under `ParentBy`, the node key and parent key. A `PropertyChanged` that leaves the snapshot
+  unchanged is ignored.
+- **When it reshapes.** A change that moves the snapshot posts one reshape to the source's
+  dispatcher; further changes in the same turn coalesce into it. A change raised on another thread
+  is marshaled to the source's thread first. The reshape re-applies the whole pipeline: filter,
+  sort, group and parent relation.
+- **Edits.** While a cell edit is in progress the reshape is held, and it runs once the edit
+  closes, so live data never ends the user's edit.
+- **Turning it on** subscribes every item and posts one catch-up reshape, because edits made while
+  it was off were not tracked. Turning it off revokes every subscription.
+- **Cost.** One subscription and one snapshot per item, kept in step with collection changes, plus
+  one snapshot capture per changed item while no reshape is pending.
 
 ## 3. Key semantics
 
@@ -110,7 +133,7 @@ Evaluated over the **whole unfiltered source** on every rebuild.
 | Case | Behaviour | Rationale |
 | --- | --- | --- |
 | Parent key is null, or an empty string | Root | The usual "no parent" encoding. |
-| Parent key matches no item's key (**orphan**) | Root | Matches Syncfusion, DevExpress WPF (default) and AG Grid. DevExtreme and Kendo hide orphans instead (§14). Treating them as roots also covers "root value" conventions (`ParentId = 0` or `-1`) without a `SelfRelationRootValue` knob, and keeps partially loaded data visible. |
+| Parent key matches no item's key (**orphan**) | Root | Matches Syncfusion, DevExpress WPF (default) and AG Grid. DevExtreme hides orphans instead (§14). Treating them as roots also covers "root value" conventions (`ParentId = 0` or `-1`) without a `SelfRelationRootValue` knob, and keeps partially loaded data visible. |
 | Two items with the same key | Throw `E_INVALIDARG` naming the key | A key must name one parent. Either winning silently would reparent rows at random. |
 | Key selector returns null or an empty string | Throw `E_INVALIDARG` | An item with no key cannot be anyone's parent, and expansion intent cannot be stored for it. |
 | Item is its own parent | Throw `E_INVALIDARG` (cycle) | |
@@ -218,7 +241,7 @@ Every item has exactly one parent, and the app supplies the key, so no path key 
 
 ### 5.2 Baseline, bulk verbs, and redeclaration
 
-- The baseline is **collapsed** (`SetDefaultExpanded(false)` in the adapter constructor). Any
+- The baseline is **collapsed** (`m_expansion.SetAllExpanded(false)` in the adapter constructor). Any
   source can hold more rows than should be realized on first paint.
 - `ExpandAllRows` / `CollapseAllRows` move the baseline. They call no app code: the index already
   exists, so the cost is only the size of the visible axis. Moving the baseline changes persistent
@@ -232,64 +255,85 @@ Every item has exactly one parent, and the app supplies the key, so no path key 
 ### 5.3 Pruning: the key set is complete
 
 A flat source always produces the full set of keys, so intent is pruned with a plain whole-set
-retain. After each rebuild:
+retain. After a publish over a new `ParentStructure` (§6.1):
 
 ```
-m_expansion.RetainOnly(allKeysInUnfilteredSource)
+m_expansion.RetainOnly(index->Structure->KeyByItem values)
 ```
 
 The prune set is the **unfiltered** source, so a node hidden by a filter keeps its intent. This is
-the grouping rule, and it is correct for the same reason: the live-key set is complete.
+the grouping rule, and it is correct for the same reason: the live-key set is complete. A reshape
+that reuses the same structure has the same key set, so it skips the prune.
 
 ## 6. Architecture
 
 The feature is split into four layers, each depending only on the ones above it.
 
 ```
-Layer 1  TabularShaping      ParentKeyIndex (pure, headless): build + validate + filter-with-ancestors
-Layer 2  ShapedItemsSource   owns source observation; filter/sort; builds the index; bucketizes roots
+Layer 1  TabularShaping      ParentStructure + ParentKeyIndex (pure, headless): validate; filter + sort
+Layer 2  ShapedItemsSource   owns source observation; builds/reuses the structure and the index; bucketizes roots
 Layer 3  HierarchicalSourceAdapter   walks the index -> visible rows + descriptors; splices toggles
 Layer 4  RowMetadataProvider / TableView / TableViewRow / peers   read row metadata; drive expansion
 ```
 
-### 6.1 Layer 1 — `ParentKeyIndex`
+### 6.1 Layer 1 — `ParentStructure` and `ParentKeyIndex`
+
+Two stages. The **structure** is the validated tree over the unfiltered source and is independent
+of filter and sort, so reshapes reuse it. The **index** is one filtered, sorted reading of it.
 
 ```cpp
 namespace ShapingHelpers
 {
+    struct ParentStructure
+    {
+        static constexpr size_t Root = SIZE_MAX;
+        std::vector<winrt::IInspectable> Rows;                          // unfiltered, source order
+        std::unordered_map<void*, std::wstring> KeyByItem;              // item ABI -> node key (complete)
+        std::unordered_map<std::wstring_view, size_t> IndexByKey;       // node key -> position in Rows
+        std::vector<std::wstring const*> NodeKeys;                      // per row
+        std::vector<size_t> ParentIndex;                                // per row; Root for roots/orphans
+        std::vector<std::vector<size_t>> ChildIndices;                  // per row, source order
+        std::vector<size_t> RootIndices;
+    };
+
     struct ParentKeyIndex
     {
         std::vector<winrt::IInspectable> Roots;                                          // shaped order
-        std::unordered_map<std::wstring, std::vector<winrt::IInspectable>> Children;     // parent node key -> shaped children
-        std::unordered_map<void*, std::wstring> KeyByItem;                               // item ABI -> node key
-        std::unordered_set<std::wstring> UnfilteredKeys;                                 // unfiltered; for pruning (§5.3)
+        std::unordered_map<std::wstring_view, std::vector<winrt::IInspectable>> Children; // parent node key -> shaped children
         std::unordered_set<std::wstring> ContextKeys;                                    // filter-retained ancestors (§4.2)
+        std::shared_ptr<const ParentStructure> Structure;                                // owns the keys
     };
 
-    // `sortedRows` is the UNFILTERED source, already sorted. `filter` may be empty.
-    // Returns false with `error` set on duplicate key, null key, self-parent or cycle.
-    bool BuildParentKeyIndex(
-        std::vector<winrt::IInspectable> const& sortedRows,
-        KeySelector const& keySelector,
-        KeySelector const& parentKeySelector,
-        ParentKeyFilter const& filter,
-        ParentKeyIndex& out,
-        winrt::hstring& error);
+    // Runs both selectors once per row. False with `error` on duplicate/null key, self-parent or cycle.
+    bool BuildParentStructure(rows, keySelector, parentKeySelector, ParentStructure& out, winrt::hstring& error);
+
+    // Re-runs the selectors over structure.Rows; true when every key and parent is unchanged.
+    // Object (reference-identity) keys always return false.
+    bool ParentStructureStillMatches(structure, keySelector, parentKeySelector);
+
+    // Runs no selector. Empty filter/sort = none. Sort orders each sibling list (roots only if sortRoots).
+    void BuildParentKeyIndex(shared_ptr<const ParentStructure>, ParentKeyFilter, SiblingSorter, bool sortRoots, ParentKeyIndex& out);
 }
 ```
 
-Steps, all O(n) apart from the incoming sort:
+`BuildParentStructure`, all O(n):
 
-1. Evaluate both selectors once per item, holding every returned key object until the build ends
-   (§3.1), and cache the node keys and a local parent-index array. Reject a null or duplicate key.
-2. Classify each item as a root (null, empty or orphan parent key) or a child of `parentKey`.
-3. Check reachability from the roots (§3.2). Reject cycles.
-4. If there is a filter, compute the kept set as matches plus ancestors, and record `ContextKeys`.
-5. Bucket the kept items into `Roots` / `Children` stably, which preserves the sort (§4.1).
+1. Evaluate the key selector once per item, holding every returned key object until the build ends
+   (§3.1). Reject a null or duplicate key.
+2. Evaluate the parent selector; resolve it to a row position, or `Root` for a null, empty or
+   orphan parent key. Reject a self-parent.
+3. Bucket child lists in source order, then check reachability from the roots (§3.2). Reject cycles.
 
-The index is **immutable once built** and handed to the adapter as
-`std::shared_ptr<const ParentKeyIndex>`. The adapter can therefore splice against it later without
-calling back into layer 2 or app code.
+`BuildParentKeyIndex`:
+
+1. If there is a filter, compute the kept set as matches plus ancestors, and record `ContextKeys`.
+2. Emit the kept roots and each kept child list in source order, then sort each list of two or more
+   with the `SiblingSorter` callback, stably (§4.1). Roots are left in source order when
+   `sortRoots` is false, so layer 2 can bucket them for grouping (§4.3).
+
+Both are **immutable once built**. The index is handed to the adapter as
+`std::shared_ptr<const ParentKeyIndex>` and keeps its structure alive, so the adapter can splice
+against it later without calling back into layer 2 or app code.
 
 This is the testable core of the feature and has no dependency on XAML, a dispatcher or the adapter.
 
@@ -302,12 +346,14 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
   adapter: its index and intent are cleared and the engine drops its reference, so the last visible
   rows are not kept alive. The previous row-metadata provider shares ownership until the projection
   swap replaces it; the next declaration creates a fresh adapter.
-- `RebuildHierarchical(rows)`: `ApplySort(rows)` over the unfiltered rows, `BuildParentKeyIndex(...)`
-  (throw on failure with the diagnostic), then `m_hierarchicalAdapter->SetIndex(index)`. Rebuild
-  **filters inside the index build**, not before it, because ancestor retention needs the unfiltered
-  parent chain.
-- `RebuildGroupedHierarchical(rows)`: the same index, then bucketize `index.Roots`. The
-  bucket-ordered roots replace `index.Roots` before the index is handed over.
+- `RebuildHierarchical(rows)`: reuse the retained `ParentStructure` when allowed (see below), or
+  build one with `BuildParentStructure` (throw on failure with the diagnostic); then
+  `BuildParentKeyIndex(structure, filter, sort, sortRoots = true)`, which sorts each sibling list
+  through `ApplySort`; then `m_hierarchicalAdapter->SetIndex(index)`. Rows stay unfiltered and in
+  source order up to the index build, because ancestor retention needs the unfiltered parent chain.
+- `RebuildGroupedHierarchical(rows)`: the same, with `sortRoots = false`; the roots are then
+  bucketized as `GroupBy` does and the bucket-ordered roots replace `index.Roots` before the index
+  is handed over.
 - **Source changes.** Layer 2 already observes the source. v1 answers every change with a full
   `Refresh()` while a hierarchy is declared. **The flat incremental fast paths
   (`ApplyIncrementalChange`, `ApplyIncrementalVectorChange`) bail out when a parent relation is
@@ -355,7 +401,10 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
   `RemoveRows` keep those structures consistent as a set. `ProjectionChanged` is raised once per
   coherent publish; rebuilds requested during a publish are coalesced (`m_rebuildInFlight`). The
   baseline is collapsed.
-- **Pruning.** `RetainOnly(index.UnfilteredKeys)` (§5.3).
+- **Pruning.** After a publish over a structure it has not pruned against yet, the adapter retains
+  only the keys in `index->Structure->KeyByItem` (§5.3).
+- **Threading.** The adapter owns an `ItemsSourceView` and must be created on a thread with a
+  `DispatcherQueue` (`RPC_E_WRONG_THREAD` otherwise); unlike layer 1 it is not headless.
 
 `NodeRow`, filled during the walk at no extra cost:
 
@@ -399,7 +448,7 @@ back to one Rebuild and a single Reset.
 | Component | Role |
 | --- | --- |
 | `TableViewSource.idl` | `ParentBy` / `ClearParentBy`. |
-| `ParentKeyIndex` (layer 1) | Build, validate and filter the relation (§6.1). |
+| `ParentKeyIndex` / `ParentStructure` (layer 1) | Validate the relation; filter and sort it (§6.1). |
 | `ShapedItemsSource` hierarchy paths | Index build, filter inside the build, incremental bail-out, intent reset on redeclaration, adapter release on retraction (§6.2). |
 | `HierarchicalSourceAdapter` | Walk, splice and publish the visible rows (§6.3). |
 | `ShapedGroup` + `IGroupChildCount`, `ResliceGroupsFromHierarchy` | Grouped composition (§4.3). |
@@ -477,8 +526,8 @@ to defer. Grouping over a flat source already pays O(n) per rebuild, so this add
 cost.
 
 The perf gate is the **100k perf** button on the sample's Hierarchical rows page
-(`Samples/TableViewSampleApp/HierarchyPage.xaml.cs`, `RunPerfAsync`), also run unattended by creating
-an `autorun-perf` file next to the exe (writes `perf-results.txt`). It generates 100,000 flat employees
+(`Samples/TableViewSampleApp/Pages/HierarchyPage.xaml.cs`, `RunPerfAsync`), which reports its results in
+the page status text. It generates 100,000 flat employees
 (branching 3) and times `ParentBy`, `Sort(Name)` and `ExpandAllRows` against a `GroupBy(Dept)`,
 `Sort(Name)`, `ExpandAllGroups` baseline over the same rows. Groups start expanded, so the baseline
 collapses them (untimed) before the timed `ExpandAllGroups`; both expand steps then realize the same
@@ -529,8 +578,9 @@ department, and expand or collapse all. The **100k perf** button times the 100k-
   Extracting the subset it uses (`TryGetNodeRow`, `TryGetNodeRowForItem`, `TryGetIndexForNodeKey`,
   `IsNodeExpanded`, `SetNodeExpanded`, `ExpandAll`, `CollapseAll`, `ExpandSubtree`) into an interface
   would let another adapter plug in; it pairs naturally with the child-provider seam above.
-- **Headless tests.** `ParentKeyIndex` and the adapter have no dependency on XAML or the
-  dispatcher-bound control, but are exercised only through the public API and UI (§12).
+- **Headless tests.** `ParentStructure` / `ParentKeyIndex` have no dependency on XAML or a
+  dispatcher, and the adapter needs only a UI-thread `DispatcherQueue` (§6.3), but both are
+  exercised only through the public API and UI (§12).
   Unit tests for index building, filtering and splice/descriptor coherence would be a cheaper
   regression net.
 - **App-defined enum keys.** A non-WinRT enum is compared by reference identity (§3.1). Keying it by
@@ -551,7 +601,7 @@ input; not part of this change), the perf button (§9) and manual keyboard and
 frozen-gutter checks. The list below is the coverage those map to (layers 1 and 3 are exercised
 through the public API rather than headless):
 
-1. **`BuildParentKeyIndex`**: roots (null, empty string, orphan, `0` with no key 0); value vs.
+1. **`BuildParentStructure` / `BuildParentKeyIndex`**: roots (null, empty string, orphan, `0` with no key 0); value vs.
    object keys; WinRT enum and `Point` keys boxed afresh per call; fresh object keys (identity, never
    a spurious duplicate); app-defined enum keys; `Int32` vs `Int64` mismatch; duplicate key (naming
    the value), null key, self-parent and cycle all throw, and the cycle error names a key on the
@@ -581,15 +631,15 @@ through the public API rather than headless):
 
 ## 14. Prior art behind decisions 2–4
 
-Sources: the official docs, or the product source where the docs were unavailable. Entries marked
-_inferred_ come from reading source code; they are not documented behaviour.
+Sources: each product's public documentation. "Not documented" means the documentation does not
+state the behaviour.
 
 **Orphans (a parent key that matches no item).**
 
 | Framework | Root rule | Orphan |
 | --- | --- | --- |
 | DevExtreme TreeList | `parentId == rootValue` (default `0`); null is treated as `rootValue` | Hidden, with its subtree |
-| Kendo TreeList | `parentId` is null, or the type's default value | Hidden (_inferred_) |
+| Kendo TreeList | `parentId` is null, or the type's default value | Not documented |
 | Syncfusion EJ2 TreeGrid | Null parent | Root |
 | Syncfusion SfTreeGrid | `SelfRelationRootValue`, or a parent that matches no key | Root |
 | DevExpress WPF TreeListView | `RootValue`, default null, meaning "matches no key" | Root while `RootValue` is null; hidden once it is set |
@@ -611,6 +661,6 @@ _inferred_ come from reading source code; they are not documented behaviour.
 | Framework | Auto-expands ancestors of matches | Prior expansion after the filter clears |
 | --- | --- | --- |
 | DevExtreme | Yes: `expandNodesOnFiltering`, default `true` | Lost (resets to collapsed) |
-| Telerik WPF RadTreeListView | Yes: `AutoExpandItemsAfterFilter`, default `true` | Unverified |
-| DevExpress WPF | Opt-in: `ExpandNodesOnFiltering` | Unverified |
-| Kendo, Syncfusion EJ2, AG Grid | No | Kept (_inferred_) |
+| Telerik WPF RadTreeListView | Yes: `AutoExpandItemsAfterFilter`, default `true` | Not documented |
+| DevExpress WPF | Opt-in: `ExpandNodesOnFiltering` | Not documented |
+| Kendo, Syncfusion EJ2, AG Grid | Not documented | Not documented |
