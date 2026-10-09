@@ -42,8 +42,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     {
         [TestMethod]
         [TestProperty("IsolationLevel", "Method")]
-        [TestProperty("Description", "Missing resources in the stock deferred TableView template retain actionable source diagnostics.")]
-        public void VerifyDeferredTemplateResourceMissIncludesSetupGuidance()
+        [TestProperty("Description", "Missing resources in the stock deferred TableView template retain the generic parse diagnostic.")]
+        public void VerifyDeferredTemplateResourceMissKeepsGenericDiagnostic()
         {
             Grid host = null;
             RunOnUIThread.Execute(() =>
@@ -85,18 +85,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsNotNull(error, "The missing header brush must fail during stock template realization.");
                     Verify.AreEqual(unchecked((int)0x802B000A), error.HResult);
                     Verify.IsTrue(error.Message.Contains("TabularSurfaceHeaderBackgroundBrush"));
-                    Verify.IsTrue(
-                        error.Message.Contains("Source: 'ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/generic.xaml'") ||
-                        error.Message.Contains("Source: 'ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/generic_perf2026.xaml'"));
-                    Verify.IsTrue(error.Message.Contains("TabularControlsResources"));
-                    Verify.IsTrue(error.Message.Contains("Application.Resources.MergedDictionaries"));
-                    Verify.IsTrue(error.Message.Contains("equivalent resources"));
+                    Verify.IsTrue(error.Message.Contains("Cannot find a Resource with the Name/Key "));
+                    Verify.IsTrue(error.Message.Contains("[Line: "));
+                    Verify.IsFalse(error.Message.Contains("TabularControlsResources"));
                 }
                 finally
                 {
-                    host.Children.Clear();
-                    Content = null;
-                    Application.Current.Resources = originalResources;
+                    try
+                    {
+                        host.Children.Clear();
+                        Content = null;
+                    }
+                    finally
+                    {
+                        Application.Current.Resources = originalResources;
+                    }
                 }
             });
         }

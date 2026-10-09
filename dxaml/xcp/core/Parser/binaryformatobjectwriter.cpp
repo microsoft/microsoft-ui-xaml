@@ -17,45 +17,6 @@
 
 using namespace DirectUI;
 
-namespace
-{
-    _Check_return_ HRESULT OriginateResourceLookupError(
-        _In_ CCoreServices* core,
-        _In_ const xstring_ptr& resourceKey,
-        _In_ ObjectWriterContext* context)
-    {
-        auto resourceUri = context->get_BaseUri();
-        if (!resourceUri)
-        {
-            resourceUri = context->get_XamlResourceUri();
-        }
-
-        xstring_ptr sourceUri;
-        if (resourceUri)
-        {
-            const HRESULT uriResult = resourceUri->GetCanonical(&sourceUri);
-            if (FAILED(uriResult))
-            {
-                TRACE_HR_NORETURN(uriResult);
-                sourceUri.Reset();
-            }
-        }
-
-        if (!resourceKey.IsNullOrEmpty() &&
-            (sourceUri.Equals(L"ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/generic.xaml", xstrCompareCaseInsensitive) ||
-             sourceUri.Equals(L"ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/generic_perf2026.xaml", xstrCompareCaseInsensitive) ||
-             sourceUri.Equals(L"ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/themeresources.xaml", xstrCompareCaseInsensitive) ||
-             sourceUri.Equals(L"ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/themeresources_perf2026.xaml", xstrCompareCaseInsensitive)))
-        {
-            // Insert the key last so its percent sequences are not treated as formatting parameters.
-            return CErrorService::OriginateInvalidOperationError(
-                core, AG_E_PARSER_TABULAR_RESOURCE_NOT_FOUND, sourceUri, resourceKey);
-        }
-
-        return CErrorService::OriginateInvalidOperationError(core, AG_E_PARSER_FAILED_RESOURCE_FIND, resourceKey);
-    }
-}
-
 _Check_return_ HRESULT BinaryFormatObjectWriter::Create(
     _In_ const std::shared_ptr<XamlSchemaContext>& spSchemaContext,
     _In_ const std::shared_ptr<XamlSavedContext>& spSavedContext,
@@ -1783,9 +1744,10 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideStaticResourceReference(
             });
 
             xstring_ptr currentUri;
-            if (const auto baseUri = m_spContext->get_BaseUri())
+            // BaseUri is null while expanding a deferred template.
+            if (const auto sourceUri = m_spContext->get_BaseUri() ? m_spContext->get_BaseUri() : m_spContext->get_XamlResourceUri())
             {
-                IGNOREHR(UriXStringGetters::GetPath(baseUri, &currentUri));
+                IGNOREHR(UriXStringGetters::GetPath(sourceUri, &currentUri));
             }
 
             IFC_RETURN(core->GetResourceLookupLogger()->Start(staticResourceKey, currentUri));
@@ -1796,10 +1758,10 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideStaticResourceReference(
         std::vector<std::wstring> extraInfo;
         extraInfo.push_back(std::wstring(traceMessage.GetBuffer()));
 
-        HRESULT xr = OriginateResourceLookupError(
+        HRESULT xr = CErrorService::OriginateInvalidOperationError(
             core,
-            staticResourceKey,
-            m_spContext.get());
+            AG_E_PARSER_FAILED_RESOURCE_FIND,
+            staticResourceKey);
         IFC_RETURN_EXTRA_INFO(m_spErrorService->WrapErrorWithParserErrorAndRethrow(xr, node.GetLineInfo()), &extraInfo);
     }
 
@@ -1872,9 +1834,10 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideThemeResourceValue(_In_ 
             });
 
             xstring_ptr currentUri;
-            if (const auto baseUri = m_spContext->get_BaseUri())
+            // BaseUri is null while expanding a deferred template.
+            if (const auto sourceUri = m_spContext->get_BaseUri() ? m_spContext->get_BaseUri() : m_spContext->get_XamlResourceUri())
             {
-                IGNOREHR(UriXStringGetters::GetPath(baseUri, &currentUri));
+                IGNOREHR(UriXStringGetters::GetPath(sourceUri, &currentUri));
             }
 
             IFC_RETURN(core->GetResourceLookupLogger()->Start(themeResourceKey, currentUri));
@@ -1885,10 +1848,10 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideThemeResourceValue(_In_ 
         std::vector<std::wstring> extraInfo;
         extraInfo.push_back(std::wstring(traceMessage.GetBuffer()));
 
-        HRESULT hr = OriginateResourceLookupError(
+        HRESULT hr = CErrorService::OriginateInvalidOperationError(
             core,
-            themeResourceKey,
-            m_spContext.get());
+            AG_E_PARSER_FAILED_RESOURCE_FIND,
+            themeResourceKey);
         IFC_RETURN_EXTRA_INFO(m_spErrorService->WrapErrorWithParserErrorAndRethrow(hr, node.GetLineInfo()), &extraInfo);
     }
 

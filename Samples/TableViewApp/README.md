@@ -34,17 +34,34 @@ rather than a workaround. For the standard defaults, merge it in `App.xaml` afte
 </Application.Resources>
 ```
 
-Applications can instead supply equivalent resources or a complete custom style/template; the
-diagnostic does not require a particular dictionary object. Compilation and construction can
-succeed before a required resource lookup fails during initial layout/style realization. A missing
-key in the Tabular defaults reports the original key and source URI, with conditional setup guidance;
-the wrapped parse error retains `0x802B000A` and its line/position.
+Applications can instead supply equivalent resources or a complete custom style/template; no
+particular dictionary object is enforced. Compilation and construction can succeed before a
+required resource lookup fails during initial layout/style realization. The exception message
+remains unchanged: it reports the missing key, `0x802B000A` and the parser line/position. An
+unhandled parse failure can surface as a `0xC000027B` stowed exception.
+
+If a `TableView` is constructed before any `TabularControlsResources` instance has successfully
+completed construction, the Tabular DLL logs conditional setup guidance to an attached debugger,
+once per process. This is an advisory hint, not proof that resources are missing or registered.
+Equivalent resources, custom templates and later registration remain valid. A previously constructed
+dictionary suppresses the hint even if it was never merged or has since been removed.
+
+For the referencing markup path in resource-lookup tracing, enable tracing early in the application
+constructor, before `InitializeComponent`:
+
+```csharp
+DebugSettings.IsXamlResourceReferenceTracingEnabled = true;
+InitializeComponent();
+```
+
+The trace can include the consuming document path for deferred templates. It is separate from the
+exception and does not identify where the resource must be defined; application, theme, merged or
+local dictionaries may supply it.
 
 If defaults are already configured, check the key, overrides and matching Tabular DLL/PRI. A missing
-required `DefaultStyleResourceUri` reports separate deployment/resource-map guidance: merging a
-dictionary cannot restore an unavailable package resource. These diagnostics do not register
-resources automatically or change the existing unhandled-error/fail-fast policy. Preserve the
-original HRESULT, key, URI and parser location when reporting a failure.
+required `DefaultStyleResourceUri` is a deployment/resource-map issue; merging a dictionary cannot
+restore an unavailable package resource. These diagnostics do not register resources automatically
+or change the existing unhandled-error/fail-fast policy.
 
 Each app instantiates `TableView` **twice on purpose**:
 
