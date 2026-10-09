@@ -118,10 +118,29 @@ namespace
 
 winrt::Size TableView::MeasureOverride(winrt::Size const& availableSize)
 {
-    auto desired = __super::MeasureOverride(availableSize);
-    ResolveColumnWidths();
-    QueueTerminalGridLineRefresh();
-    return desired;
+    const auto telemetryGeneration = m_telemetry.operationGeneration;
+    const auto scrollGeneration = m_scrollTelemetry.operationGeneration;
+    try
+    {
+        auto desired = __super::MeasureOverride(availableSize);
+        ResolveColumnWidths();
+        QueueTerminalGridLineRefresh();
+        QueueTelemetryLayout();
+        return desired;
+    }
+    catch (...)
+    {
+        FailOperationTelemetry(TableViewTelemetry::Operation::Layout,
+            telemetryGeneration, TableViewTelemetry::Stage::Layout, winrt::to_hresult());
+        if (TableViewTelemetry::IsOperationStarted(m_scrollTelemetry) &&
+            TableViewTelemetry::UpdateConfiguration(m_scrollTelemetry,
+                SnapshotTelemetryConfiguration(m_telemetry.configuration.content, m_telemetry.configuration.available)))
+        {
+            TableViewTelemetry::FailOperation(m_scrollTelemetry, TableViewTelemetry::Operation::Scroll,
+                scrollGeneration, TableViewTelemetry::Stage::Scroll, winrt::to_hresult());
+        }
+        throw;
+    }
 }
 
 // Requested from a cell panel's MeasureOverride when a realized cell's own measured width changed

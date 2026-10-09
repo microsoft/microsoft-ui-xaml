@@ -5,6 +5,7 @@
 
 #include <atomic>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -69,6 +70,41 @@ public:
     explicit ShapedItemsSource(winrt::IInspectable const& source);
     ~ShapedItemsSource();
 
+    // Optional per-verb computation ownership. Default callers allocate no operation.
+    class ShapingOperation
+    {
+    public:
+        enum class Status { Started, Succeeded, Failed, Cancelled };
+        using Callback = std::function<void(Status, std::optional<HRESULT>)>;
+        explicit ShapingOperation(Callback callback) : m_callback(std::move(callback)) {}
+        ~ShapingOperation();
+        ShapingOperation(ShapingOperation const&) = delete;
+        ShapingOperation& operator=(ShapingOperation const&) = delete;
+        void Start() noexcept;
+        void EndBody(bool completed) noexcept;
+        void Computed(bool completed) noexcept;
+        void Supersede() noexcept;
+        void Fail(std::optional<HRESULT> error = {}) noexcept;
+
+    private:
+        void Complete() noexcept;
+        Callback m_callback;
+        std::optional<HRESULT> m_error;
+        bool m_started{};
+        bool m_bodyEnded{};
+        bool m_computationEnded{};
+        bool m_computed{};
+        bool m_failed{};
+        bool m_superseded{};
+        bool m_finished{};
+    };
+    using ShapingOperationPtr = std::shared_ptr<ShapingOperation>;
+    void ObserveShapingFailure(HRESULT error) noexcept;
+    bool HasSortAxis(winrt::hstring const& token, winrt::Windows::Foundation::IUnknown const& keyIdentity) const noexcept
+    {
+        return m_pipeline.HasSortAxis(token, keyIdentity);
+    }
+
     // Subscribes to the source and builds the first projection. Separate from the constructor so
     // the owner can install its handlers first and therefore observe the very first projection.
     void Start();
@@ -89,26 +125,28 @@ public:
     // Filters are conjunctive. The untokenized overloads are the single-filter shorthand; the
     // tokenized ones let independent filter sources (a column filter and a search box, say) be
     // declared and retracted without knowing about each other.
-    void SetFilter(ShapingHelpers::Predicate const& predicate);
+    void SetFilter(ShapingHelpers::Predicate const& predicate, ShapingOperationPtr const& operation = {});
     void SetFilter(winrt::hstring const& axisToken, ShapingHelpers::Predicate const& predicate);
-    void ClearFilter();
+    void ClearFilter(ShapingOperationPtr const& operation = {});
     void ClearFilter(winrt::hstring const& axisToken);
     void SetGroup(
         ShapingHelpers::KeySelector const& key,
-        RowIdentity::IdentitySelector const& groupIdentitySelector);
-    void ClearGroup();
+        RowIdentity::IdentitySelector const& groupIdentitySelector,
+        ShapingOperationPtr const& operation = {});
+    void ClearGroup(ShapingOperationPtr const& operation = {});
     void SetSort(
         winrt::hstring const& previousAxisToken,
         winrt::hstring const& axisToken,
         ShapingHelpers::KeySelector const& key,
         winrt::Windows::Foundation::IUnknown const& keyIdentity,
         winrt::hstring const& sortMemberPath,
-        winrt::SortDirection direction);
-    void ClearSorts();
-    void ClearSort(winrt::hstring const& axisToken);
+        winrt::SortDirection direction,
+        ShapingOperationPtr const& operation = {});
+    void ClearSorts(ShapingOperationPtr const& operation = {});
+    void ClearSort(winrt::hstring const& axisToken, ShapingOperationPtr const& operation = {});
     // Drops every sort axis except axisToken. Lets a consumer that owns ONE axis assert itself as
     // the only sort without having to know the tokens of axes it did not declare.
-    void ClearSortsExcept(winrt::hstring const& axisToken);
+    void ClearSortsExcept(winrt::hstring const& axisToken, ShapingOperationPtr const& operation = {});
 
     // What an active sort axis looks like from outside the engine. Enough for a consumer to tell
     // an axis it declared from one it did not, and to say which property a foreign axis sorts on.
@@ -146,6 +184,21 @@ public:
     void Refresh();
 
 private:
+    class ComputationScope
+    {
+    public:
+        explicit ComputationScope(ShapedItemsSource& owner) noexcept;
+        ~ComputationScope();
+        ComputationScope(ComputationScope const&) = delete;
+        ComputationScope& operator=(ComputationScope const&) = delete;
+        ShapingOperationPtr const& Operation() const noexcept { return m_operation; }
+    private:
+        ShapedItemsSource& m_owner;
+        ShapingOperationPtr m_operation;
+        ShapingOperationPtr m_previous;
+        int m_exceptions{};
+    };
+    void CompleteShapingOperation() noexcept;
     void SubscribeToSourceCollectionChanges();
     void UnsubscribeFromSourceCollectionChanges();
     void OnSourceCollectionChanged();
@@ -154,12 +207,12 @@ private:
     void ApplyIncrementalChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
     void ApplyIncrementalVectorChange(winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args);
     bool TryApplyIncrementalSortedChange(winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs const& args);
-    void ApplyShapingChange();
+    void ApplyShapingChange(ShapingOperationPtr const& operation = {});
     bool TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta);
     void InvalidateShapingState();
     static std::vector<winrt::IInspectable> Materialize(winrt::IInspectable const& source);
     void ApplyFilter(std::vector<winrt::IInspectable>& rows) const { m_pipeline.ApplyFilter(rows); }
-    void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1) const { m_pipeline.ApplySort(rows, afterOrder, beforeOrder); }
+    void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1);
     void RebuildFlat(std::vector<winrt::IInspectable>& rows);
     void RebuildGrouped(std::vector<winrt::IInspectable>& rows);
     void RebuildUnshapedRows(std::vector<winrt::IInspectable> const& rows, wchar_t const* reason);
@@ -227,6 +280,10 @@ private:
     // the source must not interleave a nested update against a half-updated projection.
     bool m_isApplyingIncrementalChange{ false };
     bool m_pendingRefresh{ false };
+    ShapingOperationPtr m_pendingShapingOperation;
+    ShapingOperationPtr m_computingShapingOperation;
+    ShapingOperationPtr m_computedShapingOperation;
+    uint32_t m_shapingOperationDepth{};
     std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> m_groupCache;
     std::shared_ptr<GroupedSourceAdapter> m_groupedAdapter{};
 

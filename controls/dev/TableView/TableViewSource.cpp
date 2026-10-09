@@ -10,9 +10,55 @@
 #include "SortMemberPathResolver.h"
 #include "SharedHelpers.h"
 
+#include <algorithm>
+
 namespace
 {
     namespace tabularPrimitives = winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives::implementation;
+}
+
+struct TableViewSource::ShapingOperation
+{
+    ShapingOperation(TableViewSource& source, TableViewTelemetry::Operation kind, bool meaningful = true)
+    {
+        if (source.m_completeShapingOperation && source.m_beginShapingOperation)
+        {
+            work = std::make_shared<ShapedItemsSource::ShapingOperation>(
+                [begin = source.m_beginShapingOperation, complete = source.m_completeShapingOperation,
+                    kind, meaningful, generation = uint64_t{}]
+                (ShapedItemsSource::ShapingOperation::Status status, std::optional<HRESULT> error) mutable noexcept
+                {
+                    using Status = ShapedItemsSource::ShapingOperation::Status;
+                    if (status == Status::Started)
+                    {
+                        generation = begin(kind, meaningful);
+                    }
+                    else
+                    {
+                        complete(kind, generation, status == Status::Failed ? TableViewTelemetry::Result::Failure :
+                            status == Status::Succeeded ? TableViewTelemetry::Result::Success : TableViewTelemetry::Result::Cancelled,
+                            error);
+                    }
+                });
+            work->Start();
+        }
+    }
+
+    ~ShapingOperation()
+    {
+        if (work) { work->EndBody(completed); }
+    }
+
+    ShapingOperation(ShapingOperation const&) = delete;
+    ShapingOperation& operator=(ShapingOperation const&) = delete;
+
+    ShapedItemsSource::ShapingOperationPtr work;
+    bool completed{};
+};
+
+void TableViewSource::ObserveShapingFailure(HRESULT error) noexcept
+{
+    m_engine->ObserveShapingFailure(error);
 }
 
 TableViewSource::~TableViewSource() = default;
@@ -46,7 +92,18 @@ winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& 
     {
         throw winrt::hresult_invalid_argument(L"predicate cannot be null.");
     }
-    m_engine->SetFilter([predicate](winrt::IInspectable const& item) { return predicate(item); });
+    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Filter };
+    m_hasFilter = true;
+    m_engine->SetFilter([predicate, weakThis = get_weak()](winrt::IInspectable const& item)
+    {
+        try { return predicate(item); }
+        catch (...)
+        {
+            if (auto self = weakThis.get()) { self->ObserveShapingFailure(winrt::to_hresult()); }
+            throw;
+        }
+    }, operation.work);
+    operation.completed = true;
     return *this;
 }
 
@@ -62,43 +119,84 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
         throw winrt::hresult_invalid_argument(L"key cannot be null.");
     }
 
+    ShapingOperation operation{ *this, TableViewTelemetry::Operation::GroupConfiguration };
     RowIdentity::IdentitySelector groupIdentity{ nullptr };
     if (groupIdentitySelector)
     {
-        groupIdentity = [groupIdentitySelector](winrt::IInspectable const& item) { return groupIdentitySelector(item); };
+        groupIdentity = [groupIdentitySelector, weakThis = get_weak()](winrt::IInspectable const& item)
+        {
+            try { return groupIdentitySelector(item); }
+            catch (...)
+            {
+                if (auto self = weakThis.get()) { self->ObserveShapingFailure(winrt::to_hresult()); }
+                throw;
+            }
+        };
     }
 
-    m_engine->SetGroup([key](winrt::IInspectable const& item) { return key(item); }, groupIdentity);
+    m_hasGroup = true;
+    m_engine->SetGroup([key, weakThis = get_weak()](winrt::IInspectable const& item)
+    {
+        try { return key(item); }
+        catch (...)
+        {
+            if (auto self = weakThis.get()) { self->ObserveShapingFailure(winrt::to_hresult()); }
+            throw;
+        }
+    }, groupIdentity, operation.work);
+    operation.completed = true;
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearFilter()
 {
-    m_engine->ClearFilter();
+    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Filter, m_hasFilter };
+    m_hasFilter = false;
+    m_engine->ClearFilter(operation.work);
+    operation.completed = true;
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearGroupBy()
 {
-    m_engine->ClearGroup();
+    ShapingOperation operation{ *this, TableViewTelemetry::Operation::GroupConfiguration, m_hasGroup };
+    m_hasGroup = false;
+    m_engine->ClearGroup(operation.work);
+    operation.completed = true;
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSort()
 {
-    m_engine->ClearSorts();
+    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort, !m_engine->ActiveSortAxisInfos().empty() };
+    m_engine->ClearSorts(operation.work);
+    operation.completed = true;
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSort(winrt::hstring const& sortAxisToken)
 {
-    m_engine->ClearSort(sortAxisToken);
+    auto const axes = m_engine->ActiveSortAxisInfos();
+    const bool meaningful = std::any_of(axes.begin(), axes.end(), [&sortAxisToken](auto const& axis)
+    {
+        return sortAxisToken.empty() || axis.AxisToken == sortAxisToken;
+    });
+    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort, meaningful };
+    m_engine->ClearSort(sortAxisToken, operation.work);
+    operation.completed = true;
     return *this;
 }
 
 winrt::TableViewSource TableViewSource::ClearSortsExcept(winrt::hstring const& sortAxisToken)
 {
-    m_engine->ClearSortsExcept(sortAxisToken);
+    auto const axes = m_engine->ActiveSortAxisInfos();
+    const bool meaningful = std::any_of(axes.begin(), axes.end(), [&sortAxisToken](auto const& axis)
+    {
+        return sortAxisToken.empty() || axis.AxisToken != sortAxisToken;
+    });
+    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort, meaningful };
+    m_engine->ClearSortsExcept(sortAxisToken, operation.work);
+    operation.completed = true;
     return *this;
 }
 
@@ -137,7 +235,11 @@ winrt::TableViewSource TableViewSource::Sort(winrt::hstring const& sortMemberPat
     // One resolver per axis, captured by the selector and reused across every comparison: the
     // binding is built once per path, so steady-state cost is a DataContext write plus a property
     // read rather than a fresh binding per item.
-    auto resolver = std::make_shared<SortMemberPathResolver>(sortMemberPath);
+    auto resolver = std::make_shared<SortMemberPathResolver>(sortMemberPath,
+        [weakThis = get_weak()](HRESULT error) noexcept
+        {
+            if (auto self = weakThis.get()) { self->ObserveShapingFailure(error); }
+        });
     winrt::TableViewKeySelector key{
         [resolver](winrt::IInspectable const& item) -> winrt::IInspectable
         {
@@ -170,22 +272,45 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
         throw winrt::hresult_invalid_argument(L"direction must be a defined SortDirection value.");
     }
 
+    auto const keyIdentity = key.as<winrt::Windows::Foundation::IUnknown>();
+    const bool meaningful = direction != winrt::SortDirection::None ||
+        m_engine->HasSortAxis(sortAxisToken, keyIdentity) ||
+        (!previousSortAxisToken.empty() && previousSortAxisToken != sortAxisToken &&
+            m_engine->HasSortAxis(previousSortAxisToken, nullptr));
+    ShapingOperation operation{ *this, TableViewTelemetry::Operation::Sort, meaningful };
     // The engine stores a std::function, which cannot be compared, so the delegate itself is
     // handed over as the axis identity. The wrapping lambda holds a strong ref to that same
     // delegate, so the identity stays valid for as long as the axis lives.
     m_engine->SetSort(
         previousSortAxisToken,
         sortAxisToken,
-        [key](winrt::IInspectable const& item) { return key(item); },
-        key.as<winrt::Windows::Foundation::IUnknown>(),
+        [key, weakThis = get_weak()](winrt::IInspectable const& item)
+        {
+            try { return key(item); }
+            catch (...)
+            {
+                if (auto self = weakThis.get()) { self->ObserveShapingFailure(winrt::to_hresult()); }
+                throw;
+            }
+        },
+        keyIdentity,
         sortMemberPath,
-        direction);
+        direction,
+        operation.work);
+    operation.completed = true;
     return *this;
 }
 
 bool TableViewSource::IsGrouped() const
 {
     return m_engine->IsProjectedAsGrouped();
+}
+
+std::optional<uint32_t> TableViewSource::DataRowCount() const
+{
+    if (m_engine->Kind() == ShapedItemsSource::ProjectionKind::None) { return {}; }
+    if (auto const rows = m_engine->Rows()) { return rows.Size(); }
+    return {};
 }
 
 winrt::ItemsSourceView TableViewSource::GetItemsSourceView()
@@ -311,6 +436,8 @@ void TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
         // swapped out of ItemsSource cannot drive the control it used to belong to.
         m_projectionChanged = nullptr;
         m_shapingChanged = nullptr;
+        m_beginShapingOperation = nullptr;
+        m_completeShapingOperation = nullptr;
     }
 }
 

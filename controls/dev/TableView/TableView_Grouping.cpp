@@ -347,6 +347,35 @@ void TableView::QueueGroupExpansionByIdentity(winrt::hstring const& identity, st
     ApplyGroupExpansionByIdentity(identity, desired, generation);
 }
 
+bool TableView::GroupExpansionChangesRows(winrt::hstring const& identity, std::optional<bool> desired) const noexcept
+{
+    try
+    {
+        if (!m_tableViewSourceRowMetadata || !IsTableViewSourceGrouped()) { return false; }
+        const auto count = GetItemsSourceCount();
+        for (int32_t index = 0; index < count;)
+        {
+            auto const info = m_tableViewSourceRowMetadata->GetRowInfo(index);
+            if (info.Kind != TableViewRowKind::GroupHeader) { return true; }
+            if (identity.empty() || m_tableViewSourceRowMetadata->GetIdentity(index) == identity)
+            {
+                if (info.IsExpandable && (!desired || info.IsExpanded != *desired)) { return true; }
+                if (!identity.empty()) { return false; }
+            }
+            // Only maintained headers are inspected; skip the group's data rows.
+            const int64_t next = static_cast<int64_t>(index) + 1 + (info.IsExpanded ? info.ChildCount : 0);
+            if (next <= index || next > count) { return true; }
+            index = static_cast<int32_t>(next);
+        }
+        return false;
+    }
+    catch (...)
+    {
+        OutputDebugStringW(L"TableView telemetry: expansion state unavailable.\n");
+        return true;
+    }
+}
+
 void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, std::optional<bool> desired, uint64_t generation)
 {
     // Identities are value-based strings, not tied to a provider instance. If ItemsSource was
@@ -376,6 +405,18 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
         return;
     }
 
+    const bool admitted = generation == m_rowMetadataGeneration && GroupExpansionChangesRows(identity, desired);
+    auto const telemetryGeneration = BeginOperationTelemetry(TableViewTelemetry::Operation::GroupExpansion, admitted);
+    bool completed = false;
+    auto telemetryCompletion = wil::scope_exit([this, telemetryGeneration, admitted, &completed]() noexcept
+    {
+        if (admitted && !completed)
+        {
+            FailOperationTelemetry(TableViewTelemetry::Operation::GroupExpansion, telemetryGeneration, TableViewTelemetry::Stage::Grouping);
+        }
+        EndOperationTelemetry();
+    });
+    const auto previousCount = GetItemsSourceCount();
     bool changed = false;
     try
     {
@@ -399,6 +440,8 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     }
     catch (...)
     {
+        FailOperationTelemetry(TableViewTelemetry::Operation::GroupExpansion, telemetryGeneration,
+            TableViewTelemetry::Stage::Grouping, winrt::to_hresult());
         // Best-effort: the grouping source or its state can change during cleanup.
     }
 
@@ -417,6 +460,11 @@ void TableView::ApplyGroupExpansionByIdentity(winrt::hstring const& identity, st
     // focus stranded is the very bug this guards. Matches on identity, so an unrelated queued
     // toggle does not consume this restore.
     RestoreGroupHeaderFocusIfPending(identity);
+    if (generation != m_rowMetadataGeneration || previousCount == GetItemsSourceCount())
+    {
+        TableViewTelemetry::IgnoreOperation(m_telemetry, telemetryGeneration, TableViewTelemetry::IgnoreReason::Stale);
+    }
+    completed = true;
 }
 
 void TableView::RestoreGroupHeaderFocusIfPending(winrt::hstring const& identity)
@@ -557,6 +605,19 @@ void TableView::SetAllGroupsExpansion(bool expand)
 
     auto const focusedGroupIdentity = CaptureFocusedGroupHeaderForRestore();
 
+    const bool admitted = GroupExpansionChangesRows({}, expand);
+    auto const telemetryGeneration = BeginOperationTelemetry(TableViewTelemetry::Operation::GroupExpansion, admitted);
+    bool completed = false;
+    auto telemetryCompletion = wil::scope_exit([this, telemetryGeneration, admitted, &completed]() noexcept
+    {
+        if (admitted && !completed)
+        {
+            FailOperationTelemetry(TableViewTelemetry::Operation::GroupExpansion, telemetryGeneration, TableViewTelemetry::Stage::Grouping);
+        }
+        EndOperationTelemetry();
+    });
+    const auto generation = m_rowMetadataGeneration;
+    const auto previousCount = GetItemsSourceCount();
     bool changed = false;
     try
     {
@@ -572,6 +633,8 @@ void TableView::SetAllGroupsExpansion(bool expand)
     }
     catch (...)
     {
+        FailOperationTelemetry(TableViewTelemetry::Operation::GroupExpansion, telemetryGeneration,
+            TableViewTelemetry::Stage::Grouping, winrt::to_hresult());
         // Best-effort: the grouping source or its state can change during cleanup.
     }
 
@@ -584,6 +647,11 @@ void TableView::SetAllGroupsExpansion(bool expand)
     }
 
     RestoreGroupHeaderFocusIfPending(focusedGroupIdentity);
+    if (generation != m_rowMetadataGeneration || previousCount == GetItemsSourceCount())
+    {
+        TableViewTelemetry::IgnoreOperation(m_telemetry, telemetryGeneration, TableViewTelemetry::IgnoreReason::Stale);
+    }
+    completed = true;
 }
 
 void TableView::RaiseGroupStructureChanged()

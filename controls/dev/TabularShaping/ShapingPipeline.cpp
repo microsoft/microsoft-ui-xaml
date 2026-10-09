@@ -186,6 +186,22 @@ namespace ShapingHelpers
             });
     }
 
+    bool ShapingPipeline::MatchesSortAxis(SortAxis const& axis, winrt::hstring const& token,
+        winrt::Windows::Foundation::IUnknown const& keyIdentity) noexcept
+    {
+        return token.empty() ? (axis.AxisToken.empty() && axis.KeyIdentity && axis.KeyIdentity == keyIdentity) :
+            axis.AxisToken == token;
+    }
+
+    bool ShapingPipeline::HasSortAxis(winrt::hstring const& token,
+        winrt::Windows::Foundation::IUnknown const& keyIdentity) const noexcept
+    {
+        return std::any_of(m_sorts.begin(), m_sorts.end(), [&token, &keyIdentity](auto const& axis)
+        {
+            return MatchesSortAxis(axis, token, keyIdentity);
+        });
+    }
+
     void ShapingPipeline::SetSort(
         winrt::hstring const& previousAxisToken,
         winrt::hstring const& axisToken,
@@ -201,9 +217,7 @@ namespace ShapingHelpers
 
         for (auto it = m_sorts.begin(); it != m_sorts.end(); ++it)
         {
-            const bool sameAxis = axisToken.empty()
-                ? (it->AxisToken.empty() && it->KeyIdentity && it->KeyIdentity == keyIdentity)
-                : (it->AxisToken == axisToken);
+            const bool sameAxis = MatchesSortAxis(*it, axisToken, keyIdentity);
             if (!sameAxis)
             {
                 continue;

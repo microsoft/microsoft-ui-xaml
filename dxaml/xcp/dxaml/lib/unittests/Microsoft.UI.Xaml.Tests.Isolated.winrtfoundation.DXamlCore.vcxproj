@@ -14,7 +14,9 @@
     
   <PropertyGroup>
     <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) TEST_CODE=1;</ProjectPreprocessorDefinitions>
-    <ProjectIncludeDirectories>$(ProjectIncludeDirectories);</ProjectIncludeDirectories>
+    <ProjectPreprocessorDefinitions Condition="'$(TestInProductionIsReal)' == 'true'">$(ProjectPreprocessorDefinitions) TABLEVIEW_TIP_REAL_LIBRARY=1;</ProjectPreprocessorDefinitions>
+    <ProjectPreprocessorDefinitions Condition="'$(TestInProductionIsReal)' != 'true'">$(ProjectPreprocessorDefinitions) TABLEVIEW_TIP_REAL_LIBRARY=0;</ProjectPreprocessorDefinitions>
+    <ProjectIncludeDirectories>$(ProjectIncludeDirectories);$(MuxControlsPath)\dev\TableView;</ProjectIncludeDirectories>
   </PropertyGroup>
     
   <PropertyGroup>
@@ -28,7 +30,11 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <ClCompile Include="DXamlCoreTipTests_UnitTests.cpp" />
+    <ClCompile Include="DXamlCoreTipTests_UnitTests.cpp">
+      <!-- Released TiP test helpers require the caller to include string. -->
+      <ForcedIncludeFiles>string;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="TableViewTipTests_UnitTests.cpp" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
