@@ -154,7 +154,11 @@ runtimeclass TableViewSource
 
     // Live shaping is opt-in and subscribes to source item property changes. Changes coalesce: all
     // property changes in one dispatcher turn cost one reshape. Under ParentBy, turning on any of
-    // these also tracks each item's key and parent key (see ParentBy).
+    // these also tracks each item's key and parent key (see ParentBy). Turning live shaping on
+    // reshapes once on the next dispatcher turn, which picks up items edited while it was off. While
+    // a cell is being edited in the TableView showing this source, live reshapes wait and run once
+    // the edit closes. An item may raise PropertyChanged on any thread; the reshape always runs on
+    // the thread that created this source.
     Boolean IsLiveSorting{ get; set; };
     Boolean IsLiveFiltering{ get; set; };
     Boolean IsLiveGrouping{ get; set; };

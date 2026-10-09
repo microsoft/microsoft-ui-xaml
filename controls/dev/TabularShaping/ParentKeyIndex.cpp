@@ -151,6 +151,12 @@ std::wstring MakeNodeKey(winrt::IInspectable const& key)
     return std::wstring{ c_nodePrefix } + std::wstring{ ValueKey::ToObjectLookupKey(key, false) };
 }
 
+bool IsObjectNodeKey(std::wstring_view nodeKey) noexcept
+{
+    constexpr std::wstring_view c_objectNodeKeyPrefix{ L"node:object:" };
+    return nodeKey.starts_with(c_objectNodeKeyPrefix);
+}
+
 const std::vector<winrt::IInspectable>* ParentKeyIndex::TryGetChildren(std::wstring_view nodeKey) const
 {
     auto it = Children.find(nodeKey);
@@ -292,13 +298,12 @@ bool ParentStructureStillMatches(
     KeySelector const& parentKeySelector)
 {
     constexpr size_t c_root = ParentStructure::Root;
-    constexpr std::wstring_view c_objectNodeKeyPrefix{ L"node:object:" };
     auto const& s = structure;
 
     for (size_t i = 0; i < s.Rows.size(); ++i)
     {
         auto const nodeKey = MakeNodeKey(SafeSelect(keySelector, s.Rows[i]));
-        if (nodeKey.empty() || nodeKey.starts_with(c_objectNodeKeyPrefix) || nodeKey != *s.NodeKeys[i])
+        if (nodeKey.empty() || IsObjectNodeKey(nodeKey) || nodeKey != *s.NodeKeys[i])
         {
             return false;
         }
@@ -311,7 +316,7 @@ bool ParentStructureStillMatches(
         size_t parent = c_root;
         if (!parentKey.empty())
         {
-            if (parentKey.starts_with(c_objectNodeKeyPrefix))
+            if (IsObjectNodeKey(parentKey))
             {
                 return false;
             }

@@ -397,7 +397,21 @@ void TableViewSource::SetOwningTableView(winrt::IInspectable const& owner)
         // swapped out of ItemsSource cannot drive the control it used to belong to.
         m_projectionChanged = nullptr;
         m_shapingChanged = nullptr;
+        // A restore held for the former owner's editor must not wait on an edit it will no longer
+        // hear the end of.
+        m_engine->SetLiveShapingHold(nullptr);
+        m_engine->ResumeHeldLiveShaping();
     }
+}
+
+void TableViewSource::SetLiveShapingHold(std::function<bool()> isHeld)
+{
+    m_engine->SetLiveShapingHold(std::move(isHeld));
+}
+
+void TableViewSource::ResumeHeldLiveShaping()
+{
+    m_engine->ResumeHeldLiveShaping();
 }
 
 void TableViewSource::NotifyOwnerProjectionChanged()

@@ -91,4 +91,8 @@ void BuildParentKeyIndex(
 // Exposed for the adapter: "node:" + lookup key, or empty when `key` means "no key".
 std::wstring MakeNodeKey(winrt::IInspectable const& key);
 
+// True when MakeNodeKey keyed the value by object address. Such a key cannot prove an edge is
+// unchanged: a freed key object's address can be handed to a new one.
+bool IsObjectNodeKey(std::wstring_view nodeKey) noexcept;
+
 }

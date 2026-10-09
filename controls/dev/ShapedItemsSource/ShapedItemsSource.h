@@ -18,6 +18,7 @@
 #include "ParentKeyIndex.h"
 #include "LiveShapingTracker.h"
 
+#include <winrt/Microsoft.UI.Dispatching.h>
 class GroupedSourceAdapter;
 class HierarchicalSourceAdapter;
 class ShapedGroup;
@@ -177,6 +178,12 @@ public:
     bool IsLiveFiltering() const noexcept { return m_liveFiltering; }
     bool IsLiveShapingEnabled() const noexcept { return m_liveSorting || m_liveGrouping || m_liveFiltering; }
 
+    // The owner may hold a live restore back while the projection must not move under it (a cell
+    // editor is open). A held restore stays dirty, so later changes still coalesce into it, and
+    // runs on the turn after ResumeHeldLiveShaping.
+    void SetLiveShapingHold(std::function<bool()> isHeld) { m_liveShapingHold = std::move(isHeld); }
+    void ResumeHeldLiveShaping();
+
 private:
     void SubscribeToSourceCollectionChanges();
     void UnsubscribeFromSourceCollectionChanges();
@@ -315,8 +322,8 @@ private:
         // ParentBy relation is declared. Each Refresh compares the fresh pair with the previous
         // one to decide whether the retained tree structure still holds, and a change here is what
         // posts a live reparent.
-        winrt::hstring NodeKey;
-        winrt::hstring ParentKey;
+        std::wstring NodeKey;
+        std::wstring ParentKey;
         bool PassesFilter{ true };
     };
     LiveShapeSnapshot CaptureLiveShapeSnapshot(winrt::IInspectable const& item) const;
@@ -346,6 +353,8 @@ private:
     // posts ONE restore to the owning DispatcherQueue. Every further change in the same turn is
     // absorbed by the flag, so mutating N rows costs one re-shape instead of N.
     void MarkLiveShapingDirty();
+    // Posts RestoreLiveShaping to the next turn, or runs it now when nothing can be posted.
+    void PostLiveShapingRestore();
     void RestoreLiveShaping();
     void RaiseProjectionRebuilt() const { if (m_projectionRebuilt) { m_projectionRebuilt(); } }
     void RaiseShapeSwapped() const { if (m_shapeSwapped) { m_shapeSwapped(); } }
@@ -395,6 +404,12 @@ private:
     std::unordered_map<winrt::hstring, winrt::com_ptr<ShapedGroup>> m_groupCache;
     std::shared_ptr<GroupedSourceAdapter> m_groupedAdapter{};
     std::shared_ptr<LiveShapingTracker> m_liveShaping{ std::make_shared<LiveShapingTracker>() };
+    // The thread that built this source, which is the one m_rows is bound on. An item may raise
+    // PropertyChanged from any thread; the change is handled here, never on the raising thread.
+    // Null when built off a dispatcher thread (a test host), where changes are handled inline on
+    // the owning thread and dropped on any other (see Start).
+    winrt::Microsoft::UI::Dispatching::DispatcherQueue m_ownerQueue{ nullptr };
+    DWORD m_ownerThreadId{ 0 };
     bool m_liveSorting{ false };
     bool m_liveGrouping{ false };
     bool m_liveFiltering{ false };
@@ -404,6 +419,9 @@ private:
     // to do" record and the "a restore is already posted" guard, which is why marking twice in one
     // turn enqueues once.
     bool m_liveShapingDirty{ false };
+    std::function<bool()> m_liveShapingHold{};
+    // A restore found the hold on and parked; ResumeHeldLiveShaping re-posts it.
+    bool m_liveShapingHeld{ false };
 
     // The parent-key relation. Both set or both null; m_parentKeySelector is the "hierarchy is
     // declared" test everywhere.

@@ -113,6 +113,10 @@ public:
     // Raised when a shaping verb rewrote the projection. `reorderOnly` is true when membership is
     // unchanged and only the order moved.
     void SetShapingChangedHandler(std::function<void(bool)> handler) { m_shapingChanged = std::move(handler); }
+    // The owner holds live restores while its cell editor is open and resumes them when it
+    // closes (see ShapedItemsSource::SetLiveShapingHold).
+    void SetLiveShapingHold(std::function<bool()> isHeld);
+    void ResumeHeldLiveShaping();
 
 private:
     winrt::TableViewSource SortCore(winrt::hstring const& previousSortAxisToken, winrt::hstring const& sortAxisToken, winrt::TableViewKeySelector const& key, winrt::hstring const& sortMemberPath, winrt::SortDirection direction);

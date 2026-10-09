@@ -46,13 +46,10 @@ namespace
 
 ShapedItemsSource::ShapedItemsSource(winrt::IInspectable const& source) :
     m_source(source),
-    m_rows(winrt::single_threaded_observable_vector<winrt::IInspectable>())
+    m_rows(winrt::single_threaded_observable_vector<winrt::IInspectable>()),
+    m_ownerQueue(winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread()),
+    m_ownerThreadId(::GetCurrentThreadId())
 {
-    m_liveShaping->SetChangeHandler(
-        [this](winrt::IInspectable const& item, winrt::hstring const& propertyName)
-        {
-            OnLiveShapedItemChanged(item, propertyName);
-        });
 }
 
 ShapedItemsSource::~ShapedItemsSource()
@@ -63,6 +60,39 @@ ShapedItemsSource::~ShapedItemsSource()
 
 void ShapedItemsSource::Start()
 {
+    // Installed here rather than in the constructor because it needs weak_from_this: a handler
+    // still running on another thread while this source is destroyed must not touch it.
+    m_liveShaping->SetChangeHandler(
+        [weakThis = weak_from_this(), queue = m_ownerQueue, ownerThreadId = m_ownerThreadId](winrt::IInspectable const& item, winrt::hstring const& propertyName)
+        {
+            if (queue && !queue.HasThreadAccess())
+            {
+                // Raised off the owning thread. Everything the change touches (snapshots, the
+                // dirty flag, the bound rows) belongs to the owning thread, so hand it over whole.
+                queue.TryEnqueue([weakThis, item, propertyName]()
+                    {
+                        if (auto const strongThis = weakThis.lock())
+                        {
+                            strongThis->OnLiveShapedItemChanged(item, propertyName);
+                        }
+                    });
+                return;
+            }
+
+            if (!queue && ::GetCurrentThreadId() != ownerThreadId)
+            {
+                // The owning thread has no queue to hand the change to, and acting on it here
+                // would reshape from the wrong thread. It is dropped; the next reshape on the
+                // owning thread re-reads every item.
+                return;
+            }
+
+            if (auto const strongThis = weakThis.lock())
+            {
+                strongThis->OnLiveShapedItemChanged(item, propertyName);
+            }
+        });
+
     SubscribeToSourceCollectionChanges();
     Refresh();
 }
@@ -92,6 +122,15 @@ void ShapedItemsSource::SetLiveShaping(bool liveSorting, bool liveGrouping, bool
             InvalidateRetainedHierarchyStructure();
         }
         ResubscribeLiveShapingFromSource();
+
+        if (!wasLiveShapingEnabled)
+        {
+            // For the same reason, any item edited while untracked is still shaped by its old
+            // values, and its fresh snapshot already agrees with the new ones -- no later change
+            // would notice. One posted restore brings the projection up to date; it coalesces
+            // with whatever else changes in this turn.
+            MarkLiveShapingDirty();
+        }
     }
     else
     {
@@ -1925,8 +1964,12 @@ std::shared_ptr<const ShapingHelpers::ParentStructure> ShapedItemsSource::TryReu
     // moved, so reaching here already answers it. Without live shaping nothing has looked, so
     // re-read the keys: a reshape picks up an edge edited in place exactly as it picks up a sort or
     // filter key, while skipping the key table, validation and cycle check a rebuild would redo.
+    // Copies, as in BuildHierarchyIndex: a selector that re-declares the relation reassigns the
+    // members while they run.
+    auto const keySelector = m_keySelector;
+    auto const parentKeySelector = m_parentKeySelector;
     if (!IsLiveShapingEnabled() &&
-        !ShapingHelpers::ParentStructureStillMatches(*structure, m_keySelector, m_parentKeySelector))
+        !ShapingHelpers::ParentStructureStillMatches(*structure, keySelector, parentKeySelector))
     {
         return nullptr;
     }
@@ -2342,16 +2385,37 @@ ShapedItemsSource::LiveShapeSnapshot ShapedItemsSource::CaptureLiveShapeSnapshot
 
     if (m_liveGrouping && m_groupSelector)
     {
-        snapshot.GroupKey = keyOf(m_groupSelector);
+        // Compared as the grouping compares it: by group identity, not display text. Two group
+        // key objects usually print alike (often just their type name), so the text would hide a
+        // regroup. A key with no identity is rejected by the rebuild; its object form still tells
+        // a change apart.
+        winrt::IInspectable groupKey{ nullptr };
+        try { groupKey = m_groupSelector(item); } catch (...) {}
+        winrt::hstring identity;
+        wchar_t const* reason = nullptr;
+        if (TryGetGroupIdentity(groupKey, identity, reason))
+        {
+            snapshot.GroupKey = L"id:" + identity;
+        }
+        else
+        {
+            try { snapshot.GroupKey = winrt::hstring{ ShapingHelpers::MakeNodeKey(groupKey) }; } catch (...) {}
+        }
     }
 
     // Any live flag implies the hierarchy edge: sort, filter and grouping are all evaluated
     // against the tree (sibling sets, ancestor retention, root bucketing), so an edge change
-    // reshapes every one of them.
+    // reshapes every one of them. The edge is keyed exactly as the tree keys it: a display string
+    // can collide (an object key's IStringable is often just its type name), and would hide a
+    // reparent the tree sees.
     if (m_parentKeySelector)
     {
-        snapshot.NodeKey = keyOf(m_keySelector);
-        snapshot.ParentKey = keyOf(m_parentKeySelector);
+        auto const nodeKeyOf = [&item](ShapingHelpers::KeySelector const& selector) -> std::wstring
+        {
+            try { return ShapingHelpers::MakeNodeKey(selector(item)); } catch (...) { return {}; }
+        };
+        snapshot.NodeKey = nodeKeyOf(m_keySelector);
+        snapshot.ParentKey = nodeKeyOf(m_parentKeySelector);
     }
 
     if (m_liveFiltering)
@@ -2423,7 +2487,13 @@ void ShapedItemsSource::RefreshLiveShapingSubscriptions(
 
         if (checkEdges && !edgeMoved)
         {
-            if (auto const previous = m_liveShapeSnapshots.find(key); previous != m_liveShapeSnapshots.end())
+            // An object-keyed edge proves nothing (see IsObjectNodeKey), so it always rebuilds, as
+            // it does with live shaping off.
+            if (ShapingHelpers::IsObjectNodeKey(snapshot.NodeKey) || ShapingHelpers::IsObjectNodeKey(snapshot.ParentKey))
+            {
+                edgeMoved = true;
+            }
+            else if (auto const previous = m_liveShapeSnapshots.find(key); previous != m_liveShapeSnapshots.end())
             {
                 edgeMoved = previous->second.NodeKey != snapshot.NodeKey || previous->second.ParentKey != snapshot.ParentKey;
             }
@@ -2589,6 +2659,11 @@ void ShapedItemsSource::MarkLiveShapingDirty()
     // to the queue collapses the whole turn into a single rebuild, and it also keeps the reshape
     // out of the app's own PropertyChanged handler, where re-entering the projection would be
     // hostile.
+    PostLiveShapingRestore();
+}
+
+void ShapedItemsSource::PostLiveShapingRestore()
+{
     auto weakThis = weak_from_this();
     if (auto const queue = winrt::DispatcherQueue::GetForCurrentThread())
     {
@@ -2637,5 +2712,29 @@ void ShapedItemsSource::RestoreLiveShaping()
         return;
     }
 
+    if (m_liveShapingHold && m_liveShapingHold())
+    {
+        // Moving rows now would end the user's edit. Stay dirty: further changes coalesce into
+        // this restore, and the owner resumes it once the edit closes.
+        m_liveShapingHeld = true;
+        return;
+    }
+
     Refresh();
+
+    // Nothing else tells a UIA client the rows moved: no verb was called, so the owner hears of no
+    // shaping change. Any row may have been regrouped or filtered, not just reordered.
+    RaiseShapingChanged(false /* reorderOnly */);
+}
+
+void ShapedItemsSource::ResumeHeldLiveShaping()
+{
+    if (!std::exchange(m_liveShapingHeld, false))
+    {
+        return;
+    }
+
+    // Posted, not run here: the caller is closing an edit, often from inside app callbacks or a
+    // layout pass. If the hold is back on by the time it runs, the restore simply parks again.
+    PostLiveShapingRestore();
 }

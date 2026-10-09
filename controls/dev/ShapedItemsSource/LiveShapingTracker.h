@@ -6,16 +6,22 @@
 #include <functional>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 #include <winrt/Microsoft.UI.Xaml.Data.h>
 #include <winrt/Windows.Foundation.h>
 
 // Per-item INotifyPropertyChanged subscriptions for live shaping.
 //
-// Holds each item WEAKLY. The auto-revoker already keeps only a weak reference to its sender, so
-// the subscription entry was the sole strong reference; keeping one here would pin every item the
-// source has already dropped. The weak reference is not merely absence of ownership -- it is what
-// lets Subscribe detect a recycled ABI address (see the .cpp).
+// Holds each item WEAKLY when it supports weak references. The auto-revoker already keeps only a
+// weak reference to its sender, so the subscription entry was the sole strong reference; keeping
+// one here would pin every item the source has already dropped. The weak reference is not merely
+// absence of ownership -- it is what lets Subscribe detect a recycled ABI address (see the .cpp).
+//
+// An item without weak reference support cannot use an auto-revoker (it needs a weak reference to
+// the sender). That entry holds the item strongly and removes its handler by token instead; the
+// entry only lives while the item is in the source, and the strong reference also keeps its
+// address from being recycled.
 class LiveShapingTracker
 {
 public:
@@ -42,6 +48,11 @@ private:
         // and cannot be used to validate the entry.
         bool CanResolveItem{ false };
         winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged::PropertyChanged_revoker Revoker{};
+        // Only for an item without weak reference support (Revoker is empty then).
+        winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged StrongSource{ nullptr };
+        winrt::event_token Token{};
+
+        void Revoke() noexcept;
     };
 
     static void const* Identity(winrt::IInspectable const& item);

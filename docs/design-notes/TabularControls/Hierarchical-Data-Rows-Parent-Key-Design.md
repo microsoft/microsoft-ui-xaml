@@ -317,14 +317,19 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
   key is shown unchanged; the key table, duplicate/cycle validation and identity validation are not
   redone. How "unchanged" is shown depends on live shaping:
   - **Live shaping on**: every `Refresh` recaptures each row's snapshot, node and parent key
-    included, and compares them with the previous pass. Any difference drops the structure. No
-    selector runs beyond the snapshot capture that live shaping performs anyway. Turning live
-    shaping on also drops it, because edits made while it was off were never tracked.
+    included (in the tree's own key form, so two distinct key objects never compare equal), and
+    compares them with the previous pass. Any difference drops the structure. No selector runs
+    beyond the snapshot capture that live shaping performs anyway. Turning live shaping on also
+    drops it, because edits made while it was off were never tracked, and posts one reshape so
+    those edits show without waiting for the next change.
   - **Live shaping off**: the reshape re-runs the key and parent selectors once per row
-    (`ParentStructureStillMatches`) and rebuilds on the first difference. Object (reference-identity)
-    keys cannot be proven unchanged by address, so they always rebuild.
+    (`ParentStructureStillMatches`) and rebuilds on the first difference.
+  - Either way, object (reference-identity) keys cannot be proven unchanged by address, so they
+    always rebuild.
 - **Property changes.** With `IsLiveSorting`, `IsLiveFiltering` or `IsLiveGrouping` on, an item's
-  key and parent key are observed and a change reparents the row on the next dispatcher turn.
+  key and parent key are observed and a change reparents the row on the next dispatcher turn. A
+  change raised on another thread is handed to the source's own thread first. While a cell editor
+  is open, the reshape waits and runs once the edit closes, so live data never ends a user's edit.
   Otherwise reparenting through `INotifyPropertyChanged` on `ManagerId` takes effect at the next
   collection change or reshape, the same contract as sort keys. To reparent immediately, an app
   replaces the item or removes and re-inserts it. Documented on `ParentBy`.

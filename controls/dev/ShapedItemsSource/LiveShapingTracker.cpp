@@ -39,43 +39,67 @@ void LiveShapingTracker::Subscribe(winrt::IInspectable const& item)
     {
         // Already tracking this address. The key is a raw ABI pointer, so an address freed by a
         // dead item can be handed to a new one -- an entry that resolves to a DIFFERENT object is
-        // stale and would otherwise leave the new item silently unsubscribed. When the item does
-        // not support weak references there is nothing to compare against, so the entry stands.
+        // stale and would otherwise leave the new item silently unsubscribed. An entry for an item
+        // without weak references holds it strongly, so its address cannot have been recycled.
         if (!existing->second.CanResolveItem || existing->second.Item.get() == item)
         {
             return;
         }
-        existing->second.Revoker.revoke();
-        m_subscriptions.erase(existing);
+        // Out of the map before revoking: a revoke calls into the item, which is app code.
+        m_subscriptions.extract(existing).mapped().Revoke();
     }
 
     auto const handler = m_changeHandler;
+    auto onChanged = [handler](winrt::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
+    {
+        handler(sender, args.PropertyName());
+    };
+
     Subscription subscription{};
     if (item.try_as<::IWeakReferenceSource>())
     {
         subscription.Item = winrt::make_weak(item);
         subscription.CanResolveItem = true;
+        subscription.Revoker = observable.PropertyChanged(winrt::auto_revoke, std::move(onChanged));
     }
-    subscription.Revoker = observable.PropertyChanged(
-        winrt::auto_revoke,
-        [handler](winrt::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
-        {
-            handler(sender, args.PropertyName());
-        });
+    else
+    {
+        subscription.Token = observable.PropertyChanged(std::move(onChanged));
+        subscription.StrongSource = observable;
+    }
     m_subscriptions.emplace(identity, std::move(subscription));
+}
+
+void LiveShapingTracker::Subscription::Revoke() noexcept
+{
+    Revoker.revoke();
+    if (auto const source = std::exchange(StrongSource, nullptr))
+    {
+        try
+        {
+            source.PropertyChanged(Token);
+        }
+        catch (...)
+        {
+            // Same as the auto-revoker: a source that fails to remove the handler is past caring.
+        }
+    }
 }
 
 void LiveShapingTracker::Unsubscribe(winrt::IInspectable const& item)
 {
     if (auto const it = m_subscriptions.find(Identity(item)); it != m_subscriptions.end())
     {
-        it->second.Revoker.revoke();
-        m_subscriptions.erase(it);
+        m_subscriptions.extract(it).mapped().Revoke();
     }
 }
 
+// Revoking calls the item's remove_PropertyChanged, which is app code and may re-enter this
+// tracker. Every path below therefore takes entries out of the map first and revokes afterwards,
+// so no iterator into m_subscriptions is live while app code runs.
 void LiveShapingTracker::RetainOnly(std::unordered_set<void const*> const& live)
 {
+    std::vector<Subscription> departed;
     for (auto it = m_subscriptions.begin(); it != m_subscriptions.end();)
     {
         if (live.count(it->first) != 0)
@@ -83,17 +107,21 @@ void LiveShapingTracker::RetainOnly(std::unordered_set<void const*> const& live)
             ++it;
             continue;
         }
-        it->second.Revoker.revoke();
-        it = m_subscriptions.erase(it);
+        departed.push_back(std::move(m_subscriptions.extract(it++).mapped()));
+    }
+
+    for (auto& subscription : departed)
+    {
+        subscription.Revoke();
     }
 }
 
 void LiveShapingTracker::UnsubscribeAll() noexcept
 {
-    for (auto& [identity, subscription] : m_subscriptions)
+    auto subscriptions = std::exchange(m_subscriptions, {});
+    for (auto& [identity, subscription] : subscriptions)
     {
         UNREFERENCED_PARAMETER(identity);
-        subscription.Revoker.revoke();
+        subscription.Revoke();
     }
-    m_subscriptions.clear();
 }

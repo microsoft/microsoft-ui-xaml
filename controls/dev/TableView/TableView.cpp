@@ -1483,6 +1483,13 @@ void TableView::AdoptItemsSource()
                 strongThis->OnTableViewSourceShapingChanged(reorderOnly);
             }
         });
+        // A live reshape is not the user's doing, so it must not end their edit: hold it until
+        // the editor closes (DrainCoalescedEditReshape resumes it).
+        sourceImpl->SetLiveShapingHold([weakThis]()
+        {
+            auto strongThis = weakThis.get();
+            return strongThis && strongThis->IsEditing();
+        });
     }
 }
 
