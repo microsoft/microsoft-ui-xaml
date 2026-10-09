@@ -839,6 +839,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 App::~App called.
                 MainWindow::~MainWindow called.
                 XamlShutdownCompletedOnThread raised.
+                XamlShutdownStartingForProcess raised.
+                XamlShutdownCompletedForProcess raised.
                 ShutdownCompleted raised.";
 
             VerifyLogsEqual(expectedShutdownLog, shutdownLog);

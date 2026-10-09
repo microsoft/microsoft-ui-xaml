@@ -6788,6 +6788,8 @@ namespace Parser
         KnownEventIndex::UnknownType_UnknownEvent,
         KnownEventIndex::FrameworkApplication_ResourceManagerRequested,
         KnownEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread,
+        KnownEventIndex::WindowsXamlManager_XamlShutdownStartingForProcess,
+        KnownEventIndex::WindowsXamlManager_XamlShutdownCompletedForProcess,
     };
 
     // Map known event indexes to stable event indexes
@@ -7078,5 +7080,7 @@ namespace Parser
         StableEventIndex::DesktopWindowXamlSource_TakeFocusRequested,
         StableEventIndex::DesktopWindowXamlSource_GotFocus,
         StableEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread,
+        StableEventIndex::WindowsXamlManager_XamlShutdownStartingForProcess,
+        StableEventIndex::WindowsXamlManager_XamlShutdownCompletedForProcess,
     };
 }
