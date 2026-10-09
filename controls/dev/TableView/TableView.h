@@ -727,6 +727,22 @@ private:
         m_isApplyingControlInitiatedSort = true;
         return gsl::finally([this]() { m_isApplyingControlInitiatedSort = false; });
     }
+    // Marks a re-shape as started by the HEADER's own activation path - Enter/Space on a focused
+    // header, or a tap on a header cell. See CaptureBodyFocusForReshape for why that, and not
+    // where focus happens to be, decides whether the body cursor is replayed afterwards.
+    //
+    // Scoped rather than flagged-and-queued: every re-shape a header activation causes runs
+    // SYNCHRONOUSLY inside ToggleSortDirection (the source applies the shaping delta and raises
+    // both notifications before it returns), so the scope covers exactly the window that can
+    // produce a capture and the flag is restored on the way out even if something throws. There is
+    // no dispatcher turn it could leak across.
+    [[nodiscard]] auto BeginHeaderActivationReshapeScope()
+    {
+        const bool previous = m_headerActivationReshape;
+        m_headerActivationReshape = true;
+        return gsl::finally([this, previous]() { m_headerActivationReshape = previous; });
+    }
+    bool m_headerActivationReshape{ false };
     // EmptyTemplate shows only for null or empty row sources.
     void UpdateEmptyState();
     void UpdateItemsSourceCollectionChangedSubscription();
@@ -907,28 +923,63 @@ private:
     // the same PROJECTED POSITION - the same row index, whichever record now occupies it - which is
     // deliberately NOT the record-identity rule that governs Tab re-entry (ResolveFocusEntryRow).
     //
-    // Both re-shape paths destroy the realized rows before the control is told about them, so the
-    // position has to be captured BEFORE the rows go away and replayed afterwards:
-    //   - a projection swap (filter, group verb, anything needing a rebuild) is captured at the top
-    //     of OnTableViewSourceProjectionChanged, which runs before RefreshRowsPipeline re-sources
-    //     the repeater;
-    //   - an in-place re-order (the ungrouped sort fast path) raises only a Reset on the existing
-    //     view, which is caught by a detector subscribed AHEAD of ItemsRepeater, so it still sees
-    //     the focused row realized. ItemsRepeater rescues focus to a neighbouring element while it
-    //     recycles (ViewManager::MoveFocusFromClearedIndex), which is exactly what would otherwise
-    //     move the cursor off the user's position.
-    // Both are replayed from OnTableViewSourceShapingChanged, the one notification raised after the
-    // new shape is in place.
+    // The position has to be TRACKED as focus moves rather than sampled when the re-shape is
+    // announced: both notifications the control can receive - the rows view's Reset and the
+    // projection-rebuilt callback - are raised after ItemsRepeater has already recycled the
+    // realized rows, so by then the focused element is gone. The capture therefore falls back to
+    // m_lastBodyFocus*, which the body's own GotFocus maintains.
+    //
+    // The replay is a budgeted pump rather than one shot: at the moment the restore is requested
+    // nothing is realized at the captured index, and the deferred work a re-shape queues behind it
+    // can still drop focus after a single attempt has run.
     void CaptureBodyFocusForReshape();
     void RestoreBodyFocusAfterReshape();
+    bool TryResolveLiveBodyFocusPosition(int32_t& row, int32_t& column, bool& cellLevel) const;
+    void TrackBodyFocusPosition();
+    void OnTableViewGotFocusForBodyTracking(
+        const winrt::IInspectable& sender,
+        const winrt::RoutedEventArgs& args);
+    void OnTableViewLosingFocusForBodyTracking(
+        const winrt::IInspectable& sender,
+        const winrt::Microsoft::UI::Xaml::Input::LosingFocusEventArgs& args);
+    void SuppressBodyFocusTrackingForThisTurn();
+    bool m_lastBodyFocusValid{ false };
+    int32_t m_lastBodyFocusRow{ -1 };
+    int32_t m_lastBodyFocusColumn{ 0 };
+    bool m_lastBodyFocusCellLevel{ false };
+    bool m_suppressBodyFocusTracking{ false };
+    winrt::UIElement::GotFocus_revoker m_bodyFocusTrackerGotFocusRevoker{};
+    winrt::UIElement::LosingFocus_revoker m_bodyFocusTrackerLosingFocusRevoker{};
+    void ArmReshapeFocusAttempt();
+    void OnReshapeFocusAttempt();
+    void CancelReshapeFocusRestore();
+    bool TryLandReshapeFocus();
+    bool IsBodyFocusAtRow(int32_t rowIndex) const;
+    bool HasFocusLeftTableView() const;
+    // Drops a capture no shaping notification claimed, so an app-raised Reset cannot leave a stale
+    // body position for an unrelated later re-shape to replay.
+    void QueueReshapeFocusCaptureDisarm();
     void UpdateReshapeFocusDetectorSubscription(const winrt::ItemsSourceView& view);
     void OnRowsSourceResetForFocus(
         const winrt::IInspectable& sender,
         const winrt::NotifyCollectionChangedEventArgs& args);
     bool m_reshapeFocusValid{ false };
+    bool m_reshapeFocusDisarmQueued{ false };
     int32_t m_reshapeFocusRow{ -1 };
     int32_t m_reshapeFocusColumn{ 0 };
     bool m_reshapeFocusCellLevel{ false };
+    // The consumed capture, replayed until it sticks.
+    int32_t m_pendingReshapeFocusRow{ -1 };
+    int32_t m_pendingReshapeFocusColumn{ 0 };
+    bool m_pendingReshapeFocusCellLevel{ false };
+    int32_t m_reshapeFocusAttemptsLeft{ 0 };
+    bool m_reshapeFocusAimed{ false };
+    bool m_reshapeFocusTurnQueued{ false };
+    winrt::event_token m_reshapeFocusLayoutToken{};
+    // Enough attempts to cover realize -> arrange -> the deferred work a re-shape queues behind it,
+    // across both the layout-pass and dispatcher-turn triggers, and small enough that a restore can
+    // never fight the user for focus.
+    static constexpr int32_t s_reshapeFocusRestoreAttempts{ 24 };
     // Subscribed before the repeater so a Reset is observed while the rows are still realized.
     winrt::ItemsSourceView::CollectionChanged_revoker m_reshapeFocusDetectorRevoker{};
     winrt::ItemsSourceView m_reshapeFocusDetectorView{ nullptr };

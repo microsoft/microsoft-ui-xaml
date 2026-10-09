@@ -1575,7 +1575,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product: grouped row PositionInSet/SizeOfSet are flat, not relative to the containing group (api-spec:884).
         [TestProperty("Description", "Verifies grouped row peers report PositionInSet and SizeOfSet relative to their own group, excluding header bands.")]
         public void VerifyGroupedRowPeerPositionInSetIsRelativeToItsGroup()
         {
@@ -1698,7 +1697,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Product: the group header peer computes Level 1; the dev spec says it reports no Level (0).
         [TestProperty("Description", "Verifies a single-level group header peer computes no Level (reports 0) and an app-set AutomationProperties.Level wins.")]
         public void VerifyGroupHeaderPeerReportsNoLevelAndAppSetLevelWins()
         {

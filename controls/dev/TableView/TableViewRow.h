@@ -9,6 +9,8 @@
 #include "TableViewRow.g.h"
 #include "TableViewRow.properties.h"
 
+#include <vector>
+
 class TableViewRow :
     public ReferenceTracker<TableViewRow, winrt::implementation::TableViewRowT>,
     public TableViewRowProperties
@@ -132,8 +134,10 @@ private:
     // True when focus is on this row or exactly on one of its cells - never inside cell content.
     bool IsGridLevelFocusInternal();
 
-    // Performs the Tab move with the cells' content tab stops suppressed for its duration only.
-    bool MoveFocusOutOfRowInternal(winrt::FocusNavigationDirection direction);
+    // Takes the cells' authored content out of the tab order so XAML's own Tab walk cannot descend
+    // into it, and puts it back on the next dispatcher turn.
+    void SuppressCellContentTabStopsForTabWalkInternal();
+    void RestoreCellContentTabStopsInternal();
 
     // Resolves body Tab entry: the remembered row, and - when the shared cursor is at cell level -
     // the remembered column's cell rather than the row.
@@ -206,6 +210,10 @@ private:
 
     // False = row-level focus; true = cell-level focus. Recycled rows return at row level.
     bool m_isCellLevel{ false };
+
+    // Cell-content elements whose IsTabStop was taken away for the length of one Tab walk. Empty
+    // whenever no Tab press is in flight.
+    std::vector<winrt::UIElement> m_suppressedContentTabStops{};
 
     // Prevent DataContextChanged re-entry while RebuildCells updates child DCs.
     bool m_isRebuildingCells{ false };

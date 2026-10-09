@@ -401,16 +401,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Not observable at this tier: frozen columns are counter-translated in the compositor, and a UIElement.Translation is invisible to UIA BoundingRectangle. Needs an in-process readout of the frozen band's translation (as HeaderH does for the header sync) or an API/render test; re-enable once one exists.
         [TestProperty("Description", "Verifies a FrozenEdge.Leading column stays pinned while unfrozen columns scroll horizontally under pointer input.")]
         public void FrozenColumnStaysPinnedUnderPointerScroll()
         {
-            // Derives from TableView-dev-spec.md "Frozen leading columns" (:149): leading-frozen header and
+            // Derives from TableView-dev-spec.md:185 ("Frozen leading columns"): leading-frozen header and
             // body cells are counter-translated against the horizontal scroll offset, so a FrozenEdge.Leading
             // column keeps its on-screen x while non-frozen columns shift. FrozenName authors
-            // FrozenEdge="Leading" on the Scrolling table (TableView.idl:150). API 4.x sets the offset directly
-            // via ChangeView; this test drives real wheel and drag so the frozen layout runs off the input
-            // path. A failure means frozen pinning is applied only from the programmatic scroll path.
+            // FrozenEdge="Leading" on the Scrolling table (TableViewPage.xaml:188). API 4.x sets the offset
+            // directly via ChangeView; this test drives a real pointer drag so the frozen layout runs off the
+            // input path. A failure means frozen pinning is applied only from the programmatic scroll path.
+            //
+            // This test deliberately does NOT read the frozen header peer's BoundingRectangle: the revision of
+            // this test that did was the one marked Ignore, because the peer rectangle slid by the full scroll
+            // amount while the pin was working. The page publishes the rendered geometry in process instead -
+            // see TableViewPage.xaml.cs ReportScrollOffsets.
+            //
+            // Coordinate space (measured on the VM, 2026-10-09 - this is the subtlety that broke the first
+            // attempt at this test): TransformToVisual ALREADY INCLUDES UIElement.Translation. A 51px scroll
+            // moved the unfrozen cell's transform by exactly -51 while the frozen cell's transform stayed put
+            // despite its Translation.X going 0 -> 51; the pin can only cancel the scroller that way if it is
+            // already folded into the transform. So the published *X values are the raw transform - the
+            // rendered position - and the *T values are published separately as a mechanism diagnostic only,
+            // never summed in. Asserting on a sum would double-count the pin.
+            //
+            // The Body* trio samples the first realized row's PART_CellsHost - the band
+            // TableViewCellsPanel.cpp:318-322 pins for the user - and carries the primary assertions. The
+            // header trio is asserted too, because dev-spec:185 pins header AND body cells and
+            // RefreshFrozenColumns (TableView_Columns.cpp:66-95) is supposed to drive both from one offset.
             using (var setup = new TestSetupHelper(PageName))
             {
                 if (!SelectPivotItem(ScrollingPivotItem))
@@ -426,58 +443,96 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     return;
                 }
 
-                UIObject frozenHeader = FindColumnHeader(tableView, "FrozenName");
-                UIObject scrollHeader = FindColumnHeader(tableView, "ScrollCity");
-                if (frozenHeader == null || scrollHeader == null)
-                {
-                    Verify.Fail("The 'FrozenName' and/or 'ScrollCity' header peers were not found on the header host.");
-                    return;
-                }
-
-                double frozenLeftBefore = frozenHeader.BoundingRectangle.Left;
-                double scrollLeftBefore = scrollHeader.BoundingRectangle.Left;
                 string offsetsBefore = ReadScrollOffsets();
+                double hBefore = ReadScrollOffsetComponent(offsetsBefore, "H");
+                double frozenXBefore = ReadScrollOffsetComponent(offsetsBefore, "FrozenX");
+                double scrollXBefore = ReadScrollOffsetComponent(offsetsBefore, "ScrollX");
+                double bodyFrozenXBefore = ReadScrollOffsetComponent(offsetsBefore, "BodyFrozenX");
+                double bodyScrollXBefore = ReadScrollOffsetComponent(offsetsBefore, "BodyScrollX");
+
+                Verify.IsFalse(
+                    double.IsNaN(hBefore) ||
+                    double.IsNaN(frozenXBefore) || double.IsNaN(scrollXBefore) ||
+                    double.IsNaN(bodyFrozenXBefore) || double.IsNaN(bodyScrollXBefore),
+                    string.Format(
+                        "The page must publish H and both the header and body frozen/unfrozen x before the scroll; got '{0}'.",
+                        offsetsBefore));
 
                 // Shift+wheel is NOT a horizontal scroll here - measured, it scrolls vertically - so the drag of
-                // the body scroller's horizontal ScrollBar thumb is the real pointer route. Kept small so
-                // ScrollCity stays inside the viewport: a header scrolled clear out reports an empty rectangle
-                // whose Left reads 0, which would satisfy the "it moved" precondition falsely.
+                // the body scroller's horizontal ScrollBar thumb is the real pointer route.
                 if (!DragHorizontalScrollBar(tableView, 30))
                 {
                     Verify.Fail("The body scroller's horizontal ScrollBar was not found.");
                     return;
                 }
 
-                // No ElementCache.Clear() here - see HorizontalScrollKeepsHeaderAligned for why it crashes the
-                // app (finding #13) without making these rectangles any fresher.
-                double frozenLeftAfter = FindColumnHeader(tableView, "FrozenName").BoundingRectangle.Left;
-                double scrollLeftAfter = FindColumnHeader(tableView, "ScrollCity").BoundingRectangle.Left;
+                Wait.ForIdle();
+
                 string offsetsAfter = ReadScrollOffsets();
+                double hAfter = ReadScrollOffsetComponent(offsetsAfter, "H");
+                double frozenXAfter = ReadScrollOffsetComponent(offsetsAfter, "FrozenX");
+                double scrollXAfter = ReadScrollOffsetComponent(offsetsAfter, "ScrollX");
+                double bodyFrozenXAfter = ReadScrollOffsetComponent(offsetsAfter, "BodyFrozenX");
+                double bodyScrollXAfter = ReadScrollOffsetComponent(offsetsAfter, "BodyScrollX");
+                double bodyFrozenTAfter = ReadScrollOffsetComponent(offsetsAfter, "BodyFrozenT");
 
-                Log.Comment("FrozenName Left {0}->{1}; ScrollCity Left {2}->{3}; body offsets '{4}' -> '{5}'.",
-                    frozenLeftBefore, frozenLeftAfter, scrollLeftBefore, scrollLeftAfter, offsetsBefore, offsetsAfter);
+                Log.Comment("Body offsets '{0}' -> '{1}'.", offsetsBefore, offsetsAfter);
 
-                Verify.AreNotEqual(
-                    offsetsBefore,
-                    offsetsAfter,
-                    "Dragging the horizontal ScrollBar thumb must scroll PART_BodyScroller horizontally; identical offsets mean the input never reached the scroller.");
-
-                // The unfrozen column must actually have moved — otherwise the pinned assertion is vacuous.
-                Verify.IsGreaterThan(
-                    scrollLeftAfter,
-                    0.0,
-                    "The unfrozen 'ScrollCity' header must still be on screen; a header scrolled out reports an empty rectangle and would fake the movement below.");
+                double scrolledBy = hAfter - hBefore;
 
                 Verify.IsGreaterThan(
-                    Math.Abs(scrollLeftAfter - scrollLeftBefore),
+                    scrolledBy,
                     10.0,
-                    "The unfrozen 'ScrollCity' column must shift under horizontal scroll (precondition for the frozen assertion).");
+                    "Dragging the horizontal ScrollBar thumb must scroll PART_BodyScroller right by a measurable amount; otherwise the pinning assertions below are vacuous.");
 
-                // The frozen column's on-screen x must not move (dev-spec:149 counter-translation).
+                // Precondition: unfrozen BODY content must travel against the scroll by the full offset. This
+                // also validates the measurement formula - an element with no pin must move by exactly -scroll.
                 Verify.IsLessThanOrEqual(
-                    Math.Abs(frozenLeftAfter - frozenLeftBefore),
-                    4.0,
-                    "A FrozenEdge.Leading column must stay pinned while the body scrolls horizontally (dev-spec:149).");
+                    Math.Abs((bodyScrollXAfter - bodyScrollXBefore) + scrolledBy),
+                    2.0,
+                    string.Format(
+                        "The unfrozen 'ScrollCity' body cell must shift left by the scroll amount ({0}); it moved by {1}.",
+                        scrolledBy,
+                        bodyScrollXAfter - bodyScrollXBefore));
+
+                // The claim under test: the frozen BODY cell's rendered x does not move (dev-spec:185).
+                // Remove the counter-translation and this value tracks bodyScrollX, failing by ~scrolledBy.
+                Verify.IsLessThanOrEqual(
+                    Math.Abs(bodyFrozenXAfter - bodyFrozenXBefore),
+                    2.0,
+                    string.Format(
+                        "A FrozenEdge.Leading body cell must stay pinned while the body scrolls horizontally (dev-spec:185); its rendered x went {0} -> {1} under a {2}px scroll.",
+                        bodyFrozenXBefore,
+                        bodyFrozenXAfter,
+                        scrolledBy));
+
+                // ...and it is pinned by the spec'd mechanism, not by having failed to lay out at all: the
+                // counter-translation must equal the offset it cancels. Diagnostic-grade, never summed above.
+                Verify.IsLessThanOrEqual(
+                    Math.Abs(bodyFrozenTAfter - hAfter),
+                    2.0,
+                    string.Format(
+                        "The frozen body cell's counter-translation ({0}) must match the horizontal scroll offset ({1}) it cancels (dev-spec:185).",
+                        bodyFrozenTAfter,
+                        hAfter));
+
+                // dev-spec:185 pins header cells too, and the header band has its own scroller: assert the
+                // same contract there, with the same unfrozen precondition so neither half can go vacuous.
+                Verify.IsLessThanOrEqual(
+                    Math.Abs((scrollXAfter - scrollXBefore) + scrolledBy),
+                    2.0,
+                    string.Format(
+                        "The unfrozen 'ScrollCity' header cell must shift left by the scroll amount ({0}); it moved by {1}.",
+                        scrolledBy,
+                        scrollXAfter - scrollXBefore));
+
+                Verify.IsLessThanOrEqual(
+                    Math.Abs(frozenXAfter - frozenXBefore),
+                    2.0,
+                    string.Format(
+                        "The 'FrozenName' header cell must stay pinned with its body cells (dev-spec:185); its rendered x went {0} -> {1}.",
+                        frozenXBefore,
+                        frozenXAfter));
             }
         }
 

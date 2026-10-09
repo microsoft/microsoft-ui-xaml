@@ -165,22 +165,128 @@ namespace MUXControlsTestApp
             ScrollingTableView.LayoutUpdated -= OnScrollingTableViewLayoutUpdated;
 
             _scrollingHeaderScroller = FindDescendantByName<ScrollViewer>(ScrollingTableView, "PART_HeaderScroller");
+            _scrollingHeaderHost = FindDescendantByName<Panel>(ScrollingTableView, "PART_HeaderHost");
 
             scroller.ViewChanged += (s, args) => ReportScrollOffsets(scroller);
+
+            // The frozen-band readout below must be sampled AFTER the header band has re-laid out at its
+            // synced offset, which happens after PART_BodyScroller's ViewChanged returns. LayoutUpdated is
+            // the first point at which both the counter-translation and the header offset are settled, so
+            // the readout is refreshed there too. ReportScrollOffsets writes only on change, so this cannot
+            // feed itself a layout loop.
+            ScrollingTableView.LayoutUpdated += (s, args) => ReportScrollOffsets(_scrollingBodyScroller);
+
             ReportScrollOffsets(scroller);
         }
 
         private ScrollViewer _scrollingHeaderScroller;
+        private Panel _scrollingHeaderHost;
 
+        // Publishes PART_BodyScroller's offsets plus the frozen-band geometry an out-of-process test cannot
+        // otherwise see.
+        //
+        // Why the frozen values are needed: leading-frozen cells are pinned by writing UIElement.Translation
+        // (TableViewCellsPanel.cpp:318-322, per TableView-dev-spec.md:185). The previous revision of
+        // FrozenColumnStaysPinnedUnderPointerScroll watched the frozen header *peer's* UIA BoundingRectangle
+        // and saw it slide by the full scroll amount while the pin was in fact working, so the rendered
+        // position has to be sampled in process instead.
+        //
+        // COORDINATE SPACE - measured on the test VM, 2026-10-09, and the reason the first attempt at this
+        // readout was wrong:
+        //
+        //   TransformToVisual ALREADY INCLUDES UIElement.Translation.
+        //
+        // The run that proved it: a 51px horizontal scroll moved the unfrozen cell's transform 181 -> 130
+        // (exactly -51, the scroller offset) while the frozen cell's transform stayed at 1 even though its
+        // Translation.X had gone 0 -> 51. The frozen cell's transform could only hold still if the +51
+        // counter-translation were already folded into it, cancelling the -51 from the scroller. Adding
+        // Translation.X on top therefore DOUBLE-COUNTED the pin and reported 52 for a cell that had not moved.
+        //
+        // So the rendered x in table space is plain TransformToVisual(ScrollingTableView).X - nothing added.
+        // Translation.X is still published, but purely as a mechanism diagnostic, never as a term in the sum.
+        //
+        // Format:
+        //   "H=<h>;V=<v>;HeaderH=<h>;FrozenX=<x>;FrozenT=<tx>;ScrollX=<x>;BodyFrozenX=<x>;BodyFrozenT=<tx>;BodyScrollX=<x>"
+        // All x values are table-relative (independent of window placement). The Frozen*/Scroll* trio samples
+        // the HEADER band (PART_HeaderHost); the Body* trio samples the first realized row's cell panel
+        // (PART_CellsHost) - the band TableViewCellsPanel.cpp:318-322 actually pins for the user. Both trios
+        // are read from the same panel-per-band, both transformed against the same visual (the TableView),
+        // so a frozen and an unfrozen reading within a trio are directly comparable.
         private void ReportScrollOffsets(ScrollViewer scroller)
         {
-            ScrollOffsetTextBlock.Text = string.Format(
-                "H={0:F0};V={1:F0};HeaderH={2}",
+            if (scroller == null)
+            {
+                return;
+            }
+
+            Panel bodyCellsHost = FindDescendantByName<Panel>(ScrollingTableView, "PART_CellsHost");
+
+            string text = string.Format(
+                "H={0:F0};V={1:F0};HeaderH={2};FrozenX={3};FrozenT={4};ScrollX={5};BodyFrozenX={6};BodyFrozenT={7};BodyScrollX={8}",
                 scroller.HorizontalOffset,
                 scroller.VerticalOffset,
                 _scrollingHeaderScroller == null
                     ? "<none>"
-                    : _scrollingHeaderScroller.HorizontalOffset.ToString("F0"));
+                    : _scrollingHeaderScroller.HorizontalOffset.ToString("F0"),
+                FormatCellRenderedLeft(_scrollingHeaderHost, frozen: true),
+                FormatCellTranslationX(_scrollingHeaderHost, frozen: true),
+                FormatCellRenderedLeft(_scrollingHeaderHost, frozen: false),
+                FormatCellRenderedLeft(bodyCellsHost, frozen: true),
+                FormatCellTranslationX(bodyCellsHost, frozen: true),
+                FormatCellRenderedLeft(bodyCellsHost, frozen: false));
+
+            // LayoutUpdated also drives this; writing an unchanged string would re-dirty layout forever.
+            if (ScrollOffsetTextBlock.Text != text)
+            {
+                ScrollOffsetTextBlock.Text = text;
+            }
+        }
+
+        // The first cell in a cell panel whose column is (or is not) FrozenEdge.Leading. Cells carry their
+        // TableViewColumn in Tag - the same association TableViewCellsPanel::ApplyFrozenColumnLayout keys off,
+        // so this selects exactly the elements the product decided to pin (or not).
+        private static FrameworkElement FindCell(Panel cellsHost, bool frozen)
+        {
+            if (cellsHost == null)
+            {
+                return null;
+            }
+
+            foreach (UIElement child in cellsHost.Children)
+            {
+                if (child is FrameworkElement element &&
+                    element.Tag is TableViewColumn column &&
+                    (column.FrozenEdge == TableViewFrozenEdge.Leading) == frozen)
+                {
+                    return element;
+                }
+            }
+
+            return null;
+        }
+
+        // Rendered left edge of the cell in TableView space. TransformToVisual already folds in BOTH the
+        // scroller's offset and the cell's Translation (see the measurement note above), so this is the
+        // position the user sees and nothing may be added to it.
+        private string FormatCellRenderedLeft(Panel cellsHost, bool frozen)
+        {
+            var cell = FindCell(cellsHost, frozen);
+            if (cell == null)
+            {
+                return "<none>";
+            }
+
+            return cell.TransformToVisual(ScrollingTableView)
+                       .TransformPoint(new Windows.Foundation.Point(0, 0))
+                       .X
+                       .ToString("F0");
+        }
+
+        // Diagnostic only: the counter-translation the product wrote. Never summed into the rendered x.
+        private static string FormatCellTranslationX(Panel cellsHost, bool frozen)
+        {
+            var cell = FindCell(cellsHost, frozen);
+            return cell == null ? "<none>" : cell.Translation.X.ToString("F0");
         }
 
         private static T FindDescendantByName<T>(DependencyObject root, string name) where T : FrameworkElement

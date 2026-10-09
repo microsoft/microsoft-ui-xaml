@@ -17,9 +17,32 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!-- ORDER MATTERS, it is not cosmetic. The lab inner frame caps the page at 1024x664
+             (TestFrame.cs:_innerFrameInLabDimensions_Checked), and this strip is wider than that: whatever
+             sits past ~940px is clipped OUT of the window. A clipped control is still found by
+             FindElement.ById and still answers UIA (so Invoke()/InvokeAndWait() work on it), but a
+             PHYSICAL click - InputHelper.LeftClick/Tap, which targets BoundingRectangle - lands outside the
+             app and silently does nothing. That is how CollapseAllGroupsReconcilesGestureExpandedGroup read
+             as "CollapseAllGroups is a no-op" when the API itself was fine.
+             So: every control a test clicks with the mouse goes FIRST; the ones driven through UIA patterns
+             (the ComboBoxes) go last, where clipping is harmless. The strip is deliberately kept to one row -
+             a second row would steal height from the table, and the grouped tests need all 12 containers
+             (3 headers + 9 rows) realized. -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
             <Button Content="Dummy Button" AutomationProperties.Name="DummyButton" AutomationProperties.AutomationId="DummyButton" />
             <Button Content="Trailing Button" AutomationProperties.Name="TrailingButton" AutomationProperties.AutomationId="TrailingButton" />
+            <Button Content="Expand All Groups"
+                    AutomationProperties.Name="ExpandAllGroupsButton"
+                    AutomationProperties.AutomationId="ExpandAllGroupsButton"
+                    Click="OnExpandAllGroupsClick" />
+            <Button Content="Collapse All Groups"
+                    AutomationProperties.Name="CollapseAllGroupsButton"
+                    AutomationProperties.AutomationId="CollapseAllGroupsButton"
+                    Click="OnCollapseAllGroupsClick" />
+            <Button Content="Delayed Unload"
+                    AutomationProperties.Name="DelayedUnloadButton"
+                    AutomationProperties.AutomationId="DelayedUnloadButton"
+                    Click="OnDelayedUnloadClick" />
             <CheckBox Content="IsReadOnly"
                       AutomationProperties.Name="IsReadOnlyCheckBox"
                       AutomationProperties.AutomationId="IsReadOnlyCheckBox"
@@ -48,18 +71,6 @@
                     AutomationProperties.Name="ClearFilterButton"
                     AutomationProperties.AutomationId="ClearFilterButton"
                     Click="OnClearFilterClick" />
-            <Button Content="Expand All Groups"
-                    AutomationProperties.Name="ExpandAllGroupsButton"
-                    AutomationProperties.AutomationId="ExpandAllGroupsButton"
-                    Click="OnExpandAllGroupsClick" />
-            <Button Content="Collapse All Groups"
-                    AutomationProperties.Name="CollapseAllGroupsButton"
-                    AutomationProperties.AutomationId="CollapseAllGroupsButton"
-                    Click="OnCollapseAllGroupsClick" />
-            <Button Content="Delayed Unload"
-                    AutomationProperties.Name="DelayedUnloadButton"
-                    AutomationProperties.AutomationId="DelayedUnloadButton"
-                    Click="OnDelayedUnloadClick" />
             <ComboBox AutomationProperties.Name="SelectionModeComboBox"
                       AutomationProperties.AutomationId="SelectionModeComboBox"
                       SelectedIndex="1"
@@ -192,14 +203,18 @@
                     <controls:TableViewTextColumn Header="ScrollAge" Width="220" Binding="{Binding Age}" />
                     <controls:TableViewTextColumn Header="ScrollId" Width="220" Binding="{Binding Id}" />
                 </controls:TableView>
-                <!-- Publishes PART_BodyScroller's offsets so an out-of-process test can tell whether the body
-                     actually scrolled. Without it, "the header did not move" is vacuous: it also holds when
-                     nothing scrolled at all. -->
+                <!-- Publishes PART_BodyScroller's offsets AND the frozen band's rendered geometry so an
+                     out-of-process test can tell whether the body actually scrolled and whether the
+                     FrozenEdge.Leading column stayed pinned. Without the offsets, "the header did not move"
+                     is vacuous: it also holds when nothing scrolled at all. Without the frozen values the
+                     pinning is simply invisible - it is a composition-only UIElement.Translation, which no
+                     UIA BoundingRectangle reflects. See ReportScrollOffsets in the code-behind. -->
                 <TextBlock x:Name="ScrollOffsetTextBlock"
                            AutomationProperties.Name="ScrollOffsetTextBlock"
                            AutomationProperties.AutomationId="ScrollOffsetTextBlock"
                            IsTabStop="False"
-                           Width="300"
+                           Width="520"
+                           TextWrapping="Wrap"
                            Text="&lt;not resolved&gt;" />
                 </StackPanel>
             </Grid>

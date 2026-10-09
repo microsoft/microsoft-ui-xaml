@@ -40,7 +40,13 @@
   <Target Name="CreateManifestResourceNames" />
   <Target Name="GetMrtPackagingOutputs" />
   
-  <Target Name="FillExtensions" BeforeTargets="_CreateWinUIPackageLayout" Inputs="AppxManifest.xml;$(ArtifactsObjDir)MergedWinMD\LiftedWinRTClassRegistrations.xml" Outputs="$(OutDir)AppxManifest.xml">
+  <!-- $(LiftedExtensions) is computed here and consumed by both outputs, so both must be produced by
+       this one target. Splitting the .appxfragment into a separate incremental target let MSBuild skip
+       this target (AppxManifest.xml up to date) while still running the other, which then wrote an empty
+       fragment from an undefined $(LiftedExtensions) - and because the empty fragment was then newer than
+       AppxManifest.xml, every later build considered it up to date. Consumers of the component package
+       (e.g. MUXControlsTestApp) lost every WinUI activatable class registration as a result. -->
+  <Target Name="FillExtensions" BeforeTargets="_CreateWinUIPackageLayout" Inputs="AppxManifest.xml;$(ArtifactsObjDir)MergedWinMD\LiftedWinRTClassRegistrations.xml" Outputs="$(OutDir)AppxManifest.xml;$(OutDir)package.appxfragment">
     <PropertyGroup>
       <Namespaces>
         <Namespace Prefix="ns" Uri="http://schemas.microsoft.com/appx/manifest/foundation/windows10" />
@@ -70,9 +76,8 @@
         Query="/ns:Package/ns:Extensions"
         Namespaces="$(Namespaces)"
         Value="$(LiftedExtensions)"/>
-  </Target>
-  
-  <Target Name="GenerateAppxFragmentFromAppxManifest" BeforeTargets="_CreateWinUIPackageLayout" DependsOnTargets="FillExtensions" Inputs="$(OutDir)AppxManifest.xml" Outputs="$(OutDir)package.appxfragment">
+
+    <!-- Emit the matching component-package fragment from the same $(LiftedExtensions) value. -->
     <PropertyGroup>
       <AppxFragment>
         %3C?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?%3E
@@ -84,7 +89,7 @@
       </AppxFragment>
     </PropertyGroup>
 
-    <WriteLinesToFile File="$(OutDir)package.appxfragment" Lines="$(AppxFragment)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile File="$(OutDir)package.appxfragment" Lines="$(AppxFragment)" Overwrite="true" />
   </Target>
   
   <ItemGroup>

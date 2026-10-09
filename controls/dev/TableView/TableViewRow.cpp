@@ -488,16 +488,20 @@ bool TableViewRow::IsGridLevelFocusInternal()
     return FindOwnCellInternal(focused, true /* requireExact */) != nullptr;
 }
 
-// Runs the Tab move the framework would have run, with the cell content's tab stops suppressed for
-// exactly the length of that synchronous walk.
+// Takes the authored cell content out of the tab order for the duration of ONE Tab walk.
 //
 // The suppression cannot be made permanent: CUIElement::IsFocusable requires IsTabStop, so an
 // authored Button/ComboBox left with IsTabStop(false) would also stop taking POINTER focus, and
-// Enter-into-content would have nothing to focus. Restoring it on the way out keeps authored
-// content exactly as the app declared it the rest of the time.
-bool TableViewRow::MoveFocusOutOfRowInternal(winrt::FocusNavigationDirection direction)
+// Enter-into-content would have nothing to focus. Restoring it on the next dispatcher turn keeps
+// authored content exactly as the app declared it the rest of the time, and the turn boundary is
+// after XAML has run the Tab move - XAML performs it as the default action of the unhandled
+// KeyDown, inside the same input message.
+void TableViewRow::SuppressCellContentTabStopsForTabWalkInternal()
 {
-    std::vector<winrt::UIElement> suppressed;
+    // A press that never reached a dispatcher turn (two Tabs in one input burst) must not leave
+    // the first list behind: restore it, then collect against the live tree.
+    RestoreCellContentTabStopsInternal();
+
     if (auto const host = m_cellsHost.get())
     {
         auto const children = host.Children();
@@ -506,32 +510,60 @@ bool TableViewRow::MoveFocusOutOfRowInternal(winrt::FocusNavigationDirection dir
         {
             if (auto const cell = children.GetAt(i))
             {
-                AppendContentTabStops(cell, suppressed);
+                AppendContentTabStops(cell, m_suppressedContentTabStops);
             }
         }
     }
 
-    for (auto const& element : suppressed)
+    if (m_suppressedContentTabStops.empty())
+    {
+        return;
+    }
+
+    for (auto const& element : m_suppressedContentTabStops)
     {
         element.IsTabStop(false);
     }
 
-    bool moved = false;
-    try
+    auto weakRow = get_weak();
+    auto const queue = DispatcherQueue();
+    if (!queue || !queue.TryEnqueue([weakRow]()
+        {
+            if (auto strongRow = weakRow.get())
+            {
+                try
+                {
+                    strongRow->RestoreCellContentTabStopsInternal();
+                }
+                catch (...)
+                {
+                    // Best-effort restore; never fail-fast the dispatcher.
+                }
+            }
+        }))
     {
-        moved = winrt::FocusManager::TryMoveFocus(direction);
+        // No dispatcher (test host / teardown): authored content must never be left out of the
+        // tab order, so undo immediately even though that forfeits this press.
+        RestoreCellContentTabStopsInternal();
     }
-    catch (...)
+}
+
+void TableViewRow::RestoreCellContentTabStopsInternal()
+{
+    if (m_suppressedContentTabStops.empty())
     {
-        // A refused focus move must still restore the authored tab stops below.
+        return;
     }
+
+    auto const suppressed = std::move(m_suppressedContentTabStops);
+    m_suppressedContentTabStops.clear();
 
     for (auto const& element : suppressed)
     {
+        // Only elements that already reported IsTabStop were collected, so restoring to true
+        // cannot promote content the app declared non-tabbable.
         element.IsTabStop(true);
     }
-
-    return moved;
 }
 
 // Tab is a BAND gesture, not a per-cell one: the body is one tab stop (dev-spec:201) and the route
@@ -546,6 +578,13 @@ bool TableViewRow::MoveFocusOutOfRowInternal(winrt::FocusNavigationDirection dir
 //
 // PART_CellsHost's KeyboardNavigationMode::Once does not cover this either: it governs movement
 // once focus is already inside the host, while the row that Tab starts from sits outside it.
+//
+// The move itself is deliberately left to XAML. Running it here through
+// FocusManager::TryMoveFocus is NOT equivalent: that walk does not honour the
+// KeyboardNavigationMode::Once scope ItemsRepeater puts on itself, so Shift+Tab from any row but
+// the first stepped backwards into the PREVIOUS row's content instead of crossing to the header
+// band. Suppressing the content and leaving the key unhandled keeps the framework walk - which
+// does honour Once between siblings - and removes only the one candidate it gets wrong.
 void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 {
     if (!args.Handled() &&
@@ -555,17 +594,7 @@ void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         !IsKeyDown(winrt::VirtualKey::Menu) &&
         IsGridLevelFocusInternal())
     {
-        const auto direction = IsKeyDown(winrt::VirtualKey::Shift)
-            ? winrt::FocusNavigationDirection::Previous
-            : winrt::FocusNavigationDirection::Next;
-
-        if (MoveFocusOutOfRowInternal(direction))
-        {
-            args.Handled(true);
-            return;
-        }
-
-        // Nothing to move to. Leave the key unhandled rather than swallowing it.
+        SuppressCellContentTabStopsForTabWalkInternal();
     }
 
     __super::OnKeyDown(args);

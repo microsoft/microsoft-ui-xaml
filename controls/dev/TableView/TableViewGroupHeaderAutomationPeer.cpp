@@ -119,19 +119,10 @@ int32_t TableViewGroupHeaderAutomationPeer::GetLevelCore()
         return provided;
     }
 
-    // 1-based per UIA; 0 means "unknown", the honest answer once the projection info is gone.
-    if (auto const header = GetHeader())
-    {
-        if (auto const info = header.Content().try_as<winrt::TableViewGroupInfo>())
-        {
-            const auto level = info.Level();
-            if (level >= 0)
-            {
-                return level + 1;
-            }
-        }
-    }
-
+    // dev-spec:230 - the band computes NO Level. Grouping is single-level, so there is no
+    // hierarchy to announce and synthesizing "level 1" tells a screen reader the user is inside a
+    // nesting that does not exist. 0 is UIA's "not specified"; only an app-set
+    // AutomationProperties.Level, handled above, puts a Level on this band.
     return 0;
 }
 

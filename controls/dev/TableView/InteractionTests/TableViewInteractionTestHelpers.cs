@@ -557,18 +557,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         internal static string ReadFirstItemName() => ReadPageReadout(FirstItemName);
 
-        // Reads the page's PART_BodyScroller offset readout, formatted "H=<h>;V=<v>;HeaderH=<h>". Used as a
-        // precondition that the body moved, and - via ReadScrollOffsetComponent - as the subject of the
-        // header-sync assertion, because the header band's travel is NOT observable through UIA
-        // BoundingRectangle (the control drives PART_HeaderScroller's offset rather than moving the peers).
+        // Reads the page's PART_BodyScroller offset readout, formatted
+        // "H=<h>;V=<v>;HeaderH=<h>;FrozenX=<x>;FrozenT=<tx>;ScrollX=<x>;BodyFrozenX=<x>;BodyFrozenT=<tx>;BodyScrollX=<x>".
+        // Used as a precondition that the body moved, and - via ReadScrollOffsetComponent - as the subject of
+        // the header-sync and frozen-column assertions, because neither the header band's travel nor the frozen
+        // band's pinning is observable through UIA BoundingRectangle (the control drives PART_HeaderScroller's
+        // offset rather than moving the peers, and pins frozen cells with a UIElement.Translation that the peer
+        // rectangles did not reflect when measured).
+        //
+        // The *X components are rendered x in TableView space, taken straight from TransformToVisual - which
+        // already folds in BOTH the scroller offset and Translation. The *T components are the raw
+        // counter-translation, published for diagnosis only: adding one to its *X double-counts the pin.
         internal static string ReadScrollOffsets()
         {
             var readout = FindElement.ById<TextBlock>(ScrollOffsets);
             return readout == null ? "<no readout>" : readout.DocumentText;
         }
 
-        // Pulls one named component out of the "H=<h>;V=<v>;HeaderH=<h>" readout, or double.NaN when the
-        // readout is missing or malformed.
+        // Pulls one named component out of the scroll readout, or double.NaN when the readout is missing or
+        // malformed.
         internal static double ReadScrollOffsetComponent(string offsets, string name)
         {
             if (string.IsNullOrEmpty(offsets)) { return double.NaN; }

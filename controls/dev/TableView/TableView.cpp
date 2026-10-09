@@ -776,6 +776,15 @@ void TableView::OnApplyTemplate()
     // briefly sourced without the selector/ElementPrepared owner hookup TableView rows require.
     RefreshRowsPipeline();
 
+    // Remembers where the body cursor is as focus moves. Both re-shape notifications arrive after
+    // ItemsRepeater has recycled the focused row, so this is the only point at which the position
+    // the "same position across a re-shape" rule refers to is actually observable. Subscribed on
+    // the TableView, where both routed events bubble up from every band.
+    m_bodyFocusTrackerGotFocusRevoker = GotFocus(
+        winrt::auto_revoke, { this, &TableView::OnTableViewGotFocusForBodyTracking });
+    m_bodyFocusTrackerLosingFocusRevoker = LosingFocus(
+        winrt::auto_revoke, { this, &TableView::OnTableViewLosingFocusForBodyTracking });
+
     // Body horizontal scrolling drives the header ScrollViewer; vertical stickiness is structural.
 
     RebuildHeaders();
@@ -1510,6 +1519,11 @@ void TableView::AdoptItemsSource()
 
     m_activeSource.set(tableViewSource);
 
+    // A different source means a different projection: any remembered body position names a row
+    // that no longer exists, so it must not survive into the new one.
+    m_lastBodyFocusValid = false;
+    m_lastBodyFocusRow = -1;
+
     if (tableViewSource)
     {
         auto* const sourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
@@ -1601,6 +1615,11 @@ void TableView::RefreshRowsPipeline()
 
 void TableView::OnTableViewSourceProjectionChanged()
 {
+    // The repeater is about to recycle every realized row, and its own focus rescue runs while it
+    // does. Freeze the body-focus tracker for the rest of this turn so the rescue's landing cannot
+    // be mistaken for the user's position.
+    SuppressBodyFocusTrackingForThisTurn();
+
     // Capture first: RefreshRowsPipeline below re-sources the repeater, which tears down every
     // realized row synchronously, and TerminateEditWithoutVisualRestore can move focus before that.
     // This is the only point in the rebuild path where the body still holds the position the user
@@ -1732,6 +1751,10 @@ void TableView::OnRowsSourceResetForFocus(
     {
         return;
     }
+
+    // Same reason as the projection path: the repeater processes this Reset right after us and
+    // rescues focus off the row it recycles. Keep the tracker on the pre-reset position.
+    SuppressBodyFocusTrackingForThisTurn();
 
     CaptureBodyFocusForReshape();
 }
@@ -2392,6 +2415,10 @@ void TableView::RebuildHeaders()
                 {
                     if (auto strongThis = weakThis.get())
                     {
+                        // A tap on the header makes the header the interaction target, exactly as
+                        // Enter/Space on a focused header does, so the body cursor must not be
+                        // replayed over it when the sort re-shapes the rows.
+                        auto const headerActivationScope = strongThis->BeginHeaderActivationReshapeScope();
                         if (strongThis->ToggleSortDirection(column))
                         {
                             args.Handled(true);
@@ -2669,6 +2696,8 @@ void TableView::QueueRaiseColumnsStructureChanged()
 void TableView::OnTableViewUnloaded()
 {
     m_headerSortSpaceArmedColumn = nullptr;
+    // A re-shape focus restore cannot outlive the tree it was aiming into.
+    CancelReshapeFocusRestore();
     if (m_pendingFocusLayoutToken.value)
     {
         LayoutUpdated(m_pendingFocusLayoutToken);
