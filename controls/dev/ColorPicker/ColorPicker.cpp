@@ -101,6 +101,10 @@ void ColorPicker::OnApplyTemplate()
     {
         if (const auto moreButtonAsToggleButton = moreButton.try_as<winrt::ToggleButton>())
         {
+            // Restore the toggle state from the current state before wiring up the handlers, so a
+            // re-applied template (e.g. on a theme change) while the text-entry grid is open keeps
+            // the button checked without firing the handlers or triggering a state transition.
+            moreButtonAsToggleButton.IsChecked(m_textEntryGridOpened);
             moreButtonAsToggleButton.Checked({ this, &ColorPicker::OnMoreButtonChecked });
             moreButtonAsToggleButton.Unchecked({ this, &ColorPicker::OnMoreButtonUnchecked });
         }
@@ -109,13 +113,16 @@ void ColorPicker::OnApplyTemplate()
             moreButton.Click({ this, &ColorPicker::OnMoreButtonClicked });
         }
 
-        winrt::AutomationProperties::SetName(moreButton, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameMoreButtonCollapsed));
-        winrt::AutomationProperties::SetHelpText(moreButton, ResourceAccessor::GetLocalizedStringResource(SR_HelpTextMoreButton));
+        // Reflect the current expanded/collapsed state rather than hardcoding the collapsed
+        // strings: OnApplyTemplate can run again (e.g. on a theme change) while the text-entry
+        // grid is open, in which case the More button must keep its expanded a11y text (#7395).
+        winrt::AutomationProperties::SetName(moreButton, ResourceAccessor::GetLocalizedStringResource(m_textEntryGridOpened ? SR_AutomationNameMoreButtonExpanded : SR_AutomationNameMoreButtonCollapsed));
+        winrt::AutomationProperties::SetHelpText(moreButton, ResourceAccessor::GetLocalizedStringResource(m_textEntryGridOpened ? SR_HelpTextMoreButtonExpanded : SR_HelpTextMoreButtonCollapsed));
 
         if (const auto moreButtonLabel = GetTemplateChildT<winrt::TextBlock>(L"MoreButtonLabel", thisAsControlProtected))
         {
             m_moreButtonLabel.set(moreButtonLabel);
-            moreButtonLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextMoreButtonLabelCollapsed));
+            moreButtonLabel.Text(ResourceAccessor::GetLocalizedStringResource(m_textEntryGridOpened ? SR_TextMoreButtonLabelExpanded : SR_TextMoreButtonLabelCollapsed));
         }
     }
 
@@ -761,6 +768,7 @@ void ColorPicker::UpdateMoreButton()
     if (auto&& moreButton = m_moreButton.get())
     {
         winrt::AutomationProperties::SetName(moreButton, ResourceAccessor::GetLocalizedStringResource(m_textEntryGridOpened ? SR_AutomationNameMoreButtonExpanded : SR_AutomationNameMoreButtonCollapsed));
+        winrt::AutomationProperties::SetHelpText(moreButton, ResourceAccessor::GetLocalizedStringResource(m_textEntryGridOpened ? SR_HelpTextMoreButtonExpanded : SR_HelpTextMoreButtonCollapsed));
     }
 
     if (auto&& moreButtonLabel = m_moreButtonLabel.get())
