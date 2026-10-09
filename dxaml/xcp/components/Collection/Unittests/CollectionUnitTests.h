@@ -19,6 +19,21 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
             TEST_METHOD_PROPERTY(L"Description", L"Validates that CCollection::Reserve works as expected.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(MoveViewMapsSingleItems)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates every intermediate view for single-item moves in both directions.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MoveViewMapsRanges)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates intermediate range moves, including overlapping ranges and endpoints.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MoveViewValidatesRanges)
+            TEST_METHOD_PROPERTY(L"Description", L"Rejects invalid Move indices, empty ranges, and inconsistent item counts.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MoveViewHandlesLargeIndices)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates Move projection arithmetic near the vector size limit.")
+        END_TEST_METHOD()
 
     };
 

@@ -410,6 +410,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         public static String GetFullGenericNestedName(Type type, string programmingLanguage, bool globalized, bool setAirity)
         {
+            if (programmingLanguage == ProgrammingLanguage.CppWinRT &&
+                type.IsArray && type.GetArrayRank() == 1 && !type.GetElementType().IsArray)
+            {
+                // Array values own their storage. Parameter direction is handled by CppWinRTDeclaration.
+                string elementName = GetFullGenericNestedName(type.GetElementType(), programmingLanguage, globalized, setAirity);
+                return $"::winrt::com_array<{elementName}>";
+            }
+
             string arraySuffix;
             // if it isn't an array this does nothing.
             type = GetArrayElementType(type, out arraySuffix, programmingLanguage);
@@ -606,7 +614,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             return Int32.Parse(split[0]);
         }
 
-        // According to MSDN: https://docs.microsoft.com/en-us/cpp/cppcx/fundamental-types-c-cx
+        // Language-specific projections for C++/CX and C++/WinRT.
+        // C++/CX portion only: https://docs.microsoft.com/en-us/cpp/cppcx/fundamental-types-c-cx
+        // C++/WinRT guidance: https://learn.microsoft.com/en-us/windows/apps/develop/cpp-winrt/std-cpp-data-types
         private static IDictionary<String, ProjectionDefinition> WinRtPrimitiveTypesForProjection
         {
             get
@@ -621,8 +631,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     _winRtPrimitiveTypeList.Add("System.SByte", new ProjectionDefinition("default::int8", "int8_t"));  // signed byte is illegal in WinRT
                     _winRtPrimitiveTypeList.Add("System.Int8", new ProjectionDefinition("default::int8", "int8_t"));  // signed byte is illegal in WinRT
 
-                    _winRtPrimitiveTypeList.Add("System.Char", new ProjectionDefinition("default::char16", "wchar_t"));
-                    _winRtPrimitiveTypeList.Add("System.Char16", new ProjectionDefinition("default::char16", "wchar_t"));
+                    _winRtPrimitiveTypeList.Add("System.Char", new ProjectionDefinition("default::char16", "char16_t"));
+                    _winRtPrimitiveTypeList.Add("System.Char16", new ProjectionDefinition("default::char16", "char16_t"));
 
                     _winRtPrimitiveTypeList.Add("System.Single", new ProjectionDefinition("default::float32", "float"));
                     _winRtPrimitiveTypeList.Add("System.Double", new ProjectionDefinition("default::float64", "double"));
@@ -636,7 +646,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     _winRtPrimitiveTypeList.Add("System.Boolean", new ProjectionDefinition("Platform::Boolean", "bool"));
                     _winRtPrimitiveTypeList.Add("System.String", new ProjectionDefinition("Platform::String", "::winrt::hstring"));
                     _winRtPrimitiveTypeList.Add("System.Object", new ProjectionDefinition("Platform::Object", "::winrt::Windows::Foundation::IInspectable"));
-                    _winRtPrimitiveTypeList.Add("System.Guid", new ProjectionDefinition("Platform::Guid", "GUID"));
+                    _winRtPrimitiveTypeList.Add("System.Guid", new ProjectionDefinition("Platform::Guid", "::winrt::guid"));
                     _winRtPrimitiveTypeList.Add("Windows.Foundation.IReference`1", new ProjectionDefinition("Platform::IBox`1", "::winrt::Windows::Foundation::IReference`1"));
                     _winRtPrimitiveTypeList.Add("System.TimeSpan", new ProjectionDefinition("Windows::Foundation::TimeSpan", "::winrt::Windows::Foundation::TimeSpan"));
 

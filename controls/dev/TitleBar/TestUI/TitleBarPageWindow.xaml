@@ -131,10 +131,36 @@
                     Checked="CustomContentCheckBox_CheckedChanged"
                     Unchecked="CustomContentCheckBox_CheckedChanged" />
 
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Content Button Clicks:" />
+                <TextBlock x:Name="ContentButtonClickCountTextBlock"
+                        Margin="8,0,0,0"
+                        Foreground="Red" />
+            </StackPanel>
+
             <CheckBox x:Name="RightHeaderCheckBox"
                     Content="RightHeader"
                     Checked="RightHeaderCheckBox_CheckedChanged"
                     Unchecked="RightHeaderCheckBox_CheckedChanged" />
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button x:Name="ReadIconRegionButton"
+                        Content="Read icon region"
+                        Click="ReadIconRegionButton_Click" />
+                <TextBlock x:Name="IconRegionTextBlock" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="WindowRectChanged count:" />
+                <TextBlock x:Name="WindowRectChangedCountTextBlock"
+                        Margin="8,0,0,0"
+                        Text="0" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Visual states:" />
+                <TextBlock x:Name="VisualStatesTextBlock" Margin="8,0,0,0" />
+            </StackPanel>
 
         </StackPanel>
     </Grid>

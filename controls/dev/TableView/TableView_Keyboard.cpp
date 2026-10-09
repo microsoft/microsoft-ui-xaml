@@ -220,8 +220,8 @@ void TableView::AnnounceColumnWidth(const winrt::IInspectable& announcer, const 
     }
 }
 
-// Alt+Left/Right resizes the focused header using WPF DataGrid's binding; Shift is large-step,
-// Ctrl is accepted as an alias, and the gripper keeps pointer and keyboard on one clamp path.
+// Alt+Left/Right resizes the focused header using WPF DataGrid's binding; Shift is large-step.
+// Alt is the only resize modifier (dev-spec Keyboard); the gripper keeps pointer and keyboard on one clamp path.
 bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args)
 {
     if (args.Handled())

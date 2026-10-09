@@ -4,13 +4,13 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--
     Shared preamble for C++/WinRT *application* test projects, the native counterpart of
-    AppPreamble.cs.props. RuntimeComponentPreamble.cpp.props cannot be used by an application:
-    it builds a DynamicLibrary, defines _WINRT_DLL, emits a .winmd and requires a module
-    definition file.
+    AppPreamble.cs.props. RuntimeComponentPreamble.cpp.props defaults to DynamicLibrary
+    and configures _WINRT_DLL, Windows metadata generation, and module-definition-file
+    linker settings; application projects need this preamble instead.
 
     A consuming project supplies its identity (ProjectGuid / ProjectName / RootNamespace)
     and its desktop app-model properties, imports Microsoft.Cpp.Default.props, then imports
-    this file and, at the end, RuntimeComponentPostamble.cpp.props. The app-model properties
+    this file and, at the end, AppPostamble.cpp.props. The app-model properties
     have to live in the consuming project because they must be set before
     Microsoft.Cpp.Default.props, which is also what first makes $(CommonFilesPath) - and
     therefore this file - reachable.
@@ -23,10 +23,11 @@
     <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
     <UseWinUI>true</UseWinUI>
     <!--
-      $(WindowsAppSdkSelfContained) is deliberately left unset: for an application the
-      Windows App SDK defaults it to true, which is what the C# test apps built from
-      AppPreamble.cs.props already do. Setting it to false would require a package reference
-      to Microsoft.WindowsAppSDK.Runtime.
+      Leave $(WindowsAppSdkSelfContained) to the consuming project and imported package
+      targets. Without the Windows App SDK meta-package, the Base targets default
+      applications to self-contained mode; framework-dependent applications instead need
+      a reference to Microsoft.WindowsAppSDK.Runtime. AppPreamble.cs.props explicitly
+      selects self-contained mode for ARM64EC.
     -->
     <!--
       $(TargetName) should be the same as $(RootNamespace) so that the produced binaries
@@ -40,8 +41,9 @@
     -->
     <TestPchName Condition="'$(TestPchName)' == ''">pch</TestPchName>
     <!--
-      These are compile-only regression projects; nothing needs to be deployed. A project that
-      does need to produce an MSIX - BindTestbedCppWinRT, which uses Single-project MSIX
+      Compile/codegen fixtures and headless metadata tests consume build outputs directly,
+      so they do not require MSIX packaging. A project that does need to produce an MSIX -
+      BindTestbedCppWinRT, which uses Single-project MSIX
       Packaging - overrides these, so they are defaults rather than assignments. Setting them
       unconditionally here would silently win over the consuming project's Globals group, which
       is evaluated before this file is imported, and the app would then package an empty
