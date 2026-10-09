@@ -1677,17 +1677,16 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
     // Focus was on a row container.
     if (m_navAnchorRowContainer >= 0)
     {
-        if (!drillIn)
-        {
-            // Nothing further out at row level. Consumed anyway: an unconsumed Left here reaches
-            // directional focus navigation, which would walk focus sideways out of the table.
-            args.Handled(true);
-            return true;
-        }
-
         auto const row = GetRealizedRowAt(m_navAnchorRowContainer);
         if (!row)
         {
+            // Consume Left anyway: an unconsumed Left reaches directional focus navigation, which
+            // would walk focus sideways out of the table.
+            if (!drillIn)
+            {
+                args.Handled(true);
+                return true;
+            }
             return false;
         }
 
@@ -1718,6 +1717,14 @@ bool TableView::TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args)
                 args.Handled(true);
                 return true;
             }
+        }
+
+        if (!drillIn)
+        {
+            // Nothing further out at row level. Consumed anyway: an unconsumed Left here reaches
+            // directional focus navigation, which would walk focus sideways out of the table.
+            args.Handled(true);
+            return true;
         }
 
         auto const rowImpl = winrt::get_self<TableViewRow>(row);

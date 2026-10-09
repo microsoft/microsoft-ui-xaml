@@ -1196,8 +1196,9 @@ void TableViewRow::ApplyHierarchyIndentToCells(double indent)
     bool leadAssigned = false;
     for (uint32_t i = 0; i < children.Size(); ++i)
     {
-        auto const wrapper = children.GetAt(i).try_as<winrt::Border>();
-        if (!wrapper)
+        // A cell wrapper (TableViewCell) is the child tagged with its column.
+        auto const wrapper = children.GetAt(i).try_as<winrt::Grid>();
+        if (!wrapper || !TableViewCellsPanel::ColumnForCell(wrapper))
         {
             continue;
         }
@@ -1931,8 +1932,8 @@ void TableViewRow::SyncExpanderGutterWithLeadCell(winrt::Panel const& host)
         auto const children = host.Children();
         for (uint32_t i = 0; i < children.Size(); ++i)
         {
-            auto const wrapper = children.GetAt(i).try_as<winrt::Border>();
-            if (wrapper && wrapper.Visibility() == winrt::Visibility::Visible)
+            auto const wrapper = children.GetAt(i);
+            if (TableViewCellsPanel::ColumnForCell(wrapper) && wrapper.Visibility() == winrt::Visibility::Visible)
             {
                 offset = wrapper.Translation().x;
                 break;

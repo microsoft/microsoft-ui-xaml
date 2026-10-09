@@ -270,7 +270,7 @@ winrt::Size TableViewCellsPanel::ArrangeOverride(winrt::Size const& finalSize)
         child.Arrange({ x, 0.0f, w, finalSize.Height });
 
         // Same "lead" rule as TableViewRow::ApplyHierarchyIndentToCells: the first visible wrapper.
-        if (leadWidth < 0.0f && child.Visibility() == winrt::Visibility::Visible && child.try_as<winrt::Border>())
+        if (leadWidth < 0.0f && child.Visibility() == winrt::Visibility::Visible && column)
         {
             leadLeft = x;
             leadWidth = w;
