@@ -663,8 +663,8 @@ void ThemeTransitionTests::ValidateStaggeredEntranceVisibilityTiming()
     wh->SetTimeManagerClockOverrideConstant(0);
 
     xaml_controls::StackPanel^ panel = nullptr;
-    unsigned int startedStoryboards = 0;
-    unsigned int delayedStoryboards = 0;
+    auto transitionTargets = ref new Platform::Collections::Vector<xaml::UIElement^>();
+    auto startedStoryboards = ref new StoryboardVector();
     auto storyboardMonitor = ref new StoryboardMonitorWrapper();
     storyboardMonitor->AttachStartedHandler([&](xaml_animation::Storyboard^ storyboard, xaml::UIElement^ target)
     {
@@ -674,34 +674,7 @@ void ThemeTransitionTests::ValidateStaggeredEntranceVisibilityTiming()
             return;
         }
 
-        ++startedStoryboards;
-        VERIFY_IS_NOT_NULL(storyboard->BeginTime);
-        if (storyboard->BeginTime->Value.Duration > 0)
-        {
-            ++delayedStoryboards;
-
-            auto visibilityAnimation = safe_cast<xaml_animation::DoubleAnimationUsingKeyFrames^>(
-                storyboard->Children->GetAt(storyboard->Children->Size - 1));
-            VERIFY_ARE_EQUAL(1u, visibilityAnimation->KeyFrames->Size);
-            VERIFY_IS_NOT_NULL(dynamic_cast<xaml_animation::DiscreteDoubleKeyFrame^>(visibilityAnimation->KeyFrames->GetAt(0)));
-            VERIFY_ARE_EQUAL(0LL, visibilityAnimation->KeyFrames->GetAt(0)->KeyTime.TimeSpan.Duration);
-            VERIFY_ARE_EQUAL(xaml::DurationType::TimeSpan, visibilityAnimation->Duration.Type);
-            VERIFY_IS_GREATER_THAN(visibilityAnimation->Duration.TimeSpan.Duration, 0LL);
-
-            auto storyboards = ref new StoryboardVector();
-            storyboards->Append(storyboard);
-            TransitionAnimationTiming timing;
-            VERIFY_IS_TRUE(TryGetTransitionAnimationTiming(
-                storyboards,
-                L"(UIElement.TransitionTarget).(TransitionTarget.CompositeTransform).TranslateY",
-                100.0,
-                timing));
-            const auto transitionDuration = timing.latestEnd - storyboard->BeginTime->Value.Duration;
-            const auto visibilityDuration = visibilityAnimation->Duration.TimeSpan.Duration;
-
-            // Natural durations are stored as floats; allow one 100-nanosecond tick of rounding.
-            VERIFY_IS_TRUE(visibilityDuration >= transitionDuration - 1 && visibilityDuration <= transitionDuration + 1);
-        }
+        startedStoryboards->Append(storyboard);
     });
 
     for (bool staggeringEnabled : { false, true })
@@ -710,8 +683,7 @@ void ThemeTransitionTests::ValidateStaggeredEntranceVisibilityTiming()
         {
             RunOnUIThread([&]()
             {
-                startedStoryboards = 0;
-                delayedStoryboards = 0;
+                startedStoryboards->Clear();
                 panel = safe_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
                     L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>"
                     L"    <StackPanel.ChildrenTransitions>"
@@ -722,6 +694,14 @@ void ThemeTransitionTests::ValidateStaggeredEntranceVisibilityTiming()
                     L"    <Rectangle Width='100' Height='50' Fill='Blue' />"
                     L"</StackPanel>"));
                 safe_cast<xaml_animation::EntranceThemeTransition^>(panel->ChildrenTransitions->GetAt(0))->IsStaggeringEnabled = staggeringEnabled;
+                transitionTargets->Clear();
+
+                // Deferred storyboard creation uses TryGetPeer, so keep the children's managed peers alive.
+                for (auto child : panel->Children)
+                {
+                    transitionTargets->Append(child);
+                }
+
                 wh->WindowContent = panel;
             });
 
@@ -729,7 +709,39 @@ void ThemeTransitionTests::ValidateStaggeredEntranceVisibilityTiming()
 
             RunOnUIThread([&]()
             {
-                VERIFY_ARE_EQUAL(3u, startedStoryboards);
+                VERIFY_ARE_EQUAL(3u, startedStoryboards->Size);
+                unsigned int delayedStoryboards = 0;
+                for (auto storyboard : startedStoryboards)
+                {
+                    VERIFY_IS_NOT_NULL(storyboard->BeginTime);
+                    if (storyboard->BeginTime->Value.Duration > 0)
+                    {
+                        ++delayedStoryboards;
+
+                        auto visibilityAnimation = safe_cast<xaml_animation::DoubleAnimationUsingKeyFrames^>(
+                            storyboard->Children->GetAt(storyboard->Children->Size - 1));
+                        VERIFY_ARE_EQUAL(1u, visibilityAnimation->KeyFrames->Size);
+                        VERIFY_IS_NOT_NULL(dynamic_cast<xaml_animation::DiscreteDoubleKeyFrame^>(visibilityAnimation->KeyFrames->GetAt(0)));
+                        VERIFY_ARE_EQUAL(0LL, visibilityAnimation->KeyFrames->GetAt(0)->KeyTime.TimeSpan.Duration);
+                        VERIFY_ARE_EQUAL(xaml::DurationType::TimeSpan, visibilityAnimation->Duration.Type);
+                        VERIFY_IS_GREATER_THAN(visibilityAnimation->Duration.TimeSpan.Duration, 0LL);
+
+                        auto storyboards = ref new StoryboardVector();
+                        storyboards->Append(storyboard);
+                        TransitionAnimationTiming timing;
+                        VERIFY_IS_TRUE(TryGetTransitionAnimationTiming(
+                            storyboards,
+                            L"(UIElement.TransitionTarget).(TransitionTarget.CompositeTransform).TranslateY",
+                            100.0,
+                            timing));
+                        const auto transitionDuration = timing.latestEnd - storyboard->BeginTime->Value.Duration;
+                        const auto visibilityDuration = visibilityAnimation->Duration.TimeSpan.Duration;
+
+                        // Natural durations are stored as floats; allow one 100-nanosecond tick of rounding.
+                        VERIFY_IS_TRUE(visibilityDuration >= transitionDuration - 1 && visibilityDuration <= transitionDuration + 1);
+                    }
+                }
+
                 VERIFY_ARE_EQUAL(staggeringEnabled ? 3u : 0u, delayedStoryboards);
             });
         }
