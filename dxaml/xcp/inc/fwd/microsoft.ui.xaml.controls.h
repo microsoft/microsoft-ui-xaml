@@ -863,6 +863,7 @@ namespace Controls {
     interface ISelectionChangedEventArgsFactory;
     interface ISelectionChangedEventHandler;
     interface ISemanticZoom;
+    interface ISemanticZoomFactory;
     interface ISemanticZoomInformation;
     interface ISemanticZoomLocation;
     interface ISemanticZoomStatics;
