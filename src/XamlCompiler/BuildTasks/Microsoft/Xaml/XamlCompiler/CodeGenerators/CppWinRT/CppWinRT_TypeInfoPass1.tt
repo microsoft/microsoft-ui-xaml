@@ -8,28 +8,67 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+
+<#  if (ProjectInfo.UseCppWinRTNamedModules) { #>
+#ifdef WINRT_XAML_MODULE_INTERFACE
+module;
+#include <unknwn.h>
+
+export module <#=CppWinRTProjectionDependency.GetXamlPartitionModuleName(ProjectInfo.RootNamespace, "XamlTypeInfo")#>;
+
+#define WINRT_IMPORT_MODULE
+import std;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsFoundation)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsFoundationCollections)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.Xaml)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlData)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlMarkup)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlInterop)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsXamlInterop)#>;
+export import <#=CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlXamlTypeInfo)#>;
+<#  foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { #>
+export import <#=CppWinRTProjectionDependency.GetModuleName(projectionNamespace)#>;
+<#  }#>
+
+#undef WINRT_XAML_MODULE_INTERFACE
+#define WINRT_XAML_EXPORT export extern "C++"
+#else
 #pragma once
+#ifndef WINRT_IMPORT_MODULE
+#define WINRT_IMPORT_MODULE
+#endif
+import <#=CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)#>;
+#define WINRT_XAML_SKIP_BODY
+#endif
+<#  } else { #>
+#pragma once
+#include <unknwn.h>
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <vector>
-#include <unknwn.h>
 #include <mutex>
+#include <cstdint>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime
 #undef GetCurrentTime
 
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include "winrt/<#=KnownNamespaces.Xaml#>.h"
-#include "winrt/<#=KnownNamespaces.XamlData#>.h"
-#include "winrt/<#=KnownNamespaces.XamlMarkup#>.h"
-#include "winrt/<#=KnownNamespaces.XamlInterop#>.h"
-#include "winrt/<#=KnownNamespaces.WindowsXamlInterop#>.h"
-#include "winrt/<#=KnownNamespaces.XamlXamlTypeInfo#>.h"
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundation)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundationCollections)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.Xaml)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlData)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlMarkup)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlInterop)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsXamlInterop)#>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlXamlTypeInfo)#>
 
-namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
+#define WINRT_XAML_EXPORT
+<#  } #>
+
+#ifndef WINRT_XAML_SKIP_BODY
+WINRT_XAML_EXPORT namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
 {
     using IInspectable = <#=Projection(KnownNamespaces.WindowsFoundation)#>::IInspectable;
     using IXamlMember = <#=Projection(KnownNamespaces.XamlMarkup)#>::IXamlMember;
@@ -163,7 +202,7 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         void SetBoxedType(IXamlType boxedType);
         void AddMemberName(::winrt::hstring const& shortName);
         void AddEnumValue(::winrt::hstring const& name, IInspectable value);
-        uint32_t CreateEnumUIntFromString(::winrt::hstring const& input) const;
+        std::uint32_t CreateEnumUIntFromString(::winrt::hstring const& input) const;
 
     private:
         std::shared_ptr<XamlTypeInfoProvider> _provider;
@@ -222,3 +261,12 @@ namespace winrt::<#=Colonize(ProjectInfo.RootNamespace)#>::implementation
         std::shared_ptr<XamlTypeInfoProvider> _provider;
     };
 }
+#endif // WINRT_XAML_SKIP_BODY
+
+#ifdef WINRT_XAML_EXPORT
+#undef WINRT_XAML_EXPORT
+#endif
+#ifdef WINRT_XAML_SKIP_BODY
+#undef WINRT_XAML_SKIP_BODY
+#endif
+

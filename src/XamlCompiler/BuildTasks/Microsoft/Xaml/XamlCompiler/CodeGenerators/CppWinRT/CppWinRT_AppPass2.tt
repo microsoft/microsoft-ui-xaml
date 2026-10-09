@@ -12,11 +12,68 @@
 <#  }#>
 #include <windows.h>
 #include <type_traits>
+<#  if (ProjectInfo.UseCppWinRTNamedModules) { #>
+<#=GetCppWinRTModuleCompatibilityDefinition()#>
+<#  } else { #>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.Xaml)#>
+<#      if (ProjectInfo.EnabledXamlOptionalChanges.Count > 0 || ProjectInfo.DisabledXamlOptionalChanges.Count > 0) { #>
+<#=GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlSettings)#>
+<#      } #>
+<#  } #>
 <#  foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { #>
 #include "<#=includeFile#>"
 <#  }#>
-<#  if (ProjectInfo.EnabledXamlOptionalChanges.Count > 0 || ProjectInfo.DisabledXamlOptionalChanges.Count > 0) { #>
-#include "winrt/<#=KnownNamespaces.XamlSettings#>.h"
+<#  if (ProjectInfo.UseCppWinRTNamedModules) { #>
+#include "XamlMetaDataProvider.h"
+<#  } #>
+
+<#  if (ProjectInfo.UseCppWinRTNamedModules) { #>
+namespace winrt::<#=Colonize(Model.CodeInfo.ClassName.Namespace)#>::implementation
+{
+    template <typename D, typename ... Interfaces>
+    AppT<D, Interfaces...>::AppT() = default;
+
+    template <typename D, typename ... Interfaces>
+    AppT<D, Interfaces...>::~AppT() = default;
+
+<#      if(!ProjectInfo.GenerateProviderCode) { #>
+    template <typename D, typename ... Interfaces>
+    void AppT<D, Interfaces...>::AddOtherProvider(<#=Projection(KnownNamespaces.XamlMarkup)#>::IXamlMetadataProvider const& otherProvider)
+    {
+        AppProvider()->AddOtherProvider(otherProvider);
+    }
+<#      } #>
+
+    template <typename D, typename ... Interfaces>
+    <#=Projection(KnownNamespaces.XamlMarkup)#>::IXamlType AppT<D, Interfaces...>::GetXamlType(<#=Projection(KnownNamespaces.WindowsXamlInterop)#>::TypeName const& type)
+    {
+        return AppProvider()->GetXamlType(type);
+    }
+
+    template <typename D, typename ... Interfaces>
+    <#=Projection(KnownNamespaces.XamlMarkup)#>::IXamlType AppT<D, Interfaces...>::GetXamlType(::winrt::hstring const& fullName)
+    {
+        return AppProvider()->GetXamlType(fullName);
+    }
+
+    template <typename D, typename ... Interfaces>
+    ::winrt::com_array<<#=Projection(KnownNamespaces.XamlMarkup)#>::XmlnsDefinition> AppT<D, Interfaces...>::GetXmlnsDefinitions()
+    {
+        return AppProvider()->GetXmlnsDefinitions();
+    }
+
+    template <typename D, typename ... Interfaces>
+    winrt::com_ptr<XamlMetaDataProvider> AppT<D, Interfaces...>::AppProvider()
+    {
+        if (!_appProvider)
+        {
+            _appProvider = winrt::make_self<XamlMetaDataProvider>();
+        }
+        return _appProvider;
+    }
+
+    template struct AppT<struct <#=Model.CodeInfo.ClassName.ShortName#>>;
+}
 <#  } #>
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION

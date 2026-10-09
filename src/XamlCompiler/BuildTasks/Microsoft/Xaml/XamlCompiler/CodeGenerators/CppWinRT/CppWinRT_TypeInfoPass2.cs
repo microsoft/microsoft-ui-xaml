@@ -40,15 +40,29 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(ProjectInfo.PrecompiledHeaderFile));
             this.Write("\"\r\n");
   }
-            this.Write("#include <memory>\r\n#include <unknwn.h>\r\n\r\n// Undefine GetCurrentTime macro to pre" +
-                    "vent\r\n// conflict with Storyboard::GetCurrentTime\r\n#undef GetCurrentTime\r\n\r\n");
-  foreach (var includeFile in Model.NeededCppWinRTProjectionHeaderFiles) { 
-            this.Write("#if __has_include(<");
-            this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));
-            this.Write(">)\r\n#include <");
-            this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));
-            this.Write(">\r\n#endif\r\n");
-  }
+            this.Write(@"#include <unknwn.h>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <mutex>
+#include <type_traits>
+#include <vector>
+
+// Undefine GetCurrentTime macro to prevent
+// conflict with Storyboard::GetCurrentTime
+#undef GetCurrentTime
+
+");
+  if (ProjectInfo.UseCppWinRTNamedModules) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTModuleCompatibilityDefinition()));
+            this.Write("\r\n");
+  } else { 
+      foreach (var projectionNamespace in Model.NeededCppWinRTProjectionNamespaces) { 
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(projectionNamespace, optionalHeader: true)));
+            this.Write("\r\n");
+      }
+  } 
             this.Write("\r\n");
   if (ProjectInfo.GenerateIncrementalTypeInfo) { 
             this.Write("#ifdef XAML_TYPE_INFO_INC\r\n#include XAML_TYPE_INFO_INC\r\n#endif\r\n");
@@ -239,7 +253,7 @@ struct TypeInfo
   } 
             this.Write("\r\n");
   entryIndex = 0; 
-            this.Write("constexpr uint32_t TypeInfoLookup[] = { \r\n");
+            this.Write("constexpr std::uint32_t TypeInfoLookup[] = { \r\n");
   foreach(var entry in Model.TypeInfoLookup) 
   { 
             this.Write("    ");
@@ -356,7 +370,7 @@ struct TypeInfo
             this.Write(@"
 const TypeInfo* GetTypeInfo(::winrt::hstring const& typeName)
 {
-    size_t typeNameLength = typeName.size();
+    std::size_t typeNameLength = typeName.size();
     if (typeNameLength < _countof(TypeInfoLookup) - 1)
     {
         const auto begin = TypeInfos + TypeInfoLookup[typeNameLength];

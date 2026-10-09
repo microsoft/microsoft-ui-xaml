@@ -30,21 +30,60 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#pragma once
 
-#include <unknwn.h>
-
-// Undefine GetCurrentTime macro to prevent
-// conflict with Storyboard::GetCurrentTime
-#undef GetCurrentTime
-
-#include ""winrt/windows.foundation.h""
-#include ""winrt/windows.ui.xaml.interop.h""
-#include ""winrt/microsoft.ui.xaml.controls.h""
-#include ""winrt/microsoft.ui.xaml.data.h""
-#include ""winrt/microsoft.ui.xaml.markup.h""
-
-namespace winrt::");
+");
+  if (ProjectInfo.UseCppWinRTNamedModules) { 
+            this.Write("#ifdef WINRT_XAML_MODULE_INTERFACE\r\nmodule;\r\n#include <unknwn.h>\r\n\r\nexport module" +
+                    " ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)));
+            this.Write(";\r\n\r\n#define WINRT_IMPORT_MODULE\r\nimport std;\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsFoundation)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.WindowsFoundationCollections)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.Xaml)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlControls)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlData)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlMarkup)));
+            this.Write(";\r\nexport import ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetModuleName(KnownNamespaces.XamlInterop)));
+            this.Write(";\r\n\r\n");
+  foreach (var xamlClassName in ProjectInfo.XamlClassNames) { 
+            this.Write("export import :");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPartitionName(xamlClassName)));
+            this.Write(";\r\n");
+  } 
+  if (ProjectInfo.ShouldGenerateTypeInfoCode) { 
+            this.Write("export import :XamlTypeInfo;\r\n");
+  } 
+            this.Write("\r\n#undef WINRT_XAML_MODULE_INTERFACE\r\n#define WINRT_XAML_EXPORT export extern \"C+" +
+                    "+\"\r\n#else\r\n#pragma once\r\n#ifndef WINRT_IMPORT_MODULE\r\n#define WINRT_IMPORT_MODUL" +
+                    "E\r\n#endif\r\nimport ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(CppWinRTProjectionDependency.GetXamlPrimaryModuleName(ProjectInfo.RootNamespace)));
+            this.Write(";\r\n#define WINRT_XAML_SKIP_BODY\r\n#endif\r\n");
+  } else { 
+            this.Write("#pragma once\r\n#include <unknwn.h>\r\n\r\n// Undefine GetCurrentTime macro to prevent\r" +
+                    "\n// conflict with Storyboard::GetCurrentTime\r\n#undef GetCurrentTime\r\n\r\n#include " +
+                    "<cstdint>\r\n#include <memory>\r\n\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundation)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.WindowsFoundationCollections)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.Xaml)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlControls)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlData)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlMarkup)));
+            this.Write("\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GetCppWinRTProjectionDependencyDirective(KnownNamespaces.XamlInterop)));
+            this.Write("\r\n\r\n#define WINRT_XAML_EXPORT\r\n");
+  } 
+            this.Write("\r\n#ifndef WINRT_XAML_SKIP_BODY\r\nWINRT_XAML_EXPORT namespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Colonize(ProjectInfo.RootNamespace)));
             this.Write("::implementation\r\n{\r\n    using DataContextChangedEventArgs = ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
@@ -91,7 +130,7 @@ namespace winrt::");
         virtual void StopTracking() = 0;
         virtual void Connect(int connectionId, IInspectable const& target) = 0;
         virtual void Recycle() = 0;
-        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, int32_t& nextPhase) = 0;
+        virtual void ProcessBindings(IInspectable const& item, int itemIndex, int phase, std::int32_t& nextPhase) = 0;
         virtual void SubscribeForDataContextChanged(FrameworkElement const& object, XamlBindings& handler) = 0;
         virtual void DisconnectUnloadedObject(int connectionId) = 0;
     };
@@ -121,49 +160,50 @@ namespace winrt::");
             this.Write("::IDataTemplateComponent>\r\n    {\r\n        XamlBindings(std::shared_ptr<IXamlBindi" +
                     "ngs>&& pBindings);\r\n\r\n        // IComponentConnector\r\n        void Connect(int c" +
                     "onnectionId, IInspectable const& target);\r\n        IComponentConnector GetBindin" +
-                    "gConnector(int32_t, IInspectable const&);\r\n\r\n        // IDataTemplateComponent\r\n" +
-                    "        virtual void ProcessBindings(IInspectable const& item, int itemIndex, in" +
-                    "t phase, int32_t& nextPhase);\r\n        virtual void Recycle();\r\n\r\n        // IDa" +
-                    "taTemplateExtension\r\n        bool ProcessBinding(uint32_t phase);\r\n        int P" +
-                    "rocessBindings(ContainerContentChangingEventArgs const& args);\r\n        void Res" +
-                    "etTemplate();\r\n\r\n        void Initialize();\r\n        void Update();\r\n        voi" +
-                    "d StopTracking();\r\n        void Loading(FrameworkElement const& src, IInspectabl" +
-                    "e const& data);\r\n        void Activated(IInspectable const& sender, WindowActiva" +
-                    "tedEventArgs const& args);\r\n        void DataContextChanged(FrameworkElement con" +
-                    "st& sender, DataContextChangedEventArgs const& args);\r\n        void SubscribeFor" +
-                    "DataContextChanged(FrameworkElement const& object);\r\n        virtual void Discon" +
-                    "nectUnloadedObject(int connectionId);\r\n\r\n    private:\r\n        std::shared_ptr<I" +
-                    "XamlBindings> _pBindings;\r\n    };\r\n\r\n    template <typename TBindingsTracking>\r\n" +
-                    "    struct XamlBindingsBase : public IXamlBindings\r\n    {\r\n    protected:\r\n     " +
-                    "   bool _isInitialized = false;\r\n        std::shared_ptr<TBindingsTracking> _bin" +
-                    "dingsTracking;\r\n        winrt::event_token _dataContextChangedToken {};\r\n       " +
-                    " static const int NOT_PHASED = (1 << 31);\r\n        static const int DATA_CHANGED" +
-                    " = (1 << 30);\r\n\r\n    protected:\r\n        XamlBindingsBase() = default;\r\n\r\n      " +
-                    "  virtual ~XamlBindingsBase()\r\n        {\r\n            if (_bindingsTracking)\r\n  " +
-                    "          {\r\n                _bindingsTracking->SetListener(nullptr);\r\n         " +
-                    "       _bindingsTracking.reset();\r\n            }\r\n        }\r\n\r\n        virtual v" +
-                    "oid ReleaseAllListeners()\r\n        {\r\n            // Overridden in the binding c" +
-                    "lass as needed.\r\n        }\r\n\r\n    public:\r\n        void InitializeTracking(IXaml" +
-                    "BindingTracking* pBindingsTracking)\r\n        {\r\n            _bindingsTracking = " +
-                    "std::make_shared<TBindingsTracking>();\r\n            _bindingsTracking->SetListen" +
-                    "er(pBindingsTracking);\r\n        }\r\n\r\n        virtual void StopTracking() overrid" +
-                    "e\r\n        {\r\n            ReleaseAllListeners();\r\n            this->_isInitializ" +
-                    "ed = false;\r\n        }\r\n\r\n        virtual bool IsInitialized() override\r\n       " +
-                    " {\r\n            return this->_isInitialized;\r\n        }\r\n\r\n        void Subscrib" +
-                    "eForDataContextChanged(FrameworkElement const& object, XamlBindings& handler) ov" +
-                    "erride\r\n        {\r\n            this->_dataContextChangedToken = object.DataConte" +
-                    "xtChanged({ &handler, &XamlBindings::DataContextChanged });\r\n        }\r\n\r\n      " +
-                    "  virtual void Recycle() override\r\n        {\r\n            // Overridden in the b" +
-                    "inding class as needed.\r\n        }\r\n\r\n        virtual void ProcessBindings(IInsp" +
-                    "ectable const&, int, int, int32_t& nextPhase) override\r\n        {\r\n            /" +
-                    "/ Overridden in the binding class as needed.\r\n            nextPhase = -1;\r\n     " +
-                    "   }\r\n    };\r\n\r\n    struct XamlBindingTrackingBase\r\n    {\r\n        XamlBindingTr" +
-                    "ackingBase();\r\n        void SetListener(IXamlBindingTracking* pBindings);\r\n     " +
-                    "   \r\n        // Event handlers\r\n        void PropertyChanged(IInspectable const&" +
-                    " sender, PropertyChangedEventArgs const& e);\r\n        void CollectionChanged(IIn" +
-                    "spectable const& sender, NotifyCollectionChangedEventArgs const& e);\r\n        vo" +
-                    "id DependencyPropertyChanged(DependencyObject const& sender, DependencyProperty " +
-                    "const& prop);\r\n        void VectorChanged(IInspectable const& sender, ");
+                    "gConnector(std::int32_t, IInspectable const&);\r\n\r\n        // IDataTemplateCompon" +
+                    "ent\r\n        virtual void ProcessBindings(IInspectable const& item, int itemInde" +
+                    "x, int phase, std::int32_t& nextPhase);\r\n        virtual void Recycle();\r\n\r\n    " +
+                    "    // IDataTemplateExtension\r\n        bool ProcessBinding(std::uint32_t phase);" +
+                    "\r\n        int ProcessBindings(ContainerContentChangingEventArgs const& args);\r\n " +
+                    "       void ResetTemplate();\r\n\r\n        void Initialize();\r\n        void Update(" +
+                    ");\r\n        void StopTracking();\r\n        void Loading(FrameworkElement const& s" +
+                    "rc, IInspectable const& data);\r\n        void Activated(IInspectable const& sende" +
+                    "r, WindowActivatedEventArgs const& args);\r\n        void DataContextChanged(Frame" +
+                    "workElement const& sender, DataContextChangedEventArgs const& args);\r\n        vo" +
+                    "id SubscribeForDataContextChanged(FrameworkElement const& object);\r\n        virt" +
+                    "ual void DisconnectUnloadedObject(int connectionId);\r\n\r\n    private:\r\n        st" +
+                    "d::shared_ptr<IXamlBindings> _pBindings;\r\n    };\r\n\r\n    template <typename TBind" +
+                    "ingsTracking>\r\n    struct XamlBindingsBase : public IXamlBindings\r\n    {\r\n    pr" +
+                    "otected:\r\n        bool _isInitialized = false;\r\n        std::shared_ptr<TBinding" +
+                    "sTracking> _bindingsTracking;\r\n        winrt::event_token _dataContextChangedTok" +
+                    "en {};\r\n        static const int NOT_PHASED = (1 << 31);\r\n        static const i" +
+                    "nt DATA_CHANGED = (1 << 30);\r\n\r\n    protected:\r\n        XamlBindingsBase() = def" +
+                    "ault;\r\n\r\n        virtual ~XamlBindingsBase()\r\n        {\r\n            if (_bindin" +
+                    "gsTracking)\r\n            {\r\n                _bindingsTracking->SetListener(nullp" +
+                    "tr);\r\n                _bindingsTracking.reset();\r\n            }\r\n        }\r\n\r\n  " +
+                    "      virtual void ReleaseAllListeners()\r\n        {\r\n            // Overridden i" +
+                    "n the binding class as needed.\r\n        }\r\n\r\n    public:\r\n        void Initializ" +
+                    "eTracking(IXamlBindingTracking* pBindingsTracking)\r\n        {\r\n            _bind" +
+                    "ingsTracking = std::make_shared<TBindingsTracking>();\r\n            _bindingsTrac" +
+                    "king->SetListener(pBindingsTracking);\r\n        }\r\n\r\n        virtual void StopTra" +
+                    "cking() override\r\n        {\r\n            ReleaseAllListeners();\r\n            thi" +
+                    "s->_isInitialized = false;\r\n        }\r\n\r\n        virtual bool IsInitialized() ov" +
+                    "erride\r\n        {\r\n            return this->_isInitialized;\r\n        }\r\n\r\n      " +
+                    "  void SubscribeForDataContextChanged(FrameworkElement const& object, XamlBindin" +
+                    "gs& handler) override\r\n        {\r\n            this->_dataContextChangedToken = o" +
+                    "bject.DataContextChanged({ &handler, &XamlBindings::DataContextChanged });\r\n    " +
+                    "    }\r\n\r\n        virtual void Recycle() override\r\n        {\r\n            // Over" +
+                    "ridden in the binding class as needed.\r\n        }\r\n\r\n        virtual void Proces" +
+                    "sBindings(IInspectable const&, int, int, std::int32_t& nextPhase) override\r\n    " +
+                    "    {\r\n            // Overridden in the binding class as needed.\r\n            ne" +
+                    "xtPhase = -1;\r\n        }\r\n    };\r\n\r\n    struct XamlBindingTrackingBase\r\n    {\r\n " +
+                    "       XamlBindingTrackingBase();\r\n        void SetListener(IXamlBindingTracking" +
+                    "* pBindings);\r\n        \r\n        // Event handlers\r\n        void PropertyChanged" +
+                    "(IInspectable const& sender, PropertyChangedEventArgs const& e);\r\n        void C" +
+                    "ollectionChanged(IInspectable const& sender, NotifyCollectionChangedEventArgs co" +
+                    "nst& e);\r\n        void DependencyPropertyChanged(DependencyObject const& sender," +
+                    " DependencyProperty const& prop);\r\n        void VectorChanged(IInspectable const" +
+                    "& sender, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundationCollections)));
             this.Write("::IVectorChangedEventArgs const& e);\r\n        void MapChanged(IInspectable const&" +
                     " sender, ");
@@ -180,10 +220,10 @@ namespace winrt::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlData)));
             this.Write(@"::INotifyPropertyChanged>& cache, ::winrt::event_token& token);
         void UpdateCollectionChangedListener(INotifyCollectionChanged const& obj, INotifyCollectionChanged& cache, ::winrt::event_token& token);
-        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, DependencyObject&  cache, int64_t& token);
+        void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, DependencyObject&  cache, std::int64_t& token);
         void UpdateDependencyPropertyChangedListener(DependencyObject const& obj, DependencyProperty const& property, ::winrt::weak_ref<");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
-            this.Write("::DependencyObject>& cache, int64_t& token);\r\n");
+            this.Write("::DependencyObject>& cache, std::int64_t& token);\r\n");
  if (ProjectInfo.IsInputValidationEnabled) {
             this.Write("        void UpdateErrorsChangedListener(INotifyDataErrorInfo const& obj, INotify" +
                     "DataErrorInfo& cache, ::winrt::event_token& token);\r\n        void UpdateErrorsCh" +
@@ -221,7 +261,9 @@ namespace winrt::");
                     "    }\r\n            return false;\r\n        }\r\n\r\n        virtual void Update() ove" +
                     "rride\r\n        {\r\n            this->Update_(this->GetDataRoot(), this->NOT_PHASE" +
                     "D);\r\n            this->_isInitialized = true;\r\n        }\r\n\r\n    private:\r\n      " +
-                    "  T _dataRoot;\r\n    };\r\n}");
+                    "  T _dataRoot;\r\n    };\r\n}\r\n#endif // WINRT_XAML_SKIP_BODY\r\n\r\n#ifdef WINRT_XAML_E" +
+                    "XPORT\r\n#undef WINRT_XAML_EXPORT\r\n#endif\r\n#ifdef WINRT_XAML_SKIP_BODY\r\n#undef WIN" +
+                    "RT_XAML_SKIP_BODY\r\n#endif\r\n");
             return this.GenerationEnvironment.ToString();
         }
     }
