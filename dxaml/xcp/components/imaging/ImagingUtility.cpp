@@ -574,7 +574,22 @@ static _Check_return_ HRESULT CopyToHardwareTiles(
 
     // Allocate the temporary buffer
     uint32_t copySegmentSize = tempBufferStride * lineDecodeCount;
-    auto pTempBuffer = wil::make_unique_failfast<uint8_t[]>(copySegmentSize);
+    // Keep buffers below 128 KiB on the heap to limit allocation/page-fault
+    // overhead on repeated decodes; release larger buffers' commit at scope exit.
+    // This is a policy cutoff, not a Windows heap threshold.
+    constexpr uint32_t virtualAllocThreshold = 128 * 1024;
+    wistd::unique_ptr<uint8_t[]> heapBuffer;
+    wil::unique_virtualalloc_ptr<uint8_t> virtualBuffer;
+    if (copySegmentSize >= virtualAllocThreshold)
+    {
+        virtualBuffer.reset(static_cast<uint8_t*>(VirtualAlloc(nullptr, copySegmentSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE)));
+        IFCOOMFAILFAST(virtualBuffer.get());
+    }
+    else
+    {
+        heapBuffer = wil::make_unique_failfast<uint8_t[]>(copySegmentSize);
+    }
+    uint8_t* pTempBuffer = virtualBuffer ? virtualBuffer.get() : heapBuffer.get();
 
     // Go through all the tiles and hold the flush so that they are flushed at the end.
     // This is to prevent textures from updating at inconsistent times for the user.
@@ -608,7 +623,7 @@ static _Check_return_ HRESULT CopyToHardwareTiles(
         }
 
         // Despite being called CopyPixels, this is what actually invokes the WIC pipeline to do the decoding
-        IFC_RETURN(bitmapSource->CopyPixels(&wicSourceRect, tempBufferStride, copySegmentSize, pTempBuffer.get()));
+        IFC_RETURN(bitmapSource->CopyPixels(&wicSourceRect, tempBufferStride, copySegmentSize, pTempBuffer));
 
         // Iterate through all the tiles.  This was intentionally made to iterate over all tiles
         // and match tiles for the current scanline since CTiledSurface does not guarantee tile
@@ -681,7 +696,7 @@ static _Check_return_ HRESULT CopyToHardwareTiles(
             // Copy the decoded lines from the temp buffer to the destination surface
             uint8_t* pDestinationLine = pDestinationBuffer + (destinationStride * (currentLine - rectY));
             uint32_t pixelOffset = rectX * tempBufferPixelSize;
-            uint8_t* pTempBufferLine = pTempBuffer.get() + pixelOffset;
+            uint8_t* pTempBufferLine = pTempBuffer + pixelOffset;
             uint32_t rectWidthInBytes = rectWidth * tempBufferPixelSize;
 
             for (int copyLine = 0; copyLine < wicSourceRect.Height; copyLine++)
