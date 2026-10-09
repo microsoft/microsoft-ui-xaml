@@ -84,11 +84,14 @@ private:
     void OnPresenterPointerExited(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPresenterPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPresenterPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnItemPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
+    void OnItemPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsVectorChanged(const winrt::Collections::IObservableVector<winrt::IInspectable>& sender, const winrt::Collections::IVectorChangedEventArgs& args);
 
 
     void ResetTrackedPointerId();
+    void ReleaseCapturedPointer();
     bool IgnorePointerId(const winrt::PointerRoutedEventArgs& args);
     void OnSplitViewPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateCompactPaneLength();
@@ -144,6 +147,9 @@ private:
     RoutedEventHandler_revoker m_presenterPointerExitedRevoker{};
     RoutedEventHandler_revoker m_presenterPointerCanceledRevoker{};
     RoutedEventHandler_revoker m_presenterPointerCaptureLostRevoker{};
+    RoutedEventHandler_revoker m_itemPointerReleasedRevoker{};
+    RoutedEventHandler_revoker m_itemPointerCanceledRevoker{};
+    RoutedEventHandler_revoker m_itemPointerCaptureLostRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};
@@ -168,6 +174,7 @@ private:
 
     // Visual state tracking
     winrt::Pointer m_capturedPointer{ nullptr };
+    bool m_isPointerCapturedByItem{ false };
     uint32_t m_trackedPointerId{ 0 };
     bool m_isPressed{ false };
     bool m_isPointerOver{ false };
