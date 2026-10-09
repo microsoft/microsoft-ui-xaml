@@ -108,6 +108,66 @@ winrt::AutomationControlType TableViewAutomationPeer::GetAutomationControlTypeCo
     return winrt::AutomationControlType::DataGrid;
 }
 
+// FrameworkElementAutomationPeer reports the owner's GLOBAL bounds, which union every realized
+// descendant. The body ItemsRepeater keeps cache rows realized above and below the viewport, and
+// the scroller clips them visually but not out of those bounds, so the table read up to ~2x taller
+// than it renders. Intersect with the table's own layout box; the base result already accounts for
+// ancestor clips and offscreen state, so an empty base is returned as-is.
+//
+// The clip is best-effort: whenever the two rectangles cannot be reconciled the base result wins,
+// so a visible table never reports empty bounds. The layout box always contains the header strip,
+// so a non-empty base that does not intersect it means the two coordinate spaces disagree
+// (windowed popup, island, projection or Composition transform), not that the table is hidden.
+winrt::Rect TableViewAutomationPeer::GetBoundingRectangleCore()
+{
+    auto const bounds = __super::GetBoundingRectangleCore();
+    if (bounds.Width <= 0.0f || bounds.Height <= 0.0f)
+    {
+        return bounds;
+    }
+
+    auto const owner = Owner().try_as<winrt::FrameworkElement>();
+    if (!owner || !owner.XamlRoot())
+    {
+        return bounds;
+    }
+
+    const winrt::Rect localBounds{
+        0.0f,
+        0.0f,
+        static_cast<float>(owner.ActualWidth()),
+        static_cast<float>(owner.ActualHeight()) };
+    if (localBounds.Width <= 0.0f || localBounds.Height <= 0.0f)
+    {
+        return bounds;
+    }
+
+    winrt::Rect layoutBounds{};
+    try
+    {
+        // Same DIP -> physical mapping InkCanvasAutomationPeer uses to match the framework's space.
+        layoutBounds = SharedHelpers::ConvertDipsToPhysical(
+            owner, owner.TransformToVisual(nullptr).TransformBounds(localBounds));
+    }
+    catch (winrt::hresult_error const&)
+    {
+        // TransformToVisual throws while the owner is leaving the tree (teardown, window close).
+        return bounds;
+    }
+
+    // RectHelper::Intersect reports no overlap as RectHelper::Empty() (infinite extents), so test
+    // the extents rather than IsEmpty and never let that sentinel reach a UIA client.
+    auto const clipped = winrt::RectHelper::Intersect(bounds, layoutBounds);
+    if (!(clipped.Width > 0.0f) || !(clipped.Height > 0.0f) ||
+        !std::isfinite(clipped.X) || !std::isfinite(clipped.Y) ||
+        !std::isfinite(clipped.Width) || !std::isfinite(clipped.Height))
+    {
+        return bounds;
+    }
+
+    return clipped;
+}
+
 void TableViewAutomationPeer::RaiseStructureChangedForSortChange()
 {
     // Same children, new order.

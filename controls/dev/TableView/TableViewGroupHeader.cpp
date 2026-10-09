@@ -235,19 +235,22 @@ void TableViewGroupHeader::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         {
         case winrt::VirtualKey::Enter:
         case winrt::VirtualKey::Space:
-            RequestToggle();
             args.Handled(true);
+            m_gestureFocusState = winrt::FocusState::Keyboard;
+            RequestToggle();
             break;
 
         case winrt::VirtualKey::Right:
             // Right expands in LTR, collapses in RTL -- the TreeViewItem / Expander convention.
-            RequestExpansion(!isRtl);
             args.Handled(true);
+            m_gestureFocusState = winrt::FocusState::Keyboard;
+            RequestExpansion(!isRtl);
             break;
 
         case winrt::VirtualKey::Left:
-            RequestExpansion(isRtl);
             args.Handled(true);
+            m_gestureFocusState = winrt::FocusState::Keyboard;
+            RequestExpansion(isRtl);
             break;
 
         default:
@@ -270,7 +273,30 @@ void TableViewGroupHeader::OnPointerExited(winrt::PointerRoutedEventArgs const& 
     __super::OnPointerExited(args);
     m_isPointerOver = false;
     m_isPressed = false;
+    m_pressedGroupIdentity.clear();
     UpdateVisualStates(true /* useTransitions */);
+}
+
+void TableViewGroupHeader::ResetPointerStateInternal()
+{
+    // A container prepared for (or cleared from) a group must not carry a press that began on the
+    // group it showed before; the release would otherwise toggle the new group. Hover is left
+    // alone: it describes where the pointer is, not which group it acted on.
+    m_pressedGroupIdentity.clear();
+    if (m_isPressed)
+    {
+        m_isPressed = false;
+        UpdateVisualStates(false /* useTransitions */);
+    }
+}
+
+winrt::hstring TableViewGroupHeader::GetGroupIdentity()
+{
+    if (auto const owner = GetOwningTableView())
+    {
+        return winrt::get_self<TableView>(owner)->GetGroupHeaderIdentityInternal(*this);
+    }
+    return {};
 }
 
 void TableViewGroupHeader::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
@@ -288,6 +314,15 @@ void TableViewGroupHeader::OnPointerPressed(winrt::PointerRoutedEventArgs const&
 
     m_isPressed = true;
 
+    // Remember WHICH group was pressed. Anything that reshapes the table between press and
+    // release (a deferred edit commit, a source change, a wheel scroll) can recycle this container
+    // onto another group, and the release must not toggle that one.
+    m_pressedGroupIdentity = GetGroupIdentity();
+
+    // Focus is taken on release, not here: moving focus off an open editor commits it on a later
+    // turn, and a commit that changes a group or sort key reshapes the table in the middle of the
+    // gesture.
+
     // The band owns the gesture: mark it handled so a press on a group header never reaches the
     // row's selection handling.
     if (IsExpandable())
@@ -303,14 +338,35 @@ void TableViewGroupHeader::OnPointerReleased(winrt::PointerRoutedEventArgs const
     __super::OnPointerReleased(args);
 
     const bool wasPressed = m_isPressed;
+    auto const pressedIdentity = m_pressedGroupIdentity;
     m_isPressed = false;
+    m_pressedGroupIdentity.clear();
     UpdateVisualStates(true /* useTransitions */);
 
-    // Toggle on release-inside, the standard click semantic: a press that drags off the band
-    // does not activate.
-    if (wasPressed && m_isPointerOver && IsExpandable())
+    // Click semantic: only a press released inside the band, on the SAME group, activates. A press
+    // that drags off does nothing, and a container recycled onto another group mid-gesture does
+    // nothing rather than acting on the wrong group.
+    if (!wasPressed || !m_isPointerOver || pressedIdentity != GetGroupIdentity())
+    {
+        return;
+    }
+
+    // A click on the band makes it the keyboard focus target, as a click on a row or a
+    // ListViewItem does; otherwise the next key acts on whatever had focus before. Same exit as
+    // the keyboard path to a header (FocusRowContainerInternal): the cell cursor pops to row level.
+    // Focus BEFORE the toggle so the toggle captures it for the restore after the reshape.
+    if (Focus(winrt::FocusState::Pointer))
+    {
+        if (auto const owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->SetCellCursorActiveInternal(false);
+        }
+    }
+
+    if (IsExpandable())
     {
         args.Handled(true);
+        m_gestureFocusState = winrt::FocusState::Pointer;
         RequestToggle();
     }
 }
@@ -320,5 +376,6 @@ void TableViewGroupHeader::OnPointerCaptureLost(winrt::PointerRoutedEventArgs co
     __super::OnPointerCaptureLost(args);
     m_isPressed = false;
     m_isPointerOver = false;
+    m_pressedGroupIdentity.clear();
     UpdateVisualStates(true /* useTransitions */);
 }

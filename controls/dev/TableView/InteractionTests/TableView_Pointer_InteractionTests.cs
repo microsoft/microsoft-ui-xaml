@@ -381,6 +381,140 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a pointer click on a group header band moves keyboard focus to that header, taking it away from an unrelated control, and that the next key acts on that header.")]
+        public void GroupHeaderPointerClickMovesKeyboardFocus()
+        {
+            // Spec: dev-spec "Pointer" - a click on a row or cell makes it the keyboard focus target; the group
+            //   header band is the same kind of body container (ListViewItem/TreeViewItem do the same).
+            // The click also collapses the group, and the reshape recycles the header container, so the header is
+            //   re-found after the reshape and the test proves the CONSEQUENCE (Enter re-opens the same group)
+            //   rather than trusting a HasKeyboardFocus read on a UIObject resolved before the click.
+            // Failure means: the click toggles the group but keyboard focus stays on whatever had it before, so
+            //   the next Left/Right/Enter acts somewhere other than the band the user just clicked.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                // Resolve toolbar controls before the grouped table realizes (see GroupHeaderPointerAndPressedVisualStates).
+                Button dummyButton = FindElement.ById<Button>(DummyButton);
+                if (dummyButton == null)
+                {
+                    Verify.Fail("DummyButton was not found on the test page.");
+                    return;
+                }
+
+                UIObject tableView = SelectGroupedPivotAndGetTable();
+                if (tableView == null)
+                {
+                    Verify.Fail("The grouped table was not found.");
+                    return;
+                }
+
+                UIObject rowsHost = GetRowsHost(tableView);
+                int baselineRows = CountRows(rowsHost);
+                UIObject groupHeader = GetFirstGroupHeader(rowsHost);
+                if (groupHeader == null)
+                {
+                    Verify.Fail("No TableViewGroupHeader peer was found under the rows host of the grouped table.");
+                    return;
+                }
+                string headerName = groupHeader.Name;
+                Verify.IsNull(FindSelectedRow(rowsHost), "Precondition: no row is selected before the click.");
+
+                dummyButton.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(dummyButton.HasKeyboardFocus, "Precondition: DummyButton should hold keyboard focus before the click.");
+
+                InputHelper.LeftClick(groupHeader);
+                Wait.ForIdle();
+
+                // Observe everything before asserting anything (Verify throws): the collapse, the fresh header and
+                // where focus went are separate bugs.
+                rowsHost = GetRowsHost(tableView);
+                int rowsAfterClick = CountRows(rowsHost);
+                UIObject freshHeader = GetFirstGroupHeader(rowsHost);
+                ExpandCollapseState stateAfterClick = freshHeader == null
+                    ? ExpandCollapseState.LeafNode
+                    : new ExpandCollapseImplementation(freshHeader).ExpandCollapseState;
+                bool freshHasFocus = freshHeader != null && freshHeader.HasKeyboardFocus;
+                Log.Comment("After the click: rows={0} (baseline {1}), header '{2}' state={3}, fresh header focused={4}, focused element {5}.",
+                    rowsAfterClick, baselineRows, freshHeader == null ? "<none>" : freshHeader.Name, stateAfterClick, freshHasFocus, DescribeFocused());
+
+                if (freshHeader == null) { Verify.Fail("The first group header must still be realized after it collapses."); return; }
+                Verify.AreEqual(headerName, freshHeader.Name, "The first group header must still name the same group.");
+                Verify.AreEqual(ExpandCollapseState.Collapsed, stateAfterClick, "Precondition: the click must collapse the group.");
+                Verify.IsLessThan(rowsAfterClick, baselineRows, "Precondition: the collapse must remove the group's rows.");
+                Verify.IsTrue(freshHasFocus, "A pointer click on a group header band must move keyboard focus to that header.");
+                Verify.IsFalse(dummyButton.HasKeyboardFocus, "Focus must leave the previously focused unrelated control.");
+
+                // The consequence: the next key acts on the header that was clicked.
+                KeyboardHelper.PressKey(Key.Enter);
+                Wait.ForIdle();
+                rowsHost = GetRowsHost(tableView);
+                Verify.AreEqual(baselineRows, CountRows(rowsHost), "Enter after the click must re-open the clicked group.");
+                Verify.IsNull(FindSelectedRow(rowsHost), "Clicking a group header must not select a row.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a press on a group header band that is dragged off before release neither toggles the group nor moves keyboard focus.")]
+        public void GroupHeaderPointerPressDraggedOffDoesNothing()
+        {
+            // Click semantics: activation happens on release INSIDE the band. The header takes focus on that release,
+            //   not on press, so that moving focus off an open editor (which commits it on a later turn and can
+            //   reshape the table) never happens in the middle of a gesture that may still be cancelled.
+            // Failure means: a cancelled press still toggles the group or steals keyboard focus.
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                Button dummyButton = FindElement.ById<Button>(DummyButton);
+                if (dummyButton == null)
+                {
+                    Verify.Fail("DummyButton was not found on the test page.");
+                    return;
+                }
+
+                UIObject tableView = SelectGroupedPivotAndGetTable();
+                if (tableView == null)
+                {
+                    Verify.Fail("The grouped table was not found.");
+                    return;
+                }
+
+                UIObject rowsHost = GetRowsHost(tableView);
+                int baselineRows = CountRows(rowsHost);
+                UIObject groupHeader = GetFirstGroupHeader(rowsHost);
+                if (groupHeader == null)
+                {
+                    Verify.Fail("No TableViewGroupHeader peer was found under the rows host of the grouped table.");
+                    return;
+                }
+
+                dummyButton.SetFocus();
+                Wait.ForIdle();
+                Verify.IsTrue(dummyButton.HasKeyboardFocus, "Precondition: DummyButton should hold keyboard focus before the press.");
+
+                var dummyBounds = dummyButton.BoundingRectangle;
+                PointerInput.Move(CentreOf(groupHeader));
+                PointerInput.Press(PointerButtons.Primary);
+                Wait.ForIdle();
+                PointerInput.Move(new Point(dummyBounds.Left + (dummyBounds.Width / 2), dummyBounds.Top + (dummyBounds.Height / 2)));
+                Wait.ForIdle();
+                PointerInput.Release(PointerButtons.Primary);
+                Wait.ForIdle();
+
+                rowsHost = GetRowsHost(tableView);
+                UIObject freshHeader = GetFirstGroupHeader(rowsHost);
+                ExpandCollapseState state = freshHeader == null
+                    ? ExpandCollapseState.LeafNode
+                    : new ExpandCollapseImplementation(freshHeader).ExpandCollapseState;
+                Log.Comment("After press, drag off and release: rows={0} (baseline {1}), state={2}, focused element {3}.",
+                    CountRows(rowsHost), baselineRows, state, DescribeFocused());
+
+                Verify.AreEqual(ExpandCollapseState.Expanded, state, "A press dragged off the band must not toggle the group.");
+                Verify.AreEqual(baselineRows, CountRows(rowsHost), "A press dragged off the band must not change the rows.");
+                Verify.IsTrue(dummyButton.HasKeyboardFocus, "A cancelled press must not move keyboard focus to the header.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the group header's CommonStates follow the pointer: Normal to PointerOver on enter, Pressed while the button is down, back to PointerOver on release, and Normal when the pointer leaves.")]
         public void GroupHeaderPointerAndPressedVisualStates()
         {

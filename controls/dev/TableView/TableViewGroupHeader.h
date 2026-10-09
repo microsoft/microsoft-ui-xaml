@@ -83,9 +83,25 @@ public:
     bool IsToggleHooked() const { return m_toggleHooked; }
     void SetToggleHooked() { m_toggleHooked = true; }
 
+    // Internal: called by TableView when this pooled container is prepared for or cleared from a
+    // group, so a press that began on the previous group can never complete on the next one.
+    void ResetPointerStateInternal();
+
+    // Internal: the input that triggered the expansion request in flight (Keyboard for a key,
+    // Pointer for a click), consumed once by TableView::RequestGroupExpansion so the focus restore
+    // after the reshape uses the gesture's state rather than whatever state focus arrived with.
+    void SetGestureFocusStateInternal(winrt::FocusState state) noexcept { m_gestureFocusState = state; }
+    winrt::FocusState TakeGestureFocusStateInternal() noexcept
+    {
+        return std::exchange(m_gestureFocusState, winrt::FocusState::Unfocused);
+    }
+
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateTerminalBottomGridLineSuppression();
+
+    // Identity of the group this container shows now (value-based, index independent), or empty.
+    winrt::hstring GetGroupIdentity();
 
     // Mirror the authoritative IsExpandable/IsExpanded DPs onto the bound projection.
     void SyncExpansionToContent();
@@ -96,6 +112,9 @@ private:
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
     bool m_suppressBottomGridLine{ false };
+    // Group identity captured on press; the release toggles only if the container still shows it.
+    winrt::hstring m_pressedGroupIdentity{};
+    winrt::FocusState m_gestureFocusState{ winrt::FocusState::Unfocused };
 
     winrt::weak_ref<winrt::TableView> m_owningTableView{ nullptr };
 
