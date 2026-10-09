@@ -591,26 +591,10 @@ Entry c_typeEntries[] =
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
                     xamlType.AddMember(
-                        L"IsLiveSorting", /* propertyName */
+                        L"IsLiveShaping", /* propertyName */
                         L"Boolean", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewSource>().IsLiveSorting()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewSource>().IsLiveSorting(unbox_value<bool>(value)); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"IsLiveGrouping", /* propertyName */
-                        L"Boolean", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewSource>().IsLiveGrouping()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewSource>().IsLiveGrouping(unbox_value<bool>(value)); },
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"IsLiveFiltering", /* propertyName */
-                        L"Boolean", /* propertyType */
-                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewSource>().IsLiveFiltering()); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewSource>().IsLiveFiltering(unbox_value<bool>(value)); },
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewSource>().IsLiveShaping()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewSource>().IsLiveShaping(unbox_value<bool>(value)); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);

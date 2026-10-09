@@ -195,16 +195,14 @@ public sealed partial class HierarchyPage : Page
 
     private void Group_Toggled(object sender, RoutedEventArgs e) => ApplyGroup();
 
-    // Live shaping: one switch drives all three flags on both sources. Under ParentBy any flag also
-    // tracks each row's key and parent key, so a ManagerId / MentorId edit reparents.
+    // Live shaping on both sources. Under ParentBy it also tracks each row's key and parent key, so
+    // a ManagerId / MentorId edit reparents.
     private void ApplyLive()
     {
         bool live = LiveToggle.IsOn;
         foreach (var source in Sources)
         {
-            source.IsLiveSorting = live;
-            source.IsLiveFiltering = live;
-            source.IsLiveGrouping = live;
+            source.IsLiveShaping = live;
         }
     }
 

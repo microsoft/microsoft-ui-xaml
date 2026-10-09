@@ -97,40 +97,29 @@ void ShapedItemsSource::Start()
     Refresh();
 }
 
-void ShapedItemsSource::SetLiveShaping(bool liveSorting, bool liveGrouping, bool liveFiltering)
+void ShapedItemsSource::SetLiveShaping(bool enabled)
 {
-    if (m_liveSorting == liveSorting &&
-        m_liveGrouping == liveGrouping &&
-        m_liveFiltering == liveFiltering)
+    if (m_liveShapingEnabled == enabled)
     {
         return;
     }
 
-    bool const wasLiveShapingEnabled = IsLiveShapingEnabled();
-    m_liveSorting = liveSorting;
-    m_liveGrouping = liveGrouping;
-    m_liveFiltering = liveFiltering;
+    m_liveShapingEnabled = enabled;
 
-    if (IsLiveShapingEnabled())
+    if (enabled)
     {
-        if (!wasLiveShapingEnabled)
-        {
-            // With the flags down, edges edited in place were never tracked, and the snapshots
-            // about to be captured would already hold the new values -- nothing could tell the
-            // retained structure is stale. Live shaping trusts its snapshots from here on, so
-            // start it from a structure the next Refresh rebuilds.
-            InvalidateRetainedHierarchyStructure();
-        }
+        // With live shaping off, edges edited in place were never tracked, and the snapshots
+        // about to be captured would already hold the new values -- nothing could tell the
+        // retained structure is stale. Live shaping trusts its snapshots from here on, so start
+        // it from a structure the next Refresh rebuilds.
+        InvalidateRetainedHierarchyStructure();
         ResubscribeLiveShapingFromSource();
 
-        if (!wasLiveShapingEnabled)
-        {
-            // For the same reason, any item edited while untracked is still shaped by its old
-            // values, and its fresh snapshot already agrees with the new ones -- no later change
-            // would notice. One posted restore brings the projection up to date; it coalesces
-            // with whatever else changes in this turn.
-            MarkLiveShapingDirty();
-        }
+        // For the same reason, any item edited while untracked is still shaped by its old values,
+        // and its fresh snapshot already agrees with the new ones -- no later change would notice.
+        // One posted restore brings the projection up to date; it coalesces with whatever else
+        // changes in this turn.
+        MarkLiveShapingDirty();
     }
     else
     {
@@ -2326,7 +2315,8 @@ void ShapedItemsSource::PublishProjection()
     }
 }
 
-ShapingHelpers::ShapingPipeline::SortedInsertPlacement ShapedItemsSource::SortedInsertPlacementFor(winrt::IInspectable const& item) const{
+ShapingHelpers::ShapingPipeline::SortedInsertPlacement ShapedItemsSource::SortedInsertPlacementFor(winrt::IInspectable const& item) const
+{
     return m_pipeline.SortedInsertPlacementFor(
         item,
         m_rows ? m_rows.Size() : 0,
@@ -2375,15 +2365,13 @@ ShapedItemsSource::LiveShapeSnapshot ShapedItemsSource::CaptureLiveShapeSnapshot
         try { return RowIdentity::StringifyKey(selector(item)); } catch (...) { return RowIdentity::StringifyKey(nullptr); }
     };
 
-    if (m_liveSorting)
+    // Called only with live shaping on, so every shape input is captured.
+    for (auto const& axis : m_pipeline.ActiveSortAxes(-1, -1))
     {
-        for (auto const& axis : m_pipeline.ActiveSortAxes(-1, -1))
-        {
-            snapshot.SortKeys.push_back(keyOf(axis.Key));
-        }
+        snapshot.SortKeys.push_back(keyOf(axis.Key));
     }
 
-    if (m_liveGrouping && m_groupSelector)
+    if (m_groupSelector)
     {
         // Compared as the grouping compares it: by group identity, not display text. Two group
         // key objects usually print alike (often just their type name), so the text would hide a
@@ -2403,11 +2391,8 @@ ShapedItemsSource::LiveShapeSnapshot ShapedItemsSource::CaptureLiveShapeSnapshot
         }
     }
 
-    // Any live flag implies the hierarchy edge: sort, filter and grouping are all evaluated
-    // against the tree (sibling sets, ancestor retention, root bucketing), so an edge change
-    // reshapes every one of them. The edge is keyed exactly as the tree keys it: a display string
-    // can collide (an object key's IStringable is often just its type name), and would hide a
-    // reparent the tree sees.
+    // The edge is keyed exactly as the tree keys it: a display string can collide (an object
+    // key's IStringable is often just its type name), and would hide a reparent the tree sees.
     if (m_parentKeySelector)
     {
         auto const nodeKeyOf = [&item](ShapingHelpers::KeySelector const& selector) -> std::wstring
@@ -2418,10 +2403,7 @@ ShapedItemsSource::LiveShapeSnapshot ShapedItemsSource::CaptureLiveShapeSnapshot
         snapshot.ParentKey = nodeKeyOf(m_parentKeySelector);
     }
 
-    if (m_liveFiltering)
-    {
-        snapshot.PassesFilter = m_pipeline.PassesFilter(item);
-    }
+    snapshot.PassesFilter = m_pipeline.PassesFilter(item);
 
     return snapshot;
 }

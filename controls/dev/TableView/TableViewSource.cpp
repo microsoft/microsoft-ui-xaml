@@ -121,34 +121,14 @@ winrt::TableViewSource TableViewSource::ClearSortsExcept(winrt::hstring const& s
     return *this;
 }
 
-bool TableViewSource::IsLiveSorting() const
+bool TableViewSource::IsLiveShaping() const
 {
-    return m_engine->IsLiveSorting();
+    return m_engine->IsLiveShapingEnabled();
 }
 
-void TableViewSource::IsLiveSorting(bool value)
+void TableViewSource::IsLiveShaping(bool value)
 {
-    m_engine->SetLiveShaping(value, m_engine->IsLiveGrouping(), m_engine->IsLiveFiltering());
-}
-
-bool TableViewSource::IsLiveFiltering() const
-{
-    return m_engine->IsLiveFiltering();
-}
-
-void TableViewSource::IsLiveFiltering(bool value)
-{
-    m_engine->SetLiveShaping(m_engine->IsLiveSorting(), m_engine->IsLiveGrouping(), value);
-}
-
-bool TableViewSource::IsLiveGrouping() const
-{
-    return m_engine->IsLiveGrouping();
-}
-
-void TableViewSource::IsLiveGrouping(bool value)
-{
-    m_engine->SetLiveShaping(m_engine->IsLiveSorting(), value, m_engine->IsLiveFiltering());
+    m_engine->SetLiveShaping(value);
 }
 
 std::vector<TableViewSource::ActiveSortAxisInfo> TableViewSource::ActiveSortAxisInfos() const

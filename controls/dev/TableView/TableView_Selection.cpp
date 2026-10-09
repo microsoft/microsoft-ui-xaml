@@ -296,9 +296,10 @@ void TableView::ApplySelection(int32_t index)
     }
 
     // Capture the intentional selection by object identity. This is the single selection writer, so
-    // every user gesture / programmatic set / restore passes through here and nowhere else moves the
-    // sticky anchor - which is exactly why a Reset-driven model clear (which does NOT call this)
-    // leaves it intact for the identity restore.
+    // every user gesture / programmatic set / restore passes through here. The only other place the
+    // sticky anchor moves is OnSelectionModelSelectionChanged, which drops it when an incremental
+    // change clears the model outside a restore. A Reset-driven model clear runs under the restore
+    // flag, so it leaves the anchor intact for the identity restore.
     m_stickySelectedItem.set(index >= 0 ? SelectedItemForIndex(index) : nullptr);
     m_stickySelectedIdentity = (index >= 0 && m_stickySelectedItem.get()) ? HierarchyIdentityForIndex(index) : winrt::hstring{};
 
@@ -349,6 +350,15 @@ void TableView::OnSelectionModelSelectionChanged(
     if (m_isRestoringSelection)
     {
         return;
+    }
+
+    // Outside a restore, a model-driven clear means the selected row really left the view (an
+    // incremental Remove, such as collapsing a small subtree). Drop the anchor with it, so a later
+    // Reset does not resurrect a selection the model already gave up.
+    if (newIndex < 0)
+    {
+        m_stickySelectedItem.set(nullptr);
+        m_stickySelectedIdentity.clear();
     }
 
     PushSelectionProperties();

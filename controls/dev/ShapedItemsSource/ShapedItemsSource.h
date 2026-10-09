@@ -172,11 +172,10 @@ public:
 
     void Refresh();
 
-    void SetLiveShaping(bool liveSorting, bool liveGrouping, bool liveFiltering);
-    bool IsLiveSorting() const noexcept { return m_liveSorting; }
-    bool IsLiveGrouping() const noexcept { return m_liveGrouping; }
-    bool IsLiveFiltering() const noexcept { return m_liveFiltering; }
-    bool IsLiveShapingEnabled() const noexcept { return m_liveSorting || m_liveGrouping || m_liveFiltering; }
+    // One switch for the whole projection: sort keys, group key, filter result and the hierarchy
+    // edge are tracked together, because a change to any of them reshapes all of them.
+    void SetLiveShaping(bool enabled);
+    bool IsLiveShapingEnabled() const noexcept { return m_liveShapingEnabled; }
 
     // The owner may hold a live restore back while the projection must not move under it (a cell
     // editor is open). A held restore stays dirty, so later changes still coalesce into it, and
@@ -410,9 +409,7 @@ private:
     // the owning thread and dropped on any other (see Start).
     winrt::Microsoft::UI::Dispatching::DispatcherQueue m_ownerQueue{ nullptr };
     DWORD m_ownerThreadId{ 0 };
-    bool m_liveSorting{ false };
-    bool m_liveGrouping{ false };
-    bool m_liveFiltering{ false };
+    bool m_liveShapingEnabled{ false };
     std::unordered_map<void const*, LiveShapeSnapshot> m_liveShapeSnapshots;
     // Set when a tracked item's shape-relevant state has moved but the projection has not caught
     // up yet, cleared by the refresh that recaptures every snapshot. It is both the "there is work

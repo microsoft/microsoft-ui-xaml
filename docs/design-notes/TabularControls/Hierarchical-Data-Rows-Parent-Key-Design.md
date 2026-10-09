@@ -326,7 +326,7 @@ This is the testable core of the feature and has no dependency on XAML, a dispat
     (`ParentStructureStillMatches`) and rebuilds on the first difference.
   - Either way, object (reference-identity) keys cannot be proven unchanged by address, so they
     always rebuild.
-- **Property changes.** With `IsLiveSorting`, `IsLiveFiltering` or `IsLiveGrouping` on, an item's
+- **Property changes.** With `IsLiveShaping` on, an item's
   key and parent key are observed and a change reparents the row on the next dispatcher turn. A
   change raised on another thread is handed to the source's own thread first. While a cell editor
   is open, the reshape waits and runs once the edit closes, so live data never ends a user's edit.
@@ -511,9 +511,8 @@ department, and expand or collapse all. The **100k perf** button times the 100k-
 - **Load on demand** (Kendo/DevExtreme remote "has children"): needs a way to show a chevron with no
   children present yet; depends on the child-provider seam above.
 - **Filter modes** other than with-ancestors.
-- **Observing key property changes without live shaping** (without `IsLiveSorting`,
-  `IsLiveFiltering` or `IsLiveGrouping`, an in-place reparent waits for the next reshape or
-  collection change; §6).
+- **Observing key property changes without live shaping** (without `IsLiveShaping`, an in-place
+  reparent waits for the next reshape or collection change; §6).
 - Also not covered: declarative aggregation, nested grouping, cascading selection, drag-reparent,
   and a keyed data source for container preservation.
 

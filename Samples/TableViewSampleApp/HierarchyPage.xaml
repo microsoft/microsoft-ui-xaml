@@ -60,7 +60,7 @@
             </ComboBox>
             <ToggleSwitch x:Name="GroupToggle" OnContent="Group roots by Dept" OffContent="Group roots by Dept"
                           Toggled="Group_Toggled"/>
-            <!-- On: both sources set IsLiveSorting/IsLiveFiltering/IsLiveGrouping, so editing a
+            <!-- On: both sources set IsLiveShaping, so editing a
                  property (Reparent / Rename / Next dept) reshapes the tree in place. Off: the edit
                  is applied to the data but the rows stay where they were until the next reshape,
                  so Reparent falls back to replacing the item in the collection. -->
