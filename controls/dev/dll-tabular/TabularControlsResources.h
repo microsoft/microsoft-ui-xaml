@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <atomic>
+
 #include "TabularControlsResources.g.h"
 #include "TabularControlsResources.properties.h"
 
@@ -12,6 +14,11 @@ class TabularControlsResources :
 {
 public:
     TabularControlsResources();
+
+    // Successful construction does not imply that the dictionary is merged or still available.
+    static bool HasBeenCreated() noexcept { return s_hasBeenCreated.load(std::memory_order_relaxed); }
 private:
     void UpdateSource();
+
+    static inline std::atomic<bool> s_hasBeenCreated{ false };
 };

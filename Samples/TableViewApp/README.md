@@ -20,12 +20,48 @@ seed — the control resolves its own default style and theme resources from the
 
 `TabularControlsResources` is Tabular's own theme-resource dictionary, the exact analogue of
 `XamlControlsResources` for MUXC, and merging it is a normal part of consuming the control set
-rather than a workaround. It is required: `TableView`'s column-header style resolves
-`SortIndicatorForeground` from it, and `SortIndicator` ships in the Tabular DLL rather than in MUXC
-(`controls/Tabular.ProjectImports.targets` is the only importer of `SortIndicator.vcxitems`).
-Without the merge the app throws `XamlParseException 0x802B000A` — "Cannot find a Resource with the
-Name/Key SortIndicatorForeground" — during the first layout pass, which surfaces as a
-`0xC000027B` stowed exception a few seconds after launch.
+rather than a workaround. For the standard defaults, merge it in `App.xaml` after
+`XamlControlsResources` and before application overrides:
+
+```xml
+<Application.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            <TabularControlsResources xmlns="using:Microsoft.UI.Xaml.Controls.Tabular" />
+        </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+</Application.Resources>
+```
+
+Applications can instead supply equivalent resources or a complete custom style/template; no
+particular dictionary object is enforced. Compilation and construction can succeed before a
+required resource lookup fails during initial layout/style realization. The exception message
+remains unchanged: it reports the missing key, `0x802B000A` and the parser line/position. An
+unhandled parse failure can surface as a `0xC000027B` stowed exception.
+
+If a `TableView` is constructed before any `TabularControlsResources` instance has successfully
+completed construction, the Tabular DLL logs conditional setup guidance to an attached debugger,
+once per process. This is an advisory hint, not proof that resources are missing or registered.
+Equivalent resources, custom templates and later registration remain valid. A previously constructed
+dictionary suppresses the hint even if it was never merged or has since been removed.
+
+For the referencing markup path in resource-lookup tracing, enable tracing early in the application
+constructor, before `InitializeComponent`:
+
+```csharp
+DebugSettings.IsXamlResourceReferenceTracingEnabled = true;
+InitializeComponent();
+```
+
+The trace can include the consuming document path for deferred templates. It is separate from the
+exception and does not identify where the resource must be defined; application, theme, merged or
+local dictionaries may supply it.
+
+If defaults are already configured, check the key, overrides and matching Tabular DLL/PRI. A missing
+required `DefaultStyleResourceUri` is a deployment/resource-map issue; merging a dictionary cannot
+restore an unavailable package resource. These diagnostics do not register resources automatically
+or change the existing unhandled-error/fail-fast policy.
 
 Each app instantiates `TableView` **twice on purpose**:
 

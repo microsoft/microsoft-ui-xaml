@@ -498,6 +498,40 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
+        void ThemeResourcesTests::NonTabularResourceMissKeepsGenericDiagnostic()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([&]()
+            {
+                DisableErrorReportingScopeGuard disableErrors;
+                String^ key = L"TabularSurfaceRowBackgroundBrush_NotPresent_%0_%1";
+                String^ extensions[] = { L"StaticResource", L"ThemeResource" };
+
+                for (auto extension : extensions)
+                {
+                    String^ xaml =
+                        L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Background='{" +
+                        extension + L" " + key + L"}'/>";
+                    Platform::Exception^ error = nullptr;
+                    try
+                    {
+                        XamlReader::Load(xaml);
+                    }
+                    catch (Platform::Exception^ ex)
+                    {
+                        error = ex;
+                    }
+
+                    VERIFY_IS_NOT_NULL(error);
+                    VERIFY_ARE_EQUAL(static_cast<int>(0x802B000A), error->HResult);
+                    String^ expected = L"Cannot find a Resource with the Name/Key " + key;
+                    VERIFY_IS_NOT_NULL(wcsstr(error->Message->Data(), expected->Data()));
+                    VERIFY_IS_NULL(wcsstr(error->Message->Data(), L"TabularControlsResources"));
+                }
+            });
+        }
+
         void ThemeResourcesTests::SetThemeResourceBindingLocalOverrideAndClear()
         {
             TestCleanupWrapper cleanup;

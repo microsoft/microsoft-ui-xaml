@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 using System;
 using Windows.Foundation;
@@ -39,6 +40,70 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class TableViewNegativePathTests : TableViewApiTestBase
     {
+        [TestMethod]
+        [TestProperty("IsolationLevel", "Method")]
+        [TestProperty("Description", "Missing resources in the stock deferred TableView template retain the generic parse diagnostic.")]
+        public void VerifyDeferredTemplateResourceMissKeepsGenericDiagnostic()
+        {
+            Grid host = null;
+            RunOnUIThread.Execute(() =>
+            {
+                host = new Grid();
+                Content = host;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(host.IsLoaded, "Attaching to a loaded host must resolve the stock style before ApplyTemplate.");
+                var originalResources = Application.Current.Resources;
+                var resources = new ResourceDictionary();
+                resources.MergedDictionaries.Add(new XamlControlsResources());
+                resources["TabularSurfaceRowBackgroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.White);
+                resources["TabularSurfaceRowForegroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Black);
+                resources["TabularSurfaceGridLineBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Gray);
+
+                try
+                {
+                    Application.Current.Resources = resources;
+                    var tableView = new TableView { Width = 400, Height = 200 };
+                    tableView.Columns.Add(new TableViewTextColumn { Header = "Name" });
+                    host.Children.Add(tableView);
+                    Verify.IsNotNull(tableView.Template, "The regression must exercise the stock deferred template.");
+
+                    Exception error = null;
+                    try
+                    {
+                        tableView.ApplyTemplate();
+                    }
+                    catch (Exception exception)
+                    {
+                        error = exception;
+                    }
+
+                    Verify.IsNotNull(error, "The missing header brush must fail during stock template realization.");
+                    Verify.AreEqual(unchecked((int)0x802B000A), error.HResult);
+                    Verify.IsTrue(error.Message.Contains("TabularSurfaceHeaderBackgroundBrush"));
+                    Verify.IsTrue(error.Message.Contains("Cannot find a Resource with the Name/Key "));
+                    Verify.IsTrue(error.Message.Contains("[Line: "));
+                    Verify.IsFalse(error.Message.Contains("TabularControlsResources"));
+                }
+                finally
+                {
+                    try
+                    {
+                        host.Children.Clear();
+                        Content = null;
+                    }
+                    finally
+                    {
+                        Application.Current.Resources = originalResources;
+                    }
+                }
+            });
+        }
+
         #region 16.1 Malformed input through public API
 
         [TestMethod]
