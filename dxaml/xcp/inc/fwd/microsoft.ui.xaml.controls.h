@@ -843,6 +843,7 @@ namespace Controls {
     interface IRowDefinitionStatics;
     interface IScrollAnchorProvider;
     interface IScrollContentPresenter;
+    interface IScrollContentPresenterFactory;
     interface IScrollContentPresenter2;
     interface IScrollContentPresenterStatics2;
     interface IScrollViewer;
