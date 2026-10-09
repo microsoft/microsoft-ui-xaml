@@ -1,26 +1,16 @@
-// FileSystemEntry.cs: folders-first sort keys. The "0 "/"1 " prefix keeps folders together, and
-// the fixed-width digits make the size compare as a number, not as display text.
-public string NameSortKey => SortPrefix + Name;
-public string SizeSortKey => SortPrefix + Size.ToString("D19", CultureInfo.InvariantCulture);
-private string SortPrefix => IsFolder ? "0 " : "1 ";
+Source = TableViewSource.From(Entries);    // created once; filtered and grouped in place
+InitializeComponent();
 
-// DateTimeOffset, not DateTime: it projects to Windows.Foundation.DateTime, which the sort
-// compares as a point in time. A System.DateTime has no WinRT projection and would sort as text.
-public DateTimeOffset DateModified { get; set; }
+FileTable.HeadersVisibility = TableViewHeadersVisibility.Column;
+FileTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
+FileTable.Density = TableViewDensity.Compact;
+// handledEventsToo: the table consumes Enter for its own row navigation.
+FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
 
-// FileExplorerPage.xaml.cs. One source over one collection; a folder's entries replace its items.
-public ObservableCollection<FileSystemEntry> Entries { get; } = new();
+// …
 
-public FileExplorerPage()
-{
-    _source = TableViewSource.From(Entries);
-    InitializeComponent();
-    // handledEventsToo: the table consumes Enter for its own row navigation.
-    FileTable.AddHandler(KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
-    Loaded += OnPageLoaded;  // opens FileSystemBrowser.InitialDirectory (AppContext.BaseDirectory)
-}
+// ---- Navigation (the folder is read on a background thread) ---------------------------
 
-// The folder is read on a background thread; only the result is applied on the UI thread.
 private async Task NavigateAsync(string path, bool addToHistory, string verb)
 {
     var version = ++_navigationVersion;
@@ -35,40 +25,112 @@ private async Task NavigateAsync(string path, bool addToHistory, string verb)
     if (listing.Error is not null)
     {
         AddressBar.Text = _currentDir;
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Cannot open {0}: {1}", listing.FullPath, listing.Error));
         return;
     }
 
-    // ...push history, then refill the one collection.
+    if (addToHistory && _currentDir.Length > 0 && !string.Equals(_currentDir, listing.FullPath, StringComparison.OrdinalIgnoreCase))
+    {
+        _history.Push(_currentDir);
+    }
+
     _currentDir = listing.FullPath;
+    var focusState = TableFocusState();
     Entries.Clear();
     foreach (var entry in listing.Entries)
     {
         Entries.Add(entry);
     }
-}
 
-// Enter opens the selected folder; Backspace goes up.
-private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
-{
-    if (e.Key == VirtualKey.Enter)
+    AddressBar.Text = _currentDir;
+    BackButton.IsEnabled = _history.Count > 0;
+    UpButton.IsEnabled = Directory.GetParent(_currentDir) is not null;
+    if (focusState != FocusState.Unfocused)
     {
-        e.Handled = true;
-        OpenSelectedFolder();
-    }
-    else if (e.Key == VirtualKey.Back)
-    {
-        e.Handled = true;
-        GoUp();
+        FocusFirstRowAfterLayout(focusState);
     }
 }
 
-// Grouped by date: a sort declared BEFORE GroupBy orders the groups, so sorting newest first
-// makes the buckets read Today, Yesterday, ... The key selector receives the ROW; the identity
-// selector receives the KEY.
-if (key == nameof(FileSystemEntry.DateModified))
+// …
+
+// ---- Filter (TableViewSource.Filter) ---------------------------------------------------
+
+private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
 {
-    FileTable.SortByColumn(DateModifiedColumn, SortDirection.Descending);
+    if (FilterSelector is null)
+    {
+        return;
+    }
+
+    var filter = SampleShaping.SelectedTag(FilterSelector, "all");
+    switch (filter)
+    {
+        case "folders":
+            Source.Filter(item => item is FileSystemEntry { IsFolder: true });
+            break;
+        case "files":
+            Source.Filter(item => item is FileSystemEntry { IsFolder: false });
+            break;
+        case "none":
+            Source.Filter(_ => false);
+            break;
+        default:
+            Source.ClearFilter();
+            break;
+    }
+
+    // Fires once during InitializeComponent (SelectedIndex="0"); report user changes only.
+    if (IsLoaded)
+    {
+        // …
+    }
 }
 
-_source.GroupBy(item => KeyOf(item as FileSystemEntry, key), SampleShaping.GroupIdentity);
+private int VisibleCount() => SampleShaping.SelectedTag(FilterSelector, "all") switch
+{
+    "folders" => Entries.Count(entry => entry.IsFolder),
+    "files" => Entries.Count(entry => !entry.IsFolder),
+    "none" => 0,
+    _ => Entries.Count,
+};
+
+// …
+
+// A sort declared BEFORE GroupBy orders the groups: newest first reads Today, Yesterday, ...
+protected override void OnShapingApplying(ShapingApplyingEventArgs e)
+{
+    if (e.Mode == "grouped" && e.Key == nameof(FileSystemEntry.DateModified))
+    {
+        FileTable.SortByColumn(DateModifiedColumn, SortDirection.Descending);
+    }
+}
+// Never blank: TableViewSource fails fast on an empty group identity.
+private static object KeyOf(FileSystemEntry? entry, string key)
+{
+    if (entry is null)
+    {
+        return SampleShaping.NoneKey;
+    }
+
+    var value = key switch
+    {
+        nameof(FileSystemEntry.IsFolder) => entry.IsFolder ? "Folders" : "Files",
+        nameof(FileSystemEntry.DateModified) => ModifiedBucket(entry.DateModified),
+        _ => entry.TypeDisplay,
+    };
+
+    return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
+}
+
+private static string ModifiedBucket(DateTimeOffset modified)
+{
+    var days = (DateTime.Now.Date - modified.LocalDateTime.Date).TotalDays;
+    return days switch
+    {
+        < 1 => "Today",
+        < 2 => "Yesterday",
+        < 8 => "Earlier this week",
+        < 31 => "Earlier this month",
+        < 366 => "Earlier this year",
+        _ => "A long time ago",
+    };
+}

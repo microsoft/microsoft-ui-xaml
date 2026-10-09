@@ -99,8 +99,13 @@ visible on purpose.
   empty state, density, and grouped rows (hierarchical rows are not available in this release)
 - Right-to-left layout, virtualization, performance notes, theme settings, and About/build details
 - `TableViewTextColumn` and `TableViewTemplateColumn` usage with source snippets embedded in the
-  sample assembly. Snippet references declared on `SamplePresenter` are validated during compile so
-  a stale `SourceSnippet` / `AdditionalSnippet` value fails the build instead of rendering fake code.
+  sample assembly. The snippets are generated from `// <snippet>` regions in the pages: after editing
+  a region, run `powershell -File tools\Update-Snippets.ps1` and include the result. The build checks
+  that every snippet is current and that every `Snippet` / `SourceSnippet` / `AdditionalSnippet` a
+  page names exists: a warning locally, an error in CI.
+
+The pages are code-behind on purpose (no view models): each one demonstrates TableView API calls,
+not app architecture.
 
 ## More detail
 

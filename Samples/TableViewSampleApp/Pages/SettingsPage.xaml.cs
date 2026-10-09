@@ -14,8 +14,6 @@ namespace TableViewSampleApp.Pages;
 /// Single source of truth for the persisted app theme. Reads
 /// <see cref="AppSettings.LoadTheme"/> on navigation in, writes via
 /// <see cref="AppSettings.ApplyAndPersist"/> on selection change.
-/// The shell title-bar theme button reuses the same helper so both
-/// surfaces stay in lockstep with no observer plumbing here.
 ///
 /// Settings layout: a ComboBox theme picker plus a Storage card,
 /// styled to mirror the CommunityToolkit SettingsCard look using the
@@ -26,26 +24,41 @@ namespace TableViewSampleApp.Pages;
 /// </summary>
 public sealed partial class SettingsPage : Page
 {
-    // Guards SelectionChanged so the programmatic pre-select during
-    // Loaded doesn't re-fire ApplyAndPersist (which would no-op but
-    // also raise ThemeChanged needlessly).
+    // Guards SelectionChanged during a programmatic pre-select (Loaded, or a title-bar theme change).
     private bool _initializing;
 
     public SettingsPage()
     {
         InitializeComponent();
         Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        // -------- Theme picker: select the ComboBoxItem whose Tag matches
-        // the persisted ElementTheme. ComboBox doesn't auto-select by Tag,
-        // so we walk Items once at load time.
+        SelectTheme(AppSettings.LoadTheme());
+
+        AppSettings.ThemeChanged += OnThemeChanged;
+
+        var path = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "TableViewSampleApp",
+            "theme.txt");
+        StoragePathText.Text = path;
+
+        RefreshWindowsState();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e) => AppSettings.ThemeChanged -= OnThemeChanged;
+
+    private void OnThemeChanged(object? sender, ElementTheme theme) => SelectTheme(theme);
+
+    // ComboBox does not auto-select by Tag.
+    private void SelectTheme(ElementTheme current)
+    {
         _initializing = true;
         try
         {
-            var current = AppSettings.LoadTheme();
             var targetTag = current switch
             {
                 ElementTheme.Light => "Light",
@@ -66,17 +79,6 @@ public sealed partial class SettingsPage : Page
         {
             _initializing = false;
         }
-
-        // -------- Storage card: show the user where the setting lives.
-        // Useful when troubleshooting or copying settings between dev
-        // boxes. Unchanged from the pre-Q4 page.
-        var path = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "TableViewSampleApp",
-            "theme.txt");
-        StoragePathText.Text = path;
-
-        RefreshWindowsState();
     }
 
     private void OnRefreshWindowsStateClick(object sender, RoutedEventArgs e) => RefreshWindowsState();

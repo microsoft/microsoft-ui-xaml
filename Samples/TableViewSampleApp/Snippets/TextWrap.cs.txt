@@ -1,5 +1,45 @@
+// The cell template binds this static state; reset it so a new visit starts from the
+// defaults the rail shows.
+WrapState.TextWrapping = TextWrapping.Wrap;
+WrapState.TextTrimming = TextTrimming.None;
+WrapState.MaxLines = 0;
+
+// …
+
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+// …
+
 /// <summary>Wrapping, trimming and line limit shared by every Bio cell.</summary>
 public static TextWrapState WrapState { get; } = new();
+
+// …
+
+// ---- Wrapping, max lines and width --------------------------------------------------
+
+private void OnWrapToggled(object sender, RoutedEventArgs e)
+{
+    // Toggled fires during InitializeComponent (IsOn="True"); the ctor already set WrapState.
+    if (!IsLoaded || WrapToggle is null || MaxLinesSelector is null)
+    {
+        return;
+    }
+
+    ApplyTextState();
+}
+
+private void OnMaxLinesChanged(object sender, SelectionChangedEventArgs e)
+{
+    // Fires during InitializeComponent (SelectedIndex="0").
+    if (!IsLoaded || MaxLinesSelector is null || WrapToggle is null)
+    {
+        return;
+    }
+
+    _maxLines = int.TryParse(SampleShaping.SelectedTag(MaxLinesSelector, "0"), NumberStyles.Integer, CultureInfo.CurrentCulture, out var lines) ? lines : 0;
+    ApplyTextState();
+}
 
 // The one writer of WrapState, so the toggle and the max-lines picker never overwrite each
 // other. Every Bio cell binds WrapState, which is what makes the setting survive recycling.
@@ -25,9 +65,10 @@ private void OnBioWidthChanged(object sender, RangeBaseValueChangedEventArgs e)
     }
 
     BioColumn.Width = new GridLength(e.NewValue);
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Bio column Width -> {0:N0} px", e.NewValue));
     QueueRowMeasure();
 }
+
+// …
 
 // Coalesced: many cells change size in one layout pass, but the rows are measured once,
 // after layout, at low priority.
@@ -49,21 +90,20 @@ private void QueueRowMeasure()
     });
 }
 
-private static void CollectRowHeights(DependencyObject node, SortedSet<double> heights)
+// …
+
+// From Controls\ShapingOptions.xaml.cs
+// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
 {
-    if (node is TableViewRow row)
+    if (mode == "grouped")
     {
-        if (row.ActualHeight > 0 && row.Visibility == Visibility.Visible)
-        {
-            heights.Add(Math.Round(row.ActualHeight));
-        }
-
-        return;
+        // The key selector receives the ROW; the identity selector receives the KEY.
+        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
     }
-
-    var count = VisualTreeHelper.GetChildrenCount(node);
-    for (var i = 0; i < count; i++)
+    else
     {
-        CollectRowHeights(VisualTreeHelper.GetChild(node, i), heights);
+        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
+        source.ClearGroupBy();
     }
 }

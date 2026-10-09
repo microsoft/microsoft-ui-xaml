@@ -28,7 +28,7 @@ namespace TableViewSampleApp.Pages;
 /// Dragging a header edge and moving the sliders both change ActualWidth; the readout follows
 /// TableViewColumn.ActualWidthProperty, so both paths show up in it after layout.
 /// </summary>
-public sealed partial class ColumnLayoutPage : Page
+public sealed partial class ColumnLayoutPage : SamplePageBase
 {
     private const string PlaygroundMode = "Playground";
     private const string LockedRoleHeader = "Role (locked)";
@@ -40,16 +40,13 @@ public sealed partial class ColumnLayoutPage : Page
     public ColumnLayoutPage()
     {
         InitializeComponent();
-        Loaded += OnPageLoaded;
-        Unloaded += OnPageUnloaded;
+        InitializeSample(Status);
+        TrackLifetime(ApplySelectedMode, () => SetActiveColumn(null));
     }
 
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
-    private void OnPageLoaded(object sender, RoutedEventArgs e) => ApplySelectedMode();
-
-    private void OnPageUnloaded(object sender, RoutedEventArgs e) => SetActiveColumn(null);
-
+    // <snippet>
     // ---- Column factories ---------------------------------------------------------------
 
     private static TableViewTextColumn Text(string header, string path, GridLength width) =>
@@ -160,6 +157,7 @@ public sealed partial class ColumnLayoutPage : Page
         ApplyCanUserResizeColumns();
         RefreshReadouts();
     }
+    // </snippet>
 
     private void PopulateColumnSelector(string? preferredHeader)
     {
@@ -199,6 +197,7 @@ public sealed partial class ColumnLayoutPage : Page
         return null;
     }
 
+    // <snippet>
     private void SetActiveColumn(TableViewColumn? column)
     {
         if (_activeColumn is not null && _actualWidthToken >= 0)
@@ -253,6 +252,7 @@ public sealed partial class ColumnLayoutPage : Page
             _suppressSliderHandlers = false;
         }
     }
+    // </snippet>
 
     private void OnMinWidthSliderChanged(object sender, RangeBaseValueChangedEventArgs e)
     {
@@ -335,6 +335,7 @@ public sealed partial class ColumnLayoutPage : Page
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Width of all {0:N0} columns -> Auto", WidthsTable.Columns.Count));
     }
 
+    // <snippet>
     private void OnClampSelectedClick(object sender, RoutedEventArgs e)
     {
         if (_activeColumn is not { } column)
@@ -349,6 +350,7 @@ public sealed partial class ColumnLayoutPage : Page
         SetLastActionAfterLayout(() => string.Format(CultureInfo.CurrentCulture,
             "Width of {0} -> 80 px; MinWidth {1:N0} gives ActualWidth {2:N0}", column.Header, column.MinWidth, column.ActualWidth));
     }
+    // </snippet>
 
     private void OnResetWidthsClick(object sender, RoutedEventArgs e)
     {
@@ -373,53 +375,4 @@ public sealed partial class ColumnLayoutPage : Page
         };
         WidthsTable.LayoutUpdated += handler;
     }
-
-    private void RefreshReadouts()
-    {
-        if (WidthReadoutText is null || ClampText is null || SelectedColumnText is null || RowsText is null || ResizeStateText is null || WidthsTable is null)
-        {
-            return;
-        }
-
-        RowsText.Text = SampleShaping.RowCountText(People.Count);
-
-        if (_activeColumn is { } column)
-        {
-            SelectedColumnText.Text = column.Header?.ToString() ?? "(unnamed)";
-            var width = column.Width.GridUnitType switch
-            {
-                GridUnitType.Auto => "Auto",
-                GridUnitType.Star => string.Format(CultureInfo.CurrentCulture, "{0:0.##}* (Star)", column.Width.Value),
-                _ => string.Format(CultureInfo.CurrentCulture, "{0:N0} px", column.Width.Value),
-            };
-            WidthReadoutText.Text = string.Format(CultureInfo.CurrentCulture, "{0} / {1:N0}", width, column.ActualWidth);
-            ClampText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} / {1}",
-                column.MinWidth, double.IsInfinity(column.MaxWidth) ? "none" : column.MaxWidth.ToString("N0", CultureInfo.CurrentCulture));
-        }
-        else
-        {
-            SelectedColumnText.Text = "(none)";
-            WidthReadoutText.Text = "-";
-            ClampText.Text = "-";
-        }
-
-        var tableGate = WidthsTable.CanUserResizeColumns ? "CanUserResizeColumns on" : "CanUserResizeColumns off (every gripper)";
-        var columnGate = _activeColumn is null ? string.Empty : _activeColumn.CanResize ? "; CanResize on" : "; CanResize off";
-        ResizeStateText.Text = tableGate + columnGate;
-    }
-
-    #region Sample scaffolding (generic; see FIX-PLAN §6)
-
-    // The only writer of LastActionText.
-    private void SetLastAction(string message)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = message;
-        }
-
-        RefreshReadouts();
-    }
-
-    #endregion
 }

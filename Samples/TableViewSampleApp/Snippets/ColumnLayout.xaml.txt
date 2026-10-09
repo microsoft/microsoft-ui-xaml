@@ -1,5 +1,4 @@
 <!-- The columns are built in code for each width intent; see ColumnLayoutPage.xaml.cs. -->
-
 <tv:TableView
     x:Name="WidthsTable"
     AutomationProperties.AutomationId="ColumnLayoutTable"
@@ -8,6 +7,8 @@
     SelectionMode="Single"
     VerticalAlignment="Stretch"
     MinHeight="320"/>
+
+<!-- … -->
 
 <ComboBox
     x:Name="WidthModeSelector"
@@ -23,12 +24,16 @@
     <ComboBoxItem Content="Mixed" Tag="Mixed"/>
 </ComboBox>
 
+<!-- … -->
+
 <ToggleSwitch
     x:Name="CanUserResizeColumnsToggle"
     AutomationProperties.AutomationId="ColumnLayoutCanUserResizeColumnsToggle"
     Header="Users can resize columns"
     IsOn="True"
     Toggled="OnCanUserResizeColumnsToggled"/>
+
+<!-- … -->
 
 <Slider x:Name="WidthSlider" AutomationProperties.AutomationId="ColumnLayoutWidthSlider"
         Header="Width (Pixel)" Minimum="0" Maximum="500" StepFrequency="10" Value="160"

@@ -1,17 +1,18 @@
-// CellTemplatingPage.xaml.cs. The source is created once and reshaped in place.
-public ObservableCollection<Person> People { get; } = PersonData.Take(40);
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
 
-public TableViewSource? Source => _source;
+// …
 
-public CellTemplatingPage()
-{
-    _source = TableViewSource.From(People);
-    InitializeComponent();
-    Loaded += OnPageLoaded;
-    Unloaded += OnPageUnloaded;
-}
+// The editors are two-way bound; the page only observes the model to report each commit.
+TrackItems(People, OnPersonChanged);
+TrackLifetime(
+    () => PersonCellTemplates.DetailsOpened += OnDetailsOpened,
+    () => PersonCellTemplates.DetailsOpened -= OnDetailsOpened);
 
-// Swap a column's CellTemplate at run time; the visible rows regenerate their cells.
+// …
+
+// ---- Join date editor: swap the column's CellTemplate at run time -----------------------
+
 private void OnJoinDateEditorChanged(object sender, SelectionChangedEventArgs e)
 {
     // Fires during InitializeComponent (SelectedIndex="0"), when the XAML already shows the
@@ -27,58 +28,40 @@ private void OnJoinDateEditorChanged(object sender, SelectionChangedEventArgs e)
     JoinDateColumn.Width = new GridLength((double)resources[full ? "ColWidthDatePicker" : "ColWidthCalendarDate"]);
 }
 
-// The editors are two-way bound, so nothing commits them by hand. The page only observes the
-// model to report each commit. Handlers attached in Loaded are detached in Unloaded.
-private void OnPageLoaded(object sender, RoutedEventArgs e)
-{
-    foreach (var person in People)
-    {
-        person.PropertyChanged += OnPersonChanged;
-    }
+// …
 
-    PersonCellTemplates.DetailsOpened += OnDetailsOpened;
-}
-
-private void OnPageUnloaded(object sender, RoutedEventArgs e)
-{
-    foreach (var person in People)
-    {
-        person.PropertyChanged -= OnPersonChanged;
-    }
-
-    PersonCellTemplates.DetailsOpened -= OnDetailsOpened;
-}
-
-// GroupBy takes a delegate, not a property path, so the control cannot re-bucket a row when the
-// grouped-on value changes. Re-apply the grouping on the same source instead.
 private void OnChangeDepartmentClick(object sender, RoutedEventArgs e)
 {
     if (PeopleTable.SelectedItem is not Person person)
     {
-        SetLastAction("No row selected.");
         return;
     }
 
-    person.Department = SampleShaping.Next(PersonData.Departments, person.Department);
+    var to = SampleShaping.Next(PersonData.Departments, person.Department);
+    using (BeginBulkUpdate())
+    {
+        person.Department = to;
+    }
+
+    // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
+    // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
     ReapplyIfGroupedOn(nameof(Person.Department));
 }
 
-private void ApplyShaping(bool announce)
-{
-    var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
-    var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
-    var selected = PeopleTable.SelectedItem;
+// …
 
+// From Controls\ShapingOptions.xaml.cs
+// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
+{
     if (mode == "grouped")
     {
         // The key selector receives the ROW; the identity selector receives the KEY.
-        _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
     }
     else
     {
-        _source.ClearGroupBy();
+        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
+        source.ClearGroupBy();
     }
-
-    // Selection is index-only (TableView.Select); restore it by identity after the reshape.
-    SampleShaping.Reselect(PeopleTable, selected, People.Count + PersonData.Departments.Count + PersonData.Offices.Count, RefreshReadouts);
 }

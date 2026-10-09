@@ -1,36 +1,33 @@
-<!-- FilePropertiesPage.xaml: the two panes. The Files list is named for screen readers and wide
-     enough for the binaries' names; the table takes the rest of the width. -->
 <TextBlock Text="Files" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
-<ListView x:Name="FileList"
-          AutomationProperties.AutomationId="FilePropertiesFileList"
-          AutomationProperties.Name="Files"
-          SelectionMode="Single"
-          SelectionChanged="OnFileSelectionChanged"/>
+<Border Grid.Row="1" Style="{StaticResource TableHostBorderStyle}" Width="220" VerticalAlignment="Stretch">
+    <ListView
+        x:Name="FileList"
+        AutomationProperties.AutomationId="FilePropertiesFileList"
+        AutomationProperties.Name="Files"
+        SelectionMode="Single"
+        SelectionChanged="OnFileSelectionChanged">
+        <ListView.ItemTemplate>
+            <DataTemplate x:DataType="io:FileInfo">
+                <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Name}"/>
+            </DataTemplate>
+        </ListView.ItemTemplate>
+    </ListView>
+</Border>
 
-<tv:TableView x:Name="PropTable"
-              AutomationProperties.AutomationId="FilePropertiesTable"
-              AutomationProperties.Name="File properties"
-              ItemsSource="{x:Bind Source}"
-              SelectionMode="Single"
-              IsReadOnly="True"
-              SelectionChanged="OnPropSelectionChanged"
-              VerticalAlignment="Stretch" MinHeight="320">
-    <!-- Property is fixed; Value takes the rest. Not Auto: an Auto column is measured from the
-         realized rows only, so it changes width while you scroll. -->
-    <tv:TableViewTextColumn Header="Property" Width="{StaticResource ColWidthPropertyName}" Binding="{Binding Property}"/>
-    <tv:TableViewTextColumn Header="Value" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Value}"/>
-</tv:TableView>
-
-<!-- This page starts Grouped (SelectedIndex="1"): sections are its natural shape. -->
-<ComboBox x:Name="ShapingModeSelector" Header="Shaping mode" SelectedIndex="1"
-          SelectionChanged="OnShapingModeChanged">
-    <ComboBoxItem Content="Flat" Tag="flat"/>
-    <ComboBoxItem Content="Grouped" Tag="grouped"/>
-    <ComboBoxItem Content="Hierarchy" Tag="hierarchy" IsEnabled="False"/>
-    <ComboBoxItem Content="Grouped hierarchy" Tag="groupedHierarchy" IsEnabled="False"/>
-</ComboBox>
-<ComboBox x:Name="GroupKeySelector" Header="Group key" SelectedIndex="0" IsEnabled="False"
-          SelectionChanged="OnGroupKeyChanged">
-    <ComboBoxItem Content="Section" Tag="Section"/>
-    <ComboBoxItem Content="Source" Tag="Source"/>
-</ComboBox>
+<TextBlock Grid.Column="1" Text="Properties" AutomationProperties.HeadingLevel="Level2" Style="{StaticResource SectionHeaderTextStyle}"/>
+<Border Grid.Row="1" Grid.Column="1" Style="{StaticResource TableHostBorderStyle}" VerticalAlignment="Stretch">
+    <tv:TableView
+        x:Name="PropTable"
+        AutomationProperties.AutomationId="FilePropertiesTable"
+        AutomationProperties.Name="File properties"
+        ItemsSource="{x:Bind Source}"
+        SelectionMode="Single"
+        IsReadOnly="True"
+        SelectionChanged="OnPropSelectionChanged"
+        VerticalAlignment="Stretch"
+        MinHeight="320">
+        <!-- Not Auto: an Auto column is measured from the realized rows only, so it changes width while you scroll. -->
+        <tv:TableViewTextColumn Header="Property" Width="{StaticResource ColWidthPropertyName}" Binding="{Binding Property}"/>
+        <tv:TableViewTextColumn Header="Value" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding Value}"/>
+    </tv:TableView>
+</Border>

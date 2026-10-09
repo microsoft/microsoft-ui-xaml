@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using Microsoft.UI.Xaml.Controls;
-
 namespace TableViewSampleApp.Pages;
 
 /// <summary>
@@ -11,10 +9,11 @@ namespace TableViewSampleApp.Pages;
 /// the canonical Shaping section with every option except Flat disabled, rather than
 /// shipping controls that no-op or naming an API that does not exist.
 /// </summary>
-public sealed partial class HierarchyPage : Page
+public sealed partial class HierarchyPage : SamplePageBase
 {
     public HierarchyPage()
     {
         InitializeComponent();
+        InitializeSample(Status);
     }
 }

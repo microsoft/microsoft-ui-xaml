@@ -1,24 +1,15 @@
-<!-- The table only shows the dataset; the runs live in the rail's Actions section. Exactly one
-     * column (Name). Salary is formatted by the shared SalaryTextConverter (C0, current culture)
-     and still sorts by the number, because a text column sorts by its Binding path. -->
-<tv:TableView x:Name="PerfTable"
-              AutomationProperties.AutomationId="PerformanceTable"
-              AutomationProperties.Name="Performance run dataset"
-              SelectionMode="Single" IsReadOnly="True"
-              VerticalAlignment="Stretch" MinHeight="320">
-    <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}"
-                            Binding="{Binding EmployeeId}"/>
-    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
-                            Binding="{Binding FullName}"/>
-    <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="{StaticResource ColWidthDepartment}"
-                            Binding="{Binding Department}"/>
-    <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}"
-                            Binding="{Binding Office}"/>
-    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}"
-                            Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
+<!-- Salary is formatted by a converter yet sorts by number: a text column sorts by its Binding path. -->
+<tv:TableView
+    x:Name="PerfTable"
+    AutomationProperties.AutomationId="PerformanceTable"
+    AutomationProperties.Name="Performance run dataset"
+    SelectionMode="Single"
+    IsReadOnly="True"
+    VerticalAlignment="Stretch"
+    MinHeight="320">
+    <tv:TableViewTextColumn x:Name="IdColumn" Header="#" Width="{StaticResource ColWidthId}" Binding="{Binding EmployeeId}"/>
+    <tv:TableViewTextColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
+    <tv:TableViewTextColumn x:Name="DepartmentTextColumn" Header="Department" Width="{StaticResource ColWidthDepartment}" Binding="{Binding Department}"/>
+    <tv:TableViewTextColumn x:Name="OfficeColumn" Header="Office" Width="{StaticResource ColWidthLocation}" Binding="{Binding Office}"/>
+    <tv:TableViewTextColumn x:Name="SalaryColumn" Header="Salary" Width="{StaticResource ColWidthNumber}" Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
 </tv:TableView>
-
-<Button x:Name="Load100kButton" AutomationProperties.AutomationId="PerformanceLoad100kButton"
-        Content="Load 100,000 rows" Click="OnLoad100kClick"/>
-<Button x:Name="PerItemAddButton" AutomationProperties.AutomationId="PerformancePerItemAddButton"
-        Content="Add 10,000 rows one at a time" Click="OnPerItemAddClick"/>

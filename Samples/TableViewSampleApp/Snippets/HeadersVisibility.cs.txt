@@ -1,3 +1,10 @@
+Source = TableViewSource.From(Tickets);    // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+// …
+
+// ---- Headers visibility -------------------------------------------------------------
+
 private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs e)
 {
     // Fires during InitializeComponent (SelectedIndex="0") before the table exists.
@@ -9,8 +16,9 @@ private void OnHeadersVisibilityChanged(object sender, SelectionChangedEventArgs
     TicketsTable.HeadersVisibility = SampleShaping.SelectedTag(HeadersVisibilitySelector, "Column") == "None"
         ? TableViewHeadersVisibility.None
         : TableViewHeadersVisibility.Column;
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "HeadersVisibility -> {0}", TicketsTable.HeadersVisibility));
 }
+
+// ---- Sorting from code --------------------------------------------------------------
 
 private void OnSortByDueClick(object sender, RoutedEventArgs e)
 {
@@ -19,8 +27,9 @@ private void OnSortByDueClick(object sender, RoutedEventArgs e)
         ? TableViewSortDirection.Descending
         : TableViewSortDirection.Ascending;
     TicketsTable.SortByColumn(DueColumn, direction);
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "SortByColumn(Due, {0})", direction));
 }
+
+// …
 
 // Raised for header clicks and for SortByColumn / ClearSort alike.
 private void OnTableSorted(TableView sender, TableViewSortedEventArgs e)
@@ -30,11 +39,12 @@ private void OnTableSorted(TableView sender, TableViewSortedEventArgs e)
         : string.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Column.Header, e.Direction);
 }
 
+// …
+
 private void OnEscalateClick(object sender, RoutedEventArgs e)
 {
     if (TicketsTable.SelectedItem is not SupportTicket ticket)
     {
-        SetLastAction("No row selected.");
         return;
     }
 
@@ -42,7 +52,6 @@ private void OnEscalateClick(object sender, RoutedEventArgs e)
     var to = SupportTicket.Escalate(from);
     if (to == from)
     {
-        SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} is already {1}, the most urgent level", ticket.TicketId, from));
         return;
     }
 
@@ -51,14 +60,31 @@ private void OnEscalateClick(object sender, RoutedEventArgs e)
     // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
     // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
     ReapplyIfGroupedOn(nameof(SupportTicket.Priority));
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Escalated {0} from {1} to {2}", ticket.TicketId, from, to));
 }
 
-// In ApplyShaping, grouped: the key selector receives the ROW; the identity selector the KEY.
-_source.GroupBy(item => KeyOf(item as SupportTicket, key), SampleShaping.GroupIdentity);
+// …
 
-// Group key for a ticket. Never empty: GroupBy fails fast on an empty group identity.
-private static object KeyOf(SupportTicket? ticket, string key)
+// From Controls\ShapingOptions.xaml.cs
+// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
+{
+    if (mode == "grouped")
+    {
+        // The key selector receives the ROW; the identity selector receives the KEY.
+        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+    }
+    else
+    {
+        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
+        source.ClearGroupBy();
+    }
+}
+
+// …
+
+// From Data\TicketData.cs
+// Never empty: GroupBy fails fast on an empty group identity.
+public static object GroupKeyOf(SupportTicket? ticket, string key)
 {
     var value = key switch
     {

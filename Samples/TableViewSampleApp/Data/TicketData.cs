@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 
 namespace TableViewSampleApp.Data;
@@ -93,6 +94,21 @@ public static class TicketData
             Due = new DateTimeOffset(DateTimeOffset.Now.Date.AddDays(3)),
         };
     }
+
+    // <snippet HeadersVisibility>
+    // Never empty: GroupBy fails fast on an empty group identity.
+    public static object GroupKeyOf(SupportTicket? ticket, string key)
+    {
+        var value = key switch
+        {
+            nameof(SupportTicket.Priority) => ticket?.Priority,
+            nameof(SupportTicket.Assignee) => ticket?.Assignee,
+            _ => ticket?.Queue,
+        };
+
+        return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
+    }
+    // </snippet>
 
     private static string TicketId(int number) => "INC-" + number;
 }

@@ -12,7 +12,7 @@ template part into `XamlTypeInfo`, compiled the control's theme resources out of
 tree, merged activatable-class registrations into its own app manifest, and staged the control DLL
 next to the EXE.
 
-None of that is needed. The project file is now ~60 lines and the sample is an ordinary package
+None of that is needed. The project file is short and the sample is an ordinary package
 consumer, modelled on the [ChartApp](../ChartApp) samples — the existing pattern in this repo for a
 separately-built control set.
 
@@ -98,15 +98,55 @@ high-contrast entries must use `SystemColor*` resources rather than accent color
 
 `SamplePresenter` is a normal UserControl in this assembly. Bind `Header`, `Description`, `Example`,
 and `Options` with `x:Bind`; do not reintroduce split-binary/CsWinRT manual content sync
-workarounds. Its `SourceSnippet` and `AdditionalSnippet` values must correspond to files under
-`Snippets\*.txt`. `Generate-BuildInfo.ps1` validates those declarations at compile time before
-emitting `BuildInfo.g.cs`.
+workarounds. Its `SourceSnippet` and `AdditionalSnippet` values (or `Snippet="X"`, which names
+`X.xaml.txt` and `X.cs.txt`) must correspond to files under `Snippets\*.txt`;
+`tools\Update-Snippets.ps1 -Check` validates those declarations (see Snippets below).
 
 `BuildInfo` is generated to `$(IntermediateOutputPath)\BuildInfo.g.cs` and included from there.
 Do not check in generated `BuildInfo.cs`, and do not change the existing `BuildInfo` field names
 without updating `Pages\AboutPage.xaml.cs`.
 
-The pages deliberately source-free today are `AboutPage.xaml`, `CellEditingPage.xaml`,
-`FileExplorerPage.xaml`, `FilePropertiesPage.xaml`, `FilterPage.xaml`, `HomePage.xaml`,
-`PerformancePage.xaml`, `SettingsPage.xaml`, and `TaskManagerPage.xaml`. All other
-`SamplePresenter` pages that declare snippet attributes are covered by the snippet-existence check.
+The pages deliberately source-free today are `AboutPage.xaml`, `HomePage.xaml`,
+`SettingsPage.xaml` and `HierarchyPage.xaml`. Every other page declares `Snippet="X"`.
+
+## Page structure
+
+A page holds only the TableView behaviour it demonstrates; the generic parts are shared:
+
+- `Pages\SamplePageBase.cs` — the page base (`<pages:SamplePageBase>` XAML root): Last action,
+  readout refresh, Loaded/Unloaded tracking (`TrackItems`, `TrackTimer` for both timer types,
+  `TrackLifetime`), `EnqueueIfLoaded`, `BeginBulkUpdate`, and the page hooks `OnShapingApplying`,
+  `OnShapingApplied`, `OnShapingAction` (Expand all / Collapse all) and `OnLastActionSet`.
+- `Controls\RailSection.cs`, `Controls\ShapingOptions.xaml`, `Controls\StatusPanel.cs` — the rail's
+  section chrome, the Shaping section (GroupBy / ClearGroupBy and gating; the control itself keeps
+  the selection across the reshape) and the Status grid with its fixed Rows → Shaping → Last action
+  tail. Only Last action is a live region (Polite, raised once per new message); a readout that
+  must be announced on its own sets `AutomationProperties.LiveSetting` itself. `ShapingOptions.TimeCall` lets a page
+  time the GroupBy / ClearGroupBy and Expand / Collapse all calls. `SamplePresenter.TryIt` and
+  `WhatToLookFor` render the two InfoBars.
+- `Pages\<X>Page.Status.cs` — the page's own readouts (`RefreshReadouts`).
+- `Converters\Converters.xaml` — every page converter key, merged in `App.xaml`. Chip and tint
+  brushes come from `ChipBrushes.CreateTint` / `CreateDot` (`Converters\CellConverters.cs`): shared
+  instances that `ChipBrushes.Refresh` recolours in place when a Contrast theme is switched.
+
+The pages are code-behind on purpose: a page demonstrates TableView API calls, so the sample has no
+view models. Do not read the code-behind structure as app architecture guidance.
+
+Element AutomationIds are a contract with the UIA verification scripts. WinUI reports an unset
+AutomationId as the element's `x:Name`, so do not add an `x:Name` to an element that has an
+automation peer unless the AutomationId should change too.
+
+## Snippets
+
+The Source expander snippets (`Snippets\*.txt`) are generated from `<!-- snippet -->` /
+`// <snippet>` regions by `tools\Update-Snippets.ps1` (`-Tags Sort,Groups` limits it to some pages)
+and checked in. A named region (`// <snippet Groups Sort>`) in a shared or data file is appended to
+those pages' snippets; a snippet whose first line is `// snippet:manual` opts out. Keep each region
+readable on its own (declare, or take as parameters, the values it uses); narration
+(`SetLastAction`, `RefreshReadouts`) is elided.
+
+After editing a region, run `powershell -File tools\Update-Snippets.ps1` and commit the result. The
+build's `_CheckTableViewSnippets` target runs it with `-Check` only when a source, snippet or the
+tool changed, never in design-time builds; a stale or missing snippet is a warning (`TVSNIP001`)
+locally and an error in CI (`TF_BUILD` / `ContinuousIntegrationBuild`, or
+`/p:TableViewSampleStrictSnippets=true`).

@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Media;
+using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -23,16 +24,12 @@ namespace TableViewSampleApp.Pages;
 /// type) and sample it twice a second. "Realized rows" counts the rows that intersect the
 /// viewport; "Row pool" counts every container the table keeps.
 /// </summary>
-public sealed partial class VirtualizationPage : Page
+public sealed partial class VirtualizationPage : SamplePageBase
 {
     private readonly DispatcherTimer _sampler = new() { Interval = TimeSpan.FromMilliseconds(500) };
     private ObservableCollection<Person> _people;
-    private TableViewSource? _source;          // one per dataset; reshaped in place, never per shaping change
-    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
-    private string _appliedKey = "Department";
+    private TableViewSource _source;           // one per dataset; reshaped in place, never per shaping change
     private TableViewTextColumn? _departmentTextColumn;
-    private int _peakPool;
-    private double _rowHeight;                 // last measured; rows are uniform in this table
 
     public VirtualizationPage()
     {
@@ -40,28 +37,21 @@ public sealed partial class VirtualizationPage : Page
         _source = TableViewSource.From(_people);
         InitializeComponent();
         PeopleTable.ItemsSource = _source;
-        Loaded += OnPageLoaded;
-        Unloaded += OnPageUnloaded;
         UpdateActionLabels();
-        RefreshReadouts();
-    }
 
-    private void OnPageLoaded(object sender, RoutedEventArgs e)
-    {
+        // No re-selection fallback: the control keeps the selection on its item across a reshape.
+        Shaping.RestoreSelection = false;
+        InitializeSample(Status, Shaping.Attach(PeopleTable, _source));
+
         // Realization changes as the user scrolls and the control raises no event for it, so the
-        // readout is sampled.
+        // readout is sampled while the page is loaded.
         _sampler.Tick += OnSamplerTick;
-        _sampler.Start();
-        RefreshReadouts();
-    }
-
-    private void OnPageUnloaded(object sender, RoutedEventArgs e)
-    {
-        _sampler.Stop();
-        _sampler.Tick -= OnSamplerTick;
+        TrackTimer(_sampler, () => true);
     }
 
     private void OnSamplerTick(object? sender, object e) => RefreshReadouts();
+
+    protected override void OnShapingApplying(ShapingApplyingEventArgs e) => _peakPool = 0;
 
     // ---- Dataset ------------------------------------------------------------------------
 
@@ -74,18 +64,24 @@ public sealed partial class VirtualizationPage : Page
             return;
         }
 
+        // <snippet>
+        // There is nothing to switch on: TableView virtualizes by default. The lesson is how not
+        // to defeat it.
+
         // DO: build the whole list first, then hand it to the table in one assignment. Adding rows
         // one at a time to a bound collection raises one notification per row.
         _people = new ObservableCollection<Person>(PersonData.Many(count));
         _source = TableViewSource.From(_people);
         PeopleTable.ItemsSource = _source;
-        _peakPool = 0;
+        _peakPool = 0; // snippet:skip
 
         // A new source starts flat; give it the current shaping.
-        if (_appliedMode == "grouped")
+        Shaping.Attach(PeopleTable, _source);
+        if (IsGrouped)
         {
-            ApplyShaping(announce: false);
+            Shaping.Apply(announce: false);
         }
+        // </snippet>
 
         UpdateActionLabels();
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Rebuilt the source with {0:N0} rows", count));
@@ -157,13 +153,10 @@ public sealed partial class VirtualizationPage : Page
     private void OnJumpToFirstClick(object sender, RoutedEventArgs e) =>
         ScrollToRow(1, "Jumped to the first row");
 
-    /// <summary>
-    /// Selects row <paramref name="number"/> (1-based, source order) and scrolls to it. This
-    /// release has no TableView.ScrollIntoView, so the sample scrolls the body ScrollViewer to an
-    /// estimated offset, then corrects the estimate from a realized row whose display index it
-    /// knows (unrealized rows only have an estimated height), and finally lets the target row
-    /// bring itself into view once it is realized.
-    /// </summary>
+    // <snippet>
+    // Workaround, not a pattern to copy: this release has no TableView.ScrollIntoView, so scroll the body
+    // ScrollViewer to an estimated offset and correct it from a realized row. Assumes no sort, every
+    // group expanded and a uniform row height.
     private void ScrollToRow(int number, string message)
     {
         if (_people.Count == 0)
@@ -173,7 +166,7 @@ public sealed partial class VirtualizationPage : Page
         }
 
         var target = _people[number - 1];
-        if (_appliedMode == "grouped")
+        if (IsGrouped)
         {
             // The display index map assumes every group is expanded.
             PeopleTable.ExpandAllGroups();
@@ -216,6 +209,7 @@ public sealed partial class VirtualizationPage : Page
 
         SetLastAction(message + (ReferenceEquals(PeopleTable.SelectedItem, target) ? "; it is selected" : string.Empty));
     }
+    // </snippet>
 
     // Display index of every row. Flat: the source index. Grouped: groups appear in
     // first-encountered source order and keep source order inside, and each group header takes
@@ -223,7 +217,7 @@ public sealed partial class VirtualizationPage : Page
     private Dictionary<Person, int> DisplayIndexes()
     {
         var map = new Dictionary<Person, int>(_people.Count);
-        if (_appliedMode != "grouped")
+        if (!IsGrouped)
         {
             for (var i = 0; i < _people.Count; i++)
             {
@@ -237,7 +231,7 @@ public sealed partial class VirtualizationPage : Page
         var order = new List<List<Person>>();
         foreach (var person in _people)
         {
-            var identity = SampleShaping.GroupIdentity(SampleShaping.KeyOf(person, _appliedKey));
+            var identity = SampleShaping.GroupIdentity(SampleShaping.KeyOf(person, AppliedGroupKey));
             if (!groups.TryGetValue(identity, out var members))
             {
                 members = new List<Person>();
@@ -260,6 +254,7 @@ public sealed partial class VirtualizationPage : Page
 
         return map;
     }
+
     private static ScrollViewer? FindBodyScroller(DependencyObject root)
     {
         // PART_BodyScroller is the TableView template's body ScrollViewer. Read-only use here,
@@ -309,6 +304,9 @@ public sealed partial class VirtualizationPage : Page
         }
     }
 
+    // <snippet>
+    // The control exposes no realized-row count, so walk the visual tree for TableViewRow and count the
+    // visible rows that intersect the body viewport.
     private static bool InViewport(TableViewRow row, ScrollViewer scroller)
     {
         if (row.Visibility != Visibility.Visible || row.ActualHeight <= 0)
@@ -319,8 +317,7 @@ public sealed partial class VirtualizationPage : Page
         var bounds = row.TransformToVisual(scroller).TransformBounds(new Rect(0, 0, row.ActualWidth, row.ActualHeight));
         return bounds.Bottom > 0 && bounds.Top < scroller.ViewportHeight;
     }
-
-    // ---- Readouts -------------------------------------------------------------------------
+    // </snippet>
 
     /// <summary>
     /// Counts TableViewRow containers. A row is "realized" when it is visible and its bounds
@@ -349,121 +346,4 @@ public sealed partial class VirtualizationPage : Page
 
         return (visible, pool, rowHeight);
     }
-    private void RefreshReadouts()
-    {
-        if (PeopleTable is null || RowsText is null || RealizedRowsText is null)
-        {
-            return;
-        }
-
-        var (visible, pool, rowHeight) = IsLoaded ? CountRows() : (0, 0, 0d);
-        _rowHeight = rowHeight > 0 ? rowHeight : _rowHeight;
-        _peakPool = Math.Max(_peakPool, pool);
-        var total = _people.Count;
-
-        RowsText.Text = SampleShaping.RowCountText(total);
-        RealizedRowsText.Text = visible.ToString("N0", CultureInfo.CurrentCulture);
-        RowPoolText.Text = pool.ToString("N0", CultureInfo.CurrentCulture);
-        PeakPoolText.Text = _peakPool.ToString("N0", CultureInfo.CurrentCulture);
-        RealizedShareText.Text = total > 0
-            ? string.Format(CultureInfo.CurrentCulture, "{0:P2} of {1:N0}", (double)visible / total, total)
-            : "—";
-        RowHeightText.Text = rowHeight > 0 ? string.Format(CultureInfo.CurrentCulture, "{0:F0} px", rowHeight) : "—";
-        ColumnsText.Text = PeopleTable.Columns.Count.ToString("N0", CultureInfo.CurrentCulture);
-    }
-
-    #region Sample scaffolding (generic; see FIX-PLAN §6)
-
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void ApplyShaping(bool announce)
-    {
-        // Fires during InitializeComponent, before the later-declared elements exist.
-        if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
-            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
-        {
-            return;
-        }
-
-        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
-        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
-
-        switch (mode)
-        {
-            case "grouped":
-                // The key selector receives the ROW; the identity selector receives the KEY.
-                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
-                break;
-            // case "hierarchy":
-            // case "groupedHierarchy":
-            //     Hierarchical (tree) rows are not available in this release, so the two matching
-            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
-            //     member today. When hierarchy ships, apply it to this same source here, composed
-            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
-            //     after the call returns.
-            default:
-                _source.ClearGroupBy();
-                mode = "flat";
-                break;
-        }
-
-        _appliedMode = mode;
-        _appliedKey = key;
-
-        // No Reselect: probing tens of thousands of indexes would stall the page. A plain reshape
-        // keeps the selection on its item; Rename re-selects its row by index as it scrolls.
-        _peakPool = 0;
-        UpdateShapingGating();
-        if (announce)
-        {
-            SetLastAction(mode == "grouped"
-                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
-                : "Shaping -> Flat");
-        }
-    }
-
-    // Call after ANY write to the grouped-on property.
-    private void ReapplyIfGroupedOn(string? propertyName)
-    {
-        if (_appliedMode == "grouped" && propertyName == _appliedKey)
-        {
-            ApplyShaping(announce: false);
-        }
-    }
-
-    private void UpdateShapingGating()
-    {
-        var grouped = _appliedMode == "grouped";
-        GroupKeySelector.IsEnabled = grouped;
-        ExpandAllButton.IsEnabled = grouped;
-        CollapseAllButton.IsEnabled = grouped;
-        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
-    }
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        PeopleTable.ExpandAllGroups();
-        SetLastAction("Expanded all groups");
-    }
-
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
-    {
-        PeopleTable.CollapseAllGroups();
-        SetLastAction("Collapsed all groups");
-    }
-
-    // The only writer of LastActionText.
-    private void SetLastAction(string message)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = message;
-        }
-
-        RefreshReadouts();
-    }
-
-    #endregion
 }

@@ -1,4 +1,10 @@
-// DensityPage.xaml.cs
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+// …
+
+// ---- Density ------------------------------------------------------------------------
+
 private void OnDensityChanged(object sender, SelectionChangedEventArgs e)
 {
     // Fires during InitializeComponent (SelectedIndex="1"), when the table already uses the
@@ -10,19 +16,18 @@ private void OnDensityChanged(object sender, SelectionChangedEventArgs e)
 
     var density = Enum.Parse<TableViewDensity>(SampleShaping.SelectedTag(DensitySelector, "Standard"));
     PeopleTable.Density = density;
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Density -> {0}", density));
 }
+
+// ---- Actions ------------------------------------------------------------------------
 
 private void OnMoveGroupClick(object sender, RoutedEventArgs e)
 {
     if (PeopleTable.SelectedItem is not Person person)
     {
-        SetLastAction("No row selected.");
         return;
     }
 
-    var key = _appliedMode == "grouped" ? _appliedKey : nameof(Person.Department);
-    var from = SampleShaping.KeyOf(person, key);
+    var key = IsGrouped ? AppliedGroupKey : nameof(Person.Department);
     switch (key)
     {
         case nameof(Person.Role):
@@ -39,5 +44,22 @@ private void OnMoveGroupClick(object sender, RoutedEventArgs e)
     // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
     // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
     ReapplyIfGroupedOn(key);
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
+}
+
+// …
+
+// From Controls\ShapingOptions.xaml.cs
+// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
+{
+    if (mode == "grouped")
+    {
+        // The key selector receives the ROW; the identity selector receives the KEY.
+        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+    }
+    else
+    {
+        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
+        source.ClearGroupBy();
+    }
 }

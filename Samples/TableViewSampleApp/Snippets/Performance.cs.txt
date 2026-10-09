@@ -1,30 +1,10 @@
-// DO: build the rows off the UI thread and off the clock, then bind them once:
-// one collection, one TableViewSource, one ItemsSource assignment.
-var rows = await Task.Run(() => PersonData.Many(count));
-var ms = Timed(() =>
-{
-    _people = new ObservableCollection<Person>(rows);
-    _source = TableViewSource.From(_people);
-    PerfTable.ItemsSource = _source;
-});
-
-// DON'T: one CollectionChanged notification, and one projection update, per row.
-var ms = Timed(() =>
-{
-    people.Clear();
-    foreach (var person in rows)
-    {
-        people.Add(person);
-    }
-});
+// ---- Timed runs ---------------------------------------------------------------------
 
 // Settles the heap, then times the mutation plus one synchronous measure and arrange, so the
 // window ends when the new rows are laid out rather than when the C# call returns.
 private long Timed(Action mutation)
 {
-    GC.Collect();
-    GC.WaitForPendingFinalizers();
-    GC.Collect();
+    SettleHeap();
 
     var stopwatch = Stopwatch.StartNew();
     mutation();
@@ -33,8 +13,169 @@ private long Timed(Action mutation)
     return stopwatch.ElapsedMilliseconds;
 }
 
-// Sort, filter and group run on the control and the source, not on a re-built list.
-var ms = Timed(() => PerfTable.SortByColumn(NameColumn, direction));
-var ms = Timed(() => source.Filter(item => item is Person { Department: FilterDepartment }));
-var ms = Timed(() => source.ClearFilter());
-ms = Timed(() => source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity));
+private static void SettleHeap()
+{
+    GC.Collect();
+    GC.WaitForPendingFinalizers();
+    GC.Collect();
+}
+
+// …
+
+private async Task LoadAsync(int count, TextBlock result)
+{
+    if (!BeginRun())
+    {
+        return;
+    }
+
+    try
+    {
+        // DO: build the rows off the UI thread and off the clock, then bind them once.
+        var rows = await Task.Run(() => PersonData.Many(count));
+        var ms = Timed(() =>
+        {
+            _people = new ObservableCollection<Person>(rows);
+            _source = TableViewSource.From(_people);
+            PerfTable.ItemsSource = _source;
+        });
+
+        result.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms, {1}", ms, ColumnSetLabel);
+
+        // A new dataset gets the current shaping; GroupBy is timed separately (Group row).
+        Shaping.Attach(PerfTable, _source);
+        if (IsGrouped)
+        {
+            Shaping.Apply(announce: false);
+        }
+    }
+    finally
+    {
+        _isRunning = false;
+    }
+}
+
+// …
+
+private async void OnPerItemAddClick(object sender, RoutedEventArgs e)
+{
+    if (!BeginRun())
+    {
+        return;
+    }
+
+    try
+    {
+        var rows = await Task.Run(() => PersonData.Many(PerItemCap));
+        if (IsGrouped)
+        {
+            await RunPerItemAddGroupedAsync(rows);
+            return;
+        }
+
+        var people = _people;
+        // DON'T: one CollectionChanged notification, and one projection update, per row.
+        var ms = Timed(() =>
+        {
+            people.Clear();
+            foreach (var person in rows)
+            {
+                people.Add(person);
+            }
+        });
+
+        PerItemAddText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms for {1:N0} Add calls, {2}", ms, PerItemCap, ColumnSetLabel);
+    }
+    finally
+    {
+        _isRunning = false;
+    }
+}
+
+// Under GroupBy every Add regroups all rows so far (O(n^2)): time per-row Adds only up to a cap,
+// then do the real Adds with the grouping detached and group once.
+private async Task RunPerItemAddGroupedAsync(IReadOnlyList<Person> rows)
+{
+    var key = Shaping.SelectedKey;
+    var keyLabel = Shaping.SelectedKeyLabel;
+    var source = _source;
+    var people = _people;
+    Shaping.SetBusy(true);
+    try
+    {
+        // (1) DON'T: per-row Add while grouped, stopped at GroupedAddBudgetMs.
+        PerItemAddText.Text = "Adding under GroupBy (capped)…";
+        await Task.Delay(50);
+        int added = 0;
+        int tailStartIndex = 0;
+        long tailStartMs = 0;
+        long tailMs = 0;
+        var probeMs = Timed(() =>
+        {
+            people.Clear();
+            var stopwatch = Stopwatch.StartNew();
+            foreach (var person in rows)
+            {
+                if (stopwatch.ElapsedMilliseconds >= GroupedAddBudgetMs)
+                {
+                    break;
+                }
+
+                if (added % 100 == 0)
+                {
+                    tailStartIndex = added;
+                    tailStartMs = stopwatch.ElapsedMilliseconds;
+                }
+
+                people.Add(person);
+                added++;
+            }
+
+            tailMs = stopwatch.ElapsedMilliseconds - tailStartMs;
+        });
+        var perAddMs = (double)tailMs / Math.Max(1, added - tailStartIndex);
+
+        // Let the window repaint between the two blocking steps.
+        PerItemAddText.Text = "Adding with the grouping detached…";
+        await Task.Delay(50);
+
+        // (2) DO: detach the grouping, add per row against the flat source, group once.
+        long addMs = 0;
+        var regroupMs = 0L;
+        var totalMs = Timed(() =>
+        {
+            var stopwatch = Stopwatch.StartNew();
+            source.ClearGroupBy();
+            people.Clear();
+            foreach (var person in rows)
+            {
+                people.Add(person);
+            }
+
+            addMs = stopwatch.ElapsedMilliseconds;
+            source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+            regroupMs = stopwatch.ElapsedMilliseconds - addMs;
+        });
+
+        PerItemAddText.Text = string.Format(
+            CultureInfo.CurrentCulture,
+            "Grouped by {0}: {1:N0} of {2:N0} Adds before the {3:N0} ms cap ({4:N0} ms, last Adds {5:N1} ms each). Grouping detached: {2:N0} Adds plus one GroupBy in {6:N0} ms ({7:N0} ms Adds, {8:N0} ms GroupBy), {9}",
+            keyLabel, added, PerItemCap, GroupedAddBudgetMs, probeMs, perAddMs, totalMs, addMs, regroupMs, ColumnSetLabel);
+    }
+    finally
+    {
+        Shaping.SetBusy(false);
+    }
+}
+
+protected override void OnShapingApplied(ShapingAppliedEventArgs e)
+{
+    var ms = e.ElapsedMilliseconds;
+    GroupText.Text = e.IsGrouped
+        ? string.Format(CultureInfo.CurrentCulture, "GroupBy {0}: {1:N0} ms, {2:N0} rows", e.KeyLabel, ms, _people.Count)
+        : string.Format(CultureInfo.CurrentCulture, "ClearGroupBy: {0:N0} ms, {1:N0} rows", ms, _people.Count);
+    e.Message += string.Format(CultureInfo.CurrentCulture, " in {0:N0} ms", ms);
+}
+
+protected override void OnShapingAction(ShapingActionEventArgs e) =>
+    e.Message += string.Format(CultureInfo.CurrentCulture, " in {0:N0} ms", e.ElapsedMilliseconds);

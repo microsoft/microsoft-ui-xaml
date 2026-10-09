@@ -23,65 +23,40 @@ namespace TableViewSampleApp.Pages;
 /// its width, template and sort settings wherever it lands. The rows underneath can be grouped
 /// at the same time, to show that column changes and group headers are independent.
 /// </summary>
-public sealed partial class ColumnLifecyclePage : Page
+public sealed partial class ColumnLifecyclePage : SamplePageBase
 {
     private const int RowCount = 40;
     private const string JoinDateHeader = "Join date";
 
     private readonly TableViewColumn[] _canonical;
-    private TableViewSource? _source;          // created ONCE; reshaped in place, never rebuilt
-    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
-    private string _appliedKey = "Department";
-    private bool _isBulkUpdate;
-    private bool _personHandlersAttached;
     private int _nextPersonIndex = RowCount;   // PersonData row used by the next "Add a person"
 
     public ColumnLifecyclePage()
     {
-        _source = TableViewSource.From(People);
+        // <snippet>
+        Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
         InitializeComponent();
 
         // Index = the Tag of the matching visibility checkbox.
         _canonical = new TableViewColumn[] { ColAvatar, ColName, ColDepartment, ColRole, ColSalary, ColActive, ColShift };
-
-        Loaded += OnPageLoaded;
-        Unloaded += OnPageUnloaded;
+        // </snippet>
         PopulateColumnPicker();
-        RefreshReadouts();
+        InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
+        TrackItems(People, OnPersonChanged);
     }
 
     public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
 
-    public TableViewSource? Source => _source;
+    public TableViewSource Source { get; }
 
-    private void OnPageLoaded(object sender, RoutedEventArgs e)
-    {
-        _personHandlersAttached = true;
-        foreach (var person in People)
-        {
-            person.PropertyChanged += OnPersonChanged;
-        }
-
-        RefreshReadouts();
-    }
-
-    private void OnPageUnloaded(object sender, RoutedEventArgs e)
-    {
-        foreach (var person in People)
-        {
-            person.PropertyChanged -= OnPersonChanged;
-        }
-
-        _personHandlersAttached = false;
-    }
-
+    // <snippet>
     // ---- Column visibility: TableViewColumn.Visibility --------------------------------------
 
     private void OnColumnToggle(object sender, RoutedEventArgs e)
     {
         // IsChecked="True" raises Checked during InitializeComponent, before _canonical is
         // assigned; the XAML already matches. Reset also writes IsChecked and reports itself.
-        if (_canonical is null || _isBulkUpdate || sender is not CheckBox { Tag: string tag } box || !int.TryParse(tag, out var index))
+        if (_canonical is null || IsBulkUpdating || sender is not CheckBox { Tag: string tag } box || !int.TryParse(tag, out var index))
         {
             return;
         }
@@ -172,8 +147,7 @@ public sealed partial class ColumnLifecyclePage : Page
             }
         }
 
-        _isBulkUpdate = true;
-        try
+        using (BeginBulkUpdate())
         {
             foreach (var box in new[] { VisAvatarCheckBox, VisNameCheckBox, VisDepartmentCheckBox, VisRoleCheckBox, VisSalaryCheckBox, VisActiveCheckBox, VisShiftCheckBox })
             {
@@ -183,14 +157,11 @@ public sealed partial class ColumnLifecyclePage : Page
                 box.IsChecked = visible;
             }
         }
-        finally
-        {
-            _isBulkUpdate = false;
-        }
 
         PopulateColumnPicker();
         SetLastAction("Restored the starting column order and visibility");
     }
+    // </snippet>
 
     private TableViewColumn? FindColumn(string header) =>
         PeopleTable.Columns.FirstOrDefault(c => string.Equals(c.Header?.ToString(), header, StringComparison.Ordinal));
@@ -225,7 +196,7 @@ public sealed partial class ColumnLifecyclePage : Page
     // ---- Actions: rows ----------------------------------------------------------------------
 
     // The key an action moves a row along: the applied group key, or Department when flat.
-    private string ActionKey => _appliedMode == "grouped" ? _appliedKey : nameof(Person.Department);
+    private string ActionKey => IsGrouped ? AppliedGroupKey : nameof(Person.Department);
 
     private void OnMoveRowClick(object sender, RoutedEventArgs e)
     {
@@ -237,8 +208,7 @@ public sealed partial class ColumnLifecyclePage : Page
 
         var key = ActionKey;
         var from = SampleShaping.KeyOf(person, key);
-        _isBulkUpdate = true;
-        try
+        using (BeginBulkUpdate())
         {
             switch (key)
             {
@@ -253,10 +223,6 @@ public sealed partial class ColumnLifecyclePage : Page
                     person.Department = SampleShaping.Next(ExistingValues(p => p.Department), person.Department);
                     break;
             }
-        }
-        finally
-        {
-            _isBulkUpdate = false;
         }
 
         // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
@@ -289,11 +255,6 @@ public sealed partial class ColumnLifecyclePage : Page
             }
         }
 
-        if (_personHandlersAttached)
-        {
-            person.PropertyChanged += OnPersonChanged;
-        }
-
         People.Add(person);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Added {0} to {1}", person.FullName, SampleShaping.KeyOf(person, key)));
     }
@@ -307,13 +268,13 @@ public sealed partial class ColumnLifecyclePage : Page
         }
 
         var person = People[0];
-        person.PropertyChanged -= OnPersonChanged;
         People.RemoveAt(0);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0}; {1:N0} rows left", person.FullName, People.Count));
     }
 
     private void OnRestoreRowsClick(object sender, RoutedEventArgs e)
     {
+        // Clear() raises Reset, which carries no old items: detach them first.
         foreach (var person in People)
         {
             person.PropertyChanged -= OnPersonChanged;
@@ -322,11 +283,6 @@ public sealed partial class ColumnLifecyclePage : Page
         People.Clear();
         foreach (var person in PersonData.Take(RowCount))
         {
-            if (_personHandlersAttached)
-            {
-                person.PropertyChanged += OnPersonChanged;
-            }
-
             People.Add(person);
         }
 
@@ -340,7 +296,7 @@ public sealed partial class ColumnLifecyclePage : Page
     // In-cell edits through the Active checkbox, the Shift picker and the Join date picker.
     private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender is not Person person || _isBulkUpdate)
+        if (sender is not Person person || IsBulkUpdating)
         {
             return;
         }
@@ -359,123 +315,4 @@ public sealed partial class ColumnLifecyclePage : Page
                 break;
         }
     }
-
-    private void RefreshReadouts()
-    {
-        if (RowsText is null || ColumnOrderText is null || HiddenColumnsText is null || GroupCountText is null || PeopleTable is null)
-        {
-            return;
-        }
-
-        RowsText.Text = SampleShaping.RowCountText(People.Count);
-        ColumnOrderText.Text = string.Join(", ", PeopleTable.Columns.Select(c => c.Header?.ToString()));
-        var hidden = PeopleTable.Columns.Where(c => c.Visibility != Visibility.Visible).Select(c => c.Header?.ToString()).ToList();
-        HiddenColumnsText.Text = hidden.Count == 0 ? "(none)" : string.Join(", ", hidden);
-
-        var key = _appliedKey;
-        GroupCountText.Text = _appliedMode == "grouped"
-            ? People.Select(p => SampleShaping.KeyOf(p, key)).Distinct().Count().ToString("N0", CultureInfo.CurrentCulture)
-            : "(flat)";
-    }
-
-    #region Sample scaffolding (generic; see FIX-PLAN §6)
-
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void ApplyShaping(bool announce)
-    {
-        // Fires during InitializeComponent (each selector's SelectedIndex="0"), before the
-        // later-declared elements exist. Guard every element this path touches.
-        if (_source is null || PeopleTable is null || ShapingModeSelector is null || GroupKeySelector is null
-            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
-        {
-            return;
-        }
-
-        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
-        var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
-        var selected = PeopleTable.SelectedItem;
-
-        switch (mode)
-        {
-            case "grouped":
-                // The key selector receives the ROW; the identity selector receives the KEY.
-                // The Columns vector is untouched by a reshape.
-                _source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
-                break;
-            // case "hierarchy":
-            // case "groupedHierarchy":
-            //     Hierarchical (tree) rows are not available in this release, so the two matching
-            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
-            //     member today. When hierarchy ships, apply it to this same source here, composed
-            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
-            //     after the call returns.
-            default:
-                _source.ClearGroupBy();
-                mode = "flat";
-                break;
-        }
-
-        _appliedMode = mode;
-        _appliedKey = key;
-
-        // Re-applying GroupBy can drop the selection when the selected row changed group.
-        SampleShaping.Reselect(PeopleTable, selected, (People.Count * 2) + 2, RefreshReadouts);
-        UpdateShapingGating();
-        if (announce)
-        {
-            SetLastAction(mode == "grouped"
-                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
-                : "Shaping -> Flat");
-        }
-        else
-        {
-            RefreshReadouts();
-        }
-    }
-
-    // Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
-    private void ReapplyIfGroupedOn(string? propertyName)
-    {
-        if (_appliedMode == "grouped" && propertyName == _appliedKey)
-        {
-            ApplyShaping(announce: false);
-        }
-    }
-
-    private void UpdateShapingGating()
-    {
-        var grouped = _appliedMode == "grouped";
-        GroupKeySelector.IsEnabled = grouped;
-        ExpandAllButton.IsEnabled = grouped;
-        CollapseAllButton.IsEnabled = grouped;
-        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
-    }
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        PeopleTable.ExpandAllGroups();
-        SetLastAction("Expanded all groups");
-    }
-
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
-    {
-        PeopleTable.CollapseAllGroups();
-        SetLastAction("Collapsed all groups");
-    }
-
-    // The only writer of LastActionText.
-    private void SetLastAction(string message)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = message;
-        }
-
-        RefreshReadouts();
-    }
-
-    #endregion
 }

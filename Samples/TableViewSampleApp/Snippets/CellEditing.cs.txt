@@ -1,4 +1,10 @@
-// CellEditingPage.xaml.cs
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+// …
+
+// ---- Editing ------------------------------------------------------------------------
+
 private void OnReadOnlyToggled(object sender, RoutedEventArgs e)
 {
     if (PeopleTable is null || ReadOnlyToggle is null)
@@ -7,25 +13,23 @@ private void OnReadOnlyToggled(object sender, RoutedEventArgs e)
     }
 
     PeopleTable.IsReadOnly = ReadOnlyToggle.IsOn;
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "IsReadOnly -> {0}", PeopleTable.IsReadOnly));
 }
 
 private void OnBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
 {
-    _openEdit = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName);
     SetEditButtonsEnabled(true);
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Began editing {0}", _openEdit));
 }
 
 // Raised for every close, with EditAction saying whether it committed or cancelled.
 private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
 {
-    var what = string.Format(CultureInfo.CurrentCulture, "{0} for {1}", args.Column?.Header, (args.Item as Person)?.FullName);
-    _openEdit = "(none)";
     SetEditButtonsEnabled(false);
-    SetLastAction(args.EditAction == TableViewEditAction.Commit
-        ? string.Format(CultureInfo.CurrentCulture, "Committed {0}", what)
-        : string.Format(CultureInfo.CurrentCulture, "Cancelled the edit of {0}; the model keeps its value", what));
+}
+
+private void SetEditButtonsEnabled(bool enabled)
+{
+    CommitEditButton.IsEnabled = enabled;
+    CancelEditButton.IsEnabled = enabled;
 }
 
 // The buttons set AllowFocusOnInteraction="False", so clicking one leaves focus, and the
@@ -34,7 +38,7 @@ private void OnCommitEditClick(object sender, RoutedEventArgs e)
 {
     if (!PeopleTable.CommitEdit())
     {
-        SetLastAction("CommitEdit returned false: no edit was open, or the value was rejected.");
+        // …
     }
 }
 
@@ -42,33 +46,49 @@ private void OnCancelEditClick(object sender, RoutedEventArgs e)
 {
     if (!PeopleTable.CancelEdit())
     {
-        SetLastAction("CancelEdit returned false: no edit was open.");
+        // …
     }
 }
 
 private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
 {
-    // ...log the committed value...
+    if (sender is not Person person || Array.IndexOf(s_editableProperties, e.PropertyName) < 0)
+    {
+        return;
+    }
+
+    LogEdit(person, e.PropertyName!);
 
     // The write arrives from inside the control's commit. Re-group after it returns, so the
     // reshape never runs while the edit is still closing.
     var property = e.PropertyName;
-    DispatcherQueue.TryEnqueue(() =>
+    EnqueueIfLoaded(() =>
     {
-        if (IsLoaded)
+        var hadFocus = IsFocusWithinTable();
+        var regrouped = IsGrouped && property == AppliedGroupKey;
+        ReapplyIfGroupedOn(property);
+        if (regrouped && hadFocus)
         {
-            ReapplyIfGroupedOn(property);
-            RefreshReadouts();
+            // The reshape recycles the containers; put focus back on the edited row.
+            RestoreRowFocusAfterLayout(person);
         }
     });
-    RefreshReadouts();
 }
 
-// Call after ANY write to the grouped-on property: from an action or from an in-cell edit.
-private void ReapplyIfGroupedOn(string? propertyName)
+// …
+
+// From Controls\ShapingOptions.xaml.cs
+// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
 {
-    if (_appliedMode == "grouped" && propertyName == _appliedKey)
+    if (mode == "grouped")
     {
-        ApplyShaping(announce: false);
+        // The key selector receives the ROW; the identity selector receives the KEY.
+        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+    }
+    else
+    {
+        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
+        source.ClearGroupBy();
     }
 }

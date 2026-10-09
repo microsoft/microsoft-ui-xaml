@@ -1,29 +1,77 @@
-// There is nothing to switch on: TableView virtualizes by default. The lesson is how not to
-// defeat it.
+// There is nothing to switch on: TableView virtualizes by default. The lesson is how not
+// to defeat it.
 
-// DON'T: per-item Add into an already-bound collection. Each Add raises a CollectionChanged
-// notification on the UI thread, so 50,000 rows means 50,000 notifications and a frozen window.
-//     foreach (var person in rows) { _people.Add(person); }
-
-// DO: build the whole list first, then hand it to the table in one assignment.
+// DO: build the whole list first, then hand it to the table in one assignment. Adding rows
+// one at a time to a bound collection raises one notification per row.
 _people = new ObservableCollection<Person>(PersonData.Many(count));
 _source = TableViewSource.From(_people);
 PeopleTable.ItemsSource = _source;
 
 // A new source starts flat; give it the current shaping.
-if (_appliedMode == "grouped")
+Shaping.Attach(PeopleTable, _source);
+if (IsGrouped)
 {
-    ApplyShaping(announce: false);
+    Shaping.Apply(announce: false);
 }
 
-// Grouping the large set reshapes the same source in place. The key selector receives the
-// ROW; the identity selector receives the KEY.
-_source.GroupBy(item => SampleShaping.KeyOf(item as Person, key), SampleShaping.GroupIdentity);
+// …
 
-// Reading realization: the control exposes no realized-row count, so the readout walks the
-// visual tree for TableViewRow (a public type). A row counts as realized when it is visible and
-// its bounds intersect the body viewport; containers parked off screen or hidden by Collapse
-// all count toward the pool only.
+// Workaround, not a pattern to copy: this release has no TableView.ScrollIntoView, so scroll the body
+// ScrollViewer to an estimated offset and correct it from a realized row. Assumes no sort, every
+// group expanded and a uniform row height.
+private void ScrollToRow(int number, string message)
+{
+    if (_people.Count == 0)
+    {
+        return;
+    }
+
+    var target = _people[number - 1];
+    if (IsGrouped)
+    {
+        // The display index map assumes every group is expanded.
+        PeopleTable.ExpandAllGroups();
+    }
+
+    var indexes = DisplayIndexes();
+    var targetIndex = indexes[target];
+    PeopleTable.Select(targetIndex);
+
+    PeopleTable.UpdateLayout();
+    var scroller = FindBodyScroller(PeopleTable);
+    var measured = CountRows().RowHeight;
+    var rowHeight = measured > 0 ? measured : _rowHeight;
+    if (scroller is null || rowHeight <= 0)
+    {
+        return;
+    }
+
+    var offset = (targetIndex * rowHeight) - (scroller.ViewportHeight / 2);
+    for (var attempt = 0; attempt < 6; attempt++)
+    {
+        scroller.ChangeView(null, Math.Max(0, offset), null, disableAnimation: true);
+        PeopleTable.UpdateLayout();
+
+        if (FindRealizedRow(target) is { } row)
+        {
+            row.StartBringIntoView();
+            break;
+        }
+
+        // Not realized yet: measure how far off the estimate was from any realized row.
+        if (FindRealizedRow(null) is not { DataContext: Person landed } || !indexes.TryGetValue(landed, out var landedIndex))
+        {
+            break;
+        }
+
+        offset = scroller.VerticalOffset + ((targetIndex - landedIndex) * rowHeight);
+    }
+}
+
+// …
+
+// The control exposes no realized-row count, so walk the visual tree for TableViewRow and count the
+// visible rows that intersect the body viewport.
 private static bool InViewport(TableViewRow row, ScrollViewer scroller)
 {
     if (row.Visibility != Visibility.Visible || row.ActualHeight <= 0)
@@ -35,12 +83,20 @@ private static bool InViewport(TableViewRow row, ScrollViewer scroller)
     return bounds.Bottom > 0 && bounds.Top < scroller.ViewportHeight;
 }
 
-// There is no ScrollIntoView in this release: select by display index, scroll the body
-// ScrollViewer to an estimate, correct it from a realized row, then bring the row into view.
-PeopleTable.Select(targetIndex);
-scroller.ChangeView(null, Math.Max(0, offset), null, disableAnimation: true);
-PeopleTable.UpdateLayout();
-if (FindRealizedRow(target) is { } row)
+// …
+
+// From Controls\ShapingOptions.xaml.cs
+// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
 {
-    row.StartBringIntoView();
+    if (mode == "grouped")
+    {
+        // The key selector receives the ROW; the identity selector receives the KEY.
+        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+    }
+    else
+    {
+        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
+        source.ClearGroupBy();
+    }
 }

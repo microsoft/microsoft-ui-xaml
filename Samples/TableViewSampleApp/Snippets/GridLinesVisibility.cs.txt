@@ -1,3 +1,10 @@
+Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+InitializeComponent();
+
+// …
+
+// ---- Grid lines and banding ---------------------------------------------------------
+
 private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
 {
     // Fires during InitializeComponent (SelectedIndex="3") before the table exists.
@@ -13,7 +20,6 @@ private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
         "Vertical" => TableViewGridLinesVisibility.Vertical,
         _ => TableViewGridLinesVisibility.All,
     };
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "GridLinesVisibility -> {0}", PeopleTable.GridLinesVisibility));
 }
 
 private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
@@ -25,25 +31,21 @@ private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
 
     var custom = SampleShaping.SelectedTag(RowBandingSelector, "default") == "custom";
     PeopleTable.Style = custom ? (Style)Resources["CustomBandingTableViewStyle"] : null;
-    SetLastAction(custom
-        ? "Row banding -> custom RowBackground / AlternatingRowBackground"
-        : "Row banding -> default theme");
 }
+
+// …
 
 private void OnMoveToNextGroupClick(object sender, RoutedEventArgs e)
 {
     if (PeopleTable.SelectedItem is not Person person)
     {
-        SetLastAction("No row selected.");
         return;
     }
 
     // Moves along the key the Group key selector names, so the row always changes group
     // when grouped (and the same value changes when flat).
-    var key = SampleShaping.SelectedTag(GroupKeySelector, "Department");
-    var from = SampleShaping.KeyOf(person, key);
-    _isBulkUpdate = true;
-    try
+    var key = Shaping.SelectedKey;
+    using (BeginBulkUpdate())
     {
         switch (key)
         {
@@ -58,13 +60,26 @@ private void OnMoveToNextGroupClick(object sender, RoutedEventArgs e)
                 break;
         }
     }
-    finally
-    {
-        _isBulkUpdate = false;
-    }
 
     // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
     // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
     ReapplyIfGroupedOn(key);
-    SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
+}
+
+// …
+
+// From Controls\ShapingOptions.xaml.cs
+// Reshape the ONE TableViewSource in place: GroupBy to group, ClearGroupBy for flat.
+private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf)
+{
+    if (mode == "grouped")
+    {
+        // The key selector receives the ROW; the identity selector receives the KEY.
+        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+    }
+    else
+    {
+        // Hierarchy is not available in this release; when it ships it composes with GroupBy on this source.
+        source.ClearGroupBy();
+    }
 }

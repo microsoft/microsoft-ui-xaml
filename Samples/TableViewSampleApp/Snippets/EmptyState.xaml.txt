@@ -1,6 +1,6 @@
-<!-- TableView.EmptyTemplate is shown, centred over the row area, whenever there are no rows to
-     show. Keep its content to text and shapes: a FontIcon inside EmptyTemplate crashes at startup. -->
-
+<!-- EmptyTemplate content is TEXT + SHAPES only. A FontIcon inside the
+     EmptyTemplate crashes at startup (known issue), so the empty-state
+     glyph is drawn with an Ellipse and Rectangles instead of a FontIcon. -->
 <DataTemplate x:Key="EmptyStateTemplate" x:DataType="system:Object">
     <StackPanel
         HorizontalAlignment="Center"
@@ -34,7 +34,7 @@
     </StackPanel>
 </DataTemplate>
 
-<!-- The template columns come from Templates\PersonCellTemplates.xaml. -->
+<!-- … -->
 
 <tv:TableView
     x:Name="PeopleTable"
@@ -51,17 +51,3 @@
     <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
     <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
 </tv:TableView>
-
-<!-- Two different ways of being empty: a null ItemsSource, and a live source that holds no rows. -->
-
-<ComboBox
-    x:Name="DataSourceSelector"
-    AutomationProperties.AutomationId="EmptyStateDataSourceSelector"
-    Header="Data source"
-    SelectedIndex="0"
-    SelectionChanged="OnDataSourceChanged"
-    HorizontalAlignment="Stretch">
-    <ComboBoxItem Content="Populated" Tag="Populated"/>
-    <ComboBoxItem Content="Null ItemsSource" Tag="Null"/>
-    <ComboBoxItem Content="Zero rows" Tag="ZeroRows"/>
-</ComboBox>

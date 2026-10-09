@@ -24,35 +24,32 @@ namespace TableViewSampleApp.Pages;
 /// (FileInfo), so none is blank. The page starts grouped by section; one TableViewSource over one
 /// ObservableCollection is refilled per file and filtered, grouped and edited in place.
 /// </summary>
-public sealed partial class FilePropertiesPage : Page
+public sealed partial class FilePropertiesPage : SamplePageBase
 {
     private static readonly string[] s_sections = { "Description", "Origin", "File" };
 
-    private TableViewSource? _source;          // created ONCE over Entries; never rebuilt
-    private string _appliedMode = "flat";      // written only after GroupBy/ClearGroupBy returns
-    private string _appliedKey = "Section";
     private FileInfo? _currentFile;
 
     public FilePropertiesPage()
     {
-        _source = TableViewSource.From(Entries);
+        // <snippet>
+        Source = TableViewSource.From(Entries);    // created once; never rebuilt
         InitializeComponent();
 
         PropTable.HeadersVisibility = TableViewHeadersVisibility.Column;
         PropTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
         PropTable.Density = TableViewDensity.Compact;
+        // </snippet>
 
-        // This page starts Grouped by section (ShapingModeSelector SelectedIndex="1"). The
-        // SelectionChanged that InitializeComponent raised was ignored by the guard, so apply it now.
-        ApplyShaping(announce: false);
-        Loaded += OnPageLoaded;
+        InitializeSample(Status, Shaping.Attach(PropTable, Source, (row, key) => KeyOf(row as FilePropertyEntry, key)));
+        TrackLifetime(ListFilesOnce);
     }
 
     public ObservableCollection<FilePropertyEntry> Entries { get; } = new();
 
-    public TableViewSource? Source => _source;
+    public TableViewSource Source { get; }
 
-    private async void OnPageLoaded(object sender, RoutedEventArgs e)
+    private async void ListFilesOnce()
     {
         if (FileList.ItemsSource is not null)
         {
@@ -113,6 +110,7 @@ public sealed partial class FilePropertiesPage : Page
         }
     }
 
+    // <snippet>
     // Refills the one collection; the source re-projects it under the current filter and grouping.
     private void ShowFile(FileInfo file)
     {
@@ -125,6 +123,7 @@ public sealed partial class FilePropertiesPage : Page
 
         RefreshReadouts();
     }
+    // </snippet>
 
     private static IEnumerable<FilePropertyEntry> ReadProperties(FileInfo file)
     {
@@ -176,11 +175,12 @@ public sealed partial class FilePropertiesPage : Page
     private static string SizeText(long bytes) =>
         string.Format(CultureInfo.CurrentCulture, "{0} ({1:N0} bytes)", FileSystemEntry.FormatSize(bytes), bytes);
 
+    // <snippet>
     // ---- Filter (TableViewSource.Filter) ---------------------------------------------------
 
     private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_source is null || FilterSelector is null)
+        if (FilterSelector is null)
         {
             return;
         }
@@ -188,16 +188,16 @@ public sealed partial class FilePropertiesPage : Page
         switch (SampleShaping.SelectedTag(FilterSelector, "all"))
         {
             case "dates":
-                _source.Filter(item => item is FilePropertyEntry { IsDate: true });
+                Source.Filter(item => item is FilePropertyEntry { IsDate: true });
                 break;
             case "version":
-                _source.Filter(item => item is FilePropertyEntry { Source: FilePropertyEntry.VersionResource });
+                Source.Filter(item => item is FilePropertyEntry { Source: FilePropertyEntry.VersionResource });
                 break;
             case "none":
-                _source.Filter(_ => false);
+                Source.Filter(_ => false);
                 break;
             default:
-                _source.ClearFilter();
+                Source.ClearFilter();
                 break;
         }
 
@@ -207,6 +207,7 @@ public sealed partial class FilePropertiesPage : Page
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filter -> {0} ({1:N0} rows)", SampleShaping.Label(FilterSelector), VisibleEntries().Count()));
         }
     }
+    // </snippet>
 
     private IEnumerable<FilePropertyEntry> VisibleEntries() => SampleShaping.SelectedTag(FilterSelector, "all") switch
     {
@@ -218,6 +219,7 @@ public sealed partial class FilePropertiesPage : Page
 
     // ---- Actions ------------------------------------------------------------------------
 
+    // <snippet>
     private void OnMoveSectionClick(object sender, RoutedEventArgs e)
     {
         if (PropTable.SelectedItem is not FilePropertyEntry entry)
@@ -229,8 +231,7 @@ public sealed partial class FilePropertiesPage : Page
         var from = entry.Section;
         entry.Section = SampleShaping.Next(s_sections, from);
 
-        // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row;
-        // ApplyShaping re-selects it in its new section.
+        // GroupBy takes a delegate, not a property path, so re-apply it to re-bucket the row.
         ReapplyIfGroupedOn(nameof(FilePropertyEntry.Section));
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", entry.Property, from, entry.Section));
     }
@@ -247,6 +248,7 @@ public sealed partial class FilePropertiesPage : Page
         Entries.Remove(entry);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Removed {0} from {1}", entry.Property, entry.Section));
     }
+    // </snippet>
 
     private void OnRestoreClick(object sender, RoutedEventArgs e)
     {
@@ -275,132 +277,15 @@ public sealed partial class FilePropertiesPage : Page
 
     private void OnPropSelectionChanged(TableView sender, SelectionChangedEventArgs args)
     {
-        if (SampleShaping.IsReselecting)
-        {
-            return;
-        }
-
         RefreshReadouts();
     }
 
-    private void RefreshReadouts()
-    {
-        if (RowsText is null || FileText is null || SectionsText is null)
-        {
-            return;
-        }
-
-        var visible = VisibleEntries().ToList();
-        FileText.Text = _currentFile?.Name ?? "(none)";
-        SectionsText.Text = visible.Count == 0
-            ? "(none)"
-            : string.Join(", ", s_sections
-                .Select(section => (section, count: visible.Count(entry => entry.Section == section)))
-                .Where(pair => pair.count > 0)
-                .Select(pair => string.Format(CultureInfo.CurrentCulture, "{0} {1:N0}", pair.section, pair.count)));
-        RowsText.Text = SampleShaping.RowCountText(visible.Count);
-    }
-
-    // Group key resolution for this page's model (FIX-PLAN §1.6 R2). Never returns a blank key.
+    // <snippet>
+    // Never blank: TableViewSource fails fast on an empty group identity.
     private static object KeyOf(FilePropertyEntry? entry, string key)
     {
         var value = key == nameof(FilePropertyEntry.Source) ? entry?.Source : entry?.Section;
         return string.IsNullOrWhiteSpace(value) ? SampleShaping.NoneKey : value;
     }
-
-    #region Sample scaffolding (generic; see FIX-PLAN §6)
-
-    private void OnShapingModeChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void OnGroupKeyChanged(object sender, SelectionChangedEventArgs e) => ApplyShaping(announce: true);
-
-    private void ApplyShaping(bool announce)
-    {
-        // Fires during InitializeComponent (the selectors' SelectedIndex), before the
-        // later-declared elements exist. Guard every element this path touches.
-        if (_source is null || PropTable is null || ShapingModeSelector is null || GroupKeySelector is null
-            || ExpandAllButton is null || CollapseAllButton is null || ShapingModeText is null)
-        {
-            return;
-        }
-
-        var mode = SampleShaping.SelectedTag(ShapingModeSelector, "flat");
-        var key = SampleShaping.SelectedTag(GroupKeySelector, "Section");
-        var selected = PropTable.SelectedItem;
-
-        switch (mode)
-        {
-            case "grouped":
-                // The key selector receives the ROW; the identity selector receives the KEY.
-                _source.GroupBy(item => KeyOf(item as FilePropertyEntry, key), SampleShaping.GroupIdentity);
-                break;
-            // case "hierarchy":
-            // case "groupedHierarchy":
-            //     Hierarchical (tree) rows are not available in this release, so the two matching
-            //     ComboBoxItems ship disabled. TableViewSource and TableView have no hierarchy
-            //     member today. When hierarchy ships, apply it to this same source here, composed
-            //     with the GroupBy stage above rather than replacing it, and set _appliedMode only
-            //     after the call returns.
-            default:
-                _source.ClearGroupBy();
-                mode = "flat";
-                break;
-        }
-
-        _appliedMode = mode;
-        _appliedKey = key;
-
-        // Re-applying GroupBy can drop the selection when the selected row changed group.
-        SampleShaping.Reselect(PropTable, selected, Entries.Count + s_sections.Length + 2, RefreshReadouts);
-        UpdateShapingGating();
-        if (announce)
-        {
-            SetLastAction(mode == "grouped"
-                ? string.Format(CultureInfo.CurrentCulture, "Shaping -> Grouped by {0}", SampleShaping.Label(GroupKeySelector))
-                : "Shaping -> Flat");
-        }
-    }
-
-    // Call after ANY write to the grouped-on property.
-    private void ReapplyIfGroupedOn(string? propertyName)
-    {
-        if (_appliedMode == "grouped" && propertyName == _appliedKey)
-        {
-            ApplyShaping(announce: false);
-        }
-    }
-
-    private void UpdateShapingGating()
-    {
-        var grouped = _appliedMode == "grouped";
-        GroupKeySelector.IsEnabled = grouped;
-        ExpandAllButton.IsEnabled = grouped;
-        CollapseAllButton.IsEnabled = grouped;
-        ShapingModeText.Text = SampleShaping.ShapingText(grouped, GroupKeySelector);
-    }
-
-    private void OnExpandAllClick(object sender, RoutedEventArgs e)
-    {
-        PropTable.ExpandAllGroups();
-        SetLastAction("Expanded all groups");
-    }
-
-    private void OnCollapseAllClick(object sender, RoutedEventArgs e)
-    {
-        PropTable.CollapseAllGroups();
-        SetLastAction("Collapsed all groups");
-    }
-
-    // The only writer of LastActionText.
-    private void SetLastAction(string message)
-    {
-        if (LastActionText is not null)
-        {
-            LastActionText.Text = message;
-        }
-
-        RefreshReadouts();
-    }
-
-    #endregion
+    // </snippet>
 }
