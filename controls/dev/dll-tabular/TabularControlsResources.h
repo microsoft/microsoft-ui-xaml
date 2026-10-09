@@ -12,6 +12,11 @@ class TabularControlsResources :
 {
 public:
     TabularControlsResources();
+
+    // Not MUXControlsFactory::IsInitialized(): XamlControlsTabularXamlMetaDataProvider.Initialize() also sets that.
+    static bool HasBeenCreated() noexcept { return s_hasBeenCreated; }
 private:
     void UpdateSource();
+
+    static inline bool s_hasBeenCreated{ false };
 };

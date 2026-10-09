@@ -20,12 +20,44 @@ seed — the control resolves its own default style and theme resources from the
 
 `TabularControlsResources` is Tabular's own theme-resource dictionary, the exact analogue of
 `XamlControlsResources` for MUXC, and merging it is a normal part of consuming the control set
-rather than a workaround. It is required: `TableView`'s column-header style resolves
-`SortIndicatorForeground` from it, and `SortIndicator` ships in the Tabular DLL rather than in MUXC
-(`controls/Tabular.ProjectImports.targets` is the only importer of `SortIndicator.vcxitems`).
-Without the merge the app throws `XamlParseException 0x802B000A` — "Cannot find a Resource with the
-Name/Key SortIndicatorForeground" — during the first layout pass, which surfaces as a
-`0xC000027B` stowed exception a few seconds after launch.
+rather than a workaround. For the standard defaults, merge it in `App.xaml` after
+`XamlControlsResources` and before application overrides:
+
+```xml
+<Application.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            <TabularControlsResources xmlns="using:Microsoft.UI.Xaml.Controls.Tabular" />
+        </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+</Application.Resources>
+```
+
+Applications can instead supply equivalent resources or a complete custom style/template; nothing
+requires a particular dictionary object. Compilation and construction can succeed before a required
+resource lookup fails during initial layout/style realization.
+
+Without the merge, the first missing key (currently `SortIndicatorForeground`, though which key
+fails first changes as the templates evolve) throws `XamlParseException 0x802B000A` during the first
+layout pass. **If that exception goes unhandled it surfaces as a `0xC000027B` stowed exception a few
+seconds after launch** — that second code is usually all a crash dump shows, so it is the string
+worth searching for. The parse error reports the original key *and the source markup file it was
+looked up from*, and retains `0x802B000A` with its line/position:
+
+```
+Cannot find a Resource with the Name/Key SortIndicatorForeground.
+Source: 'ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/generic.xaml'.
+```
+
+The source URI is reported for every XAML document, not just Tabular's — it tells you which
+dictionary the control expected to find the key in, which is the fastest way to identify a missing
+or mis-ordered merge.
+
+If defaults are already configured, check the key, overrides and matching Tabular DLL/PRI. A missing
+required `DefaultStyleResourceUri` reports separate deployment/resource-map guidance: merging a
+dictionary cannot restore an unavailable package resource. These diagnostics do not register
+resources automatically or change the existing unhandled-error/fail-fast policy.
 
 Each app instantiates `TableView` **twice on purpose**:
 

@@ -1744,9 +1744,10 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideStaticResourceReference(
             });
 
             xstring_ptr currentUri;
-            if (const auto baseUri = m_spContext->get_BaseUri())
+            // BaseUri is null while expanding a deferred template.
+            if (const auto sourceUri = m_spContext->get_BaseUri() ? m_spContext->get_BaseUri() : m_spContext->get_XamlResourceUri())
             {
-                IGNOREHR(UriXStringGetters::GetPath(baseUri, &currentUri));
+                IGNOREHR(UriXStringGetters::GetPath(sourceUri, &currentUri));
             }
 
             IFC_RETURN(core->GetResourceLookupLogger()->Start(staticResourceKey, currentUri));
@@ -1833,9 +1834,10 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideThemeResourceValue(_In_ 
             });
 
             xstring_ptr currentUri;
-            if (const auto baseUri = m_spContext->get_BaseUri())
+            // BaseUri is null while expanding a deferred template.
+            if (const auto sourceUri = m_spContext->get_BaseUri() ? m_spContext->get_BaseUri() : m_spContext->get_XamlResourceUri())
             {
-                IGNOREHR(UriXStringGetters::GetPath(baseUri, &currentUri));
+                IGNOREHR(UriXStringGetters::GetPath(sourceUri, &currentUri));
             }
 
             IFC_RETURN(core->GetResourceLookupLogger()->Start(themeResourceKey, currentUri));

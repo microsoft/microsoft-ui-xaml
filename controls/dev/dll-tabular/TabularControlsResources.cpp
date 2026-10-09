@@ -11,6 +11,7 @@ TabularControlsResources::TabularControlsResources()
     // On Windows, we need to add theme resources manually.  We'll still add an instance of this element to get the rest of
     // what it does, though.
     MUXControlsFactory::EnsureInitialized();
+    s_hasBeenCreated = true;
     UpdateSource();
 }
 

@@ -16,8 +16,10 @@
 #include "SortIndicator.h"
 #include "RuntimeProfiler.h"
 #include "TVDiag.h"
+#include "TabularControlsResources.h"
 
 #include <string>
+#include <atomic>
 #include <cmath>
 #include <limits>
 #include <algorithm>
@@ -327,6 +329,18 @@ TableView::TableView()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TableView);
 
     SetDefaultStyleKey(this);
+
+    // Debug output only: apps may supply equivalent resources or a custom template instead.
+    static std::atomic<bool> s_reportedMissingResources{ false };
+    if (!TabularControlsResources::HasBeenCreated() && !s_reportedMissingResources.exchange(true))
+    {
+        OutputDebugStringW(
+            L"WARNING: TableView was created, but no Microsoft.UI.Xaml.Controls.Tabular.TabularControlsResources "
+            L"instance exists. Unless this app supplies equivalent resources or a custom template, add "
+            L"<TabularControlsResources xmlns=\"using:Microsoft.UI.Xaml.Controls.Tabular\" /> to "
+            L"Application.Resources.MergedDictionaries after XamlControlsResources. Otherwise template "
+            L"expansion fails with 'Cannot find a Resource with the Name/Key ...' (XamlParseException 0x802B000A).\r\n");
+    }
 
     // Columns must be observable; OnColumnsPropertyChanged owns the VectorChanged subscription to avoid duplicate callbacks.
     auto columns = winrt::single_threaded_observable_vector<winrt::TableViewColumn>();
