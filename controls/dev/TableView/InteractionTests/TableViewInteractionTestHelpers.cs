@@ -372,6 +372,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // ---------- Pointer (absolute screen points) ----------
 
+        // "Name [ClassName]" of the element UIA reports as focused, for logging where focus actually went.
+        internal static string DescribeFocused()
+        {
+            try
+            {
+                UIObject focused = UIObject.Focused;
+                return focused == null ? "<none>" : string.Format("'{0}' [{1}]", focused.Name, focused.ClassName);
+            }
+            catch (Exception e)
+            {
+                return "<unavailable: " + e.GetType().Name + ">";
+            }
+        }
+
+        // Rotates the wheel with the pointer parked over the given point. Vertical only: MITA exposes no
+        // horizontal wheel, and holding Shift does not turn this into one (measured - the body scrolled
+        // VERTICALLY with Shift down).
+        internal static void WheelAtPoint(Point point, int delta)
+        {
+            Log.Comment("Rotate wheel by {0} at ({1}, {2}).", delta, point.X, point.Y);
+
+            PointerInput.Move(point);
+            MouseWheelInput.RotateWheel(delta);
+            Wait.ForIdle();
+        }
+
         internal static Point CentreOf(UIObject element)
         {
             var bounds = element.BoundingRectangle;
@@ -548,6 +574,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             var readout = FindElement.ById<TextBlock>(ScrollOffsets);
             return readout == null ? "<no readout>" : readout.DocumentText;
+        }
+
+        // The "V=<v>" field of a ReadScrollOffsets() readout, or the whole readout if it has none.
+        internal static string VerticalOffsetOf(string offsets)
+        {
+            foreach (string field in offsets.Split(';'))
+            {
+                if (field.StartsWith("V=", StringComparison.Ordinal))
+                {
+                    return field;
+                }
+            }
+            return offsets;
         }
     }
 }

@@ -215,7 +215,7 @@ Keyboard handling is cell-aware and follows the WAI-ARIA treegrid model. `TableV
   - `Ctrl` plus a navigation key moves focus without selecting.
   - `Space` (without `Alt` or `Ctrl`) selects the focused row from row or cell level.
 - **Cell content.** `Enter` on a cell that hosts a focusable control moves focus into that control, and arrow keys then stay inside it. `Escape` returns to the cell. `F2` remains the begin-edit key.
-- **Re-entry.** Tabbing back into the body returns to the same **record** that last had focus, even after a sort or filter has moved it. A record that is no longer realized falls back to the row the framework targets.
+- **Re-entry.** Tabbing back into the body from outside the table (`Tab` or `Shift+Tab`, that is a focus move with direction `Next` or `Previous`) returns to the same **record** that last had focus, even after a sort or filter has moved it, at the level it was left at: the same visible column at cell level, or the row at row level. This holds whichever element the framework aimed at, including a control hosted in another row's template cell. A record that is no longer realized, or no remembered record, lands on the first (`Tab`) or last (`Shift+Tab`) row inside the body viewport at row level, so re-entry never scrolls to a cache row. The entry is redirected at most once per focus operation. Arrow, pointer and programmatic focus moves are never redirected.
 - **Re-shape while focused.** When a sort or filter re-shapes the rows while focus is **inside** the body, focus stays at the same **position**, the same projected row index, and so lands on whichever row now occupies it. This also applies when the focused record was filtered out.
 - **Gamepad.** Gamepad, D-pad and XY-focus navigation are not supported. Only the keyboard routing above is specified.
 
@@ -325,7 +325,7 @@ gone by the time the work runs: expansion is queued **by identity** with a gener
 (`QueueGroupExpansionByIdentity` / `ApplyGroupExpansionByIdentity`), and focus is captured and
 restored by identity too (`CaptureGroupHeaderFocusForRestore` /
 `RestoreGroupHeaderFocusIfPending`), so a keyboard user does not lose focus to the top of the
-table on every collapse.
+table on every collapse. The restored focus state follows the gesture (`Keyboard` for a key, `Pointer` for a click), and the restore is skipped when focus has meanwhile moved outside the table. A pointer click on a band focuses the header on **release** inside the band, before the toggle, and only when the band still shows the group that was pressed; a press dragged off the band does nothing.
 
 **Header presentation.** `TableViewGroupHeader` is a templated `ContentControl`, not a code-built
 visual tree: the chevron gutter (`PART_ExpanderGutter` / `PART_ExpanderIcon`) and the themed band

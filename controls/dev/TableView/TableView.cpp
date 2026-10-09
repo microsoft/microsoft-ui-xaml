@@ -1912,6 +1912,8 @@ void TableView::OnRowElementPrepared(
     }
     else if (auto header = args.Element().try_as<winrt::TableViewGroupHeader>())
     {
+        // A container from the pool must not carry a press that began on the group it showed before.
+        winrt::get_self<TableViewGroupHeader>(header)->ResetPointerStateInternal();
         PrepareGroupHeaderElement(header, args.Index());
         InvalidateMeasure();
         QueueTerminalGridLineRefresh();
@@ -1951,6 +1953,13 @@ void TableView::OnRowElementClearing(
         }
 
         auto const rowImpl = winrt::get_self<TableViewRow>(row);
+        // The container resets its own level on recycle and is about to show another record, so it
+        // must stop being "the drilled row". The cursor level and column survive: re-entry re-arms
+        // cell level on whichever container shows the remembered record next.
+        if (auto const drilled = m_cellLevelRow.get(); drilled && IsSameObject(row, drilled))
+        {
+            m_cellLevelRow = nullptr;
+        }
         // Release app-supplied tooltip content rather than pinning it in the recycle pool.
         rowImpl->ReleaseCellToolTips();
         rowImpl->SetTerminalGridLineSuppression({});

@@ -695,18 +695,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
-        // Rotates the wheel with the pointer parked over the given point. Vertical only: MITA exposes no
-        // horizontal wheel, and holding Shift does not turn this into one (measured - the body scrolled
-        // VERTICALLY with Shift down). Use DragHorizontalScrollBar for the horizontal axis.
-        private static void WheelAtPoint(Point point, int delta)
-        {
-            Log.Comment("Rotate wheel by {0} at ({1}, {2}).", delta, point.X, point.Y);
-
-            PointerInput.Move(point);
-            MouseWheelInput.RotateWheel(delta);
-            Wait.ForIdle();
-        }
-
         // Scrolls the body horizontally by mouse-dragging the body scroller's horizontal ScrollBar thumb.
         // dx is a screen delta: positive drags the thumb right, scrolling the content right so the headers
         // travel left. Returns false if the ScrollBar was not found.

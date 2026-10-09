@@ -250,11 +250,51 @@ public:
     // Up/Down move between while the user has not drilled into cells.
     bool FocusRowContainer(int32_t rowIndex);
 
-    // The row that body entry should land on when focus is aimed at a row CONTAINER from outside
-    // the table. Used by TableViewRow's GettingFocus redirect: entering the table returns to the
-    // row the user left, while a move that started inside the table keeps the row it names.
+    // The row Tab / Shift+Tab entry into the body should land on. Used by TableViewRow's GettingFocus
+    // redirect. A move that started inside the table keeps the row it names. Entry from outside
+    // returns to the remembered RECORD wherever it is realized now; when nothing is remembered or
+    // the record is not realized, it lands on the first (Next) or last (Previous) row inside the
+    // body viewport rather than on the cache row XAML aimed at, which would scroll. No side effects.
     winrt::TableViewRow ResolveFocusEntryRow(
-        winrt::TableViewRow const& row, winrt::DependencyObject const& oldFocusedElement);
+        winrt::TableViewRow const& row,
+        winrt::DependencyObject const& oldFocusedElement,
+        winrt::FocusNavigationDirection direction);
+
+    // The element Tab entry from outside the table lands on: the remembered cell when the cursor
+    // was left at cell level AND the resolved row still shows the remembered record, otherwise the
+    // resolved row at row level. No side effects; the caller arms the level it redirects to.
+    struct FocusEntryTarget
+    {
+        winrt::TableViewRow Row{ nullptr };
+        winrt::UIElement Element{ nullptr };
+        bool CellLevel{ false };
+    };
+    FocusEntryTarget ResolveFocusEntryTarget(
+        winrt::TableViewRow const& row,
+        winrt::DependencyObject const& oldFocusedElement,
+        winrt::FocusNavigationDirection direction);
+
+    // A redirect re-raises GettingFocus on the new target with the same CorrelationId. Entry is
+    // redirected at most once per focus operation, so no combination of row state can make the
+    // handler ping-pong inside the focus manager.
+    bool HasRedirectedFocusEntry(winrt::guid const& correlationId) const noexcept
+    {
+        return m_hasFocusEntryRedirect && m_focusEntryRedirectCorrelationId == correlationId;
+    }
+    void NoteFocusEntryRedirect(winrt::guid const& correlationId) noexcept
+    {
+        m_focusEntryRedirectCorrelationId = correlationId;
+        m_hasFocusEntryRedirect = true;
+    }
+
+    // Claims cell level for `row`, releasing whichever other row was drilled in.
+    void ArmCellLevelRowInternal(winrt::TableViewRow const& row);
+
+    // Value-based identity of the group a realized header container shows now, or empty.
+    winrt::hstring GetGroupHeaderIdentityInternal(winrt::UIElement const& container)
+    {
+        return TryGetContainerIdentity(container);
+    }
 
     // Two-level cursor state. False = ROW level, true = CELL level. Owned here rather than on the
     // row because it has to survive row recycling and follow the cursor from row to row.
@@ -760,12 +800,19 @@ private:
     // Keyboard-driven group toggle loses focus without this: the Enter/Space toggle defers a
     // structural reshape that recycles the focused header container, dropping focus (and its
     // visual) to nothing. Capture the header's identity + FocusState at gesture time, then restore
-    // focus to the same group's header once the reshape's relayout has settled. Only keyboard /
-    // programmatic focus is restored -- a pointer toggle carries no focus visual.
-    void CaptureGroupHeaderFocusForRestore(winrt::UIElement const& container, winrt::hstring const& identity);
+    // focus to the same group's header once the reshape's relayout has settled. The restored state
+    // follows the gesture (Keyboard for a key, Pointer for a click) when one is known, and the
+    // restore is skipped if focus has meanwhile moved somewhere outside the table.
+    void CaptureGroupHeaderFocusForRestore(
+        winrt::UIElement const& container,
+        winrt::hstring const& identity,
+        winrt::FocusState gestureState = winrt::FocusState::Unfocused);
     winrt::hstring CaptureFocusedGroupHeaderForRestore();
     void RestoreGroupHeaderFocusIfPending(winrt::hstring const& identity);
     void FocusGroupHeaderByIdentity(winrt::hstring const& identity, winrt::FocusState focusState);
+    // True when a deferred restore may still move focus: the window shows, and focus is nowhere,
+    // still on the (recycled) captured container, or somewhere inside this table.
+    bool CanRestoreGroupHeaderFocus(winrt::UIElement const& capturedContainer);
     // Row identity for a realized container. Identity is index-independent once captured.
     winrt::hstring TryGetContainerIdentity(winrt::UIElement const& container);
 
@@ -865,6 +912,8 @@ private:
     winrt::event_token m_pendingGroupFocusLayoutToken{};
     winrt::hstring m_pendingGroupFocusIdentity{};
     winrt::FocusState m_pendingGroupFocusState{ winrt::FocusState::Unfocused };
+    // The header container that held focus at capture time. Weak: it is pooled and recycled.
+    winrt::weak_ref<winrt::UIElement> m_pendingGroupFocusContainer{ nullptr };
     winrt::event_token m_pendingGroupRowRefreshLayoutToken{};
     // Count changes refresh both empty state and the terminal row separator.
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceCollectionChangedRevoker{};
@@ -978,8 +1027,18 @@ private:
     // Weak: cells are recycled on every scroll.
     winrt::weak_ref<winrt::FrameworkElement> m_cellInteractionCell{ nullptr };
     // The row currently drilled in, so the cursor can pop it back to row level when it moves on.
-    // Weak: rows are recycled on every scroll.
+    // Weak: rows are recycled on every scroll. Cleared when that container is recycled
+    // (OnRowElementClearing); m_cellCursorActive and m_currentCellColumn survive so re-entry can
+    // re-arm cell level on whichever container shows the remembered record next.
     winrt::weak_ref<winrt::TableViewRow> m_cellLevelRow{ nullptr };
+
+    winrt::guid m_focusEntryRedirectCorrelationId{};
+    bool m_hasFocusEntryRedirect{ false };
+
+    // First (or last) realized data row whose box lies inside the body viewport; null if none.
+    winrt::TableViewRow FindViewportEdgeRowInternal(bool last) const;
+    // True when the realized container currently shows m_currentItem.
+    bool RowShowsCurrentItemInternal(winrt::TableViewRow const& row) const;
 
     // Row-level Left/Right drill between row and cells; group headers use Left/Right for expand/collapse.
     bool TryHandleRowLevelDrillKey(const winrt::KeyRoutedEventArgs& args);
